@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ──────────────────────────────────────────────
+// NextAuth models
+// ──────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  STAFF
+  JARDINERO_ADMIN
+  JARDINERO
+}
+
+enum TipoServicio {
+  RECURRENTE
+  UNICO
+}
+
+enum EstadoServicio {
+  ACTIVO
+  PAUSADO
+  CANCELADO
+}
+
+enum EstadoVisita {
+  PROGRAMADA
+  COMPLETADA
+  INCOMPLETA
+  REAGENDADA
+}
+
+// ──────────────────────────────────────────────
+// Application models
+// ──────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(STAFF)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  // Audit relations
+  clientesCreated          Cliente[]          @relation("ClienteCreatedBy")
+  clientesUpdated          Cliente[]          @relation("ClienteUpdatedBy")
+  serviciosCreated         Servicio[]         @relation("ServicioCreatedBy")
+  serviciosUpdated         Servicio[]         @relation("ServicioUpdatedBy")
+  jardinerosCreated        Jardinero[]        @relation("JardineroCreatedBy")
+  jardinerosUpdated        Jardinero[]        @relation("JardineroUpdatedBy")
+  gruposCreated            GrupoJardinero[]   @relation("GrupoCreatedBy")
+  gruposUpdated            GrupoJardinero[]   @relation("GrupoUpdatedBy")
+  clienteServiciosCreated  ClienteServicio[]  @relation("ClienteServicioCreatedBy")
+  clienteServiciosUpdated  ClienteServicio[]  @relation("ClienteServicioUpdatedBy")
+  visitasCreated           Visita[]           @relation("VisitaCreatedBy")
+  visitasUpdated           Visita[]           @relation("VisitaUpdatedBy")
+  jardinero                Jardinero?
+  sectorAdmins             SectorAdmin[]
+}
+
+model Cliente {
+  id         String   @id @default(cuid())
+  nombre     String
+  email      String?
+  telefono   String?
+  ciudad     String?
+  sectorId   String?
+  direccion  String?
+  numeroCasa String?
+  referencia String?  @db.Text
+  notas      String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  createdById String?
+  updatedById String?
+  createdBy   User?   @relation("ClienteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?   @relation("ClienteUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  sector    Sector? @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  servicios ClienteServicio[]
+}
+
+model Servicio {
+  id          String       @id @default(cuid())
+  nombre      String
+  descripcion String?      @db.Text
+  tipo        TipoServicio
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  createdById String?
+  updatedById String?
+  createdBy   User?   @relation("ServicioCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?   @relation("ServicioUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  clientes ClienteServicio[]
+}
+
+model ClienteServicio {
+  id                String         @id @default(cuid())
+  clienteId         String
+  servicioId        String
+  precio            Decimal        @db.Decimal(10, 2)
+  iva               Decimal        @db.Decimal(10, 2) @default(0)
+  frecuenciaMensual Int?
+  estado            EstadoServicio @default(ACTIVO)
+  fechaInicio       DateTime       @default(now())
+  fechaFin          DateTime?
+  notas             String?        @db.Text
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  createdById String?
+  updatedById String?
+  createdBy   User?   @relation("ClienteServicioCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?   @relation("ClienteServicioUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  servicio Servicio @relation(fields: [servicioId], references: [id], onDelete: Restrict)
+
+  visitas Visita[]
+
+  @@unique([clienteId, servicioId])
+}
+
+model Jardinero {
+  id           String   @id @default(cuid())
+  nombre       String
+  telefono     String?
+  email        String?
+  especialidad String?
+  disponible   Boolean  @default(true)
+  userId       String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdById String?
+  updatedById String?
+  createdBy   User?   @relation("JardineroCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?   @relation("JardineroUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  user   User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  grupos GrupoJardineroMiembro[]
+}
+
+model GrupoJardinero {
+  id          String   @id @default(cuid())
+  nombre      String
+  descripcion String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdById String?
+  updatedById String?
+  createdBy   User?   @relation("GrupoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?   @relation("GrupoUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  miembros GrupoJardineroMiembro[]
+  visitas  Visita[]
+}
+
+model Visita {
+  id                  String       @id @default(cuid())
+  clienteServicioId   String
+  fechaProgramada     DateTime
+  fechaRealizada      DateTime?
+  estado              EstadoVisita @default(PROGRAMADA)
+  grupoId             String?
+  notas               String?      @db.Text
+  notasIncompleto     String?      @db.Text
+  visitaOrigenId      String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  createdById         String?
+  updatedById         String?
+
+  clienteServicio    ClienteServicio @relation(fields: [clienteServicioId], references: [id], onDelete: Cascade)
+  grupo              GrupoJardinero? @relation(fields: [grupoId], references: [id], onDelete: SetNull)
+  visitaOrigen       Visita?         @relation("VisitaReagendada", fields: [visitaOrigenId], references: [id], onDelete: SetNull)
+  visitasReagendadas Visita[]        @relation("VisitaReagendada")
+  createdBy          User?           @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy          User?           @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+model GrupoJardineroMiembro {
+  id          String @id @default(cuid())
+  jardineroId String
+  grupoId     String
+
+  jardinero Jardinero      @relation(fields: [jardineroId], references: [id], onDelete: Cascade)
+  grupo     GrupoJardinero @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+
+  @@unique([jardineroId, grupoId])
+}
+
+model Sector {
+  id        String   @id @default(cuid())
+  nombre    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientes Cliente[]
+  admins   SectorAdmin[]
+}
+
+model SectorAdmin {
+  id       String @id @default(cuid())
+  sectorId String
+  userId   String
+
+  sector Sector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sectorId, userId])
+}
