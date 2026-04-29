@@ -15,7 +15,7 @@ import { MobileNav } from "./mobile-nav";
 
 export function Header() {
   const { data: session } = useSession();
-  const userName = session?.user?.name ?? "Usuario";
+  const userName = [session?.user?.name, session?.user?.apellido].filter(Boolean).join(" ") || "Usuario";
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -27,7 +27,7 @@ export function Header() {
     <header className="flex h-16 items-center justify-between border-b bg-white px-4 md:px-6">
       <div className="flex items-center gap-4">
         <MobileNav />
-        <h2 className="text-lg font-semibold md:hidden text-green-700">
+        <h2 className="text-lg font-semibold md:hidden text-primary">
           Vivero Francisco
         </h2>
       </div>
@@ -35,7 +35,7 @@ export function Header() {
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="ghost" className="flex items-center gap-2" />}>
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-green-100 text-green-700 text-sm">
+            <AvatarFallback className="bg-primary/15 text-primary text-sm">
               {userInitials}
             </AvatarFallback>
           </Avatar>

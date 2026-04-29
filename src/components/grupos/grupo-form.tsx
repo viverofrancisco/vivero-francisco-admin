@@ -10,16 +10,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { JardineroSelector } from "./jardinero-selector";
+import { PersonalSelector } from "./personal-selector";
 import { toast } from "sonner";
 
-interface JardineroOption {
+interface PersonalOption {
   id: string;
   nombre: string;
 }
 
 interface GrupoFormProps {
-  jardineros: JardineroOption[];
+  personalList: PersonalOption[];
   initialData?: {
     id: string;
     nombre: string;
@@ -28,7 +28,7 @@ interface GrupoFormProps {
   };
 }
 
-export function GrupoForm({ jardineros, initialData }: GrupoFormProps) {
+export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
@@ -99,13 +99,13 @@ export function GrupoForm({ jardineros, initialData }: GrupoFormProps) {
 
           <div className="space-y-2">
             <Label>Miembros del grupo</Label>
-            <JardineroSelector
-              jardineros={jardineros}
+            <PersonalSelector
+              personalList={personalList}
               selectedIds={selectedIds}
               onChange={(ids) => setValue("miembrosIds", ids)}
             />
             <p className="text-xs text-gray-500">
-              {selectedIds.length} jardinero(s) seleccionado(s)
+              {selectedIds.length} personal seleccionado(s)
             </p>
           </div>
 

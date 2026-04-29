@@ -24,7 +24,7 @@ interface Asignacion {
   estado: string;
   fechaInicio: string;
   fechaFin: string | null;
-  cliente: { id: string; nombre: string; ciudad: string | null };
+  cliente: { id: string; nombre: string; apellido?: string | null; ciudad: string | null };
   servicio: { id: string; nombre: string; tipo: string };
 }
 
@@ -115,7 +115,7 @@ export function AsignacionesPageClient({
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter((a) => a.cliente.nombre.toLowerCase().includes(q));
+      result = result.filter((a) => `${a.cliente.nombre} ${a.cliente.apellido || ""}`.toLowerCase().includes(q));
     }
 
     return result;
@@ -268,9 +268,9 @@ export function AsignacionesPageClient({
                   <TableCell>
                     <Link
                       href={`/dashboard/clientes/${a.cliente.id}`}
-                      className="font-medium text-green-700 hover:underline"
+                      className="font-medium text-primary hover:underline"
                     >
-                      {a.cliente.nombre}
+                      {`${a.cliente.nombre} ${a.cliente.apellido || ""}`.trim()}
                     </Link>
                     {a.cliente.ciudad && (
                       <span className="ml-2 text-xs text-gray-400">

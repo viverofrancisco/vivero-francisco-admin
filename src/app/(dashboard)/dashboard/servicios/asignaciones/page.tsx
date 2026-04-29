@@ -7,13 +7,15 @@ export default async function AsignacionesPage() {
 
   const [asignaciones, servicios] = await Promise.all([
     prisma.clienteServicio.findMany({
+      where: { cliente: { deletedAt: null }, servicio: { deletedAt: null } },
       orderBy: { createdAt: "desc" },
       include: {
-        cliente: { select: { id: true, nombre: true, ciudad: true } },
+        cliente: { select: { id: true, nombre: true, apellido: true, ciudad: true } },
         servicio: { select: { id: true, nombre: true, tipo: true } },
       },
     }),
     prisma.servicio.findMany({
+      where: { deletedAt: null },
       orderBy: { nombre: "asc" },
       select: { id: true, nombre: true },
     }),
@@ -32,7 +34,7 @@ export default async function AsignacionesPage() {
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <AsignacionesPageClient asignaciones={serialized} servicios={servicios} />
     </div>
   );

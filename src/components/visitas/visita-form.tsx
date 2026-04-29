@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomSelect } from "@/components/ui/custom-select";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +20,7 @@ import { toast } from "sonner";
 
 interface ClienteServicioOption {
   id: string;
-  cliente: { nombre: string };
+  cliente: { nombre: string; apellido?: string | null };
   servicio: { nombre: string; tipo: string };
 }
 
@@ -106,18 +100,17 @@ export function VisitaForm({
               name="clienteServicioId"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clienteServicios.map((cs) => (
-                      <SelectItem key={cs.id} value={cs.id}>
-                        {cs.cliente.nombre} — {cs.servicio.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={clienteServicios.map((cs) => ({
+                    value: cs.id,
+                    label: `${cs.cliente.nombre} ${cs.cliente.apellido || ""}`.trim() + " — " + cs.servicio.nombre,
+                  }))}
+                  placeholder="Seleccionar"
+                  searchable
+                  searchPlaceholder="Buscar servicio..."
+                />
               )}
             />
             {errors.clienteServicioId && (
@@ -134,23 +127,17 @@ export function VisitaForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Grupo de jardineros</Label>
+            <Label>Grupo de personal</Label>
             <Controller
               name="grupoId"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sin asignar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {grupos.map((g) => (
-                      <SelectItem key={g.id} value={g.id}>
-                        {g.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={grupos.map((g) => ({ value: g.id, label: g.nombre }))}
+                  placeholder="Sin asignar"
+                />
               )}
             />
           </div>

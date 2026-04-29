@@ -5,14 +5,15 @@ import { GrupoForm } from "@/components/grupos/grupo-form";
 export default async function NuevoGrupoPage() {
   await requireAuth();
 
-  const jardineros = await prisma.jardinero.findMany({
-    select: { id: true, nombre: true },
+  const personalList = await prisma.personal.findMany({
+    where: { deletedAt: null },
+    select: { id: true, nombre: true, apellido: true },
     orderBy: { nombre: "asc" },
   });
 
   return (
-    <div className="space-y-6">
-      <GrupoForm jardineros={jardineros} />
+    <div className="p-4 md:p-6 space-y-6">
+      <GrupoForm personalList={personalList} />
     </div>
   );
 }

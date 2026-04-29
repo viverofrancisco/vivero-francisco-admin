@@ -14,23 +14,23 @@ export default async function DashboardPage() {
   const finMes = new Date(anioActual, mesActual + 1, 1);
 
   const isAdmin = user.role === "ADMIN" || user.role === "STAFF";
-  const isJardineroAdmin = user.role === "JARDINERO_ADMIN";
-  const isJardinero = user.role === "JARDINERO";
+  const isPersonalAdmin = user.role === "PERSONAL_ADMIN";
+  const isPersonal = user.role === "PERSONAL";
 
   // Build visit filter based on role
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const visitaBase: any = { fechaProgramada: { gte: inicioMes, lt: finMes } };
 
-  if (isJardineroAdmin) {
+  if (isPersonalAdmin) {
     const sectorIds = await getUserSectorIds(user.id);
     visitaBase.clienteServicio = { cliente: { sectorId: { in: sectorIds } } };
-  } else if (isJardinero) {
-    const jardinero = await prisma.jardinero.findUnique({
+  } else if (isPersonal) {
+    const personal = await prisma.personal.findUnique({
       where: { userId: user.id },
       select: { id: true },
     });
-    if (jardinero) {
-      visitaBase.grupo = { miembros: { some: { jardineroId: jardinero.id } } };
+    if (personal) {
+      visitaBase.grupo = { miembros: { some: { personalId: personal.id } } };
     } else {
       visitaBase.id = "none";
     }
@@ -40,33 +40,33 @@ export default async function DashboardPage() {
 
   if (isAdmin) {
     promises.push(
-      prisma.cliente.count(),
-      prisma.servicio.count(),
-      prisma.jardinero.count(),
-      prisma.grupoJardinero.count(),
+      prisma.cliente.count({ where: { deletedAt: null } }),
+      prisma.servicio.count({ where: { deletedAt: null } }),
+      prisma.personal.count({ where: { deletedAt: null } }),
+      prisma.grupo.count({ where: { deletedAt: null } }),
     );
-  } else if (isJardineroAdmin) {
+  } else if (isPersonalAdmin) {
     const sectorIds = await getUserSectorIds(user.id);
     promises.push(
-      prisma.cliente.count({ where: { sectorId: { in: sectorIds } } }),
+      prisma.cliente.count({ where: { sectorId: { in: sectorIds }, deletedAt: null } }),
     );
   }
 
   promises.push(
-    prisma.visita.count({ where: visitaBase }),
-    prisma.visita.count({ where: { ...visitaBase, estado: "PROGRAMADA" } }),
-    prisma.visita.count({ where: { ...visitaBase, estado: "COMPLETADA" } }),
-    prisma.visita.count({ where: { ...visitaBase, estado: "INCOMPLETA" } }),
+    prisma.visita.count({ where: { ...visitaBase, deletedAt: null } }),
+    prisma.visita.count({ where: { ...visitaBase, deletedAt: null, estado: "PROGRAMADA" } }),
+    prisma.visita.count({ where: { ...visitaBase, deletedAt: null, estado: "COMPLETADA" } }),
+    prisma.visita.count({ where: { ...visitaBase, deletedAt: null, estado: "INCOMPLETA" } }),
   );
 
   const counts = await Promise.all(promises);
 
-  let clientesCount = 0, serviciosCount = 0, jardinerosCount = 0, gruposCount = 0;
+  let clientesCount = 0, serviciosCount = 0, personalCount = 0, gruposCount = 0;
   let visitasMesTotal: number, visitasProgramadas: number, visitasCompletadas: number, visitasIncompletas: number;
 
   if (isAdmin) {
-    [clientesCount, serviciosCount, jardinerosCount, gruposCount, visitasMesTotal, visitasProgramadas, visitasCompletadas, visitasIncompletas] = counts;
-  } else if (isJardineroAdmin) {
+    [clientesCount, serviciosCount, personalCount, gruposCount, visitasMesTotal, visitasProgramadas, visitasCompletadas, visitasIncompletas] = counts;
+  } else if (isPersonalAdmin) {
     [clientesCount, visitasMesTotal, visitasProgramadas, visitasCompletadas, visitasIncompletas] = counts;
   } else {
     [visitasMesTotal, visitasProgramadas, visitasCompletadas, visitasIncompletas] = counts;
@@ -75,20 +75,20 @@ export default async function DashboardPage() {
   const adminStats = [
     { label: "Clientes", count: clientesCount, href: "/dashboard/clientes", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Servicios", count: serviciosCount, href: "/dashboard/servicios", icon: Wrench, color: "text-orange-600", bg: "bg-orange-50" },
-    { label: "Jardineros", count: jardinerosCount, href: "/dashboard/jardineros", icon: UserCheck, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Personal", count: personalCount, href: "/dashboard/personal", icon: UserCheck, color: "text-primary", bg: "bg-primary/10" },
     { label: "Grupos", count: gruposCount, href: "/dashboard/grupos", icon: UsersRound, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
   const mesNombre = now.toLocaleDateString("es-EC", { month: "long" });
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
-          Bienvenido, {user.name ?? "Usuario"}
+          Bienvenido, {[user.name, user.apellido].filter(Boolean).join(" ") || "Usuario"}
         </h1>
         <p className="text-gray-500">
-          {isAdmin ? "Resumen general del vivero" : isJardineroAdmin ? "Resumen de tus sectores" : "Tus próximas visitas"}
+          {isAdmin ? "Resumen general del vivero" : isPersonalAdmin ? "Resumen de tus sectores" : "Tus próximas visitas"}
         </p>
       </div>
 
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {isJardineroAdmin && (
+      {isPersonalAdmin && (
         <Link href="/dashboard/clientes">
           <Card className="transition-shadow hover:shadow-md">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
         <Card className="transition-shadow hover:shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
-              {isJardinero ? "Mis visitas de" : "Visitas de"}{" "}
+              {isPersonal ? "Mis visitas de" : "Visitas de"}{" "}
               <span className="capitalize">{mesNombre}</span> {anioActual}
             </CardTitle>
             <div className="rounded-md p-2 bg-teal-50">

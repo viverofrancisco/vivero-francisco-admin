@@ -1,18 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomSelect } from "@/components/ui/custom-select";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface SectorOption {
@@ -37,22 +31,44 @@ export function InviteForm({ sectores }: InviteFormProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
+  const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("STAFF");
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
+  const [sectorSearch, setSectorSearch] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!open) {
       setName("");
+      setApellido("");
       setEmail("");
       setPassword("");
       setRole("STAFF");
       setSelectedSectors([]);
+      setSectorSearch("");
       setError("");
     }
   }, [open]);
+
+  const MAX_VISIBLE_SECTORS = 8;
+
+  const filteredSectores = useMemo(() => {
+    const query = sectorSearch.toLowerCase().trim();
+    const filtered = query
+      ? sectores.filter((s) => s.nombre.toLowerCase().includes(query))
+      : sectores;
+    return filtered.slice(0, MAX_VISIBLE_SECTORS);
+  }, [sectores, sectorSearch]);
+
+  const hiddenCount = useMemo(() => {
+    const query = sectorSearch.toLowerCase().trim();
+    const total = query
+      ? sectores.filter((s) => s.nombre.toLowerCase().includes(query)).length
+      : sectores.length;
+    return Math.max(0, total - MAX_VISIBLE_SECTORS);
+  }, [sectores, sectorSearch]);
 
   const toggleSector = (sectorId: string) => {
     setSelectedSectors((prev) =>
@@ -73,10 +89,11 @@ export function InviteForm({ sectores }: InviteFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
+          apellido: apellido || undefined,
           email,
           password,
           role,
-          sectorIds: role === "JARDINERO_ADMIN" ? selectedSectors : undefined,
+          sectorIds: role === "PERSONAL_ADMIN" ? selectedSectors : undefined,
         }),
       });
 
@@ -101,19 +118,29 @@ export function InviteForm({ sectores }: InviteFormProps) {
         <Plus className="mr-2 h-4 w-4" />
         Invitar Usuario
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Invitar nuevo usuario</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="invite-name">Nombre</Label>
-            <Input
-              id="invite-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-name">Nombre</Label>
+              <Input
+                id="invite-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-apellido">Apellido</Label>
+              <Input
+                id="invite-apellido"
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="invite-email">Email</Label>
@@ -139,35 +166,62 @@ export function InviteForm({ sectores }: InviteFormProps) {
           </div>
           <div className="space-y-2">
             <Label>Rol</Label>
-            <Select value={role} onValueChange={(v) => v && setRole(v)}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="STAFF">Staff</SelectItem>
-                <SelectItem value="JARDINERO_ADMIN">Jardinero Admin</SelectItem>
-                <SelectItem value="JARDINERO">Jardinero</SelectItem>
-              </SelectContent>
-            </Select>
+            <CustomSelect
+              value={role}
+              onChange={setRole}
+              options={[
+                { value: "STAFF", label: "Staff" },
+                { value: "PERSONAL_ADMIN", label: "Personal Admin" },
+              ]}
+            />
           </div>
 
-          {role === "JARDINERO_ADMIN" && sectores.length > 0 && (
+          {role === "PERSONAL_ADMIN" && sectores.length > 0 && (
             <div className="space-y-2">
               <Label>Sectores asignados</Label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-3">
-                {sectores.map((s) => (
-                  <label
-                    key={s.id}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <Checkbox
-                      checked={selectedSectors.includes(s.id)}
-                      onCheckedChange={() => toggleSector(s.id)}
-                    />
-                    <span className="text-sm">{s.nombre}</span>
-                  </label>
-                ))}
+              <div className="border rounded-md">
+                <div className="relative p-2 border-b">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar sector..."
+                    value={sectorSearch}
+                    onChange={(e) => setSectorSearch(e.target.value)}
+                    className="pl-8 h-8 border-0 shadow-none focus-visible:ring-0"
+                  />
+                </div>
+                <div className="space-y-1 p-2 max-h-48 overflow-y-auto">
+                  {filteredSectores.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-2 text-center">
+                      No se encontraron sectores
+                    </p>
+                  ) : (
+                    <>
+                      {filteredSectores.map((s) => (
+                        <label
+                          key={s.id}
+                          className="flex items-center gap-2 cursor-pointer rounded-md px-2 py-1.5 hover:bg-gray-50"
+                        >
+                          <Checkbox
+                            checked={selectedSectors.includes(s.id)}
+                            onCheckedChange={() => toggleSector(s.id)}
+                          />
+                          <span className="text-sm">{s.nombre}</span>
+                        </label>
+                      ))}
+                      {hiddenCount > 0 && (
+                        <p className="text-xs text-muted-foreground text-center pt-1">
+                          +{hiddenCount} más — escribe para filtrar
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
+              {selectedSectors.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {selectedSectors.length} sector{selectedSectors.length !== 1 ? "es" : ""} seleccionado{selectedSectors.length !== 1 ? "s" : ""}
+                </p>
+              )}
             </div>
           )}
 

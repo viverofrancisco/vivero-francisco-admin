@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { SectoresTable } from "@/components/sectores/sectores-table";
 import { SectorForm } from "@/components/sectores/sector-form";
-import { EmptyState } from "@/components/shared/empty-state";
 
 interface AdminUser {
   id: string;
@@ -40,11 +39,7 @@ export function SectoresPageClient({ sectores }: SectoresPageClientProps) {
         </Button>
       </div>
 
-      {sectores.length === 0 ? (
-        <EmptyState message="No hay sectores registrados" />
-      ) : (
-        <SectoresTable sectores={sectores} />
-      )}
+      <SectoresTable sectores={sectores} />
 
       <SectorForm
         open={formOpen}

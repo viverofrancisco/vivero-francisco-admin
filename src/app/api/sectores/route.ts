@@ -9,21 +9,22 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  if (user.role === "JARDINERO_ADMIN") {
+  if (user.role === "PERSONAL_ADMIN") {
     const sectorIds = await getUserSectorIds(user.id);
     const sectores = await prisma.sector.findMany({
-      where: { id: { in: sectorIds } },
+      where: { id: { in: sectorIds }, deletedAt: null },
       orderBy: { nombre: "asc" },
       include: { _count: { select: { clientes: true } } },
     });
     return NextResponse.json(sectores);
   }
 
-  if (user.role === "JARDINERO") {
+  if (user.role === "PERSONAL") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
   const sectores = await prisma.sector.findMany({
+    where: { deletedAt: null },
     orderBy: { nombre: "asc" },
     include: {
       _count: { select: { clientes: true } },

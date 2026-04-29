@@ -13,12 +13,12 @@ export async function GET(
   }
 
   const { id } = await params;
-  const grupo = await prisma.grupoJardinero.findUnique({
-    where: { id },
+  const grupo = await prisma.grupo.findUnique({
+    where: { id, deletedAt: null },
     include: {
       miembros: {
         include: {
-          jardinero: { select: { id: true, nombre: true } },
+          personal: { select: { id: true, nombre: true } },
         },
       },
     },
@@ -55,7 +55,7 @@ export async function PUT(
 
   try {
     const grupo = await prisma.$transaction(async (tx) => {
-      await tx.grupoJardinero.update({
+      await tx.grupo.update({
         where: { id },
         data: {
           nombre: data.nombre,
@@ -65,23 +65,23 @@ export async function PUT(
       });
 
       // Reemplazar miembros
-      await tx.grupoJardineroMiembro.deleteMany({ where: { grupoId: id } });
+      await tx.grupoMiembro.deleteMany({ where: { grupoId: id } });
 
       if (data.miembrosIds.length > 0) {
-        await tx.grupoJardineroMiembro.createMany({
-          data: data.miembrosIds.map((jardineroId) => ({
-            jardineroId,
+        await tx.grupoMiembro.createMany({
+          data: data.miembrosIds.map((personalId) => ({
+            personalId,
             grupoId: id,
           })),
         });
       }
 
-      return tx.grupoJardinero.findUnique({
+      return tx.grupo.findUnique({
         where: { id },
         include: {
           miembros: {
             include: {
-              jardinero: { select: { id: true, nombre: true } },
+              personal: { select: { id: true, nombre: true } },
             },
           },
         },
@@ -106,8 +106,8 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await prisma.grupoJardinero.delete({ where: { id } });
-    return NextResponse.json({ message: "Grupo eliminado" });
+    await prisma.grupo.update({ where: { id }, data: { deletedAt: new Date() } });
+    return NextResponse.json({ message: "Grupo archivado" });
   } catch {
     return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
   }

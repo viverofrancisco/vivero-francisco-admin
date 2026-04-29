@@ -10,6 +10,7 @@ export async function GET() {
   }
 
   const servicios = await prisma.servicio.findMany({
+    where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { clientes: true } } },
   });

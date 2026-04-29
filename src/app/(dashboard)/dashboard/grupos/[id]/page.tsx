@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
-import { GrupoForm } from "@/components/grupos/grupo-form";
+import { GrupoDetail } from "@/components/grupos/grupo-detail";
 
 export default async function EditarGrupoPage({
   params,
@@ -11,17 +11,18 @@ export default async function EditarGrupoPage({
   await requireAuth();
   const { id } = await params;
 
-  const [grupo, jardineros] = await Promise.all([
-    prisma.grupoJardinero.findUnique({
-      where: { id },
+  const [grupo, personalList] = await Promise.all([
+    prisma.grupo.findUnique({
+      where: { id, deletedAt: null },
       include: {
         miembros: {
-          select: { jardineroId: true },
+          select: { personalId: true },
         },
       },
     }),
-    prisma.jardinero.findMany({
-      select: { id: true, nombre: true },
+    prisma.personal.findMany({
+      where: { deletedAt: null },
+      select: { id: true, nombre: true, apellido: true },
       orderBy: { nombre: "asc" },
     }),
   ]);
@@ -31,15 +32,18 @@ export default async function EditarGrupoPage({
   }
 
   return (
-    <div className="space-y-6">
-      <GrupoForm
-        jardineros={jardineros}
-        initialData={{
+    <div>
+      <GrupoDetail
+        grupo={{
           id: grupo.id,
           nombre: grupo.nombre,
           descripcion: grupo.descripcion,
-          miembrosIds: grupo.miembros.map((m: { jardineroId: string }) => m.jardineroId),
+          createdAt: grupo.createdAt.toISOString(),
         }}
+        miembrosIds={grupo.miembros.map(
+          (m: { personalId: string }) => m.personalId
+        )}
+        personalList={personalList}
       />
     </div>
   );

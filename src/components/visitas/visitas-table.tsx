@@ -10,8 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
 
 interface VisitaRow {
   id: string;
@@ -20,7 +18,7 @@ interface VisitaRow {
   estado: string;
   notas: string | null;
   clienteServicio: {
-    cliente: { id: string; nombre: string };
+    cliente: { id: string; nombre: string; apellido?: string | null };
     servicio: { id: string; nombre: string; tipo: string };
   };
   grupo: { id: string; nombre: string } | null;
@@ -34,7 +32,7 @@ const estadoBadgeVariant = (estado: string) => {
       return "default" as const;
     case "INCOMPLETA":
       return "destructive" as const;
-    case "REAGENDADA":
+    case "CANCELADA":
       return "outline" as const;
     default:
       return "outline" as const;
@@ -49,8 +47,8 @@ const estadoLabel = (estado: string) => {
       return "Completada";
     case "INCOMPLETA":
       return "Incompleta";
-    case "REAGENDADA":
-      return "Reagendada";
+    case "CANCELADA":
+      return "Cancelada";
     default:
       return estado;
   }
@@ -61,6 +59,7 @@ function formatDate(dateStr: string) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
@@ -77,15 +76,18 @@ export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
             <TableHead>Servicio</TableHead>
             <TableHead>Grupo</TableHead>
             <TableHead>Estado</TableHead>
-            <TableHead className="w-16">Ver</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {visitas.map((v) => (
-            <TableRow key={v.id}>
+            <TableRow
+              key={v.id}
+              className="cursor-pointer"
+              onClick={() => router.push(`/dashboard/visitas/${v.id}`)}
+            >
               <TableCell>{formatDate(v.fechaProgramada)}</TableCell>
               <TableCell className="font-medium">
-                {v.clienteServicio.cliente.nombre}
+                {`${v.clienteServicio.cliente.nombre} ${v.clienteServicio.cliente.apellido || ""}`.trim()}
               </TableCell>
               <TableCell>{v.clienteServicio.servicio.nombre}</TableCell>
               <TableCell>{v.grupo?.nombre ?? "—"}</TableCell>
@@ -93,15 +95,6 @@ export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
                 <Badge variant={estadoBadgeVariant(v.estado)}>
                   {estadoLabel(v.estado)}
                 </Badge>
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => router.push(`/dashboard/visitas/${v.id}`)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
               </TableCell>
             </TableRow>
           ))}

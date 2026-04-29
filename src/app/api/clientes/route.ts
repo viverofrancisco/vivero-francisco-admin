@@ -9,19 +9,19 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  if (user.role === "JARDINERO") {
+  if (user.role === "PERSONAL") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
   const where: Record<string, unknown> = {};
 
-  if (user.role === "JARDINERO_ADMIN") {
+  if (user.role === "PERSONAL_ADMIN") {
     const sectorIds = await getUserSectorIds(user.id);
     where.sectorId = { in: sectorIds };
   }
 
   const clientes = await prisma.cliente.findMany({
-    where,
+    where: { ...where, deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: {
       sector: { select: { id: true, nombre: true } },
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  if (isReadOnly(user.role)) {
+  if (isReadOnly(user.role) || user.role === "PERSONAL_ADMIN") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
@@ -56,6 +56,7 @@ export async function POST(request: Request) {
   const cliente = await prisma.cliente.create({
     data: {
       nombre: data.nombre,
+      apellido: data.apellido || null,
       email: data.email || null,
       telefono: data.telefono || null,
       ciudad: data.ciudad || null,
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
       numeroCasa: data.numeroCasa || null,
       referencia: data.referencia || null,
       notas: data.notas || null,
+      metrosCuadrados: data.metrosCuadrados || null,
       createdById: user.id,
       updatedById: user.id,
     },

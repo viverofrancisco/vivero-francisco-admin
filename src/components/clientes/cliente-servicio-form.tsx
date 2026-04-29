@@ -11,14 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomSelect } from "@/components/ui/custom-select";
 import {
   Dialog,
   DialogContent,
@@ -303,16 +298,15 @@ export function ClienteServicioForm({
                 name="estado"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ACTIVO">Activo</SelectItem>
-                      <SelectItem value="PAUSADO">Pausado</SelectItem>
-                      <SelectItem value="CANCELADO">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <CustomSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { value: "ACTIVO", label: "Activo" },
+                      { value: "PAUSADO", label: "Pausado" },
+                      { value: "CANCELADO", label: "Cancelado" },
+                    ]}
+                  />
                 )}
               />
             </div>
@@ -320,15 +314,27 @@ export function ClienteServicioForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fechaInicio">Fecha inicio *</Label>
-              <Input id="fechaInicio" type="date" {...register("fechaInicio")} />
+              <Label>Fecha inicio *</Label>
+              <Controller
+                name="fechaInicio"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker value={field.value} onChange={field.onChange} />
+                )}
+              />
               {errors.fechaInicio && (
                 <p className="text-sm text-red-600">{errors.fechaInicio.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fechaFin">Fecha fin</Label>
-              <Input id="fechaFin" type="date" {...register("fechaFin")} />
+              <Label>Fecha fin</Label>
+              <Controller
+                name="fechaFin"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker value={field.value ?? ""} onChange={field.onChange} />
+                )}
+              />
             </div>
           </div>
 

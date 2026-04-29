@@ -15,7 +15,7 @@ export async function GET(
   const { id } = await params;
 
   const asignaciones = await prisma.clienteServicio.findMany({
-    where: { clienteId: id },
+    where: { clienteId: id, servicio: { deletedAt: null } },
     orderBy: { createdAt: "desc" },
     include: { servicio: true },
   });

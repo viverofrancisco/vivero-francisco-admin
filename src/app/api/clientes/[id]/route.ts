@@ -13,7 +13,7 @@ export async function GET(
   }
 
   const { id } = await params;
-  const cliente = await prisma.cliente.findUnique({ where: { id } });
+  const cliente = await prisma.cliente.findUnique({ where: { id, deletedAt: null } });
 
   if (!cliente) {
     return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
@@ -53,6 +53,7 @@ export async function PUT(
       where: { id },
       data: {
         nombre: data.nombre,
+        apellido: data.apellido || null,
         email: data.email || null,
         telefono: data.telefono || null,
         ciudad: data.ciudad || null,
@@ -60,6 +61,7 @@ export async function PUT(
         numeroCasa: data.numeroCasa || null,
         referencia: data.referencia || null,
         notas: data.notas || null,
+        metrosCuadrados: data.metrosCuadrados || null,
         updatedById: user.id,
       },
     });
@@ -85,8 +87,8 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await prisma.cliente.delete({ where: { id } });
-    return NextResponse.json({ message: "Cliente eliminado" });
+    await prisma.cliente.update({ where: { id }, data: { deletedAt: new Date() } });
+    return NextResponse.json({ message: "Cliente archivado" });
   } catch {
     return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
   }

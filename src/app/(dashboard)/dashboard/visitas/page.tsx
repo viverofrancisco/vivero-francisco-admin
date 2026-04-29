@@ -6,79 +6,94 @@ export default async function VisitasPage() {
   const user = await requireAuth();
 
   const now = new Date();
-  const mesActual = now.getMonth() + 1;
-  const anioActual = now.getFullYear();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  // Default range: current month
+  const desde = new Date(year, month, 1);
+  const hasta = new Date(year, month + 1, 0);
+
+  const desdeStr = desde.toISOString().split("T")[0];
+  const hastaStr = hasta.toISOString().split("T")[0];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const visitasWhere: any = {
-    fechaProgramada: {
-      gte: new Date(anioActual, mesActual - 1, 1),
-      lt: new Date(anioActual, mesActual, 1),
-    },
+    fechaProgramada: { gte: desde, lte: hasta },
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const csWhere: any = { estado: "ACTIVO" };
+  const clientesWhere: any = { deletedAt: null };
 
-  if (user.role === "JARDINERO_ADMIN") {
+  if (user.role === "PERSONAL_ADMIN") {
     const sectorIds = await getUserSectorIds(user.id);
     visitasWhere.clienteServicio = { cliente: { sectorId: { in: sectorIds } } };
-    csWhere.cliente = { sectorId: { in: sectorIds } };
-  } else if (user.role === "JARDINERO") {
-    const jardinero = await prisma.jardinero.findUnique({
+    clientesWhere.sectorId = { in: sectorIds };
+  } else if (user.role === "PERSONAL") {
+    const personal = await prisma.personal.findUnique({
       where: { userId: user.id },
       select: { id: true },
     });
-    if (jardinero) {
-      visitasWhere.grupo = { miembros: { some: { jardineroId: jardinero.id } } };
+    if (personal) {
+      visitasWhere.OR = [
+        { grupo: { miembros: { some: { personalId: personal.id } } } },
+        { personal: { some: { personalId: personal.id, removedAt: null } } },
+      ];
     }
   }
 
-  const [visitas, clienteServicios, grupos] = await Promise.all([
+  const [visitas, clientes, servicios] = await Promise.all([
     prisma.visita.findMany({
-      where: visitasWhere,
+      where: { ...visitasWhere, deletedAt: null },
       orderBy: { fechaProgramada: "asc" },
       include: {
         clienteServicio: {
           include: {
-            cliente: { select: { id: true, nombre: true } },
+            cliente: { select: { id: true, nombre: true, apellido: true } },
             servicio: { select: { id: true, nombre: true, tipo: true } },
           },
         },
         grupo: { select: { id: true, nombre: true } },
       },
     }),
-    prisma.clienteServicio.findMany({
-      where: csWhere,
-      include: {
-        cliente: { select: { nombre: true } },
-        servicio: { select: { nombre: true, tipo: true } },
-      },
-      orderBy: { cliente: { nombre: "asc" } },
-    }),
-    prisma.grupoJardinero.findMany({
+    prisma.cliente.findMany({
+      where: clientesWhere,
+      select: { id: true, nombre: true, apellido: true },
       orderBy: { nombre: "asc" },
+    }),
+    prisma.servicio.findMany({
+      where: { deletedAt: null },
       select: { id: true, nombre: true },
+      orderBy: { nombre: "asc" },
     }),
   ]);
 
   const serialized = visitas.map((v) => ({
-    ...v,
-    fechaProgramada: v.fechaProgramada.toISOString(),
-    fechaRealizada: v.fechaRealizada?.toISOString() ?? null,
-    createdAt: v.createdAt.toISOString(),
-    updatedAt: v.updatedAt.toISOString(),
+    id: v.id,
+    fechaProgramada: v.fechaProgramada.toISOString().split("T")[0],
+    fechaRealizada: v.fechaRealizada?.toISOString().split("T")[0] ?? null,
+    estado: v.estado,
+    notas: v.notas,
+    clienteServicio: {
+      cliente: v.clienteServicio.cliente,
+      servicio: v.clienteServicio.servicio,
+    },
+    grupo: v.grupo,
+  }));
+
+  const clienteOptions = clientes.map((c) => ({
+    id: c.id,
+    nombre: `${c.nombre} ${c.apellido || ""}`.trim(),
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <VisitasPageClient
         initialVisitas={serialized}
-        clienteServicios={clienteServicios}
-        grupos={grupos}
-        mesInicial={mesActual}
-        anioInicial={anioActual}
+        initialDesde={desdeStr}
+        initialHasta={hastaStr}
         userRole={user.role}
+        clientes={clienteOptions}
+        servicios={servicios}
       />
     </div>
   );

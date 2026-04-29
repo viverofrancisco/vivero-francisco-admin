@@ -14,10 +14,11 @@ export async function GET(
 
   const { id } = await params;
   const sector = await prisma.sector.findUnique({
-    where: { id },
+    where: { id, deletedAt: null },
     include: {
       _count: { select: { clientes: true } },
       clientes: {
+        where: { deletedAt: null },
         select: { id: true, nombre: true, ciudad: true },
         orderBy: { nombre: "asc" },
       },
@@ -80,7 +81,7 @@ export async function DELETE(
   const { id } = await params;
 
   const clienteCount = await prisma.cliente.count({
-    where: { sectorId: id },
+    where: { sectorId: id, deletedAt: null },
   });
 
   if (clienteCount > 0) {
@@ -91,8 +92,8 @@ export async function DELETE(
   }
 
   try {
-    await prisma.sector.delete({ where: { id } });
-    return NextResponse.json({ message: "Sector eliminado" });
+    await prisma.sector.update({ where: { id }, data: { deletedAt: new Date() } });
+    return NextResponse.json({ message: "Sector archivado" });
   } catch {
     return NextResponse.json({ error: "Sector no encontrado" }, { status: 404 });
   }

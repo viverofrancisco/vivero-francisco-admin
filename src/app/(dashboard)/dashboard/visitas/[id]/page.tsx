@@ -12,11 +12,11 @@ export default async function VisitaDetailPage({
   const { id } = await params;
 
   const visita = await prisma.visita.findUnique({
-    where: { id },
+    where: { id, deletedAt: null },
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { id: true, nombre: true, ciudad: true, sector: { select: { nombre: true } } } },
+          cliente: { select: { id: true, nombre: true, apellido: true, ciudad: true, sector: { select: { nombre: true } } } },
           servicio: { select: { id: true, nombre: true, tipo: true } },
         },
       },
@@ -25,14 +25,17 @@ export default async function VisitaDetailPage({
           id: true,
           nombre: true,
           miembros: {
-            include: { jardinero: { select: { id: true, nombre: true } } },
+            include: { personal: { select: { id: true, nombre: true, apellido: true } } },
           },
         },
       },
-      visitaOrigen: { select: { id: true, fechaProgramada: true, estado: true } },
-      visitasReagendadas: {
-        select: { id: true, fechaProgramada: true, estado: true },
-        orderBy: { fechaProgramada: "asc" },
+      personal: {
+        where: { removedAt: null },
+        include: { personal: { select: { id: true, nombre: true, apellido: true } } },
+      },
+      media: {
+        select: { id: true, url: true, tipo: true },
+        orderBy: { createdAt: "asc" as const },
       },
     },
   });
@@ -41,27 +44,41 @@ export default async function VisitaDetailPage({
     notFound();
   }
 
+  // Fetch all active personal for editing (only if PROGRAMADA)
+  const allPersonal = visita.estado === "PROGRAMADA"
+    ? await prisma.personal.findMany({
+        where: { deletedAt: null, estado: "ACTIVO" },
+        select: { id: true, nombre: true, apellido: true },
+        orderBy: { nombre: "asc" },
+      })
+    : [];
+
   const serialized = {
-    ...visita,
-    fechaProgramada: visita.fechaProgramada.toISOString(),
-    fechaRealizada: visita.fechaRealizada?.toISOString() ?? null,
-    createdAt: visita.createdAt.toISOString(),
-    updatedAt: visita.updatedAt.toISOString(),
-    visitaOrigen: visita.visitaOrigen
-      ? {
-          ...visita.visitaOrigen,
-          fechaProgramada: visita.visitaOrigen.fechaProgramada.toISOString(),
-        }
-      : null,
-    visitasReagendadas: visita.visitasReagendadas.map((vr) => ({
-      ...vr,
-      fechaProgramada: vr.fechaProgramada.toISOString(),
-    })),
+    id: visita.id,
+    clienteServicioId: visita.clienteServicioId,
+    fechaProgramada: visita.fechaProgramada.toISOString().split("T")[0],
+    fechaRealizada: visita.fechaRealizada?.toISOString().split("T")[0] ?? null,
+    horaEntrada: visita.horaEntrada,
+    horaSalida: visita.horaSalida,
+    estado: visita.estado,
+    notas: visita.notas,
+    notasIncompleto: visita.notasIncompleto,
+    media: visita.media,
+    clienteServicio: {
+      cliente: visita.clienteServicio.cliente,
+      servicio: visita.clienteServicio.servicio,
+    },
+    grupo: visita.grupo,
+    personal: visita.personal,
   };
 
   return (
-    <div className="space-y-6">
-      <VisitaDetail visita={serialized} userRole={user.role} />
+    <div className="p-4 md:p-6 space-y-6">
+      <VisitaDetail
+        visita={serialized}
+        userRole={user.role}
+        allPersonal={allPersonal}
+      />
     </div>
   );
 }

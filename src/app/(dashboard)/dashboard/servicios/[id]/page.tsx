@@ -18,7 +18,7 @@ export default async function EditarServicioPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <ServicioForm initialData={servicio} />
     </div>
   );

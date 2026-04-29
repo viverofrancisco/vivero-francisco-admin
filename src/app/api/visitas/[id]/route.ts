@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
 import { visitaSchema } from "@/lib/validations/visita";
+import { z } from "zod/v4";
+
+const updatePersonalSchema = z.object({
+  personalIds: z.array(z.string()),
+});
 
 export async function GET(
   _request: Request,
@@ -14,11 +19,11 @@ export async function GET(
 
   const { id } = await params;
   const visita = await prisma.visita.findUnique({
-    where: { id },
+    where: { id, deletedAt: null },
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { id: true, nombre: true, ciudad: true, sector: true } },
+          cliente: { select: { id: true, nombre: true, apellido: true, ciudad: true, sector: true } },
           servicio: { select: { id: true, nombre: true, tipo: true } },
         },
       },
@@ -27,12 +32,18 @@ export async function GET(
           id: true,
           nombre: true,
           miembros: {
-            include: { jardinero: { select: { id: true, nombre: true } } },
+            include: { personal: { select: { id: true, nombre: true } } },
           },
         },
       },
-      visitaOrigen: { select: { id: true, fechaProgramada: true, estado: true } },
-      visitasReagendadas: { select: { id: true, fechaProgramada: true, estado: true } },
+      personal: {
+        where: { removedAt: null },
+        include: { personal: { select: { id: true, nombre: true, apellido: true } } },
+      },
+      media: {
+        select: { id: true, url: true, tipo: true },
+        orderBy: { createdAt: "asc" as const },
+      },
     },
   });
 
@@ -58,6 +69,58 @@ export async function PUT(
 
   const { id } = await params;
   const body = await request.json();
+
+  // Check if this is a personal update or a general update
+  const personalResult = updatePersonalSchema.safeParse(body);
+
+  if (personalResult.success) {
+    // Personal update
+    const visita = await prisma.visita.findUnique({ where: { id } });
+    if (!visita) {
+      return NextResponse.json({ error: "Visita no encontrada" }, { status: 404 });
+    }
+    if (visita.estado !== "PROGRAMADA") {
+      return NextResponse.json(
+        { error: "Solo se puede modificar el personal de visitas programadas" },
+        { status: 400 }
+      );
+    }
+
+    const newIds = new Set(personalResult.data.personalIds);
+
+    // Get current active personal
+    const currentPersonal = await prisma.visitaPersonal.findMany({
+      where: { visitaId: id, removedAt: null },
+    });
+    const currentIds = new Set(currentPersonal.map((p) => p.personalId));
+
+    const toRemove = currentPersonal.filter((p) => !newIds.has(p.personalId));
+    const toAdd = [...newIds].filter((pid) => !currentIds.has(pid));
+
+    await prisma.$transaction([
+      // Mark removed
+      ...toRemove.map((p) =>
+        prisma.visitaPersonal.update({
+          where: { id: p.id },
+          data: { removedAt: new Date(), removedById: user.id },
+        })
+      ),
+      // Add new
+      ...toAdd.map((pid) =>
+        prisma.visitaPersonal.create({
+          data: { visitaId: id, personalId: pid, addedById: user.id },
+        })
+      ),
+      prisma.visita.update({
+        where: { id },
+        data: { updatedById: user.id },
+      }),
+    ]);
+
+    return NextResponse.json({ success: true });
+  }
+
+  // General update (grupo, notas)
   const result = visitaSchema.safeParse(body);
 
   if (!result.success) {
@@ -73,7 +136,6 @@ export async function PUT(
     const visita = await prisma.visita.update({
       where: { id },
       data: {
-        fechaProgramada: new Date(data.fechaProgramada),
         grupoId: data.grupoId || null,
         notas: data.notas || null,
         updatedById: user.id,
@@ -101,8 +163,8 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await prisma.visita.delete({ where: { id } });
-    return NextResponse.json({ message: "Visita eliminada" });
+    await prisma.visita.update({ where: { id }, data: { deletedAt: new Date() } });
+    return NextResponse.json({ message: "Visita archivada" });
   } catch {
     return NextResponse.json({ error: "Visita no encontrada" }, { status: 404 });
   }

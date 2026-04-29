@@ -23,9 +23,9 @@ export async function POST(
     select: { role: true },
   });
 
-  if (!targetUser || targetUser.role !== "JARDINERO_ADMIN") {
+  if (!targetUser || targetUser.role !== "PERSONAL_ADMIN") {
     return NextResponse.json(
-      { error: "El usuario debe tener rol JARDINERO_ADMIN" },
+      { error: "El usuario debe tener rol PERSONAL_ADMIN" },
       { status: 400 }
     );
   }

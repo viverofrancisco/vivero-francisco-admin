@@ -13,8 +13,9 @@ export default async function EditarClientePage({
 
   const [cliente, serviciosCatalogo, visitas] = await Promise.all([
     prisma.cliente.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: {
+        sector: { select: { id: true, nombre: true } },
         servicios: {
           include: { servicio: true },
           orderBy: { createdAt: "desc" },
@@ -22,11 +23,12 @@ export default async function EditarClientePage({
       },
     }),
     prisma.servicio.findMany({
+      where: { deletedAt: null },
       orderBy: { nombre: "asc" },
       select: { id: true, nombre: true, tipo: true },
     }),
     prisma.visita.findMany({
-      where: { clienteServicio: { clienteId: id } },
+      where: { clienteServicio: { clienteId: id }, deletedAt: null },
       orderBy: { fechaProgramada: "desc" },
       select: {
         id: true,
@@ -36,7 +38,7 @@ export default async function EditarClientePage({
         notas: true,
         clienteServicio: {
           select: {
-            cliente: { select: { id: true, nombre: true } },
+            cliente: { select: { id: true, nombre: true, apellido: true } },
             servicio: { select: { id: true, nombre: true, tipo: true } },
           },
         },
@@ -68,8 +70,8 @@ export default async function EditarClientePage({
 
   const visitasSerialized = visitas.map((v) => ({
     id: v.id,
-    fechaProgramada: v.fechaProgramada.toISOString(),
-    fechaRealizada: v.fechaRealizada?.toISOString() ?? null,
+    fechaProgramada: v.fechaProgramada.toISOString().split("T")[0],
+    fechaRealizada: v.fechaRealizada?.toISOString().split("T")[0] ?? null,
     estado: v.estado,
     notas: v.notas,
     clienteServicio: v.clienteServicio,
@@ -77,18 +79,25 @@ export default async function EditarClientePage({
   }));
 
   return (
-    <div className="space-y-6">
+    <div>
       <ClienteDetailTabs
         cliente={{
           id: cliente.id,
           nombre: cliente.nombre,
+          apellido: cliente.apellido,
           email: cliente.email,
           telefono: cliente.telefono,
           ciudad: cliente.ciudad,
+          sectorId: cliente.sectorId,
+          sector: cliente.sector,
           direccion: cliente.direccion,
           numeroCasa: cliente.numeroCasa,
           referencia: cliente.referencia,
           notas: cliente.notas,
+          metrosCuadrados: cliente.metrosCuadrados,
+          recibirRecordatorios: cliente.recibirRecordatorios,
+          recibirConfirmaciones: cliente.recibirConfirmaciones,
+          createdAt: cliente.createdAt.toISOString(),
         }}
         asignaciones={asignaciones}
         serviciosCatalogo={serviciosCatalogo}

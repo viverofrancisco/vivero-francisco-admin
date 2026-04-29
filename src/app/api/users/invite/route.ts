@@ -6,9 +6,10 @@ import { z } from "zod/v4";
 
 const inviteSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
+  apellido: z.string().optional(),
   email: z.email("Email inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  role: z.enum(["STAFF", "JARDINERO_ADMIN", "JARDINERO"]),
+  role: z.enum(["STAFF", "PERSONAL_ADMIN"]),
   sectorIds: z.array(z.string()).optional(),
 });
 
@@ -42,31 +43,18 @@ export async function POST(request: Request) {
   }
 
   const hashedPassword = await bcrypt.hash(data.password, 12);
-  const isJardineroRole = data.role === "JARDINERO_ADMIN" || data.role === "JARDINERO";
-
   const newUser = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
       data: {
         name: data.name,
+        apellido: data.apellido,
         email: data.email,
         password: hashedPassword,
         role: data.role,
       },
     });
 
-    if (isJardineroRole) {
-      await tx.jardinero.create({
-        data: {
-          nombre: data.name,
-          email: data.email,
-          userId: createdUser.id,
-          createdById: user.id,
-          updatedById: user.id,
-        },
-      });
-    }
-
-    if (data.role === "JARDINERO_ADMIN" && data.sectorIds?.length) {
+    if (data.role === "PERSONAL_ADMIN" && data.sectorIds?.length) {
       await tx.sectorAdmin.createMany({
         data: data.sectorIds.map((sectorId) => ({
           sectorId,
@@ -82,6 +70,7 @@ export async function POST(request: Request) {
     {
       id: newUser.id,
       name: newUser.name,
+      apellido: newUser.apellido,
       email: newUser.email,
       role: newUser.role,
       createdAt: newUser.createdAt,

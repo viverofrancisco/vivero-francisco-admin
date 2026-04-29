@@ -13,7 +13,7 @@ export async function GET(
   }
 
   const { id } = await params;
-  const servicio = await prisma.servicio.findUnique({ where: { id } });
+  const servicio = await prisma.servicio.findUnique({ where: { id, deletedAt: null } });
 
   if (!servicio) {
     return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
@@ -83,8 +83,8 @@ export async function DELETE(
   }
 
   try {
-    await prisma.servicio.delete({ where: { id } });
-    return NextResponse.json({ message: "Servicio eliminado" });
+    await prisma.servicio.update({ where: { id }, data: { deletedAt: new Date() } });
+    return NextResponse.json({ message: "Servicio archivado" });
   } catch {
     return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
   }

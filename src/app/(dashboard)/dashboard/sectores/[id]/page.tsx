@@ -11,12 +11,13 @@ export default async function SectorDetailPage({
   await requireAdmin();
   const { id } = await params;
 
-  const [sector, allClientes, jardineroAdmins] = await Promise.all([
+  const [sector, allClientes, personalAdmins] = await Promise.all([
     prisma.sector.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: {
         clientes: {
-          select: { id: true, nombre: true, ciudad: true },
+          where: { deletedAt: null },
+          select: { id: true, nombre: true, apellido: true, ciudad: true },
           orderBy: { nombre: "asc" },
         },
         admins: {
@@ -25,12 +26,12 @@ export default async function SectorDetailPage({
       },
     }),
     prisma.cliente.findMany({
-      where: { OR: [{ sectorId: null }, { sectorId: id }] },
-      select: { id: true, nombre: true, ciudad: true, sectorId: true },
+      where: { OR: [{ sectorId: null }, { sectorId: id }], deletedAt: null },
+      select: { id: true, nombre: true, apellido: true, ciudad: true, sectorId: true },
       orderBy: { nombre: "asc" },
     }),
     prisma.user.findMany({
-      where: { role: "JARDINERO_ADMIN" },
+      where: { role: "PERSONAL_ADMIN" },
       select: { id: true, name: true, email: true },
       orderBy: { name: "asc" },
     }),
@@ -43,11 +44,11 @@ export default async function SectorDetailPage({
   const unassignedClientes = allClientes.filter((c) => c.sectorId !== id);
 
   return (
-    <div className="space-y-6">
+    <div>
       <SectorDetailClient
         sector={sector}
         unassignedClientes={unassignedClientes}
-        jardineroAdmins={jardineroAdmins}
+        personalAdmins={personalAdmins}
       />
     </div>
   );

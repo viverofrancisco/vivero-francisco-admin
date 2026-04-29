@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/ui/date-picker";
 import { ArrowLeft, Check, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +21,7 @@ interface Servicio {
 interface Cliente {
   id: string;
   nombre: string;
+  apellido: string | null;
   ciudad: string | null;
 }
 
@@ -74,7 +76,7 @@ export function AsignarServicioPage({
     return clientes
       .filter(
         (c) =>
-          c.nombre.toLowerCase().includes(q) &&
+          `${c.nombre} ${c.apellido || ""}`.toLowerCase().includes(q) &&
           !pendingIds.has(c.id) &&
           !assignedClienteIds.has(c.id)
       )
@@ -165,7 +167,7 @@ export function AsignarServicioPage({
         throw new Error(body.error || "Error al asignar");
       }
 
-      toast.success(`Servicio asignado a ${row.cliente.nombre}`);
+      toast.success(`Servicio asignado a ${row.cliente.nombre} ${row.cliente.apellido || ""}`.trim());
       setPendingRows((prev) => prev.filter((r) => r.cliente.id !== row.cliente.id));
       setAssignedClienteIds((prev) => new Set([...prev, row.cliente.id]));
     } catch (err) {
@@ -282,7 +284,7 @@ export function AsignarServicioPage({
                         onClick={() => handleAddCliente(c)}
                         className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left"
                       >
-                        <span className="font-medium">{c.nombre}</span>
+                        <span className="font-medium">{`${c.nombre} ${c.apellido || ""}`.trim()}</span>
                         <span className="text-gray-400 text-xs">{c.ciudad ?? ""}</span>
                       </button>
                     ))
@@ -301,7 +303,7 @@ export function AsignarServicioPage({
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="font-medium">{row.cliente.nombre}</span>
+                        <span className="font-medium">{`${row.cliente.nombre} ${row.cliente.apellido || ""}`.trim()}</span>
                         {row.cliente.ciudad && (
                           <span className="ml-2 text-sm text-gray-400">{row.cliente.ciudad}</span>
                         )}
@@ -358,11 +360,10 @@ export function AsignarServicioPage({
                       )}
                       <div className="space-y-1">
                         <Label className="text-xs">Fecha inicio *</Label>
-                        <Input
-                          type="date"
+                        <DatePicker
                           value={row.fechaInicio}
-                          onChange={(e) =>
-                            updateRow(row.cliente.id, "fechaInicio", e.target.value)
+                          onChange={(v) =>
+                            updateRow(row.cliente.id, "fechaInicio", v)
                           }
                         />
                       </div>

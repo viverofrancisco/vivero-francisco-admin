@@ -7,17 +7,19 @@ export default async function AsignarServicioRoute() {
 
   const [servicios, clientes] = await Promise.all([
     prisma.servicio.findMany({
+      where: { deletedAt: null },
       orderBy: { nombre: "asc" },
       select: { id: true, nombre: true, tipo: true },
     }),
     prisma.cliente.findMany({
+      where: { deletedAt: null },
       orderBy: { nombre: "asc" },
-      select: { id: true, nombre: true, ciudad: true },
+      select: { id: true, nombre: true, apellido: true, ciudad: true },
     }),
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <AsignarServicioPage servicios={servicios} clientes={clientes} />
     </div>
   );

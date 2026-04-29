@@ -6,6 +6,7 @@ export default async function SectoresPage() {
   await requireAdmin();
 
   const sectores = await prisma.sector.findMany({
+    where: { deletedAt: null },
     orderBy: { nombre: "asc" },
     include: {
       _count: { select: { clientes: true } },
@@ -16,7 +17,7 @@ export default async function SectoresPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <SectoresPageClient sectores={sectores} />
     </div>
   );

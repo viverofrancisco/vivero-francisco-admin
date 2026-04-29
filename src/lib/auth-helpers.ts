@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { UserRole } from "@/generated/prisma/client";
+import type { User, UserRole } from "@/generated/prisma/client";
 
 export async function getCurrentUser() {
   const session = await getServerSession(authOptions);
@@ -42,9 +43,19 @@ export async function getUserSectorIds(userId: string): Promise<string[]> {
 }
 
 export function isReadOnly(role: UserRole): boolean {
-  return role === "JARDINERO";
+  return role === "PERSONAL";
 }
 
-export function isJardineroRole(role: UserRole): boolean {
-  return role === "JARDINERO_ADMIN" || role === "JARDINERO";
+export function isPersonalRole(role: UserRole): boolean {
+  return role === "PERSONAL_ADMIN" || role === "PERSONAL";
+}
+
+export async function validateCredentials(
+  email: string,
+  password: string
+): Promise<User | null> {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user?.password) return null;
+  const valid = await bcrypt.compare(password, user.password);
+  return valid ? user : null;
 }

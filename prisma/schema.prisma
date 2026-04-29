@@ -54,8 +54,9 @@ model VerificationToken {
 enum UserRole {
   ADMIN
   STAFF
-  JARDINERO_ADMIN
-  JARDINERO
+  PERSONAL_ADMIN
+  PERSONAL
+  CLIENTE
 }
 
 enum TipoServicio {
@@ -73,7 +74,29 @@ enum EstadoVisita {
   PROGRAMADA
   COMPLETADA
   INCOMPLETA
-  REAGENDADA
+  CANCELADA
+}
+
+enum TipoNotificacion {
+  RECORDATORIO_VISITA_CLIENTE
+  CONFIRMACION_VISITA_CLIENTE
+  RESUMEN_DIARIO_ADMIN
+  ALERTA_VISITA_COMPLETADA
+  ALERTA_VISITA_INCOMPLETA
+  MENSAJE_ENTRANTE_CLIENTE
+  AUTENTICACION_OTP
+}
+
+enum EstadoNotificacion {
+  PENDIENTE
+  ENVIADA
+  FALLIDA
+}
+
+enum DestinatarioTipo {
+  CLIENTE
+  ADMIN
+  PERSONAL
 }
 
 // ──────────────────────────────────────────────
@@ -83,6 +106,7 @@ enum EstadoVisita {
 model User {
   id            String    @id @default(cuid())
   name          String?
+  apellido      String?
   email         String    @unique
   emailVerified DateTime?
   image         String?
@@ -95,42 +119,54 @@ model User {
   sessions Session[]
 
   // Audit relations
-  clientesCreated          Cliente[]          @relation("ClienteCreatedBy")
-  clientesUpdated          Cliente[]          @relation("ClienteUpdatedBy")
-  serviciosCreated         Servicio[]         @relation("ServicioCreatedBy")
-  serviciosUpdated         Servicio[]         @relation("ServicioUpdatedBy")
-  jardinerosCreated        Jardinero[]        @relation("JardineroCreatedBy")
-  jardinerosUpdated        Jardinero[]        @relation("JardineroUpdatedBy")
-  gruposCreated            GrupoJardinero[]   @relation("GrupoCreatedBy")
-  gruposUpdated            GrupoJardinero[]   @relation("GrupoUpdatedBy")
-  clienteServiciosCreated  ClienteServicio[]  @relation("ClienteServicioCreatedBy")
-  clienteServiciosUpdated  ClienteServicio[]  @relation("ClienteServicioUpdatedBy")
-  visitasCreated           Visita[]           @relation("VisitaCreatedBy")
-  visitasUpdated           Visita[]           @relation("VisitaUpdatedBy")
-  jardinero                Jardinero?
-  sectorAdmins             SectorAdmin[]
+  clientesCreated         Cliente[]         @relation("ClienteCreatedBy")
+  clientesUpdated         Cliente[]         @relation("ClienteUpdatedBy")
+  serviciosCreated        Servicio[]        @relation("ServicioCreatedBy")
+  serviciosUpdated        Servicio[]        @relation("ServicioUpdatedBy")
+  personalCreated         Personal[]        @relation("JardineroCreatedBy")
+  personalUpdated         Personal[]        @relation("JardineroUpdatedBy")
+  gruposCreated           Grupo[]           @relation("GrupoCreatedBy")
+  gruposUpdated           Grupo[]           @relation("GrupoUpdatedBy")
+  clienteServiciosCreated ClienteServicio[] @relation("ClienteServicioCreatedBy")
+  clienteServiciosUpdated ClienteServicio[] @relation("ClienteServicioUpdatedBy")
+  visitasCreated          Visita[]          @relation("VisitaCreatedBy")
+  visitasUpdated          Visita[]          @relation("VisitaUpdatedBy")
+  visitaPersonalAdded     VisitaPersonal[]  @relation("VisitaPersonalAddedBy")
+  visitaPersonalRemoved   VisitaPersonal[]  @relation("VisitaPersonalRemovedBy")
+  personal                Personal?
+  sectorAdmins            SectorAdmin[]
+  cliente                 Cliente?
+  pushTokens              PushToken[]
+  refreshTokens           RefreshToken[]
 }
 
 model Cliente {
-  id         String   @id @default(cuid())
-  nombre     String
-  email      String?
-  telefono   String?
-  ciudad     String?
-  sectorId   String?
-  direccion  String?
-  numeroCasa String?
-  referencia String?  @db.Text
-  notas      String?  @db.Text
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                    String    @id @default(cuid())
+  nombre                String
+  apellido              String?
+  email                 String?
+  telefono              String?
+  ciudad                String?
+  sectorId              String?
+  direccion             String?
+  numeroCasa            String?
+  referencia            String?   @db.Text
+  notas                 String?   @db.Text
+  metrosCuadrados       Float?
+  recibirRecordatorios  Boolean   @default(true)
+  recibirConfirmaciones Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
 
   createdById String?
   updatedById String?
+  userId      String? @unique
   createdBy   User?   @relation("ClienteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy   User?   @relation("ClienteUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  sector    Sector? @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  sector    Sector?           @relation(fields: [sectorId], references: [id], onDelete: SetNull)
   servicios ClienteServicio[]
 }
 
@@ -141,6 +177,7 @@ model Servicio {
   tipo        TipoServicio
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
 
   createdById String?
   updatedById String?
@@ -155,7 +192,7 @@ model ClienteServicio {
   clienteId         String
   servicioId        String
   precio            Decimal        @db.Decimal(10, 2)
-  iva               Decimal        @db.Decimal(10, 2) @default(0)
+  iva               Decimal        @default(0) @db.Decimal(10, 2)
   frecuenciaMensual Int?
   estado            EstadoServicio @default(ACTIVO)
   fechaInicio       DateTime       @default(now())
@@ -177,81 +214,118 @@ model ClienteServicio {
   @@unique([clienteId, servicioId])
 }
 
-model Jardinero {
-  id           String   @id @default(cuid())
+model Personal {
+  id           String    @id @default(cuid())
   nombre       String
+  apellido     String?
   telefono     String?
-  email        String?
   especialidad String?
-  disponible   Boolean  @default(true)
-  userId       String?  @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  sueldo       Float?
+  tipo         String?
+  estado       String    @default("ACTIVO")
+  userId       String?   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   createdById String?
   updatedById String?
   createdBy   User?   @relation("JardineroCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy   User?   @relation("JardineroUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  user   User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
-  grupos GrupoJardineroMiembro[]
+  user    User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  grupos  GrupoMiembro[]
+  visitas VisitaPersonal[]
 }
 
-model GrupoJardinero {
-  id          String   @id @default(cuid())
+model Grupo {
+  id          String    @id @default(cuid())
   nombre      String
-  descripcion String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  descripcion String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
   createdById String?
   updatedById String?
   createdBy   User?   @relation("GrupoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy   User?   @relation("GrupoUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  miembros GrupoJardineroMiembro[]
+  miembros GrupoMiembro[]
   visitas  Visita[]
 }
 
 model Visita {
-  id                  String       @id @default(cuid())
-  clienteServicioId   String
-  fechaProgramada     DateTime
-  fechaRealizada      DateTime?
-  estado              EstadoVisita @default(PROGRAMADA)
-  grupoId             String?
-  notas               String?      @db.Text
-  notasIncompleto     String?      @db.Text
-  visitaOrigenId      String?
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-  createdById         String?
-  updatedById         String?
+  id                String       @id @default(cuid())
+  clienteServicioId String
+  fechaProgramada   DateTime     @db.Date
+  fechaRealizada    DateTime?    @db.Date
+  horaEntrada       String?
+  horaSalida        String?
+  estado            EstadoVisita @default(PROGRAMADA)
+  grupoId           String?
+  notas             String?      @db.Text
+  notasIncompleto   String?      @db.Text
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  deletedAt         DateTime?
+  createdById       String?
+  updatedById       String?
 
-  clienteServicio    ClienteServicio @relation(fields: [clienteServicioId], references: [id], onDelete: Cascade)
-  grupo              GrupoJardinero? @relation(fields: [grupoId], references: [id], onDelete: SetNull)
-  visitaOrigen       Visita?         @relation("VisitaReagendada", fields: [visitaOrigenId], references: [id], onDelete: SetNull)
-  visitasReagendadas Visita[]        @relation("VisitaReagendada")
-  createdBy          User?           @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy          User?           @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  clienteServicio ClienteServicio   @relation(fields: [clienteServicioId], references: [id], onDelete: Cascade)
+  grupo           Grupo?            @relation(fields: [grupoId], references: [id], onDelete: SetNull)
+  createdBy       User?             @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy       User?             @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  media           VisitaMedia[]
+  personal        VisitaPersonal[]
+  notificaciones  NotificacionLog[]
 }
 
-model GrupoJardineroMiembro {
-  id          String @id @default(cuid())
-  jardineroId String
-  grupoId     String
+model VisitaPersonal {
+  id          String    @id @default(cuid())
+  visitaId    String
+  personalId  String
+  addedAt     DateTime  @default(now())
+  addedById   String?
+  removedAt   DateTime?
+  removedById String?
 
-  jardinero Jardinero      @relation(fields: [jardineroId], references: [id], onDelete: Cascade)
-  grupo     GrupoJardinero @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+  visita    Visita   @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  personal  Personal @relation(fields: [personalId], references: [id], onDelete: Cascade)
+  addedBy   User?    @relation("VisitaPersonalAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+  removedBy User?    @relation("VisitaPersonalRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
 
-  @@unique([jardineroId, grupoId])
+  @@unique([visitaId, personalId])
+}
+
+model VisitaMedia {
+  id        String   @id @default(cuid())
+  visitaId  String
+  key       String
+  url       String
+  tipo      String
+  createdAt DateTime @default(now())
+
+  visita Visita @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+}
+
+model GrupoMiembro {
+  id         String @id @default(cuid())
+  personalId String
+  grupoId    String
+
+  personal Personal @relation(fields: [personalId], references: [id], onDelete: Cascade)
+  grupo    Grupo    @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+
+  @@unique([personalId, grupoId])
 }
 
 model Sector {
-  id        String   @id @default(cuid())
-  nombre    String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  nombre    String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   clientes Cliente[]
   admins   SectorAdmin[]
@@ -266,4 +340,110 @@ model SectorAdmin {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([sectorId, userId])
+}
+
+// ──────────────────────────────────────────────
+// Notificaciones WhatsApp
+// ──────────────────────────────────────────────
+
+model NotificacionConfig {
+  id                     String   @id @default(cuid())
+  whatsappActivo         Boolean  @default(false)
+  whatsappPhoneNumberId  String?
+  whatsappBusinessId     String?
+  horaEnvioRecordatorio  String   @default("08:00")
+  horaEnvioDigesto       String   @default("07:00")
+  diasAnticipacion       Int      @default(1)
+  zonaHoraria            String   @default("America/Guayaquil")
+  autoRespuestaActiva    Boolean  @default(false)
+  autoRespuestaContenido String?  @db.Text
+  forwardActivo          Boolean  @default(false)
+  forwardTelefono        String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model NotificacionPlantilla {
+  id                            String           @id @default(cuid())
+  tipo                          TipoNotificacion @unique
+  nombre                        String
+  activa                        Boolean          @default(true)
+  // Template default (original, fijo en Meta)
+  contenidoOriginal             String?          @db.Text
+  whatsappDefaultTemplateName   String?
+  whatsappDefaultTemplateStatus String?
+  // Template personalizado (custom, editable)
+  whatsappTemplateName          String?
+  whatsappTemplateStatus        String?
+  whatsappTemplateVersion       Int              @default(1)
+  whatsappTemplateLanguage      String           @default("es")
+  whatsappPendingTemplateName   String?
+  whatsappPendingTemplateStatus String?
+  contenido                     String           @db.Text
+  contenidoEnRevision           String?          @db.Text
+  variables                     String[]
+  createdAt                     DateTime         @default(now())
+  updatedAt                     DateTime         @updatedAt
+}
+
+model NotificacionLog {
+  id                 String             @id @default(cuid())
+  tipo               TipoNotificacion
+  destinatarioTipo   DestinatarioTipo
+  destinatarioId     String?
+  destinatarioNombre String?
+  telefono           String
+  mensaje            String             @db.Text
+  estado             EstadoNotificacion @default(PENDIENTE)
+  whatsappMessageId  String?
+  errorDetalle       String?            @db.Text
+  visitaId           String?
+  enviadoAt          DateTime?
+  createdAt          DateTime           @default(now())
+
+  visita Visita? @relation(fields: [visitaId], references: [id], onDelete: SetNull)
+}
+
+// ──────────────────────────────────────────────
+// Mobile auth / push
+// ──────────────────────────────────────────────
+
+model PushToken {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  platform   String
+  deviceName String?
+  lastUsedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OtpCode {
+  id        String    @id @default(cuid())
+  phone     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([phone, createdAt])
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  deviceInfo String?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

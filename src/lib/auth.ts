@@ -42,6 +42,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           name: user.name,
+          apellido: user.apellido,
           email: user.email,
           role: user.role,
         };
@@ -53,12 +54,13 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        if (user.role === "JARDINERO_ADMIN" || user.role === "JARDINERO") {
-          const jardinero = await prisma.jardinero.findUnique({
+        token.apellido = user.apellido;
+        if (user.role === "PERSONAL_ADMIN" || user.role === "PERSONAL") {
+          const personal = await prisma.personal.findUnique({
             where: { userId: user.id },
             select: { id: true },
           });
-          token.jardineroId = jardinero?.id ?? null;
+          token.personalId = personal?.id ?? null;
         }
       }
       return token;
@@ -67,7 +69,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
-        session.user.jardineroId = token.jardineroId ?? null;
+        session.user.apellido = token.apellido ?? null;
+        session.user.personalId = token.personalId ?? null;
       }
       return session;
     },

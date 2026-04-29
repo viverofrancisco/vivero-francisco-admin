@@ -9,12 +9,13 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const grupos = await prisma.grupoJardinero.findMany({
+  const grupos = await prisma.grupo.findMany({
+    where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: {
       miembros: {
         include: {
-          jardinero: { select: { id: true, nombre: true } },
+          personal: { select: { id: true, nombre: true } },
         },
       },
     },
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
   const data = result.data;
 
   const grupo = await prisma.$transaction(async (tx) => {
-    const created = await tx.grupoJardinero.create({
+    const created = await tx.grupo.create({
       data: {
         nombre: data.nombre,
         descripcion: data.descripcion || null,
@@ -52,20 +53,20 @@ export async function POST(request: Request) {
     });
 
     if (data.miembrosIds.length > 0) {
-      await tx.grupoJardineroMiembro.createMany({
-        data: data.miembrosIds.map((jardineroId) => ({
-          jardineroId,
+      await tx.grupoMiembro.createMany({
+        data: data.miembrosIds.map((personalId) => ({
+          personalId,
           grupoId: created.id,
         })),
       });
     }
 
-    return tx.grupoJardinero.findUnique({
+    return tx.grupo.findUnique({
       where: { id: created.id },
       include: {
         miembros: {
           include: {
-            jardinero: { select: { id: true, nombre: true } },
+            personal: { select: { id: true, nombre: true } },
           },
         },
       },

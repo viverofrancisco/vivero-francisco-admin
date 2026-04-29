@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
 import { completarVisitaSchema } from "@/lib/validations/visita";
+import {
+  enviarAlertaVisitaCompletada,
+  enviarAlertaVisitaIncompleta,
+} from "@/lib/whatsapp/service";
+import {
+  pushAlertaCompletada,
+  pushAlertaIncompleta,
+} from "@/lib/push/triggers";
 
 export async function POST(
   request: Request,
@@ -41,40 +49,27 @@ export async function POST(
     );
   }
 
-  if (data.estado === "INCOMPLETA" && !data.nuevaFechaProgramada) {
-    return NextResponse.json(
-      { error: "Debes indicar una nueva fecha para reagendar la visita incompleta" },
-      { status: 400 }
-    );
-  }
-
-  const updated = await prisma.$transaction(async (tx) => {
-    const visitaActualizada = await tx.visita.update({
-      where: { id },
-      data: {
-        estado: data.estado,
-        fechaRealizada: new Date(data.fechaRealizada),
-        notas: data.notas || visita.notas,
-        notasIncompleto: data.notasIncompleto || null,
-        updatedById: user.id,
-      },
-    });
-
-    if (data.estado === "INCOMPLETA" && data.nuevaFechaProgramada) {
-      await tx.visita.create({
-        data: {
-          clienteServicioId: visita.clienteServicioId,
-          fechaProgramada: new Date(data.nuevaFechaProgramada),
-          grupoId: visita.grupoId,
-          visitaOrigenId: id,
-          createdById: user.id,
-          updatedById: user.id,
-        },
-      });
-    }
-
-    return visitaActualizada;
+  const updated = await prisma.visita.update({
+    where: { id },
+    data: {
+      estado: data.estado,
+      fechaRealizada: new Date(data.fechaRealizada),
+      horaEntrada: data.horaEntrada || null,
+      horaSalida: data.horaSalida || null,
+      notas: data.notas || visita.notas,
+      notasIncompleto: data.notasIncompleto || null,
+      updatedById: user.id,
+    },
   });
+
+  // Fire-and-forget notifications (WhatsApp + push en paralelo)
+  if (data.estado === "COMPLETADA") {
+    enviarAlertaVisitaCompletada(id).catch(console.error);
+    pushAlertaCompletada(id).catch(console.error);
+  } else if (data.estado === "INCOMPLETA" || data.estado === "CANCELADA") {
+    enviarAlertaVisitaIncompleta(id).catch(console.error);
+    pushAlertaIncompleta(id).catch(console.error);
+  }
 
   return NextResponse.json(updated);
 }

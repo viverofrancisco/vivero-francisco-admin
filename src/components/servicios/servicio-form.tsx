@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
@@ -95,15 +89,14 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
               name="tipo"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="RECURRENTE">Recurrente (mensual)</SelectItem>
-                    <SelectItem value="UNICO">Único (una sola vez)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <CustomSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "RECURRENTE", label: "Recurrente (mensual)" },
+                    { value: "UNICO", label: "Único (una sola vez)" },
+                  ]}
+                />
               )}
             />
             {errors.tipo && (

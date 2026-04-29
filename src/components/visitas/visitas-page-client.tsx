@@ -1,32 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Plus, CalendarPlus } from "lucide-react";
+import { CustomSelect } from "@/components/ui/custom-select";
+import { Plus } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 import { VisitasTable } from "@/components/visitas/visitas-table";
-import { VisitaForm } from "@/components/visitas/visita-form";
-import { GenerarVisitasForm } from "@/components/visitas/generar-visitas-form";
 import { EmptyState } from "@/components/shared/empty-state";
-
-const MESES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
 
 const ESTADOS = [
   { value: "ALL", label: "Todos" },
   { value: "PROGRAMADA", label: "Programada" },
   { value: "COMPLETADA", label: "Completada" },
   { value: "INCOMPLETA", label: "Incompleta" },
-  { value: "REAGENDADA", label: "Reagendada" },
+  { value: "CANCELADA", label: "Cancelada" },
 ];
 
 interface VisitaRow {
@@ -42,50 +31,51 @@ interface VisitaRow {
   grupo: { id: string; nombre: string } | null;
 }
 
-interface ClienteServicioOption {
-  id: string;
-  cliente: { nombre: string };
-  servicio: { nombre: string; tipo: string };
-}
-
-interface GrupoOption {
+interface FilterOption {
   id: string;
   nombre: string;
 }
 
 interface VisitasPageClientProps {
   initialVisitas: VisitaRow[];
-  clienteServicios: ClienteServicioOption[];
-  grupos: GrupoOption[];
-  mesInicial: number;
-  anioInicial: number;
+  initialDesde: string;
+  initialHasta: string;
   userRole?: string;
+  clientes: FilterOption[];
+  servicios: FilterOption[];
 }
 
 export function VisitasPageClient({
   initialVisitas,
-  clienteServicios,
-  grupos,
-  mesInicial,
-  anioInicial,
+  initialDesde,
+  initialHasta,
   userRole,
+  clientes,
+  servicios,
 }: VisitasPageClientProps) {
   const [visitas, setVisitas] = useState(initialVisitas);
-  const [mes, setMes] = useState(String(mesInicial));
-  const [anio, setAnio] = useState(String(anioInicial));
+  const [desde, setDesde] = useState(initialDesde);
+  const [hasta, setHasta] = useState(initialHasta);
   const [estado, setEstado] = useState("ALL");
+  const [clienteId, setClienteId] = useState("ALL");
+  const [servicioId, setServicioId] = useState("ALL");
   const [loadingFilter, setLoadingFilter] = useState(false);
-  const [crearOpen, setCrearOpen] = useState(false);
-  const [generarOpen, setGenerarOpen] = useState(false);
 
-  const anioActual = new Date().getFullYear();
-  const anios = [anioActual - 1, anioActual, anioActual + 1];
-
-  const fetchVisitas = async (m: string, a: string, e: string) => {
+  const fetchVisitas = async (
+    d: string,
+    h: string,
+    e: string,
+    cId: string,
+    sId: string
+  ) => {
     setLoadingFilter(true);
     try {
-      const params = new URLSearchParams({ mes: m, anio: a });
+      const params = new URLSearchParams();
+      if (d) params.set("desde", d);
+      if (h) params.set("hasta", h);
       if (e !== "ALL") params.set("estado", e);
+      if (cId !== "ALL") params.set("clienteId", cId);
+      if (sId !== "ALL") params.set("servicioId", sId);
       const res = await fetch(`/api/visitas?${params}`);
       if (res.ok) {
         const data = await res.json();
@@ -96,19 +86,41 @@ export function VisitasPageClient({
     }
   };
 
-  const handleMesChange = (v: string) => {
-    setMes(v);
-    fetchVisitas(v, anio, estado);
+  const handleDesdeChange = (v: string) => {
+    if (v && hasta && v > hasta) {
+      setHasta("");
+      setDesde(v);
+      fetchVisitas(v, "", estado, clienteId, servicioId);
+    } else {
+      setDesde(v);
+      fetchVisitas(v, hasta, estado, clienteId, servicioId);
+    }
   };
 
-  const handleAnioChange = (v: string) => {
-    setAnio(v);
-    fetchVisitas(mes, v, estado);
+  const handleHastaChange = (v: string) => {
+    if (v && desde && v < desde) {
+      setDesde("");
+      setHasta(v);
+      fetchVisitas("", v, estado, clienteId, servicioId);
+    } else {
+      setHasta(v);
+      fetchVisitas(desde, v, estado, clienteId, servicioId);
+    }
   };
 
   const handleEstadoChange = (v: string) => {
     setEstado(v);
-    fetchVisitas(mes, anio, v);
+    fetchVisitas(desde, hasta, v, clienteId, servicioId);
+  };
+
+  const handleClienteChange = (v: string) => {
+    setClienteId(v);
+    fetchVisitas(desde, hasta, estado, v, servicioId);
+  };
+
+  const handleServicioChange = (v: string) => {
+    setServicioId(v);
+    fetchVisitas(desde, hasta, estado, clienteId, v);
   };
 
   return (
@@ -118,87 +130,83 @@ export function VisitasPageClient({
           <h1 className="text-2xl font-bold">Visitas</h1>
           <p className="text-gray-500">Gestiona las visitas programadas</p>
         </div>
-        {userRole !== "JARDINERO" && (
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setGenerarOpen(true)}>
-              <CalendarPlus className="mr-2 h-4 w-4" />
-              Generar Mes
-            </Button>
-            <Button onClick={() => setCrearOpen(true)}>
+        {userRole !== "PERSONAL" && (
+          <Link href="/dashboard/visitas/nueva">
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Nueva Visita
             </Button>
-          </div>
+          </Link>
         )}
       </div>
 
       <div className="flex flex-wrap gap-4 items-end">
         <div className="space-y-1">
-          <Label className="text-xs">Mes</Label>
-          <Select value={mes} onValueChange={(v) => v && handleMesChange(v)}>
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MESES.map((nombre, i) => (
-                <SelectItem key={i + 1} value={String(i + 1)}>
-                  {nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs">Desde</Label>
+          <DatePicker
+            value={desde}
+            onChange={handleDesdeChange}
+            maxDate={hasta || undefined}
+            placeholder="Fecha inicio"
+            className="w-48"
+          />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Año</Label>
-          <Select value={anio} onValueChange={(v) => v && handleAnioChange(v)}>
-            <SelectTrigger className="w-24">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {anios.map((a) => (
-                <SelectItem key={a} value={String(a)}>
-                  {a}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs">Hasta</Label>
+          <DatePicker
+            value={hasta}
+            onChange={handleHastaChange}
+            minDate={desde || undefined}
+            placeholder="Fecha fin"
+            className="w-48"
+          />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Estado</Label>
-          <Select value={estado} onValueChange={(v) => v && handleEstadoChange(v)}>
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ESTADOS.map((e) => (
-                <SelectItem key={e.value} value={e.value}>
-                  {e.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CustomSelect
+            value={estado}
+            onChange={handleEstadoChange}
+            options={ESTADOS}
+            className="w-36"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Cliente</Label>
+          <CustomSelect
+            value={clienteId}
+            onChange={handleClienteChange}
+            options={[
+              { value: "ALL", label: "Todos" },
+              ...clientes.map((c) => ({ value: c.id, label: c.nombre })),
+            ]}
+            placeholder="Todos"
+            searchable
+            searchPlaceholder="Buscar..."
+            className="w-48"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Servicio</Label>
+          <CustomSelect
+            value={servicioId}
+            onChange={handleServicioChange}
+            options={[
+              { value: "ALL", label: "Todos" },
+              ...servicios.map((s) => ({ value: s.id, label: s.nombre })),
+            ]}
+            placeholder="Todos"
+            className="w-48"
+          />
         </div>
       </div>
 
       {loadingFilter ? (
-        <p className="text-center text-gray-500 py-8">Cargando...</p>
+        <p className="text-sm text-gray-400">Cargando...</p>
       ) : visitas.length === 0 ? (
         <EmptyState message="No hay visitas para este periodo" />
       ) : (
         <VisitasTable visitas={visitas} />
       )}
-
-      <VisitaForm
-        open={crearOpen}
-        onClose={() => setCrearOpen(false)}
-        clienteServicios={clienteServicios}
-        grupos={grupos}
-      />
-
-      <GenerarVisitasForm
-        open={generarOpen}
-        onClose={() => setGenerarOpen(false)}
-      />
     </>
   );
 }

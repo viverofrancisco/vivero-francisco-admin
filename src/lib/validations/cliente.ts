@@ -5,6 +5,7 @@ const telefonoEcuadorRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$/;
 
 export const clienteSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
+  apellido: z.string().optional().or(z.literal("")),
   email: z.email("Email inválido").optional().or(z.literal("")),
   telefono: z
     .string()
@@ -16,6 +17,10 @@ export const clienteSchema = z.object({
   numeroCasa: z.string().optional().or(z.literal("")),
   referencia: z.string().optional().or(z.literal("")),
   notas: z.string().optional().or(z.literal("")),
+  metrosCuadrados: z.union([
+    z.coerce.number().positive("Debe ser mayor a 0"),
+    z.literal("").transform(() => undefined),
+  ]).optional(),
 });
 
 export type ClienteFormData = z.infer<typeof clienteSchema>;
