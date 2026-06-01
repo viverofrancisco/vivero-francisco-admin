@@ -1,0 +1,78 @@
+"use client";
+
+import { signOut, useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogOut, User } from "lucide-react";
+import { MobileNav } from "./mobile-nav";
+import { Brand } from "./brand";
+
+interface BrandingProps {
+  branding: { logoUrl: string | null; nombre: string | null };
+}
+
+export function Header({ branding }: BrandingProps) {
+  const { data: session } = useSession();
+  const userName = [session?.user?.name, session?.user?.apellido].filter(Boolean).join(" ") || "Usuario";
+  const userInitials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <header className="flex h-20 items-center justify-between border-b bg-white px-4 md:px-6">
+      <div className="flex items-center gap-4">
+        <MobileNav branding={branding} />
+        <div className="md:hidden">
+          <Brand
+            logoUrl={branding.logoUrl}
+            nombre={branding.nombre}
+            className={
+              branding.logoUrl
+                ? "h-8 max-w-[140px] object-contain"
+                : "text-lg font-semibold text-primary truncate"
+            }
+          />
+        </div>
+      </div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button variant="ghost" className="flex items-center gap-2" />}>
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-primary/15 text-primary text-sm">
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="hidden sm:inline text-sm">{userName}</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-[240px] max-w-[320px]">
+          <div className="px-2 py-1.5">
+            <p className="text-sm font-medium truncate">{userName}</p>
+            <p className="text-xs text-gray-500 break-all leading-snug">
+              {session?.user?.email}
+            </p>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            <User className="mr-2 h-4 w-4" />
+            Perfil
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Cerrar sesión
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </header>
+  );
+}

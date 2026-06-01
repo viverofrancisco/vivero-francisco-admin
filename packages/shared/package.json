@@ -1,0 +1,16 @@
+{
+  "name": "@vivero/shared",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./auth": "./src/auth.ts",
+    "./push": "./src/push.ts",
+    "./visita": "./src/visita.ts"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
+}
