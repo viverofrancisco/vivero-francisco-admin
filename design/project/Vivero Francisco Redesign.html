@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vivero Francisco · Rediseño</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+  #root { width: 100vw; height: 100vh; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="vf-kit.jsx"></script>
+<script type="text/babel" src="mobile-data.jsx"></script>
+<script type="text/babel" src="mobile-screens.jsx"></script>
+<script type="text/babel" src="mobile-screens2.jsx"></script>
+<script type="text/babel" src="admin-dashboard.jsx"></script>
+<script type="text/babel" src="more-data.jsx"></script>
+<script type="text/babel" src="mensajes-screens.jsx"></script>
+<script type="text/babel" src="cliente-screens.jsx"></script>
+<script type="text/babel" src="informes-screens.jsx"></script>
+<script type="text/babel" src="admin-pages.jsx"></script>
+<script type="text/babel" src="styleguide.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="sistema" title="Sistema de diseño" subtitle="Identidad, color, tipografía y principios">
+        <DCArtboard id="guide" label="Resumen del sistema" width={952} height={760}>
+          <div style={{ width: '100%', minHeight: '100%', background: VF.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 36 }}>
+            <StyleGuide />
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="movil" title="App móvil · Equipo de campo" subtitle="El flujo diario de las cuadrillas — toca las tarjetas y botones para navegar">
+        <DCArtboard id="m-hoy" label="Hoy · ruta del día" width={470} height={940}>
+          <DeviceMount tab="visitas" />
+        </DCArtboard>
+        <DCArtboard id="m-detalle" label="Detalle de visita" width={470} height={940}>
+          <DeviceMount start={['detalle', 'v3']} />
+        </DCArtboard>
+        <DCArtboard id="m-completar" label="Completar visita" width={470} height={940}>
+          <DeviceMount start={['completar', 'v2']} />
+        </DCArtboard>
+        <DCArtboard id="m-clientes" label="Clientes" width={470} height={940}>
+          <DeviceMount tab="clientes" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="cliente" title="App móvil · Cliente" subtitle="Lo que ve el dueño del jardín — visitas, fotos antes/después y mensajería con su equipo">
+        <DCArtboard id="cl-inicio" label="Inicio · próxima visita" width={470} height={940}>
+          <ClienteMount tab="inicio" />
+        </DCArtboard>
+        <DCArtboard id="cl-detalle" label="Detalle de visita" width={470} height={940}>
+          <ClienteMount detalle />
+        </DCArtboard>
+        <DCArtboard id="cl-cuenta" label="Cuenta" width={470} height={940}>
+          <ClienteMount tab="cuenta" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="mensajes" title="Mensajes · Conversaciones" subtitle="Bandeja de entrada y chat por visita — fotos, recibos de lectura y banner de estado">
+        <DCArtboard id="ms-inbox" label="Bandeja de entrada" width={470} height={940}>
+          <MensajesMount start="inbox" />
+        </DCArtboard>
+        <DCArtboard id="ms-chat" label="Conversación" width={470} height={940}>
+          <MensajesMount start="chat" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="informes" title="Informes · Reportes en PDF" subtitle="Listado con filtros, asistente para generar y vista previa del PDF de marca">
+        <DCArtboard id="in-lista" label="Listado" width={470} height={940}>
+          <InformesMount start="lista" />
+        </DCArtboard>
+        <DCArtboard id="in-generar" label="Generar informe" width={470} height={940}>
+          <InformesMount start="generar" />
+        </DCArtboard>
+        <DCArtboard id="in-detalle" label="Vista previa" width={470} height={940}>
+          <InformesMount start="detalle" />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="web" title="Panel web · Administración" subtitle="Todas las secciones — usa la barra lateral de cualquier ventana para navegar entre páginas">
+        <DCArtboard id="w-dash" label="Panel principal" width={1320} height={860}>
+          <BrowserMount page="panel" />
+        </DCArtboard>
+        <DCArtboard id="w-visitas" label="Visitas" width={1320} height={860}>
+          <BrowserMount page="visitas" />
+        </DCArtboard>
+        <DCArtboard id="w-clientes" label="Clientes" width={1320} height={860}>
+          <BrowserMount page="clientes" />
+        </DCArtboard>
+        <DCArtboard id="w-servicios" label="Servicios" width={1320} height={860}>
+          <BrowserMount page="servicios" />
+        </DCArtboard>
+        <DCArtboard id="w-mensajes" label="Mensajes" width={1320} height={860}>
+          <BrowserMount page="mensajes" />
+        </DCArtboard>
+        <DCArtboard id="w-personal" label="Personal" width={1320} height={860}>
+          <BrowserMount page="personal" />
+        </DCArtboard>
+        <DCArtboard id="w-grupos" label="Grupos" width={1320} height={860}>
+          <BrowserMount page="grupos" />
+        </DCArtboard>
+        <DCArtboard id="w-sectores" label="Sectores" width={1320} height={860}>
+          <BrowserMount page="sectores" />
+        </DCArtboard>
+        <DCArtboard id="w-informes" label="Informes" width={1320} height={860}>
+          <BrowserMount page="informes" />
+        </DCArtboard>
+        <DCArtboard id="w-config" label="Configuración" width={1320} height={860}>
+          <BrowserMount page="config" />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+// Mounts an independent interactive device per artboard
+function DeviceMount({ tab, start }) {
+  return (
+    <div style={{ width: '100%', height: '100%', background: VF.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <MobileAppShell initialTab={tab} initialStack={start ? [{ screen: start[0], v: VISITAS.find(x => x.id === start[1]) }] : []} />
+    </div>
+  );
+}
+
+function ClienteMount({ tab, detalle }) {
+  return (
+    <div style={{ width: '100%', height: '100%', background: VF.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <ClienteAppShell initialTab={tab} initialStack={detalle ? [{ screen: 'detalle', v: VISITAS.find(x => x.estado === 'COMPLETADA') }] : []} />
+    </div>
+  );
+}
+
+function MensajesMount({ start }) {
+  return (
+    <div style={{ width: '100%', height: '100%', background: VF.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <MensajesShell start={start} />
+    </div>
+  );
+}
+
+function InformesMount({ start }) {
+  return (
+    <div style={{ width: '100%', height: '100%', background: VF.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <InformesShell start={start} />
+    </div>
+  );
+}
+
+function BrowserMount({ page }) {
+  return (
+    <div style={{ width: '100%', height: '100%', background: VF.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <ChromeWindow width={1264} height={800} url="panel.viverofrancisco.com">
+        <div style={{ width: '100%', height: '100%' }}>
+          <AdminApp initialPage={page} />
+        </div>
+      </ChromeWindow>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
