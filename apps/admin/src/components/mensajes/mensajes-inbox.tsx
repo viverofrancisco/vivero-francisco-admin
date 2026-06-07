@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { statusMeta, type EstadoVisitaUI } from "@/components/ui/status-badge";
 
 interface InboxItem {
   visitaId: string;
@@ -118,14 +120,14 @@ function InboxList() {
 
   if (!hasLoadedOnce) {
     return (
-      <div className="rounded-lg border bg-white p-12 text-center text-sm text-muted-foreground">
+      <div className="rounded-2xl border border-border bg-card p-12 text-center text-sm text-muted-foreground">
         Cargando…
       </div>
     );
   }
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border bg-white p-12 text-center">
+      <div className="rounded-2xl border border-border bg-card p-12 text-center">
         <h3 className="text-base font-medium">Sin mensajes</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Cuando los clientes te escriban, las conversaciones aparecerán aquí.
@@ -136,7 +138,7 @@ function InboxList() {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-lg border bg-white divide-y">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border">
         {items.map((item) => (
           <InboxRow key={item.visitaId} item={item} />
         ))}
@@ -199,14 +201,14 @@ function SearchList({ query }: { query: string }) {
 
   if (loading) {
     return (
-      <div className="rounded-lg border bg-white p-12 text-center text-sm text-muted-foreground">
+      <div className="rounded-2xl border border-border bg-card p-12 text-center text-sm text-muted-foreground">
         Buscando…
       </div>
     );
   }
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border bg-white p-12 text-center">
+      <div className="rounded-2xl border border-border bg-card p-12 text-center">
         <h3 className="text-base font-medium">Sin coincidencias</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Prueba con otro nombre o palabra.
@@ -217,7 +219,7 @@ function SearchList({ query }: { query: string }) {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-lg border bg-white divide-y">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border">
         {items.map((item) => (
           <SearchResultRow key={item.resultId} item={item} term={query} />
         ))}
@@ -254,45 +256,58 @@ function InboxRow({ item }: { item: InboxItem }) {
           : "";
     preview = last.mine ? `Tú: ${text}` : text;
   }
-  const initial = (item.clienteNombre[0] ?? "?").toUpperCase();
+  const dot = statusMeta[item.estado as EstadoVisitaUI]?.dot ?? "bg-muted-foreground";
+  const unread = item.unreadCount > 0;
 
   return (
     <Link
       href={`/dashboard/mensajes/${item.visitaId}`}
-      className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/40"
+      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/60"
     >
-      <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-        {initial}
+      <div className="relative flex-none">
+        <InitialsAvatar name={item.clienteNombre} size={42} />
+        <span
+          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-[2.5px] ring-card ${dot}`}
+        />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-medium">{item.clienteNombre}</p>
-          <span className="text-xs text-muted-foreground">·</span>
-          <p className="truncate text-xs text-muted-foreground">
-            {item.servicioNombre}
+        <div className="flex items-center justify-between gap-2">
+          <p
+            className={`truncate text-sm text-foreground ${
+              unread ? "font-extrabold" : "font-bold"
+            }`}
+          >
+            {item.clienteNombre}
           </p>
+          {last ? (
+            <span
+              className={`flex-none text-[11.5px] font-semibold ${
+                unread ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              {formatRelative(last.createdAt)}
+            </span>
+          ) : null}
         </div>
-        <p
-          className={`mt-0.5 truncate text-sm ${
-            item.unreadCount > 0
-              ? "font-medium text-foreground"
-              : "text-muted-foreground"
-          }`}
-        >
-          {preview}
+        <p className="truncate text-xs font-bold text-green-700">
+          {item.servicioNombre}
         </p>
-      </div>
-      <div className="flex flex-none flex-col items-end gap-1">
-        {last ? (
-          <span className="text-xs text-muted-foreground">
-            {formatRelative(last.createdAt)}
-          </span>
-        ) : null}
-        {item.unreadCount > 0 ? (
-          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
-            {item.unreadCount}
-          </span>
-        ) : null}
+        <div className="flex items-center gap-2">
+          <p
+            className={`mt-0.5 flex-1 truncate text-[13px] ${
+              unread
+                ? "font-semibold text-foreground"
+                : "font-medium text-muted-foreground"
+            }`}
+          >
+            {preview}
+          </p>
+          {unread ? (
+            <span className="inline-flex h-[18px] min-w-[18px] flex-none items-center justify-center rounded-full bg-primary px-1.5 text-[10.5px] font-extrabold text-primary-foreground">
+              {item.unreadCount}
+            </span>
+          ) : null}
+        </div>
       </div>
     </Link>
   );
@@ -305,7 +320,7 @@ function SearchResultRow({
   item: SearchResult;
   term: string;
 }) {
-  const initial = (item.clienteNombre[0] ?? "?").toUpperCase();
+  const dot = statusMeta[item.estado as EstadoVisitaUI]?.dot ?? "bg-muted-foreground";
   const isMessage = item.match.type === "message";
   const href = isMessage
     ? `/dashboard/mensajes/${item.visitaId}?search=${encodeURIComponent(term)}&messageId=${item.match.messageId}`
@@ -314,45 +329,47 @@ function SearchResultRow({
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/40"
+      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/60"
     >
-      <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-        {initial}
+      <div className="relative flex-none">
+        <InitialsAvatar name={item.clienteNombre} size={42} />
+        <span
+          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-[2.5px] ring-card ${dot}`}
+        />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-medium">
+        <div className="flex items-center justify-between gap-2">
+          <p className="truncate text-sm font-bold text-foreground">
             {isMessage ? (
               item.clienteNombre
             ) : (
               <Highlighted text={item.clienteNombre} term={term} />
             )}
           </p>
-          <span className="text-xs text-muted-foreground">·</span>
-          <p className="truncate text-xs text-muted-foreground">
-            {item.servicioNombre}
-          </p>
-        </div>
-        {isMessage ? (
-          <p className="mt-0.5 truncate text-sm text-foreground">
-            {item.match.mine ? "Tú: " : ""}
-            <Highlighted text={item.match.text} term={term} />
-          </p>
-        ) : (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            Coincidencia en el nombre del cliente
-          </p>
-        )}
-      </div>
-      <div className="flex flex-none flex-col items-end gap-1">
-        <span className="text-xs text-muted-foreground">
-          {formatRelative(item.match.createdAt)}
-        </span>
-        {item.unreadCount > 0 ? (
-          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
-            {item.unreadCount}
+          <span className="flex-none text-[11.5px] font-semibold text-muted-foreground">
+            {formatRelative(item.match.createdAt)}
           </span>
-        ) : null}
+        </div>
+        <p className="truncate text-xs font-bold text-green-700">
+          {item.servicioNombre}
+        </p>
+        <div className="flex items-center gap-2">
+          {isMessage ? (
+            <p className="mt-0.5 flex-1 truncate text-[13px] font-medium text-foreground">
+              {item.match.mine ? "Tú: " : ""}
+              <Highlighted text={item.match.text} term={term} />
+            </p>
+          ) : (
+            <p className="mt-0.5 flex-1 truncate text-[13px] font-medium text-muted-foreground">
+              Coincidencia en el nombre del cliente
+            </p>
+          )}
+          {item.unreadCount > 0 ? (
+            <span className="inline-flex h-[18px] min-w-[18px] flex-none items-center justify-center rounded-full bg-primary px-1.5 text-[10.5px] font-extrabold text-primary-foreground">
+              {item.unreadCount}
+            </span>
+          ) : null}
+        </div>
       </div>
     </Link>
   );
