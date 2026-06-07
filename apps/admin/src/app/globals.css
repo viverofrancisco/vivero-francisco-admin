@@ -45,75 +45,117 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Extended botanical semantic tokens (status, tints) */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-clay: var(--clay);
+  --color-green-50: var(--green-50);
+  --color-green-100: var(--green-100);
+  --color-green-700: var(--green-700);
+  --color-green-deep: var(--green-deep);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.453 0.052 155.849);
+  /* Vivero Francisco — botanical green system (light) */
+  --background: oklch(0.984 0.006 135);
+  --foreground: oklch(0.25 0.012 152);
+  --card: #ffffff;
+  --card-foreground: oklch(0.25 0.012 152);
+  --popover: #ffffff;
+  --popover-foreground: oklch(0.25 0.012 152);
+  --primary: oklch(0.52 0.11 152);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.453 0.052 155.849);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.453 0.052 155.849);
+  --secondary: oklch(0.965 0.018 150);
+  --secondary-foreground: oklch(0.44 0.1 153);
+  --muted: oklch(0.95 0.006 150);
+  --muted-foreground: oklch(0.6 0.01 152);
+  --accent: oklch(0.965 0.018 150);
+  --accent-foreground: oklch(0.44 0.1 153);
+  --destructive: oklch(0.56 0.18 25);
+  --border: oklch(0.905 0.008 150);
+  --input: oklch(0.905 0.008 150);
+  --ring: oklch(0.52 0.11 152);
+  /* charts / categorical: green, sky, clay, amber, purple */
+  --chart-1: oklch(0.52 0.11 152);
+  --chart-2: oklch(0.58 0.075 232);
+  --chart-3: oklch(0.63 0.12 48);
+  --chart-4: oklch(0.7 0.135 65);
+  --chart-5: oklch(0.55 0.1 300);
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: oklch(0.25 0.012 152);
+  --sidebar-primary: oklch(0.52 0.11 152);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.96 0.015 155.849);
-  --sidebar-accent-foreground: oklch(0.35 0.052 155.849);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-accent: oklch(0.965 0.018 150);
+  --sidebar-accent-foreground: oklch(0.44 0.1 153);
+  --sidebar-border: oklch(0.905 0.008 150);
+  --sidebar-ring: oklch(0.52 0.11 152);
+
+  /* Extended semantic tokens */
+  --success: oklch(0.52 0.11 152);
+  --success-foreground: oklch(0.44 0.1 153);
+  --warning: oklch(0.7 0.135 65);
+  --warning-foreground: oklch(0.5 0.13 60);
+  --info: oklch(0.58 0.075 232);
+  --info-foreground: oklch(0.58 0.075 232);
+  --clay: oklch(0.63 0.12 48);
+  --green-50: oklch(0.965 0.018 150);
+  --green-100: oklch(0.93 0.035 150);
+  --green-700: oklch(0.44 0.1 153);
+  --green-deep: oklch(0.33 0.055 155);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.87 0.00 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.371 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  /* Vivero Francisco — derived dark botanical variant */
+  --background: oklch(0.2 0.012 152);
+  --foreground: oklch(0.96 0.008 150);
+  --card: oklch(0.24 0.012 152);
+  --card-foreground: oklch(0.96 0.008 150);
+  --popover: oklch(0.24 0.012 152);
+  --popover-foreground: oklch(0.96 0.008 150);
+  --primary: oklch(0.62 0.11 152);
+  --primary-foreground: oklch(0.18 0.02 152);
+  --secondary: oklch(0.28 0.018 152);
+  --secondary-foreground: oklch(0.9 0.03 150);
+  --muted: oklch(0.28 0.012 152);
+  --muted-foreground: oklch(0.7 0.012 152);
+  --accent: oklch(0.32 0.025 152);
+  --accent-foreground: oklch(0.92 0.03 150);
+  --destructive: oklch(0.62 0.17 25);
+  --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --ring: oklch(0.62 0.11 152);
+  --chart-1: oklch(0.62 0.11 152);
+  --chart-2: oklch(0.65 0.09 232);
+  --chart-3: oklch(0.68 0.12 48);
+  --chart-4: oklch(0.74 0.135 65);
+  --chart-5: oklch(0.62 0.11 300);
+  --sidebar: oklch(0.24 0.012 152);
+  --sidebar-foreground: oklch(0.96 0.008 150);
+  --sidebar-primary: oklch(0.62 0.11 152);
+  --sidebar-primary-foreground: oklch(0.18 0.02 152);
+  --sidebar-accent: oklch(0.32 0.025 152);
+  --sidebar-accent-foreground: oklch(0.92 0.03 150);
+  --sidebar-border: oklch(1 0 0 / 11%);
+  --sidebar-ring: oklch(0.62 0.11 152);
+
+  /* Extended semantic tokens (dark) */
+  --success: oklch(0.62 0.11 152);
+  --success-foreground: oklch(0.82 0.08 150);
+  --warning: oklch(0.74 0.135 65);
+  --warning-foreground: oklch(0.82 0.11 70);
+  --info: oklch(0.68 0.085 232);
+  --info-foreground: oklch(0.72 0.085 232);
+  --clay: oklch(0.68 0.12 48);
+  --green-50: oklch(0.3 0.022 152);
+  --green-100: oklch(0.36 0.03 152);
+  --green-700: oklch(0.78 0.07 150);
+  --green-deep: oklch(0.85 0.05 150);
 }
 
 @layer base {

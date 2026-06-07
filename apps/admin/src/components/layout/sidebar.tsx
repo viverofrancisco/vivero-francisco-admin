@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -18,6 +18,7 @@ import {
   Settings,
   MapPin,
   ChevronDown,
+  LogOut,
 } from "lucide-react";
 import type { UserRole } from "@/generated/prisma/client";
 import { Brand } from "./brand";
@@ -30,7 +31,7 @@ interface NavItem {
   children?: { label: string; href: string }[];
 }
 
-const navItems: NavItem[] = [
+const mainItems: NavItem[] = [
   { label: "Panel", href: "/dashboard", icon: LayoutDashboard },
   { label: "Clientes", href: "/dashboard/clientes", icon: Users, roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"] },
   {
@@ -65,6 +66,9 @@ const navItems: NavItem[] = [
       { label: "Firmantes", href: "/dashboard/configuracion/firmantes" },
     ],
   },
+];
+
+const adminItems: NavItem[] = [
   { label: "Personal", href: "/dashboard/personal", icon: UserCheck, roles: ["ADMIN", "STAFF"] },
   { label: "Grupos", href: "/dashboard/grupos", icon: UsersRound, roles: ["ADMIN", "STAFF"] },
   { label: "Sectores", href: "/dashboard/sectores", icon: MapPin, roles: ["ADMIN"] },
@@ -85,23 +89,32 @@ interface BrandingProps {
   branding: { logoUrl: string | null; nombre: string | null };
 }
 
+const roleLabels: Record<UserRole, string> = {
+  ADMIN: "Administrador",
+  STAFF: "Staff",
+  PERSONAL_ADMIN: "Admin de sector",
+  PERSONAL: "Personal",
+  CLIENTE: "Cliente",
+};
+
 export function Sidebar({ branding }: BrandingProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = session?.user?.role;
 
-  const filteredItems = navItems.filter(
-    (item) => !item.roles || (role && item.roles.includes(role))
-  );
+  const visible = (items: NavItem[]) =>
+    items.filter((item) => !item.roles || (role && item.roles.includes(role)));
+
+  const mainVisible = visible(mainItems);
+  const adminVisible = visible(adminItems);
 
   // Initialize expanded state: auto-expand if currently on a child route
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    for (const item of navItems) {
+    for (const item of [...mainItems, ...adminItems]) {
       if (item.children) {
         initial[item.href] =
-          pathname === item.href ||
-          pathname.startsWith(item.href + "/");
+          pathname === item.href || pathname.startsWith(item.href + "/");
       }
     }
     return initial;
@@ -111,77 +124,120 @@ export function Sidebar({ branding }: BrandingProps) {
     setExpanded((prev) => ({ ...prev, [href]: !prev[href] }));
   };
 
-  return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r bg-white h-screen min-h-0">
-      <div className="flex h-20 flex-none items-center justify-center border-b px-4">
-        <Brand logoUrl={branding.logoUrl} nombre={branding.nombre} />
-      </div>
-      <nav className="flex-1 min-h-0 overflow-y-auto space-y-1 p-4">
-        {filteredItems.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
-          const isExpanded = expanded[item.href] ?? false;
-          const hasChildren = item.children && item.children.length > 0;
+  const renderItem = (item: NavItem) => {
+    const isActive =
+      pathname === item.href ||
+      (item.href !== "/dashboard" && pathname.startsWith(item.href));
+    const isExpanded = expanded[item.href] ?? false;
+    const hasChildren = item.children && item.children.length > 0;
 
-          return (
-            <div key={item.href}>
-              {hasChildren ? (
-                <button
-                  type="button"
-                  onClick={() => toggleExpanded(item.href)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 transition-transform",
-                      isExpanded && "rotate-180"
-                    )}
-                  />
-                </button>
-              ) : (
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
+    const baseClasses =
+      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors";
+    const stateClasses = isActive
+      ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+      : "text-muted-foreground font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+
+    return (
+      <div key={item.href}>
+        {hasChildren ? (
+          <button
+            type="button"
+            onClick={() => toggleExpanded(item.href)}
+            className={cn(baseClasses, stateClasses)}
+          >
+            <item.icon className="h-[18px] w-[18px]" />
+            <span className="flex-1 text-left">{item.label}</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform",
+                isExpanded && "rotate-180"
               )}
-              {hasChildren && isExpanded && (
-                <div className="ml-8 mt-1 space-y-1">
-                  {item.children!.map((child) => (
-                    <Link
-                      key={child.href}
-                      href={child.href}
-                      className={cn(
-                        "block rounded-md px-3 py-1.5 text-sm transition-colors",
-                        pathname === child.href
-                          ? "text-primary font-medium"
-                          : "text-gray-500 hover:text-gray-900"
-                      )}
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
+            />
+          </button>
+        ) : (
+          <Link href={item.href} className={cn(baseClasses, stateClasses)}>
+            <item.icon className="h-[18px] w-[18px]" />
+            {item.label}
+          </Link>
+        )}
+        {hasChildren && isExpanded && (
+          <div className="ml-8 mt-1 space-y-1">
+            {item.children!.map((child) => (
+              <Link
+                key={child.href}
+                href={child.href}
+                className={cn(
+                  "block rounded-lg px-3 py-1.5 text-sm transition-colors",
+                  pathname === child.href
+                    ? "font-semibold text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {child.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const userName =
+    [session?.user?.name, session?.user?.apellido].filter(Boolean).join(" ") ||
+    "Usuario";
+
+  return (
+    <aside className="hidden h-screen min-h-0 bg-sidebar md:flex md:w-64 md:flex-col md:border-r">
+      <div className="flex h-20 flex-none items-center border-b px-5">
+        <Brand
+          logoUrl={branding.logoUrl}
+          nombre={branding.nombre}
+          subtitle={false}
+        />
+      </div>
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
+        {mainVisible.map(renderItem)}
+
+        {adminVisible.length > 0 && (
+          <>
+            <div className="mx-2 my-3 h-px bg-border" />
+            <div className="px-3 pb-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
+              Administración
             </div>
-          );
-        })}
+            {adminVisible.map(renderItem)}
+          </>
+        )}
       </nav>
+
+      {/* Footer user card */}
+      <div className="flex-none p-3">
+        <div className="flex items-center gap-2.5 rounded-xl bg-sidebar-accent p-2.5">
+          <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+            {userName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-[13px] font-bold text-foreground">
+              {userName}
+            </div>
+            <div className="text-[11px] font-semibold text-muted-foreground">
+              {role ? roleLabels[role] : ""}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            aria-label="Cerrar sesión"
+            className="flex-none rounded-md p-1 text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="h-[17px] w-[17px]" />
+          </button>
+        </div>
+      </div>
     </aside>
   );
 }

@@ -29,17 +29,17 @@ export function Header({ branding }: BrandingProps) {
     .slice(0, 2);
 
   return (
-    <header className="flex h-20 items-center justify-between border-b bg-white px-4 md:px-6">
+    <header className="flex h-20 items-center justify-between border-b bg-card/80 px-4 backdrop-blur-md md:px-6">
       <div className="flex items-center gap-4">
         <MobileNav branding={branding} />
         <div className="md:hidden">
           <Brand
             logoUrl={branding.logoUrl}
             nombre={branding.nombre}
+            subtitle={false}
+            markSize={32}
             className={
-              branding.logoUrl
-                ? "h-8 max-w-[140px] object-contain"
-                : "text-lg font-semibold text-primary truncate"
+              branding.logoUrl ? "h-8 max-w-[140px] object-contain" : undefined
             }
           />
         </div>

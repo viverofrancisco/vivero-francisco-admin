@@ -113,13 +113,13 @@ export function MobileNav({ branding }: MobileNavProps) {
                     type="button"
                     onClick={() => toggleExpanded(item.href)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-[18px] w-[18px]" />
                     <span className="flex-1 text-left">{item.label}</span>
                     <ChevronDown
                       className={cn(
@@ -133,13 +133,13 @@ export function MobileNav({ branding }: MobileNavProps) {
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-[18px] w-[18px]" />
                     {item.label}
                   </Link>
                 )}
@@ -151,10 +151,10 @@ export function MobileNav({ branding }: MobileNavProps) {
                         href={child.href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "block rounded-md px-3 py-1.5 text-sm transition-colors",
+                          "block rounded-lg px-3 py-1.5 text-sm transition-colors",
                           pathname === child.href
-                            ? "text-primary font-medium"
-                            : "text-gray-500 hover:text-gray-900"
+                            ? "font-semibold text-primary"
+                            : "text-muted-foreground hover:text-foreground"
                         )}
                       >
                         {child.label}
