@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import {
   Users,
   Wrench,
@@ -11,29 +12,8 @@ import {
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-}
-
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function InitialsAvatar({ name, size = 34 }: { name: string; size?: number }) {
-  return (
-    <div
-      className="flex flex-none items-center justify-center rounded-full bg-green-100 font-bold text-green-700"
-      style={{ width: size, height: size, fontSize: size * 0.38 }}
-    >
-      {initials(name)}
-    </div>
-  );
 }
 
 function StatCard({

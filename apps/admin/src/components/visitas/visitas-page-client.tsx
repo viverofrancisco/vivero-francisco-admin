@@ -128,7 +128,7 @@ export function VisitasPageClient({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Visitas</h1>
-          <p className="text-gray-500">Gestiona las visitas programadas</p>
+          <p className="text-muted-foreground">Gestiona las visitas programadas</p>
         </div>
         {userRole !== "PERSONAL" && (
           <Link href="/dashboard/visitas/nueva">
@@ -138,6 +138,27 @@ export function VisitasPageClient({
             </Button>
           </Link>
         )}
+      </div>
+
+      {/* Quick status chips */}
+      <div className="flex flex-wrap gap-2">
+        {ESTADOS.map((e) => {
+          const active = estado === e.value;
+          return (
+            <button
+              key={e.value}
+              type="button"
+              onClick={() => handleEstadoChange(e.value)}
+              className={`h-9 rounded-xl px-4 text-[13px] font-bold transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border bg-card text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {e.label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex flex-wrap gap-4 items-end">
@@ -159,15 +180,6 @@ export function VisitasPageClient({
             minDate={desde || undefined}
             placeholder="Fecha fin"
             className="w-48"
-          />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Estado</Label>
-          <CustomSelect
-            value={estado}
-            onChange={handleEstadoChange}
-            options={ESTADOS}
-            className="w-36"
           />
         </div>
         <div className="space-y-1">
@@ -201,7 +213,7 @@ export function VisitasPageClient({
       </div>
 
       {loadingFilter ? (
-        <p className="text-sm text-gray-400">Cargando...</p>
+        <p className="text-sm text-muted-foreground">Cargando...</p>
       ) : visitas.length === 0 ? (
         <EmptyState message="No hay visitas para este periodo" />
       ) : (

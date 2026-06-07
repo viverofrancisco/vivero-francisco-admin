@@ -24,6 +24,10 @@ export default async function ClientesPage() {
     orderBy: { createdAt: "desc" },
     include: {
       sector: { select: { id: true, nombre: true } },
+      servicios: {
+        where: { estado: "ACTIVO" },
+        select: { servicio: { select: { nombre: true } } },
+      },
     },
   });
 
