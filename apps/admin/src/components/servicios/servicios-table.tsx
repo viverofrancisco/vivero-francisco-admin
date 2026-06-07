@@ -2,30 +2,43 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Search } from "lucide-react";
+import {
+  Search,
+  Users,
+  Leaf,
+  Droplets,
+  Scissors,
+  Sprout,
+  LayoutGrid,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface Servicio {
   id: string;
   nombre: string;
   tipo: string;
+  descripcion?: string | null;
   _count: { clientes: number };
 }
 
-const ITEMS_PER_PAGE = 10;
+/** Pick a botanical icon from keywords in the service name. */
+function iconFor(nombre: string): LucideIcon {
+  const n = nombre.toLowerCase();
+  if (/(riego|agua|aspersor|goteo)/.test(n)) return Droplets;
+  if (/(poda|seto|árbol|arbol|recorte|corte)/.test(n)) return Scissors;
+  if (/(diseñ|paisaj)/.test(n)) return Sprout;
+  if (/(vertical|muro|grid)/.test(n)) return LayoutGrid;
+  if (/(control|fitosanitar|plaga|mecán|mecan|repar)/.test(n)) return Wrench;
+  return Leaf;
+}
+
+const ITEMS_PER_PAGE = 12;
 
 export function ServiciosTable({ servicios }: { servicios: Servicio[] }) {
   const router = useRouter();
@@ -61,11 +74,11 @@ export function ServiciosTable({ servicios }: { servicios: Servicio[] }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar servicio..."
             value={searchQuery}
@@ -76,70 +89,89 @@ export function ServiciosTable({ servicios }: { servicios: Servicio[] }) {
             className="pl-9"
           />
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           {[
             { value: null, label: "Todos" },
             { value: "RECURRENTE", label: "Recurrentes" },
-            { value: "UNICO", label: "Unicos" },
-          ].map((opt) => (
-            <Button
-              key={opt.label}
-              variant={tipoFilter === opt.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setTipoFilter(opt.value);
-                setPage(1);
-              }}
-            >
-              {opt.label}
-            </Button>
-          ))}
+            { value: "UNICO", label: "Únicos" },
+          ].map((opt) => {
+            const active = tipoFilter === opt.value;
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => {
+                  setTipoFilter(opt.value);
+                  setPage(1);
+                }}
+                className={`h-9 rounded-xl px-4 text-[13px] font-bold transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-card text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Table */}
+      {/* Cards */}
       {filtered.length === 0 ? (
         <EmptyState message="No se encontraron servicios" />
       ) : (
         <>
-          <div className="rounded-md border bg-white">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Clientes</TableHead>
-                  <TableHead className="w-16">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginated.map((servicio) => (
-                  <TableRow
-                    key={servicio.id}
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => router.push(`/dashboard/servicios/${servicio.id}`)}
-                  >
-                    <TableCell className="font-medium">{servicio.nombre}</TableCell>
-                    <TableCell>
-                      <Badge variant={servicio.tipo === "RECURRENTE" ? "secondary" : "outline"}>
-                        {servicio.tipo === "RECURRENTE" ? "Recurrente" : "Unico"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{servicio._count.clientes}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <DeleteDialog
-                          title={`¿Eliminar "${servicio.nombre}"?`}
-                          description="Se eliminara este servicio permanentemente."
-                          onDelete={() => handleDelete(servicio.id)}
-                          onSuccess={() => router.refresh()}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {paginated.map((servicio) => {
+              const Icon = iconFor(servicio.nombre);
+              const recurrente = servicio.tipo === "RECURRENTE";
+              return (
+                <div
+                  key={servicio.id}
+                  onClick={() =>
+                    router.push(`/dashboard/servicios/${servicio.id}`)
+                  }
+                  className="flex cursor-pointer flex-col rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-[46px] w-[46px] items-center justify-center rounded-xl bg-secondary">
+                      <Icon className="h-[23px] w-[23px] text-green-700" />
+                    </div>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-extrabold tracking-wide ${
+                        recurrente
+                          ? "bg-secondary text-green-700"
+                          : "bg-info/12 text-info"
+                      }`}
+                    >
+                      {recurrente ? "RECURRENTE" : "ÚNICO"}
+                    </span>
+                  </div>
+                  <div className="mt-3.5 text-[16.5px] font-extrabold tracking-tight text-foreground">
+                    {servicio.nombre}
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 min-h-[38px] text-[13px] font-medium leading-snug text-muted-foreground">
+                    {servicio.descripcion || "Sin descripción."}
+                  </p>
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
+                    <div className="flex items-center gap-1.5 text-[13px] font-bold text-muted-foreground">
+                      <Users className="h-[15px] w-[15px]" />
+                      {servicio._count.clientes}{" "}
+                      {servicio._count.clientes === 1 ? "cliente" : "clientes"}
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <DeleteDialog
+                        title={`¿Eliminar "${servicio.nombre}"?`}
+                        description="Se eliminara este servicio permanentemente."
+                        onDelete={() => handleDelete(servicio.id)}
+                        onSuccess={() => router.refresh()}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Pagination */}

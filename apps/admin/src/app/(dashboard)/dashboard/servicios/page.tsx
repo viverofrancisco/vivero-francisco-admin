@@ -18,8 +18,8 @@ export default async function ServiciosPage() {
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Servicios</h1>
-          <p className="text-gray-500">Gestiona los servicios del vivero</p>
+          <h1 className="text-2xl font-bold tracking-tight">Servicios</h1>
+          <p className="text-muted-foreground">Gestiona los servicios del vivero</p>
         </div>
         <Link href="/dashboard/servicios/nuevo">
           <Button>

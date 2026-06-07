@@ -9,6 +9,9 @@ export default async function PersonalPage() {
   const personal = await prisma.personal.findMany({
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
+    include: {
+      grupos: { select: { grupo: { select: { nombre: true } } } },
+    },
   });
 
   return (

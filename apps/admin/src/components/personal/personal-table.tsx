@@ -11,11 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search } from "lucide-react";
 
 interface Personal {
@@ -26,6 +26,7 @@ interface Personal {
   especialidad: string | null;
   tipo: string | null;
   estado: string;
+  grupos?: { grupo: { nombre: string } }[];
 }
 
 function fullName(p: Personal): string {
@@ -45,6 +46,25 @@ function tipoLabel(tipo: string): string {
     default:
       return tipo;
   }
+}
+
+/** Dot color per specialty, matching the design palette. */
+function tipoDot(tipo: string | null): string {
+  switch (tipo) {
+    case "JARDINERO":
+      return "bg-primary";
+    case "SUPERVISOR":
+      return "bg-clay";
+    case "CHOFER":
+      return "bg-info";
+    default:
+      return "bg-muted-foreground";
+  }
+}
+
+function crewNames(p: Personal): string {
+  const names = (p.grupos ?? []).map((g) => g.grupo.nombre);
+  return names.length ? names.join(", ") : "—";
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -82,17 +102,49 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
     page * ITEMS_PER_PAGE
   );
 
+  const stats: [string, number][] = useMemo(() => {
+    const activo = personal.filter((p) => p.estado === "ACTIVO").length;
+    const jardineros = personal.filter((p) => p.tipo === "JARDINERO").length;
+    const supervisores = personal.filter((p) => p.tipo === "SUPERVISOR").length;
+    const cuadrillas = new Set(
+      personal.flatMap((p) => (p.grupos ?? []).map((g) => g.grupo.nombre))
+    ).size;
+    return [
+      ["Personal activo", activo],
+      ["Jardineros", jardineros],
+      ["Supervisores", supervisores],
+      ["Cuadrillas", cuadrillas],
+    ];
+  }, [personal]);
+
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/personal/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Error al eliminar");
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Summary strip */}
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+        {stats.map(([label, value]) => (
+          <div
+            key={label}
+            className="rounded-2xl border border-border bg-card px-[18px] py-[15px]"
+          >
+            <div className="truncate text-[13px] font-semibold text-muted-foreground">
+              {label}
+            </div>
+            <div className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">
+              {value}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar por nombre, telefono o especialidad..."
             value={searchQuery}
@@ -140,42 +192,71 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
         <EmptyState message="No se encontro personal" />
       ) : (
         <>
-          <div className="rounded-md border bg-white">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Telefono</TableHead>
                   <TableHead>Especialidad</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="w-16">Acciones</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead>Cuadrilla</TableHead>
+                  <TableHead className="text-right">Estado</TableHead>
+                  <TableHead className="w-16 text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.map((p) => (
                   <TableRow
                     key={p.id}
-                    className="cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer"
                     onClick={() => router.push(`/dashboard/personal/${p.id}`)}
                   >
-                    <TableCell className="font-medium">{fullName(p)}</TableCell>
-                    <TableCell>{p.telefono ?? "—"}</TableCell>
-                    <TableCell>{p.especialidad ?? "—"}</TableCell>
                     <TableCell>
-                      {p.tipo ? (
-                        <Badge variant="outline">{tipoLabel(p.tipo)}</Badge>
+                      <div className="flex items-center gap-2.5">
+                        <InitialsAvatar name={fullName(p)} size={36} />
+                        <div className="min-w-0">
+                          <div className="truncate font-bold text-foreground">
+                            {fullName(p)}
+                          </div>
+                          {p.tipo && (
+                            <div className="truncate text-xs font-semibold text-muted-foreground">
+                              {tipoLabel(p.tipo)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {p.tipo || p.especialidad ? (
+                        <span className="inline-flex items-center gap-1.5 font-semibold text-muted-foreground">
+                          <span
+                            className={`h-2 w-2 rounded-full ${tipoDot(p.tipo)}`}
+                          />
+                          {p.especialidad ?? tipoLabel(p.tipo ?? "")}
+                        </span>
                       ) : (
                         "—"
                       )}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={p.estado === "ACTIVO" ? "default" : "secondary"}>
-                        {p.estado === "ACTIVO" ? "Activo" : "Inactivo"}
-                      </Badge>
+                    <TableCell className="text-muted-foreground">
+                      {p.telefono ?? "—"}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="text-muted-foreground">
+                      {crewNames(p)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
+                          p.estado === "ACTIVO"
+                            ? "bg-secondary text-green-700"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {p.estado === "ACTIVO" ? "Activo" : "Inactivo"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         <DeleteDialog
                           title={`¿Eliminar a ${fullName(p)}?`}
                           description="Se eliminara este personal permanentemente."
