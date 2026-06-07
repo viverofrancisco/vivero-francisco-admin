@@ -38,8 +38,8 @@ export default async function NotificacionesPage() {
     <div className="p-4 md:p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Notificaciones</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl font-bold tracking-tight">Notificaciones</h1>
+          <p className="text-muted-foreground">
             Configura las notificaciones por WhatsApp
           </p>
         </div>

@@ -29,7 +29,7 @@ export default async function NotificacionesClientesPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold">Notificaciones para Clientes</h1>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Confirmaciones y recordatorios de visitas
           </p>
         </div>

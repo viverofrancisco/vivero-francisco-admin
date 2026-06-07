@@ -32,7 +32,7 @@ export default async function NotificacionesAdminPage() {
           <h1 className="text-2xl font-bold">
             Notificaciones para Administradores
           </h1>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Resúmenes diarios y alertas de visitas
           </p>
         </div>
