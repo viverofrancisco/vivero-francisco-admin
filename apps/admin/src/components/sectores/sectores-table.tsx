@@ -3,19 +3,11 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Trash2, Search } from "lucide-react";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { Trash2, Search, MapPin, Users, UserCog } from "lucide-react";
 import { toast } from "sonner";
 
 interface AdminUser {
@@ -35,7 +27,24 @@ interface SectoresTableProps {
   sectores: SectorRow[];
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 12;
+
+function SecMeta({
+  icon: Icon,
+  label,
+}: {
+  icon: typeof Users;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Icon className="h-[15px] w-[15px] text-green-700" />
+      <span className="text-[13px] font-bold text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export function SectoresTable({ sectores }: SectoresTableProps) {
   const router = useRouter();
@@ -73,12 +82,15 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
     }
   };
 
+  const stripe =
+    "repeating-linear-gradient(45deg, var(--green-50), var(--green-50) 10px, var(--card) 10px, var(--card) 20px)";
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Search */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar sector..."
             value={searchQuery}
@@ -91,62 +103,84 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Cards */}
       {filtered.length === 0 ? (
         <EmptyState message="No se encontraron sectores" />
       ) : (
         <>
-          <div className="rounded-md border bg-white">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Sector</TableHead>
-                  <TableHead>Clientes</TableHead>
-                  <TableHead>Personal Admin</TableHead>
-                  <TableHead className="w-16">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginated.map((s) => (
-                  <TableRow
-                    key={s.id}
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => router.push(`/dashboard/sectores/${s.id}`)}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {paginated.map((s) => {
+              const admin = s.admins[0]?.user;
+              const adminName = admin ? admin.name ?? admin.email : null;
+              return (
+                <div
+                  key={s.id}
+                  onClick={() => router.push(`/dashboard/sectores/${s.id}`)}
+                  className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-md"
+                >
+                  {/* Striped header with pin */}
+                  <div
+                    className="relative flex h-[92px] items-center justify-center"
+                    style={{ background: stripe }}
                   >
-                    <TableCell className="font-medium">
+                    <div className="flex h-[34px] w-[34px] rotate-[-45deg] items-center justify-center rounded-[50%_50%_50%_0] bg-primary">
+                      <MapPin className="h-[17px] w-[17px] rotate-45 text-primary-foreground" />
+                    </div>
+                    <div
+                      className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 bg-card/80"
+                        disabled={deleting === s.id}
+                        onClick={() => handleDelete(s.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="text-[16.5px] font-extrabold tracking-tight text-foreground">
                       {s.nombre}
-                    </TableCell>
-                    <TableCell>{s._count.clientes}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {s.admins.length > 0 ? (
-                          s.admins.map((a) => (
-                            <Badge key={a.user.id} variant="secondary">
-                              {a.user.name ?? a.user.email}
-                            </Badge>
-                          ))
-                        ) : (
-                          <span className="text-sm text-gray-400">—</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          disabled={deleting === s.id}
-                          onClick={() => handleDelete(s.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                    <div className="mt-2.5 flex gap-4">
+                      <SecMeta
+                        icon={Users}
+                        label={`${s._count.clientes} ${
+                          s._count.clientes === 1 ? "cliente" : "clientes"
+                        }`}
+                      />
+                      <SecMeta
+                        icon={UserCog}
+                        label={`${s.admins.length} ${
+                          s.admins.length === 1 ? "admin" : "admins"
+                        }`}
+                      />
+                    </div>
+                    <div className="mt-3.5 flex items-center gap-2 border-t border-border pt-3">
+                      {adminName ? (
+                        <>
+                          <InitialsAvatar name={adminName} size={26} />
+                          <span className="truncate text-[12.5px] font-semibold text-muted-foreground">
+                            Admin:{" "}
+                            <span className="font-bold text-foreground">
+                              {adminName}
+                            </span>
+                            {s.admins.length > 1 && ` +${s.admins.length - 1}`}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-[12.5px] font-semibold text-muted-foreground">
+                          Sin administrador
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Pagination */}

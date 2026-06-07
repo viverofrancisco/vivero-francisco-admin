@@ -30,8 +30,8 @@ export function SectoresPageClient({ sectores }: SectoresPageClientProps) {
     <>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Sectores</h1>
-          <p className="text-gray-500">Gestiona los sectores geográficos</p>
+          <h1 className="text-2xl font-bold tracking-tight">Sectores</h1>
+          <p className="text-muted-foreground">Gestiona los sectores geográficos</p>
         </div>
         <Button onClick={() => setFormOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />

@@ -10,6 +10,7 @@ export default async function GruposPage() {
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: {
+      _count: { select: { visitas: true } },
       miembros: {
         include: {
           personal: { select: { id: true, nombre: true, apellido: true } },
