@@ -18,9 +18,7 @@ import {
   Settings,
   MapPin,
   ChevronDown,
-  ChevronsUpDown,
   LogOut,
-  User,
 } from "lucide-react";
 import type { UserRole } from "@/generated/prisma/client";
 import {
@@ -245,7 +243,6 @@ export function Sidebar({ branding }: BrandingProps) {
                 {role ? roleLabels[role] : ""}
               </div>
             </div>
-            <ChevronsUpDown className="h-4 w-4 flex-none text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             side="top"
@@ -258,11 +255,6 @@ export function Sidebar({ branding }: BrandingProps) {
                 {session?.user?.email}
               </p>
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              Perfil
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
