@@ -116,14 +116,13 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <StickyFormActions
-        saveLabel={isEditing ? "Guardar cambios" : "Crear servicio"}
-        saving={loading}
-        onCancel={() => router.push("/dashboard/servicios")}
-        contentClassName="mx-auto max-w-2xl"
-      />
+        <StickyFormActions
+          saveLabel={isEditing ? "Guardar cambios" : "Crear servicio"}
+          saving={loading}
+          onCancel={() => router.push("/dashboard/servicios")}
+        />
+      </div>
     </form>
   );
 }

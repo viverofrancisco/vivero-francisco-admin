@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { StickyFormActions } from "@/components/shared/sticky-form-actions";
 import { toast } from "sonner";
 import { CIUDADES_ECUADOR } from "@/lib/constants/ciudades-ecuador";
 
@@ -498,8 +498,6 @@ export function ClienteForm({
     );
   }
 
-  const saveLabel = isEditing ? "Guardar cambios" : "Crear cliente";
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="mx-auto max-w-3xl space-y-5">
@@ -512,23 +510,12 @@ export function ClienteForm({
           </p>
         </div>
         {sections}
-      </div>
 
-      {/* Sticky action bar — always visible */}
-      <div className="sticky bottom-0 z-10 -mx-4 mt-5 border-t border-border bg-card/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
-        <div className="mx-auto flex max-w-3xl justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/dashboard/clientes")}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={loading}>
-            <Check className="h-4 w-4" />
-            {loading ? "Guardando..." : saveLabel}
-          </Button>
-        </div>
+        <StickyFormActions
+          saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
+          saving={loading}
+          onCancel={() => router.push("/dashboard/clientes")}
+        />
       </div>
     </form>
   );

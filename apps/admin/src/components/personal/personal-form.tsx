@@ -374,14 +374,13 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <StickyFormActions
-        saveLabel={isEditing ? "Guardar cambios" : "Crear personal"}
-        saving={loading}
-        onCancel={() => router.push("/dashboard/personal")}
-        contentClassName="mx-auto max-w-2xl"
-      />
+        <StickyFormActions
+          saveLabel={isEditing ? "Guardar cambios" : "Crear personal"}
+          saving={loading}
+          onCancel={() => router.push("/dashboard/personal")}
+        />
+      </div>
     </form>
   );
 }

@@ -116,14 +116,13 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <StickyFormActions
-        saveLabel={isEditing ? "Guardar cambios" : "Crear grupo"}
-        saving={loading}
-        onCancel={() => router.push("/dashboard/grupos")}
-        contentClassName="mx-auto max-w-2xl"
-      />
+        <StickyFormActions
+          saveLabel={isEditing ? "Guardar cambios" : "Crear grupo"}
+          saving={loading}
+          onCancel={() => router.push("/dashboard/grupos")}
+        />
+      </div>
     </form>
   );
 }
