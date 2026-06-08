@@ -72,10 +72,18 @@ export async function globalSearch(
   const sectorIds = personalAdmin ? await sectorIdsFor(viewer) : [];
 
   const insensitive = { mode: "insensitive" as const };
-  const nameOr = (t: string): Prisma.ClienteWhereInput[] => [
-    { nombre: { contains: t, ...insensitive } },
-    { apellido: { contains: t, ...insensitive } },
-  ];
+  // Multi-word terms (e.g. "Jorge Francisco") must match across nombre +
+  // apellido: every token has to hit one of them. Single tokens just match
+  // either field.
+  const tokens = term.split(/\s+/).filter(Boolean);
+  const clienteNameMatch = (): Prisma.ClienteWhereInput => ({
+    AND: tokens.map((tok) => ({
+      OR: [
+        { nombre: { contains: tok, ...insensitive } },
+        { apellido: { contains: tok, ...insensitive } },
+      ],
+    })),
+  });
 
   // ── Clientes (staff + sector-scoped personal_admin) ──
   let clienteWhere: Prisma.ClienteWhereInput | null = null;
@@ -83,18 +91,15 @@ export async function globalSearch(
     clienteWhere = {
       deletedAt: null,
       ...(personalAdmin ? { sectorId: { in: sectorIds } } : {}),
-      OR: [...nameOr(term), { telefono: { contains: term } }],
+      OR: [clienteNameMatch(), { telefono: { contains: term } }],
     };
   }
 
   // ── Visitas (all roles; scoped) ──
-  const visitaCliente: Prisma.ClienteWhereInput | undefined = personalAdmin
-    ? { sectorId: { in: sectorIds } }
-    : undefined;
   const visitaWhere: Prisma.VisitaWhereInput = {
     deletedAt: null,
     OR: [
-      { clienteServicio: { cliente: { OR: nameOr(term) } } },
+      { clienteServicio: { cliente: clienteNameMatch() } },
       {
         clienteServicio: {
           servicio: { nombre: { contains: term, ...insensitive } },
@@ -102,8 +107,8 @@ export async function globalSearch(
       },
     ],
   };
-  if (visitaCliente) {
-    visitaWhere.clienteServicio = { cliente: visitaCliente };
+  if (personalAdmin) {
+    visitaWhere.clienteServicio = { cliente: { sectorId: { in: sectorIds } } };
   }
   if (personal && viewer.personalId) {
     visitaWhere.AND = [
@@ -127,7 +132,7 @@ export async function globalSearch(
       ...(personalAdmin ? { cliente: { sectorId: { in: sectorIds } } } : {}),
       OR: [
         { titulo: { contains: term, ...insensitive } },
-        { cliente: { OR: nameOr(term) } },
+        { cliente: clienteNameMatch() },
       ],
     };
   }
