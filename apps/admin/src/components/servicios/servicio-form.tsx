@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { servicioSchema, type ServicioFormData } from "@/lib/validations/servicio";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { StickyFormActions } from "@/components/shared/sticky-form-actions";
 import { toast } from "sonner";
 
 interface ServicioFormProps {
@@ -69,60 +69,61 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
   };
 
   return (
-    <Card className="max-w-2xl">
-      <CardHeader>
-        <CardTitle>{isEditing ? "Editar Servicio" : "Nuevo Servicio"}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="nombre">Nombre *</Label>
-            <Input id="nombre" {...register("nombre")} />
-            {errors.nombre && (
-              <p className="text-sm text-red-600">{errors.nombre.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Tipo *</Label>
-            <Controller
-              name="tipo"
-              control={control}
-              render={({ field }) => (
-                <CustomSelect
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={[
-                    { value: "RECURRENTE", label: "Recurrente (mensual)" },
-                    { value: "UNICO", label: "Único (una sola vez)" },
-                  ]}
-                />
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="mx-auto max-w-2xl space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {isEditing ? "Editar servicio" : "Nuevo servicio"}
+          </h1>
+          <p className="text-muted-foreground">
+            Nombre, tipo y descripción del servicio.
+          </p>
+        </div>
+        <Card>
+          <CardContent className="space-y-4 pt-6">
+            <div className="space-y-2">
+              <Label htmlFor="nombre">Nombre *</Label>
+              <Input id="nombre" {...register("nombre")} />
+              {errors.nombre && (
+                <p className="text-sm text-destructive">{errors.nombre.message}</p>
               )}
-            />
-            {errors.tipo && (
-              <p className="text-sm text-red-600">{errors.tipo.message}</p>
-            )}
-          </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción</Label>
-            <Textarea id="descripcion" rows={4} {...register("descripcion")} />
-          </div>
+            <div className="space-y-2">
+              <Label>Tipo *</Label>
+              <Controller
+                name="tipo"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { value: "RECURRENTE", label: "Recurrente (mensual)" },
+                      { value: "UNICO", label: "Único (una sola vez)" },
+                    ]}
+                  />
+                )}
+              />
+              {errors.tipo && (
+                <p className="text-sm text-destructive">{errors.tipo.message}</p>
+              )}
+            </div>
 
-          <div className="flex gap-4">
-            <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push("/dashboard/servicios")}
-            >
-              Cancelar
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+            <div className="space-y-2">
+              <Label htmlFor="descripcion">Descripción</Label>
+              <Textarea id="descripcion" rows={4} {...register("descripcion")} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <StickyFormActions
+        saveLabel={isEditing ? "Guardar cambios" : "Crear servicio"}
+        saving={loading}
+        onCancel={() => router.push("/dashboard/servicios")}
+        contentClassName="mx-auto max-w-2xl"
+      />
+    </form>
   );
 }

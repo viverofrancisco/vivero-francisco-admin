@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { personalSchema, type PersonalFormData } from "@/lib/validations/personal";
-import { Button } from "@/components/ui/button";
+import { StickyFormActions } from "@/components/shared/sticky-form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -270,122 +270,118 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
 
   // --- Standard mode (create page) ---
   return (
-    <Card className="max-w-2xl">
-      <CardHeader>
-        <CardTitle>
-          {isEditing ? "Editar Personal" : "Nuevo Personal"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="nombre">Nombre *</Label>
-              <Input id="nombre" {...register("nombre")} />
-              {errors.nombre && (
-                <p className="text-sm text-red-600">{errors.nombre.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="apellido">Apellido</Label>
-              <Input id="apellido" {...register("apellido")} />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="telefono">Telefono</Label>
-              <Controller
-                name="telefono"
-                control={control}
-                render={({ field }) => (
-                  <PhoneInput
-                    id="telefono"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                  />
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="mx-auto max-w-2xl space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {isEditing ? "Editar personal" : "Nuevo personal"}
+          </h1>
+          <p className="text-muted-foreground">
+            Datos del miembro del equipo.
+          </p>
+        </div>
+        <Card>
+          <CardContent className="space-y-4 pt-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre *</Label>
+                <Input id="nombre" {...register("nombre")} />
+                {errors.nombre && (
+                  <p className="text-sm text-destructive">{errors.nombre.message}</p>
                 )}
-              />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="apellido">Apellido</Label>
+                <Input id="apellido" {...register("apellido")} />
+              </div>
             </div>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="especialidad">Especialidad</Label>
-              <Input id="especialidad" {...register("especialidad")} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono</Label>
+                <Controller
+                  name="telefono"
+                  control={control}
+                  render={({ field }) => (
+                    <PhoneInput
+                      id="telefono"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="especialidad">Especialidad</Label>
+                <Input id="especialidad" {...register("especialidad")} />
+              </div>
             </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Tipo</Label>
+                <Controller
+                  name="tipo"
+                  control={control}
+                  render={({ field }) => (
+                    <CustomSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={[
+                        { value: "JARDINERO", label: "Jardinero" },
+                        { value: "CHOFER", label: "Chofer" },
+                        { value: "SUPERVISOR", label: "Supervisor" },
+                        { value: "MECANICO", label: "Mecanico" },
+                      ]}
+                      placeholder="Seleccionar tipo"
+                    />
+                  )}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sueldo">Sueldo (USD)</Label>
+                <Input
+                  id="sueldo"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Ej: 450.00"
+                  {...register("sueldo")}
+                />
+                {errors.sueldo && (
+                  <p className="text-sm text-destructive">{errors.sueldo.message}</p>
+                )}
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label>Estado</Label>
               <Controller
-                name="tipo"
+                name="estado"
                 control={control}
                 render={({ field }) => (
                   <CustomSelect
                     value={field.value}
                     onChange={field.onChange}
                     options={[
-                      { value: "JARDINERO", label: "Jardinero" },
-                      { value: "CHOFER", label: "Chofer" },
-                      { value: "SUPERVISOR", label: "Supervisor" },
-                      { value: "MECANICO", label: "Mecanico" },
+                      { value: "ACTIVO", label: "Activo" },
+                      { value: "INACTIVO", label: "Inactivo" },
                     ]}
-                    placeholder="Seleccionar tipo"
                   />
                 )}
               />
             </div>
-          </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="sueldo">Sueldo (USD)</Label>
-              <Input
-                id="sueldo"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="Ej: 450.00"
-                {...register("sueldo")}
-              />
-              {errors.sueldo && (
-                <p className="text-sm text-red-600">{errors.sueldo.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Estado</Label>
-            <Controller
-              name="estado"
-              control={control}
-              render={({ field }) => (
-                <CustomSelect
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={[
-                    { value: "ACTIVO", label: "Activo" },
-                    { value: "INACTIVO", label: "Inactivo" },
-                  ]}
-                />
-              )}
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push("/dashboard/personal")}
-            >
-              Cancelar
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+      <StickyFormActions
+        saveLabel={isEditing ? "Guardar cambios" : "Crear personal"}
+        saving={loading}
+        onCancel={() => router.push("/dashboard/personal")}
+        contentClassName="mx-auto max-w-2xl"
+      />
+    </form>
   );
 }
