@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -106,6 +106,7 @@ const roleLabels: Record<UserRole, string> = {
 
 export function Sidebar({ branding }: BrandingProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const role = session?.user?.role;
 
@@ -204,16 +205,6 @@ export function Sidebar({ branding }: BrandingProps) {
       </div>
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3">
         {mainVisible.map(renderItem)}
-
-        {adminVisible.length > 0 && (
-          <>
-            <div className="mx-2 my-3 h-px bg-border" />
-            <div className="px-3 pb-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
-              Administración
-            </div>
-            {adminVisible.map(renderItem)}
-          </>
-        )}
       </nav>
 
       {/* Footer user menu */}
@@ -255,6 +246,25 @@ export function Sidebar({ branding }: BrandingProps) {
                 {session?.user?.email}
               </p>
             </div>
+
+            {adminVisible.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
+                  Administración
+                </div>
+                {adminVisible.map((item) => (
+                  <DropdownMenuItem
+                    key={item.href}
+                    onClick={() => router.push(item.href)}
+                  >
+                    <item.icon className="mr-2 h-4 w-4" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
