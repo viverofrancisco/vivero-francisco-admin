@@ -73,12 +73,12 @@ const mainItems: NavItem[] = [
       { label: "Firmantes", href: "/dashboard/configuracion/firmantes" },
     ],
   },
-];
-
-const adminItems: NavItem[] = [
   { label: "Personal", href: "/dashboard/personal", icon: UserCheck, roles: ["ADMIN", "STAFF"] },
   { label: "Grupos", href: "/dashboard/grupos", icon: UsersRound, roles: ["ADMIN", "STAFF"] },
   { label: "Sectores", href: "/dashboard/sectores", icon: MapPin, roles: ["ADMIN"] },
+];
+
+const adminItems: NavItem[] = [
   {
     label: "Configuración",
     href: "/dashboard/configuracion",
@@ -242,9 +242,6 @@ export function Sidebar({ branding }: BrandingProps) {
             {adminVisible.length > 0 && (
               <>
                 <DropdownMenuSeparator />
-                <div className="px-2 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
-                  Administración
-                </div>
                 {adminVisible.map((item) => (
                   <DropdownMenuItem
                     key={item.href}
