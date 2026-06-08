@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PersonalSelector } from "./personal-selector";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,7 +55,7 @@ function InfoRow({
   value: string | null | undefined;
 }) {
   return (
-    <div className="flex justify-between py-2.5 border-b border-gray-100 last:border-0">
+    <div className="flex justify-between py-2.5 border-b border-border last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-right">{value || "—"}</span>
     </div>
@@ -121,7 +122,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
   return (
     <div>
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-white/95 backdrop-blur-sm border-b">
+      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -131,7 +132,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold truncate">{grupo.nombre}</h1>
+            <h1 className="text-xl font-extrabold tracking-tight truncate">{grupo.nombre}</h1>
             <p className="text-sm text-muted-foreground">
               Creado el {formatDate(grupo.createdAt)}
             </p>
@@ -183,7 +184,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
                       <Label htmlFor="nombre">Nombre *</Label>
                       <Input id="nombre" {...register("nombre")} />
                       {errors.nombre && (
-                        <p className="text-sm text-red-600">
+                        <p className="text-sm text-destructive">
                           {errors.nombre.message}
                         </p>
                       )}
@@ -221,7 +222,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
                       selectedIds={selectedIds}
                       onChange={(ids) => setValue("miembrosIds", ids)}
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {selectedIds.length} personal seleccionado(s)
                     </p>
                   </div>
@@ -230,13 +231,16 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
                     No hay miembros en este grupo
                   </p>
                 ) : (
-                  <div className="space-y-1">
+                  <div>
                     {memberNames.map((name, i) => (
                       <div
                         key={i}
-                        className="py-2 border-b border-gray-100 last:border-0 text-sm font-medium"
+                        className="flex items-center gap-2.5 py-2 border-b border-border last:border-0"
                       >
-                        {name}
+                        <InitialsAvatar name={name} size={32} />
+                        <span className="text-sm font-bold text-foreground">
+                          {name}
+                        </span>
                       </div>
                     ))}
                   </div>

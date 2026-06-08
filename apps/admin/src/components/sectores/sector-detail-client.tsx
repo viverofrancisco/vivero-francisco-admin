@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import {
   Table,
   TableBody,
@@ -54,7 +55,7 @@ function InfoRow({
   value: string | null | undefined;
 }) {
   return (
-    <div className="flex justify-between py-2.5 border-b border-gray-100 last:border-0">
+    <div className="flex justify-between py-2.5 border-b border-border last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-right">{value || "—"}</span>
     </div>
@@ -206,7 +207,7 @@ export function SectorDetailClient({
   return (
     <div>
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-white/95 backdrop-blur-sm border-b">
+      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -216,7 +217,7 @@ export function SectorDetailClient({
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold truncate">{sector.nombre}</h1>
+            <h1 className="text-xl font-extrabold tracking-tight truncate">{sector.nombre}</h1>
             <p className="text-sm text-muted-foreground">
               {sector.clientes.length} cliente
               {sector.clientes.length !== 1 && "s"} asignado
@@ -287,7 +288,7 @@ export function SectorDetailClient({
                 {unassignedClientes.length > 0 && (
                   <div ref={searchRef} className="relative">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         placeholder="Buscar cliente para agregar..."
                         value={searchQuery}
@@ -300,9 +301,9 @@ export function SectorDetailClient({
                       />
                     </div>
                     {showResults && searchQuery.trim() && (
-                      <div className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
                         {filteredClientes.length === 0 ? (
-                          <p className="p-3 text-sm text-gray-500">
+                          <p className="p-3 text-sm text-muted-foreground">
                             No se encontraron clientes
                           </p>
                         ) : (
@@ -310,12 +311,12 @@ export function SectorDetailClient({
                             <button
                               key={c.id}
                               onClick={() => handleAssignCliente(c.id)}
-                              className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left"
+                              className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-muted text-left"
                             >
                               <span className="font-medium">
                                 {`${c.nombre} ${c.apellido || ""}`.trim()}
                               </span>
-                              <span className="text-gray-400 text-xs">
+                              <span className="text-muted-foreground text-xs">
                                 {c.ciudad ?? ""}
                               </span>
                             </button>
@@ -328,7 +329,7 @@ export function SectorDetailClient({
 
                 {/* Table */}
                 {sector.clientes.length === 0 ? (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     No hay clientes asignados a este sector
                   </p>
                 ) : (
@@ -347,8 +348,12 @@ export function SectorDetailClient({
                             <TableCell>
                               <Link
                                 href={`/dashboard/clientes/${c.id}`}
-                                className="font-medium hover:underline"
+                                className="flex items-center gap-2.5 font-bold hover:text-primary"
                               >
+                                <InitialsAvatar
+                                  name={`${c.nombre} ${c.apellido || ""}`.trim()}
+                                  size={32}
+                                />
                                 {`${c.nombre} ${c.apellido || ""}`.trim()}
                               </Link>
                             </TableCell>
@@ -360,7 +365,7 @@ export function SectorDetailClient({
                                 className="h-7 w-7"
                                 onClick={() => handleRemoveCliente(c.id)}
                               >
-                                <X className="h-4 w-4 text-red-500" />
+                                <X className="h-4 w-4 text-destructive" />
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -385,13 +390,13 @@ export function SectorDetailClient({
                   {sector.admins.map((a) => (
                     <div
                       key={a.user.id}
-                      className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-border last:border-0"
                     >
                       <Badge variant="secondary" className="flex items-center gap-1">
                         {a.user.name ?? a.user.email}
                         <button
                           onClick={() => handleRemoveAdmin(a.user.id)}
-                          className="ml-1 hover:text-red-600"
+                          className="ml-1 hover:text-destructive"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -423,7 +428,7 @@ export function SectorDetailClient({
                     )
                   )}
                   {sector.admins.length === 0 && !assigningAdmin && (
-                    <p className="text-sm text-gray-500 py-2">
+                    <p className="text-sm text-muted-foreground py-2">
                       Sin personal admin asignados
                     </p>
                   )}

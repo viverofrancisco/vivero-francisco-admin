@@ -9,9 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PersonalForm } from "@/components/personal/personal-form";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 interface PersonalData {
@@ -53,7 +53,7 @@ export function PersonalDetail({ personal, grupos }: Props) {
   return (
     <div>
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-white/95 backdrop-blur-sm border-b">
+      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -62,14 +62,23 @@ export function PersonalDetail({ personal, grupos }: Props) {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
+          <InitialsAvatar name={nombreCompleto} size={44} />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold truncate">{nombreCompleto}</h1>
-              <Badge variant={personal.estado === "ACTIVO" ? "default" : "secondary"}>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl font-extrabold tracking-tight truncate">
+                {nombreCompleto}
+              </h1>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  personal.estado === "ACTIVO"
+                    ? "bg-secondary text-green-700"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
                 {personal.estado === "ACTIVO" ? "Activo" : "Inactivo"}
-              </Badge>
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-muted-foreground">
               Personal desde {formatDate(personal.createdAt)}
             </p>
           </div>
@@ -142,9 +151,9 @@ export function PersonalDetail({ personal, grupos }: Props) {
                       <Link
                         key={g.id}
                         href={`/dashboard/grupos/${g.id}`}
-                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 text-sm hover:text-primary transition-colors"
+                        className="flex items-center justify-between py-2 border-b border-border last:border-0 text-sm hover:text-primary transition-colors"
                       >
-                        <span className="font-medium">{g.nombre}</span>
+                        <span className="font-bold">{g.nombre}</span>
                       </Link>
                     ))}
                   </div>

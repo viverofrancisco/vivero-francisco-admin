@@ -361,7 +361,7 @@ export function InformeWizard({
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col bg-background">
       {/* Sticky top: step heading */}
-      <div className="border-b bg-white px-6 py-4">
+      <div className="border-b bg-card px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -463,7 +463,7 @@ export function InformeWizard({
           </div>
 
           {/* Nav footer — only spans the right column. */}
-          <div className="border-t bg-white px-6 py-3">
+          <div className="border-t bg-card px-6 py-3">
             <div className="flex items-center justify-between">
               <Button
                 variant="ghost"
@@ -777,8 +777,8 @@ function VerticalStepper({
                   completed
                     ? "border-primary bg-primary text-primary-foreground"
                     : current
-                      ? "border-primary bg-white text-primary"
-                      : "border-muted bg-white text-muted-foreground"
+                      ? "border-primary bg-card text-primary"
+                      : "border-muted bg-card text-muted-foreground"
                 }`}
               >
                 {completed ? "✓" : it.n}
@@ -859,7 +859,7 @@ function Step1Cliente({
                 className={`flex items-center gap-3 rounded-md border px-3 py-3 text-left transition-colors ${
                   selected
                     ? "border-primary bg-primary/5"
-                    : "border-border bg-white hover:bg-muted/30"
+                    : "border-border bg-card hover:bg-muted/30"
                 }`}
               >
                 <span
@@ -973,7 +973,7 @@ function Step2Visitas({
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                   dateRange.label === label
                     ? "bg-primary text-primary-foreground"
-                    : "border bg-white text-foreground hover:bg-muted/40"
+                    : "border bg-card text-foreground hover:bg-muted/40"
                 }`}
               >
                 {label}
@@ -991,7 +991,7 @@ function Step2Visitas({
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 isCustom
                   ? "bg-primary text-primary-foreground"
-                  : "border bg-white text-foreground hover:bg-muted/40"
+                  : "border bg-card text-foreground hover:bg-muted/40"
               }`}
             >
               Personalizado
@@ -1134,7 +1134,7 @@ function Step2Visitas({
                     className={`flex w-full items-center gap-3 rounded-md border px-4 py-3 text-left transition-colors ${
                       selected
                         ? "border-primary bg-primary/5"
-                        : "border-border bg-white hover:bg-muted/30"
+                        : "border-border bg-card hover:bg-muted/30"
                     }`}
                   >
                     <span
@@ -1388,7 +1388,7 @@ function Step3Secciones({
                 onDragOver={(e) => handleDragOver(e, s.tempId)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, s.tempId)}
-                className={`relative rounded-xl border-2 bg-white transition-colors ${
+                className={`relative rounded-xl border-2 bg-card transition-colors ${
                   isPhotoDragOver
                     ? "border-primary bg-primary/5"
                     : hasPhotos || isCollapsed
@@ -1680,7 +1680,7 @@ function PhotoPickerModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl rounded-lg bg-white p-4 shadow-lg flex flex-col max-h-[85vh]"
+        className="w-full max-w-3xl rounded-lg bg-card p-4 shadow-lg flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-3">
@@ -1758,7 +1758,7 @@ function Step5Preview({
 
   return (
     <div className="flex h-full flex-col gap-3">
-      <div className="flex flex-none flex-wrap items-center justify-between gap-3 rounded-lg border bg-white px-4 py-2.5">
+      <div className="flex flex-none flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2">
           <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-green-100 text-green-700">
             <Check className="h-3.5 w-3.5" />
