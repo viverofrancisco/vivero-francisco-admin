@@ -96,14 +96,6 @@ interface BrandingProps {
   branding: { logoUrl: string | null; nombre: string | null };
 }
 
-const roleLabels: Record<UserRole, string> = {
-  ADMIN: "Administrador",
-  STAFF: "Staff",
-  PERSONAL_ADMIN: "Admin de sector",
-  PERSONAL: "Personal",
-  CLIENTE: "Cliente",
-};
-
 export function Sidebar({ branding }: BrandingProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -230,8 +222,8 @@ export function Sidebar({ branding }: BrandingProps) {
               <div className="truncate text-[13px] font-bold text-foreground">
                 {userName}
               </div>
-              <div className="text-[11px] font-semibold text-muted-foreground">
-                {role ? roleLabels[role] : ""}
+              <div className="truncate text-[11px] font-semibold text-muted-foreground">
+                {session?.user?.email}
               </div>
             </div>
           </DropdownMenuTrigger>
