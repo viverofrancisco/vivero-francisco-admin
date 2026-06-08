@@ -85,6 +85,7 @@ enum TipoNotificacion {
   ALERTA_VISITA_INCOMPLETA
   MENSAJE_ENTRANTE_CLIENTE
   AUTENTICACION_OTP
+  INVITACION_CUENTA
 }
 
 enum EstadoNotificacion {
@@ -169,9 +170,10 @@ model Cliente {
   updatedBy   User?   @relation("ClienteUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  sector    Sector?           @relation(fields: [sectorId], references: [id], onDelete: SetNull)
-  servicios ClienteServicio[]
-  informes  Informe[]
+  sector            Sector?            @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  servicios         ClienteServicio[]
+  informes          Informe[]
+  setPasswordTokens SetPasswordToken[]
 }
 
 model Servicio {
@@ -493,6 +495,21 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// Token de un solo uso para que un cliente establezca su contraseña. Se envía
+// como enlace por correo y WhatsApp; sólo se guarda el hash (sha256) del token.
+model SetPasswordToken {
+  id        String    @id @default(cuid())
+  clienteId String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
 }
 
 // ──────────────────────────────────────────────

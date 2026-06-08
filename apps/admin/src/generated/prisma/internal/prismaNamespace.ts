@@ -408,6 +408,7 @@ export const ModelName = {
   PushToken: 'PushToken',
   OtpCode: 'OtpCode',
   RefreshToken: 'RefreshToken',
+  SetPasswordToken: 'SetPasswordToken',
   TipoActividad: 'TipoActividad',
   Informe: 'Informe',
   InformeVisita: 'InformeVisita',
@@ -429,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "servicio" | "clienteServicio" | "personal" | "grupo" | "visita" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "tipoActividad" | "informe" | "informeVisita" | "informeSeccion" | "empresaConfig" | "firmante"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "servicio" | "clienteServicio" | "personal" | "grupo" | "visita" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "setPasswordToken" | "tipoActividad" | "informe" | "informeVisita" | "informeSeccion" | "empresaConfig" | "firmante"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2209,6 +2210,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SetPasswordToken: {
+      payload: Prisma.$SetPasswordTokenPayload<ExtArgs>
+      fields: Prisma.SetPasswordTokenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SetPasswordTokenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SetPasswordTokenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>
+        }
+        findFirst: {
+          args: Prisma.SetPasswordTokenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SetPasswordTokenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>
+        }
+        findMany: {
+          args: Prisma.SetPasswordTokenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>[]
+        }
+        create: {
+          args: Prisma.SetPasswordTokenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>
+        }
+        createMany: {
+          args: Prisma.SetPasswordTokenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SetPasswordTokenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>[]
+        }
+        delete: {
+          args: Prisma.SetPasswordTokenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>
+        }
+        update: {
+          args: Prisma.SetPasswordTokenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>
+        }
+        deleteMany: {
+          args: Prisma.SetPasswordTokenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SetPasswordTokenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SetPasswordTokenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>[]
+        }
+        upsert: {
+          args: Prisma.SetPasswordTokenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SetPasswordTokenPayload>
+        }
+        aggregate: {
+          args: Prisma.SetPasswordTokenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSetPasswordToken>
+        }
+        groupBy: {
+          args: Prisma.SetPasswordTokenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SetPasswordTokenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SetPasswordTokenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SetPasswordTokenCountAggregateOutputType> | number
+        }
+      }
+    }
     TipoActividad: {
       payload: Prisma.$TipoActividadPayload<ExtArgs>
       fields: Prisma.TipoActividadFieldRefs
@@ -3049,6 +3124,18 @@ export const RefreshTokenScalarFieldEnum = {
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
+export const SetPasswordTokenScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type SetPasswordTokenScalarFieldEnum = (typeof SetPasswordTokenScalarFieldEnum)[keyof typeof SetPasswordTokenScalarFieldEnum]
+
+
 export const TipoActividadScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
@@ -3492,6 +3579,7 @@ export type GlobalOmitConfig = {
   pushToken?: Prisma.PushTokenOmit
   otpCode?: Prisma.OtpCodeOmit
   refreshToken?: Prisma.RefreshTokenOmit
+  setPasswordToken?: Prisma.SetPasswordTokenOmit
   tipoActividad?: Prisma.TipoActividadOmit
   informe?: Prisma.InformeOmit
   informeVisita?: Prisma.InformeVisitaOmit

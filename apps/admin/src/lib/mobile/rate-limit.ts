@@ -31,10 +31,6 @@ function make(prefix: string, limit: number, window: `${number} ${"s" | "m" | "h
   });
 }
 
-const otpPerPhoneMinute = make("otp:phone:1m", 1, "60 s");
-const otpPerPhoneHour = make("otp:phone:1h", 5, "1 h");
-const otpPerPhoneDay = make("otp:phone:1d", 15, "1 d");
-const otpPerIpHour = make("otp:ip:1h", 20, "1 h");
 const loginPerEmailHour = make("login:email:1h", 10, "1 h");
 
 export interface RateLimitError {
@@ -45,28 +41,6 @@ export interface RateLimitError {
 
 function retryAfter(reset: number): number {
   return Math.max(1, Math.ceil((reset - Date.now()) / 1000));
-}
-
-export async function enforceOtpRequestLimit(
-  phone: string,
-  ip: string | null
-): Promise<RateLimitError | null> {
-  const checks: Array<[Limiter, string, string]> = [
-    [otpPerPhoneMinute, phone, "Espera un momento antes de solicitar otro código."],
-    [otpPerPhoneHour, phone, "Has solicitado demasiados códigos. Intenta en una hora."],
-    [otpPerPhoneDay, phone, "Límite diario alcanzado. Intenta mañana."],
-  ];
-  if (ip) {
-    checks.push([otpPerIpHour, ip, "Demasiadas solicitudes. Intenta más tarde."]);
-  }
-
-  for (const [limiter, key, reason] of checks) {
-    const res = await limiter.limit(key);
-    if (!res.success) {
-      return { blocked: true, reason, retryAfterSeconds: retryAfter(res.reset) };
-    }
-  }
-  return null;
 }
 
 export async function enforceLoginLimit(

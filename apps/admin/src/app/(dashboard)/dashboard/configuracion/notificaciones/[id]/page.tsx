@@ -10,7 +10,7 @@ import { createMetaProvider } from "@/lib/whatsapp/meta-provider";
 const TIPOS_CLIENTE = [
   "CONFIRMACION_VISITA_CLIENTE",
   "RECORDATORIO_VISITA_CLIENTE",
-  "AUTENTICACION_OTP",
+  "INVITACION_CUENTA",
 ];
 
 /**

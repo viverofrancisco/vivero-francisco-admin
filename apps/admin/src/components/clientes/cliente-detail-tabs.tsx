@@ -130,6 +130,30 @@ export function ClienteDetailTabs({
   const [recibirConfirmaciones, setRecibirConfirmaciones] = useState(
     cliente.recibirConfirmaciones
   );
+  const [invitando, setInvitando] = useState(false);
+
+  const handleEnviarInvitacion = async () => {
+    setInvitando(true);
+    try {
+      const res = await fetch(`/api/clientes/${cliente.id}/invitar`, {
+        method: "POST",
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(data.error);
+      toast.success(data.message ?? "Invitación enviada al cliente");
+    } catch (e) {
+      toast.error(
+        e instanceof Error && e.message
+          ? e.message
+          : "Error al enviar la invitación"
+      );
+    } finally {
+      setInvitando(false);
+    }
+  };
 
   const handleNotifToggle = async (
     field: "recibirRecordatorios" | "recibirConfirmaciones",
@@ -406,6 +430,34 @@ export function ClienteDetailTabs({
                   <p className="text-xs text-muted-foreground">
                     Este cliente no tiene teléfono registrado. Las notificaciones
                     no se enviarán hasta que se agregue uno.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Account / set-password invite */}
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle>Acceso a la app</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-3 space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Envía un enlace para que el cliente cree su contraseña y acceda
+                  a la app. Se envía a su correo y WhatsApp registrados.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEnviarInvitacion}
+                  disabled={
+                    invitando || (!cliente.email && !cliente.telefono)
+                  }
+                >
+                  {invitando ? "Enviando…" : "Enviar invitación"}
+                </Button>
+                {!cliente.email && !cliente.telefono && (
+                  <p className="text-xs text-muted-foreground">
+                    Agrega un correo o teléfono para poder enviar la invitación.
                   </p>
                 )}
               </CardContent>

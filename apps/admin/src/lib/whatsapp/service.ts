@@ -472,100 +472,62 @@ export async function enviarResumenDiarioAdmin() {
 }
 
 /**
- * Envia código OTP al cliente vía WhatsApp.
- * Usa el template AUTENTICACION_OTP (categoría Authentication de Meta) con
- * botón Copy Code. Meta exige que el código se pase tanto en el body como en
- * el componente button.
+ * Envía al cliente el enlace para crear/restablecer su contraseña vía WhatsApp.
+ * Usa el template INVITACION_CUENTA con las variables {{nombre}} y {{link}}.
+ *
+ * A diferencia de las notificaciones de visita, no depende de
+ * `config.whatsappActivo` — es parte del flujo de acceso. Si no hay template
+ * aprobado en Meta (o falta el provider / número inválido), imprime el enlace
+ * en la consola del servidor para poder probar el flujo en desarrollo.
  */
-export async function enviarOtpWhatsApp(
+export async function enviarInvitacionCuenta(
   telefono: string,
-  codigo: string,
+  nombre: string,
+  link: string,
   clienteId?: string
 ): Promise<SendResult> {
-  // Dev-only bypass: skip the Meta API call and just print the code to the
-  // admin terminal so the mobile app can be tested without a working
-  // WhatsApp template/account. Enable by setting MOBILE_OTP_DEV_BYPASS=true
-  // in apps/admin/.env. Verification flow is unchanged — the code is still
-  // hashed and stored in OtpCode, the user enters what they read here.
-  if (process.env.MOBILE_OTP_DEV_BYPASS === "true") {
+  const plantilla = await getPlantilla("INVITACION_CUENTA");
+
+  const tieneTemplateAprobado =
+    !!plantilla?.activa &&
+    ((plantilla.whatsappTemplateStatus === "APPROVED" &&
+      !!plantilla.whatsappTemplateName) ||
+      (plantilla.whatsappDefaultTemplateStatus === "APPROVED" &&
+        !!plantilla.whatsappDefaultTemplateName));
+
+  const provider = createMetaProvider();
+
+  if (
+    !plantilla?.activa ||
+    !tieneTemplateAprobado ||
+    !provider ||
+    !isValidWhatsAppNumber(telefono)
+  ) {
     console.log(
-      `\n🔐 [DEV OTP BYPASS]\n  Phone:   ${telefono}\n  Code:    ${codigo}\n  Cliente: ${clienteId ?? "(none)"}\n`
+      `\n🔗 [INVITACIÓN CUENTA · WhatsApp]\n  Teléfono: ${telefono}\n  Cliente:  ${clienteId ?? "(none)"}\n  Enlace:   ${link}\n`
     );
+    const result: SendResult = { success: true };
     await logNotificacion({
-      tipo: "AUTENTICACION_OTP",
+      tipo: "INVITACION_CUENTA",
       destinatarioTipo: "CLIENTE",
       destinatarioId: clienteId,
+      destinatarioNombre: nombre,
       telefono,
-      mensaje: `[DEV BYPASS] OTP code: ${codigo}`,
-      result: { success: true },
-    });
-    return { success: true };
-  }
-
-  const plantilla = await getPlantilla("AUTENTICACION_OTP");
-  if (!plantilla?.activa) {
-    return { success: false, error: "Plantilla de OTP no activa" };
-  }
-
-  if (!isValidWhatsAppNumber(telefono)) {
-    return { success: false, error: "Número de teléfono inválido" };
-  }
-
-  const templateName =
-    plantilla.whatsappTemplateStatus === "APPROVED"
-      ? plantilla.whatsappTemplateName
-      : plantilla.whatsappDefaultTemplateStatus === "APPROVED"
-        ? plantilla.whatsappDefaultTemplateName
-        : null;
-
-  if (!templateName) {
-    const result: SendResult = {
-      success: false,
-      error: "Template de OTP no aprobado en Meta",
-    };
-    await logNotificacion({
-      tipo: "AUTENTICACION_OTP",
-      destinatarioTipo: "CLIENTE",
-      destinatarioId: clienteId,
-      telefono,
-      mensaje: `OTP: ${codigo}`,
+      mensaje: `[DEV] Enlace de invitación: ${link}`,
       result,
     });
     return result;
   }
 
-  const provider = createMetaProvider();
-  if (!provider) {
-    return { success: false, error: "WhatsApp provider no configurado" };
-  }
-
-  const formatted = formatForWhatsApp(telefono);
-  const components: TemplateComponent[] = [
-    {
-      type: "body",
-      parameters: [{ type: "text", text: codigo }],
-    },
-    {
-      type: "button",
-      sub_type: "copy_code",
-      index: "0",
-      parameters: [{ type: "text", text: codigo }],
-    },
-  ];
-
-  const result = await provider.sendTemplate(
-    formatted,
-    templateName,
-    plantilla.whatsappTemplateLanguage,
-    components
-  );
-
-  const mensaje = resolverVariables(plantilla.contenido, { codigo });
+  const vars = { nombre, link };
+  const result = await enviarConTemplate(telefono, plantilla, vars);
+  const mensaje = resolverVariables(plantilla.contenido, vars);
 
   await logNotificacion({
-    tipo: "AUTENTICACION_OTP",
+    tipo: "INVITACION_CUENTA",
     destinatarioTipo: "CLIENTE",
     destinatarioId: clienteId,
+    destinatarioNombre: nombre,
     telefono,
     mensaje,
     result,

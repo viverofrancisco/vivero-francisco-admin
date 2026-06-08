@@ -342,6 +342,7 @@ export type ClienteWhereInput = {
   sector?: Prisma.XOR<Prisma.SectorNullableScalarRelationFilter, Prisma.SectorWhereInput> | null
   servicios?: Prisma.ClienteServicioListRelationFilter
   informes?: Prisma.InformeListRelationFilter
+  setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
 }
 
 export type ClienteOrderByWithRelationInput = {
@@ -371,6 +372,7 @@ export type ClienteOrderByWithRelationInput = {
   sector?: Prisma.SectorOrderByWithRelationInput
   servicios?: Prisma.ClienteServicioOrderByRelationAggregateInput
   informes?: Prisma.InformeOrderByRelationAggregateInput
+  setPasswordTokens?: Prisma.SetPasswordTokenOrderByRelationAggregateInput
 }
 
 export type ClienteWhereUniqueInput = Prisma.AtLeast<{
@@ -403,6 +405,7 @@ export type ClienteWhereUniqueInput = Prisma.AtLeast<{
   sector?: Prisma.XOR<Prisma.SectorNullableScalarRelationFilter, Prisma.SectorWhereInput> | null
   servicios?: Prisma.ClienteServicioListRelationFilter
   informes?: Prisma.InformeListRelationFilter
+  setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
 }, "id" | "userId">
 
 export type ClienteOrderByWithAggregationInput = {
@@ -482,6 +485,7 @@ export type ClienteCreateInput = {
   sector?: Prisma.SectorCreateNestedOneWithoutClientesInput
   servicios?: Prisma.ClienteServicioCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateInput = {
@@ -507,6 +511,7 @@ export type ClienteUncheckedCreateInput = {
   userId?: string | null
   servicios?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUpdateInput = {
@@ -532,6 +537,7 @@ export type ClienteUpdateInput = {
   sector?: Prisma.SectorUpdateOneWithoutClientesNestedInput
   servicios?: Prisma.ClienteServicioUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateInput = {
@@ -557,6 +563,7 @@ export type ClienteUncheckedUpdateInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servicios?: Prisma.ClienteServicioUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateManyInput = {
@@ -905,6 +912,20 @@ export type ClienteUncheckedUpdateManyWithoutSectorNestedInput = {
   deleteMany?: Prisma.ClienteScalarWhereInput | Prisma.ClienteScalarWhereInput[]
 }
 
+export type ClienteCreateNestedOneWithoutSetPasswordTokensInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutSetPasswordTokensInput, Prisma.ClienteUncheckedCreateWithoutSetPasswordTokensInput>
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutSetPasswordTokensInput
+  connect?: Prisma.ClienteWhereUniqueInput
+}
+
+export type ClienteUpdateOneRequiredWithoutSetPasswordTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutSetPasswordTokensInput, Prisma.ClienteUncheckedCreateWithoutSetPasswordTokensInput>
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutSetPasswordTokensInput
+  upsert?: Prisma.ClienteUpsertWithoutSetPasswordTokensInput
+  connect?: Prisma.ClienteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClienteUpdateToOneWithWhereWithoutSetPasswordTokensInput, Prisma.ClienteUpdateWithoutSetPasswordTokensInput>, Prisma.ClienteUncheckedUpdateWithoutSetPasswordTokensInput>
+}
+
 export type ClienteCreateNestedOneWithoutInformesInput = {
   create?: Prisma.XOR<Prisma.ClienteCreateWithoutInformesInput, Prisma.ClienteUncheckedCreateWithoutInformesInput>
   connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutInformesInput
@@ -941,6 +962,7 @@ export type ClienteCreateWithoutCreatedByInput = {
   sector?: Prisma.SectorCreateNestedOneWithoutClientesInput
   servicios?: Prisma.ClienteServicioCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutCreatedByInput = {
@@ -965,6 +987,7 @@ export type ClienteUncheckedCreateWithoutCreatedByInput = {
   userId?: string | null
   servicios?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutCreatedByInput = {
@@ -999,6 +1022,7 @@ export type ClienteCreateWithoutUpdatedByInput = {
   sector?: Prisma.SectorCreateNestedOneWithoutClientesInput
   servicios?: Prisma.ClienteServicioCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutUpdatedByInput = {
@@ -1023,6 +1047,7 @@ export type ClienteUncheckedCreateWithoutUpdatedByInput = {
   userId?: string | null
   servicios?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutUpdatedByInput = {
@@ -1057,6 +1082,7 @@ export type ClienteCreateWithoutUserInput = {
   sector?: Prisma.SectorCreateNestedOneWithoutClientesInput
   servicios?: Prisma.ClienteServicioCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutUserInput = {
@@ -1081,6 +1107,7 @@ export type ClienteUncheckedCreateWithoutUserInput = {
   updatedById?: string | null
   servicios?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutUserInput = {
@@ -1179,6 +1206,7 @@ export type ClienteUpdateWithoutUserInput = {
   sector?: Prisma.SectorUpdateOneWithoutClientesNestedInput
   servicios?: Prisma.ClienteServicioUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutUserInput = {
@@ -1203,6 +1231,7 @@ export type ClienteUncheckedUpdateWithoutUserInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servicios?: Prisma.ClienteServicioUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutServiciosInput = {
@@ -1227,6 +1256,7 @@ export type ClienteCreateWithoutServiciosInput = {
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
   sector?: Prisma.SectorCreateNestedOneWithoutClientesInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutServiciosInput = {
@@ -1251,6 +1281,7 @@ export type ClienteUncheckedCreateWithoutServiciosInput = {
   updatedById?: string | null
   userId?: string | null
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutServiciosInput = {
@@ -1291,6 +1322,7 @@ export type ClienteUpdateWithoutServiciosInput = {
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
   sector?: Prisma.SectorUpdateOneWithoutClientesNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutServiciosInput = {
@@ -1315,6 +1347,7 @@ export type ClienteUncheckedUpdateWithoutServiciosInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutSectorInput = {
@@ -1339,6 +1372,7 @@ export type ClienteCreateWithoutSectorInput = {
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
   servicios?: Prisma.ClienteServicioCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutSectorInput = {
@@ -1363,6 +1397,7 @@ export type ClienteUncheckedCreateWithoutSectorInput = {
   userId?: string | null
   servicios?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutSectorInput = {
@@ -1391,6 +1426,122 @@ export type ClienteUpdateManyWithWhereWithoutSectorInput = {
   data: Prisma.XOR<Prisma.ClienteUpdateManyMutationInput, Prisma.ClienteUncheckedUpdateManyWithoutSectorInput>
 }
 
+export type ClienteCreateWithoutSetPasswordTokensInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  email?: string | null
+  telefono?: string | null
+  ciudad?: string | null
+  direccion?: string | null
+  numeroCasa?: string | null
+  referencia?: string | null
+  notas?: string | null
+  metrosCuadrados?: number | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
+  user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  sector?: Prisma.SectorCreateNestedOneWithoutClientesInput
+  servicios?: Prisma.ClienteServicioCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteUncheckedCreateWithoutSetPasswordTokensInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  email?: string | null
+  telefono?: string | null
+  ciudad?: string | null
+  sectorId?: string | null
+  direccion?: string | null
+  numeroCasa?: string | null
+  referencia?: string | null
+  notas?: string | null
+  metrosCuadrados?: number | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  userId?: string | null
+  servicios?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteCreateOrConnectWithoutSetPasswordTokensInput = {
+  where: Prisma.ClienteWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutSetPasswordTokensInput, Prisma.ClienteUncheckedCreateWithoutSetPasswordTokensInput>
+}
+
+export type ClienteUpsertWithoutSetPasswordTokensInput = {
+  update: Prisma.XOR<Prisma.ClienteUpdateWithoutSetPasswordTokensInput, Prisma.ClienteUncheckedUpdateWithoutSetPasswordTokensInput>
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutSetPasswordTokensInput, Prisma.ClienteUncheckedCreateWithoutSetPasswordTokensInput>
+  where?: Prisma.ClienteWhereInput
+}
+
+export type ClienteUpdateToOneWithWhereWithoutSetPasswordTokensInput = {
+  where?: Prisma.ClienteWhereInput
+  data: Prisma.XOR<Prisma.ClienteUpdateWithoutSetPasswordTokensInput, Prisma.ClienteUncheckedUpdateWithoutSetPasswordTokensInput>
+}
+
+export type ClienteUpdateWithoutSetPasswordTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numeroCasa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrosCuadrados?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
+  user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  sector?: Prisma.SectorUpdateOneWithoutClientesNestedInput
+  servicios?: Prisma.ClienteServicioUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteUncheckedUpdateWithoutSetPasswordTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sectorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numeroCasa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referencia?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrosCuadrados?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  servicios?: Prisma.ClienteServicioUncheckedUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+}
+
 export type ClienteCreateWithoutInformesInput = {
   id?: string
   nombre: string
@@ -1413,6 +1564,7 @@ export type ClienteCreateWithoutInformesInput = {
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
   sector?: Prisma.SectorCreateNestedOneWithoutClientesInput
   servicios?: Prisma.ClienteServicioCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutInformesInput = {
@@ -1437,6 +1589,7 @@ export type ClienteUncheckedCreateWithoutInformesInput = {
   updatedById?: string | null
   userId?: string | null
   servicios?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutInformesInput = {
@@ -1477,6 +1630,7 @@ export type ClienteUpdateWithoutInformesInput = {
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
   sector?: Prisma.SectorUpdateOneWithoutClientesNestedInput
   servicios?: Prisma.ClienteServicioUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutInformesInput = {
@@ -1501,6 +1655,7 @@ export type ClienteUncheckedUpdateWithoutInformesInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servicios?: Prisma.ClienteServicioUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateManyCreatedByInput = {
@@ -1569,6 +1724,7 @@ export type ClienteUpdateWithoutCreatedByInput = {
   sector?: Prisma.SectorUpdateOneWithoutClientesNestedInput
   servicios?: Prisma.ClienteServicioUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutCreatedByInput = {
@@ -1593,6 +1749,7 @@ export type ClienteUncheckedUpdateWithoutCreatedByInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servicios?: Prisma.ClienteServicioUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1639,6 +1796,7 @@ export type ClienteUpdateWithoutUpdatedByInput = {
   sector?: Prisma.SectorUpdateOneWithoutClientesNestedInput
   servicios?: Prisma.ClienteServicioUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutUpdatedByInput = {
@@ -1663,6 +1821,7 @@ export type ClienteUncheckedUpdateWithoutUpdatedByInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servicios?: Prisma.ClienteServicioUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -1731,6 +1890,7 @@ export type ClienteUpdateWithoutSectorInput = {
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
   servicios?: Prisma.ClienteServicioUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutSectorInput = {
@@ -1755,6 +1915,7 @@ export type ClienteUncheckedUpdateWithoutSectorInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   servicios?: Prisma.ClienteServicioUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateManyWithoutSectorInput = {
@@ -1787,11 +1948,13 @@ export type ClienteUncheckedUpdateManyWithoutSectorInput = {
 export type ClienteCountOutputType = {
   servicios: number
   informes: number
+  setPasswordTokens: number
 }
 
 export type ClienteCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   servicios?: boolean | ClienteCountOutputTypeCountServiciosArgs
   informes?: boolean | ClienteCountOutputTypeCountInformesArgs
+  setPasswordTokens?: boolean | ClienteCountOutputTypeCountSetPasswordTokensArgs
 }
 
 /**
@@ -1816,6 +1979,13 @@ export type ClienteCountOutputTypeCountServiciosArgs<ExtArgs extends runtime.Typ
  */
 export type ClienteCountOutputTypeCountInformesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InformeWhereInput
+}
+
+/**
+ * ClienteCountOutputType without action
+ */
+export type ClienteCountOutputTypeCountSetPasswordTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SetPasswordTokenWhereInput
 }
 
 
@@ -1846,6 +2016,7 @@ export type ClienteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   sector?: boolean | Prisma.Cliente$sectorArgs<ExtArgs>
   servicios?: boolean | Prisma.Cliente$serviciosArgs<ExtArgs>
   informes?: boolean | Prisma.Cliente$informesArgs<ExtArgs>
+  setPasswordTokens?: boolean | Prisma.Cliente$setPasswordTokensArgs<ExtArgs>
   _count?: boolean | Prisma.ClienteCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["cliente"]>
 
@@ -1934,6 +2105,7 @@ export type ClienteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   sector?: boolean | Prisma.Cliente$sectorArgs<ExtArgs>
   servicios?: boolean | Prisma.Cliente$serviciosArgs<ExtArgs>
   informes?: boolean | Prisma.Cliente$informesArgs<ExtArgs>
+  setPasswordTokens?: boolean | Prisma.Cliente$setPasswordTokensArgs<ExtArgs>
   _count?: boolean | Prisma.ClienteCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ClienteIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1958,6 +2130,7 @@ export type $ClientePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     sector: Prisma.$SectorPayload<ExtArgs> | null
     servicios: Prisma.$ClienteServicioPayload<ExtArgs>[]
     informes: Prisma.$InformePayload<ExtArgs>[]
+    setPasswordTokens: Prisma.$SetPasswordTokenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2380,6 +2553,7 @@ export interface Prisma__ClienteClient<T, Null = never, ExtArgs extends runtime.
   sector<T extends Prisma.Cliente$sectorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$sectorArgs<ExtArgs>>): Prisma.Prisma__SectorClient<runtime.Types.Result.GetResult<Prisma.$SectorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   servicios<T extends Prisma.Cliente$serviciosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$serviciosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClienteServicioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informes<T extends Prisma.Cliente$informesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$informesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  setPasswordTokens<T extends Prisma.Cliente$setPasswordTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$setPasswordTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SetPasswordTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2951,6 +3125,30 @@ export type Cliente$informesArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.InformeScalarFieldEnum | Prisma.InformeScalarFieldEnum[]
+}
+
+/**
+ * Cliente.setPasswordTokens
+ */
+export type Cliente$setPasswordTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SetPasswordToken
+   */
+  select?: Prisma.SetPasswordTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SetPasswordToken
+   */
+  omit?: Prisma.SetPasswordTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SetPasswordTokenInclude<ExtArgs> | null
+  where?: Prisma.SetPasswordTokenWhereInput
+  orderBy?: Prisma.SetPasswordTokenOrderByWithRelationInput | Prisma.SetPasswordTokenOrderByWithRelationInput[]
+  cursor?: Prisma.SetPasswordTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SetPasswordTokenScalarFieldEnum | Prisma.SetPasswordTokenScalarFieldEnum[]
 }
 
 /**

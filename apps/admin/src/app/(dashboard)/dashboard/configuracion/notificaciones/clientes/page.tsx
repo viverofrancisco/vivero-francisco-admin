@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 const TIPOS_CLIENTE = [
   "CONFIRMACION_VISITA_CLIENTE",
   "RECORDATORIO_VISITA_CLIENTE",
-  "AUTENTICACION_OTP",
+  "INVITACION_CUENTA",
 ] as const;
 
 export default async function NotificacionesClientesPage() {

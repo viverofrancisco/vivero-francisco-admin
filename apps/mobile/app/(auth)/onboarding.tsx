@@ -3,53 +3,30 @@ import { Image, KeyboardAvoidingView, Platform, StyleSheet, View } from "react-n
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
-import type {
-  AuthSuccessResponse,
-  OtpRequestResponse,
-} from "@vivero/shared";
+import type { AuthSuccessResponse } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { useBranding } from "@/lib/branding";
 import { registerForPushNotifications } from "@/lib/push";
 
-type Stage = "phone" | "code";
-
 export default function OnboardingScreen() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const branding = useBranding();
-  const [stage, setStage] = useState<Stage>("phone");
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function requestCode() {
-    setError(null);
-    setLoading(true);
-    try {
-      await apiRequest<OtpRequestResponse>("/api/mobile/auth/otp/request", {
-        method: "POST",
-        body: { phone },
-        authenticated: false,
-      });
-      setStage("code");
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Error al solicitar código");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function verifyCode() {
+  async function login() {
     setError(null);
     setLoading(true);
     try {
       const res = await apiRequest<AuthSuccessResponse>(
-        "/api/mobile/auth/otp/verify",
+        "/api/mobile/auth/cliente/login",
         {
           method: "POST",
-          body: { phone, code },
+          body: { identifier: identifier.trim(), password },
           authenticated: false,
         }
       );
@@ -57,7 +34,9 @@ export default function OnboardingScreen() {
       registerForPushNotifications().catch(() => {});
       router.replace("/(cliente)/visitas");
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Código incorrecto");
+      setError(
+        e instanceof ApiError ? e.message : "No pudimos iniciar sesión"
+      );
     } finally {
       setLoading(false);
     }
@@ -82,67 +61,46 @@ export default function OnboardingScreen() {
             </Text>
           )}
           <Text variant="bodyLarge" style={styles.subtitle}>
-            {stage === "phone"
-              ? "Ingresa tu número de WhatsApp para recibir un código"
-              : `Te enviamos un código a ${phone}`}
+            Inicia sesión con tu teléfono o correo
           </Text>
 
-          {stage === "phone" ? (
-            <>
-              <TextInput
-                mode="outlined"
-                label="Teléfono"
-                placeholder="809 123 4567"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                autoComplete="tel"
-                style={styles.input}
-              />
-              <Button
-                mode="contained"
-                onPress={requestCode}
-                loading={loading}
-                disabled={loading || phone.length < 7}
-                style={styles.button}
-              >
-                Enviar código
-              </Button>
-            </>
-          ) : (
-            <>
-              <TextInput
-                mode="outlined"
-                label="Código"
-                placeholder="6 dígitos"
-                value={code}
-                onChangeText={setCode}
-                keyboardType="number-pad"
-                maxLength={6}
-                style={styles.input}
-              />
-              <Button
-                mode="contained"
-                onPress={verifyCode}
-                loading={loading}
-                disabled={loading || code.length !== 6}
-                style={styles.button}
-              >
-                Verificar
-              </Button>
-              <Button
-                mode="text"
-                onPress={() => {
-                  setCode("");
-                  setStage("phone");
-                  setError(null);
-                }}
-                disabled={loading}
-              >
-                Cambiar número
-              </Button>
-            </>
-          )}
+          <TextInput
+            mode="outlined"
+            label="Teléfono o correo"
+            placeholder="0991234567 o tu@correo.com"
+            value={identifier}
+            onChangeText={setIdentifier}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            style={styles.input}
+          />
+          <TextInput
+            mode="outlined"
+            label="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={styles.input}
+          />
+
+          <Button
+            mode="contained"
+            onPress={login}
+            loading={loading}
+            disabled={loading || identifier.trim().length < 5 || !password}
+            style={styles.button}
+          >
+            Iniciar sesión
+          </Button>
+
+          <Button
+            mode="text"
+            onPress={() => router.push("/(auth)/solicitar-acceso")}
+            disabled={loading}
+          >
+            ¿Primera vez o olvidaste tu contraseña?
+          </Button>
 
           {error ? (
             <HelperText type="error" visible style={styles.error}>

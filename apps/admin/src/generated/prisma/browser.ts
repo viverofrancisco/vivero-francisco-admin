@@ -138,6 +138,11 @@ export type OtpCode = Prisma.OtpCodeModel
  */
 export type RefreshToken = Prisma.RefreshTokenModel
 /**
+ * Model SetPasswordToken
+ * 
+ */
+export type SetPasswordToken = Prisma.SetPasswordTokenModel
+/**
  * Model TipoActividad
  * 
  */

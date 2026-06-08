@@ -9,22 +9,33 @@ export const userRoleSchema = z.enum([
 ]);
 export type UserRole = z.infer<typeof userRoleSchema>;
 
-export const otpRequestSchema = z.object({
-  phone: z.string().min(7).max(20),
-});
-export type OtpRequestBody = z.infer<typeof otpRequestSchema>;
-
-export const otpVerifySchema = z.object({
-  phone: z.string().min(7).max(20),
-  code: z.string().regex(/^\d{6}$/, "Código inválido"),
-});
-export type OtpVerifyBody = z.infer<typeof otpVerifySchema>;
-
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
 export type LoginBody = z.infer<typeof loginSchema>;
+
+// Clientes inician sesión con su teléfono o su correo (lo que tengan en su
+// ficha) + una contraseña que ellos mismos establecen vía un enlace de invitación.
+export const clienteLoginSchema = z.object({
+  identifier: z.string().min(5).max(60),
+  password: z.string().min(1),
+});
+export type ClienteLoginBody = z.infer<typeof clienteLoginSchema>;
+
+// El cliente pide un enlace para crear/restablecer su contraseña; el enlace se
+// envía al correo y/o WhatsApp registrados en su ficha.
+export const requestInviteSchema = z.object({
+  identifier: z.string().min(5).max(60),
+});
+export type RequestInviteBody = z.infer<typeof requestInviteSchema>;
+
+// Establecer la contraseña a partir del token recibido en el enlace.
+export const setPasswordSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(6).max(72),
+});
+export type SetPasswordBody = z.infer<typeof setPasswordSchema>;
 
 export const refreshSchema = z.object({
   refreshToken: z.string().min(10),
@@ -60,11 +71,6 @@ export interface MeResponse {
   email: string | null;
   personalId: string | null;
   clienteId: string | null;
-}
-
-export interface OtpRequestResponse {
-  ok: true;
-  expiresIn: number;
 }
 
 export interface ApiError {

@@ -75,6 +75,7 @@ export const ModelName = {
   PushToken: 'PushToken',
   OtpCode: 'OtpCode',
   RefreshToken: 'RefreshToken',
+  SetPasswordToken: 'SetPasswordToken',
   TipoActividad: 'TipoActividad',
   Informe: 'Informe',
   InformeVisita: 'InformeVisita',
@@ -454,6 +455,18 @@ export const RefreshTokenScalarFieldEnum = {
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const SetPasswordTokenScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type SetPasswordTokenScalarFieldEnum = (typeof SetPasswordTokenScalarFieldEnum)[keyof typeof SetPasswordTokenScalarFieldEnum]
 
 
 export const TipoActividadScalarFieldEnum = {
