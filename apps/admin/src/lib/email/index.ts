@@ -1,15 +1,28 @@
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 
-// Single Resend client, created lazily so the app boots without an API key.
-// When RESEND_API_KEY is unset we fall back to logging the email to the server
-// console — enough to test flows (e.g. the set-password link) in local dev.
-let client: Resend | null = null;
+// Single SMTP transport, created lazily so the app boots without SMTP config.
+// Designed for Google Workspace (smtp.gmail.com) using an App Password, but
+// works with any SMTP server. When the SMTP env vars are unset we fall back to
+// logging the email to the server console — enough to test flows (e.g. the
+// set-password link) in local dev.
+let transporter: Transporter | null = null;
 
-function getClient(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
-  if (!client) client = new Resend(apiKey);
-  return client;
+function getTransport(): Transporter | null {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD;
+  if (!host || !user || !pass) return null;
+
+  if (!transporter) {
+    const port = Number(process.env.SMTP_PORT ?? 465);
+    transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465, // 465 = implicit TLS; 587 = STARTTLS
+      auth: { user, pass },
+    });
+  }
+  return transporter;
 }
 
 export interface SendEmailParams {
@@ -26,11 +39,11 @@ export interface SendEmailResult {
 }
 
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
-  const resend = getClient();
-  const from = process.env.EMAIL_FROM;
+  const transport = getTransport();
+  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;
 
-  if (!resend || !from) {
-    // Dev bypass: no provider configured — print to console so flows are testable.
+  if (!transport || !from) {
+    // Dev bypass: no SMTP configured — print to console so flows are testable.
     console.log(
       `\n📧 [DEV EMAIL BYPASS]\n  To:      ${params.to}\n  Subject: ${params.subject}\n  Body:\n${params.text ?? params.html}\n`
     );
@@ -38,15 +51,14 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   }
 
   try {
-    const { data, error } = await resend.emails.send({
+    const info = await transport.sendMail({
       from,
       to: params.to,
       subject: params.subject,
       html: params.html,
       text: params.text,
     });
-    if (error) return { success: false, error: error.message };
-    return { success: true, id: data?.id };
+    return { success: true, id: info.messageId };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : "Error de envío" };
   }
