@@ -31,7 +31,7 @@ export function Header({ branding }: BrandingProps) {
     .slice(0, 2);
 
   return (
-    <header className="flex h-20 items-center gap-3 border-b bg-card/80 px-4 backdrop-blur-md md:px-6">
+    <header className="relative z-30 flex h-20 items-center gap-3 border-b bg-card/80 px-4 backdrop-blur-md md:px-6">
       <MobileNav branding={branding} />
 
       <GlobalSearch className="w-full max-w-md" />
