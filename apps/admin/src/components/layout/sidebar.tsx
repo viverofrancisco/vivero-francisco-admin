@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -76,9 +76,6 @@ const mainItems: NavItem[] = [
   { label: "Personal", href: "/dashboard/personal", icon: UserCheck, roles: ["ADMIN", "STAFF"] },
   { label: "Grupos", href: "/dashboard/grupos", icon: UsersRound, roles: ["ADMIN", "STAFF"] },
   { label: "Sectores", href: "/dashboard/sectores", icon: MapPin, roles: ["ADMIN"] },
-];
-
-const adminItems: NavItem[] = [
   {
     label: "Configuración",
     href: "/dashboard/configuracion",
@@ -98,7 +95,6 @@ interface BrandingProps {
 
 export function Sidebar({ branding }: BrandingProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const { data: session } = useSession();
   const role = session?.user?.role;
 
@@ -106,12 +102,11 @@ export function Sidebar({ branding }: BrandingProps) {
     items.filter((item) => !item.roles || (role && item.roles.includes(role)));
 
   const mainVisible = visible(mainItems);
-  const adminVisible = visible(adminItems);
 
   // Initialize expanded state: auto-expand if currently on a child route
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    for (const item of [...mainItems, ...adminItems]) {
+    for (const item of mainItems) {
       if (item.children) {
         initial[item.href] =
           pathname === item.href || pathname.startsWith(item.href + "/");
@@ -238,21 +233,6 @@ export function Sidebar({ branding }: BrandingProps) {
                 {session?.user?.email}
               </p>
             </div>
-
-            {adminVisible.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                {adminVisible.map((item) => (
-                  <DropdownMenuItem
-                    key={item.href}
-                    onClick={() => router.push(item.href)}
-                  >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
-              </>
-            )}
 
             <DropdownMenuSeparator />
             <DropdownMenuItem
