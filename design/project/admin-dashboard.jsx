@@ -52,12 +52,19 @@ function Sidebar({ page, setPage }) {
   );
 }
 
-function Topbar({ title, sub }) {
+function Topbar({ title, sub, onBack, cta }) {
   return (
     <div style={{ height: 68, flexShrink: 0, borderBottom: `1px solid ${VF.line}`, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px' }}>
-      <div>
-        <div style={{ fontSize: 19, fontWeight: 800, color: VF.ink, letterSpacing: '-0.02em' }}>{title}</div>
-        {sub && <div style={{ fontSize: 13, fontWeight: 600, color: VF.ink3, marginTop: 1 }}>{sub}</div>}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {onBack && (
+          <div onClick={onBack} style={{ width: 38, height: 38, borderRadius: 10, background: VF.surface, border: `1px solid ${VF.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Icon name="chevL" size={20} color={VF.ink} />
+          </div>
+        )}
+        <div>
+          <div style={{ fontSize: 19, fontWeight: 800, color: VF.ink, letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{title}</div>
+          {sub && <div style={{ fontSize: 13, fontWeight: 600, color: VF.ink3, marginTop: 1, whiteSpace: 'nowrap' }}>{sub}</div>}
+        </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, height: 40, padding: '0 14px', background: VF.surface, border: `1px solid ${VF.line}`, borderRadius: 11, width: 240 }}>
@@ -68,9 +75,11 @@ function Topbar({ title, sub }) {
           <Icon name="bell" size={19} color={VF.ink} />
           <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: 999, background: VF.red, border: '1.5px solid #fff' }} />
         </div>
-        <div style={{ height: 40, padding: '0 16px', borderRadius: 11, background: VF.green, color: '#fff', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
-          <Icon name="plus" size={18} color="#fff" stroke={2.4} /> Nueva visita
-        </div>
+        {cta && (
+          <div onClick={cta.onClick} style={{ height: 40, padding: '0 16px', borderRadius: 11, background: VF.green, color: '#fff', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
+            <Icon name={cta.icon || 'plus'} size={18} color="#fff" stroke={2.4} /> {cta.label}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -209,7 +218,7 @@ function Legend({ color, label, value }) {
 }
 
 // ── Visitas table page ──
-function VisitasPage() {
+function VisitasPage({ onOpen }) {
   const all = [...VISITAS, ...VISITAS.map((v, i) => ({ ...v, id: 'x' + i, estado: ['COMPLETADA', 'PROGRAMADA', 'INCOMPLETA', 'CANCELADA'][i % 4] }))].slice(0, 9);
   return (
     <div style={{ padding: 28 }}>
@@ -233,7 +242,7 @@ function VisitasPage() {
           </thead>
           <tbody>
             {all.map((v, i) => (
-              <tr key={v.id} style={{ borderTop: `1px solid ${VF.line2}` }}>
+              <tr key={v.id} onClick={() => onOpen && onOpen('visita', v)} style={{ borderTop: `1px solid ${VF.line2}`, cursor: 'pointer' }}>
                 <td style={{ padding: '13px 20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Avatar name={`${v.cliente.nombre} ${v.cliente.apellido}`} size={32} />
@@ -254,8 +263,13 @@ function VisitasPage() {
   );
 }
 
-function AdminApp({ initialPage = 'panel' }) {
-  const [page, setPage] = useStateW(initialPage);
+function AdminApp({ initialPage = 'panel', initialDetail = null }) {
+  const [page, setPageRaw] = useStateW(initialPage);
+  const [detail, setDetail] = useStateW(initialDetail);
+  const setPage = (p) => { setDetail(null); setPageRaw(p); };
+  const open = (type, item) => setDetail({ type, item });
+  const back = () => setDetail(null);
+
   const meta = {
     panel: ['Panel', 'Resumen general del vivero'],
     clientes: ['Clientes', 'Directorio de clientes y sus servicios'],
@@ -268,23 +282,62 @@ function AdminApp({ initialPage = 'panel' }) {
     sectores: ['Sectores', 'Zonas de cobertura'],
     config: ['Configuración', 'Empresa, usuarios y notificaciones'],
   };
-  const [title, sub] = meta[page] || [page[0].toUpperCase() + page.slice(1), 'Sección del panel'];
   const pages = {
     panel: DashboardPage, visitas: VisitasPage, clientes: ClientesPage, servicios: ServiciosPage,
     informes: InformesPageWeb, personal: PersonalPage, grupos: GruposPage, sectores: SectoresPage,
     config: ConfiguracionPage,
   };
-  const Page = pages[page];
-  const fullBleed = page === 'mensajes';
+
+  // Detail routing
+  let title, sub, body, cta;
+  if (detail) {
+    const it = detail.item;
+    if (detail.type === 'cliente') {
+      title = `${it.nombre} ${it.apellido || ''}`.trim(); sub = 'Detalle de cliente';
+      body = <ClienteDetalleWeb c={it} onOpenVisita={(v) => open('visita', v)} />;
+      cta = { label: 'Editar', icon: 'pen', onClick: () => open('editar-cliente', it) };
+    } else if (detail.type === 'visita') {
+      title = `${it.cliente.nombre} ${it.cliente.apellido}`; sub = it.servicio;
+      body = <VisitaDetalleWeb v={it} />;
+    } else if (detail.type === 'personal') {
+      title = it.n; sub = 'Detalle de personal'; body = <PersonalDetalle p={it} />;
+    } else if (detail.type === 'grupo') {
+      title = it.n; sub = it.sector; body = <GrupoDetalle g={it} />;
+    } else if (detail.type === 'sector') {
+      title = it.n; sub = 'Detalle de sector'; body = <SectorDetalle s={it} />;
+    } else if (detail.type === 'servicio') {
+      title = it.n; sub = 'Detalle de servicio'; body = <ServicioDetalleWeb s={it} />;
+    } else if (detail.type === 'informe') {
+      title = it.titulo; sub = 'Informe de servicio'; body = <InformeDetalleWeb r={it} />;
+    } else if (detail.type === 'nuevo-cliente') {
+      title = 'Nuevo cliente'; sub = 'Registra un cliente y sus preferencias'; body = <ClienteForm onBack={back} />;
+    } else if (detail.type === 'editar-cliente') {
+      title = 'Editar cliente'; sub = `${it.nombre} ${it.apellido || ''}`.trim(); body = <ClienteForm editData={it} onBack={back} />;
+    } else if (detail.type === 'nueva-visita') {
+      title = 'Programar visita'; sub = 'Agenda un nuevo servicio'; body = <NuevaVisitaForm onBack={back} />;
+    }
+  } else {
+    [title, sub] = meta[page] || [page[0].toUpperCase() + page.slice(1), 'Sección del panel'];
+    const Page = pages[page];
+    if (page === 'mensajes') body = <MensajesPageWeb />;
+    else body = <Page onOpen={open} />;
+    // context-aware primary action
+    if (page === 'clientes') cta = { label: 'Nuevo cliente', onClick: () => open('nuevo-cliente') };
+    else if (page === 'servicios') cta = { label: 'Nuevo servicio', onClick: () => open('nuevo-cliente') };
+    else if (page === 'personal') cta = { label: 'Nuevo personal', onClick: () => open('nuevo-cliente') };
+    else if (page !== 'config' && page !== 'mensajes') cta = { label: 'Nueva visita', onClick: () => open('nueva-visita') };
+  }
+
+  const fullBleed = !detail && page === 'mensajes';
   return (
     <div style={{ display: 'flex', height: '100%', background: VF.bg, fontFamily: VF.font, color: VF.ink }}>
       <Sidebar page={page} setPage={setPage} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Topbar title={title} sub={sub} />
+        <Topbar title={title} sub={sub} onBack={detail ? back : null} cta={cta} />
         {fullBleed ? (
-          <div style={{ flex: 1, minHeight: 0 }}><MensajesPageWeb /></div>
+          <div style={{ flex: 1, minHeight: 0 }}>{body}</div>
         ) : (
-          <div style={{ flex: 1, overflowY: 'auto' }}>{Page ? <Page /> : <DashboardPage />}</div>
+          <div style={{ flex: 1, overflowY: 'auto' }}>{body}</div>
         )}
       </div>
     </div>

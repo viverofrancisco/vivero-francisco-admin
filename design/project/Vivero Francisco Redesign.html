@@ -33,6 +33,8 @@
 <script type="text/babel" src="cliente-screens.jsx"></script>
 <script type="text/babel" src="informes-screens.jsx"></script>
 <script type="text/babel" src="admin-pages.jsx"></script>
+<script type="text/babel" src="admin-detail.jsx"></script>
+<script type="text/babel" src="admin-forms.jsx"></script>
 <script type="text/babel" src="styleguide.jsx"></script>
 
 <script type="text/babel">
@@ -107,8 +109,20 @@ function App() {
         <DCArtboard id="w-clientes" label="Clientes" width={1320} height={860}>
           <BrowserMount page="clientes" />
         </DCArtboard>
+        <DCArtboard id="w-cliente-det" label="Detalle de cliente" width={1320} height={860}>
+          <BrowserMount page="clientes" detail={{ type: 'cliente', item: CLIENTES[0] }} />
+        </DCArtboard>
+        <DCArtboard id="w-visita-det" label="Detalle de visita" width={1320} height={860}>
+          <BrowserMount page="visitas" detail={{ type: 'visita', item: VISITAS[1] }} />
+        </DCArtboard>
         <DCArtboard id="w-servicios" label="Servicios" width={1320} height={860}>
           <BrowserMount page="servicios" />
+        </DCArtboard>
+        <DCArtboard id="w-nuevo-cliente" label="Nuevo cliente (formulario)" width={1320} height={860}>
+          <BrowserMount page="clientes" detail={{ type: 'nuevo-cliente' }} />
+        </DCArtboard>
+        <DCArtboard id="w-nueva-visita" label="Programar visita (formulario)" width={1320} height={860}>
+          <BrowserMount page="visitas" detail={{ type: 'nueva-visita' }} />
         </DCArtboard>
         <DCArtboard id="w-mensajes" label="Mensajes" width={1320} height={860}>
           <BrowserMount page="mensajes" />
@@ -166,12 +180,12 @@ function InformesMount({ start }) {
   );
 }
 
-function BrowserMount({ page }) {
+function BrowserMount({ page, detail }) {
   return (
     <div style={{ width: '100%', height: '100%', background: VF.canvas, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <ChromeWindow width={1264} height={800} url="panel.viverofrancisco.com">
         <div style={{ width: '100%', height: '100%' }}>
-          <AdminApp initialPage={page} />
+          <AdminApp initialPage={page} initialDetail={detail} />
         </div>
       </ChromeWindow>
     </div>

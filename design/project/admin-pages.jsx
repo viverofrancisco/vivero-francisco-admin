@@ -49,7 +49,7 @@ function Table({ cols, children }) {
 function TD({ children, right, color, weight }) {
   return <td style={{ padding: '13px 20px', textAlign: right ? 'right' : 'left', fontSize: 13.5, fontWeight: weight || 600, color: color || VF.ink2 }}>{children}</td>;
 }
-function TR({ children }) { return <tr style={{ borderTop: `1px solid ${VF.line2}` }}>{children}</tr>; }
+function TR({ children, onClick }) { return <tr onClick={onClick} style={{ borderTop: `1px solid ${VF.line2}`, cursor: onClick ? 'pointer' : 'default' }}>{children}</tr>; }
 
 function MiniStats({ items }) {
   return (
@@ -82,7 +82,7 @@ function NameCell({ name, sub, color }) {
 }
 
 // ── Clientes ──
-function ClientesPage() {
+function ClientesPage({ onOpen }) {
   const rows = [
     ...CLIENTES,
     { id: 'c6', nombre: 'Condominio', apellido: 'Las Acacias', sector: 'Cumbayá', tel: '0993 410 778', servicios: ['Áreas verdes', 'Poda'], m2: 1200 },
@@ -94,7 +94,7 @@ function ClientesPage() {
       <Toolbar searchPh="Buscar cliente, sector o servicio…"><Chips items={['Todos', 'Cumbayá', 'Tumbaco', 'Nayón']} /></Toolbar>
       <Table cols={[{ label: 'Cliente' }, { label: 'Sector' }, { label: 'Servicios' }, { label: 'Teléfono' }, { label: 'm²' }, { label: 'Estado', right: true }]}>
         {rows.map(c => (
-          <TR key={c.id}>
+          <TR key={c.id} onClick={() => onOpen && onOpen('cliente', c)}>
             <NameCell name={`${c.nombre} ${c.apellido}`} sub={c.dir || c.sector} color={c.color} />
             <TD>{c.sector}</TD>
             <td style={{ padding: '13px 20px' }}>
@@ -113,7 +113,7 @@ function ClientesPage() {
 }
 
 // ── Servicios ──
-function ServiciosPage() {
+function ServiciosPage({ onOpen }) {
   const servicios = [
     { n: 'Mantenimiento de jardín', t: 'RECURRENTE', d: 'Poda, riego, limpieza y cuidado general de jardines.', clientes: 64, precio: '$45', icon: 'leaf' },
     { n: 'Sistema de riego', t: 'RECURRENTE', d: 'Instalación y mantenimiento de aspersores y goteo.', clientes: 28, precio: '$80', icon: 'droplet' },
@@ -127,7 +127,7 @@ function ServiciosPage() {
       <Toolbar searchPh="Buscar servicio…"><Chips items={['Todos', 'Recurrentes', 'Únicos']} /></Toolbar>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {servicios.map(s => (
-          <div key={s.n} style={{ ...pcard, padding: 20 }}>
+          <div key={s.n} onClick={() => onOpen && onOpen('servicio', s)} style={{ ...pcard, padding: 20, cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ width: 46, height: 46, borderRadius: 13, background: VF.green50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name={s.icon} size={23} color={VF.green700} />
@@ -151,7 +151,7 @@ function ServiciosPage() {
 }
 
 // ── Personal ──
-function PersonalPage() {
+function PersonalPage({ onOpen }) {
   const staff = [
     { n: 'Diego Salas', t: 'Jardinero', tel: '0998 112 045', grupo: 'Cuadrilla Norte', e: 'ACTIVO' },
     { n: 'Marco Tipán', t: 'Supervisor', tel: '0991 556 720', grupo: 'Cuadrilla Norte', e: 'ACTIVO' },
@@ -167,7 +167,7 @@ function PersonalPage() {
       <Toolbar searchPh="Buscar personal…"><Chips items={['Todos', 'Jardineros', 'Supervisores', 'Choferes']} /></Toolbar>
       <Table cols={[{ label: 'Nombre' }, { label: 'Especialidad' }, { label: 'Teléfono' }, { label: 'Cuadrilla' }, { label: 'Estado', right: true }]}>
         {staff.map(s => (
-          <TR key={s.n}>
+          <TR key={s.n} onClick={() => onOpen && onOpen('personal', s)}>
             <NameCell name={s.n} sub={s.t} />
             <td style={{ padding: '13px 20px' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: VF.ink2 }}>
@@ -187,7 +187,7 @@ function PersonalPage() {
 }
 
 // ── Grupos ──
-function GruposPage() {
+function GruposPage({ onOpen }) {
   const grupos = [
     { n: 'Cuadrilla Norte', sector: 'Cumbayá', miembros: ['Diego Salas', 'Marco Tipán', 'Iván Lema'], visitas: 12, color: VF.green },
     { n: 'Cuadrilla Valle', sector: 'Tumbaco', miembros: ['Luis Quishpe', 'Pedro Caiza'], visitas: 9, color: VF.sky },
@@ -199,7 +199,7 @@ function GruposPage() {
       <Toolbar searchPh="Buscar cuadrilla…"><Chips items={['Todas', 'Activas']} /></Toolbar>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         {grupos.map(g => (
-          <div key={g.n} style={{ ...pcard, padding: 20 }}>
+          <div key={g.n} onClick={() => onOpen && onOpen('grupo', g)} style={{ ...pcard, padding: 20, cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <div style={{ width: 12, height: 44, borderRadius: 6, background: g.color }} />
               <div style={{ flex: 1 }}>
@@ -231,7 +231,7 @@ function GruposPage() {
 }
 
 // ── Sectores ──
-function SectoresPage() {
+function SectoresPage({ onOpen }) {
   const sectores = [
     { n: 'Cumbayá', clientes: 38, admin: 'Andrés Pérez', cuadrillas: 2 },
     { n: 'Tumbaco', clientes: 29, admin: 'María Vélez', cuadrillas: 2 },
@@ -245,7 +245,7 @@ function SectoresPage() {
       <Toolbar searchPh="Buscar sector…" />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {sectores.map(s => (
-          <div key={s.n} style={{ ...pcard, overflow: 'hidden' }}>
+          <div key={s.n} onClick={() => onOpen && onOpen('sector', s)} style={{ ...pcard, overflow: 'hidden', cursor: 'pointer' }}>
             <div style={{ height: 92, position: 'relative', background: `repeating-linear-gradient(45deg, ${VF.green50}, ${VF.green50} 10px, ${VF.surface} 10px, ${VF.surface} 20px)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ width: 34, height: 34, borderRadius: '50% 50% 50% 0', background: VF.green, transform: 'rotate(-45deg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ transform: 'rotate(45deg)', display: 'flex' }}><Icon name="pin" size={17} color="#fff" /></div>
@@ -278,13 +278,13 @@ function SecMeta({ icon, label }) {
 }
 
 // ── Informes (web) ──
-function InformesPageWeb() {
+function InformesPageWeb({ onOpen }) {
   return (
     <div style={{ padding: 28 }}>
       <Toolbar searchPh="Buscar informe o cliente…"><Chips items={['Todos', 'Este mes', 'Trimestre']} /></Toolbar>
       <Table cols={[{ label: 'Informe' }, { label: 'Cliente' }, { label: 'Período' }, { label: 'Visitas' }, { label: 'Generado' }, { label: '', right: true }]}>
         {INFORMES.map(r => (
-          <TR key={r.id}>
+          <TR key={r.id} onClick={() => onOpen && onOpen('informe', r)}>
             <td style={{ padding: '13px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                 <div style={{ width: 32, height: 38, borderRadius: 7, background: VF.red50, border: `1px solid oklch(0.9 0.04 25)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
