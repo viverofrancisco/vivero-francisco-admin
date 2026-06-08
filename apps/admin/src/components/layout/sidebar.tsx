@@ -18,9 +18,18 @@ import {
   Settings,
   MapPin,
   ChevronDown,
+  ChevronsUpDown,
   LogOut,
+  User,
 } from "lucide-react";
 import type { UserRole } from "@/generated/prisma/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Brand } from "./brand";
 
 interface NavItem {
@@ -209,34 +218,60 @@ export function Sidebar({ branding }: BrandingProps) {
         )}
       </nav>
 
-      {/* Footer user card */}
+      {/* Footer user menu */}
       <div className="flex-none p-3">
-        <div className="flex items-center gap-2.5 rounded-xl bg-sidebar-accent p-2.5">
-          <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-            {userName
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-bold text-foreground">
-              {userName}
-            </div>
-            <div className="text-[11px] font-semibold text-muted-foreground">
-              {role ? roleLabels[role] : ""}
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            aria-label="Cerrar sesión"
-            className="flex-none rounded-md p-1 text-muted-foreground hover:text-foreground"
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                className="flex w-full items-center gap-2.5 rounded-xl bg-sidebar-accent p-2.5 text-left transition-colors hover:bg-sidebar-accent/70"
+              />
+            }
           >
-            <LogOut className="h-[17px] w-[17px]" />
-          </button>
-        </div>
+            <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+              {userName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-bold text-foreground">
+                {userName}
+              </div>
+              <div className="text-[11px] font-semibold text-muted-foreground">
+                {role ? roleLabels[role] : ""}
+              </div>
+            </div>
+            <ChevronsUpDown className="h-4 w-4 flex-none text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            align="start"
+            className="min-w-[230px]"
+          >
+            <div className="px-2 py-1.5">
+              <p className="truncate text-sm font-medium">{userName}</p>
+              <p className="break-all text-xs leading-snug text-muted-foreground">
+                {session?.user?.email}
+              </p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              Perfil
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Cerrar sesión
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </aside>
   );
