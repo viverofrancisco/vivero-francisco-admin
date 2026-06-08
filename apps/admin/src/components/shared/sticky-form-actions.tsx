@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 /**
- * Sticky bottom action bar for create/edit forms — keeps Save + Cancel always
- * visible while scrolling long forms. Render it as the LAST child of the
- * centered form-content container (e.g. inside `mx-auto max-w-2xl`) so the
- * buttons align with the form card's right edge.
+ * Docked bottom action bar for create/edit forms — fixed to the bottom of the
+ * viewport, spanning the content area (offset past the `md:w-64` sidebar), so
+ * Save + Cancel are always visible. Pair with bottom padding on the form
+ * content (e.g. `pb-24`) so the last fields clear the bar.
  */
 export function StickyFormActions({
   saveLabel = "Guardar",
@@ -22,7 +22,7 @@ export function StickyFormActions({
   disabled?: boolean;
 }) {
   return (
-    <div className="sticky bottom-0 z-10 flex justify-end gap-3 border-t border-border bg-card/95 py-3 backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-30 flex justify-end gap-3 border-t border-border bg-card/95 px-4 py-3 backdrop-blur md:left-64 md:px-6">
       <Button type="button" variant="outline" onClick={onCancel}>
         Cancelar
       </Button>

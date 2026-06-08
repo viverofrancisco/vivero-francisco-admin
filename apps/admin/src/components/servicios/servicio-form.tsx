@@ -70,7 +70,7 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mx-auto max-w-2xl space-y-5">
+      <div className="mx-auto max-w-2xl space-y-5 pb-24">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             {isEditing ? "Editar servicio" : "Nuevo servicio"}
@@ -116,13 +116,13 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
             </div>
           </CardContent>
         </Card>
-
-        <StickyFormActions
-          saveLabel={isEditing ? "Guardar cambios" : "Crear servicio"}
-          saving={loading}
-          onCancel={() => router.push("/dashboard/servicios")}
-        />
       </div>
+
+      <StickyFormActions
+        saveLabel={isEditing ? "Guardar cambios" : "Crear servicio"}
+        saving={loading}
+        onCancel={() => router.push("/dashboard/servicios")}
+      />
     </form>
   );
 }

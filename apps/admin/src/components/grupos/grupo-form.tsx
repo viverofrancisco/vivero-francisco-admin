@@ -79,7 +79,7 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mx-auto max-w-2xl space-y-5">
+      <div className="mx-auto max-w-2xl space-y-5 pb-24">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             {isEditing ? "Editar grupo" : "Nuevo grupo"}
@@ -116,13 +116,13 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
             </div>
           </CardContent>
         </Card>
-
-        <StickyFormActions
-          saveLabel={isEditing ? "Guardar cambios" : "Crear grupo"}
-          saving={loading}
-          onCancel={() => router.push("/dashboard/grupos")}
-        />
       </div>
+
+      <StickyFormActions
+        saveLabel={isEditing ? "Guardar cambios" : "Crear grupo"}
+        saving={loading}
+        onCancel={() => router.push("/dashboard/grupos")}
+      />
     </form>
   );
 }

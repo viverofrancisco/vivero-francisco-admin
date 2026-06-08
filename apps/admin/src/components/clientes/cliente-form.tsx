@@ -500,7 +500,7 @@ export function ClienteForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mx-auto max-w-3xl space-y-5">
+      <div className="mx-auto max-w-3xl space-y-5 pb-24">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             {isEditing ? "Editar cliente" : "Nuevo cliente"}
@@ -510,13 +510,13 @@ export function ClienteForm({
           </p>
         </div>
         {sections}
-
-        <StickyFormActions
-          saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
-          saving={loading}
-          onCancel={() => router.push("/dashboard/clientes")}
-        />
       </div>
+
+      <StickyFormActions
+        saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
+        saving={loading}
+        onCancel={() => router.push("/dashboard/clientes")}
+      />
     </form>
   );
 }
