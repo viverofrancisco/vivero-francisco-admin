@@ -10,11 +10,12 @@ import {
   CardTitle,
   CardAction,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ClienteForm } from "@/components/clientes/cliente-form";
 import { ClienteServicioForm } from "@/components/clientes/cliente-servicio-form";
 import { EmptyState } from "@/components/shared/empty-state";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -99,41 +100,17 @@ function formatDate(dateStr: string) {
   });
 }
 
-const estadoServicioBadge = (estado: string) => {
+/** Service-status pill (botanical): activo green, pausado amber, cancelado red. */
+const servicioEstado = (estado: string) => {
   switch (estado) {
-    case "ACTIVO": return "default" as const;
-    case "PAUSADO": return "secondary" as const;
-    case "CANCELADO": return "destructive" as const;
-    default: return "outline" as const;
-  }
-};
-
-const estadoVisitaBadge = (estado: string) => {
-  switch (estado) {
-    case "PROGRAMADA": return "secondary" as const;
-    case "COMPLETADA": return "default" as const;
-    case "INCOMPLETA": return "destructive" as const;
-    case "CANCELADA": return "outline" as const;
-    default: return "outline" as const;
-  }
-};
-
-const estadoVisitaLabel = (estado: string) => {
-  switch (estado) {
-    case "PROGRAMADA": return "Programada";
-    case "COMPLETADA": return "Completada";
-    case "INCOMPLETA": return "Incompleta";
-    case "CANCELADA": return "Cancelada";
-    default: return estado;
-  }
-};
-
-const estadoServicioLabel = (estado: string) => {
-  switch (estado) {
-    case "ACTIVO": return "Activo";
-    case "PAUSADO": return "Pausado";
-    case "CANCELADO": return "Cancelado";
-    default: return estado;
+    case "ACTIVO":
+      return { label: "Activo", className: "bg-secondary text-green-700" };
+    case "PAUSADO":
+      return { label: "Pausado", className: "bg-warning/15 text-warning-foreground" };
+    case "CANCELADO":
+      return { label: "Cancelado", className: "bg-destructive/10 text-destructive" };
+    default:
+      return { label: estado, className: "bg-muted text-muted-foreground" };
   }
 };
 
@@ -197,7 +174,7 @@ export function ClienteDetailTabs({
   return (
     <div>
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-white/95 backdrop-blur-sm border-b">
+      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -206,14 +183,19 @@ export function ClienteDetailTabs({
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
+          <InitialsAvatar name={nombreCompleto} size={44} />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold truncate">{nombreCompleto}</h1>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl font-extrabold tracking-tight truncate">
+                {nombreCompleto}
+              </h1>
               {cliente.sector && (
-                <Badge variant="outline">{cliente.sector.nombre}</Badge>
+                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-bold text-green-700">
+                  {cliente.sector.nombre}
+                </span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-muted-foreground">
               Cliente desde {formatDate(cliente.createdAt)}
             </p>
           </div>
@@ -288,13 +270,13 @@ export function ClienteDetailTabs({
                     {topServicios.map((a) => (
                       <div
                         key={a.id}
-                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                        className="flex items-center justify-between py-2 border-b border-border last:border-0"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium truncate">
+                          <p className="text-sm font-bold truncate">
                             {a.servicio.nombre}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs font-semibold text-muted-foreground">
                             {formatPrice(a.precio)}
                             {a.frecuenciaMensual
                               ? ` · ${a.frecuenciaMensual}x/mes`
@@ -302,12 +284,11 @@ export function ClienteDetailTabs({
                           </p>
                         </div>
                         <div className="flex items-center gap-2 ml-2">
-                          <Badge
-                            variant={estadoServicioBadge(a.estado)}
-                            className="text-xs"
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${servicioEstado(a.estado).className}`}
                           >
-                            {estadoServicioLabel(a.estado)}
-                          </Badge>
+                            {servicioEstado(a.estado).label}
+                          </span>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -346,24 +327,22 @@ export function ClienteDetailTabs({
                     {topVisitas.map((v) => (
                       <div
                         key={v.id}
-                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                        className="flex items-center justify-between py-2 border-b border-border last:border-0"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium truncate">
+                          <p className="text-sm font-bold truncate">
                             {v.clienteServicio.servicio.nombre}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs font-semibold text-muted-foreground">
                             {formatDate(v.fechaProgramada)}
                             {v.grupo ? ` · ${v.grupo.nombre}` : ""}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 ml-2">
-                          <Badge
-                            variant={estadoVisitaBadge(v.estado)}
-                            className="text-xs"
-                          >
-                            {estadoVisitaLabel(v.estado)}
-                          </Badge>
+                          <StatusBadge
+                            estado={v.estado as EstadoVisitaUI}
+                            size="sm"
+                          />
                           <Button
                             variant="ghost"
                             size="icon"

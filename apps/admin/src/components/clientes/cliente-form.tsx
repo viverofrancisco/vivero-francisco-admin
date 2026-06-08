@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { CIUDADES_ECUADOR } from "@/lib/constants/ciudades-ecuador";
 
@@ -46,7 +46,7 @@ interface ClienteFormProps {
 
 function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="flex justify-between py-2.5 border-b border-gray-100 last:border-0">
+    <div className="flex justify-between py-2.5 border-b border-border last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-right">{value || "—"}</span>
     </div>
@@ -223,14 +223,14 @@ export function ClienteForm({
                     <Label htmlFor="nombre">Nombre *</Label>
                     <Input id="nombre" {...register("nombre")} />
                     {errors.nombre && (
-                      <p className="text-sm text-red-600">{errors.nombre.message}</p>
+                      <p className="text-sm text-destructive">{errors.nombre.message}</p>
                     )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="apellido">Apellido</Label>
                     <Input id="apellido" {...register("apellido")} />
                     {errors.apellido && (
-                      <p className="text-sm text-red-600">{errors.apellido.message}</p>
+                      <p className="text-sm text-destructive">{errors.apellido.message}</p>
                     )}
                   </div>
                 </div>
@@ -239,7 +239,7 @@ export function ClienteForm({
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" {...register("email")} />
                     {errors.email && (
-                      <p className="text-sm text-red-600">{errors.email.message}</p>
+                      <p className="text-sm text-destructive">{errors.email.message}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -257,7 +257,7 @@ export function ClienteForm({
                       )}
                     />
                     {errors.telefono && (
-                      <p className="text-sm text-red-600">{errors.telefono.message}</p>
+                      <p className="text-sm text-destructive">{errors.telefono.message}</p>
                     )}
                   </div>
                 </div>
@@ -273,7 +273,7 @@ export function ClienteForm({
                       {...register("metrosCuadrados")}
                     />
                     {errors.metrosCuadrados && (
-                      <p className="text-sm text-red-600">{errors.metrosCuadrados.message}</p>
+                      <p className="text-sm text-destructive">{errors.metrosCuadrados.message}</p>
                     )}
                   </div>
                 </div>
@@ -362,141 +362,161 @@ export function ClienteForm({
   }
 
   // --- Standard / compact mode ---
-  const formFields = (
-    <>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="nombre">Nombre *</Label>
-          <Input id="nombre" {...register("nombre")} />
-          {errors.nombre && (
-            <p className="text-sm text-red-600">{errors.nombre.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="apellido">Apellido</Label>
-          <Input id="apellido" {...register("apellido")} />
-          {errors.apellido && (
-            <p className="text-sm text-red-600">{errors.apellido.message}</p>
-          )}
-        </div>
-      </div>
+  const fieldError = (msg?: string) =>
+    msg ? <p className="text-sm text-destructive">{msg}</p> : null;
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" {...register("email")} />
-          {errors.email && (
-            <p className="text-sm text-red-600">{errors.email.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="telefono">Telefono</Label>
-          <Controller
-            name="telefono"
-            control={control}
-            render={({ field }) => (
-              <PhoneInput
-                id="telefono"
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-              />
-            )}
+  const sections = (
+    <div className="space-y-5">
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>Datos del cliente</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="nombre">Nombre *</Label>
+            <Input id="nombre" {...register("nombre")} />
+            {fieldError(errors.nombre?.message)}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="apellido">Apellido</Label>
+            <Input id="apellido" {...register("apellido")} />
+            {fieldError(errors.apellido?.message)}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Correo electrónico</Label>
+            <Input id="email" type="email" {...register("email")} />
+            {fieldError(errors.email?.message)}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="telefono">Teléfono</Label>
+            <Controller
+              name="telefono"
+              control={control}
+              render={({ field }) => (
+                <PhoneInput
+                  id="telefono"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                />
+              )}
+            />
+            {fieldError(errors.telefono?.message)}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>Ubicación</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Ciudad</Label>
+            <Controller
+              name="ciudad"
+              control={control}
+              render={({ field }) => (
+                <CustomSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={CIUDADES_ECUADOR.map((ciudad) => ({
+                    value: ciudad,
+                    label: ciudad,
+                  }))}
+                  placeholder="Seleccionar ciudad"
+                  searchable
+                  searchPlaceholder="Buscar ciudad..."
+                />
+              )}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="direccion">Dirección</Label>
+            <Input
+              id="direccion"
+              placeholder="Calle principal e intersección"
+              {...register("direccion")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="numeroCasa">Número de casa</Label>
+            <Input
+              id="numeroCasa"
+              placeholder="Ej: N45-123"
+              {...register("numeroCasa")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="metrosCuadrados">Metros cuadrados del jardín</Label>
+            <Input
+              id="metrosCuadrados"
+              type="number"
+              step="0.1"
+              min="0"
+              placeholder="Ej: 150"
+              {...register("metrosCuadrados")}
+            />
+            {fieldError(errors.metrosCuadrados?.message)}
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="referencia">Referencia</Label>
+            <Textarea
+              id="referencia"
+              rows={2}
+              placeholder="Ej: Frente al parque, casa blanca con portón verde"
+              {...register("referencia")}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>Notas</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <Textarea
+            id="notas"
+            rows={4}
+            placeholder="Indicaciones especiales, horarios preferidos, mascotas…"
+            {...register("notas")}
           />
-          {errors.telefono && (
-            <p className="text-sm text-red-600">{errors.telefono.message}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="metrosCuadrados">Metros cuadrados del jardin</Label>
-        <Input
-          id="metrosCuadrados"
-          type="number"
-          step="0.1"
-          min="0"
-          placeholder="Ej: 150"
-          {...register("metrosCuadrados")}
-        />
-        {errors.metrosCuadrados && (
-          <p className="text-sm text-red-600">{errors.metrosCuadrados.message}</p>
-        )}
-      </div>
-
-      <Separator />
-      <p className="text-sm font-medium text-gray-500">Ubicacion</p>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label>Ciudad</Label>
-          <Controller
-            name="ciudad"
-            control={control}
-            render={({ field }) => (
-              <CustomSelect
-                value={field.value}
-                onChange={field.onChange}
-                options={CIUDADES_ECUADOR.map((ciudad) => ({
-                  value: ciudad,
-                  label: ciudad,
-                }))}
-                placeholder="Seleccionar ciudad"
-                searchable
-                searchPlaceholder="Buscar ciudad..."
-              />
-            )}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="direccion">Direccion</Label>
-          <Input
-            id="direccion"
-            placeholder="Calle principal e interseccion"
-            {...register("direccion")}
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="numeroCasa">Numero de casa</Label>
-          <Input
-            id="numeroCasa"
-            placeholder="Ej: N45-123"
-            {...register("numeroCasa")}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="referencia">Referencia</Label>
-        <Textarea
-          id="referencia"
-          rows={3}
-          placeholder="Ej: Frente al parque, casa blanca con porton verde"
-          {...register("referencia")}
-        />
-      </div>
-
-      <Separator />
-
-      <div className="space-y-2">
-        <Label htmlFor="notas">Notas</Label>
-        <Textarea id="notas" rows={4} {...register("notas")} />
-      </div>
-    </>
+        </CardContent>
+      </Card>
+    </div>
   );
 
-  const formContent = (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {formFields}
-
-      <div className="flex gap-4">
+  if (compact) {
+    return (
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {sections}
         <Button type="submit" disabled={loading}>
           {loading ? "Guardando..." : "Guardar"}
         </Button>
-        {!compact && (
+      </form>
+    );
+  }
+
+  const saveLabel = isEditing ? "Guardar cambios" : "Crear cliente";
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="mx-auto max-w-3xl space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {isEditing ? "Editar cliente" : "Nuevo cliente"}
+          </h1>
+          <p className="text-muted-foreground">
+            Información de contacto, ubicación y notas del cliente.
+          </p>
+        </div>
+        {sections}
+      </div>
+
+      {/* Sticky action bar — always visible */}
+      <div className="sticky bottom-0 z-10 -mx-4 mt-5 border-t border-border bg-card/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+        <div className="mx-auto flex max-w-3xl justify-end gap-3">
           <Button
             type="button"
             variant="outline"
@@ -504,23 +524,12 @@ export function ClienteForm({
           >
             Cancelar
           </Button>
-        )}
+          <Button type="submit" disabled={loading}>
+            <Check className="h-4 w-4" />
+            {loading ? "Guardando..." : saveLabel}
+          </Button>
+        </div>
       </div>
     </form>
-  );
-
-  if (compact) {
-    return formContent;
-  }
-
-  return (
-    <Card className="max-w-2xl">
-      <CardHeader>
-        <CardTitle>
-          {isEditing ? "Editar Cliente" : "Nuevo Cliente"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>{formContent}</CardContent>
-    </Card>
   );
 }
