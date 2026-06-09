@@ -1,28 +1,38 @@
-import nodemailer, { type Transporter } from "nodemailer";
+import { JWT } from "google-auth-library";
+import MailComposer from "nodemailer/lib/mail-composer";
 
-// Single SMTP transport, created lazily so the app boots without SMTP config.
-// Designed for Google Workspace (smtp.gmail.com) using an App Password, but
-// works with any SMTP server. When the SMTP env vars are unset we fall back to
-// logging the email to the server console — enough to test flows (e.g. the
+// Sends email through the Gmail API using a Google service account with
+// domain-wide delegation: the service account impersonates a Workspace mailbox
+// (GMAIL_SENDER) and sends with the gmail.send scope. No static mailbox
+// password is stored. When the service-account env vars are unset we fall back
+// to logging the email to the server console — enough to test flows (e.g. the
 // set-password link) in local dev.
-let transporter: Transporter | null = null;
+const SCOPES = ["https://www.googleapis.com/auth/gmail.send"];
+const GMAIL_SEND_URL =
+  "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
 
-function getTransport(): Transporter | null {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASSWORD;
-  if (!host || !user || !pass) return null;
+let jwtClient: JWT | null = null;
 
-  if (!transporter) {
-    const port = Number(process.env.SMTP_PORT ?? 465);
-    transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465, // 465 = implicit TLS; 587 = STARTTLS
-      auth: { user, pass },
-    });
+/** The Workspace mailbox to send as (impersonated by the service account). */
+function getSenderAddress(): string | null {
+  if (process.env.GMAIL_SENDER) return process.env.GMAIL_SENDER;
+  // Fall back to the address inside EMAIL_FROM ("Nombre <addr>" or "addr").
+  const from = process.env.EMAIL_FROM;
+  if (!from) return null;
+  const match = from.match(/<([^>]+)>/);
+  return match ? match[1] : from.trim();
+}
+
+function getClient(): JWT | null {
+  const email = process.env.GMAIL_CLIENT_EMAIL;
+  const key = process.env.GMAIL_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const subject = getSenderAddress();
+  if (!email || !key || !subject) return null;
+
+  if (!jwtClient) {
+    jwtClient = new JWT({ email, key, scopes: SCOPES, subject });
   }
-  return transporter;
+  return jwtClient;
 }
 
 export interface SendEmailParams {
@@ -38,12 +48,31 @@ export interface SendEmailResult {
   error?: string;
 }
 
-export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
-  const transport = getTransport();
-  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;
+/** Build a base64url-encoded RFC822 message for the Gmail API. */
+async function buildRawMessage(params: SendEmailParams): Promise<string> {
+  const from = process.env.EMAIL_FROM ?? getSenderAddress() ?? undefined;
+  const message = await new MailComposer({
+    from,
+    to: params.to,
+    subject: params.subject,
+    text: params.text,
+    html: params.html,
+  })
+    .compile()
+    .build();
 
-  if (!transport || !from) {
-    // Dev bypass: no SMTP configured — print to console so flows are testable.
+  return message
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
+  const client = getClient();
+
+  if (!client) {
+    // Dev bypass: no service account configured — print to console so flows are testable.
     console.log(
       `\n📧 [DEV EMAIL BYPASS]\n  To:      ${params.to}\n  Subject: ${params.subject}\n  Body:\n${params.text ?? params.html}\n`
     );
@@ -51,14 +80,26 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   }
 
   try {
-    const info = await transport.sendMail({
-      from,
-      to: params.to,
-      subject: params.subject,
-      html: params.html,
-      text: params.text,
+    const raw = await buildRawMessage(params);
+    const { token } = await client.getAccessToken();
+    if (!token) return { success: false, error: "No se pudo obtener token de Gmail" };
+
+    const res = await fetch(GMAIL_SEND_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ raw }),
     });
-    return { success: true, id: info.messageId };
+
+    if (!res.ok) {
+      const detail = await res.text();
+      return { success: false, error: `Gmail API ${res.status}: ${detail}` };
+    }
+
+    const data = (await res.json()) as { id?: string };
+    return { success: true, id: data.id };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : "Error de envío" };
   }
