@@ -80,27 +80,9 @@ async function main() {
     create: { id: "default" },
   });
 
-  // Plantilla de invitación de cuenta (enlace para crear contraseña). Idempotente:
-  // si ya existe no la sobrescribe (el admin pudo editar el contenido). El
-  // template de Meta se crea/aprueba aparte; hasta entonces el envío por WhatsApp
-  // cae al fallback de consola.
-  const invitacion = await prisma.notificacionPlantilla.findUnique({
-    where: { tipo: "INVITACION_CUENTA" },
-  });
-  if (!invitacion) {
-    await prisma.notificacionPlantilla.create({
-      data: {
-        tipo: "INVITACION_CUENTA",
-        nombre: "Invitación de cuenta",
-        activa: true,
-        contenido:
-          "Hola {{nombre}}, crea tu contraseña para acceder a la app de Vivero Francisco: {{link}}",
-        variables: ["nombre", "link"],
-        whatsappTemplateLanguage: "es",
-      },
-    });
-    console.log("Plantilla de notificación creada: INVITACION_CUENTA");
-  }
+  // Las plantillas de notificación (incluida INVITACION_CUENTA) se siembran con
+  // `npx tsx scripts/seed-notificaciones.ts`, y los templates de Meta con
+  // `npx tsx scripts/seed-meta-templates.ts`. Ver docs/notificaciones-whatsapp.md.
 }
 
 main()

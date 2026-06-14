@@ -11,7 +11,7 @@ import type { Cliente, User } from "@/generated/prisma/client";
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 function baseUrl(): string {
-  return (process.env.APP_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  return (process.env.APP_BASE_URL ?? "http://localhost:3001").replace(/\/$/, "");
 }
 
 // ──────────────────────────────────────────────
@@ -91,7 +91,7 @@ export async function createAndSendInvite(clienteId: string): Promise<void> {
       ? sendSetPasswordEmail(cliente.email, cliente.nombre, link)
       : Promise.resolve(),
     cliente.telefono
-      ? enviarInvitacionCuenta(cliente.telefono, cliente.nombre, link, cliente.id)
+      ? enviarInvitacionCuenta(cliente.telefono, cliente.nombre, token, link, cliente.id)
       : Promise.resolve(),
   ]);
 }

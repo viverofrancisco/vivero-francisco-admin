@@ -63,6 +63,16 @@ const DEFAULT_PLANTILLAS = [
     contenido: "{{codigo}} es tu código de verificación.",
     variables: ["codigo"],
   },
+  {
+    // El enlace NO va en el cuerpo: el cuerpo solo saluda ({{nombre}}) y el
+    // enlace se entrega en un botón URL dinámico (token como {{1}} de la URL).
+    // Esto es lo que Meta aprueba para enlaces en plantillas UTILITY.
+    tipo: "INVITACION_CUENTA" as const,
+    nombre: "Invitación de cuenta",
+    contenido:
+      "Hola {{nombre}}, crea tu contraseña para acceder a la app de Vivero Francisco.",
+    variables: ["nombre", "link"],
+  },
 ];
 
 async function main() {

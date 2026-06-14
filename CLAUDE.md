@@ -4,6 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **The app is in Spanish.** All UI strings, user-facing text, error messages, and domain vocabulary (cliente, servicio, visita, personal, sector, informe, notificacion) are in Spanish. Write all user-facing text in Spanish and match the existing Spanish naming conventions in code.
 
+## Documentation
+
+Extended context lives in [`docs/`](./docs/) (see [`docs/README.md`](./docs/README.md)) to keep this file short. Read the relevant doc before touching that area:
+
+- [Cliente authentication](./docs/autenticacion-clientes.md) — cliente login (phone/email + password), the invite/set-password flow, and email via the Gmail API.
+- [WhatsApp notifications](./docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
+
 ## Overview
 
 Vivero Francisco is a landscaping/gardening business management system, built as an **npm workspaces monorepo** with three packages:
@@ -19,7 +26,7 @@ Run from the repo root:
 ```bash
 npm install                 # installs all workspaces
 
-npm run dev:admin           # next dev (admin, http://localhost:3000)
+npm run dev:admin           # next dev (admin, http://localhost:3001)
 npm run dev:mobile          # expo start (mobile)
 npm run build:admin         # next build
 npm run lint:admin          # eslint (admin)
@@ -44,7 +51,7 @@ The admin app has **two parallel auth mechanisms**, and which API namespace you 
 
 1. **Web dashboard** (`/api/*`, server components, `/dashboard/*`): **NextAuth** (`next-auth`, JWT strategy, credentials provider) in `src/lib/auth.ts`. Guard server code with helpers in `src/lib/auth-helpers.ts` (`requireAuth`, `requireAdmin`, `requireRole`). `src/middleware.ts` protects `/dashboard/*`. Web users are always staff (`ADMIN`/`STAFF`), never `CLIENTE`.
 
-2. **Mobile** (`/api/mobile/*`): **custom JWT** (`jose`) with separate access/refresh secrets (`MOBILE_ACCESS_SECRET`, `MOBILE_REFRESH_SECRET`), see `src/lib/mobile/jwt.ts`. Mobile auth is OTP-based (WhatsApp) for clients and email/password for personnel. Guard mobile routes with `requireMobileUser` / `requireMobileRole` + the `isMobileUser` type guard from `src/lib/mobile/auth.ts` (these return either a `MobileUser` or a `NextResponse`, so always narrow before use).
+2. **Mobile** (`/api/mobile/*`): **custom JWT** (`jose`) with separate access/refresh secrets (`MOBILE_ACCESS_SECRET`, `MOBILE_REFRESH_SECRET`), see `src/lib/mobile/jwt.ts`. Personnel log in with email/password; **clients log in with phone-or-email + a self-set password** delivered via an invite link (see [docs/autenticacion-clientes.md](./docs/autenticacion-clientes.md) — the old WhatsApp OTP login is gone). Guard mobile routes with `requireMobileUser` / `requireMobileRole` + the `isMobileUser` type guard from `src/lib/mobile/auth.ts` (these return either a `MobileUser` or a `NextResponse`, so always narrow before use).
 
 Roles (`UserRole` enum): `ADMIN`, `STAFF`, `PERSONAL_ADMIN`, `PERSONAL`, `CLIENTE`. `PERSONAL` is read-only field staff; `PERSONAL_ADMIN` is a lead with write access.
 
@@ -81,5 +88,5 @@ Other env: `DATABASE_URL`, `MOBILE_OTP_DEV_BYPASS` (skip real OTP in dev).
 - Admin imports use the `@/*` alias → `apps/admin/src/*`. Mobile uses `@/*` → `apps/mobile/*`.
 - Validation: Zod schemas shared cross-app live in `@vivero/shared`; admin-web-only schemas live in `src/lib/validations/`. Validate request bodies/queries at the route boundary with `safeParse`.
 - Admin UI: shadcn/Base UI components in `src/components/ui/`, Tailwind v4, feature components grouped by domain (`src/components/visitas`, `clientes`, etc.). Mobile UI: react-native-paper, theme primary `#2e7d32` (green).
-- Mobile state: Zustand stores in `apps/mobile/lib/` (`auth-store.ts` holds the token pair; `lib/api.ts` is the fetch wrapper that auto-refreshes access tokens on 401). The mobile app reaches the server via `EXPO_PUBLIC_API_BASE_URL` (set to your LAN IP for a real device; defaults to `http://localhost:3000`).
+- Mobile state: Zustand stores in `apps/mobile/lib/` (`auth-store.ts` holds the token pair; `lib/api.ts` is the fetch wrapper that auto-refreshes access tokens on 401). The mobile app reaches the server via `EXPO_PUBLIC_API_BASE_URL` (set to your LAN IP for a real device; defaults to `http://localhost:3001`).
 - React 19 across the monorepo; root `package.json` pins shared native/React versions via `overrides`.

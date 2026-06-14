@@ -110,6 +110,52 @@ async function createAuthTemplate(name: string, language: string) {
   return { success: true, error: null, status: data.status as string };
 }
 
+async function createInviteTemplate(name: string, language: string, bodyText: string) {
+  const base = (process.env.APP_BASE_URL ?? "http://localhost:3001").replace(/\/$/, "");
+  const url = `https://graph.facebook.com/${API_VERSION}/${businessId}/message_templates`;
+
+  // UTILITY template con el saludo en el body ({{1}} = nombre) y el enlace en un
+  // botón URL dinámico cuyo sufijo {{1}} es el token. Meta exige que la parte
+  // variable esté al final de la URL. El dominio base se fija aquí desde
+  // APP_BASE_URL, así que debe ser la URL pública real al crear el template.
+  const components = [
+    {
+      type: "BODY",
+      text: bodyText,
+      example: { body_text: [["Juan"]] },
+    },
+    {
+      type: "BUTTONS",
+      buttons: [
+        {
+          type: "URL",
+          text: "Crear contraseña",
+          url: `${base}/establecer-contrasena?token={{1}}`,
+          example: [`${base}/establecer-contrasena?token=token_de_ejemplo_123`],
+        },
+      ],
+    },
+  ];
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name, language, category: "UTILITY", components }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    const errorMsg = data?.error?.error_user_msg || data?.error?.message || `HTTP ${res.status}`;
+    return { success: false, error: errorMsg, status: null };
+  }
+
+  return { success: true, error: null, status: data.status as string };
+}
+
 async function main() {
   if (!token || !businessId) {
     console.error("Error: WHATSAPP_API_TOKEN y WHATSAPP_BUSINESS_ID son requeridos en .env");
@@ -138,19 +184,28 @@ async function main() {
     const result =
       p.tipo === "AUTENTICACION_OTP"
         ? await createAuthTemplate(templateName, p.whatsappTemplateLanguage)
-        : await (async () => {
-            const { bodyText, usedVars } = convertToPositional(
-              p.contenido,
-              p.variables
-            );
-            const exampleValues = usedVars.map((v) => SAMPLE_VALUES[v] || v);
-            return createTemplate(
-              templateName,
-              p.whatsappTemplateLanguage,
-              bodyText,
-              exampleValues
-            );
-          })();
+        : p.tipo === "INVITACION_CUENTA"
+          ? await (async () => {
+              const { bodyText } = convertToPositional(p.contenido, p.variables);
+              return createInviteTemplate(
+                templateName,
+                p.whatsappTemplateLanguage,
+                bodyText
+              );
+            })()
+          : await (async () => {
+              const { bodyText, usedVars } = convertToPositional(
+                p.contenido,
+                p.variables
+              );
+              const exampleValues = usedVars.map((v) => SAMPLE_VALUES[v] || v);
+              return createTemplate(
+                templateName,
+                p.whatsappTemplateLanguage,
+                bodyText,
+                exampleValues
+              );
+            })();
 
     if (!result.success) {
       console.error(`  ✗ Error: ${result.error}`);

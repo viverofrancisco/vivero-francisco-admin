@@ -473,7 +473,9 @@ export async function enviarResumenDiarioAdmin() {
 
 /**
  * Envía al cliente el enlace para crear/restablecer su contraseña vía WhatsApp.
- * Usa el template INVITACION_CUENTA con las variables {{nombre}} y {{link}}.
+ * Usa el template INVITACION_CUENTA: el cuerpo saluda con {{1}} = nombre y el
+ * enlace se entrega en un botón URL dinámico cuyo sufijo {{1}} es el `token`
+ * (el dominio base está fijado en el template, ver scripts/seed-meta-templates).
  *
  * A diferencia de las notificaciones de visita, no depende de
  * `config.whatsappActivo` — es parte del flujo de acceso. Si no hay template
@@ -483,26 +485,26 @@ export async function enviarResumenDiarioAdmin() {
 export async function enviarInvitacionCuenta(
   telefono: string,
   nombre: string,
+  token: string,
   link: string,
   clienteId?: string
 ): Promise<SendResult> {
   const plantilla = await getPlantilla("INVITACION_CUENTA");
 
-  const tieneTemplateAprobado =
-    !!plantilla?.activa &&
-    ((plantilla.whatsappTemplateStatus === "APPROVED" &&
-      !!plantilla.whatsappTemplateName) ||
-      (plantilla.whatsappDefaultTemplateStatus === "APPROVED" &&
-        !!plantilla.whatsappDefaultTemplateName));
+  const templateName =
+    plantilla?.activa &&
+    plantilla.whatsappTemplateStatus === "APPROVED" &&
+    plantilla.whatsappTemplateName
+      ? plantilla.whatsappTemplateName
+      : plantilla?.activa &&
+          plantilla.whatsappDefaultTemplateStatus === "APPROVED" &&
+          plantilla.whatsappDefaultTemplateName
+        ? plantilla.whatsappDefaultTemplateName
+        : null;
 
   const provider = createMetaProvider();
 
-  if (
-    !plantilla?.activa ||
-    !tieneTemplateAprobado ||
-    !provider ||
-    !isValidWhatsAppNumber(telefono)
-  ) {
+  if (!plantilla?.activa || !templateName || !provider || !isValidWhatsAppNumber(telefono)) {
     console.log(
       `\n🔗 [INVITACIÓN CUENTA · WhatsApp]\n  Teléfono: ${telefono}\n  Cliente:  ${clienteId ?? "(none)"}\n  Enlace:   ${link}\n`
     );
@@ -519,9 +521,23 @@ export async function enviarInvitacionCuenta(
     return result;
   }
 
-  const vars = { nombre, link };
-  const result = await enviarConTemplate(telefono, plantilla, vars);
-  const mensaje = resolverVariables(plantilla.contenido, vars);
+  // Cuerpo: {{1}} = nombre. Botón URL (índice 0): {{1}} = token (sufijo de la URL).
+  const components: TemplateComponent[] = [
+    { type: "body", parameters: [{ type: "text", text: nombre }] },
+    {
+      type: "button",
+      sub_type: "url",
+      index: "0",
+      parameters: [{ type: "text", text: token }],
+    },
+  ];
+
+  const result = await provider.sendTemplate(
+    formatForWhatsApp(telefono),
+    templateName,
+    plantilla.whatsappTemplateLanguage,
+    components
+  );
 
   await logNotificacion({
     tipo: "INVITACION_CUENTA",
@@ -529,7 +545,7 @@ export async function enviarInvitacionCuenta(
     destinatarioId: clienteId,
     destinatarioNombre: nombre,
     telefono,
-    mensaje,
+    mensaje: `${resolverVariables(plantilla.contenido, { nombre })} ${link}`,
     result,
   });
 
