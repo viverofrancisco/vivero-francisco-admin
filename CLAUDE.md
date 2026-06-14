@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Documentation
 
-Extended context lives in [`docs/`](./docs/) (see [`docs/README.md`](./docs/README.md)) to keep this file short. Read the relevant doc before touching that area:
+Extended context lives in [`.claude/docs/`](./.claude/docs/) (see [`.claude/docs/README.md`](./.claude/docs/README.md)) to keep this file short. Read the relevant doc before touching that area:
 
-- [Cliente authentication](./docs/autenticacion-clientes.md) — cliente login (phone/email + password), the invite/set-password flow, and email via the Gmail API.
-- [WhatsApp notifications](./docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
+- [Cliente authentication](./.claude/docs/autenticacion-clientes.md) — cliente login (phone/email + password), the invite/set-password flow, and email via the Gmail API.
+- [WhatsApp notifications](./.claude/docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
 
 ## Overview
 
@@ -51,7 +51,7 @@ The admin app has **two parallel auth mechanisms**, and which API namespace you 
 
 1. **Web dashboard** (`/api/*`, server components, `/dashboard/*`): **NextAuth** (`next-auth`, JWT strategy, credentials provider) in `src/lib/auth.ts`. Guard server code with helpers in `src/lib/auth-helpers.ts` (`requireAuth`, `requireAdmin`, `requireRole`). `src/middleware.ts` protects `/dashboard/*`. Web users are always staff (`ADMIN`/`STAFF`), never `CLIENTE`.
 
-2. **Mobile** (`/api/mobile/*`): **custom JWT** (`jose`) with separate access/refresh secrets (`MOBILE_ACCESS_SECRET`, `MOBILE_REFRESH_SECRET`), see `src/lib/mobile/jwt.ts`. Personnel log in with email/password; **clients log in with phone-or-email + a self-set password** delivered via an invite link (see [docs/autenticacion-clientes.md](./docs/autenticacion-clientes.md) — the old WhatsApp OTP login is gone). Guard mobile routes with `requireMobileUser` / `requireMobileRole` + the `isMobileUser` type guard from `src/lib/mobile/auth.ts` (these return either a `MobileUser` or a `NextResponse`, so always narrow before use).
+2. **Mobile** (`/api/mobile/*`): **custom JWT** (`jose`) with separate access/refresh secrets (`MOBILE_ACCESS_SECRET`, `MOBILE_REFRESH_SECRET`), see `src/lib/mobile/jwt.ts`. Personnel log in with email/password; **clients log in with phone-or-email + a self-set password** delivered via an invite link (see [.claude/docs/autenticacion-clientes.md](./.claude/docs/autenticacion-clientes.md) — the old WhatsApp OTP login is gone). Guard mobile routes with `requireMobileUser` / `requireMobileRole` + the `isMobileUser` type guard from `src/lib/mobile/auth.ts` (these return either a `MobileUser` or a `NextResponse`, so always narrow before use).
 
 Roles (`UserRole` enum): `ADMIN`, `STAFF`, `PERSONAL_ADMIN`, `PERSONAL`, `CLIENTE`. `PERSONAL` is read-only field staff; `PERSONAL_ADMIN` is a lead with write access.
 

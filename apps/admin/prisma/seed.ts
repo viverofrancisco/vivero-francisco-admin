@@ -82,7 +82,7 @@ async function main() {
 
   // Las plantillas de notificación (incluida INVITACION_CUENTA) se siembran con
   // `npx tsx scripts/seed-notificaciones.ts`, y los templates de Meta con
-  // `npx tsx scripts/seed-meta-templates.ts`. Ver docs/notificaciones-whatsapp.md.
+  // `npx tsx scripts/seed-meta-templates.ts`. Ver .claude/docs/notificaciones-whatsapp.md.
 }
 
 main()

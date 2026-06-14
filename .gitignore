@@ -16,5 +16,6 @@ build/
 coverage/
 .vercel
 
-# Claude Code local files
-.claude/
+# Claude Code local files (ignore everything under .claude EXCEPT the committed docs)
+.claude/*
+!.claude/docs/
