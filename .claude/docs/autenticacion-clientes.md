@@ -42,21 +42,34 @@ Nota: `User.email` de un cliente siempre es un placeholder (`cliente+{id}@…`).
 resuelve por la **ficha del cliente**, no por `User.email`, para evitar choques con
 correos del personal.
 
-## Correo: Gmail API (service account)
+## Correo: Gmail API (OAuth2 con refresh token)
 
-El correo se envía con la **Gmail API** usando una **cuenta de servicio de Google con
-delegación a nivel de dominio** que impersona un buzón de Workspace (`GMAIL_SENDER`,
-scope `gmail.send`). No se guarda contraseña de buzón. Implementación:
-`apps/admin/src/lib/email/index.ts`.
+El correo se envía con la **Gmail API** usando **OAuth2 con un refresh token**.
+Se usa OAuth2 (y no una cuenta de servicio) porque la organización bloquea la
+creación de claves de cuentas de servicio (`iam.managed.disableServiceAccountKeyCreation`).
+El correo se envía **como la cuenta que autorizó el refresh token** (`users/me`).
+Implementación: `apps/admin/src/lib/email/index.ts`.
 
-Variables (`apps/admin/.env`): `GMAIL_CLIENT_EMAIL`, `GMAIL_PRIVATE_KEY`,
-`GMAIL_SENDER`, `EMAIL_FROM`, `APP_BASE_URL`. Si faltan, el correo se imprime en la
-consola del servidor (bypass de desarrollo). Pasos de configuración: ver `.env.example`.
+Variables (`apps/admin/.env`): `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`,
+`GMAIL_REFRESH_TOKEN`, `EMAIL_FROM`, `APP_BASE_URL`. Si faltan, el correo se imprime
+en la consola del servidor (bypass de desarrollo).
 
-- `GMAIL_PRIVATE_KEY`: pega el `private_key` del JSON con los `\n` literales, entre comillas.
-- `EMAIL_FROM` debe coincidir con `GMAIL_SENDER` (o ser un alias "enviar como" de ese buzón).
-- Delegación a nivel de dominio: Admin console → Seguridad → Controles de API →
-  Delegación de todo el dominio → agregar el Client ID con scope `…/auth/gmail.send`.
+- `EMAIL_FROM` debe ser la **cuenta que autorizó** el refresh token (o un alias
+  "enviar como" de ella); Gmail rechaza un From arbitrario.
+- El refresh token de cuentas internas de Workspace normalmente **no expira**.
+
+### Obtener el refresh token (una vez)
+
+1. Google Cloud → proyecto → habilitar **Gmail API**.
+2. **APIs y servicios → Credenciales → Crear credenciales → ID de cliente de OAuth**,
+   tipo **"Aplicación web"**. Agrega como *URI de redirección autorizado*
+   `https://developers.google.com/oauthplayground`. Guarda el `client_id` y `client_secret`.
+3. Abre el **[OAuth 2.0 Playground](https://developers.google.com/oauthplayground/)** →
+   engranaje (⚙) → marca *"Use your own OAuth credentials"* y pega tu `client_id` / `client_secret`.
+4. En *"Input your own scopes"* pon `https://www.googleapis.com/auth/gmail.send` →
+   **Authorize APIs** → inicia sesión **con el buzón remitente** (el de `EMAIL_FROM`) y acepta.
+5. **Exchange authorization code for tokens** → copia el **refresh token** a `GMAIL_REFRESH_TOKEN`.
+6. Reinicia el dev server.
 
 ## WhatsApp
 

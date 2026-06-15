@@ -1,38 +1,28 @@
-import { JWT } from "google-auth-library";
+import { OAuth2Client } from "google-auth-library";
 import MailComposer from "nodemailer/lib/mail-composer";
 
-// Sends email through the Gmail API using a Google service account with
-// domain-wide delegation: the service account impersonates a Workspace mailbox
-// (GMAIL_SENDER) and sends with the gmail.send scope. No static mailbox
-// password is stored. When the service-account env vars are unset we fall back
-// to logging the email to the server console — enough to test flows (e.g. the
-// set-password link) in local dev.
-const SCOPES = ["https://www.googleapis.com/auth/gmail.send"];
+// Sends email through the Gmail API using OAuth2 with a refresh token. The
+// refresh token is obtained once (consent by the sender Workspace account) and
+// stored in env — no service-account key is needed (the org blocks those). The
+// message is sent as the account that authorized the refresh token ("me").
+// When the OAuth env vars are unset we fall back to logging the email to the
+// server console — enough to test flows (e.g. the set-password link) in dev.
 const GMAIL_SEND_URL =
   "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
 
-let jwtClient: JWT | null = null;
+let oauthClient: OAuth2Client | null = null;
 
-/** The Workspace mailbox to send as (impersonated by the service account). */
-function getSenderAddress(): string | null {
-  if (process.env.GMAIL_SENDER) return process.env.GMAIL_SENDER;
-  // Fall back to the address inside EMAIL_FROM ("Nombre <addr>" or "addr").
-  const from = process.env.EMAIL_FROM;
-  if (!from) return null;
-  const match = from.match(/<([^>]+)>/);
-  return match ? match[1] : from.trim();
-}
+function getClient(): OAuth2Client | null {
+  const clientId = process.env.GMAIL_CLIENT_ID;
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+  if (!clientId || !clientSecret || !refreshToken) return null;
 
-function getClient(): JWT | null {
-  const email = process.env.GMAIL_CLIENT_EMAIL;
-  const key = process.env.GMAIL_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  const subject = getSenderAddress();
-  if (!email || !key || !subject) return null;
-
-  if (!jwtClient) {
-    jwtClient = new JWT({ email, key, scopes: SCOPES, subject });
+  if (!oauthClient) {
+    oauthClient = new OAuth2Client({ clientId, clientSecret });
+    oauthClient.setCredentials({ refresh_token: refreshToken });
   }
-  return jwtClient;
+  return oauthClient;
 }
 
 export interface SendEmailParams {
@@ -50,9 +40,8 @@ export interface SendEmailResult {
 
 /** Build a base64url-encoded RFC822 message for the Gmail API. */
 async function buildRawMessage(params: SendEmailParams): Promise<string> {
-  const from = process.env.EMAIL_FROM ?? getSenderAddress() ?? undefined;
   const message = await new MailComposer({
-    from,
+    from: process.env.EMAIL_FROM,
     to: params.to,
     subject: params.subject,
     text: params.text,
@@ -72,7 +61,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   const client = getClient();
 
   if (!client) {
-    // Dev bypass: no service account configured — print to console so flows are testable.
+    // Dev bypass: no OAuth credentials configured — print to console so flows are testable.
     console.log(
       `\n📧 [DEV EMAIL BYPASS]\n  To:      ${params.to}\n  Subject: ${params.subject}\n  Body:\n${params.text ?? params.html}\n`
     );
