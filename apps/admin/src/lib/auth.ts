@@ -30,6 +30,13 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Credenciales inválidas");
         }
 
+        // El panel web es solo para staff; los clientes inician sesión en la
+        // app móvil (resuelve por la ficha del cliente, no por User.email).
+        // Bloqueo explícito con error genérico para no revelar el rol.
+        if (user.role === "CLIENTE") {
+          throw new Error("Credenciales inválidas");
+        }
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password
