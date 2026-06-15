@@ -33,12 +33,7 @@ export default async function ImportacionDetallePage({
   const imp = await prisma.clienteImport.findUnique({
     where: { id },
     select: {
-      id: true,
       status: true,
-      total: true,
-      created: true,
-      skipped: true,
-      failed: true,
       results: true,
       createdAt: true,
       createdBy: { select: { name: true, apellido: true } },
@@ -67,21 +62,6 @@ export default async function ImportacionDetallePage({
               "—"}
           </p>
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2 text-sm">
-        <span className="rounded-md bg-secondary px-2.5 py-1 font-medium text-green-700">
-          {imp.created} creados
-        </span>
-        <span className="rounded-md bg-muted px-2.5 py-1 font-medium text-muted-foreground">
-          {imp.skipped} omitidos
-        </span>
-        <span className="rounded-md bg-destructive/10 px-2.5 py-1 font-medium text-destructive">
-          {imp.failed} con error
-        </span>
-        <span className="rounded-md bg-muted px-2.5 py-1 font-medium text-muted-foreground">
-          {imp.total} total
-        </span>
       </div>
 
       <ImportDetailTable results={results} />
