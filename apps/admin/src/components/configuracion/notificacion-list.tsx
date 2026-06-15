@@ -38,8 +38,6 @@ const DESCRIPCIONES: Record<string, string> = {
     "Se envía al número configurado cuando un cliente escribe al WhatsApp del negocio",
   AUTENTICACION_OTP:
     "Código de verificación por WhatsApp para iniciar sesión en la app móvil",
-  INVITACION_CUENTA:
-    "Enlace por WhatsApp para que el cliente cree su contraseña y acceda a la app",
 };
 
 const STATUS_BADGE: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {

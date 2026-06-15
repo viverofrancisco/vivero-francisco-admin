@@ -56,7 +56,7 @@ export default function SolicitarAccesoScreen() {
             <>
               <Text variant="bodyLarge" style={styles.subtitle}>
                 {message ??
-                  "Si tu cuenta existe, te enviamos un enlace por correo o WhatsApp para crear tu contraseña."}
+                  "Si tu cuenta existe, te enviamos un enlace por correo para crear tu contraseña."}
               </Text>
               <Button
                 mode="contained"
@@ -69,8 +69,8 @@ export default function SolicitarAccesoScreen() {
           ) : (
             <>
               <Text variant="bodyLarge" style={styles.subtitle}>
-                Ingresa tu teléfono o correo y te enviaremos un enlace para
-                crear tu contraseña.
+                Ingresa tu teléfono o correo y te enviaremos un enlace a tu
+                correo para crear tu contraseña.
               </Text>
               <TextInput
                 mode="outlined"

@@ -18,14 +18,14 @@ export async function POST(
   const { id } = await params;
   const cliente = await prisma.cliente.findUnique({
     where: { id, deletedAt: null },
-    select: { id: true, email: true, telefono: true },
+    select: { id: true, email: true },
   });
   if (!cliente) {
     return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
   }
-  if (!cliente.email && !cliente.telefono) {
+  if (!cliente.email) {
     return NextResponse.json(
-      { error: "El cliente no tiene correo ni teléfono para enviar la invitación." },
+      { error: "El cliente no tiene correo registrado. Agrega uno para enviar la invitación." },
       { status: 400 }
     );
   }

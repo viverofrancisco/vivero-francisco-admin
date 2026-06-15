@@ -442,22 +442,20 @@ export function ClienteDetailTabs({
               </CardHeader>
               <CardContent className="pt-3 space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Envía un enlace para que el cliente cree su contraseña y acceda
-                  a la app. Se envía a su correo y WhatsApp registrados.
+                  Envía un enlace al correo del cliente para que cree su
+                  contraseña y acceda a la app.
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleEnviarInvitacion}
-                  disabled={
-                    invitando || (!cliente.email && !cliente.telefono)
-                  }
+                  disabled={invitando || !cliente.email}
                 >
                   {invitando ? "Enviando…" : "Enviar invitación"}
                 </Button>
-                {!cliente.email && !cliente.telefono && (
+                {!cliente.email && (
                   <p className="text-xs text-muted-foreground">
-                    Agrega un correo o teléfono para poder enviar la invitación.
+                    Agrega un correo al cliente para poder enviar la invitación.
                   </p>
                 )}
               </CardContent>

@@ -33,23 +33,12 @@ estado" en la app (`/api/notificaciones/plantillas/[id]/meta`). Hasta que estén
 Categorías: la mayoría son `UTILITY`; `AUTENTICACION_OTP` es `AUTHENTICATION`;
 `INVITACION_CUENTA` es `UTILITY` con botón URL (ver abajo).
 
-## INVITACION_CUENTA (enlace para crear contraseña)
+## Invitación de cuenta: NO usa WhatsApp
 
-Meta normalmente **rechaza** una URL cruda como parámetro en el cuerpo. Por eso este
-template usa un **botón URL dinámico**, no texto:
-
-- **Cuerpo:** `Hola {{1}}, crea tu contraseña para acceder a la app de Vivero Francisco.`
-  (`{{1}}` = nombre).
-- **Botón URL:** texto "Crear contraseña", URL `${APP_BASE_URL}/establecer-contrasena?token={{1}}`
-  donde `{{1}}` (sufijo, debe ir al final de la URL) = el token.
-
-El dominio base se **fija al crear el template** desde `APP_BASE_URL`, así que esa
-variable debe ser la **URL pública real** al correr `seed-meta-templates.ts`. Al enviar,
-`enviarInvitacionCuenta()` manda `nombre` como parámetro del cuerpo y el `token` como
-parámetro del botón.
-
-Si cambias el dominio público, hay que **recrear** el template (borrar en Meta y volver
-a correr el seed) para actualizar la URL base del botón.
+La invitación para crear contraseña se envía **solo por correo** (Gmail API), no por
+WhatsApp. Se intentó un template con botón URL, pero Meta lo rechaza con
+`INCORRECT_CATEGORY` (un enlace de "crear contraseña" no encaja en sus categorías).
+Ver [autenticacion-clientes.md](./autenticacion-clientes.md).
 
 ## Agregar un template nuevo
 

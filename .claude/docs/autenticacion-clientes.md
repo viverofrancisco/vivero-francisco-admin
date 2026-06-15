@@ -15,8 +15,9 @@ sigue usando correo + contraseña por `/api/mobile/auth/login` (ver `CLAUDE.md`)
 2. **Envío del enlace** — `createAndSendInvite()` genera un token (`randomBytes(32)`,
    se guarda solo el `sha256` en `SetPasswordToken`, caduca a 24 h, un solo uso e
    invalida los anteriores) y manda `…/establecer-contrasena?token=…` por **correo
-   (Gmail API)** y **WhatsApp** a los datos en la ficha. Solo el dueño del
-   correo/teléfono recibe el enlace → eso es la prueba de propiedad.
+   (Gmail API)** al correo de la ficha. **Solo correo** — no se usa WhatsApp para
+   esto. Si el cliente no tiene correo, no se envía nada (el admin debe agregarle uno).
+   Solo el dueño del correo recibe el enlace → eso es la prueba de propiedad.
 3. **Establecer contraseña** — el enlace abre la página pública
    `/establecer-contrasena` (fuera de `/dashboard`, sin NextAuth). Valida el token
    (`GET /api/auth/set-password?token=…`) y guarda la contraseña
@@ -71,8 +72,11 @@ en la consola del servidor (bypass de desarrollo).
 5. **Exchange authorization code for tokens** → copia el **refresh token** a `GMAIL_REFRESH_TOKEN`.
 6. Reinicia el dev server.
 
-## WhatsApp
+## Nota: solo correo (no WhatsApp)
 
-El enlace por WhatsApp usa el template `INVITACION_CUENTA`. Ver
-[notificaciones-whatsapp.md](./notificaciones-whatsapp.md) para cómo se siembra y se
-aprueba en Meta. Sin template aprobado, el envío por WhatsApp cae al bypass de consola.
+La invitación se envía **únicamente por correo** (Gmail API). Se evaluó enviarla
+también por WhatsApp, pero Meta rechaza la plantilla con un botón URL como
+`INCORRECT_CATEGORY` (un enlace de "crear contraseña" no encaja en sus categorías
+UTILITY/AUTHENTICATION). Por eso el canal es solo correo. El `APP_BASE_URL` debe
+apuntar a la URL pública en producción para que el enlace del correo sea válido
+(en local usa `http://localhost:3001`).

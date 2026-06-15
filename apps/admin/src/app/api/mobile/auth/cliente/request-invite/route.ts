@@ -8,7 +8,7 @@ import {
 
 // Mensaje genérico: no revelamos si el identificador corresponde a un cliente.
 const GENERIC_MESSAGE =
-  "Si tu cuenta existe, te enviamos un enlace por correo o WhatsApp para crear tu contraseña.";
+  "Si tu cuenta existe, te enviamos un enlace por correo para crear tu contraseña.";
 
 export async function POST(request: Request) {
   const parsed = requestInviteSchema.safeParse(

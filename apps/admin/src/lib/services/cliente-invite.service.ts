@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sha256 } from "@/lib/mobile/jwt";
 import { formatForWhatsApp } from "@/lib/whatsapp/phone";
-import { enviarInvitacionCuenta } from "@/lib/whatsapp/service";
 import { sendSetPasswordEmail } from "@/lib/email";
 import type { Cliente, User } from "@/generated/prisma/client";
 
@@ -65,12 +64,13 @@ export async function resolveClienteByIdentifier(
 
 /**
  * Genera un token de un solo uso, invalida los anteriores sin usar y envía el
- * enlace para establecer contraseña al correo y/o WhatsApp del cliente.
+ * enlace para establecer contraseña al **correo** del cliente. (Solo correo: no
+ * se usa WhatsApp para esto.) Si el cliente no tiene correo, no se envía nada.
  * No revela si el cliente existe — los llamadores deben responder genéricamente.
  */
 export async function createAndSendInvite(clienteId: string): Promise<void> {
   const cliente = await prisma.cliente.findUnique({ where: { id: clienteId } });
-  if (!cliente || cliente.deletedAt) return;
+  if (!cliente || cliente.deletedAt || !cliente.email) return;
 
   const token = randomBytes(32).toString("hex");
   const tokenHash = sha256(token);
@@ -85,15 +85,7 @@ export async function createAndSendInvite(clienteId: string): Promise<void> {
   ]);
 
   const link = `${baseUrl()}/establecer-contrasena?token=${token}`;
-
-  await Promise.allSettled([
-    cliente.email
-      ? sendSetPasswordEmail(cliente.email, cliente.nombre, link)
-      : Promise.resolve(),
-    cliente.telefono
-      ? enviarInvitacionCuenta(cliente.telefono, cliente.nombre, token, link, cliente.id)
-      : Promise.resolve(),
-  ]);
+  await sendSetPasswordEmail(cliente.email, cliente.nombre, link);
 }
 
 // ──────────────────────────────────────────────
