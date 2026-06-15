@@ -143,7 +143,16 @@ async function createInviteTemplate(name: string, language: string, bodyText: st
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, language, category: "UTILITY", components }),
+    // allow_category_change deja que Meta asigne la categoría correcta en vez de
+    // rechazar con INCORRECT_CATEGORY (un enlace de "crear contraseña" cae en
+    // zona gris entre UTILITY/MARKETING para Meta).
+    body: JSON.stringify({
+      name,
+      language,
+      category: "UTILITY",
+      allow_category_change: true,
+      components,
+    }),
   });
 
   const data = await res.json();
@@ -178,7 +187,15 @@ async function main() {
       continue;
     }
 
-    const templateName = `${p.tipo.toLowerCase()}_default`;
+    // Meta bloquea por un tiempo el nombre de un template borrado, así que para
+    // INVITACION_CUENTA usamos un nombre nuevo (el _default quedó bloqueado tras
+    // borrar el rechazado). El nombre real se guarda en la DB y el envío lo lee
+    // de ahí, así que cualquier nombre es válido mientras sea consistente.
+    const TEMPLATE_NAME_OVERRIDES: Record<string, string> = {
+      INVITACION_CUENTA: "invitacion_cuenta",
+    };
+    const templateName =
+      TEMPLATE_NAME_OVERRIDES[p.tipo] ?? `${p.tipo.toLowerCase()}_default`;
     console.log(`Creando: ${templateName}...`);
 
     const result =
