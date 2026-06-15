@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { ForbiddenError, NotFoundError } from "./errors";
+import { ForbiddenError, NotFoundError, ValidationError, ServiceError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
+import { formatForWhatsApp } from "@/lib/whatsapp/phone";
+import { clienteImportRowSchema } from "@/lib/validations/cliente";
 
 export async function getClienteProfile(viewer: Viewer) {
   if (viewer.role !== "CLIENTE") {
@@ -260,6 +262,126 @@ export async function createCliente(
       updatedById: viewer.id,
     },
   });
+}
+
+// ──────────────────────────────────────────────
+// Importación masiva (CSV)
+// ──────────────────────────────────────────────
+
+export interface ImportRowResult {
+  fila: number; // 1-based, sin contar la cabecera
+  estado: "creado" | "omitido" | "error";
+  nombre?: string;
+  mensaje?: string;
+}
+
+export interface ImportClientesResult {
+  created: number;
+  skipped: number;
+  failed: number;
+  results: ImportRowResult[];
+}
+
+const MAX_IMPORT_ROWS = 1000;
+
+/**
+ * Crea clientes en lote desde filas de un CSV. Valida cada fila, omite
+ * duplicados (por correo o teléfono, contra la DB y dentro del mismo archivo) y
+ * reporta el resultado por fila. Un fallo de fila no aborta el resto.
+ */
+export async function importClientes(
+  viewer: Viewer,
+  rows: Record<string, unknown>[]
+): Promise<ImportClientesResult> {
+  ensureCanWrite(viewer);
+
+  if (rows.length === 0) {
+    throw new ValidationError("El archivo no tiene filas.");
+  }
+  if (rows.length > MAX_IMPORT_ROWS) {
+    throw new ValidationError(
+      `Máximo ${MAX_IMPORT_ROWS} filas por importación (recibidas ${rows.length}).`
+    );
+  }
+
+  // Contactos ya existentes para detectar duplicados.
+  const existentes = await prisma.cliente.findMany({
+    where: { deletedAt: null },
+    select: { email: true, telefono: true },
+  });
+  const seenEmails = new Set<string>();
+  const seenPhones = new Set<string>();
+  for (const c of existentes) {
+    if (c.email) seenEmails.add(c.email.toLowerCase());
+    if (c.telefono) seenPhones.add(formatForWhatsApp(c.telefono));
+  }
+
+  const results: ImportRowResult[] = [];
+  let created = 0;
+  let skipped = 0;
+  let failed = 0;
+
+  for (let i = 0; i < rows.length; i++) {
+    const fila = i + 1;
+    const parsed = clienteImportRowSchema.safeParse(rows[i]);
+    if (!parsed.success) {
+      failed++;
+      results.push({
+        fila,
+        estado: "error",
+        mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos",
+      });
+      continue;
+    }
+
+    const data = parsed.data;
+    const emailKey = data.email ? data.email.toLowerCase() : null;
+    const phoneKey = data.telefono ? formatForWhatsApp(data.telefono) : null;
+
+    if (
+      (emailKey && seenEmails.has(emailKey)) ||
+      (phoneKey && seenPhones.has(phoneKey))
+    ) {
+      skipped++;
+      results.push({
+        fila,
+        estado: "omitido",
+        nombre: data.nombre,
+        mensaje: "Ya existe un cliente con ese correo o teléfono.",
+      });
+      continue;
+    }
+
+    try {
+      await createCliente(viewer, {
+        nombre: data.nombre,
+        apellido: data.apellido,
+        email: data.email,
+        telefono: data.telefono,
+        ciudad: data.ciudad,
+        direccion: data.direccion,
+        numeroCasa: data.numeroCasa,
+        referencia: data.referencia,
+        notas: data.notas,
+        metrosCuadrados: data.metrosCuadrados,
+        sectorId: null,
+      });
+      created++;
+      if (emailKey) seenEmails.add(emailKey);
+      if (phoneKey) seenPhones.add(phoneKey);
+      results.push({ fila, estado: "creado", nombre: data.nombre });
+    } catch (e) {
+      failed++;
+      results.push({
+        fila,
+        estado: "error",
+        nombre: data.nombre,
+        mensaje: e instanceof ServiceError ? e.message : "No se pudo crear el cliente.",
+      });
+    }
+  }
+
+  return { created, skipped, failed, results };
 }
 
 export async function updateCliente(

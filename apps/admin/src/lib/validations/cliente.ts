@@ -24,3 +24,57 @@ export const clienteSchema = z.object({
 });
 
 export type ClienteFormData = z.infer<typeof clienteSchema>;
+
+// ──────────────────────────────────────────────
+// Importación CSV (una fila)
+// ──────────────────────────────────────────────
+
+// Las celdas del CSV llegan como strings (o undefined si falta la columna).
+// Normalizamos toda la fila primero (trim; "" o ausente → undefined) y luego
+// validamos con campos `.optional()`. Esto evita el manejo de undefined por
+// campo en zod v4.
+const csvText = (v: unknown): string | undefined => {
+  if (typeof v !== "string") return undefined;
+  const t = v.trim();
+  return t === "" ? undefined : t;
+};
+
+export const clienteImportRowSchema = z.preprocess(
+  (raw) => {
+    const r = (raw ?? {}) as Record<string, unknown>;
+    return {
+      nombre: typeof r.nombre === "string" ? r.nombre.trim() : "",
+      apellido: csvText(r.apellido),
+      email: csvText(r.email),
+      telefono: csvText(r.telefono),
+      ciudad: csvText(r.ciudad),
+      direccion: csvText(r.direccion),
+      numeroCasa: csvText(r.numeroCasa),
+      referencia: csvText(r.referencia),
+      notas: csvText(r.notas),
+      metrosCuadrados: csvText(r.metrosCuadrados),
+    };
+  },
+  z
+    .object({
+      nombre: z.string().min(1, "El nombre es obligatorio").max(120),
+      apellido: z.string().max(500).optional(),
+      email: z.email("Email inválido").optional(),
+      telefono: z
+        .string()
+        .regex(telefonoEcuadorRegex, "Número inválido. Ej: 0991234567 o +593991234567")
+        .optional(),
+      ciudad: z.string().max(500).optional(),
+      direccion: z.string().max(500).optional(),
+      numeroCasa: z.string().max(500).optional(),
+      referencia: z.string().max(500).optional(),
+      notas: z.string().max(500).optional(),
+      metrosCuadrados: z.coerce.number().positive("Debe ser mayor a 0").optional(),
+    })
+    .refine((r) => Boolean(r.email || r.telefono), {
+      message: "Se requiere teléfono o correo",
+      path: ["telefono"],
+    })
+);
+
+export type ClienteImportRow = z.infer<typeof clienteImportRowSchema>;

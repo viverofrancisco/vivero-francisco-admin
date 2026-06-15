@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
 import { PageHeader } from "@/components/shared/page-header";
 import { ClientesTable } from "@/components/clientes/clientes-table";
+import { ImportClientesDialog } from "@/components/clientes/import-clientes-dialog";
 
 export default async function ClientesPage() {
   const user = await requireAuth();
@@ -40,6 +41,7 @@ export default async function ClientesPage() {
         description="Gestiona los clientes del vivero"
         createHref={canCreate ? "/dashboard/clientes/nuevo" : undefined}
         createLabel="Nuevo Cliente"
+        actions={canCreate ? <ImportClientesDialog /> : undefined}
       />
 
       <ClientesTable clientes={clientes} />
