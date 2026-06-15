@@ -30,17 +30,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Brand } from "./brand";
 
+interface NavChild {
+  label: string;
+  href: string;
+  roles?: UserRole[];
+}
+
 interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
   roles?: UserRole[];
-  children?: { label: string; href: string }[];
+  children?: NavChild[];
 }
 
 const mainItems: NavItem[] = [
   { label: "Panel", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Clientes", href: "/dashboard/clientes", icon: Users, roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"] },
+  {
+    label: "Clientes",
+    href: "/dashboard/clientes",
+    icon: Users,
+    roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
+    children: [
+      { label: "Ver clientes", href: "/dashboard/clientes" },
+      {
+        label: "Importaciones",
+        href: "/dashboard/clientes/importaciones",
+        roles: ["ADMIN", "STAFF"],
+      },
+    ],
+  },
   {
     label: "Servicios",
     href: "/dashboard/servicios",
@@ -157,20 +176,24 @@ export function Sidebar({ branding }: BrandingProps) {
         )}
         {hasChildren && isExpanded && (
           <div className="ml-8 mt-1 space-y-1">
-            {item.children!.map((child) => (
-              <Link
-                key={child.href}
-                href={child.href}
-                className={cn(
-                  "block rounded-lg px-3 py-1.5 text-sm transition-colors",
-                  pathname === child.href
-                    ? "font-semibold text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {child.label}
-              </Link>
-            ))}
+            {item
+              .children!.filter(
+                (child) => !child.roles || (role && child.roles.includes(role))
+              )
+              .map((child) => (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  className={cn(
+                    "block rounded-lg px-3 py-1.5 text-sm transition-colors",
+                    pathname === child.href
+                      ? "font-semibold text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {child.label}
+                </Link>
+              ))}
           </div>
         )}
       </div>

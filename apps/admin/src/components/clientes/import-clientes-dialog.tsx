@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Upload, Download, FileText, History } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type CsvRow = Record<string, string>;
 
@@ -58,7 +59,9 @@ export function ImportClientesDialog() {
   const [cancelling, setCancelling] = useState(false);
   const [processed, setProcessed] = useState(0);
   const [result, setResult] = useState<ImportOutcome | null>(null);
+  const [dragging, setDragging] = useState(false);
   const cancelRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
     setFileName(null);
@@ -86,13 +89,17 @@ export function ImportClientesDialog() {
     }
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const parseFile = (file: File | undefined | null) => {
     setParseError(null);
     setResult(null);
     setRows([]);
     setFileName(null);
     if (!file) return;
+
+    if (!/\.csv$/i.test(file.name) && file.type !== "text/csv") {
+      setParseError("Selecciona un archivo .csv");
+      return;
+    }
 
     setFileName(file.name);
     Papa.parse<CsvRow>(file, {
@@ -111,6 +118,16 @@ export function ImportClientesDialog() {
       },
       error: () => setParseError("No se pudo leer el archivo CSV."),
     });
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    parseFile(e.target.files?.[0]);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    parseFile(e.dataTransfer.files?.[0]);
   };
 
   const handleImport = async () => {
@@ -281,11 +298,41 @@ export function ImportClientesDialog() {
 
             {!importing && (
               <div className="space-y-2">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragging(true);
+                  }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={handleDrop}
+                  className={cn(
+                    "flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors outline-none",
+                    dragging
+                      ? "border-primary bg-primary/5"
+                      : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                  )}
+                >
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                  <p className="text-sm font-medium">
+                    Arrastra tu CSV aquí o haz click para seleccionar
+                  </p>
+                  <p className="text-xs text-muted-foreground">Solo archivos .csv</p>
+                </div>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept=".csv,text/csv"
                   onChange={handleFile}
-                  className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-secondary/80"
+                  className="hidden"
                 />
                 {fileName && !parseError && (
                   <p className="flex items-center text-sm text-muted-foreground">

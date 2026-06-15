@@ -3,13 +3,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight } from "lucide-react";
-
-const ESTADO_BADGE: Record<string, string> = {
-  completado: "bg-secondary text-green-700",
-  cancelado: "bg-warning/15 text-warning-foreground",
-  procesando: "bg-muted text-muted-foreground",
-};
+import { ArrowLeft } from "lucide-react";
+import { ImportsTable } from "@/components/clientes/imports-table";
 
 function formatFecha(d: Date) {
   return d.toLocaleString("es-EC", {
@@ -42,6 +37,18 @@ export default async function ImportacionesPage() {
     },
   });
 
+  const rows = imports.map((imp) => ({
+    id: imp.id,
+    fecha: formatFecha(imp.createdAt),
+    por:
+      `${imp.createdBy?.name ?? ""} ${imp.createdBy?.apellido ?? ""}`.trim(),
+    status: imp.status,
+    created: imp.created,
+    skipped: imp.skipped,
+    failed: imp.failed,
+    total: imp.total,
+  }));
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -60,64 +67,10 @@ export default async function ImportacionesPage() {
         </div>
       </div>
 
-      {imports.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Aún no hay importaciones.
-        </p>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aún no hay importaciones.</p>
       ) : (
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left">
-              <tr>
-                <th className="px-4 py-2.5 font-medium">Fecha</th>
-                <th className="px-4 py-2.5 font-medium">Por</th>
-                <th className="px-4 py-2.5 font-medium">Estado</th>
-                <th className="px-4 py-2.5 font-medium text-right">Creados</th>
-                <th className="px-4 py-2.5 font-medium text-right">Omitidos</th>
-                <th className="px-4 py-2.5 font-medium text-right">Error</th>
-                <th className="px-4 py-2.5 font-medium text-right">Total</th>
-                <th className="px-4 py-2.5" />
-              </tr>
-            </thead>
-            <tbody>
-              {imports.map((imp) => (
-                <tr key={imp.id} className="border-t hover:bg-muted/30">
-                  <td className="px-4 py-2.5">{formatFecha(imp.createdAt)}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">
-                    {`${imp.createdBy?.name ?? ""} ${imp.createdBy?.apellido ?? ""}`.trim() || "—"}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-bold capitalize ${
-                        ESTADO_BADGE[imp.status] ?? "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {imp.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-medium text-green-700">
-                    {imp.created}
-                  </td>
-                  <td className="px-4 py-2.5 text-right text-muted-foreground">
-                    {imp.skipped}
-                  </td>
-                  <td className="px-4 py-2.5 text-right text-destructive">
-                    {imp.failed}
-                  </td>
-                  <td className="px-4 py-2.5 text-right">{imp.total}</td>
-                  <td className="px-4 py-2.5 text-right">
-                    <Link
-                      href={`/dashboard/clientes/importaciones/${imp.id}`}
-                      className="inline-flex items-center text-primary hover:underline"
-                    >
-                      Ver <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ImportsTable imports={rows} />
       )}
     </div>
   );
