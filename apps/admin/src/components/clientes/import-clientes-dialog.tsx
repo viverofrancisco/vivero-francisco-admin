@@ -36,6 +36,8 @@ const ESTADO_LABEL: Record<RowResult["estado"], string> = {
   error: "Error",
 };
 
+const PREVIEW_COUNT = 5;
+
 export function ImportClientesDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -54,6 +56,8 @@ export function ImportClientesDialog() {
   };
 
   const handleOpenChange = (next: boolean) => {
+    // No permitir cerrar (botón, backdrop o Escape) mientras se importa.
+    if (!next && importing) return;
     setOpen(next);
     if (!next) {
       // Si hubo creados, refresca la tabla detrás.
@@ -159,11 +163,48 @@ export function ImportClientesDialog() {
               {parseError && <p className="text-sm text-red-600">{parseError}</p>}
             </div>
 
+            {rows.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Vista previa ({Math.min(rows.length, PREVIEW_COUNT)} de {rows.length})
+                </p>
+                <div className="max-h-48 overflow-auto rounded-md border">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-muted/50">
+                      <tr className="text-left">
+                        <th className="px-2.5 py-1.5 font-medium">Nombre</th>
+                        <th className="px-2.5 py-1.5 font-medium">Correo</th>
+                        <th className="px-2.5 py-1.5 font-medium">Teléfono</th>
+                        <th className="px-2.5 py-1.5 font-medium">Ciudad</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.slice(0, PREVIEW_COUNT).map((r, i) => (
+                        <tr key={i} className="border-t">
+                          <td className="px-2.5 py-1.5">{r.nombre || "—"}</td>
+                          <td className="px-2.5 py-1.5 text-muted-foreground">
+                            {r.email || "—"}
+                          </td>
+                          <td className="px-2.5 py-1.5 text-muted-foreground">
+                            {r.telefono || "—"}
+                          </td>
+                          <td className="px-2.5 py-1.5 text-muted-foreground">
+                            {r.ciudad || "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
+                disabled={importing}
               >
                 Cancelar
               </Button>
