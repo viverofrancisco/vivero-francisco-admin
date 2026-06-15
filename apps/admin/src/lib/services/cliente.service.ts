@@ -272,6 +272,7 @@ export interface ImportRowResult {
   fila: number; // 1-based, sin contar la cabecera
   estado: "creado" | "omitido" | "error";
   nombre?: string;
+  clienteId?: string;
   mensaje?: string;
 }
 
@@ -353,7 +354,7 @@ export async function importClientes(
     }
 
     try {
-      await createCliente(viewer, {
+      const cliente = await createCliente(viewer, {
         nombre: data.nombre,
         apellido: data.apellido,
         email: data.email,
@@ -369,7 +370,7 @@ export async function importClientes(
       created++;
       if (emailKey) seenEmails.add(emailKey);
       if (phoneKey) seenPhones.add(phoneKey);
-      results.push({ fila, estado: "creado", nombre: data.nombre });
+      results.push({ fila, estado: "creado", nombre: data.nombre, clienteId: cliente.id });
     } catch (e) {
       failed++;
       results.push({

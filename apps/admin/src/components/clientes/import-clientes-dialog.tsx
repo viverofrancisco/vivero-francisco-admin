@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Upload, Download, FileText } from "lucide-react";
+import { Upload, Download, FileText, History } from "lucide-react";
 import { toast } from "sonner";
 
 type CsvRow = Record<string, string>;
@@ -20,15 +21,20 @@ interface RowResult {
   fila: number;
   estado: "creado" | "omitido" | "error";
   nombre?: string;
+  clienteId?: string;
   mensaje?: string;
 }
 
-interface ImportResult {
+interface ImportOutcome {
+  status: "completado" | "cancelado";
   created: number;
   skipped: number;
   failed: number;
   results: RowResult[];
 }
+
+const PREVIEW_COUNT = 5;
+const BATCH_SIZE = 25;
 
 const ESTADO_LABEL: Record<RowResult["estado"], string> = {
   creado: "Creado",
@@ -36,7 +42,11 @@ const ESTADO_LABEL: Record<RowResult["estado"], string> = {
   error: "Error",
 };
 
-const PREVIEW_COUNT = 5;
+const ESTADO_CLASS: Record<RowResult["estado"], string> = {
+  creado: "text-green-700",
+  omitido: "text-muted-foreground",
+  error: "text-destructive",
+};
 
 export function ImportClientesDialog() {
   const router = useRouter();
@@ -45,22 +55,32 @@ export function ImportClientesDialog() {
   const [rows, setRows] = useState<CsvRow[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
-  const [result, setResult] = useState<ImportResult | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [processed, setProcessed] = useState(0);
+  const [result, setResult] = useState<ImportOutcome | null>(null);
+  const cancelRef = useRef(false);
 
   const reset = () => {
     setFileName(null);
     setRows([]);
     setParseError(null);
     setImporting(false);
+    setCancelling(false);
+    setProcessed(0);
     setResult(null);
+    cancelRef.current = false;
   };
 
   const handleOpenChange = (next: boolean) => {
-    // No permitir cerrar (botón, backdrop o Escape) mientras se importa.
-    if (!next && importing) return;
+    // Mientras importa, intentar cerrar (botón/backdrop/Escape) solo solicita
+    // cancelar; el diálogo permanece abierto para mostrar el resultado.
+    if (!next && importing) {
+      cancelRef.current = true;
+      setCancelling(true);
+      return;
+    }
     setOpen(next);
     if (!next) {
-      // Si hubo creados, refresca la tabla detrás.
       if (result && result.created > 0) router.refresh();
       reset();
     }
@@ -94,30 +114,66 @@ export function ImportClientesDialog() {
   };
 
   const handleImport = async () => {
+    cancelRef.current = false;
+    setCancelling(false);
     setImporting(true);
+    setProcessed(0);
+
+    let importId: string | undefined;
+    const acc: RowResult[] = [];
+    let created = 0;
+    let skipped = 0;
+    let failed = 0;
+    let cancelled = false;
+
     try {
-      const res = await fetch("/api/clientes/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al importar");
-      setResult(data as ImportResult);
-      const r = data as ImportResult;
-      if (r.created > 0) {
-        toast.success(`${r.created} cliente(s) importado(s)`);
-      } else {
-        toast.message("No se creó ningún cliente nuevo");
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+        if (cancelRef.current) {
+          cancelled = true;
+          break;
+        }
+        const chunk = rows.slice(i, i + BATCH_SIZE);
+        const res = await fetch("/api/clientes/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rows: chunk, importId, offset: i, total: rows.length }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Error al importar");
+        importId = data.importId;
+        acc.push(...(data.results as RowResult[]));
+        created += data.created;
+        skipped += data.skipped;
+        failed += data.failed;
+        setProcessed(Math.min(i + BATCH_SIZE, rows.length));
       }
+
+      const finalStatus: ImportOutcome["status"] = cancelled
+        ? "cancelado"
+        : "completado";
+      if (importId) {
+        await fetch("/api/clientes/import/finish", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ importId, status: finalStatus }),
+        }).catch(() => {});
+      }
+      setResult({ status: finalStatus, created, skipped, failed, results: acc });
+      if (created > 0) toast.success(`${created} cliente(s) importado(s)`);
+      else if (cancelled) toast.message("Importación cancelada");
+      else toast.message("No se creó ningún cliente nuevo");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al importar");
+      if (acc.length > 0) {
+        setResult({ status: "cancelado", created, skipped, failed, results: acc });
+      }
     } finally {
       setImporting(false);
+      setCancelling(false);
     }
   };
 
-  const problemas = result?.results.filter((r) => r.estado !== "creado") ?? [];
+  const pct = rows.length > 0 ? Math.round((processed / rows.length) * 100) : 0;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -130,7 +186,74 @@ export function ImportClientesDialog() {
           <DialogTitle>Importar clientes desde CSV</DialogTitle>
         </DialogHeader>
 
-        {!result ? (
+        {result ? (
+          // ─── Resultado ───
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm">
+              <span
+                className={`rounded-md px-2.5 py-1 font-medium ${
+                  result.status === "completado"
+                    ? "bg-secondary text-green-700"
+                    : "bg-warning/15 text-warning-foreground"
+                }`}
+              >
+                {result.status === "completado" ? "Completado" : "Cancelado"}
+              </span>
+              <span className="rounded-md bg-secondary px-2.5 py-1 font-medium text-green-700">
+                {result.created} creados
+              </span>
+              <span className="rounded-md bg-muted px-2.5 py-1 font-medium text-muted-foreground">
+                {result.skipped} omitidos
+              </span>
+              <span className="rounded-md bg-destructive/10 px-2.5 py-1 font-medium text-destructive">
+                {result.failed} error
+              </span>
+            </div>
+
+            <div className="max-h-72 overflow-auto rounded-md border">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-muted/50">
+                  <tr className="text-left">
+                    <th className="px-3 py-2 font-medium">Fila</th>
+                    <th className="px-3 py-2 font-medium">Estado</th>
+                    <th className="px-3 py-2 font-medium">Detalle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.results.map((r) => (
+                    <tr key={r.fila} className="border-t">
+                      <td className="px-3 py-2 align-top">{r.fila}</td>
+                      <td
+                        className={`px-3 py-2 align-top font-medium ${ESTADO_CLASS[r.estado]}`}
+                      >
+                        {ESTADO_LABEL[r.estado]}
+                      </td>
+                      <td className="px-3 py-2 align-top text-muted-foreground">
+                        {r.nombre ? <span className="text-foreground">{r.nombre}</span> : null}
+                        {r.nombre && r.mensaje ? " — " : ""}
+                        {r.mensaje}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Link
+                href="/dashboard/clientes/importaciones"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <History className="mr-1.5 h-4 w-4" />
+                Ver historial
+              </Link>
+              <Button type="button" onClick={() => handleOpenChange(false)}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // ─── Selección / progreso ───
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Sube un archivo CSV. Obligatorio: <strong>nombre</strong> y al menos{" "}
@@ -138,32 +261,43 @@ export function ImportClientesDialog() {
               teléfono) se omiten.
             </p>
 
-            <a
-              href="/plantilla-clientes.csv"
-              download
-              className="inline-flex items-center text-sm text-primary hover:underline"
-            >
-              <Download className="mr-1.5 h-4 w-4" />
-              Descargar plantilla
-            </a>
-
-            <div className="space-y-2">
-              <input
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleFile}
-                className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-secondary/80"
-              />
-              {fileName && !parseError && (
-                <p className="flex items-center text-sm text-muted-foreground">
-                  <FileText className="mr-1.5 h-4 w-4" />
-                  {fileName} — {rows.length} fila(s) detectada(s)
-                </p>
-              )}
-              {parseError && <p className="text-sm text-red-600">{parseError}</p>}
+            <div className="flex items-center justify-between">
+              <a
+                href="/plantilla-clientes.csv"
+                download
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <Download className="mr-1.5 h-4 w-4" />
+                Descargar plantilla
+              </a>
+              <Link
+                href="/dashboard/clientes/importaciones"
+                className="inline-flex items-center text-sm text-muted-foreground hover:underline"
+              >
+                <History className="mr-1.5 h-4 w-4" />
+                Historial
+              </Link>
             </div>
 
-            {rows.length > 0 && (
+            {!importing && (
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleFile}
+                  className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-secondary/80"
+                />
+                {fileName && !parseError && (
+                  <p className="flex items-center text-sm text-muted-foreground">
+                    <FileText className="mr-1.5 h-4 w-4" />
+                    {fileName} — {rows.length} fila(s) detectada(s)
+                  </p>
+                )}
+                {parseError && <p className="text-sm text-red-600">{parseError}</p>}
+              </div>
+            )}
+
+            {!importing && rows.length > 0 && (
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-muted-foreground">
                   Vista previa ({Math.min(rows.length, PREVIEW_COUNT)} de {rows.length})
@@ -199,70 +333,55 @@ export function ImportClientesDialog() {
               </div>
             )}
 
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={importing}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                onClick={handleImport}
-                disabled={importing || rows.length === 0}
-              >
-                {importing ? "Importando..." : `Importar ${rows.length || ""}`}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex gap-3 text-sm">
-              <span className="rounded-md bg-secondary px-2.5 py-1 font-medium text-green-700">
-                {result.created} creados
-              </span>
-              <span className="rounded-md bg-muted px-2.5 py-1 font-medium text-muted-foreground">
-                {result.skipped} omitidos
-              </span>
-              <span className="rounded-md bg-destructive/10 px-2.5 py-1 font-medium text-destructive">
-                {result.failed} con error
-              </span>
-            </div>
-
-            {problemas.length > 0 && (
-              <div className="max-h-64 overflow-y-auto rounded-md border">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-muted/50">
-                    <tr className="text-left">
-                      <th className="px-3 py-2 font-medium">Fila</th>
-                      <th className="px-3 py-2 font-medium">Estado</th>
-                      <th className="px-3 py-2 font-medium">Detalle</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {problemas.map((r) => (
-                      <tr key={r.fila} className="border-t">
-                        <td className="px-3 py-2 align-top">{r.fila}</td>
-                        <td className="px-3 py-2 align-top">
-                          {ESTADO_LABEL[r.estado]}
-                        </td>
-                        <td className="px-3 py-2 align-top text-muted-foreground">
-                          {r.nombre ? `${r.nombre}: ` : ""}
-                          {r.mensaje}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {importing && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>
+                    {cancelling ? "Cancelando…" : "Importando…"} {processed} de{" "}
+                    {rows.length}
+                  </span>
+                  <span>{pct}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
               </div>
             )}
 
-            <div className="flex justify-end">
-              <Button type="button" onClick={() => handleOpenChange(false)}>
-                Cerrar
-              </Button>
+            <div className="flex justify-end gap-2">
+              {importing ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    cancelRef.current = true;
+                    setCancelling(true);
+                  }}
+                  disabled={cancelling}
+                >
+                  {cancelling ? "Cancelando…" : "Cancelar"}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenChange(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleImport}
+                    disabled={rows.length === 0}
+                  >
+                    Importar {rows.length || ""}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}

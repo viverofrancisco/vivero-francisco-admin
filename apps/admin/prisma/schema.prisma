@@ -142,6 +142,7 @@ model User {
   visitaMessages          VisitaMessage[]
   visitaChatReads         VisitaChatRead[]
   informesGenerados       Informe[]         @relation("InformeGeneratedBy")
+  clienteImports          ClienteImport[]   @relation("ClienteImportCreatedBy")
 }
 
 model Cliente {
@@ -495,6 +496,25 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// Historial de importaciones masivas de clientes (CSV). `results` guarda el
+// detalle por fila (ImportRowResult[]): fila, estado, nombre, clienteId, mensaje.
+model ClienteImport {
+  id          String   @id @default(cuid())
+  createdById String?
+  createdBy   User?    @relation("ClienteImportCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  // "procesando" | "completado" | "cancelado"
+  status      String   @default("procesando")
+  total       Int
+  created     Int      @default(0)
+  skipped     Int      @default(0)
+  failed      Int      @default(0)
+  results     Json     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
 }
 
 // Token de un solo uso para que un cliente establezca su contraseña. Se envía

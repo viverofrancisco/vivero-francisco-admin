@@ -408,6 +408,7 @@ export const ModelName = {
   PushToken: 'PushToken',
   OtpCode: 'OtpCode',
   RefreshToken: 'RefreshToken',
+  ClienteImport: 'ClienteImport',
   SetPasswordToken: 'SetPasswordToken',
   TipoActividad: 'TipoActividad',
   Informe: 'Informe',
@@ -430,7 +431,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "servicio" | "clienteServicio" | "personal" | "grupo" | "visita" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "setPasswordToken" | "tipoActividad" | "informe" | "informeVisita" | "informeSeccion" | "empresaConfig" | "firmante"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "servicio" | "clienteServicio" | "personal" | "grupo" | "visita" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "tipoActividad" | "informe" | "informeVisita" | "informeSeccion" | "empresaConfig" | "firmante"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2210,6 +2211,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ClienteImport: {
+      payload: Prisma.$ClienteImportPayload<ExtArgs>
+      fields: Prisma.ClienteImportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClienteImportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClienteImportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>
+        }
+        findFirst: {
+          args: Prisma.ClienteImportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClienteImportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>
+        }
+        findMany: {
+          args: Prisma.ClienteImportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>[]
+        }
+        create: {
+          args: Prisma.ClienteImportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>
+        }
+        createMany: {
+          args: Prisma.ClienteImportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ClienteImportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>[]
+        }
+        delete: {
+          args: Prisma.ClienteImportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>
+        }
+        update: {
+          args: Prisma.ClienteImportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>
+        }
+        deleteMany: {
+          args: Prisma.ClienteImportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClienteImportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ClienteImportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>[]
+        }
+        upsert: {
+          args: Prisma.ClienteImportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClienteImportPayload>
+        }
+        aggregate: {
+          args: Prisma.ClienteImportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClienteImport>
+        }
+        groupBy: {
+          args: Prisma.ClienteImportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClienteImportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClienteImportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClienteImportCountAggregateOutputType> | number
+        }
+      }
+    }
     SetPasswordToken: {
       payload: Prisma.$SetPasswordTokenPayload<ExtArgs>
       fields: Prisma.SetPasswordTokenFieldRefs
@@ -3124,6 +3199,22 @@ export const RefreshTokenScalarFieldEnum = {
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
+export const ClienteImportScalarFieldEnum = {
+  id: 'id',
+  createdById: 'createdById',
+  status: 'status',
+  total: 'total',
+  created: 'created',
+  skipped: 'skipped',
+  failed: 'failed',
+  results: 'results',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClienteImportScalarFieldEnum = (typeof ClienteImportScalarFieldEnum)[keyof typeof ClienteImportScalarFieldEnum]
+
+
 export const SetPasswordTokenScalarFieldEnum = {
   id: 'id',
   clienteId: 'clienteId',
@@ -3579,6 +3670,7 @@ export type GlobalOmitConfig = {
   pushToken?: Prisma.PushTokenOmit
   otpCode?: Prisma.OtpCodeOmit
   refreshToken?: Prisma.RefreshTokenOmit
+  clienteImport?: Prisma.ClienteImportOmit
   setPasswordToken?: Prisma.SetPasswordTokenOmit
   tipoActividad?: Prisma.TipoActividadOmit
   informe?: Prisma.InformeOmit

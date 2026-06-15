@@ -162,6 +162,11 @@ export type OtpCode = Prisma.OtpCodeModel
  */
 export type RefreshToken = Prisma.RefreshTokenModel
 /**
+ * Model ClienteImport
+ * 
+ */
+export type ClienteImport = Prisma.ClienteImportModel
+/**
  * Model SetPasswordToken
  * 
  */

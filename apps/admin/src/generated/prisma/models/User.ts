@@ -246,6 +246,7 @@ export type UserWhereInput = {
   visitaMessages?: Prisma.VisitaMessageListRelationFilter
   visitaChatReads?: Prisma.VisitaChatReadListRelationFilter
   informesGenerados?: Prisma.InformeListRelationFilter
+  clienteImports?: Prisma.ClienteImportListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -283,6 +284,7 @@ export type UserOrderByWithRelationInput = {
   visitaMessages?: Prisma.VisitaMessageOrderByRelationAggregateInput
   visitaChatReads?: Prisma.VisitaChatReadOrderByRelationAggregateInput
   informesGenerados?: Prisma.InformeOrderByRelationAggregateInput
+  clienteImports?: Prisma.ClienteImportOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -323,6 +325,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   visitaMessages?: Prisma.VisitaMessageListRelationFilter
   visitaChatReads?: Prisma.VisitaChatReadListRelationFilter
   informesGenerados?: Prisma.InformeListRelationFilter
+  clienteImports?: Prisma.ClienteImportListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -392,6 +395,7 @@ export type UserCreateInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -429,6 +433,7 @@ export type UserUncheckedCreateInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUpdateInput = {
@@ -466,6 +471,7 @@ export type UserUpdateInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -503,6 +509,7 @@ export type UserUncheckedUpdateInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -955,6 +962,22 @@ export type UserUpdateOneRequiredWithoutRefreshTokensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRefreshTokensInput, Prisma.UserUpdateWithoutRefreshTokensInput>, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
 }
 
+export type UserCreateNestedOneWithoutClienteImportsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutClienteImportsInput, Prisma.UserUncheckedCreateWithoutClienteImportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClienteImportsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutClienteImportsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutClienteImportsInput, Prisma.UserUncheckedCreateWithoutClienteImportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClienteImportsInput
+  upsert?: Prisma.UserUpsertWithoutClienteImportsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutClienteImportsInput, Prisma.UserUpdateWithoutClienteImportsInput>, Prisma.UserUncheckedUpdateWithoutClienteImportsInput>
+}
+
 export type UserCreateNestedOneWithoutInformesGeneradosInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutInformesGeneradosInput, Prisma.UserUncheckedCreateWithoutInformesGeneradosInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutInformesGeneradosInput
@@ -1003,6 +1026,7 @@ export type UserCreateWithoutAccountsInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1039,6 +1063,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1091,6 +1116,7 @@ export type UserUpdateWithoutAccountsInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1127,6 +1153,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1163,6 +1190,7 @@ export type UserCreateWithoutSessionsInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1199,6 +1227,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1251,6 +1280,7 @@ export type UserUpdateWithoutSessionsInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1287,6 +1317,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutClientesCreatedInput = {
@@ -1323,6 +1354,7 @@ export type UserCreateWithoutClientesCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutClientesCreatedInput = {
@@ -1359,6 +1391,7 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutClientesCreatedInput = {
@@ -1400,6 +1433,7 @@ export type UserCreateWithoutClientesUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutClientesUpdatedInput = {
@@ -1436,6 +1470,7 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutClientesUpdatedInput = {
@@ -1477,6 +1512,7 @@ export type UserCreateWithoutClienteInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutClienteInput = {
@@ -1513,6 +1549,7 @@ export type UserUncheckedCreateWithoutClienteInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutClienteInput = {
@@ -1565,6 +1602,7 @@ export type UserUpdateWithoutClientesCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientesCreatedInput = {
@@ -1601,6 +1639,7 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutClientesUpdatedInput = {
@@ -1648,6 +1687,7 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
@@ -1684,6 +1724,7 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutClienteInput = {
@@ -1731,6 +1772,7 @@ export type UserUpdateWithoutClienteInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClienteInput = {
@@ -1767,6 +1809,7 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutServiciosCreatedInput = {
@@ -1803,6 +1846,7 @@ export type UserCreateWithoutServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutServiciosCreatedInput = {
@@ -1839,6 +1883,7 @@ export type UserUncheckedCreateWithoutServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutServiciosCreatedInput = {
@@ -1880,6 +1925,7 @@ export type UserCreateWithoutServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutServiciosUpdatedInput = {
@@ -1916,6 +1962,7 @@ export type UserUncheckedCreateWithoutServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutServiciosUpdatedInput = {
@@ -1968,6 +2015,7 @@ export type UserUpdateWithoutServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutServiciosCreatedInput = {
@@ -2004,6 +2052,7 @@ export type UserUncheckedUpdateWithoutServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutServiciosUpdatedInput = {
@@ -2051,6 +2100,7 @@ export type UserUpdateWithoutServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutServiciosUpdatedInput = {
@@ -2087,6 +2137,7 @@ export type UserUncheckedUpdateWithoutServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutClienteServiciosCreatedInput = {
@@ -2123,6 +2174,7 @@ export type UserCreateWithoutClienteServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutClienteServiciosCreatedInput = {
@@ -2159,6 +2211,7 @@ export type UserUncheckedCreateWithoutClienteServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutClienteServiciosCreatedInput = {
@@ -2200,6 +2253,7 @@ export type UserCreateWithoutClienteServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutClienteServiciosUpdatedInput = {
@@ -2236,6 +2290,7 @@ export type UserUncheckedCreateWithoutClienteServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutClienteServiciosUpdatedInput = {
@@ -2288,6 +2343,7 @@ export type UserUpdateWithoutClienteServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClienteServiciosCreatedInput = {
@@ -2324,6 +2380,7 @@ export type UserUncheckedUpdateWithoutClienteServiciosCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutClienteServiciosUpdatedInput = {
@@ -2371,6 +2428,7 @@ export type UserUpdateWithoutClienteServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClienteServiciosUpdatedInput = {
@@ -2407,6 +2465,7 @@ export type UserUncheckedUpdateWithoutClienteServiciosUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutPersonalCreatedInput = {
@@ -2443,6 +2502,7 @@ export type UserCreateWithoutPersonalCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutPersonalCreatedInput = {
@@ -2479,6 +2539,7 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutPersonalCreatedInput = {
@@ -2520,6 +2581,7 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
@@ -2556,6 +2618,7 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutPersonalUpdatedInput = {
@@ -2597,6 +2660,7 @@ export type UserCreateWithoutPersonalInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutPersonalInput = {
@@ -2633,6 +2697,7 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutPersonalInput = {
@@ -2685,6 +2750,7 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
@@ -2721,6 +2787,7 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutPersonalUpdatedInput = {
@@ -2768,6 +2835,7 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
@@ -2804,6 +2872,7 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutPersonalInput = {
@@ -2851,6 +2920,7 @@ export type UserUpdateWithoutPersonalInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalInput = {
@@ -2887,6 +2957,7 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutGruposCreatedInput = {
@@ -2923,6 +2994,7 @@ export type UserCreateWithoutGruposCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutGruposCreatedInput = {
@@ -2959,6 +3031,7 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutGruposCreatedInput = {
@@ -3000,6 +3073,7 @@ export type UserCreateWithoutGruposUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutGruposUpdatedInput = {
@@ -3036,6 +3110,7 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutGruposUpdatedInput = {
@@ -3088,6 +3163,7 @@ export type UserUpdateWithoutGruposCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGruposCreatedInput = {
@@ -3124,6 +3200,7 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutGruposUpdatedInput = {
@@ -3171,6 +3248,7 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
@@ -3207,6 +3285,7 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutVisitasCreatedInput = {
@@ -3243,6 +3322,7 @@ export type UserCreateWithoutVisitasCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitasCreatedInput = {
@@ -3279,6 +3359,7 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitasCreatedInput = {
@@ -3320,6 +3401,7 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
@@ -3356,6 +3438,7 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitasUpdatedInput = {
@@ -3408,6 +3491,7 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
@@ -3444,6 +3528,7 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutVisitasUpdatedInput = {
@@ -3491,6 +3576,7 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
@@ -3527,6 +3613,7 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutVisitaPersonalAddedInput = {
@@ -3563,6 +3650,7 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
@@ -3599,6 +3687,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaPersonalAddedInput = {
@@ -3640,6 +3729,7 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
@@ -3676,6 +3766,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaPersonalRemovedInput = {
@@ -3728,6 +3819,7 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
@@ -3764,6 +3856,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutVisitaPersonalRemovedInput = {
@@ -3811,6 +3904,7 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
@@ -3847,6 +3941,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutVisitaMessagesInput = {
@@ -3883,6 +3978,7 @@ export type UserCreateWithoutVisitaMessagesInput = {
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaMessagesInput = {
@@ -3919,6 +4015,7 @@ export type UserUncheckedCreateWithoutVisitaMessagesInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaMessagesInput = {
@@ -3971,6 +4068,7 @@ export type UserUpdateWithoutVisitaMessagesInput = {
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
@@ -4007,6 +4105,7 @@ export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutVisitaChatReadsInput = {
@@ -4043,6 +4142,7 @@ export type UserCreateWithoutVisitaChatReadsInput = {
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
@@ -4079,6 +4179,7 @@ export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaChatReadsInput = {
@@ -4131,6 +4232,7 @@ export type UserUpdateWithoutVisitaChatReadsInput = {
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
@@ -4167,6 +4269,7 @@ export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutSectorAdminsInput = {
@@ -4203,6 +4306,7 @@ export type UserCreateWithoutSectorAdminsInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSectorAdminsInput = {
@@ -4239,6 +4343,7 @@ export type UserUncheckedCreateWithoutSectorAdminsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSectorAdminsInput = {
@@ -4291,6 +4396,7 @@ export type UserUpdateWithoutSectorAdminsInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSectorAdminsInput = {
@@ -4327,6 +4433,7 @@ export type UserUncheckedUpdateWithoutSectorAdminsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutPushTokensInput = {
@@ -4363,6 +4470,7 @@ export type UserCreateWithoutPushTokensInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutPushTokensInput = {
@@ -4399,6 +4507,7 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutPushTokensInput = {
@@ -4451,6 +4560,7 @@ export type UserUpdateWithoutPushTokensInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushTokensInput = {
@@ -4487,6 +4597,7 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutRefreshTokensInput = {
@@ -4523,6 +4634,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -4559,6 +4671,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -4611,6 +4724,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -4644,6 +4758,171 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserCreateWithoutClienteImportsInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
+  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
+  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+}
+
+export type UserUncheckedCreateWithoutClienteImportsInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
+  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
+  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+}
+
+export type UserCreateOrConnectWithoutClienteImportsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutClienteImportsInput, Prisma.UserUncheckedCreateWithoutClienteImportsInput>
+}
+
+export type UserUpsertWithoutClienteImportsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutClienteImportsInput, Prisma.UserUncheckedUpdateWithoutClienteImportsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutClienteImportsInput, Prisma.UserUncheckedCreateWithoutClienteImportsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutClienteImportsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutClienteImportsInput, Prisma.UserUncheckedUpdateWithoutClienteImportsInput>
+}
+
+export type UserUpdateWithoutClienteImportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
+  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
+  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutClienteImportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
+  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
+  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -4683,6 +4962,7 @@ export type UserCreateWithoutInformesGeneradosInput = {
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutInformesGeneradosInput = {
@@ -4719,6 +4999,7 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutInformesGeneradosInput = {
@@ -4771,6 +5052,7 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
@@ -4807,6 +5089,7 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -4837,6 +5120,7 @@ export type UserCountOutputType = {
   visitaMessages: number
   visitaChatReads: number
   informesGenerados: number
+  clienteImports: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4862,6 +5146,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   visitaMessages?: boolean | UserCountOutputTypeCountVisitaMessagesArgs
   visitaChatReads?: boolean | UserCountOutputTypeCountVisitaChatReadsArgs
   informesGenerados?: boolean | UserCountOutputTypeCountInformesGeneradosArgs
+  clienteImports?: boolean | UserCountOutputTypeCountClienteImportsArgs
 }
 
 /**
@@ -5028,6 +5313,13 @@ export type UserCountOutputTypeCountInformesGeneradosArgs<ExtArgs extends runtim
   where?: Prisma.InformeWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountClienteImportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClienteImportWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -5064,6 +5356,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   visitaMessages?: boolean | Prisma.User$visitaMessagesArgs<ExtArgs>
   visitaChatReads?: boolean | Prisma.User$visitaChatReadsArgs<ExtArgs>
   informesGenerados?: boolean | Prisma.User$informesGeneradosArgs<ExtArgs>
+  clienteImports?: boolean | Prisma.User$clienteImportsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -5132,6 +5425,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   visitaMessages?: boolean | Prisma.User$visitaMessagesArgs<ExtArgs>
   visitaChatReads?: boolean | Prisma.User$visitaChatReadsArgs<ExtArgs>
   informesGenerados?: boolean | Prisma.User$informesGeneradosArgs<ExtArgs>
+  clienteImports?: boolean | Prisma.User$clienteImportsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -5164,6 +5458,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     visitaMessages: Prisma.$VisitaMessagePayload<ExtArgs>[]
     visitaChatReads: Prisma.$VisitaChatReadPayload<ExtArgs>[]
     informesGenerados: Prisma.$InformePayload<ExtArgs>[]
+    clienteImports: Prisma.$ClienteImportPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -5594,6 +5889,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   visitaMessages<T extends Prisma.User$visitaMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitaChatReads<T extends Prisma.User$visitaChatReadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaChatReadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaChatReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informesGenerados<T extends Prisma.User$informesGeneradosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$informesGeneradosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  clienteImports<T extends Prisma.User$clienteImportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clienteImportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClienteImportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6589,6 +6885,30 @@ export type User$informesGeneradosArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.InformeScalarFieldEnum | Prisma.InformeScalarFieldEnum[]
+}
+
+/**
+ * User.clienteImports
+ */
+export type User$clienteImportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClienteImport
+   */
+  select?: Prisma.ClienteImportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClienteImport
+   */
+  omit?: Prisma.ClienteImportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClienteImportInclude<ExtArgs> | null
+  where?: Prisma.ClienteImportWhereInput
+  orderBy?: Prisma.ClienteImportOrderByWithRelationInput | Prisma.ClienteImportOrderByWithRelationInput[]
+  cursor?: Prisma.ClienteImportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClienteImportScalarFieldEnum | Prisma.ClienteImportScalarFieldEnum[]
 }
 
 /**
