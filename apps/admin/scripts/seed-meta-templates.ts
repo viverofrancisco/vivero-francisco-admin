@@ -186,6 +186,16 @@ async function main() {
         ? await createAuthTemplate(templateName, p.whatsappTemplateLanguage)
         : p.tipo === "INVITACION_CUENTA"
           ? await (async () => {
+              // Meta rechaza botones URL con localhost/http. El template solo se
+              // puede crear/aprobar con el dominio público real en APP_BASE_URL.
+              const base = (process.env.APP_BASE_URL ?? "").trim();
+              if (!/^https:\/\//i.test(base) || /localhost|127\.0\.0\.1/i.test(base)) {
+                return {
+                  success: false,
+                  error: `APP_BASE_URL debe ser una URL pública HTTPS (actual: "${base || "(vacío)"}"). Meta rechaza localhost/http en botones URL. Omitido.`,
+                  status: null,
+                };
+              }
               const { bodyText } = convertToPositional(p.contenido, p.variables);
               return createInviteTemplate(
                 templateName,
