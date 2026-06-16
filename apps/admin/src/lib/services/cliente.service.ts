@@ -424,3 +424,66 @@ export async function updateCliente(
     throw new NotFoundError("Cliente no encontrado");
   }
 }
+
+// ──────────────────────────────────────────────
+// Borrado (soft / bulk / hard)
+// ──────────────────────────────────────────────
+
+/** Soft delete de un cliente (archivar). Respeta el scoping por sector. */
+export async function deleteCliente(viewer: Viewer, clienteId: string) {
+  ensureCanWrite(viewer);
+  await getClienteForStaff(clienteId, viewer); // existencia + sector
+  await prisma.cliente.update({
+    where: { id: clienteId },
+    data: { deletedAt: new Date() },
+  });
+}
+
+/** Soft delete en lote (archivar). Solo afecta clientes activos que el viewer
+ * puede ver (scoping por sector para PERSONAL_ADMIN). */
+export async function bulkSoftDeleteClientes(
+  viewer: Viewer,
+  ids: string[]
+): Promise<{ count: number }> {
+  ensureCanWrite(viewer);
+  if (ids.length === 0) return { count: 0 };
+  const where = await buildClienteWhereForStaff(viewer);
+  const res = await prisma.cliente.updateMany({
+    where: { ...where, id: { in: ids } },
+    data: { deletedAt: new Date() },
+  });
+  return { count: res.count };
+}
+
+/** Hard delete (permanente). Solo ADMIN. Borra la ficha (cascada a servicios,
+ * visitas, media, informes, tokens) y la cuenta de login del cliente (cascada a
+ * Account/Session/RefreshToken/PushToken). La protección por entorno la hace la
+ * ruta. */
+export async function hardDeleteClientes(
+  viewer: Viewer,
+  ids: string[]
+): Promise<{ count: number }> {
+  if (viewer.role !== "ADMIN") {
+    throw new ForbiddenError("Solo un administrador puede borrar permanentemente.");
+  }
+  if (ids.length === 0) return { count: 0 };
+
+  return prisma.$transaction(async (tx) => {
+    const clientes = await tx.cliente.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, userId: true },
+    });
+    if (clientes.length === 0) return { count: 0 };
+
+    const clienteIds = clientes.map((c) => c.id);
+    const userIds = clientes
+      .map((c) => c.userId)
+      .filter((u): u is string => !!u);
+
+    await tx.cliente.deleteMany({ where: { id: { in: clienteIds } } });
+    if (userIds.length > 0) {
+      await tx.user.deleteMany({ where: { id: { in: userIds } } });
+    }
+    return { count: clienteIds.length };
+  });
+}

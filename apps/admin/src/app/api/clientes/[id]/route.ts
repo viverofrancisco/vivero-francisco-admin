@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
+import { getCurrentUser, isReadOnly, viewerFromSession } from "@/lib/auth-helpers";
 import { clienteSchema } from "@/lib/validations/cliente";
+import { deleteCliente } from "@/lib/services/cliente.service";
+import { httpStatusForServiceError } from "@/lib/services/errors";
 
 export async function GET(
   _request: Request,
@@ -80,16 +82,15 @@ export async function DELETE(
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  if (isReadOnly(user.role)) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
-
   const { id } = await params;
 
   try {
-    await prisma.cliente.update({ where: { id }, data: { deletedAt: new Date() } });
+    await deleteCliente(await viewerFromSession(), id);
     return NextResponse.json({ message: "Cliente archivado" });
-  } catch {
-    return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Error al archivar" },
+      { status: httpStatusForServiceError(e) }
+    );
   }
 }

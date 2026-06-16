@@ -33,6 +33,9 @@ export default async function ClientesPage() {
   });
 
   const canCreate = user.role === "ADMIN" || user.role === "STAFF";
+  // Hard delete es una herramienta de dev: solo ADMIN y fuera de producción.
+  const devTools =
+    process.env.NODE_ENV !== "production" && user.role === "ADMIN";
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -44,7 +47,7 @@ export default async function ClientesPage() {
         actions={canCreate ? <ImportClientesDialog /> : undefined}
       />
 
-      <ClientesTable clientes={clientes} />
+      <ClientesTable clientes={clientes} devTools={devTools} />
     </div>
   );
 }

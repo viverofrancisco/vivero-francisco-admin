@@ -12,10 +12,20 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search, ChevronDown, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface Cliente {
   id: string;
@@ -42,11 +52,20 @@ function formatUbicacion(cliente: Cliente): string {
 
 const ITEMS_PER_PAGE = 10;
 
-export function ClientesTable({ clientes }: { clientes: Cliente[] }) {
+export function ClientesTable({
+  clientes,
+  devTools = false,
+}: {
+  clientes: Cliente[];
+  devTools?: boolean;
+}) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sectorFilter, setSectorFilter] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirm, setConfirm] = useState<null | "soft" | "hard">(null);
+  const [deleting, setDeleting] = useState(false);
   const [sectorDropdownOpen, setSectorDropdownOpen] = useState(false);
   const [sectorSearch, setSectorSearch] = useState("");
   const sectorDropdownRef = useRef<HTMLDivElement>(null);
@@ -116,6 +135,53 @@ export function ClientesTable({ clientes }: { clientes: Cliente[] }) {
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Error al eliminar");
+  };
+
+  const pageIds = paginated.map((c) => c.id);
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const togglePage = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) pageIds.forEach((id) => next.delete(id));
+      else pageIds.forEach((id) => next.add(id));
+      return next;
+    });
+
+  const clearSelection = () => setSelected(new Set());
+
+  const runDelete = async (hard: boolean) => {
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/clientes/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selected), hard }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al eliminar");
+      toast.success(
+        hard
+          ? `${data.count} cliente(s) eliminado(s) permanentemente`
+          : `${data.count} cliente(s) archivado(s)`
+      );
+      setConfirm(null);
+      clearSelection();
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al eliminar");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -251,6 +317,32 @@ export function ClientesTable({ clientes }: { clientes: Cliente[] }) {
         )}
       </div>
 
+      {/* Bulk actions bar */}
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-2.5">
+          <span className="text-sm font-semibold">
+            {selected.size} seleccionado{selected.size !== 1 ? "s" : ""}
+          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={clearSelection}>
+              Limpiar
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setConfirm("soft")}>
+              Archivar
+            </Button>
+            {devTools && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setConfirm("hard")}
+              >
+                Eliminar permanentemente
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       {filtered.length === 0 ? (
         <EmptyState message="No se encontraron clientes" />
@@ -260,6 +352,13 @@ export function ClientesTable({ clientes }: { clientes: Cliente[] }) {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={allPageSelected}
+                      onCheckedChange={togglePage}
+                      aria-label="Seleccionar página"
+                    />
+                  </TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Sector</TableHead>
                   <TableHead>Servicios</TableHead>
@@ -277,6 +376,16 @@ export function ClientesTable({ clientes }: { clientes: Cliente[] }) {
                       className="cursor-pointer"
                       onClick={() => router.push(`/dashboard/clientes/${cliente.id}`)}
                     >
+                      <TableCell
+                        className="w-10"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Checkbox
+                          checked={selected.has(cliente.id)}
+                          onCheckedChange={() => toggleOne(cliente.id)}
+                          aria-label={`Seleccionar ${fullName(cliente)}`}
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2.5">
                           <InitialsAvatar name={fullName(cliente)} size={36} />
@@ -325,8 +434,8 @@ export function ClientesTable({ clientes }: { clientes: Cliente[] }) {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <DeleteDialog
-                            title={`¿Eliminar a ${fullName(cliente)}?`}
-                            description="Se eliminara este cliente permanentemente."
+                            title={`¿Archivar a ${fullName(cliente)}?`}
+                            description="Se archivará este cliente (se puede recuperar)."
                             onDelete={() => handleDelete(cliente.id)}
                             onSuccess={() => router.refresh()}
                           />
@@ -369,6 +478,44 @@ export function ClientesTable({ clientes }: { clientes: Cliente[] }) {
           )}
         </>
       )}
+
+      {/* Confirmación bulk (archivar / eliminar permanentemente) */}
+      <Dialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {confirm === "hard"
+                ? "Eliminar permanentemente"
+                : "Archivar clientes"}
+            </DialogTitle>
+            <DialogDescription>
+              {confirm === "hard"
+                ? `Esto borrará ${selected.size} cliente(s) y TODO lo relacionado (servicios, visitas, fotos, informes y su cuenta de acceso). Esta acción no se puede deshacer.`
+                : `Se archivarán ${selected.size} cliente(s). Podrás recuperarlos.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirm(null)}
+              disabled={deleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant={confirm === "hard" ? "destructive" : "default"}
+              onClick={() => runDelete(confirm === "hard")}
+              disabled={deleting}
+            >
+              {deleting
+                ? "Procesando..."
+                : confirm === "hard"
+                  ? "Eliminar permanentemente"
+                  : "Archivar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
