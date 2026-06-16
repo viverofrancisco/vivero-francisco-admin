@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,11 +20,9 @@ interface ServicioFormProps {
     descripcion: string | null;
     tipo: string;
   };
-  /** Contenido extra que se muestra debajo de la tarjeta del formulario. */
-  extra?: ReactNode;
 }
 
-export function ServicioForm({ initialData, extra }: ServicioFormProps) {
+export function ServicioForm({ initialData }: ServicioFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
@@ -118,8 +116,6 @@ export function ServicioForm({ initialData, extra }: ServicioFormProps) {
             </div>
           </CardContent>
         </Card>
-
-        {extra}
       </div>
 
       <StickyFormActions

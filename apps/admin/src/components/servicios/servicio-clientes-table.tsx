@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -51,6 +51,11 @@ export function ServicioClientesTable({
   rows: ServicioClienteRow[];
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const goToCliente = (clienteId: string) =>
+    router.push(
+      `/dashboard/clientes/${clienteId}?from=${encodeURIComponent(pathname)}`
+    );
 
   return (
     <div className="space-y-3">
@@ -79,9 +84,7 @@ export function ServicioClientesTable({
                   <TableRow
                     key={r.clienteId}
                     className="cursor-pointer"
-                    onClick={() =>
-                      router.push(`/dashboard/clientes/${r.clienteId}`)
-                    }
+                    onClick={() => goToCliente(r.clienteId)}
                   >
                     <TableCell>
                       <div className="font-bold text-foreground">{r.nombre}</div>

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
-import { ServicioForm } from "@/components/servicios/servicio-form";
-import { ServicioClientesTable } from "@/components/servicios/servicio-clientes-table";
+import { ServicioDetail } from "@/components/servicios/servicio-detail";
 
 export default async function EditarServicioPage({
   params,
@@ -48,11 +47,8 @@ export default async function EditarServicioPage({
   }));
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <ServicioForm
-        initialData={servicio}
-        extra={<ServicioClientesTable rows={rows} />}
-      />
+    <div className="p-4 md:p-6">
+      <ServicioDetail servicio={servicio} clienteRows={rows} />
     </div>
   );
 }

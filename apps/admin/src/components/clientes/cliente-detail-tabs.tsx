@@ -83,6 +83,8 @@ interface ClienteDetailTabsProps {
   asignaciones: Asignacion[];
   serviciosCatalogo: ServicioCatalogo[];
   visitas: VisitaRow[];
+  /** A dónde vuelve el botón "atrás" (depende de dónde se llegó). */
+  backHref?: string;
 }
 
 const formatPrice = (price: number) =>
@@ -119,6 +121,7 @@ export function ClienteDetailTabs({
   asignaciones,
   serviciosCatalogo,
   visitas,
+  backHref = "/dashboard/clientes",
 }: ClienteDetailTabsProps) {
   const router = useRouter();
   const [cardsEditing, setCardsEditing] = useState(false);
@@ -203,7 +206,7 @@ export function ClienteDetailTabs({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push("/dashboard/clientes")}
+            onClick={() => router.push(backHref)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

@@ -5,11 +5,16 @@ import { ClienteDetailTabs } from "@/components/clientes/cliente-detail-tabs";
 
 export default async function EditarClientePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   await requireAuth();
   const { id } = await params;
+  const { from } = await searchParams;
+  // Solo permitimos volver a rutas internas del dashboard (evita open redirect).
+  const backHref = from && from.startsWith("/dashboard/") ? from : "/dashboard/clientes";
 
   const [cliente, serviciosCatalogo, visitas] = await Promise.all([
     prisma.cliente.findUnique({
@@ -102,6 +107,7 @@ export default async function EditarClientePage({
         asignaciones={asignaciones}
         serviciosCatalogo={serviciosCatalogo}
         visitas={visitasSerialized}
+        backHref={backHref}
       />
     </div>
   );
