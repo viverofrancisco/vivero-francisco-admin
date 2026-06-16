@@ -15,6 +15,14 @@ import {
 import { Upload, Download, FileText, History } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type CsvRow = Record<string, string>;
 
@@ -206,7 +214,7 @@ export function ImportClientesDialog() {
         {result ? (
           // ─── Resultado ───
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
               <span
                 className={`rounded-md px-2.5 py-1 font-medium ${
                   result.status === "completado"
@@ -227,33 +235,35 @@ export function ImportClientesDialog() {
               </span>
             </div>
 
-            <div className="max-h-72 overflow-auto rounded-md border">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-muted/50">
-                  <tr className="text-left">
-                    <th className="px-3 py-2 font-medium">Fila</th>
-                    <th className="px-3 py-2 font-medium">Estado</th>
-                    <th className="px-3 py-2 font-medium">Detalle</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <div className="max-h-72 overflow-y-auto rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fila</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Detalle</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {result.results.map((r) => (
-                    <tr key={r.fila} className="border-t">
-                      <td className="px-3 py-2 align-top">{r.fila}</td>
-                      <td
-                        className={`px-3 py-2 align-top font-medium ${ESTADO_CLASS[r.estado]}`}
+                    <TableRow key={r.fila}>
+                      <TableCell className="align-top">{r.fila}</TableCell>
+                      <TableCell
+                        className={cn("align-top font-medium", ESTADO_CLASS[r.estado])}
                       >
                         {ESTADO_LABEL[r.estado]}
-                      </td>
-                      <td className="px-3 py-2 align-top text-muted-foreground">
-                        {r.nombre ? <span className="text-foreground">{r.nombre}</span> : null}
+                      </TableCell>
+                      <TableCell className="whitespace-normal align-top text-muted-foreground">
+                        {r.nombre ? (
+                          <span className="text-foreground">{r.nombre}</span>
+                        ) : null}
                         {r.nombre && r.mensaje ? " — " : ""}
                         {r.mensaje}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             <div className="flex items-center justify-between">
@@ -349,33 +359,33 @@ export function ImportClientesDialog() {
                 <p className="text-xs font-medium text-muted-foreground">
                   Vista previa ({Math.min(rows.length, PREVIEW_COUNT)} de {rows.length})
                 </p>
-                <div className="max-h-48 overflow-auto rounded-md border">
-                  <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-muted/50">
-                      <tr className="text-left">
-                        <th className="px-2.5 py-1.5 font-medium">Nombre</th>
-                        <th className="px-2.5 py-1.5 font-medium">Correo</th>
-                        <th className="px-2.5 py-1.5 font-medium">Teléfono</th>
-                        <th className="px-2.5 py-1.5 font-medium">Ciudad</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <div className="max-h-48 overflow-y-auto rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Correo</TableHead>
+                        <TableHead>Teléfono</TableHead>
+                        <TableHead>Ciudad</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {rows.slice(0, PREVIEW_COUNT).map((r, i) => (
-                        <tr key={i} className="border-t">
-                          <td className="px-2.5 py-1.5">{r.nombre || "—"}</td>
-                          <td className="px-2.5 py-1.5 text-muted-foreground">
+                        <TableRow key={i}>
+                          <TableCell>{r.nombre || "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">
                             {r.email || "—"}
-                          </td>
-                          <td className="px-2.5 py-1.5 text-muted-foreground">
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
                             {r.telefono || "—"}
-                          </td>
-                          <td className="px-2.5 py-1.5 text-muted-foreground">
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
                             {r.ciudad || "—"}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
             )}

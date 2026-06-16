@@ -2,6 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export interface ImportListRow {
   id: string;
@@ -24,34 +32,34 @@ export function ImportsTable({ imports }: { imports: ImportListRow[] }) {
   const router = useRouter();
 
   return (
-    <div className="overflow-x-auto rounded-md border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 text-left">
-          <tr>
-            <th className="px-4 py-2.5 font-medium">Fecha</th>
-            <th className="px-4 py-2.5 font-medium">Por</th>
-            <th className="px-4 py-2.5 font-medium">Estado</th>
-            <th className="px-4 py-2.5 font-medium text-right">Creados</th>
-            <th className="px-4 py-2.5 font-medium text-right">Omitidos</th>
-            <th className="px-4 py-2.5 font-medium text-right">Error</th>
-            <th className="px-4 py-2.5 font-medium text-right">Total</th>
-            <th className="px-4 py-2.5" />
-          </tr>
-        </thead>
-        <tbody>
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Fecha</TableHead>
+            <TableHead>Por</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead className="text-right">Creados</TableHead>
+            <TableHead className="text-right">Omitidos</TableHead>
+            <TableHead className="text-right">Error</TableHead>
+            <TableHead className="text-right">Total</TableHead>
+            <TableHead className="w-8" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {imports.map((imp) => (
-            <tr
+            <TableRow
               key={imp.id}
               onClick={() =>
                 router.push(`/dashboard/clientes/importaciones/${imp.id}`)
               }
-              className="cursor-pointer border-t hover:bg-muted/40"
+              className="cursor-pointer"
             >
-              <td className="px-4 py-2.5">{imp.fecha}</td>
-              <td className="px-4 py-2.5 text-muted-foreground">
+              <TableCell>{imp.fecha}</TableCell>
+              <TableCell className="text-muted-foreground">
                 {imp.por || "—"}
-              </td>
-              <td className="px-4 py-2.5">
+              </TableCell>
+              <TableCell>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-bold capitalize ${
                     ESTADO_BADGE[imp.status] ?? "bg-muted text-muted-foreground"
@@ -59,24 +67,24 @@ export function ImportsTable({ imports }: { imports: ImportListRow[] }) {
                 >
                   {imp.status}
                 </span>
-              </td>
-              <td className="px-4 py-2.5 text-right font-medium text-green-700">
+              </TableCell>
+              <TableCell className="text-right font-medium text-green-700">
                 {imp.created}
-              </td>
-              <td className="px-4 py-2.5 text-right text-muted-foreground">
+              </TableCell>
+              <TableCell className="text-right text-muted-foreground">
                 {imp.skipped}
-              </td>
-              <td className="px-4 py-2.5 text-right text-destructive">
+              </TableCell>
+              <TableCell className="text-right text-destructive">
                 {imp.failed}
-              </td>
-              <td className="px-4 py-2.5 text-right">{imp.total}</td>
-              <td className="px-4 py-2.5 text-right text-muted-foreground">
+              </TableCell>
+              <TableCell className="text-right">{imp.total}</TableCell>
+              <TableCell className="text-right text-muted-foreground">
                 <ChevronRight className="ml-auto h-4 w-4" />
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

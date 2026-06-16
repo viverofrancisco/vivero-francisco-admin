@@ -3,6 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type Estado = "creado" | "omitido" | "error";
 
@@ -71,39 +79,36 @@ export function ImportDetailTable({ results }: { results: ImportRowResult[] }) {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-md border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left">
-            <tr>
-              <th className="px-4 py-2.5 font-medium">Fila</th>
-              <th className="px-4 py-2.5 font-medium">Estado</th>
-              <th className="px-4 py-2.5 font-medium">Cliente</th>
-              <th className="px-4 py-2.5 font-medium">Detalle</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">Fila</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Cliente</TableHead>
+              <TableHead>Detalle</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {shown.length === 0 ? (
-              <tr>
-                <td
+              <TableRow>
+                <TableCell
                   colSpan={4}
-                  className="px-4 py-6 text-center text-muted-foreground"
+                  className="py-6 text-center text-muted-foreground"
                 >
                   Sin filas en esta categoría.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               shown.map((r) => (
-                <tr key={r.fila} className="border-t">
-                  <td className="px-4 py-2.5 align-top">{r.fila}</td>
-                  <td
-                    className={cn(
-                      "px-4 py-2.5 align-top font-medium",
-                      ESTADO_CLASS[r.estado]
-                    )}
+                <TableRow key={r.fila}>
+                  <TableCell className="align-top">{r.fila}</TableCell>
+                  <TableCell
+                    className={cn("align-top font-medium", ESTADO_CLASS[r.estado])}
                   >
                     {ESTADO_LABEL[r.estado]}
-                  </td>
-                  <td className="px-4 py-2.5 align-top">
+                  </TableCell>
+                  <TableCell className="align-top">
                     {r.clienteId ? (
                       <Link
                         href={`/dashboard/clientes/${r.clienteId}`}
@@ -114,15 +119,15 @@ export function ImportDetailTable({ results }: { results: ImportRowResult[] }) {
                     ) : (
                       (r.nombre ?? "—")
                     )}
-                  </td>
-                  <td className="px-4 py-2.5 align-top text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="whitespace-normal align-top text-muted-foreground">
                     {r.mensaje ?? ""}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
