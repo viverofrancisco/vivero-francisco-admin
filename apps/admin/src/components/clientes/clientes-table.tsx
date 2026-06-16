@@ -21,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search, ChevronDown, X } from "lucide-react";
@@ -131,11 +130,6 @@ export function ClientesTable({
     ...(topSectors.map(([n, c]) => [n, c]) as [string, number][]),
     ["Sectores", sectors.length],
   ];
-
-  const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Error al eliminar");
-  };
 
   const pageIds = paginated.map((c) => c.id);
   const allPageSelected =
@@ -364,7 +358,6 @@ export function ClientesTable({
                   <TableHead>Servicios</TableHead>
                   <TableHead>Teléfono</TableHead>
                   <TableHead>m²</TableHead>
-                  <TableHead className="w-16 text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -427,19 +420,6 @@ export function ClientesTable({
                       </TableCell>
                       <TableCell className="font-bold text-foreground">
                         {cliente.metrosCuadrados ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div
-                          className="flex items-center justify-end gap-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <DeleteDialog
-                            title={`¿Archivar a ${fullName(cliente)}?`}
-                            description="Se archivará este cliente (se puede recuperar)."
-                            onDelete={() => handleDelete(cliente.id)}
-                            onSuccess={() => router.refresh()}
-                          />
-                        </div>
                       </TableCell>
                     </TableRow>
                   );
