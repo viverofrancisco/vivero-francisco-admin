@@ -1,7 +1,8 @@
 import { z } from "zod/v4";
 
-// Teléfono ecuatoriano: celular (09XXXXXXXX o +5939XXXXXXXX) o fijo (02XXXXXXX, 04XXXXXXX, etc.)
-const telefonoEcuadorRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$/;
+// Teléfono: ecuatoriano (celular 09XXXXXXXX o +5939XXXXXXXX, o fijo 0[2-7]XXXXXXX)
+// o internacional en formato E.164 (+<código de país> con 7-15 dígitos en total).
+const telefonoRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$|^\+[1-9]\d{6,14}$/;
 
 export const clienteSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
@@ -9,7 +10,7 @@ export const clienteSchema = z.object({
   email: z.email("Email inválido").optional().or(z.literal("")),
   telefono: z
     .string()
-    .regex(telefonoEcuadorRegex, "Número inválido. Ej: 0991234567 o +593991234567")
+    .regex(telefonoRegex, "Número inválido. Ej: 0991234567, +593991234567 o +<país> internacional")
     .optional()
     .or(z.literal("")),
   ciudad: z.string().optional().or(z.literal("")),
@@ -62,7 +63,7 @@ export const clienteImportRowSchema = z.preprocess(
       email: z.email("Email inválido").optional(),
       telefono: z
         .string()
-        .regex(telefonoEcuadorRegex, "Número inválido. Ej: 0991234567 o +593991234567")
+        .regex(telefonoRegex, "Número inválido. Ej: 0991234567, +593991234567 o +<país> internacional")
         .optional(),
       ciudad: z.string().max(500).optional(),
       direccion: z.string().max(500).optional(),
@@ -71,10 +72,8 @@ export const clienteImportRowSchema = z.preprocess(
       notas: z.string().max(500).optional(),
       metrosCuadrados: z.coerce.number().positive("Debe ser mayor a 0").optional(),
     })
-    .refine((r) => Boolean(r.email || r.telefono), {
-      message: "Se requiere teléfono o correo",
-      path: ["telefono"],
-    })
+    // Solo el nombre es obligatorio al importar (igual que al crear un cliente
+    // desde el dashboard). Hay clientes sin teléfono ni correo registrado.
 );
 
 export type ClienteImportRow = z.infer<typeof clienteImportRowSchema>;

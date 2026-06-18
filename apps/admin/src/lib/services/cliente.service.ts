@@ -287,7 +287,8 @@ const MAX_IMPORT_ROWS = 1000;
 
 /**
  * Crea clientes en lote desde filas de un CSV. Valida cada fila, omite
- * duplicados (por correo o teléfono, contra la DB y dentro del mismo archivo) y
+ * duplicados por correo (contra la DB y dentro del archivo) y por teléfono
+ * (solo contra la DB; el teléfono puede repetirse entre clientes nuevos), y
  * reporta el resultado por fila. Un fallo de fila no aborta el resto.
  */
 export async function importClientes(
@@ -310,11 +311,15 @@ export async function importClientes(
     where: { deletedAt: null },
     select: { email: true, telefono: true },
   });
+  // El correo identifica al cliente (login), así que se de-duplica contra la DB
+  // y dentro del archivo. El teléfono puede repetirse entre clientes (p. ej. un
+  // mismo contacto administra varias cuentas), así que solo se de-duplica contra
+  // la DB —red de seguridad ante una reimportación—, no dentro del archivo.
   const seenEmails = new Set<string>();
-  const seenPhones = new Set<string>();
+  const dbPhones = new Set<string>();
   for (const c of existentes) {
     if (c.email) seenEmails.add(c.email.toLowerCase());
-    if (c.telefono) seenPhones.add(formatForWhatsApp(c.telefono));
+    if (c.telefono) dbPhones.add(formatForWhatsApp(c.telefono));
   }
 
   const results: ImportRowResult[] = [];
@@ -341,7 +346,7 @@ export async function importClientes(
 
     if (
       (emailKey && seenEmails.has(emailKey)) ||
-      (phoneKey && seenPhones.has(phoneKey))
+      (phoneKey && dbPhones.has(phoneKey))
     ) {
       skipped++;
       results.push({
@@ -369,7 +374,6 @@ export async function importClientes(
       });
       created++;
       if (emailKey) seenEmails.add(emailKey);
-      if (phoneKey) seenPhones.add(phoneKey);
       results.push({ fila, estado: "creado", nombre: data.nombre, clienteId: cliente.id });
     } catch (e) {
       failed++;

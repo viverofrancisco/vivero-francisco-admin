@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-// Same regex as admin's web validation (Ecuador: celular 09XXXXXXXX or
-// +5939XXXXXXXX, or fijo 02-07XXXXXXXX).
-const telefonoRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$/;
+// Same regex as admin's web validation. Acepta teléfono ecuatoriano (celular
+// 09XXXXXXXX o +5939XXXXXXXX, o fijo 0[2-7]XXXXXXX) o internacional en formato
+// E.164 (+<código de país> con 7-15 dígitos en total).
+const telefonoRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$|^\+[1-9]\d{6,14}$/;
 
 const optionalString = z
   .string()
@@ -25,7 +26,7 @@ export const createClienteSchema = z.object({
   telefono: z
     .string()
     .trim()
-    .regex(telefonoRegex, "Número inválido. Ej: 0991234567 o +593991234567")
+    .regex(telefonoRegex, "Número inválido. Ej: 0991234567, +593991234567 o +<país> internacional")
     .optional()
     .nullable()
     .or(z.literal("").transform(() => null)),
