@@ -74,7 +74,7 @@ export function ClienteForm({
     formState: { errors },
   } = useForm<ClienteFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(clienteSchema) as any,
+    resolver: zodResolver(clienteSchema as any) as any,
     defaultValues: {
       nombre: initialData?.nombre ?? "",
       apellido: initialData?.apellido ?? "",

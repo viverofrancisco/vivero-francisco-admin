@@ -54,7 +54,7 @@ export function CompletarVisitaForm({
     formState: { errors },
   } = useForm<CompletarVisitaFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(completarVisitaSchema) as any,
+    resolver: zodResolver(completarVisitaSchema as any) as any,
     defaultValues: {
       estado: "COMPLETADA",
       fechaRealizada: new Date().toISOString().split("T")[0],

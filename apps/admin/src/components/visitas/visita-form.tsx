@@ -53,7 +53,7 @@ export function VisitaForm({
     formState: { errors },
   } = useForm<VisitaFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(visitaSchema) as any,
+    resolver: zodResolver(visitaSchema as any) as any,
     defaultValues: {
       clienteServicioId: "",
       fechaProgramada: "",

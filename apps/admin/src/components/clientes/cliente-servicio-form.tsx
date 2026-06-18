@@ -109,7 +109,7 @@ export function ClienteServicioForm({
     formState: { errors },
   } = useForm<ClienteServicioFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(clienteServicioSchema) as any,
+    resolver: zodResolver(clienteServicioSchema as any) as any,
     defaultValues: {
       servicioId: editData?.servicioId ?? "",
       precio: editData?.precio ?? 0,

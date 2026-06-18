@@ -76,7 +76,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
     formState: { errors },
   } = useForm<GrupoFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(grupoSchema) as any,
+    resolver: zodResolver(grupoSchema as any) as any,
     defaultValues: {
       nombre: grupo.nombre,
       descripcion: grupo.descripcion ?? "",

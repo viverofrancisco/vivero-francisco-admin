@@ -34,7 +34,7 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
     formState: { errors },
   } = useForm<ServicioFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(servicioSchema) as any,
+    resolver: zodResolver(servicioSchema as any) as any,
     defaultValues: {
       nombre: initialData?.nombre ?? "",
       descripcion: initialData?.descripcion ?? "",

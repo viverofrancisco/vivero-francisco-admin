@@ -72,7 +72,7 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
     formState: { errors },
   } = useForm<PersonalFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(personalSchema) as any,
+    resolver: zodResolver(personalSchema as any) as any,
     defaultValues: {
       nombre: initialData?.nombre ?? "",
       apellido: initialData?.apellido ?? "",

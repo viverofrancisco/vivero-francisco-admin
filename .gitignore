@@ -16,6 +16,9 @@ build/
 coverage/
 .vercel
 
+# Playwright MCP browser session artifacts
+.playwright-mcp/
+
 # Claude Code local files (ignore everything under .claude EXCEPT the committed docs)
 .claude/*
 !.claude/docs/

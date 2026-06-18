@@ -34,7 +34,7 @@ export function SectorForm({ open, onClose, editData }: SectorFormProps) {
     formState: { errors },
   } = useForm<SectorFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(sectorSchema) as any,
+    resolver: zodResolver(sectorSchema as any) as any,
     defaultValues: { nombre: "" },
   });
 
