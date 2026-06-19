@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
@@ -142,7 +143,7 @@ function VisitaRow({
       />
       <View style={styles.rowText}>
         <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
-          {`${cliente.nombre} ${cliente.apellido ?? ""}`.trim()}
+          {nombreCliente(cliente)}
         </Text>
         <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
           {subtitleParts.join(" · ")}

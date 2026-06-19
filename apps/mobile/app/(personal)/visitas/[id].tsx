@@ -14,6 +14,7 @@ import {
 } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type { VisitaDetail, VisitaMedia } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth-store";
@@ -126,7 +127,7 @@ export default function PersonalVisitaScreen() {
             </Text>
           </View>
           <Text variant="headlineSmall" style={styles.heroTitle}>
-            {`${cliente.nombre} ${cliente.apellido ?? ""}`.trim()}
+            {nombreCliente(cliente)}
           </Text>
           <Text variant="bodyMedium" style={styles.heroSubtitle}>
             {visita.clienteServicio.servicio.nombre}

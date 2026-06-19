@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Check,
 } from "lucide-react";
+import { nombreCliente } from "@vivero/shared";
 import {
   MediaViewer,
   type MediaViewerSource,
@@ -37,6 +38,7 @@ interface Cliente {
   id: string;
   nombre: string;
   apellido: string | null;
+  empresa: string | null;
 }
 
 interface VisitaParaInforme {
@@ -226,7 +228,7 @@ export function InformeWizard({
         timeZone: "UTC",
       });
       setTitulo(
-        `Informe de Áreas Verdes — ${capitalize(mes)} — ${cliente.nombre} ${cliente.apellido ?? ""}`.trim()
+        `Informe de Áreas Verdes — ${capitalize(mes)} — ${nombreCliente(cliente)}`.trim()
       );
     }
   }, [clientes, clienteId, dateRange, titulo]);
@@ -824,7 +826,7 @@ function Step1Cliente({
     if (!q) return clientes;
     const words = q.split(/\s+/).filter(Boolean);
     return clientes.filter((c) => {
-      const full = `${c.nombre} ${c.apellido ?? ""}`.toLowerCase();
+      const full = nombreCliente(c).toLowerCase();
       return words.every((w) => full.includes(w));
     });
   }, [clientes, search]);
@@ -850,7 +852,7 @@ function Step1Cliente({
         <div className="grid gap-2 sm:grid-cols-2">
           {filtered.map((c) => {
             const selected = clienteId === c.id;
-            const initials = `${c.nombre[0] ?? ""}${c.apellido?.[0] ?? ""}`.toUpperCase();
+            const initials = nombreCliente(c).slice(0, 2).toUpperCase();
             return (
               <button
                 key={c.id}
@@ -873,7 +875,7 @@ function Step1Cliente({
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
-                    {c.nombre} {c.apellido ?? ""}
+                    {nombreCliente(c)}
                   </p>
                 </div>
                 {selected ? (
@@ -948,7 +950,7 @@ function Step2Visitas({
         <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-sm">
           <span className="text-muted-foreground">Cliente:</span>
           <span className="font-medium">
-            {cliente.nombre} {cliente.apellido ?? ""}
+            {nombreCliente(cliente)}
           </span>
         </div>
       ) : null}

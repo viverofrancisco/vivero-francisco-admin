@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { nombreCliente } from "@vivero/shared";
 import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
 import { listInformes } from "@/lib/services/informe.service";
 import { listClientes } from "@/lib/services/cliente.service";
@@ -58,7 +59,7 @@ export default async function InformesPage({
     generatedAt: i.generatedAt.toISOString(),
     cliente: {
       id: i.cliente.id,
-      nombre: `${i.cliente.nombre} ${i.cliente.apellido ?? ""}`.trim(),
+      nombre: nombreCliente(i.cliente),
     },
     generatedBy: {
       nombre: `${i.generatedBy.name ?? ""} ${i.generatedBy.apellido ?? ""}`.trim(),
@@ -68,7 +69,7 @@ export default async function InformesPage({
 
   const clientesOptions = clientesPage.items.map((c) => ({
     value: c.id,
-    label: `${c.nombre} ${c.apellido ?? ""}`.trim(),
+    label: nombreCliente(c),
   }));
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

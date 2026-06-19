@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { VisitasTable } from "@/components/visitas/visitas-table";
 import { EmptyState } from "@/components/shared/empty-state";
+import { nombreCliente } from "@vivero/shared";
 
 const ESTADOS = [
   { value: "ALL", label: "Todos" },
@@ -36,12 +37,19 @@ interface FilterOption {
   nombre: string;
 }
 
+interface ClienteFilterOption {
+  id: string;
+  nombre: string;
+  apellido?: string | null;
+  empresa?: string | null;
+}
+
 interface VisitasPageClientProps {
   initialVisitas: VisitaRow[];
   initialDesde: string;
   initialHasta: string;
   userRole?: string;
-  clientes: FilterOption[];
+  clientes: ClienteFilterOption[];
   servicios: FilterOption[];
 }
 
@@ -189,7 +197,7 @@ export function VisitasPageClient({
             onChange={handleClienteChange}
             options={[
               { value: "ALL", label: "Todos" },
-              ...clientes.map((c) => ({ value: c.id, label: c.nombre })),
+              ...clientes.map((c) => ({ value: c.id, label: nombreCliente(c) })),
             ]}
             placeholder="Todos"
             searchable

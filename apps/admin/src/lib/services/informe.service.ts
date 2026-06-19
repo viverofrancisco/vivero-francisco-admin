@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { s3, BUCKET_NAME, publicUrlForKey } from "@/lib/s3";
 import {
@@ -66,7 +67,7 @@ export async function listInformes(
     prisma.informe.findMany({
       where,
       include: {
-        cliente: { select: { id: true, nombre: true, apellido: true } },
+        cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
         generatedBy: { select: { id: true, name: true, apellido: true } },
         _count: { select: { visitas: true } },
       },
@@ -285,12 +286,10 @@ export async function generateInforme(
   // Build render data.
   const cliente = await prisma.cliente.findUnique({
     where: { id: payload.clienteId },
-    select: { nombre: true, apellido: true },
+    select: { nombre: true, apellido: true, empresa: true },
   });
   const subtituloDefault = cliente
-    ? `ACTIVIDADES REALIZADAS PARA ${(`${cliente.nombre} ${cliente.apellido ?? ""}`)
-        .trim()
-        .toUpperCase()}`
+    ? `ACTIVIDADES REALIZADAS PARA ${nombreCliente(cliente).toUpperCase()}`
     : "ACTIVIDADES REALIZADAS";
 
   const renderSecciones: InformeRenderSeccion[] = payload.secciones.map(
@@ -438,7 +437,7 @@ export async function getInforme(viewer: Viewer, id: string) {
     where: { id },
     include: {
       cliente: {
-        select: { id: true, nombre: true, apellido: true, sectorId: true },
+        select: { id: true, nombre: true, apellido: true, empresa: true, sectorId: true },
       },
       generatedBy: {
         select: { id: true, name: true, apellido: true },

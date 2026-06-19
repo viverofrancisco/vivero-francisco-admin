@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { nombreCliente } from "@vivero/shared";
 import { sendPushToUser, sendPushToUsers } from "./expo";
 
 function formatFechaCorta(date: Date): string {
@@ -15,7 +16,7 @@ async function getVisitaForPush(visitaId: string) {
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { userId: true, nombre: true } },
+          cliente: { select: { userId: true, nombre: true, apellido: true, empresa: true } },
           servicio: { select: { nombre: true } },
         },
       },
@@ -64,7 +65,7 @@ export async function pushAlertaCompletada(visitaId: string): Promise<void> {
 
   await sendPushToUsers(admins, {
     title: "Visita completada",
-    body: `${visita.clienteServicio.cliente.nombre} — ${visita.clienteServicio.servicio.nombre}`,
+    body: `${nombreCliente(visita.clienteServicio.cliente)} — ${visita.clienteServicio.servicio.nombre}`,
     data: { type: "visita_completada", visitaId },
   });
 }
@@ -78,7 +79,7 @@ export async function pushAlertaIncompleta(visitaId: string): Promise<void> {
 
   await sendPushToUsers(admins, {
     title: `Visita ${visita.estado.toLowerCase()}`,
-    body: `${visita.clienteServicio.cliente.nombre} — ${visita.clienteServicio.servicio.nombre}`,
+    body: `${nombreCliente(visita.clienteServicio.cliente)} — ${visita.clienteServicio.servicio.nombre}`,
     data: { type: "visita_incompleta", visitaId },
   });
 }
@@ -106,7 +107,7 @@ export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
           name: true,
           apellido: true,
           role: true,
-          cliente: { select: { nombre: true, apellido: true } },
+          cliente: { select: { nombre: true, apellido: true, empresa: true } },
         },
       },
       media: { select: { id: true, tipo: true } },
@@ -115,7 +116,13 @@ export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
           clienteServicio: {
             include: {
               cliente: {
-                select: { userId: true, sectorId: true, nombre: true },
+                select: {
+                  userId: true,
+                  sectorId: true,
+                  nombre: true,
+                  apellido: true,
+                  empresa: true,
+                },
               },
               servicio: { select: { nombre: true } },
             },
@@ -131,7 +138,7 @@ export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
 
   const isClienteAuthor = message.author.role === "CLIENTE";
   const authorName = isClienteAuthor
-    ? `${message.author.cliente?.nombre ?? cliente.nombre} ${message.author.cliente?.apellido ?? ""}`.trim()
+    ? nombreCliente(message.author.cliente ?? cliente)
     : `${message.author.name ?? ""} ${message.author.apellido ?? ""}`.trim() ||
       "Equipo";
   const body = message.body ?? "";

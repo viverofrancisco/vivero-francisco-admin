@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import type { VisitaDetail } from "@/lib/types";
 import { VisitaChat } from "@/components/VisitaChat";
@@ -29,9 +30,7 @@ export default function PersonalVisitaChatScreen() {
   }
 
   const cliente = visita?.clienteServicio.cliente;
-  const clienteFullName = cliente
-    ? `${cliente.nombre} ${cliente.apellido ?? ""}`.trim()
-    : undefined;
+  const clienteFullName = cliente ? nombreCliente(cliente) : undefined;
 
   // Entry from visita detail: banner is read-only context.
   return (

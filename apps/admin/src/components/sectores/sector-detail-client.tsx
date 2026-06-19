@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { nombreCliente } from "@vivero/shared";
 import {
   Table,
   TableBody,
@@ -31,6 +32,7 @@ interface ClienteRow {
   id: string;
   nombre: string;
   apellido?: string | null;
+  empresa?: string | null;
   ciudad: string | null;
 }
 
@@ -81,7 +83,7 @@ export function SectorDetailClient({
     const q = searchQuery.toLowerCase();
     return unassignedClientes
       .filter((c) =>
-        `${c.nombre} ${c.apellido || ""}`.toLowerCase().includes(q)
+        nombreCliente(c).toLowerCase().includes(q)
       )
       .slice(0, 10);
   }, [searchQuery, unassignedClientes]);
@@ -314,7 +316,7 @@ export function SectorDetailClient({
                               className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-muted text-left"
                             >
                               <span className="font-medium">
-                                {`${c.nombre} ${c.apellido || ""}`.trim()}
+                                {nombreCliente(c)}
                               </span>
                               <span className="text-muted-foreground text-xs">
                                 {c.ciudad ?? ""}
@@ -351,10 +353,10 @@ export function SectorDetailClient({
                                 className="flex items-center gap-2.5 font-bold hover:text-primary"
                               >
                                 <InitialsAvatar
-                                  name={`${c.nombre} ${c.apellido || ""}`.trim()}
+                                  name={nombreCliente(c)}
                                   size={32}
                                 />
-                                {`${c.nombre} ${c.apellido || ""}`.trim()}
+                                {nombreCliente(c)}
                               </Link>
                             </TableCell>
                             <TableCell>{c.ciudad ?? "—"}</TableCell>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { nombreCliente } from "@vivero/shared";
 
 interface VisitaRow {
   id: string;
@@ -19,7 +20,12 @@ interface VisitaRow {
   estado: string;
   notas: string | null;
   clienteServicio: {
-    cliente: { id: string; nombre: string; apellido?: string | null };
+    cliente: {
+      id: string;
+      nombre: string;
+      apellido?: string | null;
+      empresa?: string | null;
+    };
     servicio: { id: string; nombre: string; tipo: string };
   };
   grupo: { id: string; nombre: string } | null;
@@ -51,9 +57,7 @@ export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
         </TableHeader>
         <TableBody>
           {visitas.map((v) => {
-            const nombre = `${v.clienteServicio.cliente.nombre} ${
-              v.clienteServicio.cliente.apellido || ""
-            }`.trim();
+            const nombre = nombreCliente(v.clienteServicio.cliente);
             return (
               <TableRow
                 key={v.id}

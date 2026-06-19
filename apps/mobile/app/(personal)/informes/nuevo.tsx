@@ -31,6 +31,7 @@ import DraggableFlatList, {
 import { useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type {
   ClienteListItem,
@@ -170,7 +171,7 @@ export default function NuevoInformeScreen() {
           year: "numeric",
         });
         setTitulo(
-          `Informe ${capitalize(monthYear)} — ${c.nombre}`.trim()
+          `Informe ${capitalize(monthYear)} — ${nombreCliente(c)}`.trim()
         );
       }
     }
@@ -492,9 +493,7 @@ function ClienteStep({
     if (!q) return clientes.slice(0, 30);
     return clientes
       .filter((c) =>
-        `${c.nombre} ${c.apellido ?? ""} ${c.telefono ?? ""}`
-          .toLowerCase()
-          .includes(q)
+        `${nombreCliente(c)} ${c.telefono ?? ""}`.toLowerCase().includes(q)
       )
       .slice(0, 30);
   }, [query, clientes]);
@@ -515,8 +514,15 @@ function ClienteStep({
       <View style={{ gap: 6 }}>
         {filtered.map((c) => {
           const selected = selectedId === c.id;
+          const displayName = nombreCliente(c);
           const initials =
-            `${c.nombre[0] ?? ""}${c.apellido?.[0] ?? ""}`.toUpperCase();
+            displayName
+              .split(" ")
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((w) => w[0])
+              .join("")
+              .toUpperCase() || "?";
           return (
             <Pressable
               key={c.id}
@@ -532,7 +538,7 @@ function ClienteStep({
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.cardTitle} numberOfLines={1}>
-                  {`${c.nombre} ${c.apellido ?? ""}`.trim()}
+                  {displayName}
                 </Text>
                 {c.telefono ? (
                   <Text style={styles.cardSubtitle}>{c.telefono}</Text>
@@ -601,9 +607,7 @@ function VisitasStep({
         Selecciona las visitas
       </Text>
       <Text style={styles.subtitle}>
-        {cliente
-          ? `Cliente: ${cliente.nombre} ${cliente.apellido ?? ""}`.trim()
-          : ""}
+        {cliente ? `Cliente: ${nombreCliente(cliente)}` : ""}
       </Text>
 
       <View style={{ marginBottom: 16 }}>

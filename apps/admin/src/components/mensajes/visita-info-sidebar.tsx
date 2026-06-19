@@ -11,6 +11,7 @@ import {
   MediaViewer,
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
+import { nombreCliente } from "@vivero/shared";
 
 interface VisitaInfoData {
   id: string;
@@ -26,6 +27,7 @@ interface VisitaInfoData {
       id: string;
       nombre: string;
       apellido: string | null;
+      empresa: string | null;
       telefono: string | null;
       direccion: string | null;
       ciudad: string | null;
@@ -46,7 +48,7 @@ interface VisitaInfoData {
 
 export function VisitaInfoSidebar({ visita }: { visita: VisitaInfoData }) {
   const cliente = visita.clienteServicio.cliente;
-  const clienteName = `${cliente.nombre} ${cliente.apellido ?? ""}`.trim();
+  const clienteName = nombreCliente(cliente);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
     null
   );

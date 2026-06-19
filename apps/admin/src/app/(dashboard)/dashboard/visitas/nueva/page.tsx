@@ -21,6 +21,7 @@ export default async function NuevaVisitaRoute() {
         id: true,
         nombre: true,
         apellido: true,
+        empresa: true,
         servicios: {
           where: { estado: "ACTIVO" },
           select: {
@@ -50,7 +51,9 @@ export default async function NuevaVisitaRoute() {
 
   const clientesSerialized = clientes.map((c) => ({
     id: c.id,
-    nombre: `${c.nombre} ${c.apellido || ""}`.trim(),
+    nombre: c.nombre,
+    apellido: c.apellido,
+    empresa: c.empresa,
     servicios: c.servicios.map((s) => ({
       id: s.id,
       servicio: s.servicio,

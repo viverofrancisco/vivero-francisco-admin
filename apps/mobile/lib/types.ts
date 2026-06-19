@@ -107,6 +107,7 @@ export interface VisitaDetail extends VisitaSummary {
       userId: string | null;
       nombre: string;
       apellido: string | null;
+      empresa: string | null;
       telefono: string | null;
       direccion: string | null;
       ciudad: string | null;
@@ -132,6 +133,7 @@ export interface ClienteProfileResponse {
     id: string;
     nombre: string;
     apellido: string | null;
+    empresa: string | null;
     telefono: string | null;
     direccion: string | null;
     ciudad: string | null;
@@ -153,6 +155,7 @@ export interface ClienteListItem {
   id: string;
   nombre: string;
   apellido: string | null;
+  empresa: string | null;
   telefono: string | null;
   ciudad: string | null;
   sector: { id: string; nombre: string } | null;

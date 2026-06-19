@@ -15,6 +15,7 @@ import {
   MediaViewer,
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
+import { nombreCliente } from "@vivero/shared";
 
 interface VisitaDetailData {
   id: string;
@@ -28,7 +29,7 @@ interface VisitaDetailData {
   notasIncompleto: string | null;
   media: { id: string; url: string; tipo: string }[];
   clienteServicio: {
-    cliente: { id: string; nombre: string; apellido?: string | null; ciudad: string | null; sector: { nombre: string } | null };
+    cliente: { id: string; nombre: string; apellido?: string | null; empresa?: string | null; ciudad: string | null; sector: { nombre: string } | null };
     servicio: { id: string; nombre: string; tipo: string };
   };
   grupo: {
@@ -123,7 +124,7 @@ export function VisitaDetail({
               <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
             </div>
             <p className="text-sm text-muted-foreground truncate">
-              {`${visita.clienteServicio.cliente.nombre} ${visita.clienteServicio.cliente.apellido || ""}`.trim()} — {visita.clienteServicio.servicio.nombre}
+              {nombreCliente(visita.clienteServicio.cliente)} — {visita.clienteServicio.servicio.nombre}
             </p>
           </div>
           {isProgramada && canModify && (
@@ -187,7 +188,7 @@ export function VisitaDetail({
                 href={`/dashboard/clientes/${visita.clienteServicio.cliente.id}`}
                 className="text-primary hover:underline"
               >
-                {`${visita.clienteServicio.cliente.nombre} ${visita.clienteServicio.cliente.apellido || ""}`.trim()}
+                {nombreCliente(visita.clienteServicio.cliente)}
               </Link>
             </div>
             {visita.clienteServicio.cliente.ciudad && (

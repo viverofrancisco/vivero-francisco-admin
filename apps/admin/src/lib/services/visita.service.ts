@@ -93,6 +93,7 @@ const VISITA_DETAIL_INCLUDE = {
           userId: true,
           nombre: true,
           apellido: true,
+          empresa: true,
           telefono: true,
           direccion: true,
           ciudad: true,

@@ -44,7 +44,7 @@ export async function GET(request: Request) {
             fechaProgramada: true,
             clienteServicio: {
               select: {
-                cliente: { select: { nombre: true, apellido: true } },
+                cliente: { select: { nombre: true, apellido: true, empresa: true } },
                 servicio: { select: { nombre: true } },
               },
             },

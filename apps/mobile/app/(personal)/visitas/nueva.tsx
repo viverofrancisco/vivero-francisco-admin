@@ -21,6 +21,7 @@ import {
 import { Calendar, type DateData } from "react-native-calendars";
 import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type {
   ClienteListItem,
@@ -329,9 +330,7 @@ function ClienteStep({
     if (!q) return clientes.slice(0, 12);
     return clientes
       .filter((c) =>
-        `${c.nombre} ${c.apellido ?? ""} ${c.telefono ?? ""}`
-          .toLowerCase()
-          .includes(q)
+        `${nombreCliente(c)} ${c.telefono ?? ""}`.toLowerCase().includes(q)
       )
       .slice(0, 12);
   }, [query, clientes]);
@@ -365,7 +364,7 @@ function ClienteStep({
             >
               <View style={styles.rowText}>
                 <Text variant="bodyLarge" style={styles.rowTitle}>
-                  {`${c.nombre} ${c.apellido ?? ""}`.trim()}
+                  {nombreCliente(c)}
                 </Text>
                 {c.telefono || c.sector?.nombre ? (
                   <Text variant="bodySmall" style={styles.muted}>
@@ -783,11 +782,7 @@ function RevisarStep({
       <View style={styles.summaryBox}>
         <SummaryRow
           label="Cliente"
-          value={
-            cliente
-              ? `${cliente.nombre} ${cliente.apellido ?? ""}`.trim()
-              : "—"
-          }
+          value={cliente ? nombreCliente(cliente) : "—"}
         />
         <SummaryRow
           label="Servicio"

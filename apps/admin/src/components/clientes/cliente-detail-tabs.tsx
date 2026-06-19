@@ -19,6 +19,7 @@ import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { nombreCliente, nombrePersona } from "@vivero/shared";
 import {
   Plus,
   ArrowLeft,
@@ -195,7 +196,10 @@ export function ClienteDetailTabs({
     setEditData(null);
   };
 
-  const nombreCompleto = `${cliente.nombre} ${cliente.apellido || ""}`.trim();
+  const nombreCompleto = nombreCliente(cliente);
+  // Si el cliente es persona Y empresa, mostramos la empresa como complemento.
+  const empresaExtra =
+    nombrePersona(cliente) && cliente.empresa ? cliente.empresa : null;
   const topServicios = asignaciones.slice(0, 3);
   const topVisitas = visitas.slice(0, 3);
 
@@ -224,7 +228,8 @@ export function ClienteDetailTabs({
               )}
             </div>
             <p className="text-sm font-medium text-muted-foreground">
-              Cliente desde {formatDate(cliente.createdAt)}
+              {empresaExtra ? `${empresaExtra} · ` : ""}Cliente desde{" "}
+              {formatDate(cliente.createdAt)}
             </p>
           </div>
           {cardsEditing ? (

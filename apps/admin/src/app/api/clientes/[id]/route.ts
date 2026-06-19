@@ -54,7 +54,7 @@ export async function PUT(
     const cliente = await prisma.cliente.update({
       where: { id },
       data: {
-        nombre: data.nombre,
+        nombre: data.nombre || "",
         apellido: data.apellido || null,
         empresa: data.empresa || null,
         email: data.email || null,

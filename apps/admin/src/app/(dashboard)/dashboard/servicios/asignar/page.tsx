@@ -14,7 +14,7 @@ export default async function AsignarServicioRoute() {
     prisma.cliente.findMany({
       where: { deletedAt: null },
       orderBy: { nombre: "asc" },
-      select: { id: true, nombre: true, apellido: true, ciudad: true },
+      select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true },
     }),
   ]);
 

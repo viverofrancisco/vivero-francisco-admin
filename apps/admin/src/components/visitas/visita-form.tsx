@@ -17,10 +17,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { nombreCliente } from "@vivero/shared";
 
 interface ClienteServicioOption {
   id: string;
-  cliente: { nombre: string; apellido?: string | null };
+  cliente: { nombre: string; apellido?: string | null; empresa?: string | null };
   servicio: { nombre: string; tipo: string };
 }
 
@@ -105,7 +106,7 @@ export function VisitaForm({
                   onChange={field.onChange}
                   options={clienteServicios.map((cs) => ({
                     value: cs.id,
-                    label: `${cs.cliente.nombre} ${cs.cliente.apellido || ""}`.trim() + " — " + cs.servicio.nombre,
+                    label: nombreCliente(cs.cliente) + " — " + cs.servicio.nombre,
                   }))}
                   placeholder="Seleccionar"
                   searchable

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { ServicioDetail } from "@/components/servicios/servicio-detail";
@@ -29,6 +30,7 @@ export default async function EditarServicioPage({
           id: true,
           nombre: true,
           apellido: true,
+          empresa: true,
           telefono: true,
           sector: { select: { nombre: true } },
         },
@@ -38,7 +40,7 @@ export default async function EditarServicioPage({
 
   const rows = asignaciones.map((a) => ({
     clienteId: a.cliente.id,
-    nombre: `${a.cliente.nombre} ${a.cliente.apellido ?? ""}`.trim(),
+    nombre: nombreCliente(a.cliente),
     sector: a.cliente.sector?.nombre ?? null,
     telefono: a.cliente.telefono,
     precio: Number(a.precio),

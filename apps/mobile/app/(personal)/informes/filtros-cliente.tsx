@@ -8,6 +8,7 @@ import {
 import { ActivityIndicator, Searchbar, Text } from "react-native-paper";
 import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 
@@ -15,6 +16,7 @@ interface ClienteOption {
   id: string;
   nombre: string;
   apellido: string | null;
+  empresa: string | null;
   telefono?: string | null;
   ciudad?: string | null;
   sector?: { nombre: string | null } | null;
@@ -48,8 +50,7 @@ export default function FiltrosClienteScreen() {
     if (!q) return items;
     const words = q.split(/\s+/).filter(Boolean);
     return items.filter((c) => {
-      const hay = `${c.nombre} ${c.apellido ?? ""} ${c.telefono ?? ""}`
-        .toLowerCase();
+      const hay = `${nombreCliente(c)} ${c.telefono ?? ""}`.toLowerCase();
       return words.every((w) => hay.includes(w));
     });
   }, [items, search]);
@@ -58,7 +59,7 @@ export default function FiltrosClienteScreen() {
     if (c) {
       setCliente({
         id: c.id,
-        nombre: `${c.nombre} ${c.apellido ?? ""}`.trim(),
+        nombre: nombreCliente(c),
       });
     } else {
       setCliente(null);
@@ -130,7 +131,15 @@ export default function FiltrosClienteScreen() {
           }
           renderItem={({ item }) => {
             const selected = cliente?.id === item.id;
-            const initials = `${item.nombre[0] ?? ""}${item.apellido?.[0] ?? ""}`.toUpperCase();
+            const displayName = nombreCliente(item);
+            const initials =
+              displayName
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join("")
+                .toUpperCase() || "?";
             const subtitle = [item.telefono, item.sector?.nombre, item.ciudad]
               .filter(Boolean)
               .join(" · ");
@@ -148,7 +157,7 @@ export default function FiltrosClienteScreen() {
                 </View>
                 <View style={styles.rowText}>
                   <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
-                    {`${item.nombre} ${item.apellido ?? ""}`.trim()}
+                    {displayName}
                   </Text>
                   {subtitle ? (
                     <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>

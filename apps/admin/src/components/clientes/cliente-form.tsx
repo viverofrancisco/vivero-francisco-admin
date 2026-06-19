@@ -224,7 +224,7 @@ export function ClienteForm({
               <CardContent className="pt-4 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="nombre">Nombre *</Label>
+                    <Label htmlFor="nombre">Nombre</Label>
                     <Input id="nombre" {...register("nombre")} />
                     {errors.nombre && (
                       <p className="text-sm text-destructive">{errors.nombre.message}</p>
@@ -385,7 +385,7 @@ export function ClienteForm({
         </CardHeader>
         <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="nombre">Nombre *</Label>
+            <Label htmlFor="nombre">Nombre</Label>
             <Input id="nombre" {...register("nombre")} />
             {fieldError(errors.nombre?.message)}
           </div>

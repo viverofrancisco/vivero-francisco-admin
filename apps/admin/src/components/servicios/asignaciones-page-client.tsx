@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import { nombreCliente } from "@vivero/shared";
 import {
   Table,
   TableBody,
@@ -24,7 +25,7 @@ interface Asignacion {
   estado: string;
   fechaInicio: string;
   fechaFin: string | null;
-  cliente: { id: string; nombre: string; apellido?: string | null; ciudad: string | null };
+  cliente: { id: string; nombre: string; apellido?: string | null; empresa: string | null; ciudad: string | null };
   servicio: { id: string; nombre: string; tipo: string };
 }
 
@@ -115,7 +116,7 @@ export function AsignacionesPageClient({
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter((a) => `${a.cliente.nombre} ${a.cliente.apellido || ""}`.toLowerCase().includes(q));
+      result = result.filter((a) => nombreCliente(a.cliente).toLowerCase().includes(q));
     }
 
     return result;
@@ -270,7 +271,7 @@ export function AsignacionesPageClient({
                       href={`/dashboard/clientes/${a.cliente.id}`}
                       className="font-medium text-primary hover:underline"
                     >
-                      {`${a.cliente.nombre} ${a.cliente.apellido || ""}`.trim()}
+                      {nombreCliente(a.cliente)}
                     </Link>
                     {a.cliente.ciudad && (
                       <span className="ml-2 text-xs text-gray-400">

@@ -16,7 +16,7 @@ export default async function VisitaDetailPage({
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { id: true, nombre: true, apellido: true, ciudad: true, sector: { select: { nombre: true } } } },
+          cliente: { select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true, sector: { select: { nombre: true } } } },
           servicio: { select: { id: true, nombre: true, tipo: true } },
         },
       },

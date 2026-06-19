@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
+import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { sha256 } from "@/lib/mobile/jwt";
 import { formatForWhatsApp } from "@/lib/whatsapp/phone";
@@ -159,7 +160,11 @@ export async function getInviteTokenInfo(
 ): Promise<{ valid: boolean; nombre?: string }> {
   const record = await prisma.setPasswordToken.findUnique({
     where: { tokenHash: sha256(token) },
-    include: { cliente: { select: { nombre: true, deletedAt: true } } },
+    include: {
+      cliente: {
+        select: { nombre: true, apellido: true, empresa: true, deletedAt: true },
+      },
+    },
   });
   if (
     !record ||
@@ -169,7 +174,7 @@ export async function getInviteTokenInfo(
   ) {
     return { valid: false };
   }
-  return { valid: true, nombre: record.cliente.nombre };
+  return { valid: true, nombre: nombreCliente(record.cliente) };
 }
 
 // ──────────────────────────────────────────────

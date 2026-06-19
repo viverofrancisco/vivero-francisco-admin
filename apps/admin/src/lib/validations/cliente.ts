@@ -4,8 +4,9 @@ import { z } from "zod/v4";
 // o internacional en formato E.164 (+<código de país> con 7-15 dígitos en total).
 const telefonoRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$|^\+[1-9]\d{6,14}$/;
 
-export const clienteSchema = z.object({
-  nombre: z.string().min(1, "El nombre es obligatorio"),
+export const clienteSchema = z
+  .object({
+  nombre: z.string().optional().or(z.literal("")),
   apellido: z.string().optional().or(z.literal("")),
   empresa: z.string().optional().or(z.literal("")),
   email: z.email("Email inválido").optional().or(z.literal("")),
@@ -23,7 +24,12 @@ export const clienteSchema = z.object({
     z.coerce.number().positive("Debe ser mayor a 0"),
     z.literal("").transform(() => undefined),
   ]).optional(),
-});
+  })
+  // Un cliente es una persona (nombre) o una empresa (empresa): se exige uno.
+  .refine((d) => Boolean(d.nombre?.trim() || d.empresa?.trim()), {
+    message: "Se requiere un nombre o una empresa",
+    path: ["nombre"],
+  });
 
 export type ClienteFormData = z.infer<typeof clienteSchema>;
 
@@ -60,7 +66,7 @@ export const clienteImportRowSchema = z.preprocess(
   },
   z
     .object({
-      nombre: z.string().min(1, "El nombre es obligatorio").max(120),
+      nombre: z.string().max(120).optional(),
       apellido: z.string().max(500).optional(),
       empresa: z.string().max(500).optional(),
       email: z.email("Email inválido").optional(),
@@ -75,8 +81,12 @@ export const clienteImportRowSchema = z.preprocess(
       notas: z.string().max(500).optional(),
       metrosCuadrados: z.coerce.number().positive("Debe ser mayor a 0").optional(),
     })
-    // Solo el nombre es obligatorio al importar (igual que al crear un cliente
-    // desde el dashboard). Hay clientes sin teléfono ni correo registrado.
+    // Se exige nombre o empresa (igual que al crear un cliente en el dashboard).
+    // Teléfono y correo siguen siendo opcionales.
+    .refine((d) => Boolean(d.nombre?.trim() || d.empresa?.trim()), {
+      message: "Se requiere un nombre o una empresa",
+      path: ["nombre"],
+    })
 );
 
 export type ClienteImportRow = z.infer<typeof clienteImportRowSchema>;

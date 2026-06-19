@@ -7,6 +7,7 @@ import {
   Text,
 } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteStaffDetail } from "@/lib/types";
@@ -59,7 +60,16 @@ export default function ClienteDetailScreen() {
     );
   }
 
-  const initials = `${data.nombre[0] ?? ""}${data.apellido?.[0] ?? ""}`.toUpperCase();
+  const displayName = nombreCliente(data);
+  const tienePersona = nombrePersona(data).length > 0;
+  const initials =
+    displayName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "?";
   const direccion = [data.direccion, data.numeroCasa, data.ciudad]
     .filter(Boolean)
     .join(", ");
@@ -73,9 +83,9 @@ export default function ClienteDetailScreen() {
         </View>
         <View style={styles.heroText}>
           <Text variant="headlineSmall" style={styles.heroTitle}>
-            {`${data.nombre} ${data.apellido ?? ""}`.trim()}
+            {displayName}
           </Text>
-          {data.empresa ? (
+          {data.empresa && tienePersona ? (
             <Text variant="bodyMedium" style={styles.heroSubtitle}>
               {data.empresa}
             </Text>

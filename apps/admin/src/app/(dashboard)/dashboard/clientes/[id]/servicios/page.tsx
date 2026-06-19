@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { ClienteServiciosPage } from "@/components/clientes/cliente-servicios-page";
@@ -17,6 +18,7 @@ export default async function ClienteServiciosRoute({
       id: true,
       nombre: true,
       apellido: true,
+      empresa: true,
     },
   });
 
@@ -55,7 +57,7 @@ export default async function ClienteServiciosRoute({
     },
   }));
 
-  const nombreCompleto = `${cliente.nombre} ${cliente.apellido || ""}`.trim();
+  const nombreCompleto = nombreCliente(cliente);
 
   return (
     <div className="p-4 md:p-6 space-y-6">

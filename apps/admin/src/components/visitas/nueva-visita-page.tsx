@@ -14,6 +14,7 @@ import { MultiDatePicker } from "@/components/ui/multi-date-picker";
 import { PersonalSelector } from "@/components/grupos/personal-selector";
 import { ArrowLeft, Search, X, Users } from "lucide-react";
 import { toast } from "sonner";
+import { nombreCliente } from "@vivero/shared";
 
 interface ServicioAsignado {
   id: string;
@@ -23,6 +24,8 @@ interface ServicioAsignado {
 interface Cliente {
   id: string;
   nombre: string;
+  apellido?: string | null;
+  empresa?: string | null;
   servicios: ServicioAsignado[];
 }
 
@@ -67,7 +70,9 @@ export function NuevaVisitaPage({ clientes, grupos, personalList }: Props) {
   const filteredClientes = useMemo(() => {
     if (!clienteQuery.trim()) return clientes.slice(0, 8);
     const q = clienteQuery.toLowerCase();
-    return clientes.filter((c) => c.nombre.toLowerCase().includes(q)).slice(0, 8);
+    return clientes
+      .filter((c) => nombreCliente(c).toLowerCase().includes(q))
+      .slice(0, 8);
   }, [clienteQuery, clientes]);
 
   useEffect(() => {
@@ -171,7 +176,7 @@ export function NuevaVisitaPage({ clientes, grupos, personalList }: Props) {
             <h1 className="text-2xl font-bold">Nueva Visita</h1>
             {selectedCliente && selectedServicio ? (
               <p className="text-sm text-muted-foreground truncate">
-                {selectedCliente.nombre} — {selectedServicio.servicio.nombre}
+                {nombreCliente(selectedCliente)} — {selectedServicio.servicio.nombre}
                 {fechas.length > 0 && ` — ${fechas.length} fecha${fechas.length !== 1 ? "s" : ""}`}
               </p>
             ) : (
@@ -194,7 +199,7 @@ export function NuevaVisitaPage({ clientes, grupos, personalList }: Props) {
             <CardContent className="pt-4">
               {selectedCliente ? (
                 <div className="flex items-center justify-between rounded-md border px-4 py-3">
-                  <span className="font-medium text-sm">{selectedCliente.nombre}</span>
+                  <span className="font-medium text-sm">{nombreCliente(selectedCliente)}</span>
                   <button type="button" onClick={handleClearCliente}>
                     <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                   </button>
@@ -226,7 +231,7 @@ export function NuevaVisitaPage({ clientes, grupos, personalList }: Props) {
                             onClick={() => handleSelectCliente(c)}
                             className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left"
                           >
-                            <span className="font-medium">{c.nombre}</span>
+                            <span className="font-medium">{nombreCliente(c)}</span>
                             <span className="text-xs text-gray-400">
                               {c.servicios.length} servicio{c.servicios.length !== 1 ? "s" : ""}
                             </span>

@@ -13,6 +13,7 @@ import {
   Text,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
@@ -127,7 +128,15 @@ function ClienteRow({
   cliente: ClienteListItem;
   onPress: () => void;
 }) {
-  const initials = `${c.nombre[0] ?? ""}${c.apellido?.[0] ?? ""}`.toUpperCase();
+  const displayName = nombreCliente(c);
+  const initials =
+    displayName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "?";
   const subtitle = [c.telefono, c.sector?.nombre, c.ciudad]
     .filter(Boolean)
     .join(" · ");
@@ -142,7 +151,7 @@ function ClienteRow({
       </View>
       <View style={styles.rowText}>
         <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
-          {`${c.nombre} ${c.apellido ?? ""}`.trim()}
+          {displayName}
         </Text>
         {subtitle ? (
           <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>

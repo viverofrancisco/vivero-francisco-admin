@@ -4,6 +4,7 @@ import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { formatForWhatsApp } from "@/lib/whatsapp/phone";
 import { clienteImportRowSchema } from "@/lib/validations/cliente";
+import { nombreCliente } from "@vivero/shared";
 
 export async function getClienteProfile(viewer: Viewer) {
   if (viewer.role !== "CLIENTE") {
@@ -19,6 +20,7 @@ export async function getClienteProfile(viewer: Viewer) {
       id: true,
       nombre: true,
       apellido: true,
+      empresa: true,
       telefono: true,
       direccion: true,
       ciudad: true,
@@ -58,6 +60,7 @@ const CLIENTE_LIST_SELECT = {
   id: true,
   nombre: true,
   apellido: true,
+  empresa: true,
   telefono: true,
   ciudad: true,
   sector: { select: { id: true, nombre: true } },
@@ -98,6 +101,7 @@ export async function listClientes(
         OR: [
           { nombre: { contains: q, mode: "insensitive" } },
           { apellido: { contains: q, mode: "insensitive" } },
+          { empresa: { contains: q, mode: "insensitive" } },
           { telefono: { contains: q } },
         ],
       });
@@ -166,7 +170,7 @@ function startOfToday(): Date {
 // ──────────────────────────────────────────────
 
 export interface CreateClientePayload {
-  nombre: string;
+  nombre?: string | null;
   apellido?: string | null;
   empresa?: string | null;
   email?: string | null;
@@ -247,9 +251,13 @@ export async function createCliente(
   ensureCanWrite(viewer);
   await ensureSectorAllowed(viewer, payload.sectorId);
 
+  if (!payload.nombre?.trim() && !payload.empresa?.trim()) {
+    throw new ValidationError("Se requiere un nombre o una empresa.");
+  }
+
   return prisma.cliente.create({
     data: {
-      nombre: payload.nombre,
+      nombre: payload.nombre ?? "",
       apellido: payload.apellido ?? null,
       empresa: payload.empresa ?? null,
       email: payload.email ?? null,
@@ -355,7 +363,7 @@ export async function importClientes(
       results.push({
         fila,
         estado: "omitido",
-        nombre: data.nombre,
+        nombre: nombreCliente(data),
         mensaje: "Ya existe un cliente con ese correo o teléfono.",
       });
       continue;
@@ -378,13 +386,13 @@ export async function importClientes(
       });
       created++;
       if (emailKey) seenEmails.add(emailKey);
-      results.push({ fila, estado: "creado", nombre: data.nombre, clienteId: cliente.id });
+      results.push({ fila, estado: "creado", nombre: nombreCliente(data), clienteId: cliente.id });
     } catch (e) {
       failed++;
       results.push({
         fila,
         estado: "error",
-        nombre: data.nombre,
+        nombre: nombreCliente(data),
         mensaje: e instanceof ServiceError ? e.message : "No se pudo crear el cliente.",
       });
     }
@@ -412,7 +420,7 @@ export async function updateCliente(
     return await prisma.cliente.update({
       where: { id: clienteId },
       data: {
-        ...(payload.nombre !== undefined ? { nombre: payload.nombre } : {}),
+        ...(payload.nombre !== undefined ? { nombre: payload.nombre ?? "" } : {}),
         ...(payload.apellido !== undefined ? { apellido: payload.apellido } : {}),
         ...(payload.empresa !== undefined ? { empresa: payload.empresa } : {}),
         ...(payload.email !== undefined ? { email: payload.email } : {}),

@@ -17,7 +17,7 @@ export default async function SectorDetailPage({
       include: {
         clientes: {
           where: { deletedAt: null },
-          select: { id: true, nombre: true, apellido: true, ciudad: true },
+          select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true },
           orderBy: { nombre: "asc" },
         },
         admins: {
@@ -27,7 +27,7 @@ export default async function SectorDetailPage({
     }),
     prisma.cliente.findMany({
       where: { OR: [{ sectorId: null }, { sectorId: id }], deletedAt: null },
-      select: { id: true, nombre: true, apellido: true, ciudad: true, sectorId: true },
+      select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true, sectorId: true },
       orderBy: { nombre: "asc" },
     }),
     prisma.user.findMany({

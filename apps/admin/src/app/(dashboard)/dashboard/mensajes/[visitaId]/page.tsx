@@ -6,6 +6,7 @@ import { requireAuth } from "@/lib/auth-helpers";
 import { Button } from "@/components/ui/button";
 import { VisitaChatPanel } from "@/components/visitas/visita-chat-panel";
 import { VisitaInfoSidebar } from "@/components/mensajes/visita-info-sidebar";
+import { nombreCliente } from "@vivero/shared";
 
 export default async function VisitaChatPage({
   params,
@@ -28,6 +29,7 @@ export default async function VisitaChatPage({
               id: true,
               nombre: true,
               apellido: true,
+              empresa: true,
               telefono: true,
               direccion: true,
               ciudad: true,
@@ -55,7 +57,7 @@ export default async function VisitaChatPage({
   if (!visita) notFound();
 
   const cliente = visita.clienteServicio.cliente;
-  const clienteName = `${cliente.nombre} ${cliente.apellido ?? ""}`.trim();
+  const clienteName = nombreCliente(cliente);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col p-4 md:p-6">

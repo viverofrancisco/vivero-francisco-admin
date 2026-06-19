@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { nombreCliente } from "@vivero/shared";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
@@ -28,10 +29,6 @@ export interface GlobalSearchResult {
 }
 
 const EMPTY: SearchGroup = { items: [], total: 0 };
-
-function fullName(nombre: string, apellido?: string | null): string {
-  return `${nombre} ${apellido ?? ""}`.trim();
-}
 
 function fmtDate(d: Date): string {
   return d.toLocaleDateString("es-EC", {
@@ -77,12 +74,19 @@ export async function globalSearch(
   // either field.
   const tokens = term.split(/\s+/).filter(Boolean);
   const clienteNameMatch = (): Prisma.ClienteWhereInput => ({
-    AND: tokens.map((tok) => ({
-      OR: [
-        { nombre: { contains: tok, ...insensitive } },
-        { apellido: { contains: tok, ...insensitive } },
-      ],
-    })),
+    // Coincide por nombre+apellido (cada token en uno de los dos) o por empresa
+    // (clientes que solo tienen empresa, sin nombre de persona).
+    OR: [
+      {
+        AND: tokens.map((tok) => ({
+          OR: [
+            { nombre: { contains: tok, ...insensitive } },
+            { apellido: { contains: tok, ...insensitive } },
+          ],
+        })),
+      },
+      { empresa: { contains: term, ...insensitive } },
+    ],
   });
 
   // ── Clientes (staff + sector-scoped personal_admin) ──
@@ -152,6 +156,7 @@ export async function globalSearch(
             id: true,
             nombre: true,
             apellido: true,
+            empresa: true,
             ciudad: true,
             sector: { select: { nombre: true } },
           },
@@ -170,7 +175,7 @@ export async function globalSearch(
         fechaProgramada: true,
         clienteServicio: {
           select: {
-            cliente: { select: { nombre: true, apellido: true } },
+            cliente: { select: { nombre: true, apellido: true, empresa: true } },
             servicio: { select: { nombre: true } },
           },
         },
@@ -186,7 +191,7 @@ export async function globalSearch(
             id: true,
             titulo: true,
             generatedAt: true,
-            cliente: { select: { nombre: true, apellido: true } },
+            cliente: { select: { nombre: true, apellido: true, empresa: true } },
           },
           orderBy: { generatedAt: "desc" },
           take,
@@ -202,7 +207,7 @@ export async function globalSearch(
     items: clientes.map((c) => ({
       type: "cliente",
       id: c.id,
-      title: fullName(c.nombre, c.apellido),
+      title: nombreCliente(c),
       subtitle: c.sector?.nombre ?? c.ciudad ?? "Cliente",
       href: `/dashboard/clientes/${c.id}`,
     })),
@@ -214,9 +219,8 @@ export async function globalSearch(
       type: "visita",
       id: v.id,
       title: v.clienteServicio.servicio.nombre,
-      subtitle: `${fullName(
-        v.clienteServicio.cliente.nombre,
-        v.clienteServicio.cliente.apellido
+      subtitle: `${nombreCliente(
+        v.clienteServicio.cliente
       )} · ${fmtDate(v.fechaProgramada)}`,
       href: `/dashboard/visitas/${v.id}`,
       estado: v.estado,
@@ -229,9 +233,8 @@ export async function globalSearch(
       type: "informe",
       id: r.id,
       title: r.titulo,
-      subtitle: `${fullName(
-        r.cliente.nombre,
-        r.cliente.apellido
+      subtitle: `${nombreCliente(
+        r.cliente
       )} · ${fmtDate(r.generatedAt)}`,
       href: `/dashboard/informes/${r.id}`,
     })),

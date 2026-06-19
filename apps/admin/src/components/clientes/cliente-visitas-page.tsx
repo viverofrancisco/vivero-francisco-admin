@@ -24,7 +24,7 @@ interface VisitaRow {
   estado: string;
   notas: string | null;
   clienteServicio: {
-    cliente: { id: string; nombre: string; apellido?: string | null };
+    cliente: { id: string; nombre: string; apellido?: string | null; empresa: string | null };
     servicio: { id: string; nombre: string; tipo: string };
   };
   grupo: { id: string; nombre: string } | null;

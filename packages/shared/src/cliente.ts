@@ -13,8 +13,14 @@ const optionalString = z
   .nullable()
   .transform((v) => (v === "" ? null : v ?? null));
 
-export const createClienteSchema = z.object({
-  nombre: z.string().trim().min(1, "El nombre es obligatorio").max(120),
+const clienteBaseSchema = z.object({
+  nombre: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .nullable()
+    .transform((v) => (v === "" ? null : v ?? null)),
   apellido: optionalString,
   empresa: optionalString,
   email: z
@@ -48,9 +54,35 @@ export const createClienteSchema = z.object({
     .optional()
     .nullable(),
 });
+// Un cliente puede ser una persona (nombre) o una empresa (empresa). Se exige
+// al menos uno de los dos al crear.
+export const createClienteSchema = clienteBaseSchema.refine(
+  (d) => Boolean(d.nombre?.trim() || d.empresa?.trim()),
+  { message: "Se requiere un nombre o una empresa", path: ["nombre"] }
+);
 export type CreateClienteBody = z.infer<typeof createClienteSchema>;
 
-// Update is the same shape — all optional. Reuse the same schema; partial
-// inputs only update what they include.
-export const updateClienteSchema = createClienteSchema.partial();
+// Update is the same shape — all optional. No se re-valida nombre/empresa: la
+// actualización es parcial y el registro existente ya cumple la regla.
+export const updateClienteSchema = clienteBaseSchema.partial();
 export type UpdateClienteBody = z.infer<typeof updateClienteSchema>;
+
+// ──────────────────────────────────────────────
+// Nombre para mostrar (persona o empresa)
+// ──────────────────────────────────────────────
+
+export interface ClienteNombre {
+  nombre?: string | null;
+  apellido?: string | null;
+  empresa?: string | null;
+}
+
+/** "Nombre Apellido" — vacío si el cliente no tiene nombre de persona. */
+export function nombrePersona(c: ClienteNombre): string {
+  return `${c.nombre ?? ""} ${c.apellido ?? ""}`.trim();
+}
+
+/** Mejor etiqueta para mostrar: la persona si existe; si no, la empresa. */
+export function nombreCliente(c: ClienteNombre): string {
+  return nombrePersona(c) || (c.empresa ?? "").trim() || "Sin nombre";
+}

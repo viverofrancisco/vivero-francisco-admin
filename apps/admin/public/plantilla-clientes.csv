@@ -1,3 +1,4 @@
 nombre,apellido,empresa,email,telefono,ciudad,direccion,numeroCasa,referencia,notas,metrosCuadrados
 Juan,Pérez,,juan.perez@example.com,0991234567,Guayaquil,Av. Principal,45,Frente al parque,Cliente preferente,150
 María,Gómez,Vivero Gómez,,0987654321,Samborondón,Calle 10,,,Pago mensual,
+,,Floristería El Jardín,info@eljardin.com,042345678,Guayaquil,Av. de las Flores,12,,Cliente solo empresa,

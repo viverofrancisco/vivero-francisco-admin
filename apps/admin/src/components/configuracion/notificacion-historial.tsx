@@ -37,7 +37,7 @@ interface LogEntry {
     id: string;
     fechaProgramada: string;
     clienteServicio: {
-      cliente: { nombre: string; apellido: string | null };
+      cliente: { nombre: string; apellido: string | null; empresa: string | null };
       servicio: { nombre: string };
     };
   } | null;

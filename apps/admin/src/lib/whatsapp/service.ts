@@ -1,8 +1,25 @@
 import { prisma } from "@/lib/prisma";
+import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { TipoNotificacion, DestinatarioTipo } from "@/generated/prisma/client";
 import { createMetaProvider } from "./meta-provider";
 import { formatForWhatsApp, isValidWhatsAppNumber } from "./phone";
 import type { SendResult, TemplateComponent } from "./types";
+
+/**
+ * Variables `nombre`/`apellido` para las plantillas de WhatsApp. Los clientes
+ * que solo tienen empresa (sin nombre de persona) usan la empresa como
+ * `nombre` para que el saludo nunca quede en blanco.
+ */
+function nombreVarsCliente(c: {
+  nombre: string;
+  apellido: string | null;
+  empresa: string | null;
+}): { nombre: string; apellido: string } {
+  if (nombrePersona(c)) {
+    return { nombre: c.nombre, apellido: c.apellido || "" };
+  }
+  return { nombre: c.empresa ?? "", apellido: "" };
+}
 
 // ──────────────────────────────────────────────
 // Types
@@ -182,8 +199,7 @@ export async function enviarConfirmacionVisita(visitaId: string) {
   if (!cliente.recibirConfirmaciones) return;
 
   const vars = {
-    nombre: cliente.nombre,
-    apellido: cliente.apellido || "",
+    ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
     servicio: visita.clienteServicio.servicio.nombre,
     direccion: cliente.direccion || "",
@@ -196,7 +212,7 @@ export async function enviarConfirmacionVisita(visitaId: string) {
     tipo: "CONFIRMACION_VISITA_CLIENTE",
     destinatarioTipo: "CLIENTE",
     destinatarioId: cliente.id,
-    destinatarioNombre: `${vars.nombre} ${vars.apellido}`.trim(),
+    destinatarioNombre: nombreCliente(cliente),
     telefono: cliente.telefono!,
     mensaje,
     visitaId,
@@ -243,8 +259,7 @@ export async function enviarRecordatorioCliente(visitaId: string) {
   if (existing) return;
 
   const vars = {
-    nombre: cliente.nombre,
-    apellido: cliente.apellido || "",
+    ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
     servicio: visita.clienteServicio.servicio.nombre,
     direccion: cliente.direccion || "",
@@ -257,7 +272,7 @@ export async function enviarRecordatorioCliente(visitaId: string) {
     tipo: "RECORDATORIO_VISITA_CLIENTE",
     destinatarioTipo: "CLIENTE",
     destinatarioId: cliente.id,
-    destinatarioNombre: `${vars.nombre} ${vars.apellido}`.trim(),
+    destinatarioNombre: nombreCliente(cliente),
     telefono: cliente.telefono!,
     mensaje,
     visitaId,
@@ -280,7 +295,7 @@ export async function enviarAlertaVisitaCompletada(visitaId: string) {
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { nombre: true, apellido: true } },
+          cliente: { select: { nombre: true, apellido: true, empresa: true } },
           servicio: { select: { nombre: true } },
         },
       },
@@ -290,8 +305,7 @@ export async function enviarAlertaVisitaCompletada(visitaId: string) {
   if (!visita) return;
 
   const vars = {
-    nombre: visita.clienteServicio.cliente.nombre,
-    apellido: visita.clienteServicio.cliente.apellido || "",
+    ...nombreVarsCliente(visita.clienteServicio.cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
     servicio: visita.clienteServicio.servicio.nombre,
     estado: visita.estado,
@@ -340,7 +354,7 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { nombre: true, apellido: true } },
+          cliente: { select: { nombre: true, apellido: true, empresa: true } },
           servicio: { select: { nombre: true } },
         },
       },
@@ -350,8 +364,7 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
   if (!visita) return;
 
   const vars = {
-    nombre: visita.clienteServicio.cliente.nombre,
-    apellido: visita.clienteServicio.cliente.apellido || "",
+    ...nombreVarsCliente(visita.clienteServicio.cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
     servicio: visita.clienteServicio.servicio.nombre,
     estado: visita.estado,
@@ -412,7 +425,7 @@ export async function enviarResumenDiarioAdmin() {
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { nombre: true, apellido: true, direccion: true } },
+          cliente: { select: { nombre: true, apellido: true, empresa: true, direccion: true } },
           servicio: { select: { nombre: true } },
         },
       },
@@ -426,7 +439,7 @@ export async function enviarResumenDiarioAdmin() {
   const listaVisitas = visitas
     .map((v, i) => {
       const c = v.clienteServicio.cliente;
-      return `${i + 1}. ${c.nombre}${c.apellido ? ` ${c.apellido}` : ""} - ${v.clienteServicio.servicio.nombre}${c.direccion ? ` (${c.direccion})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
+      return `${i + 1}. ${nombreCliente(c)} - ${v.clienteServicio.servicio.nombre}${c.direccion ? ` (${c.direccion})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
     })
     .join("\n");
 
@@ -489,13 +502,13 @@ export async function procesarMensajeEntrante(data: {
     const formattedIncoming = formatForWhatsApp(data.telefono);
     const clientes = await prisma.cliente.findMany({
       where: { deletedAt: null, telefono: { not: null } },
-      select: { nombre: true, apellido: true, telefono: true },
+      select: { nombre: true, apellido: true, empresa: true, telefono: true },
     });
     const match = clientes.find(
       (c) => c.telefono && formatForWhatsApp(c.telefono) === formattedIncoming
     );
     if (match) {
-      clienteNombre = `${match.nombre}${match.apellido ? ` ${match.apellido}` : ""}`;
+      clienteNombre = nombreCliente(match);
     }
   } catch {
     // ignore, use profile name

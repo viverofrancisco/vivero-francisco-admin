@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { nombreCliente } from "@vivero/shared";
 import { ForbiddenError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
@@ -41,7 +42,7 @@ const AUTHOR_INCLUDE = {
       name: true,
       apellido: true,
       role: true,
-      cliente: { select: { nombre: true, apellido: true } },
+      cliente: { select: { nombre: true, apellido: true, empresa: true } },
     },
   },
   media: {
@@ -59,12 +60,12 @@ interface DbAuthor {
   name: string | null;
   apellido: string | null;
   role: string;
-  cliente: { nombre: string; apellido: string | null } | null;
+  cliente: { nombre: string; apellido: string | null; empresa: string | null } | null;
 }
 
 function authorDisplayName(a: DbAuthor): string {
   if (a.cliente) {
-    return `${a.cliente.nombre} ${a.cliente.apellido ?? ""}`.trim();
+    return nombreCliente(a.cliente);
   }
   return `${a.name ?? ""} ${a.apellido ?? ""}`.trim() || "Equipo";
 }
@@ -273,6 +274,7 @@ const INBOX_INCLUDE = {
           id: true,
           nombre: true,
           apellido: true,
+          empresa: true,
           sectorId: true,
         },
       },
@@ -403,7 +405,7 @@ export async function listInbox(
         fechaProgramada: v.fechaProgramada,
         estado: v.estado,
         servicioNombre: v.clienteServicio.servicio.nombre,
-        clienteNombre: `${cliente.nombre} ${cliente.apellido ?? ""}`.trim(),
+        clienteNombre: nombreCliente(cliente),
         lastMessage: last
           ? {
               id: last.id,
@@ -492,7 +494,14 @@ export async function searchInbox(
       ...(visibleIds === "all" ? {} : { id: { in: visibleIds } }),
       messages: { some: {} },
       clienteServicio: {
-        cliente: { AND: clienteAnd },
+        // Coincide por nombre+apellido (todas las palabras) o por empresa
+        // (clientes que solo tienen empresa, sin nombre de persona).
+        cliente: {
+          OR: [
+            { AND: clienteAnd },
+            { empresa: { contains: q, mode: "insensitive" } },
+          ],
+        },
       },
     },
     include: {
@@ -562,7 +571,7 @@ export async function searchInbox(
   // sort time we use the visita's most recent message createdAt.
   for (const v of nameMatches) {
     const cliente = v.clienteServicio.cliente;
-    const clienteName = `${cliente.nombre} ${cliente.apellido ?? ""}`.trim();
+    const clienteName = nombreCliente(cliente);
     const lastMsg = v.messages[0];
     results.push({
       resultId: `name-${v.id}`,
@@ -583,7 +592,7 @@ export async function searchInbox(
   // Message-match rows.
   for (const m of messageMatches) {
     const cliente = m.visita.clienteServicio.cliente;
-    const clienteName = `${cliente.nombre} ${cliente.apellido ?? ""}`.trim();
+    const clienteName = nombreCliente(cliente);
     results.push({
       resultId: `message-${m.id}`,
       visitaId: m.visitaId,

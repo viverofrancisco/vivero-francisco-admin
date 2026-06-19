@@ -42,7 +42,7 @@ export async function GET(
     include: {
       clienteServicio: {
         include: {
-          cliente: { select: { id: true, nombre: true, apellido: true, ciudad: true, sector: true } },
+          cliente: { select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true, sector: true } },
           servicio: { select: { id: true, nombre: true, tipo: true } },
         },
       },

@@ -48,7 +48,7 @@ export default async function VisitasPage() {
       include: {
         clienteServicio: {
           include: {
-            cliente: { select: { id: true, nombre: true, apellido: true } },
+            cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
             servicio: { select: { id: true, nombre: true, tipo: true } },
           },
         },
@@ -57,7 +57,7 @@ export default async function VisitasPage() {
     }),
     prisma.cliente.findMany({
       where: clientesWhere,
-      select: { id: true, nombre: true, apellido: true },
+      select: { id: true, nombre: true, apellido: true, empresa: true },
       orderBy: { nombre: "asc" },
     }),
     prisma.servicio.findMany({
@@ -82,7 +82,9 @@ export default async function VisitasPage() {
 
   const clienteOptions = clientes.map((c) => ({
     id: c.id,
-    nombre: `${c.nombre} ${c.apellido || ""}`.trim(),
+    nombre: c.nombre,
+    apellido: c.apellido,
+    empresa: c.empresa,
   }));
 
   return (

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ArrowLeft, Check, Search, X } from "lucide-react";
 import { toast } from "sonner";
+import { nombreCliente } from "@vivero/shared";
 
 interface Servicio {
   id: string;
@@ -22,6 +23,7 @@ interface Cliente {
   id: string;
   nombre: string;
   apellido: string | null;
+  empresa: string | null;
   ciudad: string | null;
 }
 
@@ -76,7 +78,7 @@ export function AsignarServicioPage({
     return clientes
       .filter(
         (c) =>
-          `${c.nombre} ${c.apellido || ""}`.toLowerCase().includes(q) &&
+          nombreCliente(c).toLowerCase().includes(q) &&
           !pendingIds.has(c.id) &&
           !assignedClienteIds.has(c.id)
       )
@@ -167,7 +169,7 @@ export function AsignarServicioPage({
         throw new Error(body.error || "Error al asignar");
       }
 
-      toast.success(`Servicio asignado a ${row.cliente.nombre} ${row.cliente.apellido || ""}`.trim());
+      toast.success(`Servicio asignado a ${nombreCliente(row.cliente)}`);
       setPendingRows((prev) => prev.filter((r) => r.cliente.id !== row.cliente.id));
       setAssignedClienteIds((prev) => new Set([...prev, row.cliente.id]));
     } catch (err) {
@@ -284,7 +286,7 @@ export function AsignarServicioPage({
                         onClick={() => handleAddCliente(c)}
                         className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left"
                       >
-                        <span className="font-medium">{`${c.nombre} ${c.apellido || ""}`.trim()}</span>
+                        <span className="font-medium">{nombreCliente(c)}</span>
                         <span className="text-gray-400 text-xs">{c.ciudad ?? ""}</span>
                       </button>
                     ))
@@ -303,7 +305,7 @@ export function AsignarServicioPage({
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="font-medium">{`${row.cliente.nombre} ${row.cliente.apellido || ""}`.trim()}</span>
+                        <span className="font-medium">{nombreCliente(row.cliente)}</span>
                         {row.cliente.ciudad && (
                           <span className="ml-2 text-sm text-gray-400">{row.cliente.ciudad}</span>
                         )}

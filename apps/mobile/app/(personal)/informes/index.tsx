@@ -9,6 +9,7 @@ import {
 import { ActivityIndicator, FAB, IconButton, Text } from "react-native-paper";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 
@@ -19,7 +20,12 @@ interface InformeItem {
   fechaHasta: string | null;
   pdfUrl: string;
   generatedAt: string;
-  cliente: { id: string; nombre: string };
+  cliente: {
+    id: string;
+    nombre: string;
+    apellido?: string | null;
+    empresa: string | null;
+  };
   visitasCount: number;
 }
 
@@ -216,7 +222,7 @@ function InformeRow({
           {item.titulo}
         </Text>
         <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
-          {item.cliente.nombre}
+          {nombreCliente(item.cliente)}
         </Text>
         <Text variant="bodySmall" style={styles.metaLine}>
           {formatGeneratedAt(item.generatedAt)} · {item.visitasCount} visita

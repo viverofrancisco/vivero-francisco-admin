@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 
 interface InformeDetail {
@@ -20,7 +21,12 @@ interface InformeDetail {
   fechaHasta: string | null;
   pdfUrl: string;
   generatedAt: string;
-  cliente: { id: string; nombre: string };
+  cliente: {
+    id: string;
+    nombre: string;
+    apellido?: string | null;
+    empresa: string | null;
+  };
   visitasCount: number;
 }
 
@@ -103,7 +109,7 @@ export default function InformeDetailScreen() {
             {data.titulo}
           </Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
-            {data.cliente.nombre}
+            {nombreCliente(data.cliente)}
           </Text>
         </Card.Content>
       </Card>

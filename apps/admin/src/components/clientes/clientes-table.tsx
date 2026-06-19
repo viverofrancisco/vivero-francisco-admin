@@ -25,6 +25,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search, ChevronDown, X } from "lucide-react";
 import { toast } from "sonner";
+import { nombreCliente } from "@vivero/shared";
 
 interface Cliente {
   id: string;
@@ -42,7 +43,7 @@ interface Cliente {
 }
 
 function fullName(cliente: Cliente): string {
-  return `${cliente.nombre} ${cliente.apellido || ""}`.trim();
+  return nombreCliente(cliente);
 }
 
 function formatUbicacion(cliente: Cliente): string {

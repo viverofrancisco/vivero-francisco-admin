@@ -11,6 +11,7 @@ import {
   Button,
   Text,
 } from "react-native-paper";
+import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { useBranding } from "@/lib/branding";
@@ -66,8 +67,15 @@ export default function ClienteConfiguracionScreen() {
   }
 
   const cliente = data?.cliente;
+  const displayName = cliente ? nombreCliente(cliente) : "";
   const initials = cliente
-    ? `${cliente.nombre[0] ?? ""}${cliente.apellido?.[0] ?? ""}`.toUpperCase()
+    ? displayName
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase() || "?"
     : "?";
 
   return (
@@ -83,9 +91,7 @@ export default function ClienteConfiguracionScreen() {
           <Text style={styles.avatarText}>{initials}</Text>
         </View>
         <Text variant="headlineSmall" style={styles.heroTitle}>
-          {cliente
-            ? `${cliente.nombre} ${cliente.apellido ?? ""}`.trim()
-            : "Mi cuenta"}
+          {cliente ? displayName : "Mi cuenta"}
         </Text>
         {cliente?.sector?.nombre ? (
           <Text variant="bodyMedium" style={styles.heroSubtitle}>

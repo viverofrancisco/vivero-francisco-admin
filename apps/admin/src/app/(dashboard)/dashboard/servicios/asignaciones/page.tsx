@@ -10,7 +10,7 @@ export default async function AsignacionesPage() {
       where: { cliente: { deletedAt: null }, servicio: { deletedAt: null } },
       orderBy: { createdAt: "desc" },
       include: {
-        cliente: { select: { id: true, nombre: true, apellido: true, ciudad: true } },
+        cliente: { select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true } },
         servicio: { select: { id: true, nombre: true, tipo: true } },
       },
     }),
