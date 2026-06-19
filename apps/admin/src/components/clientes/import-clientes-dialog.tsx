@@ -283,9 +283,9 @@ export function ImportClientesDialog() {
           // ─── Selección / progreso ───
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Sube un archivo CSV. Obligatorio: <strong>nombre</strong> y al menos{" "}
-              <strong>teléfono o correo</strong>. Los duplicados (por correo o
-              teléfono) se omiten.
+              Sube un archivo CSV. Único campo obligatorio: <strong>nombre</strong>.
+              Puedes incluir <strong>empresa</strong>, correo, teléfono, dirección y
+              más. Se omiten los clientes que ya existen (mismo correo o teléfono).
             </p>
 
             <div className="flex items-center justify-between">

@@ -7,6 +7,7 @@ const telefonoRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$|^\+[1-9]\d{6,14}$/;
 export const clienteSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
   apellido: z.string().optional().or(z.literal("")),
+  empresa: z.string().optional().or(z.literal("")),
   email: z.email("Email inválido").optional().or(z.literal("")),
   telefono: z
     .string()
@@ -46,6 +47,7 @@ export const clienteImportRowSchema = z.preprocess(
     return {
       nombre: typeof r.nombre === "string" ? r.nombre.trim() : "",
       apellido: csvText(r.apellido),
+      empresa: csvText(r.empresa),
       email: csvText(r.email),
       telefono: csvText(r.telefono),
       ciudad: csvText(r.ciudad),
@@ -60,6 +62,7 @@ export const clienteImportRowSchema = z.preprocess(
     .object({
       nombre: z.string().min(1, "El nombre es obligatorio").max(120),
       apellido: z.string().max(500).optional(),
+      empresa: z.string().max(500).optional(),
       email: z.email("Email inválido").optional(),
       telefono: z
         .string()

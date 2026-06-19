@@ -129,6 +129,7 @@ export async function getClienteForStaff(clienteId: string, viewer: Viewer) {
       id: true,
       nombre: true,
       apellido: true,
+      empresa: true,
       email: true,
       telefono: true,
       direccion: true,
@@ -167,6 +168,7 @@ function startOfToday(): Date {
 export interface CreateClientePayload {
   nombre: string;
   apellido?: string | null;
+  empresa?: string | null;
   email?: string | null;
   telefono?: string | null;
   ciudad?: string | null;
@@ -249,6 +251,7 @@ export async function createCliente(
     data: {
       nombre: payload.nombre,
       apellido: payload.apellido ?? null,
+      empresa: payload.empresa ?? null,
       email: payload.email ?? null,
       telefono: payload.telefono ?? null,
       ciudad: payload.ciudad ?? null,
@@ -362,6 +365,7 @@ export async function importClientes(
       const cliente = await createCliente(viewer, {
         nombre: data.nombre,
         apellido: data.apellido,
+        empresa: data.empresa,
         email: data.email,
         telefono: data.telefono,
         ciudad: data.ciudad,
@@ -410,6 +414,7 @@ export async function updateCliente(
       data: {
         ...(payload.nombre !== undefined ? { nombre: payload.nombre } : {}),
         ...(payload.apellido !== undefined ? { apellido: payload.apellido } : {}),
+        ...(payload.empresa !== undefined ? { empresa: payload.empresa } : {}),
         ...(payload.email !== undefined ? { email: payload.email } : {}),
         ...(payload.telefono !== undefined ? { telefono: payload.telefono } : {}),
         ...(payload.ciudad !== undefined ? { ciudad: payload.ciudad } : {}),

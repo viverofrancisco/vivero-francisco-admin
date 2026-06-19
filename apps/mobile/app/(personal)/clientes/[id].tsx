@@ -75,6 +75,11 @@ export default function ClienteDetailScreen() {
           <Text variant="headlineSmall" style={styles.heroTitle}>
             {`${data.nombre} ${data.apellido ?? ""}`.trim()}
           </Text>
+          {data.empresa ? (
+            <Text variant="bodyMedium" style={styles.heroSubtitle}>
+              {data.empresa}
+            </Text>
+          ) : null}
           {data.sector?.nombre ? (
             <Text variant="bodyMedium" style={styles.heroSubtitle}>
               {data.sector.nombre}

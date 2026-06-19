@@ -16,6 +16,7 @@ const optionalString = z
 export const createClienteSchema = z.object({
   nombre: z.string().trim().min(1, "El nombre es obligatorio").max(120),
   apellido: optionalString,
+  empresa: optionalString,
   email: z
     .string()
     .trim()

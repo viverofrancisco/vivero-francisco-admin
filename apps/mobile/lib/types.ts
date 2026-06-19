@@ -164,6 +164,7 @@ export interface ClientesListResponse {
 }
 
 export interface ClienteStaffDetail extends ClienteListItem {
+  empresa: string | null;
   email: string | null;
   direccion: string | null;
   numeroCasa: string | null;

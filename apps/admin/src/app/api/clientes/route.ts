@@ -57,6 +57,7 @@ export async function POST(request: Request) {
     data: {
       nombre: data.nombre,
       apellido: data.apellido || null,
+      empresa: data.empresa || null,
       email: data.email || null,
       telefono: data.telefono || null,
       ciudad: data.ciudad || null,

@@ -63,6 +63,7 @@ interface ClienteData {
   id: string;
   nombre: string;
   apellido: string | null;
+  empresa: string | null;
   email: string | null;
   telefono: string | null;
   ciudad: string | null;
@@ -263,6 +264,7 @@ export function ClienteDetailTabs({
           id: cliente.id,
           nombre: cliente.nombre,
           apellido: cliente.apellido,
+          empresa: cliente.empresa,
           email: cliente.email,
           telefono: cliente.telefono,
           ciudad: cliente.ciudad,

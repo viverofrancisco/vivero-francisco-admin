@@ -38,6 +38,7 @@ export function ClienteForm({
 
   const [nombre, setNombre] = useState(initial?.nombre ?? "");
   const [apellido, setApellido] = useState(initial?.apellido ?? "");
+  const [empresa, setEmpresa] = useState(initial?.empresa ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [telefono, setTelefono] = useState(initial?.telefono ?? "");
   const [ciudad, setCiudad] = useState(initial?.ciudad ?? "");
@@ -88,6 +89,7 @@ export function ClienteForm({
       await onSubmit({
         nombre: nombre.trim(),
         apellido: apellido?.trim() || null,
+        empresa: empresa?.trim() || null,
         email: email?.trim() || null,
         telefono: telefono?.trim() || null,
         ciudad: ciudad?.trim() || null,
@@ -126,6 +128,11 @@ export function ClienteForm({
           label="Apellido"
           value={apellido ?? ""}
           onChangeText={setApellido}
+        />
+        <Field
+          label="Empresa"
+          value={empresa ?? ""}
+          onChangeText={setEmpresa}
         />
 
         <SectionTitle>Contacto</SectionTitle>

@@ -2899,6 +2899,7 @@ export const ClienteScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
   apellido: 'apellido',
+  empresa: 'empresa',
   email: 'email',
   telefono: 'telefono',
   ciudad: 'ciudad',

@@ -30,6 +30,7 @@ interface Cliente {
   id: string;
   nombre: string;
   apellido: string | null;
+  empresa: string | null;
   email: string | null;
   telefono: string | null;
   ciudad: string | null;
@@ -102,6 +103,7 @@ export function ClientesTable({
       result = result.filter(
         (c) =>
           fullName(c).toLowerCase().includes(q) ||
+          (c.empresa?.toLowerCase().includes(q) ?? false) ||
           (c.telefono?.includes(q) ?? false) ||
           (c.ciudad?.toLowerCase().includes(q) ?? false)
       );
@@ -202,7 +204,7 @@ export function ClientesTable({
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nombre, telefono o ciudad..."
+            placeholder="Buscar por nombre, empresa, telefono o ciudad..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

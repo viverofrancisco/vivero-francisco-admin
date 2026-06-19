@@ -45,6 +45,7 @@ export default function ClienteEditarScreen() {
       initial={{
         nombre: initial.nombre,
         apellido: initial.apellido,
+        empresa: initial.empresa,
         email: initial.email,
         telefono: initial.telefono,
         ciudad: initial.ciudad,

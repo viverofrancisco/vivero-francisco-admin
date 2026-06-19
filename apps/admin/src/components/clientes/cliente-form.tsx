@@ -21,6 +21,7 @@ interface ClienteFormProps {
     id: string;
     nombre: string;
     apellido: string | null;
+    empresa: string | null;
     email: string | null;
     telefono: string | null;
     ciudad: string | null;
@@ -78,6 +79,7 @@ export function ClienteForm({
     defaultValues: {
       nombre: initialData?.nombre ?? "",
       apellido: initialData?.apellido ?? "",
+      empresa: initialData?.empresa ?? "",
       email: initialData?.email ?? "",
       telefono: initialData?.telefono ?? "",
       ciudad: initialData?.ciudad ?? "",
@@ -96,6 +98,7 @@ export function ClienteForm({
       reset({
         nombre: initialData.nombre ?? "",
         apellido: initialData.apellido ?? "",
+        empresa: initialData.empresa ?? "",
         email: initialData.email ?? "",
         telefono: initialData.telefono ?? "",
         ciudad: initialData.ciudad ?? "",
@@ -164,6 +167,7 @@ export function ClienteForm({
               <CardContent className="pt-2">
                 <InfoRow label="Nombre" value={initialData?.nombre} />
                 <InfoRow label="Apellido" value={initialData?.apellido} />
+                <InfoRow label="Empresa" value={initialData?.empresa} />
                 <InfoRow label="Email" value={initialData?.email} />
                 <InfoRow label="Telefono" value={initialData?.telefono} />
                 <InfoRow
@@ -233,6 +237,14 @@ export function ClienteForm({
                       <p className="text-sm text-destructive">{errors.apellido.message}</p>
                     )}
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="empresa">Empresa</Label>
+                  <Input
+                    id="empresa"
+                    placeholder="Nombre de la empresa (opcional)"
+                    {...register("empresa")}
+                  />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -381,6 +393,15 @@ export function ClienteForm({
             <Label htmlFor="apellido">Apellido</Label>
             <Input id="apellido" {...register("apellido")} />
             {fieldError(errors.apellido?.message)}
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="empresa">Empresa</Label>
+            <Input
+              id="empresa"
+              placeholder="Nombre de la empresa (opcional)"
+              {...register("empresa")}
+            />
+            {fieldError(errors.empresa?.message)}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Correo electrónico</Label>

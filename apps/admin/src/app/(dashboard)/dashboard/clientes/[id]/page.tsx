@@ -90,6 +90,7 @@ export default async function EditarClientePage({
           id: cliente.id,
           nombre: cliente.nombre,
           apellido: cliente.apellido,
+          empresa: cliente.empresa,
           email: cliente.email,
           telefono: cliente.telefono,
           ciudad: cliente.ciudad,
