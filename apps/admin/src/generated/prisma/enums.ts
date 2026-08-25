@@ -20,12 +20,38 @@ export const UserRole = {
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 
-export const TipoServicio = {
-  RECURRENTE: 'RECURRENTE',
-  UNICO: 'UNICO'
+export const TipoProducto = {
+  SERVICIO: 'SERVICIO',
+  BIEN: 'BIEN'
 } as const
 
-export type TipoServicio = (typeof TipoServicio)[keyof typeof TipoServicio]
+export type TipoProducto = (typeof TipoProducto)[keyof typeof TipoProducto]
+
+
+export const Periodicidad = {
+  MENSUAL: 'MENSUAL',
+  TRIMESTRAL: 'TRIMESTRAL',
+  SEMESTRAL: 'SEMESTRAL',
+  ANUAL: 'ANUAL'
+} as const
+
+export type Periodicidad = (typeof Periodicidad)[keyof typeof Periodicidad]
+
+
+export const OrigenProducto = {
+  PORTAL: 'PORTAL',
+  CONTIFICO: 'CONTIFICO'
+} as const
+
+export type OrigenProducto = (typeof OrigenProducto)[keyof typeof OrigenProducto]
+
+
+export const TipoPersona = {
+  NATURAL: 'NATURAL',
+  JURIDICA: 'JURIDICA'
+} as const
+
+export type TipoPersona = (typeof TipoPersona)[keyof typeof TipoPersona]
 
 
 export const EstadoServicio = {
@@ -77,3 +103,31 @@ export const DestinatarioTipo = {
 } as const
 
 export type DestinatarioTipo = (typeof DestinatarioTipo)[keyof typeof DestinatarioTipo]
+
+
+export const EstadoOrden = {
+  BORRADOR: 'BORRADOR',
+  CONFIRMADA: 'CONFIRMADA',
+  ANULADA: 'ANULADA'
+} as const
+
+export type EstadoOrden = (typeof EstadoOrden)[keyof typeof EstadoOrden]
+
+
+export const EstadoFactura = {
+  PENDIENTE: 'PENDIENTE',
+  FIRMADO: 'FIRMADO',
+  ENVIADO_SRI: 'ENVIADO_SRI',
+  AUTORIZADO: 'AUTORIZADO',
+  RECHAZADO: 'RECHAZADO'
+} as const
+
+export type EstadoFactura = (typeof EstadoFactura)[keyof typeof EstadoFactura]
+
+
+export const TipoIdentificacion = {
+  CEDULA: 'CEDULA',
+  RUC: 'RUC'
+} as const
+
+export type TipoIdentificacion = (typeof TipoIdentificacion)[keyof typeof TipoIdentificacion]

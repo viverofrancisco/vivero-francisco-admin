@@ -10,12 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  TablePagination,
+  FILAS_POR_PAGINA,
+} from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { StatCards } from "@/components/shared/stat-cards";
 import { Search } from "lucide-react";
 
 interface Personal {
@@ -67,8 +71,6 @@ function crewNames(p: Personal): string {
   return names.length ? names.join(", ") : "—";
 }
 
-const ITEMS_PER_PAGE = 10;
-
 export function PersonalTable({ personal }: { personal: Personal[] }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,16 +92,17 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
         (p) =>
           fullName(p).toLowerCase().includes(q) ||
           (p.telefono?.includes(q) ?? false) ||
-          (p.especialidad?.toLowerCase().includes(q) ?? false)
+          (p.especialidad?.toLowerCase().includes(q) ?? false),
       );
     }
     return result;
   }, [personal, estadoFilter, tipoFilter, searchQuery]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FILAS_POR_PAGINA));
+  const pagina = Math.min(page, totalPages);
   const paginated = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    (pagina - 1) * FILAS_POR_PAGINA,
+    pagina * FILAS_POR_PAGINA,
   );
 
   const stats: [string, number][] = useMemo(() => {
@@ -107,7 +110,7 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
     const jardineros = personal.filter((p) => p.tipo === "JARDINERO").length;
     const supervisores = personal.filter((p) => p.tipo === "SUPERVISOR").length;
     const cuadrillas = new Set(
-      personal.flatMap((p) => (p.grupos ?? []).map((g) => g.grupo.nombre))
+      personal.flatMap((p) => (p.grupos ?? []).map((g) => g.grupo.nombre)),
     ).size;
     return [
       ["Personal activo", activo],
@@ -123,26 +126,12 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
       {/* Summary strip */}
-      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-        {stats.map(([label, value]) => (
-          <div
-            key={label}
-            className="rounded-2xl border border-border bg-card px-[18px] py-[15px]"
-          >
-            <div className="truncate text-[13px] font-semibold text-muted-foreground">
-              {label}
-            </div>
-            <div className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
+      <StatCards stats={stats} />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-none flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -187,14 +176,14 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
         />
       </div>
 
-      {/* Table */}
-      {filtered.length === 0 ? (
-        <EmptyState message="No se encontro personal" />
-      ) : (
-        <>
-          <div className="overflow-hidden rounded-2xl border border-border bg-card">
-            <Table>
-              <TableHeader>
+      {/* Solo las filas scrollean: encabezado y paginación quedan fijos. */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {filtered.length === 0 ? (
+            <EmptyState message="No se encontro personal" />
+          ) : (
+            <Table containerClassName="h-full overflow-y-auto">
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Especialidad</TableHead>
@@ -256,7 +245,10 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex items-center justify-end gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <DeleteDialog
                           title={`¿Eliminar a ${fullName(p)}?`}
                           description="Se eliminara este personal permanentemente."
@@ -269,38 +261,17 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                 ))}
               </TableBody>
             </Table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Mostrando {(page - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(page * ITEMS_PER_PAGE, filtered.length)} de{" "}
-                {filtered.length}
-              </p>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
           )}
-        </>
-      )}
+        </div>
+
+        <TablePagination
+          page={pagina}
+          total={filtered.length}
+          onPageChange={setPage}
+          sustantivo="persona"
+          plural="personas"
+        />
+      </div>
     </div>
   );
 }

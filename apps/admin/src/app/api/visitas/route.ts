@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   const hasta = searchParams.get("hasta");
   const estado = searchParams.get("estado") as EstadoVisita | null;
   const clienteId = searchParams.get("clienteId");
-  const servicioId = searchParams.get("servicioId");
+  const productoId = searchParams.get("productoId");
 
   try {
     const result = await listVisitas(viewerFromSession(user), {
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       to: hasta ? new Date(hasta) : undefined,
       estado: estado ?? undefined,
       clienteId: clienteId ?? undefined,
-      servicioId: servicioId ?? undefined,
+      productoId: productoId ?? undefined,
       limit: 200,
     });
     return NextResponse.json(result.items);
@@ -69,7 +69,8 @@ export async function POST(request: Request) {
 
   try {
     const visitas = await createVisitasBatch(viewerFromSession(user), {
-      clienteServicioId: result.data.clienteServicioId,
+      clienteId: result.data.clienteId,
+      productos: result.data.productos,
       fechas: result.data.fechas.map((f) => new Date(f)),
       grupoId: result.data.grupoId || null,
       notas: result.data.notas || null,

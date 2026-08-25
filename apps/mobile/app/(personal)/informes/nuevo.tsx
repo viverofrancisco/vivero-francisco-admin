@@ -31,6 +31,7 @@ import DraggableFlatList, {
 import { useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type {
@@ -53,12 +54,17 @@ interface MediaPoolItem {
   url: string;
   visitaId: string;
   visitaFecha: string;
+  /// Producto de la visita con el que se etiquetó la foto, si lo tiene.
+  productoId: string | null;
 }
 
-interface TipoActividad {
-  id: string;
+/** Servicio cubierto por las visitas seleccionadas. Origen de cada sección. */
+interface ServicioParaSeccion {
+  productoId: string;
   nombre: string;
-  descripcionTemplate: string | null;
+  descripcion: string | null;
+  visitasCount: number;
+  fotosCount: number;
 }
 
 interface SavedFirmante {
@@ -68,12 +74,32 @@ interface SavedFirmante {
   isDefault: boolean;
 }
 
+/**
+ * Foto de una sección: o viene de una visita (`visitaMediaId`) o se subió
+ * directo al informe (`key`). `url` siempre sirve para previsualizar.
+ */
+interface SeccionFotoDraft {
+  uid: string;
+  visitaMediaId: string | null;
+  key: string | null;
+  url: string;
+}
+
 interface SeccionDraft {
   tempId: string;
-  tipoActividadId: string | null;
+  /// Producto que origina la sección. Null = sección personalizada.
+  productoId: string | null;
   titulo: string;
   descripcion: string;
-  mediaIds: string[];
+  fotos: SeccionFotoDraft[];
+}
+
+function fotoDeVisita(m: MediaPoolItem): SeccionFotoDraft {
+  return { uid: `visita-${m.id}`, visitaMediaId: m.id, key: null, url: m.url };
+}
+
+function fotoSubida(key: string, url: string): SeccionFotoDraft {
+  return { uid: `upload-${key}`, visitaMediaId: null, key, url };
 }
 
 interface FirmanteDraft {
@@ -101,7 +127,9 @@ export default function NuevoInformeScreen() {
 
   // Reference data
   const [clientes, setClientes] = useState<ClienteListItem[]>([]);
-  const [tiposActividad, setTiposActividad] = useState<TipoActividad[]>([]);
+  const [serviciosDisponibles, setServiciosDisponibles] = useState<
+    ServicioParaSeccion[]
+  >([]);
   const [firmantesCatalog, setFirmantesCatalog] = useState<SavedFirmante[]>([]);
   const [loadingRefs, setLoadingRefs] = useState(true);
 
@@ -136,9 +164,6 @@ export default function NuevoInformeScreen() {
       apiRequest<ClientesListResponse>("/api/mobile/clientes", {
         query: { limit: 500 },
       }).then((r) => setClientes(r.items)),
-      apiRequest<{ items: TipoActividad[] }>(
-        "/api/mobile/tipos-actividad"
-      ).then((r) => setTiposActividad(r.items)),
       apiRequest<{ items: SavedFirmante[] }>("/api/mobile/firmantes")
         .then((r) => {
           setFirmantesCatalog(r.items);
@@ -226,6 +251,26 @@ export default function NuevoInformeScreen() {
     };
   }, [step, selectedVisitaIds]);
 
+  // Los productos que cubren las visitas seleccionadas son el catálogo de
+  // secciones: título = nombre del servicio, descripción = la del servicio.
+  useEffect(() => {
+    if (step < 2 || selectedVisitaIds.size === 0) return;
+    let cancelled = false;
+    apiRequest<{ items: ServicioParaSeccion[] }>(
+      "/api/mobile/informes/servicios",
+      { method: "POST", body: { visitaIds: Array.from(selectedVisitaIds) } }
+    )
+      .then((r) => {
+        if (!cancelled) setServiciosDisponibles(r.items);
+      })
+      .catch(() => {
+        if (!cancelled) setServiciosDisponibles([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [step, selectedVisitaIds]);
+
   const selectedCliente = useMemo(
     () => clientes.find((c) => c.id === clienteId) ?? null,
     [clientes, clienteId]
@@ -233,7 +278,11 @@ export default function NuevoInformeScreen() {
 
   const assignedMediaIds = useMemo(() => {
     const set = new Set<string>();
-    for (const s of secciones) for (const id of s.mediaIds) set.add(id);
+    for (const s of secciones) {
+      for (const f of s.fotos) {
+        if (f.visitaMediaId) set.add(f.visitaMediaId);
+      }
+    }
     return set;
   }, [secciones]);
 
@@ -241,12 +290,6 @@ export default function NuevoInformeScreen() {
     () => pool.filter((p) => !assignedMediaIds.has(p.id)),
     [pool, assignedMediaIds]
   );
-
-  const poolById = useMemo(() => {
-    const m = new Map<string, MediaPoolItem>();
-    for (const p of pool) m.set(p.id, p);
-    return m;
-  }, [pool]);
 
   const canContinue = (): boolean => {
     switch (step) {
@@ -290,10 +333,12 @@ export default function NuevoInformeScreen() {
           cedula: f.cedula.trim() || null,
         }));
       const validSecciones = secciones.map((s) => ({
-        tipoActividadId: s.tipoActividadId,
+        productoId: s.productoId,
         titulo: s.titulo.trim(),
         descripcion: s.descripcion.trim() || null,
-        mediaIds: s.mediaIds,
+        fotos: s.fotos.map((f) =>
+          f.visitaMediaId ? { visitaMediaId: f.visitaMediaId } : { key: f.key }
+        ),
       }));
       const result = await apiRequest<{ id: string; pdfUrl: string }>(
         "/api/mobile/informes",
@@ -357,11 +402,12 @@ export default function NuevoInformeScreen() {
               loadingPool={loadingPool}
               secciones={secciones}
               onChangeSecciones={setSecciones}
-              tiposActividad={tiposActividad}
+              productos={serviciosDisponibles}
+              allPool={pool}
+              clienteId={clienteId}
               poolCount={pool.length}
               unassignedCount={unassignedPool.length}
               onOpenPicker={(tempId) => setPhotoPickerForSection(tempId)}
-              poolById={poolById}
               error={error}
             />
           </View>
@@ -461,10 +507,23 @@ export default function NuevoInformeScreen() {
           pool={unassignedPool}
           onClose={() => setPhotoPickerForSection(null)}
           onConfirm={(ids) => {
+            const byId = new Map(pool.map((m) => [m.id, m]));
+            const nuevas = ids
+              .map((id) => byId.get(id))
+              .filter((m): m is MediaPoolItem => Boolean(m))
+              .map(fotoDeVisita);
             setSecciones((prev) =>
               prev.map((s) =>
                 s.tempId === photoPickerForSection
-                  ? { ...s, mediaIds: [...s.mediaIds, ...ids] }
+                  ? {
+                      ...s,
+                      fotos: [
+                        ...s.fotos,
+                        ...nuevas.filter(
+                          (n) => !s.fotos.some((f) => f.uid === n.uid)
+                        ),
+                      ],
+                    }
                   : s
               )
             );
@@ -783,26 +842,30 @@ function SeccionesStep({
   loadingPool,
   secciones,
   onChangeSecciones,
-  tiposActividad,
+  productos,
+  allPool,
+  clienteId,
   poolCount,
   unassignedCount,
   onOpenPicker,
-  poolById,
   error,
 }: {
   loadingPool: boolean;
   secciones: SeccionDraft[];
   onChangeSecciones: (s: SeccionDraft[]) => void;
-  tiposActividad: TipoActividad[];
+  productos: ServicioParaSeccion[];
+  allPool: MediaPoolItem[];
+  clienteId: string | null;
   poolCount: number;
   unassignedCount: number;
   onOpenPicker: (tempId: string) => void;
-  poolById: Map<string, MediaPoolItem>;
   error: string | null;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
 
   function toggleCollapsed(tempId: string) {
     setCollapsed((prev) => {
@@ -813,16 +876,34 @@ function SeccionesStep({
     });
   }
 
-  function addSeccion(t: TipoActividad | null) {
+  /**
+   * Crea una sección. Con un servicio, el título y la descripción salen del
+   * servicio y arranca con las fotos etiquetadas con él que estén libres.
+   */
+  function addSeccion(servicio: ServicioParaSeccion | null) {
     setMenuOpen(false);
+    const yaAsignadas = new Set(
+      secciones.flatMap((s) =>
+        s.fotos.map((f) => f.visitaMediaId).filter((id): id is string => !!id)
+      )
+    );
+    const fotosDelServicio = servicio
+      ? allPool
+          .filter(
+            (m) =>
+              m.productoId === servicio.productoId &&
+              !yaAsignadas.has(m.id)
+          )
+          .map(fotoDeVisita)
+      : [];
     onChangeSecciones([
       ...secciones,
       {
         tempId: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        tipoActividadId: t?.id ?? null,
-        titulo: t?.nombre ?? "",
-        descripcion: t?.descripcionTemplate ?? "",
-        mediaIds: [],
+        productoId: servicio?.productoId ?? null,
+        titulo: servicio?.nombre ?? "",
+        descripcion: servicio?.descripcion ?? "",
+        fotos: fotosDelServicio,
       },
     ]);
   }
@@ -834,10 +915,77 @@ function SeccionesStep({
   function remove(tempId: string) {
     onChangeSecciones(secciones.filter((s) => s.tempId !== tempId));
   }
-  function removeFoto(tempId: string, mediaId: string) {
+  /**
+   * Sube imágenes de la galería a R2 con URLs prefirmadas y las agrega a la
+   * sección. Son fotos propias del informe: no vienen de ninguna visita.
+   */
+  async function subirImagenes(tempId: string) {
+    if (!clienteId) return;
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsMultipleSelection: true,
+      quality: 0.85,
+      selectionLimit: 20,
+    });
+    if (result.canceled || result.assets.length === 0) return;
+
+    setUploadingFor(tempId);
+    try {
+      const assets = result.assets.map((a) => {
+        const fileName =
+          a.fileName ?? a.uri.split("/").pop() ?? `imagen-${Date.now()}.jpg`;
+        const ext = fileName.split(".").pop()?.toLowerCase() ?? "jpg";
+        const contentType =
+          ext === "png"
+            ? "image/png"
+            : ext === "webp"
+              ? "image/webp"
+              : "image/jpeg";
+        return { uri: a.uri, fileName, contentType };
+      });
+
+      const { uploads } = await apiRequest<{
+        uploads: { key: string; uploadUrl: string; url: string }[];
+      }>("/api/mobile/informes/uploads", {
+        method: "POST",
+        body: {
+          clienteId,
+          files: assets.map((a) => ({
+            fileName: a.fileName,
+            contentType: a.contentType,
+          })),
+        },
+      });
+
+      await Promise.all(
+        uploads.map(async (u, i) => {
+          const asset = assets[i];
+          const blob = await (await fetch(asset.uri)).blob();
+          const put = await fetch(u.uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": asset.contentType },
+            body: blob,
+          });
+          if (!put.ok) throw new Error("No pudimos subir una de las imágenes.");
+        })
+      );
+
+      const nuevas = uploads.map((u) => fotoSubida(u.key, u.url));
+      const s = secciones.find((x) => x.tempId === tempId);
+      if (s) update(tempId, { fotos: [...s.fotos, ...nuevas] });
+    } catch {
+      // El error se muestra al generar; acá solo evitamos romper la pantalla.
+    } finally {
+      setUploadingFor(null);
+    }
+  }
+
+  function removeFoto(tempId: string, uid: string) {
     const s = secciones.find((x) => x.tempId === tempId);
     if (!s) return;
-    update(tempId, { mediaIds: s.mediaIds.filter((m) => m !== mediaId) });
+    update(tempId, { fotos: s.fotos.filter((f) => f.uid !== uid) });
   }
 
   const editing = secciones.find((s) => s.tempId === editingId) ?? null;
@@ -899,8 +1047,8 @@ function SeccionesStep({
                     </Text>
                     {isCollapsed ? (
                       <Text style={styles.seccionMeta}>
-                        {s.mediaIds.length} foto
-                        {s.mediaIds.length === 1 ? "" : "s"}
+                        {s.fotos.length} foto
+                        {s.fotos.length === 1 ? "" : "s"}
                         {s.descripcion ? " · con descripción" : ""}
                       </Text>
                     ) : null}
@@ -943,27 +1091,28 @@ function SeccionesStep({
                     </Pressable>
 
                     {/* Photos */}
-                    {s.mediaIds.length > 0 ? (
+                    {s.fotos.length > 0 ? (
                       <View style={styles.fotoGrid}>
-                        {s.mediaIds.map((id) => {
-                          const m = poolById.get(id);
-                          if (!m) return null;
-                          return (
-                            <View key={id} style={styles.fotoCell}>
-                              <Image
-                                source={{ uri: m.url }}
-                                style={styles.foto}
-                              />
-                              <Pressable
-                                onPress={() => removeFoto(s.tempId, id)}
-                                style={styles.fotoX}
-                                hitSlop={6}
-                              >
-                                <Ionicons name="close" size={14} color="#fff" />
-                              </Pressable>
-                            </View>
-                          );
-                        })}
+                        {s.fotos.map((f) => (
+                          <View key={f.uid} style={styles.fotoCell}>
+                            <Image
+                              source={{ uri: f.url }}
+                              style={styles.foto}
+                            />
+                            {!f.visitaMediaId ? (
+                              <View style={styles.fotoBadge}>
+                                <Text style={styles.fotoBadgeText}>Subida</Text>
+                              </View>
+                            ) : null}
+                            <Pressable
+                              onPress={() => removeFoto(s.tempId, f.uid)}
+                              style={styles.fotoX}
+                              hitSlop={6}
+                            >
+                              <Ionicons name="close" size={14} color="#fff" />
+                            </Pressable>
+                          </View>
+                        ))}
                       </View>
                     ) : (
                       <Text style={styles.seccionEmpty}>
@@ -982,7 +1131,21 @@ function SeccionesStep({
                           size={18}
                           color={ACCENT}
                         />
-                        <Text style={styles.iconBtnText}>Agregar fotos</Text>
+                        <Text style={styles.iconBtnText}>De las visitas</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => subirImagenes(s.tempId)}
+                        style={styles.iconBtn}
+                        disabled={uploadingFor === s.tempId}
+                      >
+                        <Ionicons
+                          name="cloud-upload-outline"
+                          size={18}
+                          color={ACCENT}
+                        />
+                        <Text style={styles.iconBtnText}>
+                          {uploadingFor === s.tempId ? "Subiendo…" : "Subir"}
+                        </Text>
                       </Pressable>
                       <IconButton
                         icon="trash-can-outline"
@@ -1018,12 +1181,12 @@ function SeccionesStep({
                 title="Personalizada (vacía)"
                 leadingIcon="text-box-outline"
               />
-              {tiposActividad.length > 0 ? <Divider /> : null}
-              {tiposActividad.map((t) => (
+              {productos.length > 0 ? <Divider /> : null}
+              {productos.map((sv) => (
                 <Menu.Item
-                  key={t.id}
-                  onPress={() => addSeccion(t)}
-                  title={t.nombre}
+                  key={sv.productoId}
+                  onPress={() => addSeccion(sv)}
+                  title={sv.nombre}
                 />
               ))}
             </Menu>
@@ -1875,6 +2038,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
   },
   foto: { width: "100%", height: "100%" },
+  fotoBadge: {
+    position: "absolute",
+    top: 4,
+    left: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+  fotoBadgeText: {
+    color: "#fff",
+    fontSize: 9,
+    fontWeight: "600",
+  },
   fotoX: {
     position: "absolute",
     top: 4,

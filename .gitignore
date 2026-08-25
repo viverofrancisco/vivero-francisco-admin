@@ -19,6 +19,9 @@ coverage/
 # Playwright MCP browser session artifacts
 .playwright-mcp/
 
+# Manifiesto del seed de datos de prueba: apunta a una base concreta.
+apps/admin/scripts/.datos-prueba.json
+
 # Claude Code local files (ignore everything under .claude EXCEPT the committed docs)
 .claude/*
 !.claude/docs/

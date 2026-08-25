@@ -12,6 +12,10 @@ import {
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
 import { nombreCliente } from "@vivero/shared";
+import {
+  listaProductos,
+  type ProductoDeVisita,
+} from "@/lib/visita-productos";
 
 interface VisitaInfoData {
   id: string;
@@ -22,19 +26,17 @@ interface VisitaInfoData {
   estado: string;
   notas: string | null;
   notasIncompleto: string | null;
-  clienteServicio: {
-    cliente: {
-      id: string;
-      nombre: string;
-      apellido: string | null;
-      empresa: string | null;
-      telefono: string | null;
-      direccion: string | null;
-      ciudad: string | null;
-      sector: { nombre: string } | null;
-    };
-    servicio: { id: string; nombre: string };
+  cliente: {
+    id: string;
+    nombre: string;
+    apellido: string | null;
+    empresa: string | null;
+    telefono: string | null;
+    direccion: string | null;
+    ciudad: string | null;
+    sector: { nombre: string } | null;
   };
+  productos: ProductoDeVisita[];
   personal: {
     personal: {
       id: string;
@@ -47,7 +49,7 @@ interface VisitaInfoData {
 }
 
 export function VisitaInfoSidebar({ visita }: { visita: VisitaInfoData }) {
-  const cliente = visita.clienteServicio.cliente;
+  const cliente = visita.cliente;
   const clienteName = nombreCliente(cliente);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
     null
@@ -69,7 +71,7 @@ export function VisitaInfoSidebar({ visita }: { visita: VisitaInfoData }) {
             {estadoLabel(visita.estado)}
           </Badge>
           <p className="text-base font-semibold">
-            {visita.clienteServicio.servicio.nombre}
+            {listaProductos(visita)}
           </p>
         </div>
 

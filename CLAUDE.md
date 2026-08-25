@@ -8,8 +8,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Extended context lives in [`.claude/docs/`](./.claude/docs/) (see [`.claude/docs/README.md`](./.claude/docs/README.md)) to keep this file short. Read the relevant doc before touching that area:
 
+- [Database & migrations](./.claude/docs/base-de-datos-y-migraciones.md) — Neon branches (**never point the local `.env` at production**), migrations applied automatically on deploy, when to hand-write the SQL, and how to verify against real data.
+- [Contífico invoicing](./.claude/docs/facturacion-contifico.md) — the accounting system integration: ownership boundary, the API's traps (product list that hangs, `codigo` as the anti-duplicate key, 15% IVA in a field named `subtotal_12`), and SRI numbering.
 - [Cliente authentication](./.claude/docs/autenticacion-clientes.md) — cliente login (phone/email + password), the invite/set-password flow, and email via the Gmail API.
 - [WhatsApp notifications](./.claude/docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
+
+### Keep the docs current
+
+**Whenever you change something these docs describe, update the doc in the same
+change.** A stale doc is worse than no doc: the next person trusts it and gets
+burned. Concretely, update the relevant doc when you:
+
+- add or change a Prisma model, an enum, or a migration convention;
+- learn something non-obvious about an external API (an undocumented parameter,
+  a validation it enforces, an endpoint that behaves unexpectedly);
+- change an environment variable, a deploy step, or a build script;
+- change who owns a piece of data between the portal and an external system.
+
+If a change makes an existing paragraph wrong, fix that paragraph — don't append
+a correction below it. And if you discover something the hard way (a request
+that fails for a non-obvious reason, an error message that lies), write it down:
+that's the highest-value content in these files.
 
 ## Overview
 
@@ -32,14 +51,49 @@ npm run build:admin         # next build
 npm run lint:admin          # eslint (admin)
 ```
 
+Migrations (from the repo root):
+
+```bash
+npm run migrate:status      # what's applied, what's pending
+npm run migrate:dev         # create + apply a migration (development)
+npm run migrate:deploy      # apply pending migrations only (production)
+```
+
+`npm run build:admin` runs `prisma migrate deploy` before `next build`, so
+**deploys apply pending migrations automatically**. Use
+`npm run build:sin-migrar -w apps/admin` to compile without touching the DB.
+
+> The local `.env` must point at a **development** Neon branch, never at
+> production. Check with `npm run migrate:status` before running anything that
+> writes. See [the database doc](./.claude/docs/base-de-datos-y-migraciones.md).
+
 Admin-specific (run inside `apps/admin`):
 
 ```bash
-npx prisma migrate dev --name <desc>   # create + apply a migration
-npx prisma generate                    # regenerate client into src/generated/prisma
-npx prisma studio                      # inspect the DB
-npm run prisma ... # seed is configured as: npx tsx prisma/seed.ts
+npx prisma generate    # regenerate client into src/generated/prisma
+npx prisma studio      # inspect the DB
+npm run prisma ...     # seed is configured as: npx tsx prisma/seed.ts
+
+# Datos de prueba para ver el portal con actividad (no inventa clientes ni
+# personal: usa los que ya están y les genera movimiento). Todo lo que crea
+# queda anotado en scripts/.datos-prueba.json, y --limpiar borra exactamente
+# eso. Sin --sin-contifico crea los productos faltantes en Contífico y
+# **emite facturas de verdad**, para que "Por cobrar" tenga qué mostrar.
+npx tsx --env-file=.env scripts/seed-datos-prueba.ts
+npx tsx --env-file=.env scripts/seed-datos-prueba.ts --limpiar
+
+# Borra TODO el movimiento (órdenes, facturas, visitas, suscripciones,
+# informes) y deja clientes, personal, grupos, sectores, productos y datos de
+# facturación. Sin --ejecutar solo muestra qué haría.
+npx tsx --env-file=.env scripts/reset-datos.ts
+npx tsx --env-file=.env scripts/reset-datos.ts --ejecutar
 ```
+
+> Después de borrar facturas hay que **subir `CONTIFICO_SECUENCIAL_INICIAL`**
+> por encima del último número emitido: los documentos siguen existiendo allá
+> (Contífico no tiene DELETE) y el secuencial sale del máximo local, así que sin
+> eso la próxima emisión arranca en un número ya usado. `reset-datos.ts` imprime
+> el valor exacto.
 
 Mobile-specific (run inside `apps/mobile`): `npm run ios`, `npm run android`, `npm run web`, `npm run lint`.
 
@@ -71,7 +125,127 @@ Services throw typed errors from `src/lib/services/errors.ts` (`NotFoundError`, 
 
 Prisma schema: `apps/admin/prisma/schema.prisma` (PostgreSQL via `@prisma/adapter-pg`). The generated client is committed at `apps/admin/src/generated/prisma` — import types from `@/generated/prisma/client`, not `@prisma/client`.
 
-Core entities: **Cliente** (customer) → **ClienteServicio** (a contracted service) → **Visita** (a scheduled visit) carried out by **Personal** (organized into **Grupo**s), scoped by **Sector** (geographic; admins are scoped via `SectorAdmin`). Visits accumulate **VisitaMedia** (photos/videos), an in-visit chat (**VisitaMessage**), and roll up into **Informe**s (PDF reports, rendered with `@react-pdf/renderer` in `src/lib/informes/`). Soft-delete is used on several models. **NotificacionPlantilla/Log/Config** drive WhatsApp + push notifications.
+Core entities: **Cliente** (customer) → **Visita** (a scheduled visit) carried out by **Personal** (organized into **Grupo**s), scoped by **Sector** (geographic; admins are scoped via `SectorAdmin`). A visita covers one or more products via **VisitaProducto**, accumulates **VisitaMedia** (photos/videos, optionally tagged to one of the visita's products), has an in-visit chat (**VisitaMessage**), and rolls up into **Informe**s (PDF reports, rendered with `@react-pdf/renderer` in `src/lib/informes/`). Soft-delete is used on several models. **NotificacionPlantilla/Log/Config** drive WhatsApp + push notifications.
+
+**Producto** is the single catalog — services and (later) retail goods. Its only
+classifying axis is `tipo`: `SERVICIO` | `BIEN` — what it *is*, mapped to
+Contífico's `SER` / `PRO`.
+
+**Nothing in the catalog says whether something is one-off or recurring.** That
+depends on the cliente, not the product: the same desmalezado is a one-off for
+one and a monthly plan for another. A product is recurring *for a cliente* when
+it sits in one of their subscriptions — there is no `modalidad` column, for the
+same reason there is no `periodicidad` one. Anything that needs to know asks per
+cliente (`productosSuscritos()` in `suscripcion.service.ts`).
+
+**A visita carries no money.** `VisitaProducto` records what was done and
+whether a plan covered it (`suscripcionItemId`), nothing else. Loose work is
+priced when it's invoiced, on the order — agendar and cobrar are different
+moments, and the price is often only known at the second one. That also keeps
+the rule that every peso lives on an `OrdenLinea` without exceptions.
+
+A subscribed product is priced on a **Suscripcion**: one row per cliente
+holding *one or more* recurring products, each with its own price, IVA rate and
+`visitasPorPeriodo` on **SuscripcionItem**. The billing cadence
+(`MENSUAL`/`TRIMESTRAL`/`SEMESTRAL`/`ANUAL`) lives on the Suscripcion header, so
+every item in it renews together — and the catalog has **no** periodicity of its
+own: the same product is monthly for one cliente and quarterly for another.
+`ClienteServicio` — the old one-product contract — is gone;
+`VisitaProducto.suscripcionItemId` is what marks a visit as covered (and
+therefore *not* separately billable).
+
+The visita wizard offers the **whole catalog** to any cliente: since a visita
+carries no money, there's nothing to decide at scheduling time. What a plan
+covers is linked to its `SuscripcionItem` **by default, and whoever schedules
+can turn that off per product** (`cubrirConPlan: false`) — extra work agreed
+outside the plan is real, and the system guessing it away was not something
+anyone could undo. The flag is a boolean, never a `suscripcionItemId` from the
+client: the server resolves which item, so nobody can hook a visita onto someone
+else's plan. Anything unlinked falls through to pending work and is priced when
+invoiced.
+
+**A visita is invoiced from its own page.** "Crear orden" opens the order screen
+with that visit's pending work already loaded, ready to have more products added.
+**Scheduled visits count too** — billing before the work happens is normal here;
+the only visita that never becomes billable is a cancelled one. The trade-off is
+that you can invoice something that later doesn't happen, and the way out is
+annulling the order. The visita's `Facturación` tile reads the state straight off
+the data — covered by a plan, linked to an `OrdenLinea` (with the order number),
+or still pending.
+
+`listarPendientes` takes a separate `hastaVisitas` bound so arriving from a
+future visita doesn't also offer subscription periods that haven't started —
+charging a period up front stays a deliberate, separate decision.
+
+`SuscripcionItem.visitasPorPeriodo` counts visits **per billing period** — a
+quarterly plan's number is visits per quarter — and it is **informative, not a
+cap**. Scheduling is never blocked by it, and every visit of a subscribed
+product links to its `SuscripcionItem`. Deciding whether extra work gets charged
+belongs to whoever builds the order, not to whoever schedules. A recurring
+product also can't be added to an order by hand — see
+[the invoicing doc](./.claude/docs/facturacion-contifico.md).
+
+**A visita is editable in any state**, including `COMPLETADA`. The state records
+what happened to the work, not whether the row is right: fixing a wrong date or
+product shouldn't mean deleting and rebuilding a visit, which would lose its
+photos, its chat and its link to the subscription. Neither `updateVisitaInfo`
+nor `updateVisitaPersonal` looks at `estado`, and both go through one PUT to
+`/api/visitas/[id]` — the shape is parsed once and each field is applied only if
+it came, so a partial PUT can't blank the rest. Editing happens on its own page
+(`/dashboard/visitas/[id]/editar`), laid out like the create wizard; the client
+is the one thing it won't change, since that would orphan the subscription link.
+
+**DatoFacturacion** holds who an invoice is made out to — identification, razón
+social, tipo de persona, address. A cliente can have several (own name vs.
+company) and one is the default; the invoice flow picks one or captures new ones
+on the spot. `Factura` stores both the id and a snapshot of what was printed, so
+editing the record later never rewrites history.
+
+**Orden** / **OrdenLinea** are the single sales ledger: every peso lives on a
+line, whether it came from a subscription period, a one-off visita, or (later) a
+product. That keeps a sales report to one query instead of a union per revenue
+type, and keeps the history in our own database. **Factura** mirrors the invoice
+that lives in Contífico — see [the invoicing doc](./.claude/docs/facturacion-contifico.md).
+
+**One order, one invoice.** The order's main action is *Registrar cobro*, and
+`cobrarOrden()` does whatever steps are missing underneath — emit the invoice,
+register the payment. That order can't be inverted: a payment is recorded
+against a Contífico document, so the invoice has to exist first. Selling on
+credit is *Emitir factura sin cobrar* (`facturarOrden()`). Annulling goes the
+other way: `anularOrdenCompleta()` annuls the invoice and then the order, and
+the order never reopens — to bill that work again you build a new order.
+
+**`EstadoOrden` is `BORRADOR | CONFIRMADA | ANULADA`, and `CONFIRMADA` means
+"has a live invoice".** There is no FACTURADA, because confirming and invoicing
+became the same moment. **Whether it's been paid is a different axis** and is
+derived from the invoice's `saldo` (`estadoCobro()` in
+`components/ordenes/formato.ts`), never stored — the payments belong to
+Contífico and can be entered from their interface. A failed emission leaves the
+order in `BORRADOR`, the only editable state, which is exactly where you fix the
+cause. `/dashboard/ordenes` lists confirmed (and annulled) orders with their
+payment status; drafts have their own page at `/dashboard/ordenes/borradores`.
+
+**Annulling an order releases the work it held, and never silently.**
+`visitaProductoId` and `[suscripcionItemId, periodoInicio]` are unique across
+the whole table regardless of order state, and `listarPendientes` treats any
+line as billed — so an annulled order that kept its lines would strand those
+visitas and periods forever. `anularOrden` therefore refuses while work is
+linked unless `liberarTrabajo` says otherwise, and the dialog lists exactly what
+goes back to pending before you can proceed.
+
+A product can only be sold once it is **linked to Contífico**
+(`Producto.contificoProductoId`, unique). Linking is manual and explicit — you
+search their catalog and pick an existing product, because Contífico has no
+DELETE and a mistaken creation is permanent. Until it's linked, the product
+can't go on an order or a subscription; both services enforce it, and the
+pickers grey it out. That's why invoicing never syncs anything.
+
+Orders are written **only** through `crearOrden()` in
+`src/lib/services/orden.service.ts`. A line's `descripcion` and
+`precioUnitario` are a snapshot and are the truth; `productoId` and the
+provenance fields (`visitaProductoId`, or `suscripcionItemId` + `periodoInicio`)
+are for traceability and for the unique indexes that stop anything being billed
+twice — they are never the source of the price.
 
 ## External integrations (admin app)
 
@@ -79,7 +253,8 @@ Core entities: **Cliente** (customer) → **ClienteServicio** (a contracted serv
 - **Push notifications** (Expo) — `src/lib/push/`. `triggers.ts` is invoked from services on visit state changes. Env: `EXPO_ACCESS_TOKEN`.
 - **Object storage** (Cloudflare R2, S3-compatible) — `src/lib/s3.ts`. Uploads use presigned URLs; region is always `auto`. Env: `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_PUBLIC_URL_BASE`.
 - **Rate limiting** (Upstash Redis) — `src/lib/mobile/rate-limit.ts`. Env: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`.
-- **Cron** — `/api/cron/notificaciones` (scheduled notifications), gated by `CRON_SECRET`.
+- **Contífico** (accounting / SRI e-invoicing) — `src/lib/contifico/`. The portal pushes orders as invoices; Contífico signs and transmits to the SRI. Env: `CONTIFICO_API_KEY`, `CONTIFICO_TOKEN`, `CONTIFICO_ESTABLECIMIENTO`, `CONTIFICO_PUNTO_EMISION`, `CONTIFICO_SECUENCIAL_INICIAL`. **Read [the doc](./.claude/docs/facturacion-contifico.md) before touching it** — its API has several traps that cost hours to rediscover.
+- **Cron** — `/api/cron/notificaciones` (scheduled notifications), `/api/cron/renovaciones` (creates BORRADOR orders for due subscription periods; idempotent) and `/api/cron/facturas` (hourly; re-reads from Contífico every invoice that can still change). All gated by `CRON_SECRET` and registered in `apps/admin/vercel.json`. **Contífico never calls us back** — it signs, transmits and collects on its own, and `url_ride`/`url_xml` only exist once it signs, so without that hourly sweep an invoice sits at "Sin firmar" with no PDF until someone happens to press *Actualizar* by hand. Those drafts surface as a counted notice on **Por cobrar** (`borradoresSinConfirmar`) rather than as rows, so the cron's output never goes unnoticed without pretending a draft is money owed.
 
 Other env: `DATABASE_URL`, `MOBILE_OTP_DEV_BYPASS` (skip real OTP in dev).
 
@@ -87,6 +262,6 @@ Other env: `DATABASE_URL`, `MOBILE_OTP_DEV_BYPASS` (skip real OTP in dev).
 
 - Admin imports use the `@/*` alias → `apps/admin/src/*`. Mobile uses `@/*` → `apps/mobile/*`.
 - Validation: Zod schemas shared cross-app live in `@vivero/shared`; admin-web-only schemas live in `src/lib/validations/`. Validate request bodies/queries at the route boundary with `safeParse`.
-- Admin UI: shadcn/Base UI components in `src/components/ui/`, Tailwind v4, feature components grouped by domain (`src/components/visitas`, `clientes`, etc.). Mobile UI: react-native-paper, theme primary `#2e7d32` (green).
+- Admin UI: shadcn/Base UI components in `src/components/ui/`, Tailwind v4, feature components grouped by domain (`src/components/visitas`, `clientes`, etc.). **Every dashboard route segment has a `loading.tsx`** (`src/components/shared/page-skeletons.tsx`): without one the App Router waits for the server component's queries *before* navigating and the click feels stuck. Add one when you add a route. **List pages follow one layout**: the page root is `flex h-full flex-col` — `h-full`, never `min-h-full`, or the content grows past the viewport and pushes the pager below the fold. The card is a `flex flex-col` holding a `min-h-0 flex-1` scroll area (`<Table containerClassName="h-full overflow-y-auto">` + `<TableHeader sticky>`) and, as its footer, `<TablePagination>` (`src/components/shared/table-pagination.tsx`), which renders even with a single page. So only the rows scroll — filters, header and pager stay put — and the height comes from the container instead of a hand-tuned `calc`. `FILAS_POR_PAGINA` is the one page size for every listing; card grids pass `suelta` to drop the footer styling. Anything else that can outgrow the viewport does the same internally: the visits calendar is a `flex h-full flex-col` card whose month header stays outside the scroll area and whose weekday row is `sticky top-0` with an **opaque** background — a translucent one lets the rows show through as they pass under it. Date filters use `DateRangePicker` (one field, two months, shortcuts for hoy/ayer/mañana/semana/mes) rather than a Desde+Hasta pair — a single day travels as `desde === hasta`. Any calendar heading is a `MonthYearPicker` so jumping to another year is three clicks, not twenty. Mobile UI: react-native-paper, theme primary `#2e7d32` (green).
 - Mobile state: Zustand stores in `apps/mobile/lib/` (`auth-store.ts` holds the token pair; `lib/api.ts` is the fetch wrapper that auto-refreshes access tokens on 401). The mobile app reaches the server via `EXPO_PUBLIC_API_BASE_URL` (set to your LAN IP for a real device; defaults to `http://localhost:3001`).
 - React 19 across the monorepo; root `package.json` pins shared native/React versions via `overrides`.

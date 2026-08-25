@@ -22,10 +22,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  TablePagination,
+  FILAS_POR_PAGINA,
+} from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search, ChevronDown, X } from "lucide-react";
 import { toast } from "sonner";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, nombrePersona } from "@vivero/shared";
 
 interface Cliente {
   id: string;
@@ -39,19 +43,12 @@ interface Cliente {
   referencia: string | null;
   metrosCuadrados?: number | null;
   sector?: { id: string; nombre: string } | null;
-  servicios?: { servicio: { nombre: string } }[];
+  productos?: { producto: { nombre: string } }[];
 }
 
 function fullName(cliente: Cliente): string {
   return nombreCliente(cliente);
 }
-
-function formatUbicacion(cliente: Cliente): string {
-  const parts = [cliente.sector?.nombre, cliente.ciudad].filter(Boolean);
-  return parts.join(", ") || "—";
-}
-
-const ITEMS_PER_PAGE = 10;
 
 export function ClientesTable({
   clientes,
@@ -75,7 +72,10 @@ export function ClientesTable({
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (sectorDropdownRef.current && !sectorDropdownRef.current.contains(e.target as Node)) {
+      if (
+        sectorDropdownRef.current &&
+        !sectorDropdownRef.current.contains(e.target as Node)
+      ) {
         setSectorDropdownOpen(false);
         setSectorSearch("");
       }
@@ -90,7 +90,7 @@ export function ClientesTable({
       if (c.sector) map.set(c.sector.id, c.sector.nombre);
     }
     return Array.from(map, ([id, nombre]) => ({ id, nombre })).sort((a, b) =>
-      a.nombre.localeCompare(b.nombre)
+      a.nombre.localeCompare(b.nombre),
     );
   }, [clientes]);
 
@@ -106,34 +106,20 @@ export function ClientesTable({
           fullName(c).toLowerCase().includes(q) ||
           (c.empresa?.toLowerCase().includes(q) ?? false) ||
           (c.telefono?.includes(q) ?? false) ||
-          (c.ciudad?.toLowerCase().includes(q) ?? false)
+          (c.ciudad?.toLowerCase().includes(q) ?? false),
       );
     }
     return result;
   }, [clientes, sectorFilter, searchQuery]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FILAS_POR_PAGINA));
+  const pagina = Math.min(page, totalPages);
   const paginated = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    (pagina - 1) * FILAS_POR_PAGINA,
+    pagina * FILAS_POR_PAGINA,
   );
 
   // Top sectors by client count, for the summary strip.
-  const topSectors = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const c of clientes) {
-      const name = c.sector?.nombre;
-      if (name) counts.set(name, (counts.get(name) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
-  }, [clientes]);
-
-  const stats: [string, number][] = [
-    ["Clientes activos", clientes.length],
-    ...(topSectors.map(([n, c]) => [n, c]) as [string, number][]),
-    ["Sectores", sectors.length],
-  ];
-
   const pageIds = paginated.map((c) => c.id);
   const allPageSelected =
     pageIds.length > 0 && pageIds.every((id) => selected.has(id));
@@ -169,7 +155,7 @@ export function ClientesTable({
       toast.success(
         hard
           ? `${data.count} cliente(s) eliminado(s) permanentemente`
-          : `${data.count} cliente(s) archivado(s)`
+          : `${data.count} cliente(s) archivado(s)`,
       );
       setConfirm(null);
       clearSelection();
@@ -182,24 +168,7 @@ export function ClientesTable({
   };
 
   return (
-    <div className="space-y-5">
-      {/* Summary strip */}
-      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-        {stats.map(([label, value]) => (
-          <div
-            key={label}
-            className="rounded-2xl border border-border bg-card px-[18px] py-[15px]"
-          >
-            <div className="truncate text-[13px] font-semibold text-muted-foreground">
-              {label}
-            </div>
-            <div className="mt-1 text-[26px] font-extrabold tracking-tight text-foreground">
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
-
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -272,7 +241,9 @@ export function ClientesTable({
                   {(() => {
                     const matches = sectorSearch.trim()
                       ? sectors.filter((s) =>
-                          s.nombre.toLowerCase().includes(sectorSearch.toLowerCase())
+                          s.nombre
+                            .toLowerCase()
+                            .includes(sectorSearch.toLowerCase()),
                         )
                       : sectors;
                     const visible = matches.slice(0, MAX_VISIBLE_SECTORS);
@@ -290,7 +261,9 @@ export function ClientesTable({
                               setPage(1);
                             }}
                             className={`flex w-full px-3 py-2 text-sm hover:bg-muted text-left ${
-                              sectorFilter === s.id ? "bg-muted font-semibold" : ""
+                              sectorFilter === s.id
+                                ? "bg-muted font-semibold"
+                                : ""
                             }`}
                           >
                             {s.nombre}
@@ -302,7 +275,9 @@ export function ClientesTable({
                           </p>
                         )}
                         {matches.length === 0 && (
-                          <p className="px-3 py-2 text-sm text-muted-foreground">Sin resultados</p>
+                          <p className="px-3 py-2 text-sm text-muted-foreground">
+                            Sin resultados
+                          </p>
                         )}
                       </>
                     );
@@ -324,7 +299,11 @@ export function ClientesTable({
             <Button variant="ghost" size="sm" onClick={clearSelection}>
               Limpiar
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setConfirm("soft")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirm("soft")}
+            >
               Archivar
             </Button>
             {devTools && (
@@ -340,14 +319,16 @@ export function ClientesTable({
         </div>
       )}
 
-      {/* Table */}
-      {filtered.length === 0 ? (
-        <EmptyState message="No se encontraron clientes" />
-      ) : (
-        <>
-          <div className="overflow-hidden rounded-2xl border border-border bg-card">
-            <Table>
-              <TableHeader>
+      {/* Scrollean las filas, no la página: el encabezado y la paginación
+          quedan siempre a la vista. El alto sale del contenedor, no de un
+          `calc` a ojo que había que reajustar con cada filtro nuevo. */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {filtered.length === 0 ? (
+            <EmptyState message="No se encontraron clientes" />
+          ) : (
+            <Table containerClassName="h-full overflow-y-auto">
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead className="w-10">
                     <Checkbox
@@ -357,20 +338,21 @@ export function ClientesTable({
                     />
                   </TableHead>
                   <TableHead>Cliente</TableHead>
+                  <TableHead>Correo</TableHead>
                   <TableHead>Sector</TableHead>
-                  <TableHead>Servicios</TableHead>
                   <TableHead>Teléfono</TableHead>
                   <TableHead>m²</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.map((cliente) => {
-                  const servicios = cliente.servicios ?? [];
                   return (
                     <TableRow
                       key={cliente.id}
                       className="cursor-pointer"
-                      onClick={() => router.push(`/dashboard/clientes/${cliente.id}`)}
+                      onClick={() =>
+                        router.push(`/dashboard/clientes/${cliente.id}`)
+                      }
                     >
                       <TableCell
                         className="w-10"
@@ -389,34 +371,19 @@ export function ClientesTable({
                             <div className="truncate font-bold text-foreground">
                               {fullName(cliente)}
                             </div>
-                            <div className="truncate text-xs font-semibold text-muted-foreground">
-                              {formatUbicacion(cliente)}
-                            </div>
+                            {nombrePersona(cliente) && cliente.empresa ? (
+                              <div className="truncate text-xs font-semibold text-muted-foreground">
+                                {cliente.empresa}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {cliente.sector?.nombre ?? "—"}
+                        {cliente.email ?? "—"}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1.5">
-                          {servicios.slice(0, 2).map((s, i) => (
-                            <span
-                              key={i}
-                              className="rounded-full bg-secondary px-2.5 py-0.5 text-[11.5px] font-bold text-green-700"
-                            >
-                              {s.servicio.nombre}
-                            </span>
-                          ))}
-                          {servicios.length > 2 && (
-                            <span className="rounded-full bg-muted px-2 py-0.5 text-[11.5px] font-bold text-muted-foreground">
-                              +{servicios.length - 2}
-                            </span>
-                          )}
-                          {servicios.length === 0 && (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </div>
+                      <TableCell className="text-muted-foreground">
+                        {cliente.sector?.nombre ?? "—"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {cliente.telefono ?? "—"}
@@ -429,41 +396,22 @@ export function ClientesTable({
                 })}
               </TableBody>
             </Table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Mostrando {(page - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(page * ITEMS_PER_PAGE, filtered.length)} de{" "}
-                {filtered.length}
-              </p>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
           )}
-        </>
-      )}
+        </div>
+
+        <TablePagination
+          page={pagina}
+          total={filtered.length}
+          onPageChange={setPage}
+          sustantivo="cliente"
+        />
+      </div>
 
       {/* Confirmación bulk (archivar / eliminar permanentemente) */}
-      <Dialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)}>
+      <Dialog
+        open={confirm !== null}
+        onOpenChange={(o) => !o && setConfirm(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>

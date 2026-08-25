@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PERIODICIDAD_SUFIJO } from "@/components/suscripciones/formato";
 
 export interface ServicioClienteRow {
   clienteId: string;
@@ -18,6 +19,7 @@ export interface ServicioClienteRow {
   telefono: string | null;
   precio: number;
   frecuencia: number | null;
+  periodicidad: string;
   estado: string;
 }
 
@@ -64,7 +66,7 @@ export function ServicioClientesTable({
       </h2>
 
       {rows.length === 0 ? (
-        <EmptyState message="Ningún cliente tiene este servicio" />
+        <EmptyState message="Ningún cliente tiene este producto" />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border bg-card">
           <Table>
@@ -101,7 +103,9 @@ export function ServicioClientesTable({
                       {formatPrice(r.precio)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {r.frecuencia ? `${r.frecuencia}x/mes` : "—"}
+                      {r.frecuencia
+                        ? `${r.frecuencia}${PERIODICIDAD_SUFIJO[r.periodicidad] ?? ""}`
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       <span

@@ -3,6 +3,7 @@ import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest } from "@/lib/api";
 import type { VisitaDetail } from "@/lib/types";
+import { listaProductos } from "@/lib/types";
 import { VisitaChat } from "@/components/VisitaChat";
 
 export default function ClienteVisitaChatScreen() {
@@ -34,13 +35,13 @@ export default function ClienteVisitaChatScreen() {
     <VisitaChat
       visitaId={id}
       title="Mensajes"
-      subtitle={visita?.clienteServicio.servicio.nombre}
+      subtitle={visita ? listaProductos(visita) : undefined}
       banner={
         visita
           ? {
               fechaProgramada: visita.fechaProgramada,
               estado: visita.estado,
-              servicioNombre: visita.clienteServicio.servicio.nombre,
+              servicioNombre: listaProductos(visita),
             }
           : undefined
       }

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
 import { VisitasPageClient } from "@/components/visitas/visitas-page-client";
+import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
 
 export default async function VisitasPage() {
   const user = await requireAuth();
@@ -26,7 +27,7 @@ export default async function VisitasPage() {
 
   if (user.role === "PERSONAL_ADMIN") {
     const sectorIds = await getUserSectorIds(user.id);
-    visitasWhere.clienteServicio = { cliente: { sectorId: { in: sectorIds } } };
+    visitasWhere.cliente = { sectorId: { in: sectorIds } };
     clientesWhere.sectorId = { in: sectorIds };
   } else if (user.role === "PERSONAL") {
     const personal = await prisma.personal.findUnique({
@@ -46,12 +47,8 @@ export default async function VisitasPage() {
       where: { ...visitasWhere, deletedAt: null },
       orderBy: { fechaProgramada: "asc" },
       include: {
-        clienteServicio: {
-          include: {
-            cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
-            servicio: { select: { id: true, nombre: true, tipo: true } },
-          },
-        },
+        cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
+        productos: PRODUCTOS_DE_VISITA_SELECT,
         grupo: { select: { id: true, nombre: true } },
       },
     }),
@@ -60,7 +57,7 @@ export default async function VisitasPage() {
       select: { id: true, nombre: true, apellido: true, empresa: true },
       orderBy: { nombre: "asc" },
     }),
-    prisma.servicio.findMany({
+    prisma.producto.findMany({
       where: { deletedAt: null },
       select: { id: true, nombre: true },
       orderBy: { nombre: "asc" },
@@ -73,10 +70,8 @@ export default async function VisitasPage() {
     fechaRealizada: v.fechaRealizada?.toISOString().split("T")[0] ?? null,
     estado: v.estado,
     notas: v.notas,
-    clienteServicio: {
-      cliente: v.clienteServicio.cliente,
-      servicio: v.clienteServicio.servicio,
-    },
+    cliente: v.cliente,
+    productos: v.productos,
     grupo: v.grupo,
   }));
 
@@ -88,14 +83,14 @@ export default async function VisitasPage() {
   }));
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
       <VisitasPageClient
         initialVisitas={serialized}
         initialDesde={desdeStr}
         initialHasta={hastaStr}
         userRole={user.role}
         clientes={clienteOptions}
-        servicios={servicios}
+        productos={servicios}
       />
     </div>
   );

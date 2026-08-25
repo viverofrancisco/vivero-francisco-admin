@@ -56,11 +56,13 @@ export const ModelName = {
   VerificationToken: 'VerificationToken',
   User: 'User',
   Cliente: 'Cliente',
-  Servicio: 'Servicio',
-  ClienteServicio: 'ClienteServicio',
+  Producto: 'Producto',
+  Suscripcion: 'Suscripcion',
+  SuscripcionItem: 'SuscripcionItem',
   Personal: 'Personal',
   Grupo: 'Grupo',
   Visita: 'Visita',
+  VisitaProducto: 'VisitaProducto',
   VisitaPersonal: 'VisitaPersonal',
   VisitaMedia: 'VisitaMedia',
   VisitaMessage: 'VisitaMessage',
@@ -77,12 +79,16 @@ export const ModelName = {
   RefreshToken: 'RefreshToken',
   ClienteImport: 'ClienteImport',
   SetPasswordToken: 'SetPasswordToken',
-  TipoActividad: 'TipoActividad',
   Informe: 'Informe',
   InformeVisita: 'InformeVisita',
   InformeSeccion: 'InformeSeccion',
+  InformeSeccionFoto: 'InformeSeccionFoto',
   EmpresaConfig: 'EmpresaConfig',
-  Firmante: 'Firmante'
+  Firmante: 'Firmante',
+  Orden: 'Orden',
+  OrdenLinea: 'OrdenLinea',
+  DatoFacturacion: 'DatoFacturacion',
+  Factura: 'Factura'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -168,6 +174,9 @@ export const ClienteScalarFieldEnum = {
   referencia: 'referencia',
   notas: 'notas',
   metrosCuadrados: 'metrosCuadrados',
+  cedula: 'cedula',
+  ruc: 'ruc',
+  tipoPersona: 'tipoPersona',
   recibirRecordatorios: 'recibirRecordatorios',
   recibirConfirmaciones: 'recibirConfirmaciones',
   createdAt: 'createdAt',
@@ -181,11 +190,16 @@ export const ClienteScalarFieldEnum = {
 export type ClienteScalarFieldEnum = (typeof ClienteScalarFieldEnum)[keyof typeof ClienteScalarFieldEnum]
 
 
-export const ServicioScalarFieldEnum = {
+export const ProductoScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
   descripcion: 'descripcion',
   tipo: 'tipo',
+  origen: 'origen',
+  codigo: 'codigo',
+  contificoProductoId: 'contificoProductoId',
+  contificoCategoriaId: 'contificoCategoriaId',
+  ivaTasa: 'ivaTasa',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
@@ -193,17 +207,14 @@ export const ServicioScalarFieldEnum = {
   updatedById: 'updatedById'
 } as const
 
-export type ServicioScalarFieldEnum = (typeof ServicioScalarFieldEnum)[keyof typeof ServicioScalarFieldEnum]
+export type ProductoScalarFieldEnum = (typeof ProductoScalarFieldEnum)[keyof typeof ProductoScalarFieldEnum]
 
 
-export const ClienteServicioScalarFieldEnum = {
+export const SuscripcionScalarFieldEnum = {
   id: 'id',
   clienteId: 'clienteId',
-  servicioId: 'servicioId',
-  precio: 'precio',
-  iva: 'iva',
-  frecuenciaMensual: 'frecuenciaMensual',
   estado: 'estado',
+  periodicidad: 'periodicidad',
   fechaInicio: 'fechaInicio',
   fechaFin: 'fechaFin',
   notas: 'notas',
@@ -213,7 +224,19 @@ export const ClienteServicioScalarFieldEnum = {
   updatedById: 'updatedById'
 } as const
 
-export type ClienteServicioScalarFieldEnum = (typeof ClienteServicioScalarFieldEnum)[keyof typeof ClienteServicioScalarFieldEnum]
+export type SuscripcionScalarFieldEnum = (typeof SuscripcionScalarFieldEnum)[keyof typeof SuscripcionScalarFieldEnum]
+
+
+export const SuscripcionItemScalarFieldEnum = {
+  id: 'id',
+  suscripcionId: 'suscripcionId',
+  productoId: 'productoId',
+  precio: 'precio',
+  ivaTasa: 'ivaTasa',
+  visitasPorPeriodo: 'visitasPorPeriodo'
+} as const
+
+export type SuscripcionItemScalarFieldEnum = (typeof SuscripcionItemScalarFieldEnum)[keyof typeof SuscripcionItemScalarFieldEnum]
 
 
 export const PersonalScalarFieldEnum = {
@@ -252,7 +275,7 @@ export type GrupoScalarFieldEnum = (typeof GrupoScalarFieldEnum)[keyof typeof Gr
 
 export const VisitaScalarFieldEnum = {
   id: 'id',
-  clienteServicioId: 'clienteServicioId',
+  clienteId: 'clienteId',
   fechaProgramada: 'fechaProgramada',
   fechaRealizada: 'fechaRealizada',
   horaEntrada: 'horaEntrada',
@@ -269,6 +292,17 @@ export const VisitaScalarFieldEnum = {
 } as const
 
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]
+
+
+export const VisitaProductoScalarFieldEnum = {
+  id: 'id',
+  visitaId: 'visitaId',
+  productoId: 'productoId',
+  suscripcionItemId: 'suscripcionItemId',
+  orden: 'orden'
+} as const
+
+export type VisitaProductoScalarFieldEnum = (typeof VisitaProductoScalarFieldEnum)[keyof typeof VisitaProductoScalarFieldEnum]
 
 
 export const VisitaPersonalScalarFieldEnum = {
@@ -290,7 +324,8 @@ export const VisitaMediaScalarFieldEnum = {
   key: 'key',
   url: 'url',
   tipo: 'tipo',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  productoId: 'productoId'
 } as const
 
 export type VisitaMediaScalarFieldEnum = (typeof VisitaMediaScalarFieldEnum)[keyof typeof VisitaMediaScalarFieldEnum]
@@ -487,19 +522,6 @@ export const SetPasswordTokenScalarFieldEnum = {
 export type SetPasswordTokenScalarFieldEnum = (typeof SetPasswordTokenScalarFieldEnum)[keyof typeof SetPasswordTokenScalarFieldEnum]
 
 
-export const TipoActividadScalarFieldEnum = {
-  id: 'id',
-  nombre: 'nombre',
-  descripcionTemplate: 'descripcionTemplate',
-  orden: 'orden',
-  activo: 'activo',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type TipoActividadScalarFieldEnum = (typeof TipoActividadScalarFieldEnum)[keyof typeof TipoActividadScalarFieldEnum]
-
-
 export const InformeScalarFieldEnum = {
   id: 'id',
   clienteId: 'clienteId',
@@ -528,14 +550,25 @@ export type InformeVisitaScalarFieldEnum = (typeof InformeVisitaScalarFieldEnum)
 export const InformeSeccionScalarFieldEnum = {
   id: 'id',
   informeId: 'informeId',
-  tipoActividadId: 'tipoActividadId',
+  productoId: 'productoId',
   titulo: 'titulo',
   descripcion: 'descripcion',
-  orden: 'orden',
-  mediaIds: 'mediaIds'
+  orden: 'orden'
 } as const
 
 export type InformeSeccionScalarFieldEnum = (typeof InformeSeccionScalarFieldEnum)[keyof typeof InformeSeccionScalarFieldEnum]
+
+
+export const InformeSeccionFotoScalarFieldEnum = {
+  id: 'id',
+  seccionId: 'seccionId',
+  orden: 'orden',
+  key: 'key',
+  url: 'url',
+  visitaMediaId: 'visitaMediaId'
+} as const
+
+export type InformeSeccionFotoScalarFieldEnum = (typeof InformeSeccionFotoScalarFieldEnum)[keyof typeof InformeSeccionFotoScalarFieldEnum]
 
 
 export const EmpresaConfigScalarFieldEnum = {
@@ -560,6 +593,95 @@ export const FirmanteScalarFieldEnum = {
 } as const
 
 export type FirmanteScalarFieldEnum = (typeof FirmanteScalarFieldEnum)[keyof typeof FirmanteScalarFieldEnum]
+
+
+export const OrdenScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  datoFacturacionId: 'datoFacturacionId',
+  numero: 'numero',
+  fecha: 'fecha',
+  estado: 'estado',
+  notas: 'notas',
+  subtotal: 'subtotal',
+  iva: 'iva',
+  total: 'total',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdById: 'createdById',
+  updatedById: 'updatedById'
+} as const
+
+export type OrdenScalarFieldEnum = (typeof OrdenScalarFieldEnum)[keyof typeof OrdenScalarFieldEnum]
+
+
+export const OrdenLineaScalarFieldEnum = {
+  id: 'id',
+  ordenId: 'ordenId',
+  posicion: 'posicion',
+  descripcion: 'descripcion',
+  cantidad: 'cantidad',
+  precioUnitario: 'precioUnitario',
+  ivaTasa: 'ivaTasa',
+  subtotal: 'subtotal',
+  iva: 'iva',
+  total: 'total',
+  productoId: 'productoId',
+  suscripcionItemId: 'suscripcionItemId',
+  periodoInicio: 'periodoInicio',
+  periodoFin: 'periodoFin',
+  visitaProductoId: 'visitaProductoId'
+} as const
+
+export type OrdenLineaScalarFieldEnum = (typeof OrdenLineaScalarFieldEnum)[keyof typeof OrdenLineaScalarFieldEnum]
+
+
+export const DatoFacturacionScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  tipoIdentificacion: 'tipoIdentificacion',
+  identificacion: 'identificacion',
+  razonSocial: 'razonSocial',
+  tipoPersona: 'tipoPersona',
+  direccion: 'direccion',
+  telefono: 'telefono',
+  email: 'email',
+  esPredeterminado: 'esPredeterminado',
+  archivado: 'archivado',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdById: 'createdById',
+  updatedById: 'updatedById'
+} as const
+
+export type DatoFacturacionScalarFieldEnum = (typeof DatoFacturacionScalarFieldEnum)[keyof typeof DatoFacturacionScalarFieldEnum]
+
+
+export const FacturaScalarFieldEnum = {
+  id: 'id',
+  ordenId: 'ordenId',
+  contificoDocumentoId: 'contificoDocumentoId',
+  numero: 'numero',
+  fechaEmision: 'fechaEmision',
+  estado: 'estado',
+  autorizacion: 'autorizacion',
+  urlRide: 'urlRide',
+  urlXml: 'urlXml',
+  contificoPersonaId: 'contificoPersonaId',
+  datoFacturacionId: 'datoFacturacionId',
+  razonSocial: 'razonSocial',
+  identificacion: 'identificacion',
+  subtotal0: 'subtotal0',
+  subtotalGravado: 'subtotalGravado',
+  iva: 'iva',
+  total: 'total',
+  saldo: 'saldo',
+  anulada: 'anulada',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FacturaScalarFieldEnum = (typeof FacturaScalarFieldEnum)[keyof typeof FacturaScalarFieldEnum]
 
 
 export const SortOrder = {

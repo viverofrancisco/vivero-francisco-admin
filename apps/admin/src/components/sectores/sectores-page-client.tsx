@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 import { SectoresTable } from "@/components/sectores/sectores-table";
 import { SectorForm } from "@/components/sectores/sector-form";
 
@@ -28,16 +27,18 @@ export function SectoresPageClient({ sectores }: SectoresPageClientProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Sectores</h1>
-          <p className="text-muted-foreground">Gestiona los sectores geográficos</p>
-        </div>
-        <Button onClick={() => setFormOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Sector
-        </Button>
-      </div>
+      <PageHeader
+        title="Sectores"
+        description="Gestiona los sectores geográficos"
+        actions={[
+          {
+            label: "Nuevo Sector",
+            icon: "plus",
+            onClick: () => setFormOpen(true),
+            primary: true,
+          },
+        ]}
+      />
 
       <SectoresTable sectores={sectores} />
 

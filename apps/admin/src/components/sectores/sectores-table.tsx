@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  TablePagination,
+  FILAS_POR_PAGINA,
+} from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Trash2, Search, MapPin, Users, UserCog } from "lucide-react";
 import { toast } from "sonner";
@@ -27,7 +31,6 @@ interface SectoresTableProps {
   sectores: SectorRow[];
 }
 
-const ITEMS_PER_PAGE = 12;
 
 function SecMeta({
   icon: Icon,
@@ -58,10 +61,11 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
     return sectores.filter((s) => s.nombre.toLowerCase().includes(q));
   }, [sectores, searchQuery]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FILAS_POR_PAGINA));
+  const pagina = Math.min(page, totalPages);
   const paginated = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    (pagina - 1) * FILAS_POR_PAGINA,
+    pagina * FILAS_POR_PAGINA
   );
 
   const handleDelete = async (id: string) => {
@@ -184,33 +188,14 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Mostrando {(page - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(page * ITEMS_PER_PAGE, filtered.length)} de{" "}
-                {filtered.length}
-              </p>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
-          )}
+          <TablePagination
+            page={pagina}
+            total={filtered.length}
+            onPageChange={setPage}
+            suelta
+            sustantivo="sector"
+            plural="sectores"
+          />
         </>
       )}
     </div>

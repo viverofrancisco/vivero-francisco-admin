@@ -36,10 +36,8 @@ interface LogEntry {
   visita: {
     id: string;
     fechaProgramada: string;
-    clienteServicio: {
-      cliente: { nombre: string; apellido: string | null; empresa: string | null };
-      servicio: { nombre: string };
-    };
+    cliente: { nombre: string; apellido: string | null; empresa: string | null };
+    productos: { producto: { nombre: string } }[];
   } | null;
 }
 

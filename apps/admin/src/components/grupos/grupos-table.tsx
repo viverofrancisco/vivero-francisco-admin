@@ -2,10 +2,13 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  TablePagination,
+  FILAS_POR_PAGINA,
+} from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search, ChevronRight } from "lucide-react";
 
@@ -19,7 +22,6 @@ interface Grupo {
   }[];
 }
 
-const ITEMS_PER_PAGE = 12;
 
 const barColors = [
   "bg-chart-1",
@@ -40,10 +42,11 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
     return grupos.filter((g) => g.nombre.toLowerCase().includes(q));
   }, [grupos, searchQuery]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FILAS_POR_PAGINA));
+  const pagina = Math.min(page, totalPages);
   const paginated = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    (pagina - 1) * FILAS_POR_PAGINA,
+    pagina * FILAS_POR_PAGINA
   );
 
   const handleDelete = async (id: string) => {
@@ -144,33 +147,14 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Mostrando {(page - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(page * ITEMS_PER_PAGE, filtered.length)} de{" "}
-                {filtered.length}
-              </p>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
-          )}
+          <TablePagination
+            page={pagina}
+            total={filtered.length}
+            onPageChange={setPage}
+            suelta
+            sustantivo="grupo"
+            plural="grupos"
+          />
         </>
       )}
     </div>

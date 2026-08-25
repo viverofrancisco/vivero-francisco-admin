@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/notificaciones",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/renovaciones",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/facturas",
+      "schedule": "0 * * * *"
     }
   ]
 }

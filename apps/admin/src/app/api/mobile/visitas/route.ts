@@ -73,7 +73,8 @@ export async function POST(request: Request) {
     const visitas = await createVisitasBatch(
       viewerFromMobileUser(userOrResponse),
       {
-        clienteServicioId: parsed.data.clienteServicioId,
+        clienteId: parsed.data.clienteId,
+        productos: parsed.data.productos,
         fechas: parsed.data.fechas.map((f) => new Date(f)),
         grupoId: parsed.data.grupoId ?? null,
         notas: parsed.data.notas ?? null,

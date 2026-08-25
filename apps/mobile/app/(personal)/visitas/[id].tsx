@@ -17,6 +17,7 @@ import * as VideoThumbnails from "expo-video-thumbnails";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type { VisitaDetail, VisitaMedia } from "@/lib/types";
+import { listaProductos } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth-store";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 
@@ -102,7 +103,7 @@ export default function PersonalVisitaScreen() {
   const canAct = visita.estado !== "CANCELADA" && canMutate;
   const isEdit =
     visita.estado === "COMPLETADA" || visita.estado === "INCOMPLETA";
-  const cliente = visita.clienteServicio.cliente;
+  const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
 
   return (
@@ -130,7 +131,7 @@ export default function PersonalVisitaScreen() {
             {nombreCliente(cliente)}
           </Text>
           <Text variant="bodyMedium" style={styles.heroSubtitle}>
-            {visita.clienteServicio.servicio.nombre}
+            {listaProductos(visita)}
           </Text>
         </View>
 

@@ -24,6 +24,7 @@ import type {
   VisitaDetail,
   VisitaMedia,
 } from "@/lib/types";
+import { listaProductos } from "@/lib/types";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 
 interface PendingAttachment {
@@ -893,7 +894,7 @@ function VisitaDetailsSheet({
               </Text>
             </View>
             <Text variant="headlineSmall" style={detailsStyles.heroTitle}>
-              {visita.clienteServicio.servicio.nombre}
+              {listaProductos(visita)}
             </Text>
             <Text variant="bodyMedium" style={detailsStyles.heroSubtitle}>
               {formatBannerDate(visita.fechaProgramada)}

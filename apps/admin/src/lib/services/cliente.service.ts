@@ -34,16 +34,19 @@ export async function getClienteProfile(viewer: Viewer) {
       deletedAt: null,
       estado: "PROGRAMADA",
       fechaProgramada: { gte: startOfToday() },
-      clienteServicio: { clienteId: cliente.id },
+      clienteId: cliente.id,
     },
     orderBy: { fechaProgramada: "asc" },
     select: {
       id: true,
       fechaProgramada: true,
       horaEntrada: true,
-      clienteServicio: {
+      productos: {
+        orderBy: { orden: "asc" },
         select: {
-          servicio: { select: { id: true, nombre: true, tipo: true } },
+          producto: {
+            select: { id: true, nombre: true, tipo: true },
+          },
         },
       },
     },
@@ -143,14 +146,24 @@ export async function getClienteForStaff(clienteId: string, viewer: Viewer) {
       notas: true,
       metrosCuadrados: true,
       sector: { select: { id: true, nombre: true } },
-      servicios: {
+      suscripciones: {
         where: { estado: { not: "CANCELADO" } },
         select: {
           id: true,
           estado: true,
-          precio: true,
-          frecuenciaMensual: true,
-          servicio: { select: { id: true, nombre: true, tipo: true } },
+          periodicidad: true,
+          fechaInicio: true,
+          items: {
+            select: {
+              id: true,
+              precio: true,
+              ivaTasa: true,
+              visitasPorPeriodo: true,
+              producto: {
+                select: { id: true, nombre: true, tipo: true },
+              },
+            },
+          },
         },
       },
     },
@@ -207,41 +220,12 @@ async function ensureSectorAllowed(
 }
 
 export interface AsignarServicioPayload {
-  servicioId: string;
+  productoId: string;
   precio: number;
   iva?: number;
-  frecuenciaMensual?: number | null;
+  visitasPorPeriodo?: number | null;
   fechaInicio: string;
   notas?: string | null;
-}
-
-export async function asignarServicioToCliente(
-  clienteId: string,
-  viewer: Viewer,
-  payload: AsignarServicioPayload
-) {
-  ensureCanWrite(viewer);
-  await getClienteForStaff(clienteId, viewer); // sector check + existence
-
-  const servicio = await prisma.servicio.findFirst({
-    where: { id: payload.servicioId, deletedAt: null },
-    select: { id: true },
-  });
-  if (!servicio) throw new NotFoundError("Servicio no encontrado");
-
-  return prisma.clienteServicio.create({
-    data: {
-      clienteId,
-      servicioId: payload.servicioId,
-      precio: payload.precio,
-      iva: payload.iva ?? 0,
-      frecuenciaMensual: payload.frecuenciaMensual ?? null,
-      fechaInicio: new Date(payload.fechaInicio),
-      notas: payload.notas?.trim() || null,
-      createdById: viewer.id,
-      updatedById: viewer.id,
-    },
-  });
 }
 
 export async function createCliente(

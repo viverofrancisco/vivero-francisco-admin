@@ -24,6 +24,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type {
+  ServicioListItem,
+  ServiciosListResponse,
   ClienteListItem,
   ClienteStaffDetail,
   ClientesListResponse,
@@ -34,7 +36,7 @@ import type {
 } from "@/lib/types";
 
 type Step = 0 | 1 | 2 | 3 | 4;
-const STEP_LABELS = ["Cliente", "Servicio", "Fechas", "Personal", "Revisar"];
+const STEP_LABELS = ["Cliente", "Servicios", "Fechas", "Personal", "Revisar"];
 
 export default function CrearVisitaScreen() {
   const router = useRouter();
@@ -62,9 +64,12 @@ export default function CrearVisitaScreen() {
     null
   );
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [clienteServicioId, setClienteServicioId] = useState<string | null>(
-    null
-  );
+  const [selectedProductoIds, setSelectedProductoIds] = useState<string[]>([]);
+  // Precio de cada trabajo suelto elegido, por productoId.
+  const [preciosSueltos, setPreciosSueltos] = useState<
+    Record<string, { precio: string; ivaTasa: string }>
+  >({});
+  const [catalogo, setCatalogo] = useState<ServicioListItem[]>([]);
   const [fechas, setFechas] = useState<string[]>([]);
   const [grupoId, setGrupoId] = useState<string | null>(null);
   const [selectedPersonalIds, setSelectedPersonalIds] = useState<string[]>([]);
@@ -84,6 +89,11 @@ export default function CrearVisitaScreen() {
       apiRequest<PersonalListResponse>("/api/mobile/personal").then((r) =>
         setPersonal(r.items)
       ),
+      // Catálogo completo: permite agendar un servicio que el cliente todavía
+      // no tiene suscrito, sin pasar antes por otra pantalla.
+      apiRequest<ServiciosListResponse>("/api/mobile/servicios", {
+        query: { limit: 200 },
+      }).then((r) => setCatalogo(r.items)),
     ])
       .catch(() => {})
       .finally(() => setLoadingRefs(false));
@@ -92,33 +102,68 @@ export default function CrearVisitaScreen() {
   useEffect(() => {
     if (!selectedClienteId) {
       setClienteDetail(null);
-      setClienteServicioId(null);
+      setSelectedProductoIds([]);
+      setPreciosSueltos({});
       return;
     }
     setLoadingDetail(true);
     apiRequest<ClienteStaffDetail>(`/api/mobile/clientes/${selectedClienteId}`)
       .then((c) => {
         setClienteDetail(c);
-        const activos = c.servicios.filter((s) => s.estado === "ACTIVO");
-        setClienteServicioId(activos.length === 1 ? activos[0].id : null);
+        const cubiertos = c.suscripciones
+          .filter((s) => s.estado === "ACTIVO")
+          .flatMap((s) => s.items);
+        // Con un solo producto suscrito no hay nada que elegir: se preselecciona.
+        setSelectedProductoIds(
+          cubiertos.length === 1 ? [cubiertos[0].producto.id] : []
+        );
+        setPreciosSueltos({});
       })
       .catch(() => setClienteDetail(null))
       .finally(() => setLoadingDetail(false));
   }, [selectedClienteId]);
 
   const selectedCliente = clientes.find((c) => c.id === selectedClienteId);
-  const activeServicios =
-    clienteDetail?.servicios.filter((s) => s.estado === "ACTIVO") ?? [];
-  const selectedCs = clienteDetail?.servicios.find(
-    (s) => s.id === clienteServicioId
+
+  // Lo que ya cubre una suscripción activa: se elige sin pedir precio, porque
+  // el precio vive en la suscripción.
+  const cubiertoPorProductoId = new Map(
+    (clienteDetail?.suscripciones ?? [])
+      .filter((s) => s.estado === "ACTIVO")
+      .flatMap((s) => s.items)
+      .map((i) => [i.producto.id, i] as const)
   );
+
+  // Todo el catálogo: desde que la visita no lleva precio, no hay motivo para
+  // restringir qué se le puede agendar a quién. Lo que cubre un plan se marca
+  // como tal; el resto queda pendiente de facturar.
+  const catalogoDisponible = catalogo;
+  const selectedServicios = catalogoDisponible.filter((sv) =>
+    selectedProductoIds.includes(sv.id)
+  );
+  const totalServicios = selectedServicios.length;
+
+  // Sin precios: agendar no cotiza. Lo suelto se cobra al armar la orden.
+  const resumenProductosElegidos = selectedServicios.map((sv) =>
+    cubiertoPorProductoId.has(sv.id)
+      ? `${sv.nombre} (cubierto por la suscripción)`
+      : `${sv.nombre} (se factura aparte)`
+  );
+
+  function toggleServicio(sv: ServicioListItem) {
+    setSelectedProductoIds((prev) =>
+      prev.includes(sv.id) ? prev.filter((x) => x !== sv.id) : [...prev, sv.id]
+    );
+  }
   const selectedPersonal = personal.filter((p) =>
     selectedPersonalIds.includes(p.id)
   );
 
   function canContinue(): boolean {
     if (step === 0) return !!selectedClienteId;
-    if (step === 1) return !!clienteServicioId;
+    if (step === 1) {
+      return totalServicios > 0;
+    }
     if (step === 2) return fechas.length > 0;
     if (step === 3) return true; // personal optional
     return true;
@@ -138,13 +183,25 @@ export default function CrearVisitaScreen() {
 
   async function submit() {
     setError(null);
-    if (!clienteServicioId || fechas.length === 0) return;
+    if (totalServicios === 0 || fechas.length === 0) return;
     setSubmitting(true);
     try {
       await apiRequest("/api/mobile/visitas", {
         method: "POST",
         body: {
-          clienteServicioId,
+          clienteId: selectedClienteId,
+          // El servidor enlaza solo lo que cubre una suscripción activa; el
+          // precio que va acá es el del trabajo suelto.
+          productos: selectedServicios.map((sv) => {
+            const cubierto = cubiertoPorProductoId.has(sv.id);
+            const d = preciosSueltos[sv.id];
+            return {
+              productoId: sv.id,
+              precio: cubierto ? null : Number(d?.precio ?? 0),
+              ivaTasa:
+                cubierto || !d?.ivaTasa.trim() ? null : Number(d.ivaTasa),
+            };
+          }),
           fechas,
           grupoId: grupoId || null,
           personalIds: selectedPersonalIds,
@@ -210,9 +267,10 @@ export default function CrearVisitaScreen() {
           {step === 1 && (
             <ServicioStep
               loading={loadingDetail}
-              activeServicios={activeServicios}
-              selectedId={clienteServicioId}
-              onSelect={setClienteServicioId}
+              catalogoDisponible={catalogoDisponible}
+              selectedIds={selectedProductoIds}
+              cubiertoPorProductoId={cubiertoPorProductoId}
+              onToggle={toggleServicio}
             />
           )}
           {step === 2 && (
@@ -254,7 +312,7 @@ export default function CrearVisitaScreen() {
           {step === 4 && (
             <RevisarStep
               cliente={selectedCliente}
-              servicio={selectedCs}
+              servicio={resumenProductosElegidos}
               fechas={fechas}
               personal={selectedPersonal}
               notas={notas}
@@ -391,62 +449,69 @@ function ClienteStep({
 }
 
 // ──────────────────────────────────────────────
-// Step 1 — Servicio
+// Step 1 — Servicios
 // ──────────────────────────────────────────────
 
 function ServicioStep({
   loading,
-  activeServicios,
-  selectedId,
-  onSelect,
+  catalogoDisponible,
+  selectedIds,
+  cubiertoPorProductoId,
+  onToggle,
 }: {
   loading: boolean;
-  activeServicios: ClienteStaffDetail["servicios"];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
+  catalogoDisponible: ServicioListItem[];
+  selectedIds: string[];
+  cubiertoPorProductoId: Map<
+    string,
+    ClienteStaffDetail["suscripciones"][number]["items"][number]
+  >;
+  onToggle: (sv: ServicioListItem) => void;
 }) {
   return (
     <View>
       <Text variant="headlineSmall" style={styles.title}>
-        Selecciona el servicio
+        Selecciona los servicios
       </Text>
       <Text variant="bodyMedium" style={styles.subtitle}>
-        Elige uno de los servicios contratados
+        Una visita puede cubrir varios servicios
       </Text>
 
       {loading ? (
         <ActivityIndicator />
-      ) : activeServicios.length === 0 ? (
+      ) : catalogoDisponible.length === 0 ? (
         <Text style={styles.empty}>
-          Este cliente no tiene servicios activos. Asígnale uno primero.
+          No hay productos en el catálogo.
         </Text>
       ) : (
         <View style={styles.list}>
-          {activeServicios.map((cs) => {
-            const selected = cs.id === selectedId;
+          {catalogoDisponible.map((sv) => {
+            const cubierto = cubiertoPorProductoId.get(sv.id);
+            const selected = selectedIds.includes(sv.id);
             return (
-              <Pressable
-                key={cs.id}
-                onPress={() => onSelect(cs.id)}
-                style={[styles.row, selected && styles.rowSelected]}
-              >
-                <View style={styles.rowText}>
-                  <Text variant="bodyLarge" style={styles.rowTitle}>
-                    {cs.servicio.nombre}
-                  </Text>
-                  <Text variant="bodySmall" style={styles.muted}>
-                    $ {Number(cs.precio).toFixed(2)}
-                    {cs.frecuenciaMensual
-                      ? ` · ${cs.frecuenciaMensual}/mes`
-                      : ""}
-                  </Text>
-                </View>
-                {selected ? (
-                  <View style={styles.checkmark}>
-                    <Text style={styles.checkmarkIcon}>✓</Text>
+              <View key={sv.id}>
+                <Pressable
+                  onPress={() => onToggle(sv)}
+                  style={[styles.row, selected && styles.rowSelected]}
+                >
+                  <View style={styles.rowText}>
+                    <Text variant="bodyLarge" style={styles.rowTitle}>
+                      {sv.nombre}
+                    </Text>
+                    <Text variant="bodySmall" style={styles.muted}>
+                      {cubierto
+                        ? `Suscripción · $ ${Number(cubierto.precio).toFixed(2)}`
+                        : "Trabajo suelto"}
+                    </Text>
                   </View>
-                ) : null}
-              </Pressable>
+                  {selected ? (
+                    <View style={styles.checkmark}>
+                      <Text style={styles.checkmarkIcon}>✓</Text>
+                    </View>
+                  ) : null}
+                </Pressable>
+
+              </View>
             );
           })}
         </View>
@@ -764,7 +829,8 @@ function RevisarStep({
   onChangeNotas,
 }: {
   cliente: ClienteListItem | undefined;
-  servicio: ClienteStaffDetail["servicios"][number] | undefined;
+  /** Líneas ya formateadas: "Nombre · $ 00.00". */
+  servicio: string[];
   fechas: string[];
   personal: PersonalOption[];
   notas: string;
@@ -785,11 +851,9 @@ function RevisarStep({
           value={cliente ? nombreCliente(cliente) : "—"}
         />
         <SummaryRow
-          label="Servicio"
+          label={servicio.length === 1 ? "Servicio" : "Servicios"}
           value={
-            servicio
-              ? `${servicio.servicio.nombre} · $ ${Number(servicio.precio).toFixed(2)}`
-              : "—"
+            servicio.length > 0 ? servicio.join("\n") : "—"
           }
         />
         <SummaryRow
@@ -938,6 +1002,29 @@ const styles = StyleSheet.create({
   },
   rowSelected: {
     backgroundColor: "#e8f5e9",
+  },
+  groupLabel: {
+    color: "#888",
+    letterSpacing: 0.6,
+    marginBottom: 6,
+    marginTop: 4,
+  },
+  groupHint: {
+    color: "#888",
+    marginBottom: 8,
+  },
+  precioSuelto: {
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingBottom: 10,
+    backgroundColor: "#e8f5e9",
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  nuevoInput: {
+    flex: 1,
+    backgroundColor: "#fff",
   },
   rowPressed: {
     backgroundColor: "#eaeaea",

@@ -22,27 +22,38 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { ImagePlus, X, Loader2 } from "lucide-react";
+import type { ProductoDeVisita } from "@/lib/visita-productos";
 
 interface CompletarVisitaFormProps {
   visitaId: string;
   open: boolean;
   onClose: () => void;
+  /// Servicios que cubre la visita. Con más de uno se pueden etiquetar fotos.
+  productos?: ProductoDeVisita[];
 }
 
 interface PendingFile {
   file: File;
   preview: string;
   tipo: "imagen" | "video";
+  /// Servicio de la visita al que corresponde. Opcional.
+  productoId: string | null;
 }
 
 export function CompletarVisitaForm({
   visitaId,
   open,
   onClose,
+  productos = [],
 }: CompletarVisitaFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<PendingFile[]>([]);
+  // Etiqueta que se aplica a los archivos nuevos. Con un solo servicio va
+  // preseleccionada porque no hay nada que elegir.
+  const [tagServicioId, setTagServicioId] = useState<string | null>(
+    productos.length === 1 ? productos[0].productoId : null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -77,10 +88,18 @@ export function CompletarVisitaForm({
         ? ""
         : URL.createObjectURL(file),
       tipo: file.type.startsWith("video/") ? "video" : "imagen",
+      productoId: tagServicioId,
     }));
 
     setFiles((prev) => [...prev, ...newFiles]);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  /** Cambia la etiqueta de un archivo ya agregado. */
+  const setFileTag = (index: number, productoId: string | null) => {
+    setFiles((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, productoId } : f))
+    );
   };
 
   const removeFile = (index: number) => {
@@ -128,9 +147,10 @@ export function CompletarVisitaForm({
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        files: uploads.map((u: { key: string; tipo: string }) => ({
+        files: uploads.map((u: { key: string; tipo: string }, i: number) => ({
           key: u.key,
           tipo: u.tipo,
+          productoId: files[i]?.productoId ?? null,
         })),
       }),
     });
@@ -281,6 +301,47 @@ export function CompletarVisitaForm({
               className="hidden"
               onChange={handleFileChange}
             />
+            {productos.length > 1 && (
+              <div className="space-y-1.5 rounded-md border bg-muted/30 p-2.5">
+                <p className="text-xs font-medium">
+                  Etiquetar archivos nuevos como:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {productos.map((sv) => {
+                    const activo = tagServicioId === sv.productoId;
+                    return (
+                      <button
+                        key={sv.productoId}
+                        type="button"
+                        onClick={() => setTagServicioId(sv.productoId)}
+                        className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                          activo
+                            ? "border-primary bg-primary/10 font-medium text-primary"
+                            : "text-muted-foreground hover:bg-background"
+                        }`}
+                      >
+                        {sv.producto.nombre}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => setTagServicioId(null)}
+                    className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                      tagServicioId === null
+                        ? "border-primary bg-primary/10 font-medium text-primary"
+                        : "text-muted-foreground hover:bg-background"
+                    }`}
+                  >
+                    Sin etiqueta
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Es opcional. Sirve para que el informe arme cada sección con
+                  sus fotos.
+                </p>
+              </div>
+            )}
             {files.length > 0 && (
               <div className="grid grid-cols-3 gap-2">
                 {files.map((f, i) => (
@@ -304,6 +365,26 @@ export function CompletarVisitaForm({
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
+                    {productos.length > 1 && (
+                      <select
+                        value={f.productoId ?? ""}
+                        onChange={(e) =>
+                          setFileTag(i, e.target.value || null)
+                        }
+                        className="absolute inset-x-0 bottom-0 w-full truncate border-0 bg-black/60 px-1 py-0.5 text-[10px] text-white outline-none"
+                        title="Servicio de esta foto"
+                      >
+                        <option value="">Sin etiqueta</option>
+                        {productos.map((sv) => (
+                          <option
+                            key={sv.productoId}
+                            value={sv.productoId}
+                          >
+                            {sv.producto.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                 ))}
               </div>

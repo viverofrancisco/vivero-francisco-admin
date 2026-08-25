@@ -11,6 +11,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  resumenProductos,
+  PRODUCTOS_DE_VISITA_SELECT,
+} from "@/lib/visita-productos";
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -141,7 +145,7 @@ export default async function DashboardPage() {
   let scope: Prisma.VisitaWhereInput = {};
   if (isPersonalAdmin) {
     const sectorIds = await getUserSectorIds(user.id);
-    scope = { clienteServicio: { cliente: { sectorId: { in: sectorIds } } } };
+    scope = { cliente: { sectorId: { in: sectorIds } } };
   } else if (isPersonal) {
     const personal = await prisma.personal.findUnique({
       where: { userId: user.id },
@@ -185,7 +189,7 @@ export default async function DashboardPage() {
           })
         : Promise.resolve(0),
     isAdmin
-      ? prisma.servicio.count({ where: { deletedAt: null } })
+      ? prisma.producto.count({ where: { deletedAt: null } })
       : Promise.resolve(0),
     isAdmin
       ? prisma.personal.count({ where: { deletedAt: null } })
@@ -197,12 +201,8 @@ export default async function DashboardPage() {
     prisma.visita.findMany({
       where: diaFilter,
       include: {
-        clienteServicio: {
-          include: {
-            cliente: { include: { sector: { select: { nombre: true } } } },
-            servicio: { select: { nombre: true } },
-          },
-        },
+        cliente: { include: { sector: { select: { nombre: true } } } },
+        productos: PRODUCTOS_DE_VISITA_SELECT,
         grupo: { select: { nombre: true } },
       },
       orderBy: [{ horaEntrada: "asc" }, { createdAt: "asc" }],
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
   for (const v of visitasHoy) {
     const nombre = v.grupo?.nombre;
     if (!nombre) continue;
-    const sector = v.clienteServicio.cliente.sector?.nombre;
+    const sector = v.cliente.sector?.nombre;
     const entry = crewMap.get(nombre) ?? { sectores: new Set(), count: 0 };
     if (sector) entry.sectores.add(sector);
     entry.count += 1;
@@ -277,7 +277,7 @@ export default async function DashboardPage() {
             value={serviciosCount}
             icon={Wrench}
             iconClass="bg-clay/12 text-clay"
-            href="/dashboard/servicios"
+            href="/dashboard/productos"
           />
         )}
         {isAdmin && (
@@ -326,7 +326,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="divide-y divide-border/60">
               {visitasHoy.slice(0, 8).map((v) => {
-                const c = v.clienteServicio.cliente;
+                const c = v.cliente;
                 const nombre = [c.nombre, c.apellido].filter(Boolean).join(" ");
                 return (
                   <div
@@ -344,7 +344,7 @@ export default async function DashboardPage() {
                         {nombre}
                       </div>
                       <div className="truncate text-[12.5px] font-semibold text-muted-foreground">
-                        {v.clienteServicio.servicio.nombre}
+                        {resumenProductos(v)}
                       </div>
                     </div>
                     <span className="hidden text-[13px] font-semibold text-muted-foreground sm:block">

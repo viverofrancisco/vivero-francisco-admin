@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
   Download,
   ExternalLink,
   Check,
+  Upload,
 } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
 import {
@@ -54,20 +55,45 @@ interface MediaPoolItem {
   url: string;
   visitaId: string;
   visitaFecha: string;
+  /// Servicio de la visita con el que se etiquetó la foto, si lo tiene.
+  productoId: string | null;
 }
 
-interface TipoActividad {
-  id: string;
+/** Servicio cubierto por las visitas seleccionadas. Origen de cada sección. */
+interface ServicioParaSeccion {
+  productoId: string;
   nombre: string;
-  descripcionTemplate: string | null;
+  descripcion: string | null;
+  visitasCount: number;
+  fotosCount: number;
+}
+
+/**
+ * Foto de una sección. O viene de una visita (`visitaMediaId`) o se subió
+ * directo al informe (`key`). `url` siempre sirve para previsualizar.
+ */
+interface SeccionFotoDraft {
+  uid: string;
+  visitaMediaId: string | null;
+  key: string | null;
+  url: string;
 }
 
 interface SeccionDraft {
   tempId: string;
-  tipoActividadId: string | null;
+  /// Servicio que origina la sección. Null = sección personalizada.
+  productoId: string | null;
   titulo: string;
   descripcion: string;
-  mediaIds: string[];
+  fotos: SeccionFotoDraft[];
+}
+
+function fotoDeVisita(m: MediaPoolItem): SeccionFotoDraft {
+  return { uid: `visita-${m.id}`, visitaMediaId: m.id, key: null, url: m.url };
+}
+
+function fotoSubida(key: string, url: string): SeccionFotoDraft {
+  return { uid: `upload-${key}`, visitaMediaId: null, key, url };
 }
 
 interface FirmanteDraft {
@@ -83,10 +109,14 @@ interface InitialData {
   visitaIds: string[];
   firmantes: Array<{ nombre: string; cedula: string | null }>;
   secciones: Array<{
-    tipoActividadId: string | null;
+    productoId: string | null;
     titulo: string;
     descripcion: string | null;
-    mediaIds: string[];
+    fotos: Array<{
+      visitaMediaId: string | null;
+      key: string;
+      url: string;
+    }>;
   }>;
   pdfUrl?: string;
 }
@@ -111,7 +141,9 @@ export function InformeWizard({
   const [step, setStep] = useState<WizardStep>(initial ? 3 : 1);
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [tiposActividad, setTiposActividad] = useState<TipoActividad[]>([]);
+  const [serviciosDisponibles, setServiciosDisponibles] = useState<
+    ServicioParaSeccion[]
+  >([]);
   const [firmantesCatalog, setFirmantesCatalog] = useState<SavedFirmante[]>([]);
   const [clienteId, setClienteId] = useState<string | null>(
     initial?.clienteId ?? null
@@ -136,10 +168,17 @@ export function InformeWizard({
     initial
       ? initial.secciones.map((s, i) => ({
           tempId: `existing-${i}`,
-          tipoActividadId: s.tipoActividadId,
+          productoId: s.productoId,
           titulo: s.titulo,
           descripcion: s.descripcion ?? "",
-          mediaIds: s.mediaIds,
+          fotos: s.fotos.map((f, j) => ({
+            uid: f.visitaMediaId
+              ? `visita-${f.visitaMediaId}`
+              : `upload-${f.key || j}`,
+            visitaMediaId: f.visitaMediaId,
+            key: f.visitaMediaId ? null : f.key,
+            url: f.url,
+          })),
         }))
       : []
   );
@@ -178,16 +217,11 @@ export function InformeWizard({
   useEffect(() => {
     void (async () => {
       try {
-        const [cRes, tRes, fRes] = await Promise.all([
+        const [cRes, fRes] = await Promise.all([
           fetch("/api/clientes", { cache: "no-store" }),
-          fetch("/api/admin/tipos-actividad", { cache: "no-store" }),
           fetch("/api/admin/firmantes", { cache: "no-store" }),
         ]);
         if (cRes.ok) setClientes(await cRes.json());
-        if (tRes.ok) {
-          const data: { items: TipoActividad[] } = await tRes.json();
-          setTiposActividad(data.items);
-        }
         if (fRes.ok) {
           const data: { items: SavedFirmante[] } = await fRes.json();
           setFirmantesCatalog(data.items);
@@ -255,10 +289,33 @@ export function InformeWizard({
       .finally(() => setLoadingPool(false));
   }, [step, selectedVisitaIds]);
 
+  // Los servicios que cubren las visitas seleccionadas son el catálogo de
+  // secciones: título = nombre del servicio, descripción = la del servicio.
+  useEffect(() => {
+    if (step !== 3) return;
+    const ids = Array.from(selectedVisitaIds);
+    if (ids.length === 0) {
+      setServiciosDisponibles([]);
+      return;
+    }
+    fetch("/api/admin/informes/servicios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitaIds: ids }),
+    })
+      .then((r) => r.json())
+      .then((data: { items: ServicioParaSeccion[] }) => {
+        setServiciosDisponibles(data.items ?? []);
+      })
+      .catch(() => {});
+  }, [step, selectedVisitaIds]);
+
   const assignedIds = useMemo(() => {
     const set = new Set<string>();
     for (const s of secciones) {
-      for (const m of s.mediaIds) set.add(m);
+      for (const f of s.fotos) {
+        if (f.visitaMediaId) set.add(f.visitaMediaId);
+      }
     }
     return set;
   }, [secciones]);
@@ -310,10 +367,14 @@ export function InformeWizard({
           visitaIds: Array.from(selectedVisitaIds),
           firmantes: validFirmantes,
           secciones: secciones.map((s) => ({
-            tipoActividadId: s.tipoActividadId,
+            productoId: s.productoId,
             titulo: s.titulo,
             descripcion: s.descripcion || null,
-            mediaIds: s.mediaIds,
+            fotos: s.fotos.map((f) =>
+              f.visitaMediaId
+                ? { visitaMediaId: f.visitaMediaId }
+                : { key: f.key }
+            ),
           })),
         }),
       });
@@ -441,7 +502,8 @@ export function InformeWizard({
                 loadingPool={loadingPool}
                 secciones={secciones}
                 onSeccionesChange={setSecciones}
-                tiposActividad={tiposActividad}
+                productos={serviciosDisponibles}
+                clienteId={clienteId}
                 allPool={pool}
                 addPhotosFor={addPhotosFor}
                 setAddPhotosFor={setAddPhotosFor}
@@ -1188,7 +1250,8 @@ function Step3Secciones({
   loadingPool,
   secciones,
   onSeccionesChange,
-  tiposActividad,
+  productos,
+  clienteId,
   allPool,
   addPhotosFor,
   setAddPhotosFor,
@@ -1200,19 +1263,28 @@ function Step3Secciones({
   loadingPool: boolean;
   secciones: SeccionDraft[];
   onSeccionesChange: (s: SeccionDraft[]) => void;
-  tiposActividad: TipoActividad[];
+  productos: ServicioParaSeccion[];
+  clienteId: string | null;
   allPool: MediaPoolItem[];
   addPhotosFor: string | null;
   setAddPhotosFor: (id: string | null) => void;
   onViewMedia: (url: string) => void;
 }) {
-  const allPoolById = useMemo(() => {
-    const map = new Map<string, MediaPoolItem>();
-    for (const m of allPool) map.set(m.id, m);
-    return map;
-  }, [allPool]);
+  // Fotos de visita ya usadas en alguna sección: no se vuelven a autoasignar.
+  const assignedIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const sec of secciones) {
+      for (const f of sec.fotos) {
+        if (f.visitaMediaId) set.add(f.visitaMediaId);
+      }
+    }
+    return set;
+  }, [secciones]);
 
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadTargetRef = useRef<string | null>(null);
   const [photoDragOverId, setPhotoDragOverId] = useState<string | null>(null);
   const [draggingSectionId, setDraggingSectionId] = useState<string | null>(
     null
@@ -1231,13 +1303,27 @@ function Step3Secciones({
     });
   }
 
-  function addSeccion(tipo: TipoActividad | null) {
+  /**
+   * Crea una sección. Con un servicio, el título y la descripción salen del
+   * servicio y la sección arranca con las fotos que se etiquetaron con él.
+   * Sin servicio, queda una sección personalizada vacía.
+   */
+  function addSeccion(servicio: ServicioParaSeccion | null) {
+    const fotosDelServicio = servicio
+      ? allPool
+          .filter(
+            (m) =>
+              m.productoId === servicio.productoId &&
+              !assignedIds.has(m.id)
+          )
+          .map(fotoDeVisita)
+      : [];
     const draft: SeccionDraft = {
       tempId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      tipoActividadId: tipo?.id ?? null,
-      titulo: tipo?.nombre ?? "",
-      descripcion: tipo?.descripcionTemplate ?? "",
-      mediaIds: [],
+      productoId: servicio?.productoId ?? null,
+      titulo: servicio?.nombre ?? "",
+      descripcion: servicio?.descripcion ?? "",
+      fotos: fotosDelServicio,
     };
     onSeccionesChange([...secciones, draft]);
   }
@@ -1263,29 +1349,103 @@ function Step3Secciones({
     onSeccionesChange(next);
   }
 
-  function removeFotoFromSeccion(tempId: string, mediaId: string) {
+  function removeFotoFromSeccion(tempId: string, uid: string) {
     const seccion = secciones.find((s) => s.tempId === tempId);
     if (!seccion) return;
     updateSeccion(tempId, {
-      mediaIds: seccion.mediaIds.filter((m) => m !== mediaId),
+      fotos: seccion.fotos.filter((f) => f.uid !== uid),
     });
   }
 
-  function addFotosToSeccion(tempId: string, ids: string[]) {
+  function addFotosToSeccion(tempId: string, nuevas: SeccionFotoDraft[]) {
     const seccion = secciones.find((s) => s.tempId === tempId);
     if (!seccion) return;
-    const existing = new Set(seccion.mediaIds);
-    const additions = ids.filter((id) => !existing.has(id));
+    const existing = new Set(seccion.fotos.map((f) => f.uid));
+    const additions = nuevas.filter((f) => !existing.has(f.uid));
     if (additions.length === 0) return;
-    updateSeccion(tempId, {
-      mediaIds: [...seccion.mediaIds, ...additions],
-    });
+    updateSeccion(tempId, { fotos: [...seccion.fotos, ...additions] });
+  }
+
+  /** Ids del pool → fotos de sección. */
+  function fotosDesdePool(ids: string[]): SeccionFotoDraft[] {
+    const byId = new Map(allPool.map((m) => [m.id, m]));
+    return ids
+      .map((id) => byId.get(id))
+      .filter((m): m is MediaPoolItem => Boolean(m))
+      .map(fotoDeVisita);
+  }
+
+  /**
+   * Sube imágenes propias del informe a R2 con URLs prefirmadas y las agrega
+   * a la sección. Es lo que usan tanto el drop de archivos como el botón.
+   */
+  async function subirArchivos(tempId: string, files: File[]) {
+    const imagenes = files.filter((f) => f.type.startsWith("image/"));
+    if (imagenes.length === 0) {
+      toast.error("Solo se pueden agregar imágenes.");
+      return;
+    }
+    if (!clienteId) {
+      toast.error("Selecciona un cliente antes de subir imágenes.");
+      return;
+    }
+    setUploadingFor(tempId);
+    try {
+      const res = await fetch("/api/admin/informes/uploads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clienteId,
+          files: imagenes.map((f) => ({
+            fileName: f.name,
+            contentType: f.type,
+          })),
+        }),
+      });
+      if (!res.ok) throw new Error("No pudimos preparar la subida.");
+      const { uploads } = (await res.json()) as {
+        uploads: Array<{ key: string; uploadUrl: string; url: string }>;
+      };
+
+      const subidas: SeccionFotoDraft[] = [];
+      await Promise.all(
+        uploads.map(async (u, i) => {
+          const file = imagenes[i];
+          const put = await fetch(u.uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          if (!put.ok) throw new Error(`No se pudo subir ${file.name}.`);
+          subidas.push(fotoSubida(u.key, u.url));
+        })
+      );
+
+      addFotosToSeccion(tempId, subidas);
+      toast.success(
+        subidas.length === 1
+          ? "Imagen agregada"
+          : `${subidas.length} imágenes agregadas`
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al subir imágenes");
+    } finally {
+      setUploadingFor(null);
+    }
+  }
+
+  function abrirSelectorDeArchivos(tempId: string) {
+    uploadTargetRef.current = tempId;
+    fileInputRef.current?.click();
   }
 
   function handleDragOver(e: React.DragEvent, sectionTempId: string) {
     e.preventDefault();
     const types = e.dataTransfer.types;
-    if (types.includes("application/x-section")) {
+    if (types.includes("Files")) {
+      setPhotoDragOverId(sectionTempId);
+      setSectionDragOverId(null);
+    } else if (types.includes("application/x-section")) {
       setSectionDragOverId(sectionTempId);
       setPhotoDragOverId(null);
     } else {
@@ -1305,15 +1465,7 @@ function Step3Secciones({
     e.preventDefault();
     setPhotoDragOverId(null);
     setSectionDragOverId(null);
-    const sectionId = e.dataTransfer.getData("application/x-section");
-    if (sectionId) {
-      reorderSecciones(sectionId, sectionTempId);
-      return;
-    }
-    const photoId = e.dataTransfer.getData("text/plain");
-    if (photoId) {
-      addFotosToSeccion(sectionTempId, [photoId]);
-      // Auto-expand if the user drops onto a collapsed section
+    function expandir() {
       setCollapsed((prev) => {
         if (!prev.has(sectionTempId)) return prev;
         const next = new Set(prev);
@@ -1321,12 +1473,28 @@ function Step3Secciones({
         return next;
       });
     }
+
+    // Archivos arrastrados desde el escritorio → subida propia del informe.
+    const archivos = Array.from(e.dataTransfer.files ?? []);
+    if (archivos.length > 0) {
+      expandir();
+      void subirArchivos(sectionTempId, archivos);
+      return;
+    }
+
+    const sectionId = e.dataTransfer.getData("application/x-section");
+    if (sectionId) {
+      reorderSecciones(sectionId, sectionTempId);
+      return;
+    }
+    const photoId = e.dataTransfer.getData("text/plain");
+    if (photoId) {
+      addFotosToSeccion(sectionTempId, fotosDesdePool([photoId]));
+      expandir();
+    }
   }
 
-  const totalAssigned = secciones.reduce(
-    (sum, s) => sum + s.mediaIds.length,
-    0
-  );
+  const totalAssigned = secciones.reduce((sum, s) => sum + s.fotos.length, 0);
 
   return (
     <div className="space-y-5">
@@ -1371,7 +1539,8 @@ function Step3Secciones({
               draggingSectionId !== s.tempId;
             const isDragging = draggingSectionId === s.tempId;
             const isCollapsed = collapsed.has(s.tempId);
-            const hasPhotos = s.mediaIds.length > 0;
+            const hasPhotos = s.fotos.length > 0;
+            const isUploading = uploadingFor === s.tempId;
             return (
               <div
                 key={s.tempId}
@@ -1427,8 +1596,8 @@ function Step3Secciones({
                   />
                   {isCollapsed && hasPhotos ? (
                     <span className="flex-none text-xs text-muted-foreground">
-                      {s.mediaIds.length} foto
-                      {s.mediaIds.length === 1 ? "" : "s"}
+                      {s.fotos.length} foto
+                      {s.fotos.length === 1 ? "" : "s"}
                     </span>
                   ) : null}
                   <Button
@@ -1478,70 +1647,96 @@ function Step3Secciones({
                       {hasPhotos ? (
                         <>
                           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-                            {s.mediaIds.map((mid) => {
-                              const m = allPoolById.get(mid);
-                              return (
-                                <div
-                                  key={mid}
-                                  className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                            {s.fotos.map((f) => (
+                              <div
+                                key={f.uid}
+                                className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => onViewMedia(f.url)}
+                                  className="block h-full w-full"
+                                  title="Ver en grande"
                                 >
-                                  {m ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => onViewMedia(m.url)}
-                                      className="block h-full w-full"
-                                      title="Ver en grande"
-                                    >
-                                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                                      <img
-                                        src={m.url}
-                                        alt=""
-                                        className="h-full w-full object-cover transition-transform hover:scale-105"
-                                      />
-                                    </button>
-                                  ) : null}
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      removeFotoFromSeccion(s.tempId, mid)
-                                    }
-                                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                                    title="Quitar de esta sección"
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={f.url}
+                                    alt=""
+                                    className="h-full w-full object-cover transition-transform hover:scale-105"
+                                  />
+                                </button>
+                                {!f.visitaMediaId ? (
+                                  <span
+                                    className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
+                                    title="Imagen subida al informe, no viene de una visita"
                                   >
-                                    <X className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-                              );
-                            })}
+                                    Subida
+                                  </span>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeFotoFromSeccion(s.tempId, f.uid)
+                                  }
+                                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                                  title="Quitar de esta sección"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                          <div className="mt-3 flex items-center justify-between">
+                          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                             <p className="text-xs text-muted-foreground">
-                              {s.mediaIds.length} foto
-                              {s.mediaIds.length === 1 ? "" : "s"}
+                              {s.fotos.length} foto
+                              {s.fotos.length === 1 ? "" : "s"}
                             </p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setAddPhotosFor(s.tempId)}
-                              disabled={pool.length === 0}
-                            >
-                              <Plus className="h-4 w-4 mr-1" /> Agregar más
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setAddPhotosFor(s.tempId)}
+                                disabled={pool.length === 0}
+                              >
+                                <Plus className="h-4 w-4 mr-1" /> De las visitas
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => abrirSelectorDeArchivos(s.tempId)}
+                                disabled={isUploading}
+                              >
+                                <Upload className="h-4 w-4 mr-1" />
+                                {isUploading ? "Subiendo…" : "Subir"}
+                              </Button>
+                            </div>
                           </div>
                         </>
                       ) : (
                         <div className="rounded-md border-2 border-dashed border-muted-foreground/20 px-4 py-8 text-center">
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Arrastra fotos del pool aquí
+                          <p className="text-sm text-muted-foreground">
+                            {isUploading
+                              ? "Subiendo imágenes…"
+                              : "Arrastra fotos del pool o imágenes de tu computadora"}
                           </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setAddPhotosFor(s.tempId)}
-                            disabled={pool.length === 0}
-                          >
-                            <Plus className="h-4 w-4 mr-1" /> O agregar fotos
-                          </Button>
+                          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setAddPhotosFor(s.tempId)}
+                              disabled={pool.length === 0}
+                            >
+                              <Plus className="h-4 w-4 mr-1" /> De las visitas
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => abrirSelectorDeArchivos(s.tempId)}
+                              disabled={isUploading}
+                            >
+                              <Upload className="h-4 w-4 mr-1" /> Subir imágenes
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1560,21 +1755,37 @@ function Step3Secciones({
               <DropdownMenuItem onClick={() => addSeccion(null)}>
                 Sección personalizada (vacía)
               </DropdownMenuItem>
-              {tiposActividad.length > 0 ? (
+              {productos.length > 0 ? (
                 <>
                   <div className="px-2 py-1 text-xs text-muted-foreground">
-                    Desde el catálogo:
+                    Servicios de las visitas seleccionadas:
                   </div>
-                  {tiposActividad.map((t) => (
-                    <DropdownMenuItem
-                      key={t.id}
-                      onClick={() => addSeccion(t)}
-                    >
-                      {t.nombre}
-                    </DropdownMenuItem>
-                  ))}
+                  {productos.map((sv) => {
+                    const yaAgregado = secciones.some(
+                      (sec) => sec.productoId === sv.productoId
+                    );
+                    return (
+                      <DropdownMenuItem
+                        key={sv.productoId}
+                        onClick={() => addSeccion(sv)}
+                      >
+                        <span className="flex-1">{sv.nombre}</span>
+                        <span className="ml-3 text-xs text-muted-foreground">
+                          {yaAgregado
+                            ? "ya agregado"
+                            : sv.fotosCount > 0
+                              ? `${sv.fotosCount} foto${sv.fotosCount === 1 ? "" : "s"}`
+                              : ""}
+                        </span>
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </>
-              ) : null}
+              ) : (
+                <div className="px-2 py-1 text-xs text-muted-foreground">
+                  Las visitas seleccionadas no tienen servicios.
+                </div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -1618,12 +1829,27 @@ function Step3Secciones({
         </div>
       </div>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          const tempId = uploadTargetRef.current;
+          const files = Array.from(e.target.files ?? []);
+          e.target.value = "";
+          uploadTargetRef.current = null;
+          if (tempId && files.length > 0) void subirArchivos(tempId, files);
+        }}
+      />
+
       {addPhotosFor !== null ? (
         <PhotoPickerModal
           pool={pool}
           onClose={() => setAddPhotosFor(null)}
           onConfirm={(ids) => {
-            addFotosToSeccion(addPhotosFor, ids);
+            addFotosToSeccion(addPhotosFor, fotosDesdePool(ids));
             setAddPhotosFor(null);
           }}
         />

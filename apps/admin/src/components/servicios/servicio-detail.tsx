@@ -5,19 +5,30 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CustomSelect } from "@/components/ui/custom-select";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Link2, Pencil } from "lucide-react";
+import { CopyField } from "@/components/shared/copy-field";
 import { toast } from "sonner";
 import {
   ServicioClientesTable,
   type ServicioClienteRow,
 } from "@/components/servicios/servicio-clientes-table";
+import {
+  ContificoSyncDialog,
+  type ContificoProducto,
+  type VinculoContifico,
+} from "@/components/servicios/contifico-sync-dialog";
 
 const TIPO_LABEL: Record<string, string> = {
-  RECURRENTE: "Recurrente (mensual)",
-  UNICO: "Único (una sola vez)",
+  SERVICIO: "Servicio",
+  BIEN: "Bien",
 };
 
 interface ServicioData {
@@ -25,6 +36,10 @@ interface ServicioData {
   nombre: string;
   tipo: string;
   descripcion: string | null;
+  ivaTasa: string | number | null;
+  /** Llave anti-duplicados en Contífico. Se genera al sincronizar. */
+  codigo: string | null;
+  contificoProductoId: string | null;
 }
 
 export function ServicioDetail({
@@ -37,6 +52,55 @@ export function ServicioDetail({
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [syncOpen, setSyncOpen] = useState(false);
+  const [guardandoVinculo, setGuardandoVinculo] = useState(false);
+  const [contifico, setContifico] = useState<VinculoContifico>({
+    codigo: servicio.codigo,
+    contificoProductoId: servicio.contificoProductoId,
+  });
+
+  /** Vincular y cambiar son la misma llamada: el POST pisa el vínculo previo. */
+  const guardarVinculo = async (init: RequestInit, exito: string) => {
+    setGuardandoVinculo(true);
+    try {
+      const res = await fetch(`/api/servicios/${servicio.id}/contifico`, init);
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      setContifico(body);
+      setSyncOpen(false);
+      toast.success(exito);
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
+    } finally {
+      setGuardandoVinculo(false);
+    }
+  };
+
+  const elegir = (
+    p: ContificoProducto,
+    opciones: { actualizarNombre: boolean }
+  ) =>
+    guardarVinculo(
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contificoProductoId: p.id,
+          codigo: p.codigo,
+          actualizarNombre: opciones.actualizarNombre,
+        }),
+      },
+      opciones.actualizarNombre
+        ? `Vinculado y renombrado en Contífico`
+        : `Vinculado con "${p.nombre}"`
+    );
+
+  const crearNuevo = () =>
+    guardarVinculo({ method: "POST" }, "Producto creado en Contífico");
+
+  const desvincular = () =>
+    guardarVinculo({ method: "DELETE" }, "Vínculo deshecho");
   const [data, setData] = useState({
     nombre: servicio.nombre,
     tipo: servicio.tipo,
@@ -61,17 +125,19 @@ export function ServicioDetail({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre: form.nombre.trim(),
+          // `tipo` es inmutable: se manda tal cual está para que el servidor
+          // lo valide, no para cambiarlo.
           tipo: form.tipo,
           descripcion: form.descripcion,
         }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Servicio actualizado");
+      toast.success("Producto actualizado");
       setData(form);
       setEditing(false);
       router.refresh();
     } catch {
-      toast.error("Error al guardar el servicio");
+      toast.error("Error al guardar el producto");
     } finally {
       setSaving(false);
     }
@@ -82,7 +148,7 @@ export function ServicioDetail({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{data.nombre}</h1>
-          <p className="text-muted-foreground">Detalle del servicio</p>
+          <p className="text-muted-foreground">Detalle del producto</p>
         </div>
         {!editing && (
           <Button variant="outline" onClick={startEdit}>
@@ -92,75 +158,172 @@ export function ServicioDetail({
         )}
       </div>
 
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          {editing ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="nombre">Nombre *</Label>
-                <Input
-                  id="nombre"
-                  value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Tipo *</Label>
-                <CustomSelect
-                  value={form.tipo}
-                  onChange={(v) => setForm({ ...form, tipo: v })}
-                  options={[
-                    { value: "RECURRENTE", label: "Recurrente (mensual)" },
-                    { value: "UNICO", label: "Único (una sola vez)" },
-                  ]}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="descripcion">Descripción</Label>
-                <Textarea
-                  id="descripcion"
-                  rows={4}
-                  value={form.descripcion}
-                  onChange={(e) =>
-                    setForm({ ...form, descripcion: e.target.value })
-                  }
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditing(false)}
-                  disabled={saving}
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={save} disabled={saving}>
-                  {saving ? "Guardando..." : "Guardar cambios"}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <div className="text-sm font-semibold text-muted-foreground">
-                  Tipo
-                </div>
-                <div>{TIPO_LABEL[data.tipo] ?? data.tipo}</div>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-muted-foreground">
-                  Descripción
-                </div>
-                <div className="whitespace-pre-wrap">
-                  {data.descripcion || (
-                    <span className="text-muted-foreground">Sin descripción</span>
+      {/* El detalle manda; Contífico es estado de apoyo, va al costado. */}
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardContent className="space-y-4">
+              {editing ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="nombre">Nombre *</Label>
+                    <Input
+                      id="nombre"
+                      value={form.nombre}
+                      onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="descripcion">Descripción</Label>
+                    <Textarea
+                      id="descripcion"
+                      rows={4}
+                      value={form.descripcion}
+                      onChange={(e) =>
+                        setForm({ ...form, descripcion: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditing(false)}
+                      disabled={saving}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button onClick={save} disabled={saving}>
+                      {saving ? "Guardando..." : "Guardar cambios"}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <div className="text-sm font-semibold text-muted-foreground">
+                        Tipo
+                      </div>
+                      <div>{TIPO_LABEL[data.tipo] ?? data.tipo}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-muted-foreground">
+                      Descripción
+                    </div>
+                    <div className="whitespace-pre-wrap">
+                      {data.descripcion || (
+                        <span className="text-muted-foreground">Sin descripción</span>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          {/* Facturar exige el `producto_id` de Contífico. Sin vínculo, el
+              producto no se puede agregar a una orden ni contratar en una
+              suscripción. */}
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="text-sm font-semibold">Contífico</CardTitle>
+              <CardAction>
+                {contifico.contificoProductoId ? (
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Vinculado
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Sin vincular
+                  </span>
+                )}
+              </CardAction>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {contifico.contificoProductoId ? (
+                <div className="divide-y rounded-lg border bg-muted/30">
+                  {contifico.codigo && (
+                    <CopyField
+                      label="Código"
+                      value={contifico.codigo}
+                      className="px-2.5 py-2"
+                    />
                   )}
+                  <CopyField
+                    label="ID"
+                    value={contifico.contificoProductoId}
+                    className="px-2.5 py-2"
+                  />
                 </div>
+              ) : (
+                <p className="rounded-lg bg-amber-50 p-3 text-xs leading-snug text-amber-800">
+                  Hasta que esté vinculado, este producto no se puede agregar a
+                  una orden ni contratar en una suscripción.
+                </p>
+              )}
+
+              <div className="flex gap-2">
+                {contifico.contificoProductoId ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setSyncOpen(true)}
+                      disabled={guardandoVinculo}
+                    >
+                      Cambiar
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1 text-muted-foreground"
+                      onClick={desvincular}
+                      disabled={guardandoVinculo}
+                    >
+                      Desvincular
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={() => setSyncOpen(true)}
+                    disabled={guardandoVinculo}
+                  >
+                    <Link2 className="mr-2 h-4 w-4" />
+                    Vincular
+                  </Button>
+                )}
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Montado solo cuando está abierto: así el asistente arranca siempre
+          en el primer paso, sin tener que resetearlo a mano. */}
+      {syncOpen && (
+        <ContificoSyncDialog
+          producto={{
+            id: servicio.id,
+            nombre: data.nombre,
+            descripcion: data.descripcion || null,
+            tipo: data.tipo,
+            ivaTasa: servicio.ivaTasa != null ? Number(servicio.ivaTasa) : null,
+          }}
+          open={syncOpen}
+          onOpenChange={setSyncOpen}
+          actualId={contifico.contificoProductoId}
+          guardando={guardandoVinculo}
+          onElegir={elegir}
+          onCrearNuevo={crearNuevo}
+        />
+      )}
 
       <ServicioClientesTable rows={clienteRows} />
     </div>

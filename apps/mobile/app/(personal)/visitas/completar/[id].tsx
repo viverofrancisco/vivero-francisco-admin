@@ -34,6 +34,7 @@ export default function CompletarVisitaScreen() {
   return (
     <VisitaResultForm
       visitaId={id}
+      productos={visita?.productos ?? []}
       mode="complete"
       initialValues={
         isEdit && visita

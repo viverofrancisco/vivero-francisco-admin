@@ -23,7 +23,11 @@ import * as VideoThumbnails from "expo-video-thumbnails";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Calendar, type DateData } from "react-native-calendars";
 import { apiRequest, ApiError } from "@/lib/api";
-import type { VisitaDetail, VisitaMedia } from "@/lib/types";
+import type {
+  VisitaDetail,
+  VisitaMedia,
+  VisitaProducto,
+} from "@/lib/types";
 
 type Mode = "complete" | "incomplete";
 
@@ -33,6 +37,8 @@ interface MediaItem {
   contentType: string;
   tipo: "imagen" | "video";
   thumbUri?: string;
+  /// Producto de la visita al que corresponde. Opcional.
+  productoId: string | null;
 }
 
 export interface VisitaFormInitialValues {
@@ -58,10 +64,13 @@ export function VisitaResultForm({
   visitaId,
   mode,
   initialValues,
+  productos = [],
 }: {
   visitaId: string;
   mode: Mode;
   initialValues?: VisitaFormInitialValues;
+  /// Servicios que cubre la visita. Con más de uno se pueden etiquetar fotos.
+  productos?: VisitaProducto[];
 }) {
   const router = useRouter();
   const navigation = useNavigation();
@@ -118,6 +127,11 @@ export function VisitaResultForm({
 
   const [text, setText] = useState(initialValues?.text ?? "");
   const [media, setMedia] = useState<MediaItem[]>([]);
+  // Etiqueta que se aplica a las fotos nuevas. Con un solo servicio no hay
+  // nada que elegir, así que va preseleccionado.
+  const [tagServicioId, setTagServicioId] = useState<string | null>(
+    productos.length === 1 ? productos[0].productoId : null
+  );
   const [existingMedia, setExistingMedia] = useState<VisitaMedia[]>(
     initialValues?.existingMedia ?? []
   );
@@ -227,6 +241,7 @@ export function VisitaResultForm({
           contentType,
           tipo: isVideo ? "video" : "imagen",
           thumbUri,
+          productoId: tagServicioId,
         };
       })
     );
@@ -235,6 +250,32 @@ export function VisitaResultForm({
 
   function removeMedia(uri: string) {
     setMedia((prev) => prev.filter((m) => m.uri !== uri));
+  }
+
+  /**
+   * Rota la etiqueta de una foto entre los productos de la visita y "sin
+   * etiqueta". Es la forma más corta de corregir una foto ya agregada.
+   */
+  function cycleTag(uri: string) {
+    if (productos.length === 0) return;
+    const ids: (string | null)[] = [
+      ...productos.map((sv) => sv.productoId),
+      null,
+    ];
+    setMedia((prev) =>
+      prev.map((m) => {
+        if (m.uri !== uri) return m;
+        const idx = ids.indexOf(m.productoId);
+        return { ...m, productoId: ids[(idx + 1) % ids.length] };
+      })
+    );
+  }
+
+  function nombreServicio(id: string | null): string | null {
+    if (!id) return null;
+    return (
+      productos.find((sv) => sv.productoId === id)?.producto.nombre ?? null
+    );
   }
 
   async function uploadAll(): Promise<{ key: string; tipo: "imagen" | "video" }[]> {
@@ -269,7 +310,11 @@ export function VisitaResultForm({
         }
       })
     );
-    return presign.uploads.map((u) => ({ key: u.key, tipo: u.tipo }));
+    return presign.uploads.map((u, i) => ({
+      key: u.key,
+      tipo: u.tipo,
+      productoId: media[i]?.productoId ?? null,
+    }));
   }
 
   async function submit() {
@@ -373,6 +418,54 @@ export function VisitaResultForm({
           </Section>
 
           <Section title="Imágenes y videos">
+            {productos.length > 1 ? (
+              <View style={styles.tagPicker}>
+                <Text style={styles.tagPickerLabel}>
+                  Etiquetar fotos nuevas como:
+                </Text>
+                <View style={styles.tagChips}>
+                  {productos.map((sv) => {
+                    const activo = tagServicioId === sv.productoId;
+                    return (
+                      <Pressable
+                        key={sv.productoId}
+                        onPress={() => setTagServicioId(sv.productoId)}
+                        style={[styles.tagChip, activo && styles.tagChipActive]}
+                      >
+                        <Text
+                          style={[
+                            styles.tagChipText,
+                            activo && styles.tagChipTextActive,
+                          ]}
+                        >
+                          {sv.producto.nombre}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                  <Pressable
+                    onPress={() => setTagServicioId(null)}
+                    style={[
+                      styles.tagChip,
+                      tagServicioId === null && styles.tagChipActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tagChipText,
+                        tagServicioId === null && styles.tagChipTextActive,
+                      ]}
+                    >
+                      Sin etiqueta
+                    </Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.tagPickerHint}>
+                  Es opcional. Sirve para que el informe arme cada sección con
+                  sus fotos. Toca la etiqueta de una foto para cambiarla.
+                </Text>
+              </View>
+            ) : null}
             <View style={styles.mediaGrid}>
               {existingMedia.map((m) => {
                 const removing = removingMediaIds.has(m.id);
@@ -408,7 +501,9 @@ export function VisitaResultForm({
                   </View>
                 );
               })}
-              {media.map((m) => (
+              {media.map((m) => {
+                const tag = nombreServicio(m.productoId);
+                return (
                 <View key={m.uri} style={styles.mediaItem}>
                   {m.tipo === "imagen" ? (
                     <Image source={{ uri: m.uri }} style={styles.mediaThumb} />
@@ -434,8 +529,20 @@ export function VisitaResultForm({
                   >
                     <Text style={styles.mediaRemoveX}>×</Text>
                   </Pressable>
+                  {productos.length > 1 ? (
+                    <Pressable
+                      onPress={() => cycleTag(m.uri)}
+                      style={styles.mediaTag}
+                      hitSlop={4}
+                    >
+                      <Text style={styles.mediaTagText} numberOfLines={1}>
+                        {tag ?? "Sin etiqueta"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
                 </View>
-              ))}
+                );
+              })}
               {existingMedia.length + media.length < 20 ? (
                 <Pressable
                   onPress={pickMedia}
@@ -793,6 +900,61 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     marginLeft: 2,
+  },
+  tagPicker: {
+    marginBottom: 12,
+    gap: 6,
+  },
+  tagPickerLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#444",
+  },
+  tagChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  tagChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
+  },
+  tagChipActive: {
+    borderColor: "#2e7d32",
+    backgroundColor: "#e8f5e9",
+  },
+  tagChipText: {
+    fontSize: 12,
+    color: "#666",
+  },
+  tagChipTextActive: {
+    color: "#2e7d32",
+    fontWeight: "600",
+  },
+  tagPickerHint: {
+    fontSize: 11,
+    color: "#888",
+    lineHeight: 15,
+  },
+  mediaTag: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 4,
+    paddingVertical: 3,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  mediaTagText: {
+    color: "#fff",
+    fontSize: 9,
+    textAlign: "center",
   },
   mediaRemove: {
     position: "absolute",

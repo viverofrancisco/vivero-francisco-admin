@@ -43,10 +43,14 @@ export default async function InformeDetailPage({
     visitaIds: informe.visitas.map((v) => v.visitaId),
     firmantes,
     secciones: informe.secciones.map((s) => ({
-      tipoActividadId: s.tipoActividadId,
+      productoId: s.productoId,
       titulo: s.titulo,
       descripcion: s.descripcion,
-      mediaIds: s.mediaIds,
+      fotos: s.fotos.map((f) => ({
+        visitaMediaId: f.visitaMediaId,
+        key: f.key,
+        url: f.url,
+      })),
     })),
     pdfUrl: informe.pdfUrl,
   };

@@ -13,7 +13,7 @@ export async function GET(
   }
 
   const { id } = await params;
-  const servicio = await prisma.servicio.findUnique({ where: { id, deletedAt: null } });
+  const servicio = await prisma.producto.findUnique({ where: { id, deletedAt: null } });
 
   if (!servicio) {
     return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
@@ -45,7 +45,7 @@ export async function PUT(
   const data = result.data;
 
   try {
-    const servicio = await prisma.servicio.update({
+    const servicio = await prisma.producto.update({
       where: { id },
       data: {
         nombre: data.nombre,
@@ -71,8 +71,8 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const asignaciones = await prisma.clienteServicio.count({
-    where: { servicioId: id },
+  const asignaciones = await prisma.suscripcionItem.count({
+    where: { productoId: id },
   });
 
   if (asignaciones > 0) {
@@ -83,7 +83,7 @@ export async function DELETE(
   }
 
   try {
-    await prisma.servicio.update({ where: { id }, data: { deletedAt: new Date() } });
+    await prisma.producto.update({ where: { id }, data: { deletedAt: new Date() } });
     return NextResponse.json({ message: "Servicio archivado" });
   } catch {
     return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });

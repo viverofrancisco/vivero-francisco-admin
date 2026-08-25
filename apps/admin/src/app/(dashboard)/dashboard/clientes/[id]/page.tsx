@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-helpers";
+import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
+import { listarOrdenes } from "@/lib/services/orden.service";
 import { ClienteDetailTabs } from "@/components/clientes/cliente-detail-tabs";
+import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
 
 export default async function EditarClientePage({
   params,
@@ -10,30 +12,30 @@ export default async function EditarClientePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
-  await requireAuth();
+  const user = await requireAuth();
   const { id } = await params;
   const { from } = await searchParams;
   // Solo permitimos volver a rutas internas del dashboard (evita open redirect).
   const backHref = from && from.startsWith("/dashboard/") ? from : "/dashboard/clientes";
 
-  const [cliente, serviciosCatalogo, visitas] = await Promise.all([
+  const [cliente, visitas] = await Promise.all([
     prisma.cliente.findUnique({
       where: { id, deletedAt: null },
       include: {
         sector: { select: { id: true, nombre: true } },
-        servicios: {
-          include: { servicio: true },
+        datosFacturacion: {
+          where: { archivado: false },
+          orderBy: [{ esPredeterminado: "desc" }, { createdAt: "asc" }],
+        },
+        suscripciones: {
+          where: { estado: { not: "CANCELADO" } },
+          include: { items: { include: { producto: true } } },
           orderBy: { createdAt: "desc" },
         },
       },
     }),
-    prisma.servicio.findMany({
-      where: { deletedAt: null },
-      orderBy: { nombre: "asc" },
-      select: { id: true, nombre: true, tipo: true },
-    }),
     prisma.visita.findMany({
-      where: { clienteServicio: { clienteId: id }, deletedAt: null },
+      where: { clienteId: id, deletedAt: null },
       orderBy: { fechaProgramada: "desc" },
       select: {
         id: true,
@@ -41,12 +43,8 @@ export default async function EditarClientePage({
         fechaRealizada: true,
         estado: true,
         notas: true,
-        clienteServicio: {
-          select: {
-            cliente: { select: { id: true, nombre: true, apellido: true } },
-            servicio: { select: { id: true, nombre: true, tipo: true } },
-          },
-        },
+        cliente: { select: { id: true, nombre: true, apellido: true } },
+        productos: PRODUCTOS_DE_VISITA_SELECT,
         grupo: { select: { id: true, nombre: true } },
       },
     }),
@@ -56,22 +54,26 @@ export default async function EditarClientePage({
     notFound();
   }
 
-  const asignaciones = cliente.servicios.map((a) => ({
-    id: a.id,
-    servicioId: a.servicioId,
-    precio: Number(a.precio),
-    iva: Number(a.iva),
-    frecuenciaMensual: a.frecuenciaMensual,
-    estado: a.estado,
-    fechaInicio: a.fechaInicio.toISOString(),
-    fechaFin: a.fechaFin?.toISOString() ?? null,
-    notas: a.notas,
-    servicio: {
-      id: a.servicio.id,
-      nombre: a.servicio.nombre,
-      tipo: a.servicio.tipo,
-    },
-  }));
+  // La ficha muestra los ítems de todas sus suscripciones: es lo que el cliente
+  // tiene contratado, sin importar en qué suscripción esté agrupado.
+  const asignaciones = cliente.suscripciones.flatMap((s) =>
+    s.items.map((i) => ({
+      id: i.id,
+      suscripcionId: s.id,
+      productoId: i.productoId,
+      precio: Number(i.precio),
+      ivaTasa: Number(i.ivaTasa),
+      visitasPorPeriodo: i.visitasPorPeriodo,
+      estado: s.estado,
+      periodicidad: s.periodicidad,
+      fechaInicio: s.fechaInicio.toISOString(),
+      producto: {
+        id: i.producto.id,
+        nombre: i.producto.nombre,
+        tipo: i.producto.tipo,
+      },
+    }))
+  );
 
   const visitasSerialized = visitas.map((v) => ({
     id: v.id,
@@ -79,9 +81,16 @@ export default async function EditarClientePage({
     fechaRealizada: v.fechaRealizada?.toISOString().split("T")[0] ?? null,
     estado: v.estado,
     notas: v.notas,
-    clienteServicio: v.clienteServicio,
+    cliente: v.cliente,
+    productos: v.productos,
     grupo: v.grupo,
   }));
+
+  // Las facturas no van en la ficha: son parte de la orden que las generó.
+  const { items: ordenes } = await listarOrdenes(viewerFromUser(user), {
+    clienteId: id,
+    limit: 100,
+  });
 
   return (
     <div>
@@ -106,7 +115,26 @@ export default async function EditarClientePage({
           createdAt: cliente.createdAt.toISOString(),
         }}
         asignaciones={asignaciones}
-        serviciosCatalogo={serviciosCatalogo}
+        ordenes={ordenes.map((o) => ({
+          id: o.id,
+          numero: o.numero,
+          fecha: o.fecha.toISOString(),
+          estado: o.estado,
+          total: Number(o.total),
+          lineas: o._count.lineas,
+          facturas: o._count.facturas,
+        }))}
+        datosFacturacion={cliente.datosFacturacion.map((d) => ({
+          id: d.id,
+          tipoIdentificacion: d.tipoIdentificacion,
+          identificacion: d.identificacion,
+          razonSocial: d.razonSocial,
+          tipoPersona: d.tipoPersona,
+          direccion: d.direccion,
+          telefono: d.telefono,
+          email: d.email,
+          esPredeterminado: d.esPredeterminado,
+        }))}
         visitas={visitasSerialized}
         backHref={backHref}
       />

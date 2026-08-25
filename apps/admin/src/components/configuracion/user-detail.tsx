@@ -244,7 +244,7 @@ export function UserDetail({ user, assignedSectors, allSectors }: Props) {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="pt-3">
+                <CardContent>
                   {editingSectors ? (
                     <div className="space-y-3">
                       <div className="border rounded-md">
@@ -339,7 +339,7 @@ export function UserDetail({ user, assignedSectors, allSectors }: Props) {
               <CardHeader className="border-b">
                 <CardTitle>Seguridad</CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent>
                 <Button
                   variant="outline"
                   className="w-full"

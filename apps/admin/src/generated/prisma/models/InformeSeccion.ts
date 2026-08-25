@@ -37,7 +37,7 @@ export type InformeSeccionSumAggregateOutputType = {
 export type InformeSeccionMinAggregateOutputType = {
   id: string | null
   informeId: string | null
-  tipoActividadId: string | null
+  productoId: string | null
   titulo: string | null
   descripcion: string | null
   orden: number | null
@@ -46,7 +46,7 @@ export type InformeSeccionMinAggregateOutputType = {
 export type InformeSeccionMaxAggregateOutputType = {
   id: string | null
   informeId: string | null
-  tipoActividadId: string | null
+  productoId: string | null
   titulo: string | null
   descripcion: string | null
   orden: number | null
@@ -55,11 +55,10 @@ export type InformeSeccionMaxAggregateOutputType = {
 export type InformeSeccionCountAggregateOutputType = {
   id: number
   informeId: number
-  tipoActividadId: number
+  productoId: number
   titulo: number
   descripcion: number
   orden: number
-  mediaIds: number
   _all: number
 }
 
@@ -75,7 +74,7 @@ export type InformeSeccionSumAggregateInputType = {
 export type InformeSeccionMinAggregateInputType = {
   id?: true
   informeId?: true
-  tipoActividadId?: true
+  productoId?: true
   titulo?: true
   descripcion?: true
   orden?: true
@@ -84,7 +83,7 @@ export type InformeSeccionMinAggregateInputType = {
 export type InformeSeccionMaxAggregateInputType = {
   id?: true
   informeId?: true
-  tipoActividadId?: true
+  productoId?: true
   titulo?: true
   descripcion?: true
   orden?: true
@@ -93,11 +92,10 @@ export type InformeSeccionMaxAggregateInputType = {
 export type InformeSeccionCountAggregateInputType = {
   id?: true
   informeId?: true
-  tipoActividadId?: true
+  productoId?: true
   titulo?: true
   descripcion?: true
   orden?: true
-  mediaIds?: true
   _all?: true
 }
 
@@ -190,11 +188,10 @@ export type InformeSeccionGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 export type InformeSeccionGroupByOutputType = {
   id: string
   informeId: string
-  tipoActividadId: string | null
+  productoId: string | null
   titulo: string
   descripcion: string | null
   orden: number
-  mediaIds: string[]
   _count: InformeSeccionCountAggregateOutputType | null
   _avg: InformeSeccionAvgAggregateOutputType | null
   _sum: InformeSeccionSumAggregateOutputType | null
@@ -223,25 +220,25 @@ export type InformeSeccionWhereInput = {
   NOT?: Prisma.InformeSeccionWhereInput | Prisma.InformeSeccionWhereInput[]
   id?: Prisma.StringFilter<"InformeSeccion"> | string
   informeId?: Prisma.StringFilter<"InformeSeccion"> | string
-  tipoActividadId?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
+  productoId?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   titulo?: Prisma.StringFilter<"InformeSeccion"> | string
   descripcion?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
-  mediaIds?: Prisma.StringNullableListFilter<"InformeSeccion">
   informe?: Prisma.XOR<Prisma.InformeScalarRelationFilter, Prisma.InformeWhereInput>
-  tipoActividad?: Prisma.XOR<Prisma.TipoActividadNullableScalarRelationFilter, Prisma.TipoActividadWhereInput> | null
+  producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
+  fotos?: Prisma.InformeSeccionFotoListRelationFilter
 }
 
 export type InformeSeccionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   informeId?: Prisma.SortOrder
-  tipoActividadId?: Prisma.SortOrderInput | Prisma.SortOrder
+  productoId?: Prisma.SortOrderInput | Prisma.SortOrder
   titulo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   orden?: Prisma.SortOrder
-  mediaIds?: Prisma.SortOrder
   informe?: Prisma.InformeOrderByWithRelationInput
-  tipoActividad?: Prisma.TipoActividadOrderByWithRelationInput
+  producto?: Prisma.ProductoOrderByWithRelationInput
+  fotos?: Prisma.InformeSeccionFotoOrderByRelationAggregateInput
 }
 
 export type InformeSeccionWhereUniqueInput = Prisma.AtLeast<{
@@ -250,23 +247,22 @@ export type InformeSeccionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.InformeSeccionWhereInput[]
   NOT?: Prisma.InformeSeccionWhereInput | Prisma.InformeSeccionWhereInput[]
   informeId?: Prisma.StringFilter<"InformeSeccion"> | string
-  tipoActividadId?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
+  productoId?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   titulo?: Prisma.StringFilter<"InformeSeccion"> | string
   descripcion?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
-  mediaIds?: Prisma.StringNullableListFilter<"InformeSeccion">
   informe?: Prisma.XOR<Prisma.InformeScalarRelationFilter, Prisma.InformeWhereInput>
-  tipoActividad?: Prisma.XOR<Prisma.TipoActividadNullableScalarRelationFilter, Prisma.TipoActividadWhereInput> | null
+  producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
+  fotos?: Prisma.InformeSeccionFotoListRelationFilter
 }, "id">
 
 export type InformeSeccionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   informeId?: Prisma.SortOrder
-  tipoActividadId?: Prisma.SortOrderInput | Prisma.SortOrder
+  productoId?: Prisma.SortOrderInput | Prisma.SortOrder
   titulo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   orden?: Prisma.SortOrder
-  mediaIds?: Prisma.SortOrder
   _count?: Prisma.InformeSeccionCountOrderByAggregateInput
   _avg?: Prisma.InformeSeccionAvgOrderByAggregateInput
   _max?: Prisma.InformeSeccionMaxOrderByAggregateInput
@@ -280,11 +276,10 @@ export type InformeSeccionScalarWhereWithAggregatesInput = {
   NOT?: Prisma.InformeSeccionScalarWhereWithAggregatesInput | Prisma.InformeSeccionScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"InformeSeccion"> | string
   informeId?: Prisma.StringWithAggregatesFilter<"InformeSeccion"> | string
-  tipoActividadId?: Prisma.StringNullableWithAggregatesFilter<"InformeSeccion"> | string | null
+  productoId?: Prisma.StringNullableWithAggregatesFilter<"InformeSeccion"> | string | null
   titulo?: Prisma.StringWithAggregatesFilter<"InformeSeccion"> | string
   descripcion?: Prisma.StringNullableWithAggregatesFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntWithAggregatesFilter<"InformeSeccion"> | number
-  mediaIds?: Prisma.StringNullableListFilter<"InformeSeccion">
 }
 
 export type InformeSeccionCreateInput = {
@@ -292,19 +287,19 @@ export type InformeSeccionCreateInput = {
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
-  tipoActividad?: Prisma.TipoActividadCreateNestedOneWithoutSeccionesInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutInformeSeccionesInput
+  fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
 }
 
 export type InformeSeccionUncheckedCreateInput = {
   id?: string
   informeId: string
-  tipoActividadId?: string | null
+  productoId?: string | null
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
+  fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
 
 export type InformeSeccionUpdateInput = {
@@ -312,29 +307,28 @@ export type InformeSeccionUpdateInput = {
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
-  tipoActividad?: Prisma.TipoActividadUpdateOneWithoutSeccionesNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutInformeSeccionesNestedInput
+  fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
 }
 
 export type InformeSeccionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   informeId?: Prisma.StringFieldUpdateOperationsInput | string
-  tipoActividadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
+  fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
 
 export type InformeSeccionCreateManyInput = {
   id?: string
   informeId: string
-  tipoActividadId?: string | null
+  productoId?: string | null
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
 }
 
 export type InformeSeccionUpdateManyMutationInput = {
@@ -342,17 +336,15 @@ export type InformeSeccionUpdateManyMutationInput = {
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
 }
 
 export type InformeSeccionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   informeId?: Prisma.StringFieldUpdateOperationsInput | string
-  tipoActividadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
 }
 
 export type InformeSeccionListRelationFilter = {
@@ -368,11 +360,10 @@ export type InformeSeccionOrderByRelationAggregateInput = {
 export type InformeSeccionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   informeId?: Prisma.SortOrder
-  tipoActividadId?: Prisma.SortOrder
+  productoId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   orden?: Prisma.SortOrder
-  mediaIds?: Prisma.SortOrder
 }
 
 export type InformeSeccionAvgOrderByAggregateInput = {
@@ -382,7 +373,7 @@ export type InformeSeccionAvgOrderByAggregateInput = {
 export type InformeSeccionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   informeId?: Prisma.SortOrder
-  tipoActividadId?: Prisma.SortOrder
+  productoId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   orden?: Prisma.SortOrder
@@ -391,7 +382,7 @@ export type InformeSeccionMaxOrderByAggregateInput = {
 export type InformeSeccionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   informeId?: Prisma.SortOrder
-  tipoActividadId?: Prisma.SortOrder
+  productoId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   orden?: Prisma.SortOrder
@@ -401,45 +392,50 @@ export type InformeSeccionSumOrderByAggregateInput = {
   orden?: Prisma.SortOrder
 }
 
-export type InformeSeccionCreateNestedManyWithoutTipoActividadInput = {
-  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput> | Prisma.InformeSeccionCreateWithoutTipoActividadInput[] | Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput[]
-  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput | Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput[]
-  createMany?: Prisma.InformeSeccionCreateManyTipoActividadInputEnvelope
+export type InformeSeccionScalarRelationFilter = {
+  is?: Prisma.InformeSeccionWhereInput
+  isNot?: Prisma.InformeSeccionWhereInput
+}
+
+export type InformeSeccionCreateNestedManyWithoutProductoInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutProductoInput, Prisma.InformeSeccionUncheckedCreateWithoutProductoInput> | Prisma.InformeSeccionCreateWithoutProductoInput[] | Prisma.InformeSeccionUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutProductoInput | Prisma.InformeSeccionCreateOrConnectWithoutProductoInput[]
+  createMany?: Prisma.InformeSeccionCreateManyProductoInputEnvelope
   connect?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
 }
 
-export type InformeSeccionUncheckedCreateNestedManyWithoutTipoActividadInput = {
-  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput> | Prisma.InformeSeccionCreateWithoutTipoActividadInput[] | Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput[]
-  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput | Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput[]
-  createMany?: Prisma.InformeSeccionCreateManyTipoActividadInputEnvelope
+export type InformeSeccionUncheckedCreateNestedManyWithoutProductoInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutProductoInput, Prisma.InformeSeccionUncheckedCreateWithoutProductoInput> | Prisma.InformeSeccionCreateWithoutProductoInput[] | Prisma.InformeSeccionUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutProductoInput | Prisma.InformeSeccionCreateOrConnectWithoutProductoInput[]
+  createMany?: Prisma.InformeSeccionCreateManyProductoInputEnvelope
   connect?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
 }
 
-export type InformeSeccionUpdateManyWithoutTipoActividadNestedInput = {
-  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput> | Prisma.InformeSeccionCreateWithoutTipoActividadInput[] | Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput[]
-  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput | Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput[]
-  upsert?: Prisma.InformeSeccionUpsertWithWhereUniqueWithoutTipoActividadInput | Prisma.InformeSeccionUpsertWithWhereUniqueWithoutTipoActividadInput[]
-  createMany?: Prisma.InformeSeccionCreateManyTipoActividadInputEnvelope
+export type InformeSeccionUpdateManyWithoutProductoNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutProductoInput, Prisma.InformeSeccionUncheckedCreateWithoutProductoInput> | Prisma.InformeSeccionCreateWithoutProductoInput[] | Prisma.InformeSeccionUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutProductoInput | Prisma.InformeSeccionCreateOrConnectWithoutProductoInput[]
+  upsert?: Prisma.InformeSeccionUpsertWithWhereUniqueWithoutProductoInput | Prisma.InformeSeccionUpsertWithWhereUniqueWithoutProductoInput[]
+  createMany?: Prisma.InformeSeccionCreateManyProductoInputEnvelope
   set?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
   disconnect?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
   delete?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
   connect?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
-  update?: Prisma.InformeSeccionUpdateWithWhereUniqueWithoutTipoActividadInput | Prisma.InformeSeccionUpdateWithWhereUniqueWithoutTipoActividadInput[]
-  updateMany?: Prisma.InformeSeccionUpdateManyWithWhereWithoutTipoActividadInput | Prisma.InformeSeccionUpdateManyWithWhereWithoutTipoActividadInput[]
+  update?: Prisma.InformeSeccionUpdateWithWhereUniqueWithoutProductoInput | Prisma.InformeSeccionUpdateWithWhereUniqueWithoutProductoInput[]
+  updateMany?: Prisma.InformeSeccionUpdateManyWithWhereWithoutProductoInput | Prisma.InformeSeccionUpdateManyWithWhereWithoutProductoInput[]
   deleteMany?: Prisma.InformeSeccionScalarWhereInput | Prisma.InformeSeccionScalarWhereInput[]
 }
 
-export type InformeSeccionUncheckedUpdateManyWithoutTipoActividadNestedInput = {
-  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput> | Prisma.InformeSeccionCreateWithoutTipoActividadInput[] | Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput[]
-  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput | Prisma.InformeSeccionCreateOrConnectWithoutTipoActividadInput[]
-  upsert?: Prisma.InformeSeccionUpsertWithWhereUniqueWithoutTipoActividadInput | Prisma.InformeSeccionUpsertWithWhereUniqueWithoutTipoActividadInput[]
-  createMany?: Prisma.InformeSeccionCreateManyTipoActividadInputEnvelope
+export type InformeSeccionUncheckedUpdateManyWithoutProductoNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutProductoInput, Prisma.InformeSeccionUncheckedCreateWithoutProductoInput> | Prisma.InformeSeccionCreateWithoutProductoInput[] | Prisma.InformeSeccionUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutProductoInput | Prisma.InformeSeccionCreateOrConnectWithoutProductoInput[]
+  upsert?: Prisma.InformeSeccionUpsertWithWhereUniqueWithoutProductoInput | Prisma.InformeSeccionUpsertWithWhereUniqueWithoutProductoInput[]
+  createMany?: Prisma.InformeSeccionCreateManyProductoInputEnvelope
   set?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
   disconnect?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
   delete?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
   connect?: Prisma.InformeSeccionWhereUniqueInput | Prisma.InformeSeccionWhereUniqueInput[]
-  update?: Prisma.InformeSeccionUpdateWithWhereUniqueWithoutTipoActividadInput | Prisma.InformeSeccionUpdateWithWhereUniqueWithoutTipoActividadInput[]
-  updateMany?: Prisma.InformeSeccionUpdateManyWithWhereWithoutTipoActividadInput | Prisma.InformeSeccionUpdateManyWithWhereWithoutTipoActividadInput[]
+  update?: Prisma.InformeSeccionUpdateWithWhereUniqueWithoutProductoInput | Prisma.InformeSeccionUpdateWithWhereUniqueWithoutProductoInput[]
+  updateMany?: Prisma.InformeSeccionUpdateManyWithWhereWithoutProductoInput | Prisma.InformeSeccionUpdateManyWithWhereWithoutProductoInput[]
   deleteMany?: Prisma.InformeSeccionScalarWhereInput | Prisma.InformeSeccionScalarWhereInput[]
 }
 
@@ -485,57 +481,62 @@ export type InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput = {
   deleteMany?: Prisma.InformeSeccionScalarWhereInput | Prisma.InformeSeccionScalarWhereInput[]
 }
 
-export type InformeSeccionCreatemediaIdsInput = {
-  set: string[]
+export type InformeSeccionCreateNestedOneWithoutFotosInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutFotosInput, Prisma.InformeSeccionUncheckedCreateWithoutFotosInput>
+  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutFotosInput
+  connect?: Prisma.InformeSeccionWhereUniqueInput
 }
 
-export type InformeSeccionUpdatemediaIdsInput = {
-  set?: string[]
-  push?: string | string[]
+export type InformeSeccionUpdateOneRequiredWithoutFotosNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutFotosInput, Prisma.InformeSeccionUncheckedCreateWithoutFotosInput>
+  connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutFotosInput
+  upsert?: Prisma.InformeSeccionUpsertWithoutFotosInput
+  connect?: Prisma.InformeSeccionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InformeSeccionUpdateToOneWithWhereWithoutFotosInput, Prisma.InformeSeccionUpdateWithoutFotosInput>, Prisma.InformeSeccionUncheckedUpdateWithoutFotosInput>
 }
 
-export type InformeSeccionCreateWithoutTipoActividadInput = {
+export type InformeSeccionCreateWithoutProductoInput = {
   id?: string
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
+  fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
 }
 
-export type InformeSeccionUncheckedCreateWithoutTipoActividadInput = {
+export type InformeSeccionUncheckedCreateWithoutProductoInput = {
   id?: string
   informeId: string
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
+  fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
 
-export type InformeSeccionCreateOrConnectWithoutTipoActividadInput = {
+export type InformeSeccionCreateOrConnectWithoutProductoInput = {
   where: Prisma.InformeSeccionWhereUniqueInput
-  create: Prisma.XOR<Prisma.InformeSeccionCreateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput>
+  create: Prisma.XOR<Prisma.InformeSeccionCreateWithoutProductoInput, Prisma.InformeSeccionUncheckedCreateWithoutProductoInput>
 }
 
-export type InformeSeccionCreateManyTipoActividadInputEnvelope = {
-  data: Prisma.InformeSeccionCreateManyTipoActividadInput | Prisma.InformeSeccionCreateManyTipoActividadInput[]
+export type InformeSeccionCreateManyProductoInputEnvelope = {
+  data: Prisma.InformeSeccionCreateManyProductoInput | Prisma.InformeSeccionCreateManyProductoInput[]
   skipDuplicates?: boolean
 }
 
-export type InformeSeccionUpsertWithWhereUniqueWithoutTipoActividadInput = {
+export type InformeSeccionUpsertWithWhereUniqueWithoutProductoInput = {
   where: Prisma.InformeSeccionWhereUniqueInput
-  update: Prisma.XOR<Prisma.InformeSeccionUpdateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedUpdateWithoutTipoActividadInput>
-  create: Prisma.XOR<Prisma.InformeSeccionCreateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedCreateWithoutTipoActividadInput>
+  update: Prisma.XOR<Prisma.InformeSeccionUpdateWithoutProductoInput, Prisma.InformeSeccionUncheckedUpdateWithoutProductoInput>
+  create: Prisma.XOR<Prisma.InformeSeccionCreateWithoutProductoInput, Prisma.InformeSeccionUncheckedCreateWithoutProductoInput>
 }
 
-export type InformeSeccionUpdateWithWhereUniqueWithoutTipoActividadInput = {
+export type InformeSeccionUpdateWithWhereUniqueWithoutProductoInput = {
   where: Prisma.InformeSeccionWhereUniqueInput
-  data: Prisma.XOR<Prisma.InformeSeccionUpdateWithoutTipoActividadInput, Prisma.InformeSeccionUncheckedUpdateWithoutTipoActividadInput>
+  data: Prisma.XOR<Prisma.InformeSeccionUpdateWithoutProductoInput, Prisma.InformeSeccionUncheckedUpdateWithoutProductoInput>
 }
 
-export type InformeSeccionUpdateManyWithWhereWithoutTipoActividadInput = {
+export type InformeSeccionUpdateManyWithWhereWithoutProductoInput = {
   where: Prisma.InformeSeccionScalarWhereInput
-  data: Prisma.XOR<Prisma.InformeSeccionUpdateManyMutationInput, Prisma.InformeSeccionUncheckedUpdateManyWithoutTipoActividadInput>
+  data: Prisma.XOR<Prisma.InformeSeccionUpdateManyMutationInput, Prisma.InformeSeccionUncheckedUpdateManyWithoutProductoInput>
 }
 
 export type InformeSeccionScalarWhereInput = {
@@ -544,11 +545,10 @@ export type InformeSeccionScalarWhereInput = {
   NOT?: Prisma.InformeSeccionScalarWhereInput | Prisma.InformeSeccionScalarWhereInput[]
   id?: Prisma.StringFilter<"InformeSeccion"> | string
   informeId?: Prisma.StringFilter<"InformeSeccion"> | string
-  tipoActividadId?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
+  productoId?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   titulo?: Prisma.StringFilter<"InformeSeccion"> | string
   descripcion?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
-  mediaIds?: Prisma.StringNullableListFilter<"InformeSeccion">
 }
 
 export type InformeSeccionCreateWithoutInformeInput = {
@@ -556,17 +556,17 @@ export type InformeSeccionCreateWithoutInformeInput = {
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
-  tipoActividad?: Prisma.TipoActividadCreateNestedOneWithoutSeccionesInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutInformeSeccionesInput
+  fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
 }
 
 export type InformeSeccionUncheckedCreateWithoutInformeInput = {
   id?: string
-  tipoActividadId?: string | null
+  productoId?: string | null
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
+  fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
 
 export type InformeSeccionCreateOrConnectWithoutInformeInput = {
@@ -595,49 +595,98 @@ export type InformeSeccionUpdateManyWithWhereWithoutInformeInput = {
   data: Prisma.XOR<Prisma.InformeSeccionUpdateManyMutationInput, Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeInput>
 }
 
-export type InformeSeccionCreateManyTipoActividadInput = {
+export type InformeSeccionCreateWithoutFotosInput = {
+  id?: string
+  titulo: string
+  descripcion?: string | null
+  orden: number
+  informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutInformeSeccionesInput
+}
+
+export type InformeSeccionUncheckedCreateWithoutFotosInput = {
+  id?: string
+  informeId: string
+  productoId?: string | null
+  titulo: string
+  descripcion?: string | null
+  orden: number
+}
+
+export type InformeSeccionCreateOrConnectWithoutFotosInput = {
+  where: Prisma.InformeSeccionWhereUniqueInput
+  create: Prisma.XOR<Prisma.InformeSeccionCreateWithoutFotosInput, Prisma.InformeSeccionUncheckedCreateWithoutFotosInput>
+}
+
+export type InformeSeccionUpsertWithoutFotosInput = {
+  update: Prisma.XOR<Prisma.InformeSeccionUpdateWithoutFotosInput, Prisma.InformeSeccionUncheckedUpdateWithoutFotosInput>
+  create: Prisma.XOR<Prisma.InformeSeccionCreateWithoutFotosInput, Prisma.InformeSeccionUncheckedCreateWithoutFotosInput>
+  where?: Prisma.InformeSeccionWhereInput
+}
+
+export type InformeSeccionUpdateToOneWithWhereWithoutFotosInput = {
+  where?: Prisma.InformeSeccionWhereInput
+  data: Prisma.XOR<Prisma.InformeSeccionUpdateWithoutFotosInput, Prisma.InformeSeccionUncheckedUpdateWithoutFotosInput>
+}
+
+export type InformeSeccionUpdateWithoutFotosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutInformeSeccionesNestedInput
+}
+
+export type InformeSeccionUncheckedUpdateWithoutFotosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  informeId?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type InformeSeccionCreateManyProductoInput = {
   id?: string
   informeId: string
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
 }
 
-export type InformeSeccionUpdateWithoutTipoActividadInput = {
+export type InformeSeccionUpdateWithoutProductoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
+  fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
 }
 
-export type InformeSeccionUncheckedUpdateWithoutTipoActividadInput = {
+export type InformeSeccionUncheckedUpdateWithoutProductoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   informeId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
+  fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
 
-export type InformeSeccionUncheckedUpdateManyWithoutTipoActividadInput = {
+export type InformeSeccionUncheckedUpdateManyWithoutProductoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   informeId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
 }
 
 export type InformeSeccionCreateManyInformeInput = {
   id?: string
-  tipoActividadId?: string | null
+  productoId?: string | null
   titulo: string
   descripcion?: string | null
   orden: number
-  mediaIds?: Prisma.InformeSeccionCreatemediaIdsInput | string[]
 }
 
 export type InformeSeccionUpdateWithoutInformeInput = {
@@ -645,104 +694,135 @@ export type InformeSeccionUpdateWithoutInformeInput = {
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
-  tipoActividad?: Prisma.TipoActividadUpdateOneWithoutSeccionesNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutInformeSeccionesNestedInput
+  fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
 }
 
 export type InformeSeccionUncheckedUpdateWithoutInformeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tipoActividadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
+  fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
 
 export type InformeSeccionUncheckedUpdateManyWithoutInformeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tipoActividadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  mediaIds?: Prisma.InformeSeccionUpdatemediaIdsInput | string[]
 }
 
+
+/**
+ * Count Type InformeSeccionCountOutputType
+ */
+
+export type InformeSeccionCountOutputType = {
+  fotos: number
+}
+
+export type InformeSeccionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  fotos?: boolean | InformeSeccionCountOutputTypeCountFotosArgs
+}
+
+/**
+ * InformeSeccionCountOutputType without action
+ */
+export type InformeSeccionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InformeSeccionCountOutputType
+   */
+  select?: Prisma.InformeSeccionCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * InformeSeccionCountOutputType without action
+ */
+export type InformeSeccionCountOutputTypeCountFotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InformeSeccionFotoWhereInput
+}
 
 
 export type InformeSeccionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   informeId?: boolean
-  tipoActividadId?: boolean
+  productoId?: boolean
   titulo?: boolean
   descripcion?: boolean
   orden?: boolean
-  mediaIds?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
-  tipoActividad?: boolean | Prisma.InformeSeccion$tipoActividadArgs<ExtArgs>
+  producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
+  fotos?: boolean | Prisma.InformeSeccion$fotosArgs<ExtArgs>
+  _count?: boolean | Prisma.InformeSeccionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccion"]>
 
 export type InformeSeccionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   informeId?: boolean
-  tipoActividadId?: boolean
+  productoId?: boolean
   titulo?: boolean
   descripcion?: boolean
   orden?: boolean
-  mediaIds?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
-  tipoActividad?: boolean | Prisma.InformeSeccion$tipoActividadArgs<ExtArgs>
+  producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccion"]>
 
 export type InformeSeccionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   informeId?: boolean
-  tipoActividadId?: boolean
+  productoId?: boolean
   titulo?: boolean
   descripcion?: boolean
   orden?: boolean
-  mediaIds?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
-  tipoActividad?: boolean | Prisma.InformeSeccion$tipoActividadArgs<ExtArgs>
+  producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccion"]>
 
 export type InformeSeccionSelectScalar = {
   id?: boolean
   informeId?: boolean
-  tipoActividadId?: boolean
+  productoId?: boolean
   titulo?: boolean
   descripcion?: boolean
   orden?: boolean
-  mediaIds?: boolean
 }
 
-export type InformeSeccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "informeId" | "tipoActividadId" | "titulo" | "descripcion" | "orden" | "mediaIds", ExtArgs["result"]["informeSeccion"]>
+export type InformeSeccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "informeId" | "productoId" | "titulo" | "descripcion" | "orden", ExtArgs["result"]["informeSeccion"]>
 export type InformeSeccionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
-  tipoActividad?: boolean | Prisma.InformeSeccion$tipoActividadArgs<ExtArgs>
+  producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
+  fotos?: boolean | Prisma.InformeSeccion$fotosArgs<ExtArgs>
+  _count?: boolean | Prisma.InformeSeccionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InformeSeccionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
-  tipoActividad?: boolean | Prisma.InformeSeccion$tipoActividadArgs<ExtArgs>
+  producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
 }
 export type InformeSeccionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
-  tipoActividad?: boolean | Prisma.InformeSeccion$tipoActividadArgs<ExtArgs>
+  producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
 }
 
 export type $InformeSeccionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "InformeSeccion"
   objects: {
     informe: Prisma.$InformePayload<ExtArgs>
-    tipoActividad: Prisma.$TipoActividadPayload<ExtArgs> | null
+    producto: Prisma.$ProductoPayload<ExtArgs> | null
+    fotos: Prisma.$InformeSeccionFotoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     informeId: string
-    tipoActividadId: string | null
+    /**
+     * Producto que origina la sección. Null = sección personalizada.
+     */
+    productoId: string | null
     titulo: string
     descripcion: string | null
     orden: number
-    mediaIds: string[]
   }, ExtArgs["result"]["informeSeccion"]>
   composites: {}
 }
@@ -1138,7 +1218,8 @@ readonly fields: InformeSeccionFieldRefs;
 export interface Prisma__InformeSeccionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   informe<T extends Prisma.InformeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeDefaultArgs<ExtArgs>>): Prisma.Prisma__InformeClient<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  tipoActividad<T extends Prisma.InformeSeccion$tipoActividadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeSeccion$tipoActividadArgs<ExtArgs>>): Prisma.Prisma__TipoActividadClient<runtime.Types.Result.GetResult<Prisma.$TipoActividadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  producto<T extends Prisma.InformeSeccion$productoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeSeccion$productoArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  fotos<T extends Prisma.InformeSeccion$fotosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeSeccion$fotosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeSeccionFotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1170,11 +1251,10 @@ export interface Prisma__InformeSeccionClient<T, Null = never, ExtArgs extends r
 export interface InformeSeccionFieldRefs {
   readonly id: Prisma.FieldRef<"InformeSeccion", 'String'>
   readonly informeId: Prisma.FieldRef<"InformeSeccion", 'String'>
-  readonly tipoActividadId: Prisma.FieldRef<"InformeSeccion", 'String'>
+  readonly productoId: Prisma.FieldRef<"InformeSeccion", 'String'>
   readonly titulo: Prisma.FieldRef<"InformeSeccion", 'String'>
   readonly descripcion: Prisma.FieldRef<"InformeSeccion", 'String'>
   readonly orden: Prisma.FieldRef<"InformeSeccion", 'Int'>
-  readonly mediaIds: Prisma.FieldRef<"InformeSeccion", 'String[]'>
 }
     
 
@@ -1576,22 +1656,46 @@ export type InformeSeccionDeleteManyArgs<ExtArgs extends runtime.Types.Extension
 }
 
 /**
- * InformeSeccion.tipoActividad
+ * InformeSeccion.producto
  */
-export type InformeSeccion$tipoActividadArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type InformeSeccion$productoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the TipoActividad
+   * Select specific fields to fetch from the Producto
    */
-  select?: Prisma.TipoActividadSelect<ExtArgs> | null
+  select?: Prisma.ProductoSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the TipoActividad
+   * Omit specific fields from the Producto
    */
-  omit?: Prisma.TipoActividadOmit<ExtArgs> | null
+  omit?: Prisma.ProductoOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.TipoActividadInclude<ExtArgs> | null
-  where?: Prisma.TipoActividadWhereInput
+  include?: Prisma.ProductoInclude<ExtArgs> | null
+  where?: Prisma.ProductoWhereInput
+}
+
+/**
+ * InformeSeccion.fotos
+ */
+export type InformeSeccion$fotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InformeSeccionFoto
+   */
+  select?: Prisma.InformeSeccionFotoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InformeSeccionFoto
+   */
+  omit?: Prisma.InformeSeccionFotoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InformeSeccionFotoInclude<ExtArgs> | null
+  where?: Prisma.InformeSeccionFotoWhereInput
+  orderBy?: Prisma.InformeSeccionFotoOrderByWithRelationInput | Prisma.InformeSeccionFotoOrderByWithRelationInput[]
+  cursor?: Prisma.InformeSeccionFotoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InformeSeccionFotoScalarFieldEnum | Prisma.InformeSeccionFotoScalarFieldEnum[]
 }
 
 /**

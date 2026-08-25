@@ -31,6 +31,7 @@ export default function IncompletaVisitaScreen() {
   return (
     <VisitaResultForm
       visitaId={id}
+      productos={visita?.productos ?? []}
       mode="incomplete"
       initialValues={
         isEdit && visita

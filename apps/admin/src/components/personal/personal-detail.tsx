@@ -140,7 +140,7 @@ export function PersonalDetail({ personal, grupos }: Props) {
               <CardHeader className="border-b">
                 <CardTitle>Grupos</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3">
+              <CardContent>
                 {grupos.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-2">
                     No pertenece a ningun grupo

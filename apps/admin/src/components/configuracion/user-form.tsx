@@ -80,7 +80,7 @@ export function UserForm({ initialData, cardsEditing, onEditDone }: UserFormProp
         <CardHeader className="border-b">
           <CardTitle>Informacion General</CardTitle>
         </CardHeader>
-        <CardContent className="pt-2">
+        <CardContent>
           <InfoRow label="Nombre" value={initialData.name} />
           <InfoRow label="Apellido" value={initialData.apellido} />
           <InfoRow label="Correo" value={initialData.email} />
@@ -95,7 +95,7 @@ export function UserForm({ initialData, cardsEditing, onEditDone }: UserFormProp
         <CardHeader className="border-b">
           <CardTitle>Informacion General</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4 space-y-4">
+        <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="user-name">Nombre *</Label>

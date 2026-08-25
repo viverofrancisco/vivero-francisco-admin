@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import type { VisitaDetail } from "@/lib/types";
+import { listaProductos } from "@/lib/types";
 import { VisitaChat } from "@/components/VisitaChat";
 
 export default function PersonalVisitaChatScreen() {
@@ -29,7 +30,7 @@ export default function PersonalVisitaChatScreen() {
     );
   }
 
-  const cliente = visita?.clienteServicio.cliente;
+  const cliente = visita?.cliente;
   const clienteFullName = cliente ? nombreCliente(cliente) : undefined;
 
   // Entry from visita detail: banner is read-only context.
@@ -37,13 +38,13 @@ export default function PersonalVisitaChatScreen() {
     <VisitaChat
       visitaId={id}
       title={clienteFullName ?? "Mensajes"}
-      subtitle={visita?.clienteServicio.servicio.nombre}
+      subtitle={visita ? listaProductos(visita) : undefined}
       banner={
         visita
           ? {
               fechaProgramada: visita.fechaProgramada,
               estado: visita.estado,
-              servicioNombre: visita.clienteServicio.servicio.nombre,
+              servicioNombre: listaProductos(visita),
               clienteNombre: clienteFullName,
             }
           : undefined

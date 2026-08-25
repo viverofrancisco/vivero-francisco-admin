@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
-import { s3, BUCKET_NAME, publicUrlForKey } from "@/lib/s3";
+import { s3, BUCKET_NAME, publicUrlForKey, getUploadUrl } from "@/lib/s3";
 import {
   ForbiddenError,
   NotFoundError,
@@ -11,6 +11,7 @@ import {
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { getVisitaForViewer } from "./visita.service";
+import { resumenProductos } from "@/lib/visita-productos";
 import { renderInformePDF } from "@/lib/informes/render";
 import type {
   InformeRenderData,
@@ -101,7 +102,7 @@ export async function listVisitasParaInforme(
   // do the rest. PERSONAL_ADMIN: also filter by sector match.
   const where: Record<string, unknown> = {
     deletedAt: null,
-    clienteServicio: { clienteId },
+    clienteId,
     estado: { in: ["COMPLETADA", "INCOMPLETA"] },
   };
   if (options.from || options.to) {
@@ -116,17 +117,19 @@ export async function listVisitasParaInforme(
       select: { sectorId: true },
     });
     const sectorIds = sectorAdmins.map((s) => s.sectorId);
-    where.clienteServicio = {
-      clienteId,
-      cliente: { sectorId: { in: sectorIds } },
-    };
+    where.cliente = { sectorId: { in: sectorIds } };
   }
 
   const visitas = await prisma.visita.findMany({
     where,
     include: {
-      clienteServicio: {
-        select: { servicio: { select: { id: true, nombre: true } } },
+      productos: {
+        orderBy: { orden: "asc" },
+        include: {
+          producto: {
+                select: { id: true, nombre: true, descripcion: true },
+          },
+        },
       },
       _count: { select: { media: true } },
     },
@@ -138,9 +141,84 @@ export async function listVisitasParaInforme(
     fechaProgramada: v.fechaProgramada,
     fechaRealizada: v.fechaRealizada,
     estado: v.estado,
-    servicioNombre: v.clienteServicio.servicio.nombre,
+    productos: v.productos.map((vs) => ({
+      productoId: vs.producto.id,
+      nombre: vs.producto.nombre,
+    })),
+    servicioNombre: resumenProductos(v),
     fotosCount: v._count.media,
   }));
+}
+
+// ──────────────────────────────────────────────
+// Wizard paso 2 — servicios disponibles para armar secciones
+// ──────────────────────────────────────────────
+
+export interface ServicioParaSeccion {
+  productoId: string;
+  nombre: string;
+  descripcion: string | null;
+  /// Cuántas de las visitas seleccionadas incluyen este servicio.
+  visitasCount: number;
+  /// Fotos de las visitas seleccionadas etiquetadas con este servicio.
+  fotosCount: number;
+}
+
+/**
+ * Union de los servicios cubiertos por las visitas seleccionadas. Cada uno se
+ * ofrece como sección: el título sale del nombre del servicio y la descripción
+ * de la descripción del servicio.
+ */
+export async function listServiciosParaInforme(
+  viewer: Viewer,
+  visitaIds: string[]
+): Promise<ServicioParaSeccion[]> {
+  ensureInformeWriter(viewer);
+  if (visitaIds.length === 0) return [];
+  // Verifica que el viewer pueda ver cada visita.
+  await Promise.all(visitaIds.map((id) => getVisitaForViewer(id, viewer)));
+
+  const [rows, fotos] = await Promise.all([
+    prisma.visitaProducto.findMany({
+      where: { visitaId: { in: visitaIds } },
+      include: {
+        producto: {
+              select: { id: true, nombre: true, descripcion: true },
+        },
+      },
+      orderBy: { orden: "asc" },
+    }),
+    prisma.visitaMedia.groupBy({
+      by: ["productoId"],
+      where: {
+        visitaId: { in: visitaIds },
+        tipo: "imagen",
+        productoId: { not: null },
+      },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const fotosPorServicio = new Map(
+    fotos.map((f) => [f.productoId, f._count._all])
+  );
+
+  const porServicio = new Map<string, ServicioParaSeccion>();
+  for (const row of rows) {
+    const existente = porServicio.get(row.productoId);
+    if (existente) {
+      existente.visitasCount += 1;
+      continue;
+    }
+    porServicio.set(row.productoId, {
+      productoId: row.producto.id,
+      nombre: row.producto.nombre,
+      descripcion: row.producto.descripcion,
+      visitasCount: 1,
+      fotosCount: fotosPorServicio.get(row.productoId) ?? 0,
+    });
+  }
+  return [...porServicio.values()];
 }
 
 // ──────────────────────────────────────────────
@@ -174,7 +252,54 @@ export async function getMediaPoolDeVisitas(
     url: m.url,
     visitaId: m.visitaId,
     visitaFecha: m.visita.fechaProgramada,
+    // Permite que el wizard prellene cada sección con sus fotos etiquetadas.
+    productoId: m.productoId,
   }));
+}
+
+// ──────────────────────────────────────────────
+// Fotos subidas directo a una sección del informe
+// ──────────────────────────────────────────────
+
+export interface InformeUploadDescriptor {
+  key: string;
+  uploadUrl: string;
+  url: string;
+  contentType: string;
+}
+
+/**
+ * URLs prefirmadas para subir imágenes propias de un informe (las que no vienen
+ * de una visita). El archivo se sube directo a R2 y la sección guarda la key.
+ */
+export async function requestInformeUploadUrls(
+  viewer: Viewer,
+  clienteId: string,
+  files: Array<{ fileName: string; contentType: string }>
+): Promise<InformeUploadDescriptor[]> {
+  ensureInformeWriter(viewer);
+  if (files.length === 0) return [];
+
+  const invalido = files.find((f) => !f.contentType.startsWith("image/"));
+  if (invalido) {
+    throw new ValidationError("Solo se pueden subir imágenes a las secciones.");
+  }
+
+  return Promise.all(
+    files.map(async (f) => {
+      const ext = f.fileName.includes(".") ? f.fileName.split(".").pop() : "";
+      const key = `informes/${clienteId}/adjuntos/${randomUUID()}${
+        ext ? `.${ext}` : ""
+      }`;
+      const uploadUrl = await getUploadUrl(key, f.contentType);
+      return {
+        key,
+        uploadUrl,
+        url: publicUrlForKey(key),
+        contentType: f.contentType,
+      };
+    })
+  );
 }
 
 // ──────────────────────────────────────────────
@@ -186,6 +311,15 @@ export interface InformeFirmanteInput {
   cedula?: string | null;
 }
 
+/**
+ * Una foto de una sección: o viene de una visita (`visitaMediaId`) o se subió
+ * directo al informe (`key`, ya en R2 vía URL prefirmada). Exactamente una.
+ */
+export interface InformeSeccionFotoInput {
+  visitaMediaId?: string | null;
+  key?: string | null;
+}
+
 export interface InformeGeneratePayload {
   informeId?: string; // if present = update existing
   clienteId: string;
@@ -193,11 +327,19 @@ export interface InformeGeneratePayload {
   visitaIds: string[];
   firmantes: InformeFirmanteInput[]; // 1 to 3
   secciones: Array<{
-    tipoActividadId?: string | null;
+    /// Servicio que origina la sección. Null = sección personalizada.
+    productoId?: string | null;
     titulo: string;
     descripcion?: string | null;
-    mediaIds: string[];
+    fotos: InformeSeccionFotoInput[];
   }>;
+}
+
+/** Foto ya resuelta a bytes + metadatos, lista para el PDF y para persistir. */
+interface FotoResuelta {
+  key: string;
+  url: string;
+  visitaMediaId: string | null;
 }
 
 export async function generateInforme(
@@ -229,26 +371,75 @@ export async function generateInforme(
   );
   // Make sure all visitas belong to the same cliente in the payload.
   for (const v of visitas) {
-    const cs = (v as unknown as { clienteServicio: { cliente: { id: string } } })
-      .clienteServicio;
-    if (cs.cliente.id !== payload.clienteId) {
+    if (v.cliente.id !== payload.clienteId) {
       throw new ValidationError("Una de las visitas no pertenece al cliente.");
     }
   }
 
-  // Validate media IDs all belong to selected visitas.
-  const allMediaIds = payload.secciones.flatMap((s) => s.mediaIds);
-  if (allMediaIds.length > 0) {
-    const validMedia = await prisma.visitaMedia.findMany({
-      where: { id: { in: allMediaIds }, visitaId: { in: payload.visitaIds } },
-      select: { id: true, url: true, tipo: true },
+  // Las secciones basadas en un servicio tienen que apuntar a un servicio del
+  // cliente; las personalizadas van sin servicio.
+  const seccionServicioIds = [
+    ...new Set(
+      payload.secciones
+        .map((sec) => sec.productoId)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  if (seccionServicioIds.length > 0) {
+    const validos = await prisma.producto.count({
+      where: { id: { in: seccionServicioIds }, deletedAt: null },
     });
-    if (validMedia.length !== allMediaIds.length) {
+    if (validos !== seccionServicioIds.length) {
       throw new ValidationError(
-        "Algunos archivos referenciados no pertenecen a las visitas seleccionadas."
+        "Alguna sección apunta a un producto que no existe."
       );
     }
   }
+
+  // Las fotos que vienen de una visita tienen que ser de las visitas elegidas.
+  const visitaMediaIds = [
+    ...new Set(
+      payload.secciones
+        .flatMap((sec) => sec.fotos)
+        .map((f) => f.visitaMediaId)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  const visitaMedia = visitaMediaIds.length
+    ? await prisma.visitaMedia.findMany({
+        where: { id: { in: visitaMediaIds }, visitaId: { in: payload.visitaIds } },
+        select: { id: true, key: true, url: true },
+      })
+    : [];
+  if (visitaMedia.length !== visitaMediaIds.length) {
+    throw new ValidationError(
+      "Algunos archivos referenciados no pertenecen a las visitas seleccionadas."
+    );
+  }
+  const visitaMediaById = new Map(visitaMedia.map((m) => [m.id, m]));
+
+  // Resuelve cada foto de cada sección a { key, url, visitaMediaId }.
+  const seccionesResueltas = payload.secciones.map((sec) => ({
+    ...sec,
+    fotos: sec.fotos
+      .map((f): FotoResuelta | null => {
+        if (f.visitaMediaId) {
+          const m = visitaMediaById.get(f.visitaMediaId);
+          return m
+            ? { key: m.key, url: m.url, visitaMediaId: m.id }
+            : null;
+        }
+        if (f.key) {
+          return {
+            key: f.key,
+            url: publicUrlForKey(f.key),
+            visitaMediaId: null,
+          };
+        }
+        return null;
+      })
+      .filter((f): f is FotoResuelta => f !== null),
+  }));
 
   // Resolve fechaDesde/fechaHasta from visita range.
   const fechas = visitas.map(
@@ -259,28 +450,22 @@ export async function generateInforme(
   const fechaDesde = fechas[0];
   const fechaHasta = fechas[fechas.length - 1];
 
-  // Hydrate media bytes.
-  const allMedia = allMediaIds.length
-    ? await prisma.visitaMedia.findMany({
-        where: { id: { in: allMediaIds } },
-        select: { id: true, url: true },
-      })
-    : [];
-  const mediaById = new Map(allMedia.map((m) => [m.id, m]));
-
+  // Descarga los bytes de cada foto una sola vez, cacheando por key.
   const fotosCache = new Map<string, { bytes: Uint8Array; mimeType: string }>();
-  for (const m of allMedia) {
-    if (fotosCache.has(m.id)) continue;
-    const res = await fetch(m.url);
-    if (!res.ok) {
-      throw new ValidationError(`No pudimos descargar la foto ${m.id}.`);
+  for (const sec of seccionesResueltas) {
+    for (const foto of sec.fotos) {
+      if (fotosCache.has(foto.key)) continue;
+      const res = await fetch(foto.url);
+      if (!res.ok) {
+        throw new ValidationError(`No pudimos descargar la foto ${foto.key}.`);
+      }
+      const mimeType = res.headers.get("content-type") ?? "image/jpeg";
+      const arrayBuffer = await res.arrayBuffer();
+      fotosCache.set(foto.key, {
+        bytes: new Uint8Array(arrayBuffer),
+        mimeType,
+      });
     }
-    const mimeType = res.headers.get("content-type") ?? "image/jpeg";
-    const arrayBuffer = await res.arrayBuffer();
-    fotosCache.set(m.id, {
-      bytes: new Uint8Array(arrayBuffer),
-      mimeType,
-    });
   }
 
   // Build render data.
@@ -292,17 +477,16 @@ export async function generateInforme(
     ? `ACTIVIDADES REALIZADAS PARA ${nombreCliente(cliente).toUpperCase()}`
     : "ACTIVIDADES REALIZADAS";
 
-  const renderSecciones: InformeRenderSeccion[] = payload.secciones.map(
+  const renderSecciones: InformeRenderSeccion[] = seccionesResueltas.map(
     (sec) => ({
       titulo: sec.titulo,
       descripcion: sec.descripcion?.trim() || null,
-      fotos: sec.mediaIds
-        .map((id) => {
-          const cached = fotosCache.get(id);
-          const meta = mediaById.get(id);
-          if (!cached || !meta) return null;
+      fotos: sec.fotos
+        .map((foto) => {
+          const cached = fotosCache.get(foto.key);
+          if (!cached) return null;
           return {
-            id,
+            id: foto.key,
             bytes: cached.bytes,
             mimeType: cached.mimeType,
           };
@@ -385,16 +569,25 @@ export async function generateInforme(
           visitaId: vid,
         })),
       });
-      await tx.informeSeccion.createMany({
-        data: payload.secciones.map((s, idx) => ({
-          informeId: updated.id,
-          tipoActividadId: s.tipoActividadId ?? null,
-          titulo: s.titulo,
-          descripcion: s.descripcion?.trim() || null,
-          orden: idx * 10,
-          mediaIds: s.mediaIds,
-        })),
-      });
+      for (const [idx, sec] of seccionesResueltas.entries()) {
+        await tx.informeSeccion.create({
+          data: {
+            informeId: updated.id,
+            productoId: sec.productoId ?? null,
+            titulo: sec.titulo,
+            descripcion: sec.descripcion?.trim() || null,
+            orden: idx * 10,
+            fotos: {
+              create: sec.fotos.map((foto, fIdx) => ({
+                orden: fIdx,
+                key: foto.key,
+                url: foto.url,
+                visitaMediaId: foto.visitaMediaId,
+              })),
+            },
+          },
+        });
+      }
       return updated;
     } else {
       const created = await tx.informe.create({
@@ -411,12 +604,19 @@ export async function generateInforme(
             create: payload.visitaIds.map((vid) => ({ visitaId: vid })),
           },
           secciones: {
-            create: payload.secciones.map((s, idx) => ({
-              tipoActividadId: s.tipoActividadId ?? null,
-              titulo: s.titulo,
-              descripcion: s.descripcion?.trim() || null,
+            create: seccionesResueltas.map((sec, idx) => ({
+              productoId: sec.productoId ?? null,
+              titulo: sec.titulo,
+              descripcion: sec.descripcion?.trim() || null,
               orden: idx * 10,
-              mediaIds: s.mediaIds,
+              fotos: {
+                create: sec.fotos.map((foto, fIdx) => ({
+                  orden: fIdx,
+                  key: foto.key,
+                  url: foto.url,
+                  visitaMediaId: foto.visitaMediaId,
+                })),
+              },
             })),
           },
         },
@@ -443,7 +643,13 @@ export async function getInforme(viewer: Viewer, id: string) {
         select: { id: true, name: true, apellido: true },
       },
       visitas: { select: { visitaId: true } },
-      secciones: { orderBy: { orden: "asc" } },
+      secciones: {
+        orderBy: { orden: "asc" },
+        include: {
+          producto: { select: { id: true, nombre: true } },
+          fotos: { orderBy: { orden: "asc" } },
+        },
+      },
     },
   });
   if (!informe) throw new NotFoundError();

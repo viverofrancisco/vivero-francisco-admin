@@ -58,7 +58,19 @@ import type { Viewer } from "@/lib/services/viewer";
  * call the same service functions the mobile API uses.
  */
 export async function viewerFromSession(): Promise<Viewer> {
-  const user = await requireAuth();
+  return viewerFromUser(await requireAuth());
+}
+
+/**
+ * Igual que `viewerFromSession` pero sobre un usuario ya cargado, para las
+ * rutas que llamaron a `getCurrentUser()` y no necesitan resolver la sesión
+ * de nuevo.
+ */
+export function viewerFromUser(user: {
+  id: string;
+  role: UserRole;
+  personalId?: string | null;
+}): Viewer {
   return {
     id: user.id,
     role: user.role,

@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Search, X } from "lucide-react";
+import { Ban, ChevronDown, Search, X } from "lucide-react";
 
 interface Option {
   value: string;
   label: string;
+  /** Se muestra pero no se puede elegir. */
+  disabled?: boolean;
+  /** Por qué no se puede elegir. Aparece al pasar el mouse por encima. */
+  hint?: string;
 }
 
 interface CustomSelectProps {
@@ -17,6 +22,7 @@ interface CustomSelectProps {
   searchable?: boolean;
   searchPlaceholder?: string;
   clearable?: boolean;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -28,25 +34,69 @@ export function CustomSelect({
   searchable = false,
   searchPlaceholder = "Buscar...",
   clearable = false,
+  disabled = false,
   className,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
-  const [openAbove, setOpenAbove] = useState(false);
+  /**
+   * Posición del desplegable en coordenadas de la ventana.
+   *
+   * Va en un portal con `position: fixed` en vez de `absolute` dentro del
+   * componente: así no lo recorta ni lo desborda ningún contenedor —tarjetas,
+   * diálogos, tablas con scroll—, que era el problema de fondo. `null` mientras
+   * está cerrado.
+   */
+  const [caja, setCaja] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    above: boolean;
+  } | null>(null);
   const [search, setSearch] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const openAbove = caja?.above ?? false;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-        setSearch("");
+      const target = e.target as Node;
+      // El desplegable vive en un portal, así que no alcanza con mirar `ref`.
+      if (
+        (ref.current && ref.current.contains(target)) ||
+        (popupRef.current && popupRef.current.contains(target))
+      ) {
+        return;
       }
+      setOpen(false);
+      setSearch("");
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Con `position: fixed` la caja no sigue al contenido: si la página se mueve
+  // quedaría flotando en el aire, así que se cierra.
+  //
+  // Pero el listener va en captura, así que también le llegaba el scroll de la
+  // propia lista: con muchas opciones, bajar para buscar una la cerraba. Un
+  // scroll que nace adentro del desplegable no lo mueve de lugar y se ignora.
+  useEffect(() => {
+    if (!open) return;
+    const cerrar = (e: Event) => {
+      if (e.target instanceof Node && popupRef.current?.contains(e.target)) {
+        return;
+      }
+      setOpen(false);
+    };
+    window.addEventListener("scroll", cerrar, true);
+    window.addEventListener("resize", cerrar);
+    return () => {
+      window.removeEventListener("scroll", cerrar, true);
+      window.removeEventListener("resize", cerrar);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (open && searchable && searchRef.current) {
@@ -62,17 +112,25 @@ export function CustomSelect({
 
   const selectedLabel = value ? options.find((o) => o.value === value)?.label : undefined;
 
-  const handleSelect = (val: string) => {
-    onChange(val);
+  const handleSelect = (option: Option) => {
+    if (option.disabled) return;
+    onChange(option.value);
     setOpen(false);
     setSearch("");
   };
 
+  const ALTO_MAX = 260;
+
   const handleToggle = () => {
     if (!open && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      setOpenAbove(spaceBelow < 260);
+      const above = window.innerHeight - rect.bottom < ALTO_MAX;
+      setCaja({
+        top: above ? rect.top : rect.bottom,
+        left: rect.left,
+        width: rect.width,
+        above,
+      });
     }
     setOpen(!open);
     setSearch("");
@@ -85,6 +143,7 @@ export function CustomSelect({
         ref={triggerRef}
         type="button"
         onClick={handleToggle}
+        disabled={disabled}
         className={cn(
           "flex h-9 w-full items-center justify-between rounded-md border bg-background px-3 py-1 text-sm ring-offset-background transition-colors",
           "hover:bg-accent hover:text-accent-foreground",
@@ -116,13 +175,24 @@ export function CustomSelect({
       </button>
 
       {/* Dropdown */}
-      {open && (
-        <div
-          className={cn(
-            "absolute z-50 w-full rounded-md border bg-white shadow-lg",
-            openAbove ? "bottom-full mb-1" : "top-full mt-1"
-          )}
-        >
+      {open &&
+        caja &&
+        createPortal(
+          <div
+            ref={popupRef}
+            style={{
+              top: caja.top,
+              left: caja.left,
+              width: caja.width,
+              // Abriendo hacia arriba, `top` es el borde superior del trigger y
+              // la caja crece hacia arriba desde ahí.
+              transform: caja.above ? "translateY(-100%)" : undefined,
+            }}
+            className={cn(
+              "fixed z-50 rounded-md border bg-white shadow-lg",
+              caja.above ? "-mt-1" : "mt-1"
+            )}
+          >
           {searchable && (
             <div className="border-b p-2">
               <div className="relative">
@@ -145,24 +215,48 @@ export function CustomSelect({
               </p>
             ) : (
               filtered.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleSelect(option.value)}
-                  className={cn(
-                    "flex w-full items-center rounded-md px-2.5 py-1.5 text-sm text-left transition-colors",
-                    value === option.value
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "hover:bg-gray-100"
+                <div key={option.value} className="group/opt relative">
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(option)}
+                    // `aria-disabled` y no `disabled`: un botón deshabilitado no
+                    // emite eventos de mouse en la mayoría de los navegadores, y
+                    // entonces el motivo nunca se llegaría a ver.
+                    aria-disabled={option.disabled}
+                    className={cn(
+                      "flex w-full items-center rounded-md px-2.5 py-1.5 text-sm text-left transition-colors",
+                      option.disabled
+                        ? "cursor-not-allowed text-muted-foreground/60"
+                        : value === option.value
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-gray-100"
+                    )}
+                  >
+                    <span className="truncate">{option.label}</span>
+                    {option.disabled && (
+                      <Ban className="ml-auto h-3.5 w-3.5 flex-none opacity-60" />
+                    )}
+                  </button>
+                  {option.disabled && option.hint && (
+                    <div
+                      role="tooltip"
+                      className={cn(
+                        "pointer-events-none absolute left-2 right-2 z-10 hidden rounded-md bg-gray-900 px-2.5 py-1.5 text-[11px] leading-snug text-white shadow-lg group-hover/opt:block",
+                        // Acompaña la dirección del desplegable: si abre hacia
+                        // arriba, el motivo abajo se saldría de la tarjeta.
+                        openAbove ? "bottom-full" : "top-full"
+                      )}
+                    >
+                      {option.hint}
+                    </div>
                   )}
-                >
-                  {option.label}
-                </button>
+                </div>
               ))
             )}
           </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

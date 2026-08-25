@@ -10,7 +10,10 @@
     "dev:admin": "npm run dev -w apps/admin",
     "dev:mobile": "npm run start -w apps/mobile",
     "build:admin": "npm run build -w apps/admin",
-    "lint:admin": "npm run lint -w apps/admin"
+    "lint:admin": "npm run lint -w apps/admin",
+    "migrate:dev": "npm run migrate:dev -w apps/admin",
+    "migrate:deploy": "npm run migrate:deploy -w apps/admin",
+    "migrate:status": "npm run migrate:status -w apps/admin"
   },
   "devDependencies": {
     "expo-router": "~6.0.23"

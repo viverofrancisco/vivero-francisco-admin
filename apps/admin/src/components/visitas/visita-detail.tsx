@@ -2,24 +2,38 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
-import { ArrowLeft, CheckCircle, MessageSquare, Pencil, Play } from "lucide-react";
-import { toast } from "sonner";
+import {
+  ArrowLeft,
+  CheckCircle,
+  MessageSquare,
+  Pencil,
+  Play,
+  Receipt,
+} from "lucide-react";
 import { CompletarVisitaForm } from "@/components/visitas/completar-visita-form";
-import { PersonalSelector } from "@/components/grupos/personal-selector";
 import {
   MediaViewer,
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { nombreCliente } from "@vivero/shared";
+import {
+  listaProductos,
+  type ProductoDeVisita,
+} from "@/lib/visita-productos";
 
 interface VisitaDetailData {
   id: string;
-  clienteServicioId: string;
   fechaProgramada: string;
   fechaRealizada: string | null;
   horaEntrada: string | null;
@@ -28,10 +42,15 @@ interface VisitaDetailData {
   notas: string | null;
   notasIncompleto: string | null;
   media: { id: string; url: string; tipo: string }[];
-  clienteServicio: {
-    cliente: { id: string; nombre: string; apellido?: string | null; empresa?: string | null; ciudad: string | null; sector: { nombre: string } | null };
-    servicio: { id: string; nombre: string; tipo: string };
+  cliente: {
+    id: string;
+    nombre: string;
+    apellido?: string | null;
+    empresa?: string | null;
+    ciudad: string | null;
+    sector: { nombre: string } | null;
   };
+  productos: ProductoDeVisita[];
   grupo: {
     id: string;
     nombre: string;
@@ -40,42 +59,19 @@ interface VisitaDetailData {
   personal: { personal: { id: string; nombre: string; apellido?: string | null } }[];
 }
 
-interface PersonalOption {
-  id: string;
-  nombre: string;
-  apellido?: string | null;
-}
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("es-EC", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
 
 interface VisitaDetailProps {
   visita: VisitaDetailData;
   userRole?: string;
-  allPersonal?: PersonalOption[];
   hasMessages?: boolean;
 }
 
 export function VisitaDetail({
   visita,
   userRole,
-  allPersonal = [],
   hasMessages = false,
 }: VisitaDetailProps) {
-  const router = useRouter();
   const [completarOpen, setCompletarOpen] = useState(false);
-  const [editingPersonal, setEditingPersonal] = useState(false);
-  const [selectedPersonalIds, setSelectedPersonalIds] = useState<string[]>(
-    visita.personal.map((p) => p.personal.id)
-  );
-  const [savingPersonal, setSavingPersonal] = useState(false);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
     null
   );
@@ -83,29 +79,26 @@ export function VisitaDetail({
   const isProgramada = visita.estado === "PROGRAMADA";
   const canModify = userRole !== "PERSONAL";
 
-  const handleSavePersonal = async () => {
-    setSavingPersonal(true);
-    try {
-      const res = await fetch(`/api/visitas/${visita.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ personalIds: selectedPersonalIds }),
-      });
-      if (!res.ok) throw new Error();
-      toast.success("Personal actualizado");
-      setEditingPersonal(false);
-      router.refresh();
-    } catch {
-      toast.error("Error al actualizar personal");
-    } finally {
-      setSavingPersonal(false);
-    }
-  };
-
-  const handleCancelEditPersonal = () => {
-    setSelectedPersonalIds(visita.personal.map((p) => p.personal.id));
-    setEditingPersonal(false);
-  };
+  /**
+   * Qué falta cobrar de esta visita.
+   *
+   * Lo cubierto por un plan no se factura aparte: entra en la orden del período.
+   * Lo demás se cobra una vez, y la línea de orden es la prueba de que ya pasó.
+   *
+   * Se puede facturar por adelantado: alcanza con que la visita exista y no
+   * esté cancelada. De una cancelada no hay nada que cobrar, y
+   * `listarPendientes` tampoco la ofrece.
+   */
+  const facturable = visita.estado !== "CANCELADA";
+  const porFacturar = visita.productos.filter(
+    (vs) => !vs.suscripcionItemId && !vs.ordenLinea
+  );
+  const facturados = visita.productos.filter((vs) => vs.ordenLinea);
+  const ordenes = [
+    ...new Map(
+      facturados.map((vs) => [vs.ordenLinea!.ordenId, vs.ordenLinea!])
+    ).values(),
+  ];
 
   return (
     <>
@@ -124,176 +117,181 @@ export function VisitaDetail({
               <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
             </div>
             <p className="text-sm text-muted-foreground truncate">
-              {nombreCliente(visita.clienteServicio.cliente)} — {visita.clienteServicio.servicio.nombre}
+              {nombreCliente(visita.cliente)} — {listaProductos(visita)}
             </p>
           </div>
-          {isProgramada && canModify && (
-            <Button onClick={() => setCompletarOpen(true)}>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Completar
-            </Button>
+          {canModify && (
+            <div className="flex flex-none items-center gap-2">
+              {/* Editable en cualquier estado: corregir la fecha o el producto
+                  de una visita ya hecha no debería obligar a rehacerla. */}
+              <Link href={`/dashboard/visitas/${visita.id}/editar`}>
+                <Button variant="outline">
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Editar
+                </Button>
+              </Link>
+              {facturable && porFacturar.length > 0 && (
+                <Link
+                  href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
+                >
+                  <Button variant="outline">
+                    <Receipt className="mr-2 h-4 w-4" />
+                    Crear orden
+                  </Button>
+                </Link>
+              )}
+              {isProgramada && (
+                <Button onClick={() => setCompletarOpen(true)}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Completar
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Información</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Estado</span>
-              <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Fecha programada</span>
-              <span className="capitalize">{formatDate(visita.fechaProgramada)}</span>
-            </div>
-            {visita.fechaRealizada && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Fecha realizada</span>
-                <span className="capitalize">{formatDate(visita.fechaRealizada)}</span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Hora entrada</span>
-              <span>{visita.horaEntrada ?? "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Hora salida</span>
-              <span>{visita.horaSalida ?? "—"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Servicio</span>
-              <span>{visita.clienteServicio.servicio.nombre}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Tipo</span>
-              <Badge variant="outline">
-                {visita.clienteServicio.servicio.tipo === "RECURRENTE" ? "Recurrente" : "Único"}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Una banda con lo que identifica la visita —cuándo, para quién, qué—
+          y debajo casillas chicas con el resto. La lista de etiqueta/valor
+          dejaba media pantalla vacía y obligaba a leer en zigzag. */}
+      <div className="flex flex-wrap items-start gap-5 rounded-2xl border bg-card p-5">
+        <TarjetaFecha iso={visita.fechaProgramada} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Cliente</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Nombre</span>
-              <Link
-                href={`/dashboard/clientes/${visita.clienteServicio.cliente.id}`}
-                className="text-primary hover:underline"
+        <div className="min-w-0 flex-1 space-y-2">
+          <Link
+            href={`/dashboard/clientes/${visita.cliente.id}`}
+            className="block truncate text-xl font-bold hover:underline"
+          >
+            {nombreCliente(visita.cliente)}
+          </Link>
+          <p className="text-sm text-muted-foreground">
+            {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
+              .filter(Boolean)
+              .join(" · ") || "Sin sector"}
+          </p>
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {/* Lo cubierto por un plan se marca por visita, que es donde el
+                dato existe: el catálogo no sabe qué tiene contratado quién. */}
+            {visita.productos.map((vs) => (
+              <Badge
+                key={vs.productoId}
+                variant={vs.suscripcionItemId ? "secondary" : "outline"}
+                title={
+                  vs.suscripcionItemId
+                    ? "Cubierto por la suscripción del cliente"
+                    : vs.ordenLinea
+                      ? `Facturado en la orden #${vs.ordenLinea.orden.numero}`
+                      : "Pendiente de facturar"
+                }
               >
-                {nombreCliente(visita.clienteServicio.cliente)}
-              </Link>
-            </div>
-            {visita.clienteServicio.cliente.ciudad && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Ciudad</span>
-                <span>{visita.clienteServicio.cliente.ciudad}</span>
-              </div>
-            )}
-            {visita.clienteServicio.cliente.sector && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Sector</span>
-                <span>{visita.clienteServicio.cliente.sector.nombre}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                {vs.producto.nombre}
+                {!vs.suscripcionItemId && !vs.ordenLinea && (
+                  <span className="ml-1 text-amber-700">·</span>
+                )}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Personal asignado</CardTitle>
-              {isProgramada && canModify && !editingPersonal && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditingPersonal(true)}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Dato etiqueta="Realizada">
+          {visita.fechaRealizada ? (
+            <span className="capitalize">{formatCorta(visita.fechaRealizada)}</span>
+          ) : (
+            <span className="text-muted-foreground">Todavía no</span>
+          )}
+        </Dato>
+        <Dato etiqueta="Horario">
+          {visita.horaEntrada || visita.horaSalida ? (
+            `${visita.horaEntrada ?? "—"} a ${visita.horaSalida ?? "—"}`
+          ) : (
+            <span className="text-muted-foreground">Sin registrar</span>
+          )}
+        </Dato>
+        <Dato etiqueta="Duración">
+          {duracion(visita.horaEntrada, visita.horaSalida) ?? (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </Dato>
+        <Dato etiqueta="Facturación">
+          {porFacturar.length > 0 && !facturable ? (
+            <span className="text-muted-foreground">Cancelada</span>
+          ) : porFacturar.length > 0 ? (
+            <span className="text-amber-700">
+              {porFacturar.length === visita.productos.length
+                ? "Pendiente"
+                : `${porFacturar.length} sin facturar`}
+            </span>
+          ) : ordenes.length > 0 ? (
+            <span className="flex flex-wrap gap-x-2">
+              {ordenes.map((o) => (
+                <Link
+                  key={o.ordenId}
+                  href={`/dashboard/ordenes/${o.ordenId}`}
+                  className="text-primary hover:underline"
                 >
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                  Editar
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {visita.grupo && (
-              <div className="flex justify-between mb-3 pb-3 border-b">
-                <span className="text-muted-foreground text-sm">Grupo</span>
-                <span className="text-sm font-medium">{visita.grupo.nombre}</span>
-              </div>
-            )}
+                  Orden #{o.orden.numero}
+                </Link>
+              ))}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">Cubierta por el plan</span>
+          )}
+        </Dato>
+      </div>
 
-            {editingPersonal ? (
-              <div className="space-y-3">
-                <PersonalSelector
-                  personalList={allPersonal}
-                  selectedIds={selectedPersonalIds}
-                  onChange={setSelectedPersonalIds}
-                />
-                {selectedPersonalIds.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {selectedPersonalIds.length} persona{selectedPersonalIds.length !== 1 ? "s" : ""} seleccionada{selectedPersonalIds.length !== 1 ? "s" : ""}
-                  </p>
-                )}
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancelEditPersonal}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSavePersonal}
-                    disabled={savingPersonal}
-                  >
-                    {savingPersonal ? "Guardando..." : "Guardar"}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {visita.personal.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">Sin personal asignado</p>
-                ) : (
-                  <ul className="space-y-1">
-                    {visita.personal.map((vp) => (
-                      <li key={vp.personal.id} className="text-sm">
-                        {`${vp.personal.nombre} ${vp.personal.apellido || ""}`.trim()}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Notas</CardTitle>
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Notas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {visita.notas ? (
-              <p className="text-sm whitespace-pre-wrap">{visita.notas}</p>
+              <p className="whitespace-pre-wrap text-sm">{visita.notas}</p>
             ) : (
-              <p className="text-muted-foreground text-sm">Sin notas</p>
+              <p className="text-sm text-muted-foreground">Sin notas</p>
             )}
             {visita.notasIncompleto && (
-              <div className="border-t pt-3">
-                <p className="text-sm font-medium text-destructive mb-1">
-                  {visita.estado === "CANCELADA" ? "Razón de cancelación:" : "Razón de incompleto:"}
+              <div className="rounded-md bg-destructive/5 p-3">
+                <p className="mb-1 text-xs font-bold text-destructive">
+                  {visita.estado === "CANCELADA"
+                    ? "Razón de cancelación"
+                    : "Razón de incompleto"}
                 </p>
-                <p className="text-sm whitespace-pre-wrap">{visita.notasIncompleto}</p>
+                <p className="whitespace-pre-wrap text-sm">
+                  {visita.notasIncompleto}
+                </p>
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Personal</CardTitle>
+            <CardAction>
+              <span className="text-xs text-muted-foreground">
+                {visita.personal.length}
+              </span>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            {visita.personal.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sin asignar</p>
+            ) : (
+              <ul className="space-y-2">
+                {visita.personal.map((vp) => {
+                  const nombre =
+                    `${vp.personal.nombre} ${vp.personal.apellido || ""}`.trim();
+                  return (
+                    <li key={vp.personal.id} className="flex items-center gap-2.5">
+                      <InitialsAvatar name={nombre} size={28} />
+                      <span className="min-w-0 truncate text-sm">{nombre}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </CardContent>
         </Card>
@@ -364,6 +362,7 @@ export function VisitaDetail({
 
       <CompletarVisitaForm
         visitaId={visita.id}
+        productos={visita.productos}
         open={completarOpen}
         onClose={() => setCompletarOpen(false)}
       />
@@ -374,4 +373,67 @@ export function VisitaDetail({
       />
     </>
   );
+}
+
+/** El día de la visita como una hoja de calendario. */
+function TarjetaFecha({ iso }: { iso: string }) {
+  const d = new Date(iso + "T00:00:00Z");
+  const mes = d
+    .toLocaleDateString("es-EC", { month: "short", timeZone: "UTC" })
+    .replace(".", "");
+  const dia = d.toLocaleDateString("es-EC", { weekday: "short", timeZone: "UTC" });
+
+  return (
+    <div className="flex w-20 flex-none flex-col items-center overflow-hidden rounded-xl border">
+      <span className="w-full bg-primary py-1 text-center text-[11px] font-bold uppercase tracking-wide text-primary-foreground">
+        {mes}
+      </span>
+      <span className="py-1 text-3xl font-bold leading-none">
+        {d.getUTCDate()}
+      </span>
+      <span className="pb-1.5 text-[11px] capitalize text-muted-foreground">
+        {dia}
+      </span>
+    </div>
+  );
+}
+
+/** Casilla chica: etiqueta arriba, valor abajo. */
+function Dato({
+  etiqueta,
+  children,
+}: {
+  etiqueta: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border bg-card px-4 py-3">
+      <p className="text-xs text-muted-foreground">{etiqueta}</p>
+      <p className="mt-0.5 truncate text-sm font-semibold">{children}</p>
+    </div>
+  );
+}
+
+const formatCorta = (iso: string) =>
+  new Date(iso + "T00:00:00Z").toLocaleDateString("es-EC", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
+/** "3 h 30 min" a partir de las horas cargadas al cerrar la visita. */
+function duracion(entrada: string | null, salida: string | null): string | null {
+  if (!entrada || !salida) return null;
+  const min = (h: string) => {
+    const [a, b] = h.split(":").map(Number);
+    return a * 60 + (b || 0);
+  };
+  const total = min(salida) - min(entrada);
+  if (total <= 0) return null;
+  const horas = Math.floor(total / 60);
+  const resto = total % 60;
+  return [horas ? `${horas} h` : null, resto ? `${resto} min` : null]
+    .filter(Boolean)
+    .join(" ");
 }

@@ -14,7 +14,7 @@ import {
   TextInput,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { CreateServicioBody, TipoServicio } from "@vivero/shared";
+import type { CreateServicioBody, TipoProducto } from "@vivero/shared";
 
 const PRIMARY = "#2e7d32";
 
@@ -32,7 +32,7 @@ export function ServicioForm({
   const insets = useSafeAreaInsets();
   const [nombre, setNombre] = useState(initial?.nombre ?? "");
   const [descripcion, setDescripcion] = useState(initial?.descripcion ?? "");
-  const [tipo, setTipo] = useState<TipoServicio>(initial?.tipo ?? "RECURRENTE");
+  const [tipo, setTipo] = useState<TipoProducto>(initial?.tipo ?? "SERVICIO");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,16 +94,16 @@ export function ServicioForm({
         <SectionTitle>Tipo</SectionTitle>
         <View style={styles.tipoList}>
           <TipoOption
-            label="Recurrente"
-            description="Visitas programadas con frecuencia"
-            selected={tipo === "RECURRENTE"}
-            onPress={() => setTipo("RECURRENTE")}
+            label="Servicio"
+            description="Trabajo que se ejecuta en una visita"
+            selected={tipo === "SERVICIO"}
+            onPress={() => setTipo("SERVICIO")}
           />
           <TipoOption
-            label="Único"
-            description="Una sola visita"
-            selected={tipo === "UNICO"}
-            onPress={() => setTipo("UNICO")}
+            label="Bien"
+            description="Producto que se despacha"
+            selected={tipo === "BIEN"}
+            onPress={() => setTipo("BIEN")}
           />
         </View>
 

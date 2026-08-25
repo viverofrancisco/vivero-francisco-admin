@@ -262,7 +262,7 @@ export function SectorDetailClient({
               <CardHeader className="border-b">
                 <CardTitle>Informacion del Sector</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3">
+              <CardContent>
                 {editing ? (
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
@@ -285,7 +285,7 @@ export function SectorDetailClient({
               <CardHeader className="border-b">
                 <CardTitle>Clientes en este sector</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3 space-y-4">
+              <CardContent className="space-y-4">
                 {/* Search bar */}
                 {unassignedClientes.length > 0 && (
                   <div ref={searchRef} className="relative">
@@ -387,7 +387,7 @@ export function SectorDetailClient({
               <CardHeader className="border-b">
                 <CardTitle>Personal Admin</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3">
+              <CardContent>
                 <div className="space-y-2">
                   {sector.admins.map((a) => (
                     <div

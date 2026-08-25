@@ -89,7 +89,7 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
           </p>
         </div>
         <Card>
-          <CardContent className="space-y-4 pt-6">
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nombre">Nombre *</Label>
               <Input id="nombre" {...register("nombre")} />

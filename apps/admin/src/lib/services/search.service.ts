@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { resumenProductos } from "@/lib/visita-productos";
 import { nombreCliente } from "@vivero/shared";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Viewer } from "./viewer";
@@ -103,16 +104,16 @@ export async function globalSearch(
   const visitaWhere: Prisma.VisitaWhereInput = {
     deletedAt: null,
     OR: [
-      { clienteServicio: { cliente: clienteNameMatch() } },
+      { cliente: clienteNameMatch() },
       {
-        clienteServicio: {
-          servicio: { nombre: { contains: term, ...insensitive } },
+        productos: {
+          some: { producto: { nombre: { contains: term, ...insensitive } } },
         },
       },
     ],
   };
   if (personalAdmin) {
-    visitaWhere.clienteServicio = { cliente: { sectorId: { in: sectorIds } } };
+    visitaWhere.cliente = { sectorId: { in: sectorIds } };
   }
   if (personal && viewer.personalId) {
     visitaWhere.AND = [
@@ -173,11 +174,10 @@ export async function globalSearch(
         id: true,
         estado: true,
         fechaProgramada: true,
-        clienteServicio: {
-          select: {
-            cliente: { select: { nombre: true, apellido: true, empresa: true } },
-            servicio: { select: { nombre: true } },
-          },
+        cliente: { select: { nombre: true, apellido: true, empresa: true } },
+        productos: {
+          orderBy: { orden: "asc" },
+          select: { producto: { select: { nombre: true } } },
         },
       },
       orderBy: { fechaProgramada: "desc" },
@@ -218,10 +218,8 @@ export async function globalSearch(
     items: visitas.map((v) => ({
       type: "visita",
       id: v.id,
-      title: v.clienteServicio.servicio.nombre,
-      subtitle: `${nombreCliente(
-        v.clienteServicio.cliente
-      )} · ${fmtDate(v.fechaProgramada)}`,
+      title: resumenProductos(v),
+      subtitle: `${nombreCliente(v.cliente)} · ${fmtDate(v.fechaProgramada)}`,
       href: `/dashboard/visitas/${v.id}`,
       estado: v.estado,
     })),

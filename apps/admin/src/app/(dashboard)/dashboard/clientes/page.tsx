@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
-import { PageHeader } from "@/components/shared/page-header";
 import { ClientesTable } from "@/components/clientes/clientes-table";
-import { ImportClientesDialog } from "@/components/clientes/import-clientes-dialog";
+import { ClientesPageHeader } from "@/components/clientes/clientes-page-header";
 
 export default async function ClientesPage() {
   const user = await requireAuth();
@@ -25,9 +24,11 @@ export default async function ClientesPage() {
     orderBy: { createdAt: "desc" },
     include: {
       sector: { select: { id: true, nombre: true } },
-      servicios: {
+      suscripciones: {
         where: { estado: "ACTIVO" },
-        select: { servicio: { select: { nombre: true } } },
+        select: {
+          items: { select: { producto: { select: { nombre: true } } } },
+        },
       },
     },
   });
@@ -38,14 +39,8 @@ export default async function ClientesPage() {
     process.env.NODE_ENV !== "production" && user.role === "ADMIN";
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <PageHeader
-        title="Clientes"
-        description="Gestiona los clientes del vivero"
-        createHref={canCreate ? "/dashboard/clientes/nuevo" : undefined}
-        createLabel="Nuevo Cliente"
-        actions={canCreate ? <ImportClientesDialog /> : undefined}
-      />
+    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+      <ClientesPageHeader canCreate={canCreate} />
 
       <ClientesTable clientes={clientes} devTools={devTools} />
     </div>

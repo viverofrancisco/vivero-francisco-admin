@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { listaProductos } from "@/lib/visita-productos";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { TipoNotificacion, DestinatarioTipo } from "@/generated/prisma/client";
 import { createMetaProvider } from "./meta-provider";
@@ -183,25 +184,24 @@ export async function enviarConfirmacionVisita(visitaId: string) {
   const visita = await prisma.visita.findUnique({
     where: { id: visitaId },
     include: {
-      clienteServicio: {
-        include: {
-          cliente: true,
-          servicio: { select: { nombre: true } },
-        },
+      cliente: true,
+      productos: {
+        orderBy: { orden: "asc" },
+        include: { producto: { select: { nombre: true } } },
       },
     },
   });
 
   if (!visita) return;
 
-  const cliente = visita.clienteServicio.cliente;
+  const cliente = visita.cliente;
   if (!isValidWhatsAppNumber(cliente.telefono)) return;
   if (!cliente.recibirConfirmaciones) return;
 
   const vars = {
     ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: visita.clienteServicio.servicio.nombre,
+    servicio: listaProductos(visita),
     direccion: cliente.direccion || "",
   };
 
@@ -233,18 +233,17 @@ export async function enviarRecordatorioCliente(visitaId: string) {
   const visita = await prisma.visita.findUnique({
     where: { id: visitaId },
     include: {
-      clienteServicio: {
-        include: {
-          cliente: true,
-          servicio: { select: { nombre: true } },
-        },
+      cliente: true,
+      productos: {
+        orderBy: { orden: "asc" },
+        include: { producto: { select: { nombre: true } } },
       },
     },
   });
 
   if (!visita || visita.estado !== "PROGRAMADA") return;
 
-  const cliente = visita.clienteServicio.cliente;
+  const cliente = visita.cliente;
   if (!isValidWhatsAppNumber(cliente.telefono)) return;
   if (!cliente.recibirRecordatorios) return;
 
@@ -261,7 +260,7 @@ export async function enviarRecordatorioCliente(visitaId: string) {
   const vars = {
     ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: visita.clienteServicio.servicio.nombre,
+    servicio: listaProductos(visita),
     direccion: cliente.direccion || "",
   };
 
@@ -293,11 +292,10 @@ export async function enviarAlertaVisitaCompletada(visitaId: string) {
   const visita = await prisma.visita.findUnique({
     where: { id: visitaId },
     include: {
-      clienteServicio: {
-        include: {
-          cliente: { select: { nombre: true, apellido: true, empresa: true } },
-          servicio: { select: { nombre: true } },
-        },
+      cliente: { select: { nombre: true, apellido: true, empresa: true } },
+      productos: {
+        orderBy: { orden: "asc" },
+        include: { producto: { select: { nombre: true } } },
       },
     },
   });
@@ -305,9 +303,9 @@ export async function enviarAlertaVisitaCompletada(visitaId: string) {
   if (!visita) return;
 
   const vars = {
-    ...nombreVarsCliente(visita.clienteServicio.cliente),
+    ...nombreVarsCliente(visita.cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: visita.clienteServicio.servicio.nombre,
+    servicio: listaProductos(visita),
     estado: visita.estado,
     horaEntrada: visita.horaEntrada || "N/A",
     horaSalida: visita.horaSalida || "N/A",
@@ -352,11 +350,10 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
   const visita = await prisma.visita.findUnique({
     where: { id: visitaId },
     include: {
-      clienteServicio: {
-        include: {
-          cliente: { select: { nombre: true, apellido: true, empresa: true } },
-          servicio: { select: { nombre: true } },
-        },
+      cliente: { select: { nombre: true, apellido: true, empresa: true } },
+      productos: {
+        orderBy: { orden: "asc" },
+        include: { producto: { select: { nombre: true } } },
       },
     },
   });
@@ -364,9 +361,9 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
   if (!visita) return;
 
   const vars = {
-    ...nombreVarsCliente(visita.clienteServicio.cliente),
+    ...nombreVarsCliente(visita.cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: visita.clienteServicio.servicio.nombre,
+    servicio: listaProductos(visita),
     estado: visita.estado,
     motivo: visita.notasIncompleto || "Sin detalle",
   };
@@ -423,11 +420,10 @@ export async function enviarResumenDiarioAdmin() {
       deletedAt: null,
     },
     include: {
-      clienteServicio: {
-        include: {
-          cliente: { select: { nombre: true, apellido: true, empresa: true, direccion: true } },
-          servicio: { select: { nombre: true } },
-        },
+      cliente: { select: { nombre: true, apellido: true, empresa: true, direccion: true } },
+      productos: {
+        orderBy: { orden: "asc" },
+        include: { producto: { select: { nombre: true } } },
       },
       grupo: { select: { nombre: true } },
     },
@@ -438,8 +434,8 @@ export async function enviarResumenDiarioAdmin() {
 
   const listaVisitas = visitas
     .map((v, i) => {
-      const c = v.clienteServicio.cliente;
-      return `${i + 1}. ${nombreCliente(c)} - ${v.clienteServicio.servicio.nombre}${c.direccion ? ` (${c.direccion})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
+      const c = v.cliente;
+      return `${i + 1}. ${nombreCliente(c)} - ${listaProductos(v)}${c.direccion ? ` (${c.direccion})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
     })
     .join("\n");
 

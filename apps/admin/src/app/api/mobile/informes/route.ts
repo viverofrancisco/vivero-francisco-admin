@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { z } from "zod/v4";
+import { informeGenerateSchema } from "@/lib/validations/informe";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 import {
   generateInforme,
@@ -55,30 +55,7 @@ export async function GET(request: Request) {
   }
 }
 
-const generateSchema = z.object({
-  clienteId: z.string().min(1),
-  titulo: z.string().min(1).max(200),
-  visitaIds: z.array(z.string().min(1)).min(1),
-  firmantes: z
-    .array(
-      z.object({
-        nombre: z.string().min(1).max(100),
-        cedula: z.string().max(30).nullable().optional(),
-      })
-    )
-    .min(1)
-    .max(3),
-  secciones: z
-    .array(
-      z.object({
-        tipoActividadId: z.string().nullable().optional(),
-        titulo: z.string().min(1).max(200),
-        descripcion: z.string().max(4000).nullable().optional(),
-        mediaIds: z.array(z.string().min(1)),
-      })
-    )
-    .min(1),
-});
+const generateSchema = informeGenerateSchema;
 
 export async function POST(request: Request) {
   const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");

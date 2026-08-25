@@ -73,6 +73,8 @@ export default function ClienteDetailScreen() {
   const direccion = [data.direccion, data.numeroCasa, data.ciudad]
     .filter(Boolean)
     .join(", ");
+  // El detalle ya excluye las canceladas; se muestran activas y pausadas.
+  const suscripcionesVisibles = data.suscripciones;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -144,48 +146,42 @@ export default function ClienteDetailScreen() {
         </View>
       ) : null}
 
-      {/* Servicios */}
+      {/* Suscripciones — solo lectura: se arman desde el portal. */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text variant="labelMedium" style={styles.sectionLabel}>
-            SERVICIOS CONTRATADOS
+            SUSCRIPCIONES
           </Text>
-          {canEdit ? (
-            <Button
-              mode="text"
-              compact
-              icon="plus"
-              onPress={() =>
-                router.push(`/(personal)/clientes/asignar/${id}`)
-              }
-              style={styles.sectionAction}
-            >
-              Asignar
-            </Button>
-          ) : null}
         </View>
-        {data.servicios.length === 0 ? (
+        {suscripcionesVisibles.length === 0 ? (
           <HelperText type="info" visible style={styles.muted}>
-            Sin servicios activos.
+            Sin suscripciones activas.
           </HelperText>
         ) : (
           <View style={styles.serviciosList}>
-            {data.servicios.map((cs) => (
-              <View key={cs.id} style={styles.servicioRow}>
-                <View style={styles.servicioText}>
-                  <Text variant="bodyLarge" style={styles.servicioTitle}>
-                    {cs.servicio.nombre}
-                  </Text>
-                  <Text variant="bodySmall" style={styles.muted}>
-                    {formatTipo(cs.servicio.tipo)}
-                    {cs.frecuenciaMensual
-                      ? ` · ${cs.frecuenciaMensual}/mes`
-                      : ""}
-                  </Text>
-                </View>
-                <Text variant="bodyMedium" style={styles.servicioPrecio}>
-                  ${formatPrice(cs.precio)}
+            {suscripcionesVisibles.map((sus) => (
+              <View key={sus.id}>
+                <Text variant="labelSmall" style={styles.muted}>
+                  {formatPeriodicidad(sus.periodicidad)}
+                  {sus.estado !== "ACTIVO" ? ` · ${sus.estado}` : ""}
                 </Text>
+                {sus.items.map((item) => (
+                  <View key={item.id} style={styles.servicioRow}>
+                    <View style={styles.servicioText}>
+                      <Text variant="bodyLarge" style={styles.servicioTitle}>
+                        {item.producto.nombre}
+                      </Text>
+                      <Text variant="bodySmall" style={styles.muted}>
+                        {item.visitasPorPeriodo
+                          ? `${item.visitasPorPeriodo}${sufijoPeriodo(sus.periodicidad)}`
+                          : "Sin visitas declaradas"}
+                      </Text>
+                    </View>
+                    <Text variant="bodyMedium" style={styles.servicioPrecio}>
+                      ${formatPrice(item.precio)}
+                    </Text>
+                  </View>
+                ))}
               </View>
             ))}
           </View>
@@ -234,8 +230,27 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function formatTipo(tipo: string): string {
-  return tipo === "RECURRENTE" ? "Recurrente" : "Único";
+const PERIODICIDAD_LABELS: Record<string, string> = {
+  MENSUAL: "Mensual",
+  TRIMESTRAL: "Trimestral",
+  SEMESTRAL: "Semestral",
+  ANUAL: "Anual",
+};
+
+function formatPeriodicidad(p: string): string {
+  return PERIODICIDAD_LABELS[p] ?? p;
+}
+
+const PERIODICIDAD_SUFIJOS: Record<string, string> = {
+  MENSUAL: "/mes",
+  TRIMESTRAL: "/trimestre",
+  SEMESTRAL: "/semestre",
+  ANUAL: "/año",
+};
+
+/** Las visitas incluidas se cuentan por período de cobro, no por mes. */
+function sufijoPeriodo(p: string): string {
+  return PERIODICIDAD_SUFIJOS[p] ?? "";
 }
 
 function formatPrice(value: string): string {

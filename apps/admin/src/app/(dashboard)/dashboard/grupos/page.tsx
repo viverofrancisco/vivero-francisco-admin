@@ -24,8 +24,14 @@ export default async function GruposPage() {
       <PageHeader
         title="Grupos de Personal"
         description="Gestiona los grupos de trabajo"
-        createHref="/dashboard/grupos/nuevo"
-        createLabel="Nuevo Grupo"
+        actions={[
+          {
+            label: "Nuevo Grupo",
+            href: "/dashboard/grupos/nuevo",
+            icon: "plus",
+            primary: true,
+          },
+        ]}
       />
 
       <GruposTable grupos={grupos} />

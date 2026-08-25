@@ -3,6 +3,7 @@ import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { ClienteVisitasPage } from "@/components/clientes/cliente-visitas-page";
+import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
 
 export default async function ClienteVisitasRoute({
   params,
@@ -27,7 +28,7 @@ export default async function ClienteVisitasRoute({
   }
 
   const visitas = await prisma.visita.findMany({
-    where: { clienteServicio: { clienteId: id }, deletedAt: null },
+    where: { clienteId: id, deletedAt: null },
     orderBy: { fechaProgramada: "desc" },
     select: {
       id: true,
@@ -35,12 +36,8 @@ export default async function ClienteVisitasRoute({
       fechaRealizada: true,
       estado: true,
       notas: true,
-      clienteServicio: {
-        select: {
-          cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
-          servicio: { select: { id: true, nombre: true, tipo: true } },
-        },
-      },
+      cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
+      productos: PRODUCTOS_DE_VISITA_SELECT,
       grupo: { select: { id: true, nombre: true } },
     },
   });
@@ -51,14 +48,15 @@ export default async function ClienteVisitasRoute({
     fechaRealizada: v.fechaRealizada?.toISOString().split("T")[0] ?? null,
     estado: v.estado,
     notas: v.notas,
-    clienteServicio: v.clienteServicio,
+    cliente: v.cliente,
+    productos: v.productos,
     grupo: v.grupo,
   }));
 
   const nombreCompleto = nombreCliente(cliente);
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
       <ClienteVisitasPage
         clienteId={cliente.id}
         clienteNombre={nombreCompleto}

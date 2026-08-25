@@ -143,7 +143,7 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
             <CardHeader className="border-b">
               <CardTitle>Informacion General</CardTitle>
             </CardHeader>
-            <CardContent className="pt-2">
+            <CardContent>
               <InfoRow label="Nombre" value={initialData?.nombre} />
               <InfoRow label="Apellido" value={initialData?.apellido} />
               <InfoRow label="Telefono" value={initialData?.telefono} />
@@ -171,7 +171,7 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
             <CardHeader className="border-b">
               <CardTitle>Informacion General</CardTitle>
             </CardHeader>
-            <CardContent className="pt-4 space-y-4">
+            <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="nombre">Nombre *</Label>
@@ -281,7 +281,7 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
           </p>
         </div>
         <Card>
-          <CardContent className="space-y-4 pt-6">
+          <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="nombre">Nombre *</Label>

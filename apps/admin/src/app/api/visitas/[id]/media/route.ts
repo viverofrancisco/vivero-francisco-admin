@@ -64,6 +64,8 @@ const confirmSchema = z.object({
     z.object({
       key: z.string().min(1),
       tipo: z.string().min(1),
+      // Servicio de la visita al que corresponde la foto. Opcional.
+      productoId: z.string().min(1).nullable().optional(),
     })
   ),
 });
@@ -91,12 +93,23 @@ export async function PUT(
     );
   }
 
+  // Solo aceptamos etiquetas de servicios que realmente cubre esta visita.
+  const serviciosDeVisita = await prisma.visitaProducto.findMany({
+    where: { visitaId: id },
+    select: { productoId: true },
+  });
+  const permitidos = new Set(
+    serviciosDeVisita.map((vs) => vs.productoId)
+  );
+
   const media = await prisma.visitaMedia.createManyAndReturn({
     data: result.data.files.map((f) => ({
       visitaId: id,
       key: f.key,
       url: publicUrlForKey(f.key),
       tipo: f.tipo,
+      productoId:
+        f.productoId && permitidos.has(f.productoId) ? f.productoId : null,
     })),
   });
 

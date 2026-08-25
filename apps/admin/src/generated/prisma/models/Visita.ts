@@ -26,7 +26,7 @@ export type AggregateVisita = {
 
 export type VisitaMinAggregateOutputType = {
   id: string | null
-  clienteServicioId: string | null
+  clienteId: string | null
   fechaProgramada: Date | null
   fechaRealizada: Date | null
   horaEntrada: string | null
@@ -44,7 +44,7 @@ export type VisitaMinAggregateOutputType = {
 
 export type VisitaMaxAggregateOutputType = {
   id: string | null
-  clienteServicioId: string | null
+  clienteId: string | null
   fechaProgramada: Date | null
   fechaRealizada: Date | null
   horaEntrada: string | null
@@ -62,7 +62,7 @@ export type VisitaMaxAggregateOutputType = {
 
 export type VisitaCountAggregateOutputType = {
   id: number
-  clienteServicioId: number
+  clienteId: number
   fechaProgramada: number
   fechaRealizada: number
   horaEntrada: number
@@ -82,7 +82,7 @@ export type VisitaCountAggregateOutputType = {
 
 export type VisitaMinAggregateInputType = {
   id?: true
-  clienteServicioId?: true
+  clienteId?: true
   fechaProgramada?: true
   fechaRealizada?: true
   horaEntrada?: true
@@ -100,7 +100,7 @@ export type VisitaMinAggregateInputType = {
 
 export type VisitaMaxAggregateInputType = {
   id?: true
-  clienteServicioId?: true
+  clienteId?: true
   fechaProgramada?: true
   fechaRealizada?: true
   horaEntrada?: true
@@ -118,7 +118,7 @@ export type VisitaMaxAggregateInputType = {
 
 export type VisitaCountAggregateInputType = {
   id?: true
-  clienteServicioId?: true
+  clienteId?: true
   fechaProgramada?: true
   fechaRealizada?: true
   horaEntrada?: true
@@ -209,7 +209,7 @@ export type VisitaGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type VisitaGroupByOutputType = {
   id: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date
   fechaRealizada: Date | null
   horaEntrada: string | null
@@ -248,7 +248,7 @@ export type VisitaWhereInput = {
   OR?: Prisma.VisitaWhereInput[]
   NOT?: Prisma.VisitaWhereInput | Prisma.VisitaWhereInput[]
   id?: Prisma.StringFilter<"Visita"> | string
-  clienteServicioId?: Prisma.StringFilter<"Visita"> | string
+  clienteId?: Prisma.StringFilter<"Visita"> | string
   fechaProgramada?: Prisma.DateTimeFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableFilter<"Visita"> | string | null
@@ -262,7 +262,8 @@ export type VisitaWhereInput = {
   deletedAt?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   createdById?: Prisma.StringNullableFilter<"Visita"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Visita"> | string | null
-  clienteServicio?: Prisma.XOR<Prisma.ClienteServicioScalarRelationFilter, Prisma.ClienteServicioWhereInput>
+  cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
+  productos?: Prisma.VisitaProductoListRelationFilter
   grupo?: Prisma.XOR<Prisma.GrupoNullableScalarRelationFilter, Prisma.GrupoWhereInput> | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -276,7 +277,7 @@ export type VisitaWhereInput = {
 
 export type VisitaOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  clienteServicioId?: Prisma.SortOrder
+  clienteId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrderInput | Prisma.SortOrder
   horaEntrada?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -290,7 +291,8 @@ export type VisitaOrderByWithRelationInput = {
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
-  clienteServicio?: Prisma.ClienteServicioOrderByWithRelationInput
+  cliente?: Prisma.ClienteOrderByWithRelationInput
+  productos?: Prisma.VisitaProductoOrderByRelationAggregateInput
   grupo?: Prisma.GrupoOrderByWithRelationInput
   createdBy?: Prisma.UserOrderByWithRelationInput
   updatedBy?: Prisma.UserOrderByWithRelationInput
@@ -307,7 +309,7 @@ export type VisitaWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.VisitaWhereInput | Prisma.VisitaWhereInput[]
   OR?: Prisma.VisitaWhereInput[]
   NOT?: Prisma.VisitaWhereInput | Prisma.VisitaWhereInput[]
-  clienteServicioId?: Prisma.StringFilter<"Visita"> | string
+  clienteId?: Prisma.StringFilter<"Visita"> | string
   fechaProgramada?: Prisma.DateTimeFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableFilter<"Visita"> | string | null
@@ -321,7 +323,8 @@ export type VisitaWhereUniqueInput = Prisma.AtLeast<{
   deletedAt?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   createdById?: Prisma.StringNullableFilter<"Visita"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Visita"> | string | null
-  clienteServicio?: Prisma.XOR<Prisma.ClienteServicioScalarRelationFilter, Prisma.ClienteServicioWhereInput>
+  cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
+  productos?: Prisma.VisitaProductoListRelationFilter
   grupo?: Prisma.XOR<Prisma.GrupoNullableScalarRelationFilter, Prisma.GrupoWhereInput> | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -335,7 +338,7 @@ export type VisitaWhereUniqueInput = Prisma.AtLeast<{
 
 export type VisitaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  clienteServicioId?: Prisma.SortOrder
+  clienteId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrderInput | Prisma.SortOrder
   horaEntrada?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -359,7 +362,7 @@ export type VisitaScalarWhereWithAggregatesInput = {
   OR?: Prisma.VisitaScalarWhereWithAggregatesInput[]
   NOT?: Prisma.VisitaScalarWhereWithAggregatesInput | Prisma.VisitaScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Visita"> | string
-  clienteServicioId?: Prisma.StringWithAggregatesFilter<"Visita"> | string
+  clienteId?: Prisma.StringWithAggregatesFilter<"Visita"> | string
   fechaProgramada?: Prisma.DateTimeWithAggregatesFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableWithAggregatesFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableWithAggregatesFilter<"Visita"> | string | null
@@ -387,7 +390,8 @@ export type VisitaCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
@@ -401,7 +405,7 @@ export type VisitaCreateInput = {
 
 export type VisitaUncheckedCreateInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -415,6 +419,7 @@ export type VisitaUncheckedCreateInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -435,7 +440,8 @@ export type VisitaUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -449,7 +455,7 @@ export type VisitaUpdateInput = {
 
 export type VisitaUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -463,6 +469,7 @@ export type VisitaUncheckedUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -473,7 +480,7 @@ export type VisitaUncheckedUpdateInput = {
 
 export type VisitaCreateManyInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -505,7 +512,7 @@ export type VisitaUpdateManyMutationInput = {
 
 export type VisitaUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -533,7 +540,7 @@ export type VisitaOrderByRelationAggregateInput = {
 
 export type VisitaCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  clienteServicioId?: Prisma.SortOrder
+  clienteId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrder
   horaEntrada?: Prisma.SortOrder
@@ -551,7 +558,7 @@ export type VisitaCountOrderByAggregateInput = {
 
 export type VisitaMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  clienteServicioId?: Prisma.SortOrder
+  clienteId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrder
   horaEntrada?: Prisma.SortOrder
@@ -569,7 +576,7 @@ export type VisitaMaxOrderByAggregateInput = {
 
 export type VisitaMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  clienteServicioId?: Prisma.SortOrder
+  clienteId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrder
   horaEntrada?: Prisma.SortOrder
@@ -679,45 +686,45 @@ export type VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput = {
   deleteMany?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
 }
 
-export type VisitaCreateNestedManyWithoutClienteServicioInput = {
-  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteServicioInput, Prisma.VisitaUncheckedCreateWithoutClienteServicioInput> | Prisma.VisitaCreateWithoutClienteServicioInput[] | Prisma.VisitaUncheckedCreateWithoutClienteServicioInput[]
-  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteServicioInput | Prisma.VisitaCreateOrConnectWithoutClienteServicioInput[]
-  createMany?: Prisma.VisitaCreateManyClienteServicioInputEnvelope
+export type VisitaCreateNestedManyWithoutClienteInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteInput, Prisma.VisitaUncheckedCreateWithoutClienteInput> | Prisma.VisitaCreateWithoutClienteInput[] | Prisma.VisitaUncheckedCreateWithoutClienteInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteInput | Prisma.VisitaCreateOrConnectWithoutClienteInput[]
+  createMany?: Prisma.VisitaCreateManyClienteInputEnvelope
   connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
 }
 
-export type VisitaUncheckedCreateNestedManyWithoutClienteServicioInput = {
-  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteServicioInput, Prisma.VisitaUncheckedCreateWithoutClienteServicioInput> | Prisma.VisitaCreateWithoutClienteServicioInput[] | Prisma.VisitaUncheckedCreateWithoutClienteServicioInput[]
-  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteServicioInput | Prisma.VisitaCreateOrConnectWithoutClienteServicioInput[]
-  createMany?: Prisma.VisitaCreateManyClienteServicioInputEnvelope
+export type VisitaUncheckedCreateNestedManyWithoutClienteInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteInput, Prisma.VisitaUncheckedCreateWithoutClienteInput> | Prisma.VisitaCreateWithoutClienteInput[] | Prisma.VisitaUncheckedCreateWithoutClienteInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteInput | Prisma.VisitaCreateOrConnectWithoutClienteInput[]
+  createMany?: Prisma.VisitaCreateManyClienteInputEnvelope
   connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
 }
 
-export type VisitaUpdateManyWithoutClienteServicioNestedInput = {
-  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteServicioInput, Prisma.VisitaUncheckedCreateWithoutClienteServicioInput> | Prisma.VisitaCreateWithoutClienteServicioInput[] | Prisma.VisitaUncheckedCreateWithoutClienteServicioInput[]
-  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteServicioInput | Prisma.VisitaCreateOrConnectWithoutClienteServicioInput[]
-  upsert?: Prisma.VisitaUpsertWithWhereUniqueWithoutClienteServicioInput | Prisma.VisitaUpsertWithWhereUniqueWithoutClienteServicioInput[]
-  createMany?: Prisma.VisitaCreateManyClienteServicioInputEnvelope
+export type VisitaUpdateManyWithoutClienteNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteInput, Prisma.VisitaUncheckedCreateWithoutClienteInput> | Prisma.VisitaCreateWithoutClienteInput[] | Prisma.VisitaUncheckedCreateWithoutClienteInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteInput | Prisma.VisitaCreateOrConnectWithoutClienteInput[]
+  upsert?: Prisma.VisitaUpsertWithWhereUniqueWithoutClienteInput | Prisma.VisitaUpsertWithWhereUniqueWithoutClienteInput[]
+  createMany?: Prisma.VisitaCreateManyClienteInputEnvelope
   set?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
   disconnect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
   delete?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
   connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
-  update?: Prisma.VisitaUpdateWithWhereUniqueWithoutClienteServicioInput | Prisma.VisitaUpdateWithWhereUniqueWithoutClienteServicioInput[]
-  updateMany?: Prisma.VisitaUpdateManyWithWhereWithoutClienteServicioInput | Prisma.VisitaUpdateManyWithWhereWithoutClienteServicioInput[]
+  update?: Prisma.VisitaUpdateWithWhereUniqueWithoutClienteInput | Prisma.VisitaUpdateWithWhereUniqueWithoutClienteInput[]
+  updateMany?: Prisma.VisitaUpdateManyWithWhereWithoutClienteInput | Prisma.VisitaUpdateManyWithWhereWithoutClienteInput[]
   deleteMany?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
 }
 
-export type VisitaUncheckedUpdateManyWithoutClienteServicioNestedInput = {
-  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteServicioInput, Prisma.VisitaUncheckedCreateWithoutClienteServicioInput> | Prisma.VisitaCreateWithoutClienteServicioInput[] | Prisma.VisitaUncheckedCreateWithoutClienteServicioInput[]
-  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteServicioInput | Prisma.VisitaCreateOrConnectWithoutClienteServicioInput[]
-  upsert?: Prisma.VisitaUpsertWithWhereUniqueWithoutClienteServicioInput | Prisma.VisitaUpsertWithWhereUniqueWithoutClienteServicioInput[]
-  createMany?: Prisma.VisitaCreateManyClienteServicioInputEnvelope
+export type VisitaUncheckedUpdateManyWithoutClienteNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutClienteInput, Prisma.VisitaUncheckedCreateWithoutClienteInput> | Prisma.VisitaCreateWithoutClienteInput[] | Prisma.VisitaUncheckedCreateWithoutClienteInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutClienteInput | Prisma.VisitaCreateOrConnectWithoutClienteInput[]
+  upsert?: Prisma.VisitaUpsertWithWhereUniqueWithoutClienteInput | Prisma.VisitaUpsertWithWhereUniqueWithoutClienteInput[]
+  createMany?: Prisma.VisitaCreateManyClienteInputEnvelope
   set?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
   disconnect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
   delete?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
   connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
-  update?: Prisma.VisitaUpdateWithWhereUniqueWithoutClienteServicioInput | Prisma.VisitaUpdateWithWhereUniqueWithoutClienteServicioInput[]
-  updateMany?: Prisma.VisitaUpdateManyWithWhereWithoutClienteServicioInput | Prisma.VisitaUpdateManyWithWhereWithoutClienteServicioInput[]
+  update?: Prisma.VisitaUpdateWithWhereUniqueWithoutClienteInput | Prisma.VisitaUpdateWithWhereUniqueWithoutClienteInput[]
+  updateMany?: Prisma.VisitaUpdateManyWithWhereWithoutClienteInput | Prisma.VisitaUpdateManyWithWhereWithoutClienteInput[]
   deleteMany?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
 }
 
@@ -765,6 +772,20 @@ export type VisitaUncheckedUpdateManyWithoutGrupoNestedInput = {
 
 export type EnumEstadoVisitaFieldUpdateOperationsInput = {
   set?: $Enums.EstadoVisita
+}
+
+export type VisitaCreateNestedOneWithoutProductosInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutProductosInput, Prisma.VisitaUncheckedCreateWithoutProductosInput>
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutProductosInput
+  connect?: Prisma.VisitaWhereUniqueInput
+}
+
+export type VisitaUpdateOneRequiredWithoutProductosNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutProductosInput, Prisma.VisitaUncheckedCreateWithoutProductosInput>
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutProductosInput
+  upsert?: Prisma.VisitaUpsertWithoutProductosInput
+  connect?: Prisma.VisitaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaUpdateToOneWithWhereWithoutProductosInput, Prisma.VisitaUpdateWithoutProductosInput>, Prisma.VisitaUncheckedUpdateWithoutProductosInput>
 }
 
 export type VisitaCreateNestedOneWithoutPersonalInput = {
@@ -865,7 +886,8 @@ export type VisitaCreateWithoutCreatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
   media?: Prisma.VisitaMediaCreateNestedManyWithoutVisitaInput
@@ -878,7 +900,7 @@ export type VisitaCreateWithoutCreatedByInput = {
 
 export type VisitaUncheckedCreateWithoutCreatedByInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -891,6 +913,7 @@ export type VisitaUncheckedCreateWithoutCreatedByInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -921,7 +944,8 @@ export type VisitaCreateWithoutUpdatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   media?: Prisma.VisitaMediaCreateNestedManyWithoutVisitaInput
@@ -934,7 +958,7 @@ export type VisitaCreateWithoutUpdatedByInput = {
 
 export type VisitaUncheckedCreateWithoutUpdatedByInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -947,6 +971,7 @@ export type VisitaUncheckedCreateWithoutUpdatedByInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   createdById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -986,7 +1011,7 @@ export type VisitaScalarWhereInput = {
   OR?: Prisma.VisitaScalarWhereInput[]
   NOT?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
   id?: Prisma.StringFilter<"Visita"> | string
-  clienteServicioId?: Prisma.StringFilter<"Visita"> | string
+  clienteId?: Prisma.StringFilter<"Visita"> | string
   fechaProgramada?: Prisma.DateTimeFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableFilter<"Visita"> | string | null
@@ -1018,7 +1043,7 @@ export type VisitaUpdateManyWithWhereWithoutUpdatedByInput = {
   data: Prisma.XOR<Prisma.VisitaUpdateManyMutationInput, Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByInput>
 }
 
-export type VisitaCreateWithoutClienteServicioInput = {
+export type VisitaCreateWithoutClienteInput = {
   id?: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
@@ -1030,6 +1055,7 @@ export type VisitaCreateWithoutClienteServicioInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
@@ -1041,7 +1067,7 @@ export type VisitaCreateWithoutClienteServicioInput = {
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
 }
 
-export type VisitaUncheckedCreateWithoutClienteServicioInput = {
+export type VisitaUncheckedCreateWithoutClienteInput = {
   id?: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
@@ -1056,6 +1082,7 @@ export type VisitaUncheckedCreateWithoutClienteServicioInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -1064,30 +1091,30 @@ export type VisitaUncheckedCreateWithoutClienteServicioInput = {
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
-export type VisitaCreateOrConnectWithoutClienteServicioInput = {
+export type VisitaCreateOrConnectWithoutClienteInput = {
   where: Prisma.VisitaWhereUniqueInput
-  create: Prisma.XOR<Prisma.VisitaCreateWithoutClienteServicioInput, Prisma.VisitaUncheckedCreateWithoutClienteServicioInput>
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutClienteInput, Prisma.VisitaUncheckedCreateWithoutClienteInput>
 }
 
-export type VisitaCreateManyClienteServicioInputEnvelope = {
-  data: Prisma.VisitaCreateManyClienteServicioInput | Prisma.VisitaCreateManyClienteServicioInput[]
+export type VisitaCreateManyClienteInputEnvelope = {
+  data: Prisma.VisitaCreateManyClienteInput | Prisma.VisitaCreateManyClienteInput[]
   skipDuplicates?: boolean
 }
 
-export type VisitaUpsertWithWhereUniqueWithoutClienteServicioInput = {
+export type VisitaUpsertWithWhereUniqueWithoutClienteInput = {
   where: Prisma.VisitaWhereUniqueInput
-  update: Prisma.XOR<Prisma.VisitaUpdateWithoutClienteServicioInput, Prisma.VisitaUncheckedUpdateWithoutClienteServicioInput>
-  create: Prisma.XOR<Prisma.VisitaCreateWithoutClienteServicioInput, Prisma.VisitaUncheckedCreateWithoutClienteServicioInput>
+  update: Prisma.XOR<Prisma.VisitaUpdateWithoutClienteInput, Prisma.VisitaUncheckedUpdateWithoutClienteInput>
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutClienteInput, Prisma.VisitaUncheckedCreateWithoutClienteInput>
 }
 
-export type VisitaUpdateWithWhereUniqueWithoutClienteServicioInput = {
+export type VisitaUpdateWithWhereUniqueWithoutClienteInput = {
   where: Prisma.VisitaWhereUniqueInput
-  data: Prisma.XOR<Prisma.VisitaUpdateWithoutClienteServicioInput, Prisma.VisitaUncheckedUpdateWithoutClienteServicioInput>
+  data: Prisma.XOR<Prisma.VisitaUpdateWithoutClienteInput, Prisma.VisitaUncheckedUpdateWithoutClienteInput>
 }
 
-export type VisitaUpdateManyWithWhereWithoutClienteServicioInput = {
+export type VisitaUpdateManyWithWhereWithoutClienteInput = {
   where: Prisma.VisitaScalarWhereInput
-  data: Prisma.XOR<Prisma.VisitaUpdateManyMutationInput, Prisma.VisitaUncheckedUpdateManyWithoutClienteServicioInput>
+  data: Prisma.XOR<Prisma.VisitaUpdateManyMutationInput, Prisma.VisitaUncheckedUpdateManyWithoutClienteInput>
 }
 
 export type VisitaCreateWithoutGrupoInput = {
@@ -1102,7 +1129,8 @@ export type VisitaCreateWithoutGrupoInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
   media?: Prisma.VisitaMediaCreateNestedManyWithoutVisitaInput
@@ -1115,7 +1143,7 @@ export type VisitaCreateWithoutGrupoInput = {
 
 export type VisitaUncheckedCreateWithoutGrupoInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1128,6 +1156,7 @@ export type VisitaUncheckedCreateWithoutGrupoInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -1162,7 +1191,7 @@ export type VisitaUpdateManyWithWhereWithoutGrupoInput = {
   data: Prisma.XOR<Prisma.VisitaUpdateManyMutationInput, Prisma.VisitaUncheckedUpdateManyWithoutGrupoInput>
 }
 
-export type VisitaCreateWithoutPersonalInput = {
+export type VisitaCreateWithoutProductosInput = {
   id?: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
@@ -1174,20 +1203,21 @@ export type VisitaCreateWithoutPersonalInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
   media?: Prisma.VisitaMediaCreateNestedManyWithoutVisitaInput
+  personal?: Prisma.VisitaPersonalCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
 }
 
-export type VisitaUncheckedCreateWithoutPersonalInput = {
+export type VisitaUncheckedCreateWithoutProductosInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1201,6 +1231,119 @@ export type VisitaUncheckedCreateWithoutPersonalInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
+  personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
+  notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
+  messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
+  chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
+  informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+}
+
+export type VisitaCreateOrConnectWithoutProductosInput = {
+  where: Prisma.VisitaWhereUniqueInput
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutProductosInput, Prisma.VisitaUncheckedCreateWithoutProductosInput>
+}
+
+export type VisitaUpsertWithoutProductosInput = {
+  update: Prisma.XOR<Prisma.VisitaUpdateWithoutProductosInput, Prisma.VisitaUncheckedUpdateWithoutProductosInput>
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutProductosInput, Prisma.VisitaUncheckedCreateWithoutProductosInput>
+  where?: Prisma.VisitaWhereInput
+}
+
+export type VisitaUpdateToOneWithWhereWithoutProductosInput = {
+  where?: Prisma.VisitaWhereInput
+  data: Prisma.XOR<Prisma.VisitaUpdateWithoutProductosInput, Prisma.VisitaUncheckedUpdateWithoutProductosInput>
+}
+
+export type VisitaUpdateWithoutProductosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoVisitaFieldUpdateOperationsInput | $Enums.EstadoVisita
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notasIncompleto?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
+  media?: Prisma.VisitaMediaUpdateManyWithoutVisitaNestedInput
+  personal?: Prisma.VisitaPersonalUpdateManyWithoutVisitaNestedInput
+  notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
+  messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
+  chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
+  informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+}
+
+export type VisitaUncheckedUpdateWithoutProductosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoVisitaFieldUpdateOperationsInput | $Enums.EstadoVisita
+  grupoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notasIncompleto?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
+  personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
+  notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
+  messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
+  chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
+  informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+}
+
+export type VisitaCreateWithoutPersonalInput = {
+  id?: string
+  fechaProgramada: Date | string
+  fechaRealizada?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  estado?: $Enums.EstadoVisita
+  notas?: string | null
+  notasIncompleto?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
+  grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
+  media?: Prisma.VisitaMediaCreateNestedManyWithoutVisitaInput
+  notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
+  messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
+  chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
+  informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+}
+
+export type VisitaUncheckedCreateWithoutPersonalInput = {
+  id?: string
+  clienteId: string
+  fechaProgramada: Date | string
+  fechaRealizada?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  estado?: $Enums.EstadoVisita
+  grupoId?: string | null
+  notas?: string | null
+  notasIncompleto?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
@@ -1236,7 +1379,8 @@ export type VisitaUpdateWithoutPersonalInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -1249,7 +1393,7 @@ export type VisitaUpdateWithoutPersonalInput = {
 
 export type VisitaUncheckedUpdateWithoutPersonalInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1263,6 +1407,7 @@ export type VisitaUncheckedUpdateWithoutPersonalInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1282,7 +1427,8 @@ export type VisitaCreateWithoutMediaInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
@@ -1295,7 +1441,7 @@ export type VisitaCreateWithoutMediaInput = {
 
 export type VisitaUncheckedCreateWithoutMediaInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1309,6 +1455,7 @@ export type VisitaUncheckedCreateWithoutMediaInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
@@ -1344,7 +1491,8 @@ export type VisitaUpdateWithoutMediaInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -1357,7 +1505,7 @@ export type VisitaUpdateWithoutMediaInput = {
 
 export type VisitaUncheckedUpdateWithoutMediaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1371,6 +1519,7 @@ export type VisitaUncheckedUpdateWithoutMediaInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1390,7 +1539,8 @@ export type VisitaCreateWithoutMessagesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
@@ -1403,7 +1553,7 @@ export type VisitaCreateWithoutMessagesInput = {
 
 export type VisitaUncheckedCreateWithoutMessagesInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1417,6 +1567,7 @@ export type VisitaUncheckedCreateWithoutMessagesInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -1452,7 +1603,8 @@ export type VisitaUpdateWithoutMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -1465,7 +1617,7 @@ export type VisitaUpdateWithoutMessagesInput = {
 
 export type VisitaUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1479,6 +1631,7 @@ export type VisitaUncheckedUpdateWithoutMessagesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1498,7 +1651,8 @@ export type VisitaCreateWithoutChatReadsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
@@ -1511,7 +1665,7 @@ export type VisitaCreateWithoutChatReadsInput = {
 
 export type VisitaUncheckedCreateWithoutChatReadsInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1525,6 +1679,7 @@ export type VisitaUncheckedCreateWithoutChatReadsInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -1560,7 +1715,8 @@ export type VisitaUpdateWithoutChatReadsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -1573,7 +1729,7 @@ export type VisitaUpdateWithoutChatReadsInput = {
 
 export type VisitaUncheckedUpdateWithoutChatReadsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1587,6 +1743,7 @@ export type VisitaUncheckedUpdateWithoutChatReadsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1606,7 +1763,8 @@ export type VisitaCreateWithoutNotificacionesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
@@ -1619,7 +1777,7 @@ export type VisitaCreateWithoutNotificacionesInput = {
 
 export type VisitaUncheckedCreateWithoutNotificacionesInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1633,6 +1791,7 @@ export type VisitaUncheckedCreateWithoutNotificacionesInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
@@ -1668,7 +1827,8 @@ export type VisitaUpdateWithoutNotificacionesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -1681,7 +1841,7 @@ export type VisitaUpdateWithoutNotificacionesInput = {
 
 export type VisitaUncheckedUpdateWithoutNotificacionesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1695,6 +1855,7 @@ export type VisitaUncheckedUpdateWithoutNotificacionesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1714,7 +1875,8 @@ export type VisitaCreateWithoutInformesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  clienteServicio: Prisma.ClienteServicioCreateNestedOneWithoutVisitasInput
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
   grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
   createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
@@ -1727,7 +1889,7 @@ export type VisitaCreateWithoutInformesInput = {
 
 export type VisitaUncheckedCreateWithoutInformesInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1741,6 +1903,7 @@ export type VisitaUncheckedCreateWithoutInformesInput = {
   deletedAt?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
   media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
   personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
@@ -1776,7 +1939,8 @@ export type VisitaUpdateWithoutInformesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -1789,7 +1953,7 @@ export type VisitaUpdateWithoutInformesInput = {
 
 export type VisitaUncheckedUpdateWithoutInformesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1803,6 +1967,7 @@ export type VisitaUncheckedUpdateWithoutInformesInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1812,7 +1977,7 @@ export type VisitaUncheckedUpdateWithoutInformesInput = {
 
 export type VisitaCreateManyCreatedByInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1829,7 +1994,7 @@ export type VisitaCreateManyCreatedByInput = {
 
 export type VisitaCreateManyUpdatedByInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1856,7 +2021,8 @@ export type VisitaUpdateWithoutCreatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
   media?: Prisma.VisitaMediaUpdateManyWithoutVisitaNestedInput
@@ -1869,7 +2035,7 @@ export type VisitaUpdateWithoutCreatedByInput = {
 
 export type VisitaUncheckedUpdateWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1882,6 +2048,7 @@ export type VisitaUncheckedUpdateWithoutCreatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1892,7 +2059,7 @@ export type VisitaUncheckedUpdateWithoutCreatedByInput = {
 
 export type VisitaUncheckedUpdateManyWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1919,7 +2086,8 @@ export type VisitaUpdateWithoutUpdatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   media?: Prisma.VisitaMediaUpdateManyWithoutVisitaNestedInput
@@ -1932,7 +2100,7 @@ export type VisitaUpdateWithoutUpdatedByInput = {
 
 export type VisitaUncheckedUpdateWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1945,6 +2113,7 @@ export type VisitaUncheckedUpdateWithoutUpdatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -1955,7 +2124,7 @@ export type VisitaUncheckedUpdateWithoutUpdatedByInput = {
 
 export type VisitaUncheckedUpdateManyWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1970,7 +2139,7 @@ export type VisitaUncheckedUpdateManyWithoutUpdatedByInput = {
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
-export type VisitaCreateManyClienteServicioInput = {
+export type VisitaCreateManyClienteInput = {
   id?: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
@@ -1987,7 +2156,7 @@ export type VisitaCreateManyClienteServicioInput = {
   updatedById?: string | null
 }
 
-export type VisitaUpdateWithoutClienteServicioInput = {
+export type VisitaUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1999,6 +2168,7 @@ export type VisitaUpdateWithoutClienteServicioInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
@@ -2010,7 +2180,7 @@ export type VisitaUpdateWithoutClienteServicioInput = {
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
 }
 
-export type VisitaUncheckedUpdateWithoutClienteServicioInput = {
+export type VisitaUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2025,6 +2195,7 @@ export type VisitaUncheckedUpdateWithoutClienteServicioInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -2033,7 +2204,7 @@ export type VisitaUncheckedUpdateWithoutClienteServicioInput = {
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
-export type VisitaUncheckedUpdateManyWithoutClienteServicioInput = {
+export type VisitaUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2052,7 +2223,7 @@ export type VisitaUncheckedUpdateManyWithoutClienteServicioInput = {
 
 export type VisitaCreateManyGrupoInput = {
   id?: string
-  clienteServicioId: string
+  clienteId: string
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -2079,7 +2250,8 @@ export type VisitaUpdateWithoutGrupoInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clienteServicio?: Prisma.ClienteServicioUpdateOneRequiredWithoutVisitasNestedInput
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
   media?: Prisma.VisitaMediaUpdateManyWithoutVisitaNestedInput
@@ -2092,7 +2264,7 @@ export type VisitaUpdateWithoutGrupoInput = {
 
 export type VisitaUncheckedUpdateWithoutGrupoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2105,6 +2277,7 @@ export type VisitaUncheckedUpdateWithoutGrupoInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
   media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
   personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
@@ -2115,7 +2288,7 @@ export type VisitaUncheckedUpdateWithoutGrupoInput = {
 
 export type VisitaUncheckedUpdateManyWithoutGrupoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteServicioId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2136,6 +2309,7 @@ export type VisitaUncheckedUpdateManyWithoutGrupoInput = {
  */
 
 export type VisitaCountOutputType = {
+  productos: number
   media: number
   personal: number
   notificaciones: number
@@ -2145,6 +2319,7 @@ export type VisitaCountOutputType = {
 }
 
 export type VisitaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  productos?: boolean | VisitaCountOutputTypeCountProductosArgs
   media?: boolean | VisitaCountOutputTypeCountMediaArgs
   personal?: boolean | VisitaCountOutputTypeCountPersonalArgs
   notificaciones?: boolean | VisitaCountOutputTypeCountNotificacionesArgs
@@ -2161,6 +2336,13 @@ export type VisitaCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
    * Select specific fields to fetch from the VisitaCountOutputType
    */
   select?: Prisma.VisitaCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * VisitaCountOutputType without action
+ */
+export type VisitaCountOutputTypeCountProductosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VisitaProductoWhereInput
 }
 
 /**
@@ -2208,7 +2390,7 @@ export type VisitaCountOutputTypeCountInformesArgs<ExtArgs extends runtime.Types
 
 export type VisitaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  clienteServicioId?: boolean
+  clienteId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2222,7 +2404,8 @@ export type VisitaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   deletedAt?: boolean
   createdById?: boolean
   updatedById?: boolean
-  clienteServicio?: boolean | Prisma.ClienteServicioDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  productos?: boolean | Prisma.Visita$productosArgs<ExtArgs>
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
@@ -2237,7 +2420,7 @@ export type VisitaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 
 export type VisitaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  clienteServicioId?: boolean
+  clienteId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2251,7 +2434,7 @@ export type VisitaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   deletedAt?: boolean
   createdById?: boolean
   updatedById?: boolean
-  clienteServicio?: boolean | Prisma.ClienteServicioDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
@@ -2259,7 +2442,7 @@ export type VisitaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
 
 export type VisitaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  clienteServicioId?: boolean
+  clienteId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2273,7 +2456,7 @@ export type VisitaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   deletedAt?: boolean
   createdById?: boolean
   updatedById?: boolean
-  clienteServicio?: boolean | Prisma.ClienteServicioDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
@@ -2281,7 +2464,7 @@ export type VisitaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 
 export type VisitaSelectScalar = {
   id?: boolean
-  clienteServicioId?: boolean
+  clienteId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2297,9 +2480,10 @@ export type VisitaSelectScalar = {
   updatedById?: boolean
 }
 
-export type VisitaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteServicioId" | "fechaProgramada" | "fechaRealizada" | "horaEntrada" | "horaSalida" | "estado" | "grupoId" | "notas" | "notasIncompleto" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById", ExtArgs["result"]["visita"]>
+export type VisitaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "fechaProgramada" | "fechaRealizada" | "horaEntrada" | "horaSalida" | "estado" | "grupoId" | "notas" | "notasIncompleto" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById", ExtArgs["result"]["visita"]>
 export type VisitaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  clienteServicio?: boolean | Prisma.ClienteServicioDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  productos?: boolean | Prisma.Visita$productosArgs<ExtArgs>
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
@@ -2312,13 +2496,13 @@ export type VisitaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   _count?: boolean | Prisma.VisitaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VisitaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  clienteServicio?: boolean | Prisma.ClienteServicioDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
 }
 export type VisitaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  clienteServicio?: boolean | Prisma.ClienteServicioDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
@@ -2327,7 +2511,8 @@ export type VisitaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type $VisitaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Visita"
   objects: {
-    clienteServicio: Prisma.$ClienteServicioPayload<ExtArgs>
+    cliente: Prisma.$ClientePayload<ExtArgs>
+    productos: Prisma.$VisitaProductoPayload<ExtArgs>[]
     grupo: Prisma.$GrupoPayload<ExtArgs> | null
     createdBy: Prisma.$UserPayload<ExtArgs> | null
     updatedBy: Prisma.$UserPayload<ExtArgs> | null
@@ -2340,7 +2525,7 @@ export type $VisitaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    clienteServicioId: string
+    clienteId: string
     fechaProgramada: Date
     fechaRealizada: Date | null
     horaEntrada: string | null
@@ -2748,7 +2933,8 @@ readonly fields: VisitaFieldRefs;
  */
 export interface Prisma__VisitaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  clienteServicio<T extends Prisma.ClienteServicioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClienteServicioDefaultArgs<ExtArgs>>): Prisma.Prisma__ClienteServicioClient<runtime.Types.Result.GetResult<Prisma.$ClienteServicioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  cliente<T extends Prisma.ClienteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClienteDefaultArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  productos<T extends Prisma.Visita$productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaProductoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   grupo<T extends Prisma.Visita$grupoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$grupoArgs<ExtArgs>>): Prisma.Prisma__GrupoClient<runtime.Types.Result.GetResult<Prisma.$GrupoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   createdBy<T extends Prisma.Visita$createdByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$createdByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   updatedBy<T extends Prisma.Visita$updatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$updatedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2788,7 +2974,7 @@ export interface Prisma__VisitaClient<T, Null = never, ExtArgs extends runtime.T
  */
 export interface VisitaFieldRefs {
   readonly id: Prisma.FieldRef<"Visita", 'String'>
-  readonly clienteServicioId: Prisma.FieldRef<"Visita", 'String'>
+  readonly clienteId: Prisma.FieldRef<"Visita", 'String'>
   readonly fechaProgramada: Prisma.FieldRef<"Visita", 'DateTime'>
   readonly fechaRealizada: Prisma.FieldRef<"Visita", 'DateTime'>
   readonly horaEntrada: Prisma.FieldRef<"Visita", 'String'>
@@ -3200,6 +3386,30 @@ export type VisitaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Visitas to delete.
    */
   limit?: number
+}
+
+/**
+ * Visita.productos
+ */
+export type Visita$productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VisitaProducto
+   */
+  select?: Prisma.VisitaProductoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VisitaProducto
+   */
+  omit?: Prisma.VisitaProductoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VisitaProductoInclude<ExtArgs> | null
+  where?: Prisma.VisitaProductoWhereInput
+  orderBy?: Prisma.VisitaProductoOrderByWithRelationInput | Prisma.VisitaProductoOrderByWithRelationInput[]
+  cursor?: Prisma.VisitaProductoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VisitaProductoScalarFieldEnum | Prisma.VisitaProductoScalarFieldEnum[]
 }
 
 /**

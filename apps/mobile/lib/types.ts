@@ -5,14 +5,48 @@
 
 import type { EstadoVisita } from "@vivero/shared";
 
+/** Uno de los productos que cubre una visita. */
+export interface VisitaProducto {
+  productoId: string;
+  /// Item de suscripción que lo cubre, o null si es un trabajo suelto.
+  suscripcionItemId: string | null;
+  producto: {
+    id: string;
+    nombre: string;
+    descripcion: string | null;
+    tipo: string;
+  };
+}
+
 export interface VisitaSummary {
   id: string;
   fechaProgramada: string;
   horaEntrada: string | null;
   estado: EstadoVisita;
-  clienteServicio: {
-    servicio: { id: string; nombre: string; tipo: string };
-  };
+  /// Una visita puede cubrir varios servicios del mismo cliente.
+  productos: VisitaProducto[];
+}
+
+/** Nombres de los servicios de una visita, en el orden guardado. */
+export function nombresProductos(v: { productos: VisitaProducto[] }): string[] {
+  return v.productos.map((vs) => vs.producto.nombre);
+}
+
+/** Todos los servicios en una línea. */
+export function listaProductos(v: { productos: VisitaProducto[] }): string {
+  const nombres = nombresProductos(v);
+  return nombres.length > 0 ? nombres.join(", ") : "Sin servicio";
+}
+
+/** Servicios resumidos para espacios cortos: "A, B +2". */
+export function resumenProductos(
+  v: { productos: VisitaProducto[] },
+  max = 2
+): string {
+  const nombres = nombresProductos(v);
+  if (nombres.length === 0) return "Sin servicio";
+  if (nombres.length <= max) return nombres.join(", ");
+  return `${nombres.slice(0, max).join(", ")} +${nombres.length - max}`;
 }
 
 export interface ChatMediaItem {
@@ -94,6 +128,8 @@ export interface VisitaMedia {
   url: string;
   tipo: string; // "imagen" | "video"
   createdAt: string;
+  /// Producto de la visita al que se etiquetó la foto, si tiene.
+  productoId: string | null;
 }
 
 export interface VisitaDetail extends VisitaSummary {
@@ -101,19 +137,16 @@ export interface VisitaDetail extends VisitaSummary {
   notas: string | null;
   notasIncompleto: string | null;
   fechaRealizada: string | null;
-  clienteServicio: {
-    cliente: {
-      id: string;
-      userId: string | null;
-      nombre: string;
-      apellido: string | null;
-      empresa: string | null;
-      telefono: string | null;
-      direccion: string | null;
-      ciudad: string | null;
-      sector: { id: string; nombre: string } | null;
-    };
-    servicio: { id: string; nombre: string; tipo: string };
+  cliente: {
+    id: string;
+    userId: string | null;
+    nombre: string;
+    apellido: string | null;
+    empresa: string | null;
+    telefono: string | null;
+    direccion: string | null;
+    ciudad: string | null;
+    sector: { id: string; nombre: string } | null;
   };
   personal: {
     personalId: string;
@@ -174,12 +207,18 @@ export interface ClienteStaffDetail extends ClienteListItem {
   referencia: string | null;
   notas: string | null;
   metrosCuadrados: number | null;
-  servicios: {
+  suscripciones: {
     id: string;
     estado: string;
-    precio: string;
-    frecuenciaMensual: number | null;
-    servicio: { id: string; nombre: string; tipo: string };
+    periodicidad: string;
+    fechaInicio: string;
+    items: {
+      id: string;
+      precio: string;
+      ivaTasa: string | null;
+      visitasPorPeriodo: number | null;
+      producto: { id: string; nombre: string; tipo: string };
+    }[];
   }[];
 }
 
@@ -190,9 +229,13 @@ export interface ClienteStaffDetail extends ClienteListItem {
 export interface ServicioListItem {
   id: string;
   nombre: string;
-  tipo: "RECURRENTE" | "UNICO";
+  /** Qué es. Se mapea al `tipo` de Contífico (SER / PRO). */
+  tipo: "SERVICIO" | "BIEN";
+  /** Cómo se vende. Solo existe en el portal. */
+  /** Porcentaje por defecto. En Ecuador conviven 0% y 15%. */
+  ivaTasa: string | null;
   descripcion: string | null;
-  _count: { clientes: number };
+  _count: { suscripcionItems: number };
 }
 
 export interface ServiciosListResponse {

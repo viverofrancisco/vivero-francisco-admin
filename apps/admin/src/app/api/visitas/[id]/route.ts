@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
-import { visitaSchema } from "@/lib/validations/visita";
-import { z } from "zod/v4";
+import { actualizarVisitaSchema } from "@/lib/validations/visita";
 import {
   softDeleteVisita,
   updateVisitaInfo,
@@ -13,10 +12,6 @@ import {
   httpStatusForServiceError,
 } from "@/lib/services/errors";
 import type { Viewer } from "@/lib/services/viewer";
-
-const updatePersonalSchema = z.object({
-  personalIds: z.array(z.string()),
-});
 
 function viewerFromSession(user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>): Viewer {
   return {
@@ -40,10 +35,22 @@ export async function GET(
   const visita = await prisma.visita.findUnique({
     where: { id, deletedAt: null },
     include: {
-      clienteServicio: {
+      cliente: {
+        select: {
+          id: true,
+          nombre: true,
+          apellido: true,
+          empresa: true,
+          ciudad: true,
+          sector: true,
+        },
+      },
+      productos: {
+        orderBy: { orden: "asc" },
         include: {
-          cliente: { select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true, sector: true } },
-          servicio: { select: { id: true, nombre: true, tipo: true } },
+          producto: {
+                select: { id: true, nombre: true, descripcion: true, tipo: true },
+          },
         },
       },
       grupo: {
@@ -89,17 +96,7 @@ export async function PUT(
   const body = await request.json();
   const viewer = viewerFromSession(user);
 
-  const personalResult = updatePersonalSchema.safeParse(body);
-  if (personalResult.success) {
-    try {
-      await updateVisitaPersonal(id, viewer, personalResult.data.personalIds);
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      return handleServiceError(error);
-    }
-  }
-
-  const generalResult = visitaSchema.safeParse(body);
+  const generalResult = actualizarVisitaSchema.safeParse(body);
   if (!generalResult.success) {
     return NextResponse.json(
       { error: "Datos inválidos", details: generalResult.error.issues },
@@ -107,10 +104,54 @@ export async function PUT(
     );
   }
 
+  const { personalIds } = generalResult.data;
   try {
+    // Un solo parseo y las dos escrituras: antes el esquema de personal se
+    // probaba primero y, como Zod ignora las claves de más, un PUT completo
+    // entraba por esa rama y descartaba fecha, productos y notas en silencio.
+    if (personalIds !== undefined) {
+      await updateVisitaPersonal(id, viewer, personalIds);
+    }
+
+    const {
+      fechaProgramada,
+      fechaRealizada,
+      horaEntrada,
+      horaSalida,
+      grupoId,
+      notas,
+      productoIds,
+      productos,
+    } = generalResult.data;
+    const soloPersonal =
+      fechaProgramada === undefined &&
+      fechaRealizada === undefined &&
+      horaEntrada === undefined &&
+      horaSalida === undefined &&
+      grupoId === undefined &&
+      notas === undefined &&
+      productoIds === undefined &&
+      productos === undefined;
+    if (soloPersonal) return NextResponse.json({ success: true });
+
     const visita = await updateVisitaInfo(id, viewer, {
-      grupoId: generalResult.data.grupoId || null,
-      notas: generalResult.data.notas || null,
+      // Fecha sin hora: se arma en UTC para que no se corra por zona horaria.
+      ...(fechaProgramada !== undefined
+        ? { fechaProgramada: new Date(`${fechaProgramada}T00:00:00.000Z`) }
+        : {}),
+      ...(fechaRealizada !== undefined
+        ? {
+            fechaRealizada: fechaRealizada
+              ? new Date(`${fechaRealizada}T00:00:00.000Z`)
+              : null,
+          }
+        : {}),
+      ...(horaEntrada !== undefined ? { horaEntrada: horaEntrada || null } : {}),
+      ...(horaSalida !== undefined ? { horaSalida: horaSalida || null } : {}),
+      ...(grupoId !== undefined ? { grupoId: grupoId || null } : {}),
+      ...(notas !== undefined ? { notas: notas || null } : {}),
+      ...(productoIds !== undefined ? { productoIds } : {}),
+      ...(productos !== undefined ? { productos } : {}),
     });
     return NextResponse.json(visita);
   } catch (error) {

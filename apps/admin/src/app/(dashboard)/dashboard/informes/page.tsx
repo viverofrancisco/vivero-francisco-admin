@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { nombreCliente } from "@vivero/shared";
 import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
 import { listInformes } from "@/lib/services/informe.service";
 import { listClientes } from "@/lib/services/cliente.service";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 import { InformesTable } from "@/components/informes/informes-table";
 import { InformesFilters } from "@/components/informes/informes-filters";
 import { InformesPagination } from "@/components/informes/informes-pagination";
@@ -76,20 +74,18 @@ export default async function InformesPage({
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Informes</h1>
-          <p className="text-sm text-muted-foreground">
-            Informes mensuales generados por cliente.
-          </p>
-        </div>
-        <Link href="/dashboard/informes/nuevo">
-          <Button>
-            <Plus className="h-4 w-4 mr-1.5" />
-            Generar nuevo informe
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Informes"
+        description="Informes mensuales generados por cliente."
+        actions={[
+          {
+            label: "Generar nuevo informe",
+            href: "/dashboard/informes/nuevo",
+            icon: "plus",
+            primary: true,
+          },
+        ]}
+      />
 
       <InformesFilters
         clientes={clientesOptions}

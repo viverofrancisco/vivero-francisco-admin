@@ -15,12 +15,18 @@ export default async function PersonalPage() {
   });
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
       <PageHeader
         title="Personal"
         description="Gestiona el personal del vivero"
-        createHref="/dashboard/personal/nuevo"
-        createLabel="Nuevo Personal"
+        actions={[
+          {
+            label: "Nuevo Personal",
+            href: "/dashboard/personal/nuevo",
+            icon: "plus",
+            primary: true,
+          },
+        ]}
       />
 
       <PersonalTable personal={personal} />

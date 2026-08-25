@@ -177,7 +177,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
               <CardHeader className="border-b">
                 <CardTitle>Informacion del Grupo</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3">
+              <CardContent>
                 {editing ? (
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -214,7 +214,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
               <CardHeader className="border-b">
                 <CardTitle>Miembros</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3">
+              <CardContent>
                 {editing ? (
                   <div className="space-y-2">
                     <PersonalSelector

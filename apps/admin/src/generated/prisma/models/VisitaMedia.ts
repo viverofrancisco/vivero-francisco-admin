@@ -31,6 +31,7 @@ export type VisitaMediaMinAggregateOutputType = {
   url: string | null
   tipo: string | null
   createdAt: Date | null
+  productoId: string | null
 }
 
 export type VisitaMediaMaxAggregateOutputType = {
@@ -40,6 +41,7 @@ export type VisitaMediaMaxAggregateOutputType = {
   url: string | null
   tipo: string | null
   createdAt: Date | null
+  productoId: string | null
 }
 
 export type VisitaMediaCountAggregateOutputType = {
@@ -49,6 +51,7 @@ export type VisitaMediaCountAggregateOutputType = {
   url: number
   tipo: number
   createdAt: number
+  productoId: number
   _all: number
 }
 
@@ -60,6 +63,7 @@ export type VisitaMediaMinAggregateInputType = {
   url?: true
   tipo?: true
   createdAt?: true
+  productoId?: true
 }
 
 export type VisitaMediaMaxAggregateInputType = {
@@ -69,6 +73,7 @@ export type VisitaMediaMaxAggregateInputType = {
   url?: true
   tipo?: true
   createdAt?: true
+  productoId?: true
 }
 
 export type VisitaMediaCountAggregateInputType = {
@@ -78,6 +83,7 @@ export type VisitaMediaCountAggregateInputType = {
   url?: true
   tipo?: true
   createdAt?: true
+  productoId?: true
   _all?: true
 }
 
@@ -160,6 +166,7 @@ export type VisitaMediaGroupByOutputType = {
   url: string
   tipo: string
   createdAt: Date
+  productoId: string | null
   _count: VisitaMediaCountAggregateOutputType | null
   _min: VisitaMediaMinAggregateOutputType | null
   _max: VisitaMediaMaxAggregateOutputType | null
@@ -190,7 +197,10 @@ export type VisitaMediaWhereInput = {
   url?: Prisma.StringFilter<"VisitaMedia"> | string
   tipo?: Prisma.StringFilter<"VisitaMedia"> | string
   createdAt?: Prisma.DateTimeFilter<"VisitaMedia"> | Date | string
+  productoId?: Prisma.StringNullableFilter<"VisitaMedia"> | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
+  producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
+  informeFotos?: Prisma.InformeSeccionFotoListRelationFilter
 }
 
 export type VisitaMediaOrderByWithRelationInput = {
@@ -200,7 +210,10 @@ export type VisitaMediaOrderByWithRelationInput = {
   url?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  productoId?: Prisma.SortOrderInput | Prisma.SortOrder
   visita?: Prisma.VisitaOrderByWithRelationInput
+  producto?: Prisma.ProductoOrderByWithRelationInput
+  informeFotos?: Prisma.InformeSeccionFotoOrderByRelationAggregateInput
 }
 
 export type VisitaMediaWhereUniqueInput = Prisma.AtLeast<{
@@ -213,7 +226,10 @@ export type VisitaMediaWhereUniqueInput = Prisma.AtLeast<{
   url?: Prisma.StringFilter<"VisitaMedia"> | string
   tipo?: Prisma.StringFilter<"VisitaMedia"> | string
   createdAt?: Prisma.DateTimeFilter<"VisitaMedia"> | Date | string
+  productoId?: Prisma.StringNullableFilter<"VisitaMedia"> | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
+  producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
+  informeFotos?: Prisma.InformeSeccionFotoListRelationFilter
 }, "id">
 
 export type VisitaMediaOrderByWithAggregationInput = {
@@ -223,6 +239,7 @@ export type VisitaMediaOrderByWithAggregationInput = {
   url?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  productoId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.VisitaMediaCountOrderByAggregateInput
   _max?: Prisma.VisitaMediaMaxOrderByAggregateInput
   _min?: Prisma.VisitaMediaMinOrderByAggregateInput
@@ -238,6 +255,7 @@ export type VisitaMediaScalarWhereWithAggregatesInput = {
   url?: Prisma.StringWithAggregatesFilter<"VisitaMedia"> | string
   tipo?: Prisma.StringWithAggregatesFilter<"VisitaMedia"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"VisitaMedia"> | Date | string
+  productoId?: Prisma.StringNullableWithAggregatesFilter<"VisitaMedia"> | string | null
 }
 
 export type VisitaMediaCreateInput = {
@@ -247,6 +265,8 @@ export type VisitaMediaCreateInput = {
   tipo: string
   createdAt?: Date | string
   visita: Prisma.VisitaCreateNestedOneWithoutMediaInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutVisitaMediaInput
+  informeFotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutVisitaMediaInput
 }
 
 export type VisitaMediaUncheckedCreateInput = {
@@ -256,6 +276,8 @@ export type VisitaMediaUncheckedCreateInput = {
   url: string
   tipo: string
   createdAt?: Date | string
+  productoId?: string | null
+  informeFotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutVisitaMediaInput
 }
 
 export type VisitaMediaUpdateInput = {
@@ -265,6 +287,8 @@ export type VisitaMediaUpdateInput = {
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   visita?: Prisma.VisitaUpdateOneRequiredWithoutMediaNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutVisitaMediaNestedInput
+  informeFotos?: Prisma.InformeSeccionFotoUpdateManyWithoutVisitaMediaNestedInput
 }
 
 export type VisitaMediaUncheckedUpdateInput = {
@@ -274,6 +298,8 @@ export type VisitaMediaUncheckedUpdateInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  informeFotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutVisitaMediaNestedInput
 }
 
 export type VisitaMediaCreateManyInput = {
@@ -283,6 +309,7 @@ export type VisitaMediaCreateManyInput = {
   url: string
   tipo: string
   createdAt?: Date | string
+  productoId?: string | null
 }
 
 export type VisitaMediaUpdateManyMutationInput = {
@@ -300,6 +327,7 @@ export type VisitaMediaUncheckedUpdateManyInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type VisitaMediaListRelationFilter = {
@@ -319,6 +347,7 @@ export type VisitaMediaCountOrderByAggregateInput = {
   url?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  productoId?: Prisma.SortOrder
 }
 
 export type VisitaMediaMaxOrderByAggregateInput = {
@@ -328,6 +357,7 @@ export type VisitaMediaMaxOrderByAggregateInput = {
   url?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  productoId?: Prisma.SortOrder
 }
 
 export type VisitaMediaMinOrderByAggregateInput = {
@@ -337,6 +367,54 @@ export type VisitaMediaMinOrderByAggregateInput = {
   url?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  productoId?: Prisma.SortOrder
+}
+
+export type VisitaMediaNullableScalarRelationFilter = {
+  is?: Prisma.VisitaMediaWhereInput | null
+  isNot?: Prisma.VisitaMediaWhereInput | null
+}
+
+export type VisitaMediaCreateNestedManyWithoutProductoInput = {
+  create?: Prisma.XOR<Prisma.VisitaMediaCreateWithoutProductoInput, Prisma.VisitaMediaUncheckedCreateWithoutProductoInput> | Prisma.VisitaMediaCreateWithoutProductoInput[] | Prisma.VisitaMediaUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.VisitaMediaCreateOrConnectWithoutProductoInput | Prisma.VisitaMediaCreateOrConnectWithoutProductoInput[]
+  createMany?: Prisma.VisitaMediaCreateManyProductoInputEnvelope
+  connect?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+}
+
+export type VisitaMediaUncheckedCreateNestedManyWithoutProductoInput = {
+  create?: Prisma.XOR<Prisma.VisitaMediaCreateWithoutProductoInput, Prisma.VisitaMediaUncheckedCreateWithoutProductoInput> | Prisma.VisitaMediaCreateWithoutProductoInput[] | Prisma.VisitaMediaUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.VisitaMediaCreateOrConnectWithoutProductoInput | Prisma.VisitaMediaCreateOrConnectWithoutProductoInput[]
+  createMany?: Prisma.VisitaMediaCreateManyProductoInputEnvelope
+  connect?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+}
+
+export type VisitaMediaUpdateManyWithoutProductoNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaMediaCreateWithoutProductoInput, Prisma.VisitaMediaUncheckedCreateWithoutProductoInput> | Prisma.VisitaMediaCreateWithoutProductoInput[] | Prisma.VisitaMediaUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.VisitaMediaCreateOrConnectWithoutProductoInput | Prisma.VisitaMediaCreateOrConnectWithoutProductoInput[]
+  upsert?: Prisma.VisitaMediaUpsertWithWhereUniqueWithoutProductoInput | Prisma.VisitaMediaUpsertWithWhereUniqueWithoutProductoInput[]
+  createMany?: Prisma.VisitaMediaCreateManyProductoInputEnvelope
+  set?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  disconnect?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  delete?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  connect?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  update?: Prisma.VisitaMediaUpdateWithWhereUniqueWithoutProductoInput | Prisma.VisitaMediaUpdateWithWhereUniqueWithoutProductoInput[]
+  updateMany?: Prisma.VisitaMediaUpdateManyWithWhereWithoutProductoInput | Prisma.VisitaMediaUpdateManyWithWhereWithoutProductoInput[]
+  deleteMany?: Prisma.VisitaMediaScalarWhereInput | Prisma.VisitaMediaScalarWhereInput[]
+}
+
+export type VisitaMediaUncheckedUpdateManyWithoutProductoNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaMediaCreateWithoutProductoInput, Prisma.VisitaMediaUncheckedCreateWithoutProductoInput> | Prisma.VisitaMediaCreateWithoutProductoInput[] | Prisma.VisitaMediaUncheckedCreateWithoutProductoInput[]
+  connectOrCreate?: Prisma.VisitaMediaCreateOrConnectWithoutProductoInput | Prisma.VisitaMediaCreateOrConnectWithoutProductoInput[]
+  upsert?: Prisma.VisitaMediaUpsertWithWhereUniqueWithoutProductoInput | Prisma.VisitaMediaUpsertWithWhereUniqueWithoutProductoInput[]
+  createMany?: Prisma.VisitaMediaCreateManyProductoInputEnvelope
+  set?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  disconnect?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  delete?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  connect?: Prisma.VisitaMediaWhereUniqueInput | Prisma.VisitaMediaWhereUniqueInput[]
+  update?: Prisma.VisitaMediaUpdateWithWhereUniqueWithoutProductoInput | Prisma.VisitaMediaUpdateWithWhereUniqueWithoutProductoInput[]
+  updateMany?: Prisma.VisitaMediaUpdateManyWithWhereWithoutProductoInput | Prisma.VisitaMediaUpdateManyWithWhereWithoutProductoInput[]
+  deleteMany?: Prisma.VisitaMediaScalarWhereInput | Prisma.VisitaMediaScalarWhereInput[]
 }
 
 export type VisitaMediaCreateNestedManyWithoutVisitaInput = {
@@ -381,12 +459,89 @@ export type VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput = {
   deleteMany?: Prisma.VisitaMediaScalarWhereInput | Prisma.VisitaMediaScalarWhereInput[]
 }
 
+export type VisitaMediaCreateNestedOneWithoutInformeFotosInput = {
+  create?: Prisma.XOR<Prisma.VisitaMediaCreateWithoutInformeFotosInput, Prisma.VisitaMediaUncheckedCreateWithoutInformeFotosInput>
+  connectOrCreate?: Prisma.VisitaMediaCreateOrConnectWithoutInformeFotosInput
+  connect?: Prisma.VisitaMediaWhereUniqueInput
+}
+
+export type VisitaMediaUpdateOneWithoutInformeFotosNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaMediaCreateWithoutInformeFotosInput, Prisma.VisitaMediaUncheckedCreateWithoutInformeFotosInput>
+  connectOrCreate?: Prisma.VisitaMediaCreateOrConnectWithoutInformeFotosInput
+  upsert?: Prisma.VisitaMediaUpsertWithoutInformeFotosInput
+  disconnect?: Prisma.VisitaMediaWhereInput | boolean
+  delete?: Prisma.VisitaMediaWhereInput | boolean
+  connect?: Prisma.VisitaMediaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaMediaUpdateToOneWithWhereWithoutInformeFotosInput, Prisma.VisitaMediaUpdateWithoutInformeFotosInput>, Prisma.VisitaMediaUncheckedUpdateWithoutInformeFotosInput>
+}
+
+export type VisitaMediaCreateWithoutProductoInput = {
+  id?: string
+  key: string
+  url: string
+  tipo: string
+  createdAt?: Date | string
+  visita: Prisma.VisitaCreateNestedOneWithoutMediaInput
+  informeFotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutVisitaMediaInput
+}
+
+export type VisitaMediaUncheckedCreateWithoutProductoInput = {
+  id?: string
+  visitaId: string
+  key: string
+  url: string
+  tipo: string
+  createdAt?: Date | string
+  informeFotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutVisitaMediaInput
+}
+
+export type VisitaMediaCreateOrConnectWithoutProductoInput = {
+  where: Prisma.VisitaMediaWhereUniqueInput
+  create: Prisma.XOR<Prisma.VisitaMediaCreateWithoutProductoInput, Prisma.VisitaMediaUncheckedCreateWithoutProductoInput>
+}
+
+export type VisitaMediaCreateManyProductoInputEnvelope = {
+  data: Prisma.VisitaMediaCreateManyProductoInput | Prisma.VisitaMediaCreateManyProductoInput[]
+  skipDuplicates?: boolean
+}
+
+export type VisitaMediaUpsertWithWhereUniqueWithoutProductoInput = {
+  where: Prisma.VisitaMediaWhereUniqueInput
+  update: Prisma.XOR<Prisma.VisitaMediaUpdateWithoutProductoInput, Prisma.VisitaMediaUncheckedUpdateWithoutProductoInput>
+  create: Prisma.XOR<Prisma.VisitaMediaCreateWithoutProductoInput, Prisma.VisitaMediaUncheckedCreateWithoutProductoInput>
+}
+
+export type VisitaMediaUpdateWithWhereUniqueWithoutProductoInput = {
+  where: Prisma.VisitaMediaWhereUniqueInput
+  data: Prisma.XOR<Prisma.VisitaMediaUpdateWithoutProductoInput, Prisma.VisitaMediaUncheckedUpdateWithoutProductoInput>
+}
+
+export type VisitaMediaUpdateManyWithWhereWithoutProductoInput = {
+  where: Prisma.VisitaMediaScalarWhereInput
+  data: Prisma.XOR<Prisma.VisitaMediaUpdateManyMutationInput, Prisma.VisitaMediaUncheckedUpdateManyWithoutProductoInput>
+}
+
+export type VisitaMediaScalarWhereInput = {
+  AND?: Prisma.VisitaMediaScalarWhereInput | Prisma.VisitaMediaScalarWhereInput[]
+  OR?: Prisma.VisitaMediaScalarWhereInput[]
+  NOT?: Prisma.VisitaMediaScalarWhereInput | Prisma.VisitaMediaScalarWhereInput[]
+  id?: Prisma.StringFilter<"VisitaMedia"> | string
+  visitaId?: Prisma.StringFilter<"VisitaMedia"> | string
+  key?: Prisma.StringFilter<"VisitaMedia"> | string
+  url?: Prisma.StringFilter<"VisitaMedia"> | string
+  tipo?: Prisma.StringFilter<"VisitaMedia"> | string
+  createdAt?: Prisma.DateTimeFilter<"VisitaMedia"> | Date | string
+  productoId?: Prisma.StringNullableFilter<"VisitaMedia"> | string | null
+}
+
 export type VisitaMediaCreateWithoutVisitaInput = {
   id?: string
   key: string
   url: string
   tipo: string
   createdAt?: Date | string
+  producto?: Prisma.ProductoCreateNestedOneWithoutVisitaMediaInput
+  informeFotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutVisitaMediaInput
 }
 
 export type VisitaMediaUncheckedCreateWithoutVisitaInput = {
@@ -395,6 +550,8 @@ export type VisitaMediaUncheckedCreateWithoutVisitaInput = {
   url: string
   tipo: string
   createdAt?: Date | string
+  productoId?: string | null
+  informeFotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutVisitaMediaInput
 }
 
 export type VisitaMediaCreateOrConnectWithoutVisitaInput = {
@@ -423,16 +580,98 @@ export type VisitaMediaUpdateManyWithWhereWithoutVisitaInput = {
   data: Prisma.XOR<Prisma.VisitaMediaUpdateManyMutationInput, Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaInput>
 }
 
-export type VisitaMediaScalarWhereInput = {
-  AND?: Prisma.VisitaMediaScalarWhereInput | Prisma.VisitaMediaScalarWhereInput[]
-  OR?: Prisma.VisitaMediaScalarWhereInput[]
-  NOT?: Prisma.VisitaMediaScalarWhereInput | Prisma.VisitaMediaScalarWhereInput[]
-  id?: Prisma.StringFilter<"VisitaMedia"> | string
-  visitaId?: Prisma.StringFilter<"VisitaMedia"> | string
-  key?: Prisma.StringFilter<"VisitaMedia"> | string
-  url?: Prisma.StringFilter<"VisitaMedia"> | string
-  tipo?: Prisma.StringFilter<"VisitaMedia"> | string
-  createdAt?: Prisma.DateTimeFilter<"VisitaMedia"> | Date | string
+export type VisitaMediaCreateWithoutInformeFotosInput = {
+  id?: string
+  key: string
+  url: string
+  tipo: string
+  createdAt?: Date | string
+  visita: Prisma.VisitaCreateNestedOneWithoutMediaInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutVisitaMediaInput
+}
+
+export type VisitaMediaUncheckedCreateWithoutInformeFotosInput = {
+  id?: string
+  visitaId: string
+  key: string
+  url: string
+  tipo: string
+  createdAt?: Date | string
+  productoId?: string | null
+}
+
+export type VisitaMediaCreateOrConnectWithoutInformeFotosInput = {
+  where: Prisma.VisitaMediaWhereUniqueInput
+  create: Prisma.XOR<Prisma.VisitaMediaCreateWithoutInformeFotosInput, Prisma.VisitaMediaUncheckedCreateWithoutInformeFotosInput>
+}
+
+export type VisitaMediaUpsertWithoutInformeFotosInput = {
+  update: Prisma.XOR<Prisma.VisitaMediaUpdateWithoutInformeFotosInput, Prisma.VisitaMediaUncheckedUpdateWithoutInformeFotosInput>
+  create: Prisma.XOR<Prisma.VisitaMediaCreateWithoutInformeFotosInput, Prisma.VisitaMediaUncheckedCreateWithoutInformeFotosInput>
+  where?: Prisma.VisitaMediaWhereInput
+}
+
+export type VisitaMediaUpdateToOneWithWhereWithoutInformeFotosInput = {
+  where?: Prisma.VisitaMediaWhereInput
+  data: Prisma.XOR<Prisma.VisitaMediaUpdateWithoutInformeFotosInput, Prisma.VisitaMediaUncheckedUpdateWithoutInformeFotosInput>
+}
+
+export type VisitaMediaUpdateWithoutInformeFotosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  visita?: Prisma.VisitaUpdateOneRequiredWithoutMediaNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutVisitaMediaNestedInput
+}
+
+export type VisitaMediaUncheckedUpdateWithoutInformeFotosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  visitaId?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type VisitaMediaCreateManyProductoInput = {
+  id?: string
+  visitaId: string
+  key: string
+  url: string
+  tipo: string
+  createdAt?: Date | string
+}
+
+export type VisitaMediaUpdateWithoutProductoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  visita?: Prisma.VisitaUpdateOneRequiredWithoutMediaNestedInput
+  informeFotos?: Prisma.InformeSeccionFotoUpdateManyWithoutVisitaMediaNestedInput
+}
+
+export type VisitaMediaUncheckedUpdateWithoutProductoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  visitaId?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  informeFotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutVisitaMediaNestedInput
+}
+
+export type VisitaMediaUncheckedUpdateManyWithoutProductoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  visitaId?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type VisitaMediaCreateManyVisitaInput = {
@@ -441,6 +680,7 @@ export type VisitaMediaCreateManyVisitaInput = {
   url: string
   tipo: string
   createdAt?: Date | string
+  productoId?: string | null
 }
 
 export type VisitaMediaUpdateWithoutVisitaInput = {
@@ -449,6 +689,8 @@ export type VisitaMediaUpdateWithoutVisitaInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  producto?: Prisma.ProductoUpdateOneWithoutVisitaMediaNestedInput
+  informeFotos?: Prisma.InformeSeccionFotoUpdateManyWithoutVisitaMediaNestedInput
 }
 
 export type VisitaMediaUncheckedUpdateWithoutVisitaInput = {
@@ -457,6 +699,8 @@ export type VisitaMediaUncheckedUpdateWithoutVisitaInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  informeFotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutVisitaMediaNestedInput
 }
 
 export type VisitaMediaUncheckedUpdateManyWithoutVisitaInput = {
@@ -465,8 +709,38 @@ export type VisitaMediaUncheckedUpdateManyWithoutVisitaInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
+
+/**
+ * Count Type VisitaMediaCountOutputType
+ */
+
+export type VisitaMediaCountOutputType = {
+  informeFotos: number
+}
+
+export type VisitaMediaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  informeFotos?: boolean | VisitaMediaCountOutputTypeCountInformeFotosArgs
+}
+
+/**
+ * VisitaMediaCountOutputType without action
+ */
+export type VisitaMediaCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VisitaMediaCountOutputType
+   */
+  select?: Prisma.VisitaMediaCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * VisitaMediaCountOutputType without action
+ */
+export type VisitaMediaCountOutputTypeCountInformeFotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InformeSeccionFotoWhereInput
+}
 
 
 export type VisitaMediaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -476,7 +750,11 @@ export type VisitaMediaSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   url?: boolean
   tipo?: boolean
   createdAt?: boolean
+  productoId?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
+  producto?: boolean | Prisma.VisitaMedia$productoArgs<ExtArgs>
+  informeFotos?: boolean | Prisma.VisitaMedia$informeFotosArgs<ExtArgs>
+  _count?: boolean | Prisma.VisitaMediaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["visitaMedia"]>
 
 export type VisitaMediaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -486,7 +764,9 @@ export type VisitaMediaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   url?: boolean
   tipo?: boolean
   createdAt?: boolean
+  productoId?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
+  producto?: boolean | Prisma.VisitaMedia$productoArgs<ExtArgs>
 }, ExtArgs["result"]["visitaMedia"]>
 
 export type VisitaMediaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -496,7 +776,9 @@ export type VisitaMediaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   url?: boolean
   tipo?: boolean
   createdAt?: boolean
+  productoId?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
+  producto?: boolean | Prisma.VisitaMedia$productoArgs<ExtArgs>
 }, ExtArgs["result"]["visitaMedia"]>
 
 export type VisitaMediaSelectScalar = {
@@ -506,23 +788,31 @@ export type VisitaMediaSelectScalar = {
   url?: boolean
   tipo?: boolean
   createdAt?: boolean
+  productoId?: boolean
 }
 
-export type VisitaMediaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "key" | "url" | "tipo" | "createdAt", ExtArgs["result"]["visitaMedia"]>
+export type VisitaMediaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "key" | "url" | "tipo" | "createdAt" | "productoId", ExtArgs["result"]["visitaMedia"]>
 export type VisitaMediaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
+  producto?: boolean | Prisma.VisitaMedia$productoArgs<ExtArgs>
+  informeFotos?: boolean | Prisma.VisitaMedia$informeFotosArgs<ExtArgs>
+  _count?: boolean | Prisma.VisitaMediaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VisitaMediaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
+  producto?: boolean | Prisma.VisitaMedia$productoArgs<ExtArgs>
 }
 export type VisitaMediaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
+  producto?: boolean | Prisma.VisitaMedia$productoArgs<ExtArgs>
 }
 
 export type $VisitaMediaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "VisitaMedia"
   objects: {
     visita: Prisma.$VisitaPayload<ExtArgs>
+    producto: Prisma.$ProductoPayload<ExtArgs> | null
+    informeFotos: Prisma.$InformeSeccionFotoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -531,6 +821,10 @@ export type $VisitaMediaPayload<ExtArgs extends runtime.Types.Extensions.Interna
     url: string
     tipo: string
     createdAt: Date
+    /**
+     * Etiqueta opcional: a cuál de los productos de la visita corresponde la foto.
+     */
+    productoId: string | null
   }, ExtArgs["result"]["visitaMedia"]>
   composites: {}
 }
@@ -926,6 +1220,8 @@ readonly fields: VisitaMediaFieldRefs;
 export interface Prisma__VisitaMediaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   visita<T extends Prisma.VisitaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaDefaultArgs<ExtArgs>>): Prisma.Prisma__VisitaClient<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  producto<T extends Prisma.VisitaMedia$productoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaMedia$productoArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  informeFotos<T extends Prisma.VisitaMedia$informeFotosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaMedia$informeFotosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeSeccionFotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -961,6 +1257,7 @@ export interface VisitaMediaFieldRefs {
   readonly url: Prisma.FieldRef<"VisitaMedia", 'String'>
   readonly tipo: Prisma.FieldRef<"VisitaMedia", 'String'>
   readonly createdAt: Prisma.FieldRef<"VisitaMedia", 'DateTime'>
+  readonly productoId: Prisma.FieldRef<"VisitaMedia", 'String'>
 }
     
 
@@ -1359,6 +1656,49 @@ export type VisitaMediaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Limit how many VisitaMedias to delete.
    */
   limit?: number
+}
+
+/**
+ * VisitaMedia.producto
+ */
+export type VisitaMedia$productoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Producto
+   */
+  select?: Prisma.ProductoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Producto
+   */
+  omit?: Prisma.ProductoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductoInclude<ExtArgs> | null
+  where?: Prisma.ProductoWhereInput
+}
+
+/**
+ * VisitaMedia.informeFotos
+ */
+export type VisitaMedia$informeFotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InformeSeccionFoto
+   */
+  select?: Prisma.InformeSeccionFotoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InformeSeccionFoto
+   */
+  omit?: Prisma.InformeSeccionFotoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InformeSeccionFotoInclude<ExtArgs> | null
+  where?: Prisma.InformeSeccionFotoWhereInput
+  orderBy?: Prisma.InformeSeccionFotoOrderByWithRelationInput | Prisma.InformeSeccionFotoOrderByWithRelationInput[]
+  cursor?: Prisma.InformeSeccionFotoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InformeSeccionFotoScalarFieldEnum | Prisma.InformeSeccionFotoScalarFieldEnum[]
 }
 
 /**

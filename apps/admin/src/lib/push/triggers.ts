@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { nombreCliente } from "@vivero/shared";
+import { listaProductos } from "@/lib/visita-productos";
 import { sendPushToUser, sendPushToUsers } from "./expo";
 
 function formatFechaCorta(date: Date): string {
@@ -14,11 +15,12 @@ async function getVisitaForPush(visitaId: string) {
   return prisma.visita.findUnique({
     where: { id: visitaId },
     include: {
-      clienteServicio: {
-        include: {
-          cliente: { select: { userId: true, nombre: true, apellido: true, empresa: true } },
-          servicio: { select: { nombre: true } },
-        },
+      cliente: {
+        select: { userId: true, nombre: true, apellido: true, empresa: true },
+      },
+      productos: {
+        orderBy: { orden: "asc" },
+        include: { producto: { select: { nombre: true } } },
       },
     },
   });
@@ -34,24 +36,24 @@ async function getAdminUserIds(): Promise<string[]> {
 
 export async function pushConfirmacionVisita(visitaId: string): Promise<void> {
   const visita = await getVisitaForPush(visitaId);
-  const userId = visita?.clienteServicio.cliente.userId;
+  const userId = visita?.cliente.userId;
   if (!visita || !userId) return;
 
   await sendPushToUser(userId, {
     title: "Visita confirmada",
-    body: `${visita.clienteServicio.servicio.nombre} — ${formatFechaCorta(visita.fechaProgramada)}`,
+    body: `${listaProductos(visita)} — ${formatFechaCorta(visita.fechaProgramada)}`,
     data: { type: "visita_confirmada", visitaId },
   });
 }
 
 export async function pushRecordatorioCliente(visitaId: string): Promise<void> {
   const visita = await getVisitaForPush(visitaId);
-  const userId = visita?.clienteServicio.cliente.userId;
+  const userId = visita?.cliente.userId;
   if (!visita || !userId) return;
 
   await sendPushToUser(userId, {
     title: "Recordatorio de visita",
-    body: `Mañana: ${visita.clienteServicio.servicio.nombre}`,
+    body: `Mañana: ${listaProductos(visita)}`,
     data: { type: "visita_recordatorio", visitaId },
   });
 }
@@ -65,7 +67,7 @@ export async function pushAlertaCompletada(visitaId: string): Promise<void> {
 
   await sendPushToUsers(admins, {
     title: "Visita completada",
-    body: `${nombreCliente(visita.clienteServicio.cliente)} — ${visita.clienteServicio.servicio.nombre}`,
+    body: `${nombreCliente(visita.cliente)} — ${listaProductos(visita)}`,
     data: { type: "visita_completada", visitaId },
   });
 }
@@ -79,7 +81,7 @@ export async function pushAlertaIncompleta(visitaId: string): Promise<void> {
 
   await sendPushToUsers(admins, {
     title: `Visita ${visita.estado.toLowerCase()}`,
-    body: `${nombreCliente(visita.clienteServicio.cliente)} — ${visita.clienteServicio.servicio.nombre}`,
+    body: `${nombreCliente(visita.cliente)} — ${listaProductos(visita)}`,
     data: { type: "visita_incompleta", visitaId },
   });
 }
@@ -113,18 +115,13 @@ export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
       media: { select: { id: true, tipo: true } },
       visita: {
         include: {
-          clienteServicio: {
-            include: {
-              cliente: {
-                select: {
-                  userId: true,
-                  sectorId: true,
-                  nombre: true,
-                  apellido: true,
-                  empresa: true,
-                },
-              },
-              servicio: { select: { nombre: true } },
+          cliente: {
+            select: {
+              userId: true,
+              sectorId: true,
+              nombre: true,
+              apellido: true,
+              empresa: true,
             },
           },
         },
@@ -134,7 +131,7 @@ export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
   if (!message) return;
 
   const visita = message.visita;
-  const cliente = visita.clienteServicio.cliente;
+  const cliente = visita.cliente;
 
   const isClienteAuthor = message.author.role === "CLIENTE";
   const authorName = isClienteAuthor

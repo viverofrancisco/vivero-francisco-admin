@@ -12,6 +12,7 @@ import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
+import { resumenProductos } from "@/lib/types";
 
 type Group = "Hoy" | "Mañana" | "Esta semana" | "Más adelante";
 
@@ -119,9 +120,9 @@ function VisitaRow({
   showDate: boolean;
   onPress: () => void;
 }) {
-  const cliente = v.clienteServicio.cliente;
+  const cliente = v.cliente;
   const sector = cliente.sector?.nombre;
-  const subtitleParts = [v.clienteServicio.servicio.nombre, sector].filter(
+  const subtitleParts = [resumenProductos(v), sector].filter(
     Boolean
   );
   const isCompleted = v.estado !== "PROGRAMADA";

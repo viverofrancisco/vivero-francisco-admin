@@ -14,8 +14,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  TablePagination,
+  FILAS_POR_PAGINA,
+} from "@/components/shared/table-pagination";
 import { ArrowLeft, Eye, Search } from "lucide-react";
+import {
+  nombresProductos,
+  resumenProductos,
+  type ProductoDeVisita,
+} from "@/lib/visita-productos";
 
 interface VisitaRow {
   id: string;
@@ -23,10 +33,13 @@ interface VisitaRow {
   fechaRealizada: string | null;
   estado: string;
   notas: string | null;
-  clienteServicio: {
-    cliente: { id: string; nombre: string; apellido?: string | null; empresa: string | null };
-    servicio: { id: string; nombre: string; tipo: string };
+  cliente: {
+    id: string;
+    nombre: string;
+    apellido?: string | null;
+    empresa: string | null;
   };
+  productos: ProductoDeVisita[];
   grupo: { id: string; nombre: string } | null;
 }
 
@@ -36,7 +49,6 @@ interface Props {
   visitas: VisitaRow[];
 }
 
-const ITEMS_PER_PAGE = 10;
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-EC", {
@@ -86,23 +98,24 @@ export function ClienteVisitasPage({
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (v) =>
-          v.clienteServicio.servicio.nombre.toLowerCase().includes(q) ||
+          nombresProductos(v).some((n) => n.toLowerCase().includes(q)) ||
           (v.grupo?.nombre.toLowerCase().includes(q) ?? false)
       );
     }
     return result;
   }, [visitas, estadoFilter, searchQuery]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FILAS_POR_PAGINA));
+  const pagina = Math.min(page, totalPages);
   const paginated = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+    (pagina - 1) * FILAS_POR_PAGINA,
+    pagina * FILAS_POR_PAGINA
   );
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-none items-center gap-3">
         <Link href={`/dashboard/clientes/${clienteId}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
@@ -115,7 +128,7 @@ export function ClienteVisitasPage({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-none flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
@@ -128,37 +141,32 @@ export function ClienteVisitasPage({
             className="pl-9"
           />
         </div>
-        <div className="flex gap-1">
-          {[
-            { value: null, label: "Todas" },
+        <CustomSelect
+          value={estadoFilter ?? ""}
+          onChange={(v) => {
+            setEstadoFilter(v || null);
+            setPage(1);
+          }}
+          options={[
+            { value: "", label: "Todas" },
             { value: "PROGRAMADA", label: "Programadas" },
             { value: "COMPLETADA", label: "Completadas" },
             { value: "INCOMPLETA", label: "Incompletas" },
             { value: "CANCELADA", label: "Canceladas" },
-          ].map((opt) => (
-            <Button
-              key={opt.label}
-              variant={estadoFilter === opt.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setEstadoFilter(opt.value);
-                setPage(1);
-              }}
-            >
-              {opt.label}
-            </Button>
-          ))}
-        </div>
+          ]}
+          placeholder="Todas"
+          className="w-44"
+        />
       </div>
 
       {/* Table */}
-      {filtered.length === 0 ? (
-        <EmptyState message="No se encontraron visitas" />
-      ) : (
-        <>
-          <div className="rounded-md border bg-white">
-            <Table>
-              <TableHeader>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {filtered.length === 0 ? (
+            <EmptyState message="No se encontraron visitas" />
+          ) : (
+            <Table containerClassName="h-full overflow-y-auto">
+              <TableHeader sticky>
                 <TableRow>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Servicio</TableHead>
@@ -174,7 +182,7 @@ export function ClienteVisitasPage({
                       {formatDate(v.fechaProgramada)}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {v.clienteServicio.servicio.nombre}
+                      {resumenProductos(v)}
                     </TableCell>
                     <TableCell>{v.grupo?.nombre ?? "—"}</TableCell>
                     <TableCell>
@@ -197,38 +205,17 @@ export function ClienteVisitasPage({
                 ))}
               </TableBody>
             </Table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Mostrando {(page - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(page * ITEMS_PER_PAGE, filtered.length)} de{" "}
-                {filtered.length}
-              </p>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
           )}
-        </>
-      )}
-    </>
+        </div>
+
+        <TablePagination
+          page={pagina}
+          total={filtered.length}
+          onPageChange={setPage}
+          sustantivo="visita"
+          plural="visitas"
+        />
+      </div>
+    </div>
   );
 }

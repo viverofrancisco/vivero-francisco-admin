@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -19,6 +18,8 @@ import {
   MapPin,
   ChevronDown,
   LogOut,
+  Receipt,
+  RefreshCw,
 } from "lucide-react";
 import type { UserRole } from "@/generated/prisma/client";
 import {
@@ -51,34 +52,16 @@ const mainItems: NavItem[] = [
     href: "/dashboard/clientes",
     icon: Users,
     roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
-    children: [
-      { label: "Ver clientes", href: "/dashboard/clientes" },
-      {
-        label: "Importaciones",
-        href: "/dashboard/clientes/importaciones",
-        roles: ["ADMIN", "STAFF"],
-      },
-    ],
   },
+  // Sin `children`: un desplegable de un solo ítem es un clic de más. "Nueva
+  // visita" ya está dentro de la propia página de visitas.
   {
-    label: "Servicios",
-    href: "/dashboard/servicios",
+    label: "Productos",
+    href: "/dashboard/productos",
     icon: Wrench,
     roles: ["ADMIN", "STAFF"],
-    children: [
-      { label: "Ver Servicios", href: "/dashboard/servicios" },
-      { label: "Asignar a Clientes", href: "/dashboard/servicios/asignar" },
-    ],
   },
-  {
-    label: "Visitas",
-    href: "/dashboard/visitas",
-    icon: CalendarDays,
-    children: [
-      { label: "Ver Visitas", href: "/dashboard/visitas" },
-      { label: "Nueva Visita", href: "/dashboard/visitas/nueva" },
-    ],
-  },
+  { label: "Visitas", href: "/dashboard/visitas", icon: CalendarDays },
   { label: "Mensajes", href: "/dashboard/mensajes", icon: MessageSquare },
   {
     label: "Informes",
@@ -86,10 +69,24 @@ const mainItems: NavItem[] = [
     icon: FileText,
     roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
     children: [
-      { label: "Ver informes", href: "/dashboard/informes" },
       { label: "Generar nuevo", href: "/dashboard/informes/nuevo" },
-      { label: "Tipos de actividad", href: "/dashboard/configuracion/tipos-actividad" },
       { label: "Firmantes", href: "/dashboard/configuracion/firmantes" },
+    ],
+  },
+  {
+    label: "Suscripciones",
+    href: "/dashboard/suscripciones",
+    icon: RefreshCw,
+    roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
+  },
+  {
+    label: "Órdenes",
+    href: "/dashboard/ordenes",
+    icon: Receipt,
+    roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
+    children: [
+      { label: "Borradores", href: "/dashboard/ordenes/borradores" },
+      { label: "Por cobrar", href: "/dashboard/ordenes/por-cobrar" },
     ],
   },
   { label: "Personal", href: "/dashboard/personal", icon: UserCheck, roles: ["ADMIN", "STAFF"] },
@@ -108,6 +105,37 @@ const mainItems: NavItem[] = [
   },
 ];
 
+/**
+ * Qué sección del menú está abierta.
+ *
+ * Se deriva de la ruta en vez de guardarse en estado: el padre navega a su
+ * propia página, así que "la sección de la ruta actual" y "la sección abierta"
+ * son lo mismo. De ahí sale solo que haya una sola abierta a la vez, y que
+ * nunca se desincronice con lo que se está viendo.
+ *
+ * Gana la coincidencia más larga, que es lo que resuelve los hijos alojados
+ * bajo otra rama: `/dashboard/configuracion/firmantes` cuelga de Informes, y
+ * sin esto abriría Configuración.
+ */
+function seccionAbierta(pathname: string, items: NavItem[]): string | null {
+  const alcanza = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
+
+  let mejor: { href: string; puntaje: number } | null = null;
+  for (const item of items) {
+    if (!item.children?.length) continue;
+    const candidatos = [item.href, ...item.children.map((c) => c.href)];
+    const puntaje = Math.max(
+      0,
+      ...candidatos.filter(alcanza).map((href) => href.length)
+    );
+    if (puntaje > 0 && (!mejor || puntaje > mejor.puntaje)) {
+      mejor = { href: item.href, puntaje };
+    }
+  }
+  return mejor?.href ?? null;
+}
+
 interface BrandingProps {
   branding: { logoUrl: string | null; nombre: string | null };
 }
@@ -122,27 +150,13 @@ export function Sidebar({ branding }: BrandingProps) {
 
   const mainVisible = visible(mainItems);
 
-  // Initialize expanded state: auto-expand if currently on a child route
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    for (const item of mainItems) {
-      if (item.children) {
-        initial[item.href] =
-          pathname === item.href || pathname.startsWith(item.href + "/");
-      }
-    }
-    return initial;
-  });
-
-  const toggleExpanded = (href: string) => {
-    setExpanded((prev) => ({ ...prev, [href]: !prev[href] }));
-  };
+  const abierta = seccionAbierta(pathname, mainItems);
 
   const renderItem = (item: NavItem) => {
     const isActive =
       pathname === item.href ||
       (item.href !== "/dashboard" && pathname.startsWith(item.href));
-    const isExpanded = expanded[item.href] ?? false;
+    const isExpanded = abierta === item.href;
     const hasChildren = item.children && item.children.length > 0;
 
     const baseClasses =
@@ -153,27 +167,20 @@ export function Sidebar({ branding }: BrandingProps) {
 
     return (
       <div key={item.href}>
-        {hasChildren ? (
-          <button
-            type="button"
-            onClick={() => toggleExpanded(item.href)}
-            className={cn(baseClasses, stateClasses)}
-          >
-            <item.icon className="h-[18px] w-[18px]" />
-            <span className="flex-1 text-left">{item.label}</span>
+        {/* Siempre un Link, tenga hijos o no: el clic navega, y abrir la
+            sección es consecuencia de haber llegado ahí. */}
+        <Link href={item.href} className={cn(baseClasses, stateClasses)}>
+          <item.icon className="h-[18px] w-[18px]" />
+          <span className="flex-1 text-left">{item.label}</span>
+          {hasChildren && (
             <ChevronDown
               className={cn(
                 "h-4 w-4 transition-transform",
                 isExpanded && "rotate-180"
               )}
             />
-          </button>
-        ) : (
-          <Link href={item.href} className={cn(baseClasses, stateClasses)}>
-            <item.icon className="h-[18px] w-[18px]" />
-            {item.label}
-          </Link>
-        )}
+          )}
+        </Link>
         {hasChildren && isExpanded && (
           <div className="ml-8 mt-1 space-y-1">
             {item

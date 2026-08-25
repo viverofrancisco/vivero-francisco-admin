@@ -117,7 +117,9 @@ function ServicioRow({
   onPress: () => void;
 }) {
   const initial = (s.nombre[0] ?? "?").toUpperCase();
-  const isRecurrente = s.tipo === "RECURRENTE";
+  // No hay productos recurrentes en el catálogo: lo que se marca es si
+  // alguien lo tiene hoy en un plan.
+  const enPlanes = s._count.suscripcionItems > 0;
   return (
     <Pressable
       onPress={onPress}
@@ -126,13 +128,13 @@ function ServicioRow({
       <View
         style={[
           styles.avatar,
-          isRecurrente ? styles.avatarRecurrente : styles.avatarUnico,
+          enPlanes ? styles.avatarRecurrente : styles.avatarUnico,
         ]}
       >
         <Text
           style={[
             styles.avatarText,
-            isRecurrente
+            enPlanes
               ? styles.avatarTextRecurrente
               : styles.avatarTextUnico,
           ]}
@@ -152,10 +154,9 @@ function ServicioRow({
       </View>
       <View style={styles.meta}>
         <Text variant="bodySmall" style={styles.metaPrimary}>
-          {isRecurrente ? "Recurrente" : "Único"}
-        </Text>
-        <Text variant="bodySmall" style={styles.metaSecondary}>
-          {`${s._count.clientes} cliente${s._count.clientes === 1 ? "" : "s"}`}
+          {enPlanes
+            ? `${s._count.suscripcionItems} en plan`
+            : "Sin planes"}
         </Text>
       </View>
     </Pressable>

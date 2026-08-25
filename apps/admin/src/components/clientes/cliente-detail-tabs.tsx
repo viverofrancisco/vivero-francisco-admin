@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -12,14 +12,41 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ClienteForm } from "@/components/clientes/cliente-form";
-import { ClienteServicioForm } from "@/components/clientes/cliente-servicio-form";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  DatosFacturacionCard,
+  type DatoFacturacion,
+} from "@/components/clientes/datos-facturacion-card";
+import { Badge } from "@/components/ui/badge";
+import {
+  estadoLabel as estadoOrdenLabel,
+  estadoVariant as estadoOrdenVariant,
+} from "@/components/ordenes/formato";
+
+/** Lo mínimo de una orden para listarla en la ficha. */
+export interface OrdenResumen {
+  id: string;
+  numero: number;
+  fecha: string;
+  estado: string;
+  total: number;
+  lineas: number;
+  facturas: number;
+}
+import {
+  PERIODICIDAD_LABEL,
+  PERIODICIDAD_SUFIJO,
+} from "@/components/suscripciones/formato";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
+import {
+  resumenProductos,
+  type ProductoDeVisita,
+} from "@/lib/visita-productos";
 import {
   Plus,
   ArrowLeft,
@@ -28,23 +55,24 @@ import {
   Eye,
 } from "lucide-react";
 
-interface ServicioCatalogo {
+interface ProductoCatalogo {
   id: string;
   nombre: string;
   tipo: string;
 }
 
+/** Un ítem de suscripción, tal como lo ve la ficha del cliente. */
 interface Asignacion {
   id: string;
-  servicioId: string;
+  suscripcionId: string;
+  productoId: string;
   precio: number;
-  iva: number;
-  frecuenciaMensual: number | null;
+  ivaTasa: number;
+  visitasPorPeriodo: number | null;
   estado: string;
+  periodicidad: string;
   fechaInicio: string;
-  fechaFin: string | null;
-  notas: string | null;
-  servicio: ServicioCatalogo;
+  producto: ProductoCatalogo;
 }
 
 interface VisitaRow {
@@ -53,10 +81,8 @@ interface VisitaRow {
   fechaRealizada: string | null;
   estado: string;
   notas: string | null;
-  clienteServicio: {
-    cliente: { id: string; nombre: string; apellido?: string | null };
-    servicio: { id: string; nombre: string; tipo: string };
-  };
+  cliente: { id: string; nombre: string; apellido?: string | null };
+  productos: ProductoDeVisita[];
   grupo: { id: string; nombre: string } | null;
 }
 
@@ -83,7 +109,8 @@ interface ClienteData {
 interface ClienteDetailTabsProps {
   cliente: ClienteData;
   asignaciones: Asignacion[];
-  serviciosCatalogo: ServicioCatalogo[];
+  datosFacturacion: DatoFacturacion[];
+  ordenes: OrdenResumen[];
   visitas: VisitaRow[];
   /** A dónde vuelve el botón "atrás" (depende de dónde se llegó). */
   backHref?: string;
@@ -121,14 +148,15 @@ const servicioEstado = (estado: string) => {
 export function ClienteDetailTabs({
   cliente,
   asignaciones,
-  serviciosCatalogo,
+  datosFacturacion,
+  ordenes,
   visitas,
   backHref = "/dashboard/clientes",
 }: ClienteDetailTabsProps) {
   const router = useRouter();
+  // Las pantallas de suscripción vuelven acá, no siempre a su propia lista.
+  const volverAca = encodeURIComponent(usePathname());
   const [cardsEditing, setCardsEditing] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editData, setEditData] = useState<Asignacion | null>(null);
   const [recibirRecordatorios, setRecibirRecordatorios] = useState(
     cliente.recibirRecordatorios
   );
@@ -186,21 +214,36 @@ export function ClienteDetailTabs({
     }
   };
 
-  const handleEdit = (asignacion: Asignacion) => {
-    setEditData(asignacion);
-    setDialogOpen(true);
-  };
-
-  const handleClose = () => {
-    setDialogOpen(false);
-    setEditData(null);
-  };
-
   const nombreCompleto = nombreCliente(cliente);
   // Si el cliente es persona Y empresa, mostramos la empresa como complemento.
   const empresaExtra =
     nombrePersona(cliente) && cliente.empresa ? cliente.empresa : null;
-  const topServicios = asignaciones.slice(0, 3);
+  // Aplanar los ítems hacía parecer que cada producto era una suscripción
+  // aparte. Se agrupan: una suscripción es UN contrato con N productos que se
+  // cobran juntos, en una sola factura.
+  const suscripciones = [
+    ...asignaciones
+      .reduce((mapa, a) => {
+        const grupo = mapa.get(a.suscripcionId) ?? {
+          id: a.suscripcionId,
+          estado: a.estado,
+          periodicidad: a.periodicidad,
+          items: [] as typeof asignaciones,
+          total: 0,
+        };
+        grupo.items.push(a);
+        grupo.total += a.precio;
+        mapa.set(a.suscripcionId, grupo);
+        return mapa;
+      }, new Map<string, {
+        id: string;
+        estado: string;
+        periodicidad: string;
+        items: typeof asignaciones;
+        total: number;
+      }>())
+      .values(),
+  ];
   const topVisitas = visitas.slice(0, 3);
 
   return (
@@ -282,64 +325,59 @@ export function ClienteDetailTabs({
         cards
         cardsEditing={cardsEditing}
         onEditDone={() => setCardsEditing(false)}
-        rightColumnContent={
-          <>
-            {/* Services Card */}
+        actividadContent={<>            {/* Órdenes primero: es lo que se factura, y lo que más se
+                consulta al entrar a un cliente. */}
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Servicios</CardTitle>
+                <CardTitle>Órdenes</CardTitle>
                 <CardAction>
-                  <Link href="/dashboard/servicios/asignar">
-                    <Button size="sm" variant="ghost">
+                  <Link href={`/dashboard/ordenes/nueva?cliente=${cliente.id}`}>
+                    <Button size="sm" variant="ghost" title="Nueva orden">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </Link>
                 </CardAction>
               </CardHeader>
-              <CardContent className="pt-3">
-                {asignaciones.length === 0 ? (
-                  <EmptyState message="Sin servicios" />
+              <CardContent>
+                {ordenes.length === 0 ? (
+                  <EmptyState message="Sin órdenes" />
                 ) : (
-                  <div className="space-y-3">
-                    {topServicios.map((a) => (
-                      <div
-                        key={a.id}
-                        className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                  <div className="space-y-1">
+                    {ordenes.slice(0, 3).map((o) => (
+                      <Link
+                        key={o.id}
+                        href={`/dashboard/ordenes/${o.id}`}
+                        className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
                       >
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold truncate">
-                            {a.servicio.nombre}
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold">
+                            Orden #{o.numero}
+                            <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                              {formatDate(o.fecha)}
+                            </span>
                           </p>
                           <p className="text-xs font-semibold text-muted-foreground">
-                            {formatPrice(a.precio)}
-                            {a.frecuenciaMensual
-                              ? ` · ${a.frecuenciaMensual}x/mes`
-                              : ""}
+                            {o.lineas} {o.lineas === 1 ? "producto" : "productos"}
+                            {o.facturas > 0 &&
+                              ` · ${o.facturas} ${o.facturas === 1 ? "factura" : "facturas"}`}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 ml-2">
-                          <span
-                            className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${servicioEstado(a.estado).className}`}
-                          >
-                            {servicioEstado(a.estado).label}
+                        <div className="flex flex-none items-center gap-2">
+                          <span className="text-sm font-semibold tabular-nums">
+                            {formatPrice(o.total)}
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => handleEdit(a)}
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </Button>
+                          <Badge variant={estadoOrdenVariant[o.estado] ?? "outline"}>
+                            {estadoOrdenLabel[o.estado] ?? o.estado}
+                          </Badge>
                         </div>
-                      </div>
+                      </Link>
                     ))}
-                    {asignaciones.length > 3 && (
+                    {ordenes.length > 3 && (
                       <Link
-                        href={`/dashboard/clientes/${cliente.id}/servicios`}
-                        className="flex items-center justify-center gap-1 text-sm text-primary hover:underline pt-1"
+                        href={`/dashboard/ordenes?cliente=${cliente.id}`}
+                        className="flex items-center justify-center gap-1 pt-1 text-sm text-primary hover:underline"
                       >
-                        Ver todos ({asignaciones.length})
+                        Ver todas ({ordenes.length})
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     )}
@@ -348,12 +386,102 @@ export function ClienteDetailTabs({
               </CardContent>
             </Card>
 
+            {/* Services Card */}
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle>Suscripciones</CardTitle>
+                <CardAction>
+                  {/* A la pantalla completa con el cliente ya elegido: armar una
+                      suscripción con varios productos no entra cómodo en un
+                      diálogo. */}
+                  <Link
+                    href={`/dashboard/suscripciones/nueva?cliente=${cliente.id}&from=${volverAca}`}
+                  >
+                    <Button size="sm" variant="ghost" title="Agregar suscripción">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardAction>
+              </CardHeader>
+              {/* Sin tarjeta adentro de otra: cada suscripción es un bloque
+                  separado por una línea. */}
+              <CardContent>
+                {asignaciones.length === 0 ? (
+                  <EmptyState message="Sin servicios" />
+                ) : (
+                  <div className="divide-y">
+                    {suscripciones.slice(0, 3).map((sus) => (
+                      <div key={sus.id} className="py-3 first:pt-0 last:pb-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="min-w-0 text-xs font-bold">
+                            {PERIODICIDAD_LABEL[sus.periodicidad] ??
+                              sus.periodicidad}
+                            <span className="ml-1.5 font-semibold text-muted-foreground">
+                              · {formatPrice(sus.total)} por período
+                            </span>
+                          </p>
+                          <div className="flex flex-none items-center gap-1.5">
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${servicioEstado(sus.estado).className}`}
+                            >
+                              {servicioEstado(sus.estado).label}
+                            </span>
+                            <Link
+                              href={`/dashboard/suscripciones/${sus.id}?from=${volverAca}`}
+                            >
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                title="Editar suscripción"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                        <div className="mt-1.5 space-y-1">
+                          {sus.items.map((a) => (
+                            <div
+                              key={a.id}
+                              className="flex items-center justify-between gap-2"
+                            >
+                              <p className="min-w-0 flex-1 truncate text-sm">
+                                {a.producto.nombre}
+                              </p>
+                              <p className="flex-none text-xs font-semibold text-muted-foreground tabular-nums">
+                                {formatPrice(a.precio)}
+                                {a.visitasPorPeriodo
+                                  ? ` · ${a.visitasPorPeriodo}${PERIODICIDAD_SUFIJO[sus.periodicidad] ?? ""}`
+                                  : ""}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {suscripciones.length > 3 && (
+                  <Link
+                    href={`/dashboard/suscripciones?cliente=${cliente.id}`}
+                    className="flex items-center justify-center gap-1 pt-3 text-sm text-primary hover:underline"
+                  >
+                    Ver todas ({suscripciones.length})
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Al final: es lo que menos se toca, pero vive con la actividad
+                porque su razón de ser es facturar. */}
             {/* Visits Card */}
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Visitas</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3">
+              <CardContent>
                 {visitas.length === 0 ? (
                   <EmptyState message="Sin visitas" />
                 ) : (
@@ -365,7 +493,7 @@ export function ClienteDetailTabs({
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold truncate">
-                            {v.clienteServicio.servicio.nombre}
+                            {resumenProductos(v)}
                           </p>
                           <p className="text-xs font-semibold text-muted-foreground">
                             {formatDate(v.fechaProgramada)}
@@ -404,12 +532,22 @@ export function ClienteDetailTabs({
               </CardContent>
             </Card>
 
+            <DatosFacturacionCard
+              clienteId={cliente.id}
+              datos={datosFacturacion}
+            />
+</>}
+        rightColumnContent={
+          <>
+
+
+
             {/* Notifications Card */}
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Notificaciones WhatsApp</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3 space-y-4">
+              <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="recibir-recordatorios" className="cursor-pointer">
                     Recibir recordatorios de visita
@@ -450,7 +588,7 @@ export function ClienteDetailTabs({
               <CardHeader className="border-b">
                 <CardTitle>Acceso a la app</CardTitle>
               </CardHeader>
-              <CardContent className="pt-3 space-y-3">
+              <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
                   Envía un enlace al correo del cliente para que cree su
                   contraseña y acceda a la app.
@@ -474,16 +612,6 @@ export function ClienteDetailTabs({
         }
       />
 
-      {/* Edit Service Dialog */}
-      {editData && (
-        <ClienteServicioForm
-          clienteId={cliente.id}
-          servicios={serviciosCatalogo}
-          editData={editData}
-          onClose={handleClose}
-          open={dialogOpen}
-        />
-      )}
       </div>
     </div>
   );

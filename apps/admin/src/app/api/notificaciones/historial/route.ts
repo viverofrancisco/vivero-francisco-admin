@@ -42,11 +42,10 @@ export async function GET(request: Request) {
           select: {
             id: true,
             fechaProgramada: true,
-            clienteServicio: {
-              select: {
-                cliente: { select: { nombre: true, apellido: true, empresa: true } },
-                servicio: { select: { nombre: true } },
-              },
+            cliente: { select: { nombre: true, apellido: true, empresa: true } },
+            productos: {
+              orderBy: { orden: "asc" },
+              select: { producto: { select: { nombre: true } } },
             },
           },
         },

@@ -13,7 +13,7 @@ export default async function NuevaVisitaRoute() {
     clientesWhere.sectorId = { in: sectorIds };
   }
 
-  const [clientes, grupos, personalList] = await Promise.all([
+  const [clientes, catalogo, grupos, personalList] = await Promise.all([
     prisma.cliente.findMany({
       where: { ...clientesWhere, deletedAt: null },
       orderBy: { nombre: "asc" },
@@ -22,14 +22,28 @@ export default async function NuevaVisitaRoute() {
         nombre: true,
         apellido: true,
         empresa: true,
-        servicios: {
+        // Lo que cubre una suscripción activa no lleva precio en la visita.
+        suscripciones: {
           where: { estado: "ACTIVO" },
           select: {
-            id: true,
-            servicio: { select: { id: true, nombre: true, tipo: true } },
+            periodicidad: true,
+            items: {
+              select: {
+                precio: true,
+                visitasPorPeriodo: true,
+                producto: { select: { id: true, nombre: true } },
+              },
+            },
           },
         },
       },
+    }),
+    // Catálogo completo: permite agendar un servicio que el cliente no tiene
+    // suscrito, sin pasar antes por otra pantalla.
+    prisma.producto.findMany({
+      where: { deletedAt: null },
+      orderBy: { nombre: "asc" },
+      select: { id: true, nombre: true, tipo: true, ivaTasa: true },
     }),
     prisma.grupo.findMany({
       where: { deletedAt: null },
@@ -54,10 +68,24 @@ export default async function NuevaVisitaRoute() {
     nombre: c.nombre,
     apellido: c.apellido,
     empresa: c.empresa,
-    servicios: c.servicios.map((s) => ({
-      id: s.id,
-      servicio: s.servicio,
-    })),
+    // Productos que ya cubre una suscripción activa: se marcan al elegirlos.
+    // Lo incluido es informativo; agendar de más está permitido.
+    cubiertos: c.suscripciones.flatMap((sus) =>
+      sus.items.map((i) => ({
+        productoId: i.producto.id,
+        nombre: i.producto.nombre,
+        precio: Number(i.precio),
+        visitasPorPeriodo: i.visitasPorPeriodo,
+        periodicidad: sus.periodicidad as string,
+      }))
+    ),
+  }));
+
+  const catalogoSerialized = catalogo.map((s) => ({
+    id: s.id,
+    nombre: s.nombre,
+    tipo: s.tipo,
+    ivaTasa: s.ivaTasa != null ? Number(s.ivaTasa) : null,
   }));
 
   const gruposSerialized = grupos.map((g) => ({
@@ -69,6 +97,7 @@ export default async function NuevaVisitaRoute() {
   return (
     <NuevaVisitaPage
       clientes={clientesSerialized}
+      catalogo={catalogoSerialized}
       grupos={gruposSerialized}
       personalList={personalList}
     />

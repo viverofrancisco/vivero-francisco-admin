@@ -59,9 +59,34 @@ enum UserRole {
   CLIENTE
 }
 
-enum TipoServicio {
-  RECURRENTE
-  UNICO
+/// Qué es el ítem. Se mapea al `tipo` de Contífico (SER / PRO).
+enum TipoProducto {
+  SERVICIO
+  BIEN
+}
+
+/// Cómo se vende. Vive solo en el portal: Contífico no conoce suscripciones,
+/// solo recibe una factura por período.
+/// Cada cuánto se cobra una suscripción. El precio del contrato es por período,
+/// no por mes: una anual de $1200 se cobra $1200 una vez al año.
+enum Periodicidad {
+  MENSUAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+}
+
+/// Quién creó el ítem. Define hacia qué lado sincroniza y evita que el portal
+/// y Contífico se pisen: cada uno es dueño de lo que crea.
+enum OrigenProducto {
+  PORTAL
+  CONTIFICO
+}
+
+/// Tipo de persona para facturación. Espeja el campo `tipo` de Contífico.
+enum TipoPersona {
+  NATURAL
+  JURIDICA
 }
 
 enum EstadoServicio {
@@ -122,14 +147,14 @@ model User {
   // Audit relations
   clientesCreated         Cliente[]         @relation("ClienteCreatedBy")
   clientesUpdated         Cliente[]         @relation("ClienteUpdatedBy")
-  serviciosCreated        Servicio[]        @relation("ServicioCreatedBy")
-  serviciosUpdated        Servicio[]        @relation("ServicioUpdatedBy")
+  productosCreated        Producto[]        @relation("ProductoCreatedBy")
+  productosUpdated        Producto[]        @relation("ProductoUpdatedBy")
   personalCreated         Personal[]        @relation("JardineroCreatedBy")
   personalUpdated         Personal[]        @relation("JardineroUpdatedBy")
   gruposCreated           Grupo[]           @relation("GrupoCreatedBy")
   gruposUpdated           Grupo[]           @relation("GrupoUpdatedBy")
-  clienteServiciosCreated ClienteServicio[] @relation("ClienteServicioCreatedBy")
-  clienteServiciosUpdated ClienteServicio[] @relation("ClienteServicioUpdatedBy")
+  suscripcionesCreated    Suscripcion[]     @relation("SuscripcionCreatedBy")
+  suscripcionesUpdated    Suscripcion[]     @relation("SuscripcionUpdatedBy")
   visitasCreated          Visita[]          @relation("VisitaCreatedBy")
   visitasUpdated          Visita[]          @relation("VisitaUpdatedBy")
   visitaPersonalAdded     VisitaPersonal[]  @relation("VisitaPersonalAddedBy")
@@ -143,22 +168,33 @@ model User {
   visitaChatReads         VisitaChatRead[]
   informesGenerados       Informe[]         @relation("InformeGeneratedBy")
   clienteImports          ClienteImport[]   @relation("ClienteImportCreatedBy")
+  ordenesCreated          Orden[]           @relation("OrdenCreatedBy")
+  ordenesUpdated          Orden[]           @relation("OrdenUpdatedBy")
+  datosFacturacionCreated DatoFacturacion[] @relation("DatoFacturacionCreatedBy")
+  datosFacturacionUpdated DatoFacturacion[] @relation("DatoFacturacionUpdatedBy")
 }
 
 model Cliente {
-  id                    String    @id @default(cuid())
-  nombre                String
-  apellido              String?
-  empresa               String?
-  email                 String?
-  telefono              String?
-  ciudad                String?
-  sectorId              String?
-  direccion             String?
-  numeroCasa            String?
-  referencia            String?   @db.Text
-  notas                 String?   @db.Text
-  metrosCuadrados       Float?
+  id              String  @id @default(cuid())
+  nombre          String
+  apellido        String?
+  empresa         String?
+  email           String?
+  telefono        String?
+  ciudad          String?
+  sectorId        String?
+  direccion       String?
+  numeroCasa      String?
+  referencia      String? @db.Text
+  notas           String? @db.Text
+  metrosCuadrados Float?
+
+  /// Identificación tributaria. Contífico exige `cedula` y `tipo` para emitir
+  /// una factura; hoy están vacías y se backfillean desde su padrón.
+  cedula      String?
+  ruc         String?
+  tipoPersona TipoPersona?
+
   recibirRecordatorios  Boolean   @default(true)
   recibirConfirmaciones Boolean   @default(true)
   createdAt             DateTime  @default(now())
@@ -173,53 +209,103 @@ model Cliente {
   user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   sector            Sector?            @relation(fields: [sectorId], references: [id], onDelete: SetNull)
-  servicios         ClienteServicio[]
+  suscripciones     Suscripcion[]
+  datosFacturacion  DatoFacturacion[]
+  visitas           Visita[]
+  ordenes           Orden[]
   informes          Informe[]
   setPasswordTokens SetPasswordToken[]
 }
 
-model Servicio {
-  id          String       @id @default(cuid())
-  nombre      String
-  descripcion String?      @db.Text
-  tipo        TipoServicio
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
+/// Catálogo único: servicios de jardinería y, más adelante, bienes de vivero.
+/// En Contífico ambos son `producto`; lo que los distingue acá es `tipo`.
+model Producto {
+  id           String         @id @default(cuid())
+  nombre       String
+  descripcion  String?        @db.Text
+  /// Inmutable después de crear: cambiarlo dejaría líneas de orden con una
+  /// semántica que ya no corresponde. No hay un eje "único vs recurrente" en el
+  /// catálogo: lo recurrente lo define la suscripción que contiene al producto,
+  /// no el producto.
+  tipo   TipoProducto   @default(SERVICIO)
+  origen OrigenProducto @default(PORTAL)
+
+  /// Código de sincronización con Contífico. Es la llave: Contífico rechaza
+  /// códigos repetidos (409 con el id del existente) pero acepta nombres
+  /// repetidos, así que el código es lo único que evita duplicados.
+  codigo String? @unique
+
+  /// Producto equivalente en Contífico. `detalles[].producto_id` es obligatorio
+  /// al facturar, así que cada ítem se vincula una vez con su producto. Único:
+  /// dos productos del portal apuntando al mismo de Contífico harían ambigua
+  /// la factura y romperían la trazabilidad hacia atrás.
+  contificoProductoId  String?  @unique
+  contificoCategoriaId String?
+  /// Tasa de IVA por defecto (porcentaje). En Ecuador conviven 0% y 15%.
+  ivaTasa              Decimal? @db.Decimal(5, 2)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   createdById String?
   updatedById String?
-  createdBy   User?   @relation("ServicioCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy   User?   @relation("ServicioUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdBy   User?   @relation("ProductoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?   @relation("ProductoUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  clientes ClienteServicio[]
+  suscripcionItems SuscripcionItem[]
+  visitaProductos  VisitaProducto[]
+  visitaMedia      VisitaMedia[]
+  informeSecciones InformeSeccion[]
+  ordenLineas      OrdenLinea[]
 }
 
-model ClienteServicio {
-  id                String         @id @default(cuid())
-  clienteId         String
-  servicioId        String
-  precio            Decimal        @db.Decimal(10, 2)
-  iva               Decimal        @default(0) @db.Decimal(10, 2)
-  frecuenciaMensual Int?
-  estado            EstadoServicio @default(ACTIVO)
-  fechaInicio       DateTime       @default(now())
-  fechaFin          DateTime?
-  notas             String?        @db.Text
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+/// Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
+/// el mismo ciclo: cada renovación genera una orden con una línea por ítem.
+model Suscripcion {
+  id           String         @id @default(cuid())
+  clienteId    String
+  estado       EstadoServicio @default(ACTIVO)
+  /// El ciclo lo define la suscripción, no el producto: el mismo producto puede
+  /// ser mensual para un cliente y trimestral para otro.
+  periodicidad Periodicidad   @default(MENSUAL)
+  fechaInicio  DateTime       @db.Date
+  fechaFin     DateTime?      @db.Date
+  notas        String?        @db.Text
 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   createdById String?
   updatedById String?
-  createdBy   User?   @relation("ClienteServicioCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy   User?   @relation("ClienteServicioUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  servicio Servicio @relation(fields: [servicioId], references: [id], onDelete: Restrict)
+  cliente   Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  createdBy User?             @relation("SuscripcionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?             @relation("SuscripcionUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  items     SuscripcionItem[]
 
-  visitas Visita[]
+  @@index([clienteId, estado])
+}
 
-  @@unique([clienteId, servicioId])
+/// Un producto dentro de una suscripción, con su propio precio e IVA. La tasa
+/// va acá y no en la cabecera porque una misma factura puede mezclar líneas al
+/// 0% y al 15%.
+model SuscripcionItem {
+  id                String  @id @default(cuid())
+  suscripcionId     String
+  productoId        String
+  precio            Decimal @db.Decimal(10, 2)
+  ivaTasa           Decimal @default(0) @db.Decimal(5, 2)
+  /// Visitas que incluye **por período de cobro**: en una trimestral son las
+  /// del trimestre. Es informativo — no es un tope, se puede agendar de más.
+  visitasPorPeriodo Int?
+
+  suscripcion     Suscripcion      @relation(fields: [suscripcionId], references: [id], onDelete: Cascade)
+  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  visitaProductos VisitaProducto[]
+  ordenLineas     OrdenLinea[]
+
+  @@unique([suscripcionId, productoId])
+  @@index([productoId])
 }
 
 model Personal {
@@ -264,32 +350,63 @@ model Grupo {
 }
 
 model Visita {
-  id                String       @id @default(cuid())
-  clienteServicioId String
-  fechaProgramada   DateTime     @db.Date
-  fechaRealizada    DateTime?    @db.Date
-  horaEntrada       String?
-  horaSalida        String?
-  estado            EstadoVisita @default(PROGRAMADA)
-  grupoId           String?
-  notas             String?      @db.Text
-  notasIncompleto   String?      @db.Text
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  deletedAt         DateTime?
-  createdById       String?
-  updatedById       String?
+  id              String       @id @default(cuid())
+  clienteId       String
+  fechaProgramada DateTime     @db.Date
+  fechaRealizada  DateTime?    @db.Date
+  horaEntrada     String?
+  horaSalida      String?
+  estado          EstadoVisita @default(PROGRAMADA)
+  grupoId         String?
+  notas           String?      @db.Text
+  notasIncompleto String?      @db.Text
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
+  createdById     String?
+  updatedById     String?
 
-  clienteServicio ClienteServicio   @relation(fields: [clienteServicioId], references: [id], onDelete: Cascade)
-  grupo           Grupo?            @relation(fields: [grupoId], references: [id], onDelete: SetNull)
-  createdBy       User?             @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy       User?             @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  media           VisitaMedia[]
-  personal        VisitaPersonal[]
-  notificaciones  NotificacionLog[]
-  messages        VisitaMessage[]
-  chatReads       VisitaChatRead[]
-  informes        InformeVisita[]
+  cliente        Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  productos      VisitaProducto[]
+  grupo          Grupo?            @relation(fields: [grupoId], references: [id], onDelete: SetNull)
+  createdBy      User?             @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy      User?             @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  media          VisitaMedia[]
+  personal       VisitaPersonal[]
+  notificaciones NotificacionLog[]
+  messages       VisitaMessage[]
+  chatReads      VisitaChatRead[]
+  informes       InformeVisita[]
+
+  @@index([clienteId])
+  @@index([fechaProgramada])
+}
+
+/// Una visita puede cubrir varios servicios contratados del mismo cliente.
+/// Un producto cubierto por una visita. Una visita puede cubrir varios.
+///
+/// **No lleva plata.** El precio de un trabajo se decide al facturarlo, en la
+/// orden, igual que todo el resto del dinero del sistema. Acá solo vive el
+/// hecho: qué se hizo y si estaba cubierto por un plan.
+model VisitaProducto {
+  id                String  @id @default(cuid())
+  visitaId          String
+  /// Qué se hizo. Siempre presente, venga de una suscripción o sea trabajo suelto.
+  productoId        String
+  /// Puesto = el plan lo cubre y no se cobra aparte. Null = trabajo suelto, se
+  /// factura creando una orden. No es plata: es cobertura.
+  suscripcionItemId String?
+  orden             Int     @default(0)
+
+  visita          Visita           @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
+  /// Dónde se cobró, si ya se cobró. Único: un trabajo se factura una sola vez.
+  ordenLinea      OrdenLinea?
+
+  @@unique([visitaId, productoId])
+  @@index([productoId])
+  @@index([suscripcionItemId])
 }
 
 model VisitaPersonal {
@@ -317,7 +434,15 @@ model VisitaMedia {
   tipo      String
   createdAt DateTime @default(now())
 
-  visita Visita @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  /// Etiqueta opcional: a cuál de los productos de la visita corresponde la foto.
+  productoId String?
+
+  visita       Visita               @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  producto     Producto?            @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  informeFotos InformeSeccionFoto[]
+
+  @@index([visitaId])
+  @@index([productoId])
 }
 
 model VisitaMessage {
@@ -537,18 +662,6 @@ model SetPasswordToken {
 // Informes mensuales (PDFs)
 // ──────────────────────────────────────────────
 
-model TipoActividad {
-  id                  String   @id @default(cuid())
-  nombre              String
-  descripcionTemplate String?  @db.Text
-  orden               Int      @default(0)
-  activo              Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  secciones InformeSeccion[]
-}
-
 model Informe {
   id            String    @id @default(cuid())
   clienteId     String
@@ -584,19 +697,38 @@ model InformeVisita {
 }
 
 model InformeSeccion {
-  id              String  @id @default(cuid())
-  informeId       String
-  tipoActividadId String?
-  titulo          String
-  descripcion     String? @db.Text
-  orden           Int
-  // VisitaMedia.id list, in display order. Postgres String array.
-  mediaIds        String[]
+  id          String  @id @default(cuid())
+  informeId   String
+  /// Producto que origina la sección. Null = sección personalizada.
+  productoId  String?
+  titulo      String
+  descripcion String? @db.Text
+  orden       Int
 
-  informe       Informe        @relation(fields: [informeId], references: [id], onDelete: Cascade)
-  tipoActividad TipoActividad? @relation(fields: [tipoActividadId], references: [id], onDelete: SetNull)
+  informe  Informe              @relation(fields: [informeId], references: [id], onDelete: Cascade)
+  producto Producto?            @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  fotos    InformeSeccionFoto[]
 
   @@index([informeId])
+  @@index([productoId])
+}
+
+/// Una foto de una sección: puede venir de una visita (visitaMediaId) o haber
+/// sido subida directamente al informe. `key`/`url` siempre se guardan para que
+/// el informe siga siendo editable aunque se borre la media de la visita.
+model InformeSeccionFoto {
+  id            String  @id @default(cuid())
+  seccionId     String
+  orden         Int
+  key           String
+  url           String
+  visitaMediaId String?
+
+  seccion     InformeSeccion @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+  visitaMedia VisitaMedia?   @relation(fields: [visitaMediaId], references: [id], onDelete: SetNull)
+
+  @@index([seccionId, orden])
+  @@index([visitaMediaId])
 }
 
 model EmpresaConfig {
@@ -617,4 +749,207 @@ model Firmante {
   updatedAt DateTime @updatedAt
 
   @@index([isDefault])
+}
+
+// ──────────────────────────────────────────────
+// Libro de ventas
+//
+// Una orden es "lo que se vendió": existe desde que se hizo el trabajo, antes
+// de que exista factura. Toda la plata vive en `OrdenLinea`, venga de una
+// suscripción, de una visita única o (más adelante) de un bien. Así un reporte
+// de ventas es una sola consulta en vez de un union por cada tipo de ingreso,
+// y si algún día se deja de usar Contífico el historial completo queda acá.
+// ──────────────────────────────────────────────
+
+/// Tres estados y una sola idea: si la orden está viva y si se puede tocar.
+///
+/// No hay FACTURADA porque facturar dejó de ser un paso aparte —confirmar
+/// emite— así que CONFIRMADA **es** "tiene factura viva". Que esté cobrada o no
+/// se lee del saldo de esa factura, no del estado de la orden: son dos ejes
+/// distintos y mezclarlos obligaba a inventar un estado por combinación.
+///
+/// Una emisión fallida deja la orden en BORRADOR, que es el único estado
+/// editable: justo donde hay que estar para arreglar la causa.
+enum EstadoOrden {
+  BORRADOR
+  CONFIRMADA
+  ANULADA
+}
+
+model Orden {
+  id                String      @id @default(cuid())
+  clienteId         String
+  /// Con qué datos se va a facturar. Se elige al armar la orden, cuando el
+  /// vendedor tiene al cliente delante; al emitir ya es tarde para preguntar.
+  /// Nullable porque una orden puede existir antes de saberlo.
+  datoFacturacionId String?
+  /// Correlativo interno legible. No es el número de factura del SRI.
+  numero            Int         @unique @default(autoincrement())
+  fecha             DateTime    @db.Date
+  estado            EstadoOrden @default(BORRADOR)
+  notas             String?     @db.Text
+
+  /// Totales denormalizados, recalculados desde las líneas en cada escritura.
+  subtotal Decimal @default(0) @db.Decimal(10, 2)
+  iva      Decimal @default(0) @db.Decimal(10, 2)
+  total    Decimal @default(0) @db.Decimal(10, 2)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  updatedById String?
+
+  cliente         Cliente          @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
+  createdBy       User?            @relation("OrdenCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy       User?            @relation("OrdenUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  lineas          OrdenLinea[]
+  facturas        Factura[]
+
+  @@index([clienteId, fecha])
+  @@index([estado])
+  @@index([datoFacturacionId])
+}
+
+model OrdenLinea {
+  id       String @id @default(cuid())
+  ordenId  String
+  posicion Int    @default(0)
+
+  /// Snapshot: sobrevive a que después renombren o borren el producto.
+  descripcion    String
+  cantidad       Decimal @default(1) @db.Decimal(10, 2)
+  precioUnitario Decimal @db.Decimal(10, 2)
+  ivaTasa        Decimal @default(0) @db.Decimal(5, 2)
+  subtotal       Decimal @db.Decimal(10, 2)
+  iva            Decimal @db.Decimal(10, 2)
+  total          Decimal @db.Decimal(10, 2)
+
+  /// Qué se vendió. Obligatorio: Contífico exige `producto_id` en cada línea y
+  /// no acepta texto libre, así que una línea sin producto sería una venta que
+  /// no se puede cobrar. Es además lo que hace que un reporte por producto sea
+  /// un `groupBy` y no una reconstrucción.
+  productoId        String
+  suscripcionItemId String?
+  periodoInicio     DateTime? @db.Date
+  periodoFin        DateTime? @db.Date
+  /// El VisitaProducto es la unidad facturable de un trabajo suelto: una visita
+  /// que cubre dos productos genera dos líneas.
+  visitaProductoId  String?   @unique
+
+  orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  /// `Restrict` y no `SetNull`: un producto que ya se vendió no se puede
+  /// borrar. Perder el vínculo dejaría la línea fuera de todo reporte y la
+  /// factura sin con qué reconciliarse.
+  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
+  visitaProducto  VisitaProducto?  @relation(fields: [visitaProductoId], references: [id], onDelete: SetNull)
+
+  /// Impide facturar dos veces el mismo período de la misma suscripción.
+  @@unique([suscripcionItemId, periodoInicio])
+  @@index([ordenId, posicion])
+  @@index([productoId])
+}
+
+enum EstadoFactura {
+  PENDIENTE
+  FIRMADO
+  ENVIADO_SRI
+  AUTORIZADO
+  RECHAZADO
+}
+
+/// Espejo de la factura que vive en Contífico. El portal no la emite ni la
+/// numera: guarda la referencia y el estado. Contífico no permite editarlas ni
+/// anularlas por API, así que acá son de solo lectura una vez creadas.
+/// Los datos con los que se le emite una factura a un cliente.
+///
+/// Van aparte del Cliente porque uno puede facturar de más de una forma: a
+/// nombre propio y al de su empresa, o a distintas razones sociales de un mismo
+/// contacto. Y porque el nombre con el que se lo conoce en el portal no tiene
+/// por qué ser la razón social del SRI.
+///
+/// Editarlo no rompe el historial: cada Factura guarda además un snapshot de la
+/// razón social e identificación con las que se emitió.
+model DatoFacturacion {
+  id        String @id @default(cuid())
+  clienteId String
+
+  /// `CEDULA` o `RUC`. Contífico valida el módulo 10 de la cédula.
+  tipoIdentificacion TipoIdentificacion
+  identificacion     String
+  /// Lo que se imprime en la factura, no el nombre del portal.
+  razonSocial        String
+  /// Natural o jurídica: Contífico lo recibe como `N` / `J`.
+  tipoPersona        TipoPersona
+  direccion          String?
+  telefono           String?
+  email              String?
+
+  /// El que se propone al facturar.
+  esPredeterminado Boolean @default(false)
+  /// Los archivados no se ofrecen, pero las facturas viejas los siguen citando.
+  archivado        Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  updatedById String?
+
+  cliente   Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("DatoFacturacionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?     @relation("DatoFacturacionUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  facturas  Factura[]
+  ordenes   Orden[]
+
+  /// No se repite la misma identificación dos veces en el mismo cliente.
+  @@unique([clienteId, identificacion])
+  @@index([clienteId, archivado])
+}
+
+enum TipoIdentificacion {
+  CEDULA
+  RUC
+}
+
+model Factura {
+  id      String @id @default(cuid())
+  ordenId String
+
+  contificoDocumentoId String?       @unique
+  numero               String
+  fechaEmision         DateTime      @db.Date
+  estado               EstadoFactura @default(PENDIENTE)
+  /// Clave de acceso del SRI (49 dígitos), la genera Contífico.
+  autorizacion         String?
+  urlRide              String?
+  urlXml               String?
+  /// Persona de Contífico. La crea sola al facturar; se guarda por referencia.
+  contificoPersonaId   String?
+
+  /// Con qué datos se emitió. El id es la referencia; los dos campos de abajo
+  /// son el snapshot y son la verdad — el dato puede editarse o archivarse, y
+  /// el papel que recibió el cliente no cambia.
+  datoFacturacionId String?
+  razonSocial       String?
+  identificacion    String?
+
+  subtotal0       Decimal @default(0) @db.Decimal(10, 2)
+  subtotalGravado Decimal @default(0) @db.Decimal(10, 2)
+  iva             Decimal @default(0) @db.Decimal(10, 2)
+  total           Decimal @default(0) @db.Decimal(10, 2)
+  /// Lo que falta cobrar, espejado de Contífico. Los cobros son suyos: acá solo
+  /// se guarda el número para no tener que pedirlo cada vez. `null` = sin
+  /// sincronizar todavía.
+  saldo           Decimal? @db.Decimal(10, 2)
+
+  anulada   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Restrict)
+  datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
+
+  @@index([ordenId])
+  @@index([estado])
 }

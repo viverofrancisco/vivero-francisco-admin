@@ -1,0 +1,33 @@
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-helpers";
+import { ServiciosTable } from "@/components/servicios/servicios-table";
+import { PageHeader } from "@/components/shared/page-header";
+
+export default async function ServiciosPage() {
+  await requireAuth();
+
+  const servicios = await prisma.producto.findMany({
+    where: { deletedAt: null },
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { suscripcionItems: true } } },
+  });
+
+  return (
+    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+      <PageHeader
+        title="Productos"
+        description="Servicios y bienes que se le pueden vender a un cliente"
+        actions={[
+          {
+            label: "Nuevo producto",
+            href: "/dashboard/productos/nuevo",
+            icon: "plus",
+            primary: true,
+          },
+        ]}
+      />
+
+      <ServiciosTable productos={servicios} />
+    </div>
+  );
+}

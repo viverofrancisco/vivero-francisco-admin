@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { VisitaDetail } from "@/components/visitas/visita-detail";
+import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
 
 export default async function VisitaDetailPage({
   params,
@@ -14,12 +15,17 @@ export default async function VisitaDetailPage({
   const visita = await prisma.visita.findUnique({
     where: { id, deletedAt: null },
     include: {
-      clienteServicio: {
-        include: {
-          cliente: { select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true, sector: { select: { nombre: true } } } },
-          servicio: { select: { id: true, nombre: true, tipo: true } },
+      cliente: {
+        select: {
+          id: true,
+          nombre: true,
+          apellido: true,
+          empresa: true,
+          ciudad: true,
+          sector: { select: { nombre: true } },
         },
       },
+      productos: PRODUCTOS_DE_VISITA_SELECT,
       grupo: {
         select: {
           id: true,
@@ -44,17 +50,7 @@ export default async function VisitaDetailPage({
     notFound();
   }
 
-  // Fetch all active personal for editing (only if PROGRAMADA)
-  const allPersonal = visita.estado === "PROGRAMADA"
-    ? await prisma.personal.findMany({
-        where: { deletedAt: null, estado: "ACTIVO" },
-        select: { id: true, nombre: true, apellido: true },
-        orderBy: { nombre: "asc" },
-      })
-    : [];
-
-  // Whether this visita has any chat messages — controls the "Ver mensajes"
-  // button visibility on the detail page.
+  // Controla el botón "Ver mensajes".
   const messageCount = await prisma.visitaMessage.count({
     where: { visitaId: id },
   });
@@ -62,7 +58,6 @@ export default async function VisitaDetailPage({
 
   const serialized = {
     id: visita.id,
-    clienteServicioId: visita.clienteServicioId,
     fechaProgramada: visita.fechaProgramada.toISOString().split("T")[0],
     fechaRealizada: visita.fechaRealizada?.toISOString().split("T")[0] ?? null,
     horaEntrada: visita.horaEntrada,
@@ -71,10 +66,8 @@ export default async function VisitaDetailPage({
     notas: visita.notas,
     notasIncompleto: visita.notasIncompleto,
     media: visita.media,
-    clienteServicio: {
-      cliente: visita.clienteServicio.cliente,
-      servicio: visita.clienteServicio.servicio,
-    },
+    cliente: visita.cliente,
+    productos: visita.productos,
     grupo: visita.grupo,
     personal: visita.personal,
   };
@@ -84,7 +77,6 @@ export default async function VisitaDetailPage({
       <VisitaDetail
         visita={serialized}
         userRole={user.role}
-        allPersonal={allPersonal}
         hasMessages={hasMessages}
       />
     </div>

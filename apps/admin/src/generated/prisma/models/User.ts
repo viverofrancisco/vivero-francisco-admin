@@ -226,14 +226,14 @@ export type UserWhereInput = {
   sessions?: Prisma.SessionListRelationFilter
   clientesCreated?: Prisma.ClienteListRelationFilter
   clientesUpdated?: Prisma.ClienteListRelationFilter
-  serviciosCreated?: Prisma.ServicioListRelationFilter
-  serviciosUpdated?: Prisma.ServicioListRelationFilter
+  productosCreated?: Prisma.ProductoListRelationFilter
+  productosUpdated?: Prisma.ProductoListRelationFilter
   personalCreated?: Prisma.PersonalListRelationFilter
   personalUpdated?: Prisma.PersonalListRelationFilter
   gruposCreated?: Prisma.GrupoListRelationFilter
   gruposUpdated?: Prisma.GrupoListRelationFilter
-  clienteServiciosCreated?: Prisma.ClienteServicioListRelationFilter
-  clienteServiciosUpdated?: Prisma.ClienteServicioListRelationFilter
+  suscripcionesCreated?: Prisma.SuscripcionListRelationFilter
+  suscripcionesUpdated?: Prisma.SuscripcionListRelationFilter
   visitasCreated?: Prisma.VisitaListRelationFilter
   visitasUpdated?: Prisma.VisitaListRelationFilter
   visitaPersonalAdded?: Prisma.VisitaPersonalListRelationFilter
@@ -247,6 +247,10 @@ export type UserWhereInput = {
   visitaChatReads?: Prisma.VisitaChatReadListRelationFilter
   informesGenerados?: Prisma.InformeListRelationFilter
   clienteImports?: Prisma.ClienteImportListRelationFilter
+  ordenesCreated?: Prisma.OrdenListRelationFilter
+  ordenesUpdated?: Prisma.OrdenListRelationFilter
+  datosFacturacionCreated?: Prisma.DatoFacturacionListRelationFilter
+  datosFacturacionUpdated?: Prisma.DatoFacturacionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -264,14 +268,14 @@ export type UserOrderByWithRelationInput = {
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   clientesCreated?: Prisma.ClienteOrderByRelationAggregateInput
   clientesUpdated?: Prisma.ClienteOrderByRelationAggregateInput
-  serviciosCreated?: Prisma.ServicioOrderByRelationAggregateInput
-  serviciosUpdated?: Prisma.ServicioOrderByRelationAggregateInput
+  productosCreated?: Prisma.ProductoOrderByRelationAggregateInput
+  productosUpdated?: Prisma.ProductoOrderByRelationAggregateInput
   personalCreated?: Prisma.PersonalOrderByRelationAggregateInput
   personalUpdated?: Prisma.PersonalOrderByRelationAggregateInput
   gruposCreated?: Prisma.GrupoOrderByRelationAggregateInput
   gruposUpdated?: Prisma.GrupoOrderByRelationAggregateInput
-  clienteServiciosCreated?: Prisma.ClienteServicioOrderByRelationAggregateInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioOrderByRelationAggregateInput
+  suscripcionesCreated?: Prisma.SuscripcionOrderByRelationAggregateInput
+  suscripcionesUpdated?: Prisma.SuscripcionOrderByRelationAggregateInput
   visitasCreated?: Prisma.VisitaOrderByRelationAggregateInput
   visitasUpdated?: Prisma.VisitaOrderByRelationAggregateInput
   visitaPersonalAdded?: Prisma.VisitaPersonalOrderByRelationAggregateInput
@@ -285,6 +289,10 @@ export type UserOrderByWithRelationInput = {
   visitaChatReads?: Prisma.VisitaChatReadOrderByRelationAggregateInput
   informesGenerados?: Prisma.InformeOrderByRelationAggregateInput
   clienteImports?: Prisma.ClienteImportOrderByRelationAggregateInput
+  ordenesCreated?: Prisma.OrdenOrderByRelationAggregateInput
+  ordenesUpdated?: Prisma.OrdenOrderByRelationAggregateInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionOrderByRelationAggregateInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -305,14 +313,14 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   sessions?: Prisma.SessionListRelationFilter
   clientesCreated?: Prisma.ClienteListRelationFilter
   clientesUpdated?: Prisma.ClienteListRelationFilter
-  serviciosCreated?: Prisma.ServicioListRelationFilter
-  serviciosUpdated?: Prisma.ServicioListRelationFilter
+  productosCreated?: Prisma.ProductoListRelationFilter
+  productosUpdated?: Prisma.ProductoListRelationFilter
   personalCreated?: Prisma.PersonalListRelationFilter
   personalUpdated?: Prisma.PersonalListRelationFilter
   gruposCreated?: Prisma.GrupoListRelationFilter
   gruposUpdated?: Prisma.GrupoListRelationFilter
-  clienteServiciosCreated?: Prisma.ClienteServicioListRelationFilter
-  clienteServiciosUpdated?: Prisma.ClienteServicioListRelationFilter
+  suscripcionesCreated?: Prisma.SuscripcionListRelationFilter
+  suscripcionesUpdated?: Prisma.SuscripcionListRelationFilter
   visitasCreated?: Prisma.VisitaListRelationFilter
   visitasUpdated?: Prisma.VisitaListRelationFilter
   visitaPersonalAdded?: Prisma.VisitaPersonalListRelationFilter
@@ -326,6 +334,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   visitaChatReads?: Prisma.VisitaChatReadListRelationFilter
   informesGenerados?: Prisma.InformeListRelationFilter
   clienteImports?: Prisma.ClienteImportListRelationFilter
+  ordenesCreated?: Prisma.OrdenListRelationFilter
+  ordenesUpdated?: Prisma.OrdenListRelationFilter
+  datosFacturacionCreated?: Prisma.DatoFacturacionListRelationFilter
+  datosFacturacionUpdated?: Prisma.DatoFacturacionListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -375,14 +387,14 @@ export type UserCreateInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -396,6 +408,10 @@ export type UserCreateInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -413,14 +429,14 @@ export type UserUncheckedCreateInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -434,6 +450,10 @@ export type UserUncheckedCreateInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUpdateInput = {
@@ -451,14 +471,14 @@ export type UserUpdateInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -472,6 +492,10 @@ export type UserUpdateInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -489,14 +513,14 @@ export type UserUncheckedUpdateInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -510,6 +534,10 @@ export type UserUncheckedUpdateInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -684,68 +712,68 @@ export type UserUpdateOneWithoutClienteNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutClienteInput, Prisma.UserUpdateWithoutClienteInput>, Prisma.UserUncheckedUpdateWithoutClienteInput>
 }
 
-export type UserCreateNestedOneWithoutServiciosCreatedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutServiciosCreatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutServiciosCreatedInput
+export type UserCreateNestedOneWithoutProductosCreatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutProductosCreatedInput, Prisma.UserUncheckedCreateWithoutProductosCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutProductosCreatedInput
   connect?: Prisma.UserWhereUniqueInput
 }
 
-export type UserCreateNestedOneWithoutServiciosUpdatedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutServiciosUpdatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutServiciosUpdatedInput
+export type UserCreateNestedOneWithoutProductosUpdatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutProductosUpdatedInput, Prisma.UserUncheckedCreateWithoutProductosUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutProductosUpdatedInput
   connect?: Prisma.UserWhereUniqueInput
 }
 
-export type UserUpdateOneWithoutServiciosCreatedNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutServiciosCreatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutServiciosCreatedInput
-  upsert?: Prisma.UserUpsertWithoutServiciosCreatedInput
+export type UserUpdateOneWithoutProductosCreatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutProductosCreatedInput, Prisma.UserUncheckedCreateWithoutProductosCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutProductosCreatedInput
+  upsert?: Prisma.UserUpsertWithoutProductosCreatedInput
   disconnect?: Prisma.UserWhereInput | boolean
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutServiciosCreatedInput, Prisma.UserUpdateWithoutServiciosCreatedInput>, Prisma.UserUncheckedUpdateWithoutServiciosCreatedInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProductosCreatedInput, Prisma.UserUpdateWithoutProductosCreatedInput>, Prisma.UserUncheckedUpdateWithoutProductosCreatedInput>
 }
 
-export type UserUpdateOneWithoutServiciosUpdatedNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutServiciosUpdatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutServiciosUpdatedInput
-  upsert?: Prisma.UserUpsertWithoutServiciosUpdatedInput
+export type UserUpdateOneWithoutProductosUpdatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutProductosUpdatedInput, Prisma.UserUncheckedCreateWithoutProductosUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutProductosUpdatedInput
+  upsert?: Prisma.UserUpsertWithoutProductosUpdatedInput
   disconnect?: Prisma.UserWhereInput | boolean
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutServiciosUpdatedInput, Prisma.UserUpdateWithoutServiciosUpdatedInput>, Prisma.UserUncheckedUpdateWithoutServiciosUpdatedInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProductosUpdatedInput, Prisma.UserUpdateWithoutProductosUpdatedInput>, Prisma.UserUncheckedUpdateWithoutProductosUpdatedInput>
 }
 
-export type UserCreateNestedOneWithoutClienteServiciosCreatedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosCreatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClienteServiciosCreatedInput
+export type UserCreateNestedOneWithoutSuscripcionesCreatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesCreatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSuscripcionesCreatedInput
   connect?: Prisma.UserWhereUniqueInput
 }
 
-export type UserCreateNestedOneWithoutClienteServiciosUpdatedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosUpdatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClienteServiciosUpdatedInput
+export type UserCreateNestedOneWithoutSuscripcionesUpdatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesUpdatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSuscripcionesUpdatedInput
   connect?: Prisma.UserWhereUniqueInput
 }
 
-export type UserUpdateOneWithoutClienteServiciosCreatedNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosCreatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClienteServiciosCreatedInput
-  upsert?: Prisma.UserUpsertWithoutClienteServiciosCreatedInput
+export type UserUpdateOneWithoutSuscripcionesCreatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesCreatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSuscripcionesCreatedInput
+  upsert?: Prisma.UserUpsertWithoutSuscripcionesCreatedInput
   disconnect?: Prisma.UserWhereInput | boolean
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutClienteServiciosCreatedInput, Prisma.UserUpdateWithoutClienteServiciosCreatedInput>, Prisma.UserUncheckedUpdateWithoutClienteServiciosCreatedInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSuscripcionesCreatedInput, Prisma.UserUpdateWithoutSuscripcionesCreatedInput>, Prisma.UserUncheckedUpdateWithoutSuscripcionesCreatedInput>
 }
 
-export type UserUpdateOneWithoutClienteServiciosUpdatedNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosUpdatedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutClienteServiciosUpdatedInput
-  upsert?: Prisma.UserUpsertWithoutClienteServiciosUpdatedInput
+export type UserUpdateOneWithoutSuscripcionesUpdatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesUpdatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSuscripcionesUpdatedInput
+  upsert?: Prisma.UserUpsertWithoutSuscripcionesUpdatedInput
   disconnect?: Prisma.UserWhereInput | boolean
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutClienteServiciosUpdatedInput, Prisma.UserUpdateWithoutClienteServiciosUpdatedInput>, Prisma.UserUncheckedUpdateWithoutClienteServiciosUpdatedInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSuscripcionesUpdatedInput, Prisma.UserUpdateWithoutSuscripcionesUpdatedInput>, Prisma.UserUncheckedUpdateWithoutSuscripcionesUpdatedInput>
 }
 
 export type UserCreateNestedOneWithoutPersonalCreatedInput = {
@@ -992,6 +1020,70 @@ export type UserUpdateOneRequiredWithoutInformesGeneradosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInformesGeneradosInput, Prisma.UserUpdateWithoutInformesGeneradosInput>, Prisma.UserUncheckedUpdateWithoutInformesGeneradosInput>
 }
 
+export type UserCreateNestedOneWithoutOrdenesCreatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOrdenesCreatedInput, Prisma.UserUncheckedCreateWithoutOrdenesCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrdenesCreatedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutOrdenesUpdatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOrdenesUpdatedInput, Prisma.UserUncheckedCreateWithoutOrdenesUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrdenesUpdatedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutOrdenesCreatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOrdenesCreatedInput, Prisma.UserUncheckedCreateWithoutOrdenesCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrdenesCreatedInput
+  upsert?: Prisma.UserUpsertWithoutOrdenesCreatedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOrdenesCreatedInput, Prisma.UserUpdateWithoutOrdenesCreatedInput>, Prisma.UserUncheckedUpdateWithoutOrdenesCreatedInput>
+}
+
+export type UserUpdateOneWithoutOrdenesUpdatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOrdenesUpdatedInput, Prisma.UserUncheckedCreateWithoutOrdenesUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrdenesUpdatedInput
+  upsert?: Prisma.UserUpsertWithoutOrdenesUpdatedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOrdenesUpdatedInput, Prisma.UserUpdateWithoutOrdenesUpdatedInput>, Prisma.UserUncheckedUpdateWithoutOrdenesUpdatedInput>
+}
+
+export type UserCreateNestedOneWithoutDatosFacturacionCreatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionCreatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDatosFacturacionCreatedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutDatosFacturacionUpdatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionUpdatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDatosFacturacionUpdatedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutDatosFacturacionCreatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionCreatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDatosFacturacionCreatedInput
+  upsert?: Prisma.UserUpsertWithoutDatosFacturacionCreatedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDatosFacturacionCreatedInput, Prisma.UserUpdateWithoutDatosFacturacionCreatedInput>, Prisma.UserUncheckedUpdateWithoutDatosFacturacionCreatedInput>
+}
+
+export type UserUpdateOneWithoutDatosFacturacionUpdatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionUpdatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDatosFacturacionUpdatedInput
+  upsert?: Prisma.UserUpsertWithoutDatosFacturacionUpdatedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDatosFacturacionUpdatedInput, Prisma.UserUpdateWithoutDatosFacturacionUpdatedInput>, Prisma.UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput>
+}
+
 export type UserCreateWithoutAccountsInput = {
   id?: string
   name?: string | null
@@ -1006,14 +1098,14 @@ export type UserCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -1027,6 +1119,10 @@ export type UserCreateWithoutAccountsInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1043,14 +1139,14 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -1064,6 +1160,10 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1096,14 +1196,14 @@ export type UserUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -1117,6 +1217,10 @@ export type UserUpdateWithoutAccountsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1133,14 +1237,14 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -1154,6 +1258,10 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1170,14 +1278,14 @@ export type UserCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -1191,6 +1299,10 @@ export type UserCreateWithoutSessionsInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1207,14 +1319,14 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -1228,6 +1340,10 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1260,14 +1376,14 @@ export type UserUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -1281,6 +1397,10 @@ export type UserUpdateWithoutSessionsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1297,14 +1417,14 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -1318,6 +1438,10 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutClientesCreatedInput = {
@@ -1334,14 +1458,14 @@ export type UserCreateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -1355,6 +1479,10 @@ export type UserCreateWithoutClientesCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutClientesCreatedInput = {
@@ -1371,14 +1499,14 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -1392,6 +1520,10 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutClientesCreatedInput = {
@@ -1413,14 +1545,14 @@ export type UserCreateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -1434,6 +1566,10 @@ export type UserCreateWithoutClientesUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutClientesUpdatedInput = {
@@ -1450,14 +1586,14 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -1471,6 +1607,10 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutClientesUpdatedInput = {
@@ -1493,14 +1633,14 @@ export type UserCreateWithoutClienteInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -1513,6 +1653,10 @@ export type UserCreateWithoutClienteInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutClienteInput = {
@@ -1530,14 +1674,14 @@ export type UserUncheckedCreateWithoutClienteInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -1550,6 +1694,10 @@ export type UserUncheckedCreateWithoutClienteInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutClienteInput = {
@@ -1582,14 +1730,14 @@ export type UserUpdateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -1603,6 +1751,10 @@ export type UserUpdateWithoutClientesCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientesCreatedInput = {
@@ -1619,14 +1771,14 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -1640,6 +1792,10 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUpsertWithoutClientesUpdatedInput = {
@@ -1667,14 +1823,14 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -1688,6 +1844,10 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
@@ -1704,14 +1864,14 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -1725,6 +1885,10 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUpsertWithoutClienteInput = {
@@ -1753,14 +1917,14 @@ export type UserUpdateWithoutClienteInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -1773,6 +1937,10 @@ export type UserUpdateWithoutClienteInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClienteInput = {
@@ -1790,14 +1958,14 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -1810,9 +1978,13 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserCreateWithoutServiciosCreatedInput = {
+export type UserCreateWithoutProductosCreatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -1827,13 +1999,13 @@ export type UserCreateWithoutServiciosCreatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -1847,9 +2019,13 @@ export type UserCreateWithoutServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserUncheckedCreateWithoutServiciosCreatedInput = {
+export type UserUncheckedCreateWithoutProductosCreatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -1864,13 +2040,13 @@ export type UserUncheckedCreateWithoutServiciosCreatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -1884,14 +2060,18 @@ export type UserUncheckedCreateWithoutServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserCreateOrConnectWithoutServiciosCreatedInput = {
+export type UserCreateOrConnectWithoutProductosCreatedInput = {
   where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutServiciosCreatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutProductosCreatedInput, Prisma.UserUncheckedCreateWithoutProductosCreatedInput>
 }
 
-export type UserCreateWithoutServiciosUpdatedInput = {
+export type UserCreateWithoutProductosUpdatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -1906,13 +2086,13 @@ export type UserCreateWithoutServiciosUpdatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -1926,9 +2106,13 @@ export type UserCreateWithoutServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserUncheckedCreateWithoutServiciosUpdatedInput = {
+export type UserUncheckedCreateWithoutProductosUpdatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -1943,13 +2127,13 @@ export type UserUncheckedCreateWithoutServiciosUpdatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -1963,25 +2147,29 @@ export type UserUncheckedCreateWithoutServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserCreateOrConnectWithoutServiciosUpdatedInput = {
+export type UserCreateOrConnectWithoutProductosUpdatedInput = {
   where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutServiciosUpdatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutProductosUpdatedInput, Prisma.UserUncheckedCreateWithoutProductosUpdatedInput>
 }
 
-export type UserUpsertWithoutServiciosCreatedInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutServiciosCreatedInput, Prisma.UserUncheckedUpdateWithoutServiciosCreatedInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutServiciosCreatedInput>
+export type UserUpsertWithoutProductosCreatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutProductosCreatedInput, Prisma.UserUncheckedUpdateWithoutProductosCreatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutProductosCreatedInput, Prisma.UserUncheckedCreateWithoutProductosCreatedInput>
   where?: Prisma.UserWhereInput
 }
 
-export type UserUpdateToOneWithWhereWithoutServiciosCreatedInput = {
+export type UserUpdateToOneWithWhereWithoutProductosCreatedInput = {
   where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutServiciosCreatedInput, Prisma.UserUncheckedUpdateWithoutServiciosCreatedInput>
+  data: Prisma.XOR<Prisma.UserUpdateWithoutProductosCreatedInput, Prisma.UserUncheckedUpdateWithoutProductosCreatedInput>
 }
 
-export type UserUpdateWithoutServiciosCreatedInput = {
+export type UserUpdateWithoutProductosCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1996,13 +2184,13 @@ export type UserUpdateWithoutServiciosCreatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -2016,9 +2204,13 @@ export type UserUpdateWithoutServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserUncheckedUpdateWithoutServiciosCreatedInput = {
+export type UserUncheckedUpdateWithoutProductosCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2033,13 +2225,13 @@ export type UserUncheckedUpdateWithoutServiciosCreatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -2053,20 +2245,24 @@ export type UserUncheckedUpdateWithoutServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserUpsertWithoutServiciosUpdatedInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutServiciosUpdatedInput, Prisma.UserUncheckedUpdateWithoutServiciosUpdatedInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutServiciosUpdatedInput>
+export type UserUpsertWithoutProductosUpdatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutProductosUpdatedInput, Prisma.UserUncheckedUpdateWithoutProductosUpdatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutProductosUpdatedInput, Prisma.UserUncheckedCreateWithoutProductosUpdatedInput>
   where?: Prisma.UserWhereInput
 }
 
-export type UserUpdateToOneWithWhereWithoutServiciosUpdatedInput = {
+export type UserUpdateToOneWithWhereWithoutProductosUpdatedInput = {
   where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutServiciosUpdatedInput, Prisma.UserUncheckedUpdateWithoutServiciosUpdatedInput>
+  data: Prisma.XOR<Prisma.UserUpdateWithoutProductosUpdatedInput, Prisma.UserUncheckedUpdateWithoutProductosUpdatedInput>
 }
 
-export type UserUpdateWithoutServiciosUpdatedInput = {
+export type UserUpdateWithoutProductosUpdatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2081,13 +2277,13 @@ export type UserUpdateWithoutServiciosUpdatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -2101,9 +2297,13 @@ export type UserUpdateWithoutServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserUncheckedUpdateWithoutServiciosUpdatedInput = {
+export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2118,13 +2318,13 @@ export type UserUncheckedUpdateWithoutServiciosUpdatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -2138,9 +2338,13 @@ export type UserUncheckedUpdateWithoutServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserCreateWithoutClienteServiciosCreatedInput = {
+export type UserCreateWithoutSuscripcionesCreatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -2155,13 +2359,13 @@ export type UserCreateWithoutClienteServiciosCreatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -2175,9 +2379,13 @@ export type UserCreateWithoutClienteServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserUncheckedCreateWithoutClienteServiciosCreatedInput = {
+export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -2192,13 +2400,13 @@ export type UserUncheckedCreateWithoutClienteServiciosCreatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -2212,14 +2420,18 @@ export type UserUncheckedCreateWithoutClienteServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserCreateOrConnectWithoutClienteServiciosCreatedInput = {
+export type UserCreateOrConnectWithoutSuscripcionesCreatedInput = {
   where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosCreatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesCreatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesCreatedInput>
 }
 
-export type UserCreateWithoutClienteServiciosUpdatedInput = {
+export type UserCreateWithoutSuscripcionesUpdatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -2234,13 +2446,13 @@ export type UserCreateWithoutClienteServiciosUpdatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -2254,9 +2466,13 @@ export type UserCreateWithoutClienteServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserUncheckedCreateWithoutClienteServiciosUpdatedInput = {
+export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
   id?: string
   name?: string | null
   apellido?: string | null
@@ -2271,13 +2487,13 @@ export type UserUncheckedCreateWithoutClienteServiciosUpdatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -2291,25 +2507,29 @@ export type UserUncheckedCreateWithoutClienteServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
-export type UserCreateOrConnectWithoutClienteServiciosUpdatedInput = {
+export type UserCreateOrConnectWithoutSuscripcionesUpdatedInput = {
   where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosUpdatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesUpdatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesUpdatedInput>
 }
 
-export type UserUpsertWithoutClienteServiciosCreatedInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutClienteServiciosCreatedInput, Prisma.UserUncheckedUpdateWithoutClienteServiciosCreatedInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosCreatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosCreatedInput>
+export type UserUpsertWithoutSuscripcionesCreatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSuscripcionesCreatedInput, Prisma.UserUncheckedUpdateWithoutSuscripcionesCreatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesCreatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesCreatedInput>
   where?: Prisma.UserWhereInput
 }
 
-export type UserUpdateToOneWithWhereWithoutClienteServiciosCreatedInput = {
+export type UserUpdateToOneWithWhereWithoutSuscripcionesCreatedInput = {
   where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutClienteServiciosCreatedInput, Prisma.UserUncheckedUpdateWithoutClienteServiciosCreatedInput>
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSuscripcionesCreatedInput, Prisma.UserUncheckedUpdateWithoutSuscripcionesCreatedInput>
 }
 
-export type UserUpdateWithoutClienteServiciosCreatedInput = {
+export type UserUpdateWithoutSuscripcionesCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2324,13 +2544,13 @@ export type UserUpdateWithoutClienteServiciosCreatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -2344,9 +2564,13 @@ export type UserUpdateWithoutClienteServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserUncheckedUpdateWithoutClienteServiciosCreatedInput = {
+export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2361,13 +2585,13 @@ export type UserUncheckedUpdateWithoutClienteServiciosCreatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -2381,20 +2605,24 @@ export type UserUncheckedUpdateWithoutClienteServiciosCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserUpsertWithoutClienteServiciosUpdatedInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutClienteServiciosUpdatedInput, Prisma.UserUncheckedUpdateWithoutClienteServiciosUpdatedInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutClienteServiciosUpdatedInput, Prisma.UserUncheckedCreateWithoutClienteServiciosUpdatedInput>
+export type UserUpsertWithoutSuscripcionesUpdatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSuscripcionesUpdatedInput, Prisma.UserUncheckedUpdateWithoutSuscripcionesUpdatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSuscripcionesUpdatedInput, Prisma.UserUncheckedCreateWithoutSuscripcionesUpdatedInput>
   where?: Prisma.UserWhereInput
 }
 
-export type UserUpdateToOneWithWhereWithoutClienteServiciosUpdatedInput = {
+export type UserUpdateToOneWithWhereWithoutSuscripcionesUpdatedInput = {
   where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutClienteServiciosUpdatedInput, Prisma.UserUncheckedUpdateWithoutClienteServiciosUpdatedInput>
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSuscripcionesUpdatedInput, Prisma.UserUncheckedUpdateWithoutSuscripcionesUpdatedInput>
 }
 
-export type UserUpdateWithoutClienteServiciosUpdatedInput = {
+export type UserUpdateWithoutSuscripcionesUpdatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2409,13 +2637,13 @@ export type UserUpdateWithoutClienteServiciosUpdatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -2429,9 +2657,13 @@ export type UserUpdateWithoutClienteServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
-export type UserUncheckedUpdateWithoutClienteServiciosUpdatedInput = {
+export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2446,13 +2678,13 @@ export type UserUncheckedUpdateWithoutClienteServiciosUpdatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -2466,6 +2698,10 @@ export type UserUncheckedUpdateWithoutClienteServiciosUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutPersonalCreatedInput = {
@@ -2483,13 +2719,13 @@ export type UserCreateWithoutPersonalCreatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -2503,6 +2739,10 @@ export type UserCreateWithoutPersonalCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutPersonalCreatedInput = {
@@ -2520,13 +2760,13 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -2540,6 +2780,10 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutPersonalCreatedInput = {
@@ -2562,13 +2806,13 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -2582,6 +2826,10 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
@@ -2599,13 +2847,13 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -2619,6 +2867,10 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutPersonalUpdatedInput = {
@@ -2641,14 +2893,14 @@ export type UserCreateWithoutPersonalInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -2661,6 +2913,10 @@ export type UserCreateWithoutPersonalInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutPersonalInput = {
@@ -2678,14 +2934,14 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -2698,6 +2954,10 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutPersonalInput = {
@@ -2731,13 +2991,13 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -2751,6 +3011,10 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
@@ -2768,13 +3032,13 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -2788,6 +3052,10 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUpsertWithoutPersonalUpdatedInput = {
@@ -2816,13 +3084,13 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -2836,6 +3104,10 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
@@ -2853,13 +3125,13 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -2873,6 +3145,10 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUpsertWithoutPersonalInput = {
@@ -2901,14 +3177,14 @@ export type UserUpdateWithoutPersonalInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -2921,6 +3197,10 @@ export type UserUpdateWithoutPersonalInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalInput = {
@@ -2938,14 +3218,14 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -2958,6 +3238,10 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutGruposCreatedInput = {
@@ -2975,13 +3259,13 @@ export type UserCreateWithoutGruposCreatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -2995,6 +3279,10 @@ export type UserCreateWithoutGruposCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutGruposCreatedInput = {
@@ -3012,13 +3300,13 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -3032,6 +3320,10 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutGruposCreatedInput = {
@@ -3054,13 +3346,13 @@ export type UserCreateWithoutGruposUpdatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -3074,6 +3366,10 @@ export type UserCreateWithoutGruposUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutGruposUpdatedInput = {
@@ -3091,13 +3387,13 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -3111,6 +3407,10 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutGruposUpdatedInput = {
@@ -3144,13 +3444,13 @@ export type UserUpdateWithoutGruposCreatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -3164,6 +3464,10 @@ export type UserUpdateWithoutGruposCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGruposCreatedInput = {
@@ -3181,13 +3485,13 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -3201,6 +3505,10 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUpsertWithoutGruposUpdatedInput = {
@@ -3229,13 +3537,13 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -3249,6 +3557,10 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
@@ -3266,13 +3578,13 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -3286,6 +3598,10 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutVisitasCreatedInput = {
@@ -3303,14 +3619,14 @@ export type UserCreateWithoutVisitasCreatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
@@ -3323,6 +3639,10 @@ export type UserCreateWithoutVisitasCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitasCreatedInput = {
@@ -3340,14 +3660,14 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
@@ -3360,6 +3680,10 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitasCreatedInput = {
@@ -3382,14 +3706,14 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
@@ -3402,6 +3726,10 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
@@ -3419,14 +3747,14 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
@@ -3439,6 +3767,10 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitasUpdatedInput = {
@@ -3472,14 +3804,14 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
@@ -3492,6 +3824,10 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
@@ -3509,14 +3845,14 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
@@ -3529,6 +3865,10 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUpsertWithoutVisitasUpdatedInput = {
@@ -3557,14 +3897,14 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
@@ -3577,6 +3917,10 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
@@ -3594,14 +3938,14 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
@@ -3614,6 +3958,10 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutVisitaPersonalAddedInput = {
@@ -3631,14 +3979,14 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
@@ -3651,6 +3999,10 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
@@ -3668,14 +4020,14 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
@@ -3688,6 +4040,10 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaPersonalAddedInput = {
@@ -3710,14 +4066,14 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -3730,6 +4086,10 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
@@ -3747,14 +4107,14 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -3767,6 +4127,10 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaPersonalRemovedInput = {
@@ -3800,14 +4164,14 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
@@ -3820,6 +4184,10 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
@@ -3837,14 +4205,14 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
@@ -3857,6 +4225,10 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUpsertWithoutVisitaPersonalRemovedInput = {
@@ -3885,14 +4257,14 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -3905,6 +4277,10 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
@@ -3922,14 +4298,14 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -3942,6 +4318,10 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutVisitaMessagesInput = {
@@ -3959,14 +4339,14 @@ export type UserCreateWithoutVisitaMessagesInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -3979,6 +4359,10 @@ export type UserCreateWithoutVisitaMessagesInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaMessagesInput = {
@@ -3996,14 +4380,14 @@ export type UserUncheckedCreateWithoutVisitaMessagesInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -4016,6 +4400,10 @@ export type UserUncheckedCreateWithoutVisitaMessagesInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaMessagesInput = {
@@ -4049,14 +4437,14 @@ export type UserUpdateWithoutVisitaMessagesInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -4069,6 +4457,10 @@ export type UserUpdateWithoutVisitaMessagesInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
@@ -4086,14 +4478,14 @@ export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -4106,6 +4498,10 @@ export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutVisitaChatReadsInput = {
@@ -4123,14 +4519,14 @@ export type UserCreateWithoutVisitaChatReadsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -4143,6 +4539,10 @@ export type UserCreateWithoutVisitaChatReadsInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
@@ -4160,14 +4560,14 @@ export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -4180,6 +4580,10 @@ export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutVisitaChatReadsInput = {
@@ -4213,14 +4617,14 @@ export type UserUpdateWithoutVisitaChatReadsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -4233,6 +4637,10 @@ export type UserUpdateWithoutVisitaChatReadsInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
@@ -4250,14 +4658,14 @@ export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -4270,6 +4678,10 @@ export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutSectorAdminsInput = {
@@ -4287,14 +4699,14 @@ export type UserCreateWithoutSectorAdminsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -4307,6 +4719,10 @@ export type UserCreateWithoutSectorAdminsInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutSectorAdminsInput = {
@@ -4324,14 +4740,14 @@ export type UserUncheckedCreateWithoutSectorAdminsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -4344,6 +4760,10 @@ export type UserUncheckedCreateWithoutSectorAdminsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutSectorAdminsInput = {
@@ -4377,14 +4797,14 @@ export type UserUpdateWithoutSectorAdminsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -4397,6 +4817,10 @@ export type UserUpdateWithoutSectorAdminsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSectorAdminsInput = {
@@ -4414,14 +4838,14 @@ export type UserUncheckedUpdateWithoutSectorAdminsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -4434,6 +4858,10 @@ export type UserUncheckedUpdateWithoutSectorAdminsInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutPushTokensInput = {
@@ -4451,14 +4879,14 @@ export type UserCreateWithoutPushTokensInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -4471,6 +4899,10 @@ export type UserCreateWithoutPushTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutPushTokensInput = {
@@ -4488,14 +4920,14 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -4508,6 +4940,10 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutPushTokensInput = {
@@ -4541,14 +4977,14 @@ export type UserUpdateWithoutPushTokensInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -4561,6 +4997,10 @@ export type UserUpdateWithoutPushTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushTokensInput = {
@@ -4578,14 +5018,14 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -4598,6 +5038,10 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutRefreshTokensInput = {
@@ -4615,14 +5059,14 @@ export type UserCreateWithoutRefreshTokensInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -4635,6 +5079,10 @@ export type UserCreateWithoutRefreshTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -4652,14 +5100,14 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -4672,6 +5120,10 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -4705,14 +5157,14 @@ export type UserUpdateWithoutRefreshTokensInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -4725,6 +5177,10 @@ export type UserUpdateWithoutRefreshTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -4742,14 +5198,14 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -4762,6 +5218,10 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutClienteImportsInput = {
@@ -4779,14 +5239,14 @@ export type UserCreateWithoutClienteImportsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -4799,6 +5259,10 @@ export type UserCreateWithoutClienteImportsInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutClienteImportsInput = {
@@ -4816,14 +5280,14 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -4836,6 +5300,10 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutClienteImportsInput = {
@@ -4869,14 +5337,14 @@ export type UserUpdateWithoutClienteImportsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -4889,6 +5357,10 @@ export type UserUpdateWithoutClienteImportsInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClienteImportsInput = {
@@ -4906,14 +5378,14 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -4926,6 +5398,10 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserCreateWithoutInformesGeneradosInput = {
@@ -4943,14 +5419,14 @@ export type UserCreateWithoutInformesGeneradosInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
@@ -4963,6 +5439,10 @@ export type UserCreateWithoutInformesGeneradosInput = {
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserUncheckedCreateWithoutInformesGeneradosInput = {
@@ -4980,14 +5460,14 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  serviciosCreated?: Prisma.ServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  serviciosUpdated?: Prisma.ServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
   personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
   gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
   gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutCreatedByInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
@@ -5000,6 +5480,10 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
 }
 
 export type UserCreateOrConnectWithoutInformesGeneradosInput = {
@@ -5033,14 +5517,14 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
@@ -5053,6 +5537,10 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
@@ -5070,14 +5558,14 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  serviciosCreated?: Prisma.ServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  serviciosUpdated?: Prisma.ServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
   personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
   gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
   gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteServiciosCreated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutCreatedByNestedInput
-  clienteServiciosUpdated?: Prisma.ClienteServicioUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
@@ -5090,6 +5578,730 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserCreateWithoutOrdenesCreatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutOrdenesCreatedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOrdenesCreatedInput, Prisma.UserUncheckedCreateWithoutOrdenesCreatedInput>
+}
+
+export type UserCreateWithoutOrdenesUpdatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutOrdenesUpdatedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOrdenesUpdatedInput, Prisma.UserUncheckedCreateWithoutOrdenesUpdatedInput>
+}
+
+export type UserUpsertWithoutOrdenesCreatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOrdenesCreatedInput, Prisma.UserUncheckedUpdateWithoutOrdenesCreatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOrdenesCreatedInput, Prisma.UserUncheckedCreateWithoutOrdenesCreatedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOrdenesCreatedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOrdenesCreatedInput, Prisma.UserUncheckedUpdateWithoutOrdenesCreatedInput>
+}
+
+export type UserUpdateWithoutOrdenesCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUpsertWithoutOrdenesUpdatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOrdenesUpdatedInput, Prisma.UserUncheckedUpdateWithoutOrdenesUpdatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOrdenesUpdatedInput, Prisma.UserUncheckedCreateWithoutOrdenesUpdatedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOrdenesUpdatedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOrdenesUpdatedInput, Prisma.UserUncheckedUpdateWithoutOrdenesUpdatedInput>
+}
+
+export type UserUpdateWithoutOrdenesUpdatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserCreateWithoutDatosFacturacionCreatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutDatosFacturacionCreatedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionCreatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionCreatedInput>
+}
+
+export type UserCreateWithoutDatosFacturacionUpdatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutDatosFacturacionUpdatedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionUpdatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionUpdatedInput>
+}
+
+export type UserUpsertWithoutDatosFacturacionCreatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutDatosFacturacionCreatedInput, Prisma.UserUncheckedUpdateWithoutDatosFacturacionCreatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionCreatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionCreatedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutDatosFacturacionCreatedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutDatosFacturacionCreatedInput, Prisma.UserUncheckedUpdateWithoutDatosFacturacionCreatedInput>
+}
+
+export type UserUpdateWithoutDatosFacturacionCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUpsertWithoutDatosFacturacionUpdatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutDatosFacturacionUpdatedInput, Prisma.UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutDatosFacturacionUpdatedInput, Prisma.UserUncheckedCreateWithoutDatosFacturacionUpdatedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutDatosFacturacionUpdatedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutDatosFacturacionUpdatedInput, Prisma.UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput>
+}
+
+export type UserUpdateWithoutDatosFacturacionUpdatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -5102,14 +6314,14 @@ export type UserCountOutputType = {
   sessions: number
   clientesCreated: number
   clientesUpdated: number
-  serviciosCreated: number
-  serviciosUpdated: number
+  productosCreated: number
+  productosUpdated: number
   personalCreated: number
   personalUpdated: number
   gruposCreated: number
   gruposUpdated: number
-  clienteServiciosCreated: number
-  clienteServiciosUpdated: number
+  suscripcionesCreated: number
+  suscripcionesUpdated: number
   visitasCreated: number
   visitasUpdated: number
   visitaPersonalAdded: number
@@ -5121,6 +6333,10 @@ export type UserCountOutputType = {
   visitaChatReads: number
   informesGenerados: number
   clienteImports: number
+  ordenesCreated: number
+  ordenesUpdated: number
+  datosFacturacionCreated: number
+  datosFacturacionUpdated: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5128,14 +6344,14 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   clientesCreated?: boolean | UserCountOutputTypeCountClientesCreatedArgs
   clientesUpdated?: boolean | UserCountOutputTypeCountClientesUpdatedArgs
-  serviciosCreated?: boolean | UserCountOutputTypeCountServiciosCreatedArgs
-  serviciosUpdated?: boolean | UserCountOutputTypeCountServiciosUpdatedArgs
+  productosCreated?: boolean | UserCountOutputTypeCountProductosCreatedArgs
+  productosUpdated?: boolean | UserCountOutputTypeCountProductosUpdatedArgs
   personalCreated?: boolean | UserCountOutputTypeCountPersonalCreatedArgs
   personalUpdated?: boolean | UserCountOutputTypeCountPersonalUpdatedArgs
   gruposCreated?: boolean | UserCountOutputTypeCountGruposCreatedArgs
   gruposUpdated?: boolean | UserCountOutputTypeCountGruposUpdatedArgs
-  clienteServiciosCreated?: boolean | UserCountOutputTypeCountClienteServiciosCreatedArgs
-  clienteServiciosUpdated?: boolean | UserCountOutputTypeCountClienteServiciosUpdatedArgs
+  suscripcionesCreated?: boolean | UserCountOutputTypeCountSuscripcionesCreatedArgs
+  suscripcionesUpdated?: boolean | UserCountOutputTypeCountSuscripcionesUpdatedArgs
   visitasCreated?: boolean | UserCountOutputTypeCountVisitasCreatedArgs
   visitasUpdated?: boolean | UserCountOutputTypeCountVisitasUpdatedArgs
   visitaPersonalAdded?: boolean | UserCountOutputTypeCountVisitaPersonalAddedArgs
@@ -5147,6 +6363,10 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   visitaChatReads?: boolean | UserCountOutputTypeCountVisitaChatReadsArgs
   informesGenerados?: boolean | UserCountOutputTypeCountInformesGeneradosArgs
   clienteImports?: boolean | UserCountOutputTypeCountClienteImportsArgs
+  ordenesCreated?: boolean | UserCountOutputTypeCountOrdenesCreatedArgs
+  ordenesUpdated?: boolean | UserCountOutputTypeCountOrdenesUpdatedArgs
+  datosFacturacionCreated?: boolean | UserCountOutputTypeCountDatosFacturacionCreatedArgs
+  datosFacturacionUpdated?: boolean | UserCountOutputTypeCountDatosFacturacionUpdatedArgs
 }
 
 /**
@@ -5190,15 +6410,15 @@ export type UserCountOutputTypeCountClientesUpdatedArgs<ExtArgs extends runtime.
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountServiciosCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ServicioWhereInput
+export type UserCountOutputTypeCountProductosCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductoWhereInput
 }
 
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountServiciosUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ServicioWhereInput
+export type UserCountOutputTypeCountProductosUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductoWhereInput
 }
 
 /**
@@ -5232,15 +6452,15 @@ export type UserCountOutputTypeCountGruposUpdatedArgs<ExtArgs extends runtime.Ty
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountClienteServiciosCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ClienteServicioWhereInput
+export type UserCountOutputTypeCountSuscripcionesCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SuscripcionWhereInput
 }
 
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountClienteServiciosUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ClienteServicioWhereInput
+export type UserCountOutputTypeCountSuscripcionesUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SuscripcionWhereInput
 }
 
 /**
@@ -5320,6 +6540,34 @@ export type UserCountOutputTypeCountClienteImportsArgs<ExtArgs extends runtime.T
   where?: Prisma.ClienteImportWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountOrdenesCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountOrdenesUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountDatosFacturacionCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DatoFacturacionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountDatosFacturacionUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DatoFacturacionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -5336,14 +6584,14 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   clientesCreated?: boolean | Prisma.User$clientesCreatedArgs<ExtArgs>
   clientesUpdated?: boolean | Prisma.User$clientesUpdatedArgs<ExtArgs>
-  serviciosCreated?: boolean | Prisma.User$serviciosCreatedArgs<ExtArgs>
-  serviciosUpdated?: boolean | Prisma.User$serviciosUpdatedArgs<ExtArgs>
+  productosCreated?: boolean | Prisma.User$productosCreatedArgs<ExtArgs>
+  productosUpdated?: boolean | Prisma.User$productosUpdatedArgs<ExtArgs>
   personalCreated?: boolean | Prisma.User$personalCreatedArgs<ExtArgs>
   personalUpdated?: boolean | Prisma.User$personalUpdatedArgs<ExtArgs>
   gruposCreated?: boolean | Prisma.User$gruposCreatedArgs<ExtArgs>
   gruposUpdated?: boolean | Prisma.User$gruposUpdatedArgs<ExtArgs>
-  clienteServiciosCreated?: boolean | Prisma.User$clienteServiciosCreatedArgs<ExtArgs>
-  clienteServiciosUpdated?: boolean | Prisma.User$clienteServiciosUpdatedArgs<ExtArgs>
+  suscripcionesCreated?: boolean | Prisma.User$suscripcionesCreatedArgs<ExtArgs>
+  suscripcionesUpdated?: boolean | Prisma.User$suscripcionesUpdatedArgs<ExtArgs>
   visitasCreated?: boolean | Prisma.User$visitasCreatedArgs<ExtArgs>
   visitasUpdated?: boolean | Prisma.User$visitasUpdatedArgs<ExtArgs>
   visitaPersonalAdded?: boolean | Prisma.User$visitaPersonalAddedArgs<ExtArgs>
@@ -5357,6 +6605,10 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   visitaChatReads?: boolean | Prisma.User$visitaChatReadsArgs<ExtArgs>
   informesGenerados?: boolean | Prisma.User$informesGeneradosArgs<ExtArgs>
   clienteImports?: boolean | Prisma.User$clienteImportsArgs<ExtArgs>
+  ordenesCreated?: boolean | Prisma.User$ordenesCreatedArgs<ExtArgs>
+  ordenesUpdated?: boolean | Prisma.User$ordenesUpdatedArgs<ExtArgs>
+  datosFacturacionCreated?: boolean | Prisma.User$datosFacturacionCreatedArgs<ExtArgs>
+  datosFacturacionUpdated?: boolean | Prisma.User$datosFacturacionUpdatedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -5405,14 +6657,14 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   clientesCreated?: boolean | Prisma.User$clientesCreatedArgs<ExtArgs>
   clientesUpdated?: boolean | Prisma.User$clientesUpdatedArgs<ExtArgs>
-  serviciosCreated?: boolean | Prisma.User$serviciosCreatedArgs<ExtArgs>
-  serviciosUpdated?: boolean | Prisma.User$serviciosUpdatedArgs<ExtArgs>
+  productosCreated?: boolean | Prisma.User$productosCreatedArgs<ExtArgs>
+  productosUpdated?: boolean | Prisma.User$productosUpdatedArgs<ExtArgs>
   personalCreated?: boolean | Prisma.User$personalCreatedArgs<ExtArgs>
   personalUpdated?: boolean | Prisma.User$personalUpdatedArgs<ExtArgs>
   gruposCreated?: boolean | Prisma.User$gruposCreatedArgs<ExtArgs>
   gruposUpdated?: boolean | Prisma.User$gruposUpdatedArgs<ExtArgs>
-  clienteServiciosCreated?: boolean | Prisma.User$clienteServiciosCreatedArgs<ExtArgs>
-  clienteServiciosUpdated?: boolean | Prisma.User$clienteServiciosUpdatedArgs<ExtArgs>
+  suscripcionesCreated?: boolean | Prisma.User$suscripcionesCreatedArgs<ExtArgs>
+  suscripcionesUpdated?: boolean | Prisma.User$suscripcionesUpdatedArgs<ExtArgs>
   visitasCreated?: boolean | Prisma.User$visitasCreatedArgs<ExtArgs>
   visitasUpdated?: boolean | Prisma.User$visitasUpdatedArgs<ExtArgs>
   visitaPersonalAdded?: boolean | Prisma.User$visitaPersonalAddedArgs<ExtArgs>
@@ -5426,6 +6678,10 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   visitaChatReads?: boolean | Prisma.User$visitaChatReadsArgs<ExtArgs>
   informesGenerados?: boolean | Prisma.User$informesGeneradosArgs<ExtArgs>
   clienteImports?: boolean | Prisma.User$clienteImportsArgs<ExtArgs>
+  ordenesCreated?: boolean | Prisma.User$ordenesCreatedArgs<ExtArgs>
+  ordenesUpdated?: boolean | Prisma.User$ordenesUpdatedArgs<ExtArgs>
+  datosFacturacionCreated?: boolean | Prisma.User$datosFacturacionCreatedArgs<ExtArgs>
+  datosFacturacionUpdated?: boolean | Prisma.User$datosFacturacionUpdatedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -5438,14 +6694,14 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     clientesCreated: Prisma.$ClientePayload<ExtArgs>[]
     clientesUpdated: Prisma.$ClientePayload<ExtArgs>[]
-    serviciosCreated: Prisma.$ServicioPayload<ExtArgs>[]
-    serviciosUpdated: Prisma.$ServicioPayload<ExtArgs>[]
+    productosCreated: Prisma.$ProductoPayload<ExtArgs>[]
+    productosUpdated: Prisma.$ProductoPayload<ExtArgs>[]
     personalCreated: Prisma.$PersonalPayload<ExtArgs>[]
     personalUpdated: Prisma.$PersonalPayload<ExtArgs>[]
     gruposCreated: Prisma.$GrupoPayload<ExtArgs>[]
     gruposUpdated: Prisma.$GrupoPayload<ExtArgs>[]
-    clienteServiciosCreated: Prisma.$ClienteServicioPayload<ExtArgs>[]
-    clienteServiciosUpdated: Prisma.$ClienteServicioPayload<ExtArgs>[]
+    suscripcionesCreated: Prisma.$SuscripcionPayload<ExtArgs>[]
+    suscripcionesUpdated: Prisma.$SuscripcionPayload<ExtArgs>[]
     visitasCreated: Prisma.$VisitaPayload<ExtArgs>[]
     visitasUpdated: Prisma.$VisitaPayload<ExtArgs>[]
     visitaPersonalAdded: Prisma.$VisitaPersonalPayload<ExtArgs>[]
@@ -5459,6 +6715,10 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     visitaChatReads: Prisma.$VisitaChatReadPayload<ExtArgs>[]
     informesGenerados: Prisma.$InformePayload<ExtArgs>[]
     clienteImports: Prisma.$ClienteImportPayload<ExtArgs>[]
+    ordenesCreated: Prisma.$OrdenPayload<ExtArgs>[]
+    ordenesUpdated: Prisma.$OrdenPayload<ExtArgs>[]
+    datosFacturacionCreated: Prisma.$DatoFacturacionPayload<ExtArgs>[]
+    datosFacturacionUpdated: Prisma.$DatoFacturacionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -5869,14 +7129,14 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   clientesCreated<T extends Prisma.User$clientesCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   clientesUpdated<T extends Prisma.User$clientesUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientesUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  serviciosCreated<T extends Prisma.User$serviciosCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$serviciosCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ServicioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  serviciosUpdated<T extends Prisma.User$serviciosUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$serviciosUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ServicioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  productosCreated<T extends Prisma.User$productosCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$productosCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  productosUpdated<T extends Prisma.User$productosUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$productosUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   personalCreated<T extends Prisma.User$personalCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$personalCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   personalUpdated<T extends Prisma.User$personalUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$personalUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   gruposCreated<T extends Prisma.User$gruposCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$gruposCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GrupoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   gruposUpdated<T extends Prisma.User$gruposUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$gruposUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GrupoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  clienteServiciosCreated<T extends Prisma.User$clienteServiciosCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clienteServiciosCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClienteServicioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  clienteServiciosUpdated<T extends Prisma.User$clienteServiciosUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clienteServiciosUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClienteServicioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  suscripcionesCreated<T extends Prisma.User$suscripcionesCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$suscripcionesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  suscripcionesUpdated<T extends Prisma.User$suscripcionesUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$suscripcionesUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitasCreated<T extends Prisma.User$visitasCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitasUpdated<T extends Prisma.User$visitasUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitaPersonalAdded<T extends Prisma.User$visitaPersonalAddedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaPersonalAddedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5890,6 +7150,10 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   visitaChatReads<T extends Prisma.User$visitaChatReadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaChatReadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaChatReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informesGenerados<T extends Prisma.User$informesGeneradosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$informesGeneradosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   clienteImports<T extends Prisma.User$clienteImportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clienteImportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClienteImportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ordenesCreated<T extends Prisma.User$ordenesCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ordenesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ordenesUpdated<T extends Prisma.User$ordenesUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ordenesUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  datosFacturacionCreated<T extends Prisma.User$datosFacturacionCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$datosFacturacionCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DatoFacturacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  datosFacturacionUpdated<T extends Prisma.User$datosFacturacionUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$datosFacturacionUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DatoFacturacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6418,51 +7682,51 @@ export type User$clientesUpdatedArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 /**
- * User.serviciosCreated
+ * User.productosCreated
  */
-export type User$serviciosCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$productosCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Servicio
+   * Select specific fields to fetch from the Producto
    */
-  select?: Prisma.ServicioSelect<ExtArgs> | null
+  select?: Prisma.ProductoSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Servicio
+   * Omit specific fields from the Producto
    */
-  omit?: Prisma.ServicioOmit<ExtArgs> | null
+  omit?: Prisma.ProductoOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ServicioInclude<ExtArgs> | null
-  where?: Prisma.ServicioWhereInput
-  orderBy?: Prisma.ServicioOrderByWithRelationInput | Prisma.ServicioOrderByWithRelationInput[]
-  cursor?: Prisma.ServicioWhereUniqueInput
+  include?: Prisma.ProductoInclude<ExtArgs> | null
+  where?: Prisma.ProductoWhereInput
+  orderBy?: Prisma.ProductoOrderByWithRelationInput | Prisma.ProductoOrderByWithRelationInput[]
+  cursor?: Prisma.ProductoWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ServicioScalarFieldEnum | Prisma.ServicioScalarFieldEnum[]
+  distinct?: Prisma.ProductoScalarFieldEnum | Prisma.ProductoScalarFieldEnum[]
 }
 
 /**
- * User.serviciosUpdated
+ * User.productosUpdated
  */
-export type User$serviciosUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$productosUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Servicio
+   * Select specific fields to fetch from the Producto
    */
-  select?: Prisma.ServicioSelect<ExtArgs> | null
+  select?: Prisma.ProductoSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Servicio
+   * Omit specific fields from the Producto
    */
-  omit?: Prisma.ServicioOmit<ExtArgs> | null
+  omit?: Prisma.ProductoOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ServicioInclude<ExtArgs> | null
-  where?: Prisma.ServicioWhereInput
-  orderBy?: Prisma.ServicioOrderByWithRelationInput | Prisma.ServicioOrderByWithRelationInput[]
-  cursor?: Prisma.ServicioWhereUniqueInput
+  include?: Prisma.ProductoInclude<ExtArgs> | null
+  where?: Prisma.ProductoWhereInput
+  orderBy?: Prisma.ProductoOrderByWithRelationInput | Prisma.ProductoOrderByWithRelationInput[]
+  cursor?: Prisma.ProductoWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ServicioScalarFieldEnum | Prisma.ServicioScalarFieldEnum[]
+  distinct?: Prisma.ProductoScalarFieldEnum | Prisma.ProductoScalarFieldEnum[]
 }
 
 /**
@@ -6562,51 +7826,51 @@ export type User$gruposUpdatedArgs<ExtArgs extends runtime.Types.Extensions.Inte
 }
 
 /**
- * User.clienteServiciosCreated
+ * User.suscripcionesCreated
  */
-export type User$clienteServiciosCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$suscripcionesCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the ClienteServicio
+   * Select specific fields to fetch from the Suscripcion
    */
-  select?: Prisma.ClienteServicioSelect<ExtArgs> | null
+  select?: Prisma.SuscripcionSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the ClienteServicio
+   * Omit specific fields from the Suscripcion
    */
-  omit?: Prisma.ClienteServicioOmit<ExtArgs> | null
+  omit?: Prisma.SuscripcionOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ClienteServicioInclude<ExtArgs> | null
-  where?: Prisma.ClienteServicioWhereInput
-  orderBy?: Prisma.ClienteServicioOrderByWithRelationInput | Prisma.ClienteServicioOrderByWithRelationInput[]
-  cursor?: Prisma.ClienteServicioWhereUniqueInput
+  include?: Prisma.SuscripcionInclude<ExtArgs> | null
+  where?: Prisma.SuscripcionWhereInput
+  orderBy?: Prisma.SuscripcionOrderByWithRelationInput | Prisma.SuscripcionOrderByWithRelationInput[]
+  cursor?: Prisma.SuscripcionWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ClienteServicioScalarFieldEnum | Prisma.ClienteServicioScalarFieldEnum[]
+  distinct?: Prisma.SuscripcionScalarFieldEnum | Prisma.SuscripcionScalarFieldEnum[]
 }
 
 /**
- * User.clienteServiciosUpdated
+ * User.suscripcionesUpdated
  */
-export type User$clienteServiciosUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$suscripcionesUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the ClienteServicio
+   * Select specific fields to fetch from the Suscripcion
    */
-  select?: Prisma.ClienteServicioSelect<ExtArgs> | null
+  select?: Prisma.SuscripcionSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the ClienteServicio
+   * Omit specific fields from the Suscripcion
    */
-  omit?: Prisma.ClienteServicioOmit<ExtArgs> | null
+  omit?: Prisma.SuscripcionOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.ClienteServicioInclude<ExtArgs> | null
-  where?: Prisma.ClienteServicioWhereInput
-  orderBy?: Prisma.ClienteServicioOrderByWithRelationInput | Prisma.ClienteServicioOrderByWithRelationInput[]
-  cursor?: Prisma.ClienteServicioWhereUniqueInput
+  include?: Prisma.SuscripcionInclude<ExtArgs> | null
+  where?: Prisma.SuscripcionWhereInput
+  orderBy?: Prisma.SuscripcionOrderByWithRelationInput | Prisma.SuscripcionOrderByWithRelationInput[]
+  cursor?: Prisma.SuscripcionWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.ClienteServicioScalarFieldEnum | Prisma.ClienteServicioScalarFieldEnum[]
+  distinct?: Prisma.SuscripcionScalarFieldEnum | Prisma.SuscripcionScalarFieldEnum[]
 }
 
 /**
@@ -6909,6 +8173,102 @@ export type User$clienteImportsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.ClienteImportScalarFieldEnum | Prisma.ClienteImportScalarFieldEnum[]
+}
+
+/**
+ * User.ordenesCreated
+ */
+export type User$ordenesCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Orden
+   */
+  select?: Prisma.OrdenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Orden
+   */
+  omit?: Prisma.OrdenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrdenInclude<ExtArgs> | null
+  where?: Prisma.OrdenWhereInput
+  orderBy?: Prisma.OrdenOrderByWithRelationInput | Prisma.OrdenOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrdenScalarFieldEnum | Prisma.OrdenScalarFieldEnum[]
+}
+
+/**
+ * User.ordenesUpdated
+ */
+export type User$ordenesUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Orden
+   */
+  select?: Prisma.OrdenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Orden
+   */
+  omit?: Prisma.OrdenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrdenInclude<ExtArgs> | null
+  where?: Prisma.OrdenWhereInput
+  orderBy?: Prisma.OrdenOrderByWithRelationInput | Prisma.OrdenOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrdenScalarFieldEnum | Prisma.OrdenScalarFieldEnum[]
+}
+
+/**
+ * User.datosFacturacionCreated
+ */
+export type User$datosFacturacionCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DatoFacturacion
+   */
+  select?: Prisma.DatoFacturacionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DatoFacturacion
+   */
+  omit?: Prisma.DatoFacturacionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DatoFacturacionInclude<ExtArgs> | null
+  where?: Prisma.DatoFacturacionWhereInput
+  orderBy?: Prisma.DatoFacturacionOrderByWithRelationInput | Prisma.DatoFacturacionOrderByWithRelationInput[]
+  cursor?: Prisma.DatoFacturacionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DatoFacturacionScalarFieldEnum | Prisma.DatoFacturacionScalarFieldEnum[]
+}
+
+/**
+ * User.datosFacturacionUpdated
+ */
+export type User$datosFacturacionUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DatoFacturacion
+   */
+  select?: Prisma.DatoFacturacionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DatoFacturacion
+   */
+  omit?: Prisma.DatoFacturacionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DatoFacturacionInclude<ExtArgs> | null
+  where?: Prisma.DatoFacturacionWhereInput
+  orderBy?: Prisma.DatoFacturacionOrderByWithRelationInput | Prisma.DatoFacturacionOrderByWithRelationInput[]
+  cursor?: Prisma.DatoFacturacionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DatoFacturacionScalarFieldEnum | Prisma.DatoFacturacionScalarFieldEnum[]
 }
 
 /**

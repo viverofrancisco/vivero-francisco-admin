@@ -43,15 +43,24 @@ export type User = Prisma.UserModel
  */
 export type Cliente = Prisma.ClienteModel
 /**
- * Model Servicio
- * 
+ * Model Producto
+ * Catálogo único: servicios de jardinería y, más adelante, bienes de vivero.
+ * En Contífico ambos son `producto`; lo que los distingue acá es `tipo`.
  */
-export type Servicio = Prisma.ServicioModel
+export type Producto = Prisma.ProductoModel
 /**
- * Model ClienteServicio
- * 
+ * Model Suscripcion
+ * Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
+ * el mismo ciclo: cada renovación genera una orden con una línea por ítem.
  */
-export type ClienteServicio = Prisma.ClienteServicioModel
+export type Suscripcion = Prisma.SuscripcionModel
+/**
+ * Model SuscripcionItem
+ * Un producto dentro de una suscripción, con su propio precio e IVA. La tasa
+ * va acá y no en la cabecera porque una misma factura puede mezclar líneas al
+ * 0% y al 15%.
+ */
+export type SuscripcionItem = Prisma.SuscripcionItemModel
 /**
  * Model Personal
  * 
@@ -67,6 +76,16 @@ export type Grupo = Prisma.GrupoModel
  * 
  */
 export type Visita = Prisma.VisitaModel
+/**
+ * Model VisitaProducto
+ * Una visita puede cubrir varios servicios contratados del mismo cliente.
+ * Un producto cubierto por una visita. Una visita puede cubrir varios.
+ * 
+ * **No lleva plata.** El precio de un trabajo se decide al facturarlo, en la
+ * orden, igual que todo el resto del dinero del sistema. Acá solo vive el
+ * hecho: qué se hizo y si estaba cubierto por un plan.
+ */
+export type VisitaProducto = Prisma.VisitaProductoModel
 /**
  * Model VisitaPersonal
  * 
@@ -148,11 +167,6 @@ export type ClienteImport = Prisma.ClienteImportModel
  */
 export type SetPasswordToken = Prisma.SetPasswordTokenModel
 /**
- * Model TipoActividad
- * 
- */
-export type TipoActividad = Prisma.TipoActividadModel
-/**
  * Model Informe
  * 
  */
@@ -168,6 +182,13 @@ export type InformeVisita = Prisma.InformeVisitaModel
  */
 export type InformeSeccion = Prisma.InformeSeccionModel
 /**
+ * Model InformeSeccionFoto
+ * Una foto de una sección: puede venir de una visita (visitaMediaId) o haber
+ * sido subida directamente al informe. `key`/`url` siempre se guardan para que
+ * el informe siga siendo editable aunque se borre la media de la visita.
+ */
+export type InformeSeccionFoto = Prisma.InformeSeccionFotoModel
+/**
  * Model EmpresaConfig
  * 
  */
@@ -177,3 +198,34 @@ export type EmpresaConfig = Prisma.EmpresaConfigModel
  * 
  */
 export type Firmante = Prisma.FirmanteModel
+/**
+ * Model Orden
+ * 
+ */
+export type Orden = Prisma.OrdenModel
+/**
+ * Model OrdenLinea
+ * 
+ */
+export type OrdenLinea = Prisma.OrdenLineaModel
+/**
+ * Model DatoFacturacion
+ * Espejo de la factura que vive en Contífico. El portal no la emite ni la
+ * numera: guarda la referencia y el estado. Contífico no permite editarlas ni
+ * anularlas por API, así que acá son de solo lectura una vez creadas.
+ * Los datos con los que se le emite una factura a un cliente.
+ * 
+ * Van aparte del Cliente porque uno puede facturar de más de una forma: a
+ * nombre propio y al de su empresa, o a distintas razones sociales de un mismo
+ * contacto. Y porque el nombre con el que se lo conoce en el portal no tiene
+ * por qué ser la razón social del SRI.
+ * 
+ * Editarlo no rompe el historial: cada Factura guarda además un snapshot de la
+ * razón social e identificación con las que se emitió.
+ */
+export type DatoFacturacion = Prisma.DatoFacturacionModel
+/**
+ * Model Factura
+ * 
+ */
+export type Factura = Prisma.FacturaModel

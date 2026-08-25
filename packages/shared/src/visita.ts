@@ -20,6 +20,8 @@ export type CancelVisitaBody = z.infer<typeof cancelVisitaSchema>;
 const mediaItemSchema = z.object({
   key: z.string().min(1),
   tipo: z.enum(["imagen", "video"]),
+  // Servicio de la visita al que corresponde la foto. Opcional.
+  productoId: z.string().min(1).nullable().optional(),
 });
 
 export const completeVisitaSchema = z.object({
@@ -54,11 +56,24 @@ export const requestUploadUrlsSchema = z.object({
 });
 export type RequestUploadUrlsBody = z.infer<typeof requestUploadUrlsSchema>;
 
+/** Sin plata: agendar y cobrar son dos momentos distintos. */
+export const productoDeVisitaSchema = z.object({
+  productoId: z.string().min(1),
+  /**
+   * Si el cliente tiene un plan con este producto, ¿esta visita se descuenta de
+   * él? Por omisión sí — es el caso normal y lo que hacían los clientes viejos
+   * de la API. En `false` la visita queda como trabajo suelto y se cotiza.
+   */
+  cubrirConPlan: z.boolean().optional(),
+});
+
 export const createVisitasSchema = z.object({
-  clienteServicioId: z.string().min(1, "Selecciona un servicio asignado"),
-  fechas: z
-    .array(z.string().min(1))
-    .min(1, "Selecciona al menos una fecha"),
+  clienteId: z.string().min(1),
+  /** Productos que cubre la visita. */
+  productos: z
+    .array(productoDeVisitaSchema)
+    .min(1, "Selecciona al menos un producto"),
+  fechas: z.array(z.string().min(1)).min(1, "Selecciona al menos una fecha"),
   grupoId: z.string().optional().nullable(),
   notas: z.string().trim().max(1000).optional().nullable(),
   personalIds: z.array(z.string()).optional(),

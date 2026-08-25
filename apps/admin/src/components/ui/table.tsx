@@ -4,11 +4,16 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+function Table({
+  className,
+  /** Para acotar el alto y hacer scrollear solo las filas. */
+  containerClassName,
+  ...props
+}: React.ComponentProps<"table"> & { containerClassName?: string }) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className={cn("relative w-full overflow-x-auto", containerClassName)}
     >
       <table
         data-slot="table"
@@ -19,11 +24,24 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   )
 }
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+function TableHeader({
+  className,
+  /**
+   * Fija el encabezado al tope del contenedor. Va en los `th` y no en el
+   * `thead` porque `position: sticky` no funciona sobre `thead` en Safari, y
+   * el fondo tiene que ser opaco o las filas se ven pasar por detrás.
+   */
+  sticky,
+  ...props
+}: React.ComponentProps<"thead"> & { sticky?: boolean }) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("bg-secondary/60 [&_tr]:border-b", className)}
+      className={cn(
+        "bg-secondary/60 [&_tr]:border-b",
+        sticky && "[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-secondary",
+        className
+      )}
       {...props}
     />
   )

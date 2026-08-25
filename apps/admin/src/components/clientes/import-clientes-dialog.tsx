@@ -57,9 +57,24 @@ const ESTADO_CLASS: Record<RowResult["estado"], string> = {
   error: "text-destructive",
 };
 
-export function ImportClientesDialog() {
+export function ImportClientesDialog({
+  open: openProp,
+  onOpenChange,
+  showTrigger = true,
+}: {
+  /** Estado controlado (opcional). Si se omite, el diálogo se controla solo. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Mostrar el botón "Importar" interno. False cuando se abre desde fuera. */
+  showTrigger?: boolean;
+} = {}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (onOpenChange) onOpenChange(next);
+    else setInternalOpen(next);
+  };
   const [fileName, setFileName] = useState<string | null>(null);
   const [rows, setRows] = useState<CsvRow[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
@@ -202,10 +217,12 @@ export function ImportClientesDialog() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<Button variant="outline" />}>
-        <Upload className="mr-2 h-4 w-4" />
-        Importar
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger render={<Button variant="outline" />}>
+          <Upload className="mr-2 h-4 w-4" />
+          Importar
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Importar clientes desde CSV</DialogTitle>

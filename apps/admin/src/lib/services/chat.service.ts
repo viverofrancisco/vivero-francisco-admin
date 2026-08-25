@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { resumenProductos } from "@/lib/visita-productos";
 import { nombreCliente } from "@vivero/shared";
 import { ForbiddenError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
@@ -144,9 +145,9 @@ export async function listMessages(
       : {
           visitaId,
           userId:
-            visita.clienteServicio.cliente.userId &&
-            visita.clienteServicio.cliente.userId !== viewer.id
-              ? visita.clienteServicio.cliente.userId
+            visita.cliente.userId &&
+            visita.cliente.userId !== viewer.id
+              ? visita.cliente.userId
               : "__never__",
         };
 
@@ -267,19 +268,18 @@ export async function markChatRead(visitaId: string, viewer: Viewer) {
 const INBOX_LIMIT = 100;
 
 const INBOX_INCLUDE = {
-  clienteServicio: {
-    include: {
-      cliente: {
-        select: {
-          id: true,
-          nombre: true,
-          apellido: true,
-          empresa: true,
-          sectorId: true,
-        },
-      },
-      servicio: { select: { id: true, nombre: true } },
+  cliente: {
+    select: {
+      id: true,
+      nombre: true,
+      apellido: true,
+      empresa: true,
+      sectorId: true,
     },
+  },
+  productos: {
+    orderBy: { orden: "asc" },
+    include: { producto: { select: { id: true, nombre: true } } },
   },
 } as const;
 
@@ -308,7 +308,7 @@ async function visibleVisitaIdsForViewer(viewer: Viewer): Promise<string[] | "al
     const visitas = await prisma.visita.findMany({
       where: {
         deletedAt: null,
-        clienteServicio: { clienteId: viewer.clienteId },
+        clienteId: viewer.clienteId,
       },
       select: { id: true },
     });
@@ -324,9 +324,7 @@ async function visibleVisitaIdsForViewer(viewer: Viewer): Promise<string[] | "al
     const visitas = await prisma.visita.findMany({
       where: {
         deletedAt: null,
-        clienteServicio: {
-          cliente: { sectorId: { in: sectorIds } },
-        },
+        cliente: { sectorId: { in: sectorIds } },
       },
       select: { id: true },
     });
@@ -399,12 +397,12 @@ export async function listInbox(
   const items = pageVisitas
     .map((v) => {
       const last = v.messages[0];
-      const cliente = v.clienteServicio.cliente;
+      const cliente = v.cliente;
       return {
         visitaId: v.id,
         fechaProgramada: v.fechaProgramada,
         estado: v.estado,
-        servicioNombre: v.clienteServicio.servicio.nombre,
+        servicioNombre: resumenProductos(v),
         clienteNombre: nombreCliente(cliente),
         lastMessage: last
           ? {
@@ -493,15 +491,13 @@ export async function searchInbox(
       deletedAt: null,
       ...(visibleIds === "all" ? {} : { id: { in: visibleIds } }),
       messages: { some: {} },
-      clienteServicio: {
-        // Coincide por nombre+apellido (todas las palabras) o por empresa
-        // (clientes que solo tienen empresa, sin nombre de persona).
-        cliente: {
-          OR: [
-            { AND: clienteAnd },
-            { empresa: { contains: q, mode: "insensitive" } },
-          ],
-        },
+      // Coincide por nombre+apellido (todas las palabras) o por empresa
+      // (clientes que solo tienen empresa, sin nombre de persona).
+      cliente: {
+        OR: [
+          { AND: clienteAnd },
+          { empresa: { contains: q, mode: "insensitive" } },
+        ],
       },
     },
     include: {
@@ -570,13 +566,13 @@ export async function searchInbox(
   // Name-match rows. The "match.text" is the cliente's full name; for the
   // sort time we use the visita's most recent message createdAt.
   for (const v of nameMatches) {
-    const cliente = v.clienteServicio.cliente;
+    const cliente = v.cliente;
     const clienteName = nombreCliente(cliente);
     const lastMsg = v.messages[0];
     results.push({
       resultId: `name-${v.id}`,
       visitaId: v.id,
-      servicioNombre: v.clienteServicio.servicio.nombre,
+      servicioNombre: resumenProductos(v),
       clienteNombre: clienteName,
       fechaProgramada: v.fechaProgramada,
       estado: v.estado,
@@ -591,12 +587,12 @@ export async function searchInbox(
 
   // Message-match rows.
   for (const m of messageMatches) {
-    const cliente = m.visita.clienteServicio.cliente;
+    const cliente = m.visita.cliente;
     const clienteName = nombreCliente(cliente);
     results.push({
       resultId: `message-${m.id}`,
       visitaId: m.visitaId,
-      servicioNombre: m.visita.clienteServicio.servicio.nombre,
+      servicioNombre: resumenProductos(m.visita),
       clienteNombre: clienteName,
       fechaProgramada: m.visita.fechaProgramada,
       estado: m.visita.estado,

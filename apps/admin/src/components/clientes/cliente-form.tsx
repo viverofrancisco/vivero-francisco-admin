@@ -34,14 +34,19 @@ interface ClienteFormProps {
   onSuccess?: () => void;
   compact?: boolean;
   /**
-   * Cards layout mode: renders General, Ubicacion, and Notas as separate cards
-   * inside a 3-column grid. General + Ubicacion span 2 cols, Notas spans 1 col.
-   * Controlled externally via cardsEditing.
+   * Modo tarjetas: General, Ubicacion y Notas como tarjetas separadas dentro de
+   * una grilla de 3 columnas. La actividad ocupa 2 y los datos 1.
+   * La edición se controla desde afuera con `cardsEditing`.
    */
   cards?: boolean;
   cardsEditing?: boolean;
   onEditDone?: () => void;
-  /** Extra content to render in the right column (below the notes card) */
+  /**
+   * Órdenes, suscripciones y visitas. Va en la columna ancha: es lo que se
+   * mira, mientras que los datos del cliente son referencia.
+   */
+  actividadContent?: React.ReactNode;
+  /** Debajo de los datos, en la columna angosta. */
   rightColumnContent?: React.ReactNode;
 }
 
@@ -61,6 +66,7 @@ export function ClienteForm({
   cards,
   cardsEditing,
   onEditDone,
+  actividadContent,
   rightColumnContent,
 }: ClienteFormProps) {
   const router = useRouter();
@@ -158,13 +164,16 @@ export function ClienteForm({
       // Read-only: use a plain div grid (no form needed)
       return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Columna ancha: la actividad del cliente, que es lo que se mira. */}
+          <div className="lg:col-span-2 space-y-6">{actividadContent}</div>
+
+          {/* Columna angosta: los datos, que son referencia. */}
+          <div className="space-y-6">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Informacion General</CardTitle>
               </CardHeader>
-              <CardContent className="pt-2">
+              <CardContent>
                 <InfoRow label="Nombre" value={initialData?.nombre} />
                 <InfoRow label="Apellido" value={initialData?.apellido} />
                 <InfoRow label="Empresa" value={initialData?.empresa} />
@@ -181,7 +190,7 @@ export function ClienteForm({
               <CardHeader className="border-b">
                 <CardTitle>Ubicacion</CardTitle>
               </CardHeader>
-              <CardContent className="pt-2">
+              <CardContent>
                 <InfoRow label="Ciudad" value={initialData?.ciudad} />
                 <InfoRow label="Direccion" value={initialData?.direccion} />
                 <InfoRow label="Numero de casa" value={initialData?.numeroCasa} />
@@ -189,11 +198,12 @@ export function ClienteForm({
               </CardContent>
             </Card>
 
+
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Notas</CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent>
                 {initialData?.notas ? (
                   <p className="text-sm whitespace-pre-wrap">{initialData.notas}</p>
                 ) : (
@@ -201,10 +211,7 @@ export function ClienteForm({
                 )}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right column */}
-          <div className="space-y-6">
             {rightColumnContent}
           </div>
         </div>
@@ -215,13 +222,16 @@ export function ClienteForm({
     return (
       <form id="cliente-cards-form" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Columna ancha: la actividad del cliente, que es lo que se mira. */}
+          <div className="lg:col-span-2 space-y-6">{actividadContent}</div>
+
+          {/* Columna angosta: los datos, que son referencia. */}
+          <div className="space-y-6">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Informacion General</CardTitle>
               </CardHeader>
-              <CardContent className="pt-4 space-y-4">
+              <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
@@ -296,7 +306,7 @@ export function ClienteForm({
               <CardHeader className="border-b">
                 <CardTitle>Ubicacion</CardTitle>
               </CardHeader>
-              <CardContent className="pt-4 space-y-4">
+              <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Ciudad</Label>
@@ -349,11 +359,12 @@ export function ClienteForm({
               </CardContent>
             </Card>
 
+
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Notas</CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent>
                 <Textarea
                   id="notas"
                   rows={4}
@@ -362,10 +373,7 @@ export function ClienteForm({
                 />
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right column */}
-          <div className="space-y-6">
             {rightColumnContent}
           </div>
         </div>
@@ -383,7 +391,7 @@ export function ClienteForm({
         <CardHeader className="border-b">
           <CardTitle>Datos del cliente</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
+        <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="nombre">Nombre</Label>
             <Input id="nombre" {...register("nombre")} />
@@ -431,7 +439,7 @@ export function ClienteForm({
         <CardHeader className="border-b">
           <CardTitle>Ubicación</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
+        <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label>Ciudad</Label>
             <Controller
@@ -496,7 +504,7 @@ export function ClienteForm({
         <CardHeader className="border-b">
           <CardTitle>Notas</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent>
           <Textarea
             id="notas"
             rows={4}
