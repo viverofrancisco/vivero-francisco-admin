@@ -6,11 +6,17 @@ import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
 
 export default async function VisitaDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const user = await requireAuth();
   const { id } = await params;
+  const { from } = await searchParams;
+  // Solo rutas internas del dashboard: evita un open redirect.
+  const backHref =
+    from && from.startsWith("/dashboard/") ? from : "/dashboard/visitas";
 
   const visita = await prisma.visita.findUnique({
     where: { id, deletedAt: null },
@@ -58,6 +64,7 @@ export default async function VisitaDetailPage({
 
   const serialized = {
     id: visita.id,
+    numero: visita.numero,
     fechaProgramada: visita.fechaProgramada.toISOString().split("T")[0],
     fechaRealizada: visita.fechaRealizada?.toISOString().split("T")[0] ?? null,
     horaEntrada: visita.horaEntrada,
@@ -75,6 +82,7 @@ export default async function VisitaDetailPage({
   return (
     <div className="p-4 md:p-6 space-y-6">
       <VisitaDetail
+        backHref={backHref}
         visita={serialized}
         userRole={user.role}
         hasMessages={hasMessages}

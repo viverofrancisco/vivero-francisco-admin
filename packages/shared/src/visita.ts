@@ -64,7 +64,6 @@ export const productoDeVisitaSchema = z.object({
    * él? Por omisión sí — es el caso normal y lo que hacían los clientes viejos
    * de la API. En `false` la visita queda como trabajo suelto y se cotiza.
    */
-  cubrirConPlan: z.boolean().optional(),
 });
 
 export const createVisitasSchema = z.object({

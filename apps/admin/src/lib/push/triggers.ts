@@ -19,7 +19,7 @@ async function getVisitaForPush(visitaId: string) {
         select: { userId: true, nombre: true, apellido: true, empresa: true },
       },
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: { producto: { select: { nombre: true } } },
       },
     },

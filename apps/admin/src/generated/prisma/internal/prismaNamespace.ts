@@ -3397,6 +3397,7 @@ export type ProductoScalarFieldEnum = (typeof ProductoScalarFieldEnum)[keyof typ
 
 export const SuscripcionScalarFieldEnum = {
   id: 'id',
+  numero: 'numero',
   clienteId: 'clienteId',
   estado: 'estado',
   periodicidad: 'periodicidad',
@@ -3460,7 +3461,9 @@ export type GrupoScalarFieldEnum = (typeof GrupoScalarFieldEnum)[keyof typeof Gr
 
 export const VisitaScalarFieldEnum = {
   id: 'id',
+  numero: 'numero',
   clienteId: 'clienteId',
+  suscripcionId: 'suscripcionId',
   fechaProgramada: 'fechaProgramada',
   fechaRealizada: 'fechaRealizada',
   horaEntrada: 'horaEntrada',
@@ -3484,7 +3487,8 @@ export const VisitaProductoScalarFieldEnum = {
   visitaId: 'visitaId',
   productoId: 'productoId',
   suscripcionItemId: 'suscripcionItemId',
-  orden: 'orden'
+  posicion: 'posicion',
+  liberadoAt: 'liberadoAt'
 } as const
 
 export type VisitaProductoScalarFieldEnum = (typeof VisitaProductoScalarFieldEnum)[keyof typeof VisitaProductoScalarFieldEnum]
@@ -3785,6 +3789,8 @@ export const OrdenScalarFieldEnum = {
   clienteId: 'clienteId',
   datoFacturacionId: 'datoFacturacionId',
   numero: 'numero',
+  visitaId: 'visitaId',
+  suscripcionId: 'suscripcionId',
   fecha: 'fecha',
   estado: 'estado',
   notas: 'notas',

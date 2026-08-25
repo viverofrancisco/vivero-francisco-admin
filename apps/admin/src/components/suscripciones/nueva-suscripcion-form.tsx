@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { hoyISOEcuador } from "@/lib/fechas";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +55,7 @@ export function NuevaSuscripcionForm({
   const [items, setItems] = useState<ItemDraft[]>([]);
   const [periodicidad, setPeriodicidad] = useState("MENSUAL");
   const [fechaInicio, setFechaInicio] = useState(
-    new Date().toISOString().slice(0, 10)
+    hoyISOEcuador()
   );
 
   // `cargando` ya arranca en true y el componente se monta de nuevo por cliente

@@ -506,23 +506,102 @@ factura sin con qué reconciliarse. (El portal borra en suave, así que en el us
 normal no cambia nada.) Los servicios y el schema de Zod lo validan antes, para
 dar un mensaje útil en vez de un error de constraint.
 
-### Lo que cubre un plan necesita procedencia
+### Lo que se factura junto se factura entero
 
-Un producto que **este cliente** tiene en una suscripción activa solo entra a
-una orden **desde el panel de pendientes**, nunca eligiéndolo del catálogo. La
-pregunta es por cliente y no por una etiqueta del producto: el catálogo no sabe
-—ni debe saber— quién lo tiene contratado. Puede llegar de dos formas:
+`ensureTrabajoCompleto()` rechaza una orden que se lleve **parte** de una visita
+o **parte** de un período: si toca una visita, entran todos los productos que a
+esa visita le falten cobrar; si toca un período de un plan, entran todos los
+ítems de ese plan para ese período.
+
+Los índices únicos no alcanzaban. Garantizan que nada se cobre **dos veces**
+—`visitaProductoId` es único y `[suscripcionItemId, periodoInicio]` también—
+pero no que se cobre **junto**: dos productos de la misma visita podían terminar
+en dos órdenes distintas y nadie se quejaba. Media visita facturada es una
+conversación a medias con el cliente y una segunda factura por el resto que
+nadie esperaba.
+
+Agregar productos sueltos del catálogo sigue permitido: **la regla es sobre lo
+que falta, no sobre lo que sobra.**
+
+Al editar una orden, sus propias líneas no cuentan como "facturadas en otra": si
+no, ninguna orden con procedencia se podría volver a guardar.
+
+Del lado de la interfaz no hay que acordarse: agregar un pendiente del panel
+**arrastra a sus hermanos** —la visita completa, el período completo— y lo
+avisa. La validación del servidor está para que no entre por otra puerta.
+
+Verificado el 25/08/2026: media visita y medio período rechazados; la visita
+completa entra sin problema.
+
+### Una orden no mezcla plan con visitas
+
+`ensureNoMezclaOrigenes()` rechaza una orden que tenga a la vez líneas con
+`suscripcionItemId` y líneas con `visitaProductoId`. Son dos conversaciones
+distintas con el cliente: el plan es lo pactado y se renueva solo; la visita
+suelta es algo que pasó y se cotiza. Juntarlas daba una orden cuyo total no se
+podía explicar sin abrirla, y una factura que mezclaba la mensualidad con
+trabajos puntuales.
+
+**Lo agregado a mano entra en cualquiera de las dos** —es el extra sobre lo que
+ya está— y una orden de puro trabajo a mano también vale.
+
+Por eso `generarOrden()` devuelve **varias** órdenes: una por suscripción (sus
+períodos agrupados por la cabecera del plan, no todos juntos) y otra con las
+visitas sueltas. El armador de órdenes grisa lo que no combina con lo que ya
+hay y dice por qué, en vez de dejar apretar y fallar.
+
+### Lo que cubre un plan entra por procedencia, o a mano como extra
+
+Un producto que **este cliente** tiene en una suscripción activa llega a una
+orden de tres formas:
 
 - `suscripcionItemId` + período → la renovación del plan;
-- `visitaProductoId` → una visita concreta que se hizo y **no** quedó cubierta.
+- `visitaProductoId` → una visita que se hizo y **no** quedó cubierta;
+- a mano desde el catálogo → un extra, sin procedencia.
 
-Lo que no se puede es agregarlo a mano: esa línea no lleva ninguna de las dos, y
-los índices únicos que impiden cobrar dos veces cuelgan justamente de ahí — sin
-procedencia, el mismo trabajo se factura dos veces sin que nada lo note.
+**La tercera estuvo prohibida y ya no.** El argumento era que una línea a mano
+no choca contra ningún índice único y el mismo trabajo podría cobrarse dos
+veces. Pero esa protección **ninguna línea a mano la tiene**: dos órdenes con
+"Poda" escrita a mano tampoco chocan contra nada. La regla no evitaba una clase
+de error, evitaba un caso de un error que igual es posible en todos los demás —
+y a cambio hacía imposible algo legítimo, como cobrarle un saco de más a alguien
+que tiene ese producto en su plan.
 
-Lo valida `crearOrden()` con `productosSuscritos(clienteId)`, y el selector del
-editor los muestra en gris —la lista se recarga al cambiar de cliente, junto con
-lo pendiente, porque de otro modo grisaría lo que le corresponde a otro.
+Lo que sí protege la base sigue protegido: un período no se cobra dos veces
+(`[suscripcionItemId, periodoInicio]`) y una visita tampoco (`visitaProductoId`).
+
+El selector lo ofrece con la aclaración *"El cliente ya lo tiene en un plan.
+Agregalo solo si es un extra"*. Lo único que sigue en gris es lo que **no se
+puede facturar**: un producto sin vincular con Contífico.
+
+### El plan se elige por visita, no por producto
+
+Al agendar hay un campo **Suscripción** con los planes activos del cliente y la
+opción *Ninguna · se cobra aparte*. Lo que se elija queda en
+`Visita.suscripcionId`, y de ahí `coberturaDelPlan()` deduce, producto por
+producto, cuáles caen dentro del plan: los que ese plan tiene como ítem quedan
+cubiertos, el resto es trabajo suelto que se cobra. Editando la visita se puede
+cambiar el plan o sacarlo, y la cobertura se recalcula sola.
+
+Antes la pregunta era **por producto** —*Cubre el plan* / *Se cobra aparte*, sin
+default— y estaba mal planteada. Nadie agenda media visita contra un plan: si la
+visita es del plan, lo que el plan tiene lo cubre. Preguntarlo por producto
+aparecía en toda visita de todo cliente con plan, y la respuesta correcta era
+siempre la misma; a cambio, la relación visita↔suscripción no existía en ningún
+lado y no había manera de ver las visitas de un plan.
+
+A qué ítem corresponde cada producto lo sigue resolviendo el servidor: el
+cliente manda un `suscripcionId`, nunca un `suscripcionItemId`, y se verifica que
+ese plan sea del cliente de la visita. No hay ambigüedad posible dentro del plan
+—`crearSuscripcion` impide que un producto esté en dos suscripciones activas del
+mismo cliente.
+
+Un detalle que sí importa: **cambiar el plan no toca los productos que ya están
+en una orden**. Marcarlos como cubiertos los dejaría cobrados y cubiertos a la
+vez. Se recalcula solo lo que todavía no se facturó.
+
+Desde la ficha de una suscripción, **"Nueva visita"** abre el alta con ese plan
+ya elegido; es el camino normal para las visitas de un plan.
 
 Desde la ficha de una visita, **"Crear orden"** abre la pantalla de alta con su
 trabajo pendiente ya cargado (`?cliente=…&visita=…`). Sirve también con la visita
@@ -720,6 +799,32 @@ emitir no escribe nada en el catálogo.
 
 El estado inicial es siempre `PENDIENTE` ("No se ha firmado"). Contífico firma y
 transmite de forma **asincrónica**, procesando los pendientes cada hora, así que
+### "Hoy" es en Ecuador, no en UTC
+
+El servidor corre en UTC y `new Date()` truncado a día da **mañana** entre las
+19:00 y la medianoche de Ecuador (UTC-5). No es cosmético: `Orden.fecha` y
+`Factura.fechaEmision` son columnas `DATE`, viajan como `fecha_emision` a
+Contífico y de ahí al SRI.
+
+Verificado el 25/08/2026 con la `001-002-000900043`: emitida a las **22:38 del
+24** hora de Ecuador, quedó guardada con fecha del **25**.
+
+Por eso existe `hoyEnEcuador()` en `src/lib/fechas.ts`, y lo mismo del lado del
+navegador —`new Date().toISOString().slice(0, 10)` **también** es UTC, no la
+fecha local del que está mirando la pantalla—.
+
+Al mostrar hay que distinguir dos cosas, y por eso `formato.ts` tiene dos
+funciones:
+
+| | Qué es | Cómo se muestra |
+|---|---|---|
+| `fecha()` | Columna `DATE` (sin hora) | En **UTC**: Prisma la devuelve como medianoche UTC y formatearla en Ecuador la correría un día atrás |
+| `fechaHora()` | Un instante real (`createdAt`) | En **hora de Ecuador**, con hora |
+
+En la card de la factura conviven las dos: *Fecha* es la del documento —la que
+ve el SRI— y *Emitida* es cuándo salió de verdad del portal. Los cobros solo
+tienen fecha: Contífico devuelve `fecha` en `DD/MM/YYYY`, sin hora.
+
 ### `url_ride` existe antes de que exista el RIDE
 
 **Que la URL venga no quiere decir que el PDF esté.** `url_ride` y `url_xml`

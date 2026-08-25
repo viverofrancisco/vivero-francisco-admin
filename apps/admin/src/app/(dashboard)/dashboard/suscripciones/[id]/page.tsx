@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import { viewerFromSession } from "@/lib/auth-helpers";
-import { getSuscripcion } from "@/lib/services/suscripcion.service";
-import { listarFacturas } from "@/lib/services/factura.service";
+import {
+  getSuscripcion,
+  ordenesDeSuscripcion,
+  visitasDeSuscripcion,
+} from "@/lib/services/suscripcion.service";
 import { NotFoundError } from "@/lib/services/errors";
 import { SuscripcionDetail } from "@/components/suscripciones/suscripcion-detail";
 
@@ -27,31 +30,35 @@ export default async function SuscripcionRoute({
     throw error;
   }
 
-  // No hay relación directa: se llega por las líneas de orden que citan
-  // alguno de sus ítems.
-  const { items: facturas } = await listarFacturas(viewer, {
-    suscripcionId: id,
-  });
+  // Ninguna de las dos es una relación directa: a las órdenes se llega por las
+  // líneas que citan alguno de sus ítems, y a las visitas por los
+  // `VisitaProducto` marcados como cubiertos por esos mismos ítems.
+  const [ordenes, visitas] = await Promise.all([
+    ordenesDeSuscripcion(viewer, id),
+    visitasDeSuscripcion(viewer, id),
+  ]);
 
   return (
     <div className="p-4 md:p-6">
       <SuscripcionDetail
         backHref={backHref}
-        facturas={facturas.map((f) => ({
-          id: f.id,
-          numero: f.numero,
-          fechaEmision: f.fechaEmision.toISOString(),
-          estado: f.estado,
-          total: Number(f.total),
-          saldo: f.saldo === null ? null : Number(f.saldo),
-          urlRide: f.urlRide,
-          anulada: f.anulada,
-          razonSocial: f.razonSocial,
-          identificacion: f.identificacion,
-          orden: { id: f.orden.id, numero: f.orden.numero, cliente: f.orden.cliente },
+        visitas={visitas.map((v) => ({
+          id: v.id,
+          numero: v.numero,
+          fechaProgramada: v.fechaProgramada.toISOString(),
+          fechaRealizada: v.fechaRealizada?.toISOString() ?? null,
+          estado: v.estado,
+          productos: v.productos,
+        }))}
+        ordenes={ordenes.map((o) => ({
+          ...o,
+          fecha: o.fecha.toISOString(),
+          periodoInicio: o.periodoInicio?.toISOString() ?? null,
+          periodoFin: o.periodoFin?.toISOString() ?? null,
         }))}
         suscripcion={{
           id: suscripcion.id,
+          numero: suscripcion.numero,
           estado: suscripcion.estado,
           periodicidad: suscripcion.periodicidad,
           fechaInicio: suscripcion.fechaInicio.toISOString(),

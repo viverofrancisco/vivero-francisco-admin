@@ -77,6 +77,7 @@ export function OrdenLineasEditor({
   lineasIniciales,
   notasIniciales,
   productos,
+  clienteNombre,
   suscritos = [],
   guardando,
   onGuardar,
@@ -85,6 +86,8 @@ export function OrdenLineasEditor({
   lineasIniciales: LineaEditable[];
   notasIniciales: string;
   productos: ProductoCatalogo[];
+  /** Para nombrarlo en el aviso: "Fulano tiene este producto…". */
+  clienteNombre?: string;
   /** Productos que este cliente ya tiene en un plan activo. */
   suscritos?: string[];
   guardando: boolean;
@@ -107,12 +110,6 @@ export function OrdenLineasEditor({
     if (!p) return;
     if (!p.contificoProductoId) {
       toast.error(`"${p.nombre}" no está sincronizado con Contífico`);
-      return;
-    }
-    if (suscritos.includes(p.id)) {
-      toast.error(
-        `"${p.nombre}" está en un plan de este cliente: se cobra por período`
-      );
       return;
     }
     setLineas((prev) => [
@@ -239,11 +236,11 @@ export function OrdenLineasEditor({
             options={productos.map((p) => ({
               value: p.id,
               label: p.nombre,
-              disabled: !p.contificoProductoId || suscritos.includes(p.id),
+              disabled: !p.contificoProductoId,
               hint: !p.contificoProductoId
-                ? "No está vinculado con Contífico, así que no se puede facturar."
+                ? "No se puede facturar: falta vincularlo con Contífico desde su ficha."
                 : suscritos.includes(p.id)
-                  ? "Este cliente lo tiene en un plan: se cobra por período."
+                  ? `${clienteNombre ?? "El cliente"} tiene este producto en una suscripción.`
                   : undefined,
             }))}
             placeholder="Buscar producto..."

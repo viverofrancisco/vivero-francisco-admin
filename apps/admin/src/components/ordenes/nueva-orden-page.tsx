@@ -47,7 +47,9 @@ interface Pendiente {
   precio: string;
   ivaTasa: string;
   visitaProductoId?: string;
+  visitaId?: string;
   suscripcionItemId?: string;
+  suscripcionId?: string;
   fecha?: string;
   periodoInicio?: string;
   periodoFin?: string;
@@ -167,11 +169,31 @@ export function NuevaOrdenPage({
       .map(lineaDesde)
   );
   /**
-   * Productos que este cliente ya tiene en un plan. No se pueden agregar a mano:
-   * entran por el período o por la visita, o se le cobraría dos veces. Depende
-   * del cliente, así que se recarga con él.
+   * Productos que este cliente ya tiene en un plan. Se pueden agregar igual
+   * —sería un extra sobre lo que el plan cubre—, pero se avisa, porque agregar
+   * sin querer lo que el plan ya cubre es cobrarlo dos veces. Depende del
+   * cliente, así que se recarga con él.
    */
   const [suscritos, setSuscritos] = useState<string[]>(suscritosIniciales ?? []);
+
+  /**
+   * Se llegó desde una visita: la orden **es** de esa visita.
+   *
+   * Cambia dos cosas. Sus productos no se pueden sacar —una visita se factura
+   * completa y el servidor rechazaría la orden a medias, así que ofrecer el
+   * tacho es ofrecer un botón que falla—, y el panel de pendientes desaparece:
+   * quien entró por acá viene a cobrar esta visita, no a revisar todo lo que el
+   * cliente debe. Lo que sí se puede es sumar productos del catálogo.
+   */
+  const esDeUnaVisita = desdeVisita != null && (preseleccion?.length ?? 0) > 0;
+  const fijada = (l: Linea) =>
+    esDeUnaVisita &&
+    !!l.visitaProductoId &&
+    preseleccion!.includes(l.visitaProductoId);
+  const nombreDelCliente = (() => {
+    const c = clientes.find((x) => x.id === clienteId);
+    return c ? nombreCliente(c) : "El cliente";
+  })();
   const [pendientes, setPendientes] = useState<Pendiente[]>(
     pendientesIniciales ?? []
   );
@@ -216,12 +238,6 @@ export function NuevaOrdenPage({
       toast.error(`"${p.nombre}" no está sincronizado con Contífico`);
       return;
     }
-    if (suscritos.includes(p.id)) {
-      toast.error(
-        `"${p.nombre}" está en un plan de este cliente: entra desde "Pendiente de facturar"`
-      );
-      return;
-    }
     setLineas((prev) => [
       ...prev,
       {
@@ -250,12 +266,64 @@ export function NuevaOrdenPage({
     (p) => !yaEnLaOrden.has(clavePendiente(p))
   );
 
+  /**
+   * Qué origen tiene ya esta orden. Una orden no mezcla períodos de plan con
+   * trabajo de visitas —el servicio lo rechaza— así que el primero que entra
+   * define de qué es. Lo agregado a mano no cuenta: es el extra de cualquiera.
+   */
+  const origen: "PLAN" | "VISITAS" | null = lineas.some(
+    (l) => l.suscripcionItemId
+  )
+    ? "PLAN"
+    : lineas.some((l) => l.visitaProductoId)
+      ? "VISITAS"
+      : null;
+
+  const chocaConElOrigen = (p: Pendiente) =>
+    origen !== null &&
+    origen !== (p.tipo === "suscripcion" ? "PLAN" : "VISITAS");
+
+  /**
+   * Qué otros pendientes tienen que entrar con este.
+   *
+   * Una visita se factura completa y un período de un plan también: agregar uno
+   * arrastra a sus hermanos. Es la misma regla que valida el servidor, pero acá
+   * se cumple sola en vez de rebotar recién al guardar.
+   */
+  const grupoDe = (p: Pendiente) =>
+    pendientesDisponibles.filter((otro) =>
+      p.tipo === "visita"
+        ? otro.tipo === "visita" && otro.visitaId === p.visitaId
+        : otro.tipo === "suscripcion" &&
+          otro.suscripcionId === p.suscripcionId &&
+          otro.periodoInicio === p.periodoInicio
+    );
+
   const agregarPendiente = (p: Pendiente) => {
-    setLineas((prev) => [...prev, lineaDesde(p)]);
+    if (chocaConElOrigen(p)) {
+      toast.error(
+        origen === "PLAN"
+          ? "Esta orden es de una suscripción. El trabajo de visitas va en otra."
+          : "Esta orden es de visitas. Los períodos de suscripción van en otra."
+      );
+      return;
+    }
+    const grupo = grupoDe(p);
+    setLineas((prev) => [...prev, ...grupo.map(lineaDesde)]);
+    if (grupo.length > 1) {
+      toast.info(
+        p.tipo === "visita"
+          ? `Se agregó la visita completa (${grupo.length} productos)`
+          : `Se agregó el período completo (${grupo.length} productos)`
+      );
+    }
   };
 
+  /** Solo lo que combina con lo que ya hay: agregar todo no rompe la regla. */
   const agregarTodosLosPendientes = () =>
-    pendientesDisponibles.forEach((p) => agregarPendiente(p));
+    pendientesDisponibles
+      .filter((p) => !chocaConElOrigen(p))
+      .forEach((p) => setLineas((prev) => [...prev, lineaDesde(p)]));
 
   const actualizar = (uid: string, patch: Partial<Linea>) =>
     setLineas((prev) =>
@@ -324,7 +392,15 @@ export function NuevaOrdenPage({
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/ordenes">
+        {/* Vuelve de donde vino: si se entró desde una visita, cancelar tiene
+            que devolver a esa visita y no a la lista de órdenes. */}
+        <Link
+          href={
+            desdeVisita
+              ? `/dashboard/visitas/${desdeVisita.id}`
+              : "/dashboard/ordenes"
+          }
+        >
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -390,14 +466,16 @@ export function NuevaOrdenPage({
                               </p>
                             )}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => quitar(l.uid)}
-                            aria-label="Quitar producto"
-                          >
-                            <Trash2 className="h-4 w-4 text-muted-foreground" />
-                          </Button>
+                          {!fijada(l) && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => quitar(l.uid)}
+                              aria-label="Quitar producto"
+                            >
+                              <Trash2 className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          )}
                         </div>
                         <div className="flex flex-wrap items-end gap-3">
                           <div className="w-20 space-y-1">
@@ -461,18 +539,18 @@ export function NuevaOrdenPage({
                   <CustomSelect
                     value={productoAAgregar}
                     onChange={agregarProducto}
-                    // Lo que ya cubre un plan de este cliente no se elige a
-                    // mano: entra por el panel de pendientes, que es lo que
-                    // trae el período y evita cobrar dos veces el mismo mes.
+                    // Lo que está en un plan del cliente **sí** se puede
+                    // agregar: es un extra sobre lo que el plan cubre, y quien
+                    // arma la orden es quien decide si se cobra. Lo único que
+                    // no entra es lo que no se puede facturar.
                     options={productos.map((p) => ({
                       value: p.id,
                       label: p.nombre,
-                      disabled:
-                        !p.contificoProductoId || suscritos.includes(p.id),
+                      disabled: !p.contificoProductoId,
                       hint: !p.contificoProductoId
-                        ? "No está vinculado con Contífico, así que no se puede facturar. Vinculalo desde la ficha del producto."
+                        ? "No se puede facturar: falta vincularlo con Contífico desde su ficha."
                         : suscritos.includes(p.id)
-                          ? "Este cliente lo tiene en un plan: se cobra por período, desde “Pendiente de facturar”."
+                          ? `${nombreDelCliente} tiene este producto en una suscripción.`
                           : undefined,
                     }))}
                     placeholder="Buscar producto..."
@@ -484,8 +562,23 @@ export function NuevaOrdenPage({
             </CardContent>
           </Card>
 
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">Notas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                id="notas"
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+                placeholder="Opcional"
+                rows={3}
+              />
+            </CardContent>
+          </Card>
+
           {/* ── Pendientes de facturar ───────────────────────────── */}
-          {clienteId && (
+          {clienteId && !esDeUnaVisita && (
             <Card>
               <CardHeader className="border-b py-3">
                 <CardTitle className="text-base">
@@ -520,7 +613,9 @@ export function NuevaOrdenPage({
                     {pendientesDisponibles.map((p) => (
                       <div
                         key={clavePendiente(p)}
-                        className="flex items-center justify-between gap-3 py-2.5"
+                        className={`flex items-center justify-between gap-3 py-2.5 ${
+                          chocaConElOrigen(p) ? "opacity-50" : ""
+                        }`}
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
@@ -531,6 +626,15 @@ export function NuevaOrdenPage({
                               ? `Visita · ${fecha(p.fecha!)}`
                               : `${fecha(p.periodoInicio!)} → ${fecha(p.periodoFin!)}`}
                           </p>
+                          {chocaConElOrigen(p) && (
+                            <p className="text-xs text-amber-700">
+                              Va en otra orden: esta es{" "}
+                              {origen === "PLAN"
+                                ? "de una suscripción"
+                                : "de visitas"}
+                              .
+                            </p>
+                          )}
                         </div>
                         <div className="flex flex-none items-center gap-3">
                           <Badge
@@ -548,6 +652,7 @@ export function NuevaOrdenPage({
                             variant="outline"
                             size="sm"
                             onClick={() => agregarPendiente(p)}
+                            disabled={chocaConElOrigen(p)}
                           >
                             Agregar
                           </Button>
@@ -579,16 +684,6 @@ export function NuevaOrdenPage({
                 searchable
                 searchPlaceholder="Buscar cliente..."
               />
-              <div className="space-y-2">
-                <Label htmlFor="notas">Notas</Label>
-                <Textarea
-                  id="notas"
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
-                  placeholder="Opcional"
-                  rows={3}
-                />
-              </div>
             </CardContent>
           </Card>
 

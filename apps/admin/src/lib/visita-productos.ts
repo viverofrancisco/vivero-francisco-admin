@@ -52,12 +52,34 @@ export function productoPrincipal(
  * esperan los helpers de arriba. Reutilizable en cualquier query de visitas.
  */
 export const PRODUCTOS_DE_VISITA_SELECT = {
-  orderBy: { orden: "asc" },
+  orderBy: { posicion: "asc" },
   select: {
     productoId: true,
     suscripcionItemId: true,
+    // A qué plan pertenece, para poder ir hasta él desde la visita: "cubierto
+    // por el plan" sin decir cuál es una afirmación que no se puede verificar.
+    suscripcionItem: {
+      select: {
+        suscripcionId: true,
+        suscripcion: {
+          select: {
+            numero: true,
+            periodicidad: true,
+            estado: true,
+            cliente: {
+              select: { nombre: true, apellido: true, empresa: true },
+            },
+          },
+        },
+      },
+    },
     // Si tiene línea de orden, este trabajo ya se cobró (o está por cobrarse).
-    ordenLinea: { select: { ordenId: true, orden: { select: { numero: true } } } },
+    ordenLinea: {
+      select: {
+        ordenId: true,
+        orden: { select: { numero: true, estado: true } },
+      },
+    },
     producto: {
       select: {
         id: true,
@@ -73,7 +95,19 @@ export const PRODUCTOS_DE_VISITA_SELECT = {
 export interface ProductoDeVisita {
   productoId: string;
   suscripcionItemId: string | null;
-  ordenLinea: { ordenId: string; orden: { numero: number } } | null;
+  suscripcionItem: {
+    suscripcionId: string;
+    suscripcion: {
+      numero: number;
+      periodicidad: string;
+      estado: string;
+      cliente: { nombre: string; apellido: string | null; empresa: string | null };
+    };
+  } | null;
+  ordenLinea: {
+    ordenId: string;
+    orden: { numero: number; estado: string };
+  } | null;
   producto: {
     id: string;
     nombre: string;

@@ -1,15 +1,48 @@
+import { ZONA_ECUADOR } from "@/lib/fechas";
+
 /** Formato de plata compartido por las pantallas de órdenes. */
 export const money = (n: number | string) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
     Number(n)
   );
 
+/**
+ * Una fecha sin hora (columna `@db.Date`).
+ *
+ * Va en **UTC** a propósito: Prisma devuelve esas columnas como medianoche UTC,
+ * y formatearlas en Ecuador (UTC-5) las correría un día para atrás.
+ */
 export const fecha = (iso: string) =>
   new Date(iso).toLocaleDateString("es-EC", {
     day: "2-digit",
     month: "short",
     year: "numeric",
     timeZone: "UTC",
+  });
+
+/**
+ * La hora de un instante real, en **hora de Ecuador**.
+ *
+ * Lo contrario del de arriba: acá sí hay un momento concreto guardado, y
+ * mostrarlo en UTC daría las 3 de la mañana para algo que pasó a las 22:00.
+ */
+export const hora = (iso: string) =>
+  new Date(iso).toLocaleTimeString("es-EC", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: ZONA_ECUADOR,
+  });
+
+/**
+ * ¿Una columna `DATE` y un instante caen el mismo día en Ecuador?
+ *
+ * Sirve para decidir si tiene sentido pegarle la hora a una fecha: la de la
+ * columna se lee en UTC (es medianoche UTC) y la del instante en Ecuador.
+ */
+export const mismoDia = (fechaIso: string, instanteIso: string) =>
+  fechaIso.slice(0, 10) ===
+  new Date(instanteIso).toLocaleDateString("en-CA", {
+    timeZone: ZONA_ECUADOR,
   });
 
 export const estadoLabel: Record<string, string> = {

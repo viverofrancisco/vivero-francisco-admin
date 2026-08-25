@@ -14,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { MultiDateCalendar } from "@/components/ui/multi-date-calendar";
 import { PersonalSelector } from "@/components/grupos/personal-selector";
 import {
@@ -30,14 +29,6 @@ import { PERIODICIDAD_SUFIJO } from "@/components/suscripciones/formato";
 import { SelectorProductos } from "@/components/visitas/selector-productos";
 
 /** Un producto que ya cubre una suscripción activa del cliente. */
-interface ProductoCubierto {
-  productoId: string;
-  nombre: string;
-  precio: number;
-  /** Visitas incluidas por período de cobro. Informativo: no es un tope. */
-  visitasPorPeriodo: number | null;
-  periodicidad: string;
-}
 
 interface ProductoCatalogo {
   id: string;
@@ -46,12 +37,19 @@ interface ProductoCatalogo {
   ivaTasa: number | null;
 }
 
+interface SuscripcionOpcion {
+  id: string;
+  numero: number;
+  periodicidad: string;
+  productos: { productoId: string; nombre: string; visitasPorPeriodo: number | null }[];
+}
+
 interface Cliente {
   id: string;
   nombre: string;
   apellido?: string | null;
   empresa?: string | null;
-  cubiertos: ProductoCubierto[];
+  suscripciones: SuscripcionOpcion[];
 }
 
 interface Grupo {
@@ -71,6 +69,8 @@ interface Props {
   catalogo: ProductoCatalogo[];
   grupos: Grupo[];
   personalList: PersonalOption[];
+  /** Preseleccionado al venir desde una suscripción. */
+  suscripcionInicial?: string;
 }
 
 const fechaCorta = (iso: string) =>
@@ -92,6 +92,7 @@ const fechaCorta = (iso: string) =>
  */
 export function NuevaVisitaPage({
   clientes,
+  suscripcionInicial,
   catalogo,
   grupos,
   personalList,
@@ -99,7 +100,14 @@ export function NuevaVisitaPage({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const [clienteId, setClienteId] = useState("");
+  // Con un plan preseleccionado, el cliente sale de él: es su dueño y no hay
+  // nada que elegir. Se resuelve en el estado inicial y no en un efecto.
+  const [clienteId, setClienteId] = useState(
+    () =>
+      clientes.find((c) =>
+        c.suscripciones.some((s) => s.id === suscripcionInicial)
+      )?.id ?? ""
+  );
   const [productoIds, setProductoIds] = useState<string[]>([]);
   const [fechas, setFechas] = useState<string[]>([]);
   const [grupoId, setGrupoId] = useState("");
@@ -108,30 +116,33 @@ export function NuevaVisitaPage({
   const [confirmar, setConfirmar] = useState(false);
   const [eligiendo, setEligiendo] = useState(false);
   /**
-   * Productos que se sacan del plan a propósito. Se guarda lo excluido y no lo
-   * incluido porque el default es cubrir: así cambiar de cliente no arrastra
-   * decisiones tomadas sobre la cobertura de otro.
+   * De qué plan es la visita. Vacío = trabajo aparte, se cobra en una orden.
+   *
+   * Una sola decisión y de la visita entera. Qué productos cubre ese plan no se
+   * elige: se deduce de lo que el plan contiene.
    */
-  const [sinPlan, setSinPlan] = useState<string[]>([]);
+  const [suscripcionId, setSuscripcionId] = useState(
+    suscripcionInicial ?? ""
+  );
 
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
-  // Cambiar de cliente recalcula la cobertura sin perder lo ya elegido.
+  const planes = cliente?.suscripciones ?? [];
+  const plan = planes.find((s) => s.id === suscripcionId) ?? null;
+  /** Lo que el plan elegido cubre, para marcarlo en la lista. */
   const cubiertos = new Map(
-    (cliente?.cubiertos ?? []).map((c) => [c.productoId, c])
+    (plan?.productos ?? []).map((p) => [p.productoId, p])
   );
 
   // El orden del catálogo manda, así la lista no salta al elegir.
   const elegidos = catalogo.filter((p) => productoIds.includes(p.id));
 
+  const elegirCliente = (id: string) => {
+    setClienteId(id);
+    setSuscripcionId("");
+  };
+
   const alternarProducto = (id: string) =>
     setProductoIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-
-  const cubre = (id: string) => cubiertos.has(id) && !sinPlan.includes(id);
-
-  const alternarCobertura = (id: string) =>
-    setSinPlan((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
 
@@ -150,12 +161,9 @@ export function NuevaVisitaPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clienteId,
-          // Qué se va a hacer y qué se descuenta del plan. El servidor
-          // resuelve a qué ítem corresponde: acá solo viaja el sí o el no.
-          productos: productoIds.map((productoId) => ({
-            productoId,
-            cubrirConPlan: !sinPlan.includes(productoId),
-          })),
+          productos: productoIds.map((productoId) => ({ productoId })),
+          // De qué plan es. El servidor deduce qué productos cubre.
+          suscripcionId: suscripcionId || null,
           fechas,
           grupoId: grupoId || undefined,
           personalIds,
@@ -190,17 +198,27 @@ export function NuevaVisitaPage({
             define al facturar.
           </p>
         </div>
-        <Button
-          onClick={() => setConfirmar(true)}
-          disabled={
-            loading || !clienteId || elegidos.length === 0 || fechas.length === 0
-          }
-        >
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {fechas.length > 1
-            ? `Crear ${fechas.length} visitas`
-            : "Crear visita"}
-        </Button>
+        <div className="flex flex-none items-center gap-2">
+          <Link href="/dashboard/visitas">
+            <Button variant="outline" disabled={loading}>
+              Cancelar
+            </Button>
+          </Link>
+          <Button
+            onClick={() => setConfirmar(true)}
+            disabled={
+              loading ||
+              !clienteId ||
+              elegidos.length === 0 ||
+              fechas.length === 0
+            }
+          >
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {fechas.length > 1
+              ? `Crear ${fechas.length} visitas`
+              : "Crear visita"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid items-start gap-6 px-4 md:px-6 lg:grid-cols-3">
@@ -224,7 +242,6 @@ export function NuevaVisitaPage({
               ) : (
                 <div className="divide-y rounded-md border">
                   {elegidos.map((p) => {
-                    const cubierto = cubiertos.get(p.id);
                     return (
                       <div
                         key={p.id}
@@ -233,23 +250,6 @@ export function NuevaVisitaPage({
                         <span className="min-w-0 flex-1 truncate text-sm font-medium">
                           {p.nombre}
                         </span>
-                        {cubierto && (
-                          <label className="flex flex-none cursor-pointer items-center gap-1.5 text-xs">
-                            <Checkbox
-                              checked={cubre(p.id)}
-                              onCheckedChange={() => alternarCobertura(p.id)}
-                            />
-                            <span
-                              className={
-                                cubre(p.id) ? "" : "text-muted-foreground"
-                              }
-                            >
-                              {cubre(p.id)
-                                ? etiquetaCobertura(cubierto)
-                                : "Se cobra aparte"}
-                            </span>
-                          </label>
-                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -338,7 +338,7 @@ export function NuevaVisitaPage({
             <CardContent>
               <CustomSelect
                 value={clienteId}
-                onChange={setClienteId}
+                onChange={elegirCliente}
                 options={clientes.map((c) => ({
                   value: c.id,
                   label: nombreCliente(c),
@@ -348,15 +348,32 @@ export function NuevaVisitaPage({
                 searchPlaceholder="Buscar cliente..."
                 clearable
               />
-              {cliente && cubiertos.size > 0 && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Tiene {cubiertos.size}{" "}
-                  {cubiertos.size === 1 ? "producto" : "productos"} en
-                  suscripción.
-                </p>
-              )}
             </CardContent>
           </Card>
+
+          {/* De qué plan es la visita: una decisión, de la visita entera. Lo
+              que el plan cubra sale de sus productos, no se elige acá. La X la
+              desvincula; una opción "Ninguna" diría lo mismo ocupando lugar. */}
+          {planes.length > 0 && (
+            <Card className="overflow-visible">
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-base">Suscripción</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CustomSelect
+                  value={suscripcionId}
+                  onChange={setSuscripcionId}
+                  options={planes.map((sus) => ({
+                    value: sus.id,
+                    label: `Suscripción #${sus.numero}`,
+                    hint: sus.productos.map((x) => x.nombre).join(", "),
+                  }))}
+                  placeholder="Sin suscripción"
+                  clearable
+                />
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
@@ -406,7 +423,7 @@ export function NuevaVisitaPage({
         seleccionados={productoIds}
         etiqueta={(id) => {
           const c = cubiertos.get(id);
-          return c ? etiquetaCobertura(c) : null;
+          return c ? etiquetaCobertura(c, plan?.periodicidad ?? "") : null;
         }}
         onToggle={alternarProducto}
       />
@@ -432,12 +449,13 @@ export function NuevaVisitaPage({
                   {elegidos.map((p) => (
                     <span key={p.id} className="block">
                       {p.nombre}
-                      {cubiertos.has(p.id) && (
-                        <span className="text-xs text-muted-foreground">
-                          {" "}
-                          · {cubre(p.id) ? "cubierto por el plan" : "se cobra aparte"}
-                        </span>
-                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {" "}
+                        ·{" "}
+                        {cubiertos.has(p.id)
+                          ? "cubierto por el plan"
+                          : "se cobra aparte"}
+                      </span>
                     </span>
                   ))}
                 </span>
@@ -492,8 +510,11 @@ function Fila({
 }
 
 /** "4/trimestre incluidas" — lo que dice el contrato, no un tope. */
-function etiquetaCobertura(c: ProductoCubierto): string {
-  if (!c.visitasPorPeriodo) return "Suscripción";
-  const sufijo = PERIODICIDAD_SUFIJO[c.periodicidad] ?? "";
+function etiquetaCobertura(
+  c: { visitasPorPeriodo: number | null },
+  periodicidad: string
+): string {
+  if (!c.visitasPorPeriodo) return "Incluido en el plan";
+  const sufijo = PERIODICIDAD_SUFIJO[periodicidad] ?? "";
   return `${c.visitasPorPeriodo}${sufijo} incluidas`;
 }

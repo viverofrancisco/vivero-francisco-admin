@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { hoyISOEcuador } from "@/lib/fechas";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PageHeader } from "@/components/shared/page-header";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { VisitasTable } from "@/components/visitas/visitas-table";
@@ -75,6 +77,14 @@ export function VisitasPageClient({
   const [desde, setDesde] = useState(initialDesde);
   const [hasta, setHasta] = useState(initialHasta);
   const [estado, setEstado] = useState("ALL");
+  /**
+   * Solo las que tienen trabajo suelto sin cobrar.
+   *
+   * Se filtra en el cliente y no en la API porque la respuesta ya trae la
+   * procedencia de cada producto: agregar un parámetro al endpoint sería pedir
+   * de vuelta lo que ya está en la mano.
+   */
+  const [soloSinOrden, setSoloSinOrden] = useState(false);
   const [clienteId, setClienteId] = useState("ALL");
   const [productoId, setServicioId] = useState("ALL");
   const [loadingFilter, setLoadingFilter] = useState(false);
@@ -145,15 +155,26 @@ export function VisitasPageClient({
   const filtrosActivos =
     (clienteId !== "ALL" ? 1 : 0) +
     (productoId !== "ALL" ? 1 : 0) +
+    (estado !== "ALL" ? 1 : 0) +
+    (soloSinOrden ? 1 : 0) +
     (desde || hasta ? 1 : 0);
 
   const limpiarFiltros = () => {
     setClienteId("ALL");
     setServicioId("ALL");
+    setEstado("ALL");
+    setSoloSinOrden(false);
     setDesde("");
     setHasta("");
-    fetchVisitas("", "", estado, "ALL", "ALL");
+    fetchVisitas("", "", "ALL", "ALL", "ALL");
   };
+
+  /** Le queda trabajo suelto que todavía no entró en ninguna orden. */
+  const sinOrden = (v: VisitaRow) =>
+    v.estado !== "CANCELADA" &&
+    v.productos.some((p) => !p.suscripcionItemId && !p.ordenLinea);
+
+  const visibles = soloSinOrden ? visitas.filter(sinOrden) : visitas;
 
   const handleServicioChange = (v: string) => {
     setServicioId(v);
@@ -165,7 +186,7 @@ export function VisitasPageClient({
    * mueve ese filtro. Si el calendario llevara su propio mes, avanzar mostraría
    * un mes vacío: los datos son los que trajo el rango.
    */
-  const mesVisible = (desde || new Date().toISOString().slice(0, 10)).slice(0, 7);
+  const mesVisible = (desde || hoyISOEcuador()).slice(0, 7);
 
   const handleMesChange = (mes: string) => {
     const [anio, m] = mes.split("-").map(Number);
@@ -198,14 +219,6 @@ export function VisitasPageClient({
       {/* Una sola fila de controles: las cinco pastillas de estado más cuatro
           campos ocupaban un cuarto de la pantalla antes de mostrar un dato. */}
       <div className="flex flex-wrap items-center gap-3">
-        <CustomSelect
-          value={estado}
-          onChange={handleEstadoChange}
-          options={ESTADOS}
-          placeholder="Todos"
-          className="w-44"
-        />
-
         <Popover>
           <PopoverTrigger
             render={
@@ -221,6 +234,15 @@ export function VisitasPageClient({
             }
           />
           <PopoverContent className="w-80 space-y-4">
+            <div className="space-y-1">
+              <Label className="text-xs">Estado</Label>
+              <CustomSelect
+                value={estado}
+                onChange={handleEstadoChange}
+                options={ESTADOS}
+                placeholder="Todos"
+              />
+            </div>
             <div className="space-y-1">
               <Label className="text-xs">Fechas</Label>
               <DateRangePicker
@@ -257,6 +279,21 @@ export function VisitasPageClient({
                 searchPlaceholder="Buscar..."
               />
             </div>
+            {/* Lo que falta cobrar de trabajo suelto. Lo cubierto por un plan
+                no cuenta: no se factura aparte. */}
+            <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2.5">
+              <Checkbox
+                checked={soloSinOrden}
+                onCheckedChange={(v) => setSoloSinOrden(v === true)}
+                className="mt-0.5"
+              />
+              <span className="text-sm">
+                Sin orden
+                <span className="block text-xs text-muted-foreground">
+                  Con trabajo suelto todavía sin facturar
+                </span>
+              </span>
+            </label>
             <Button
               variant="ghost"
               size="sm"
@@ -270,7 +307,7 @@ export function VisitasPageClient({
         </Popover>
 
         <span className="text-sm text-muted-foreground">
-          {visitas.length} {visitas.length === 1 ? "visita" : "visitas"}
+          {visibles.length} {visibles.length === 1 ? "visita" : "visitas"}
         </span>
 
         <div className="ml-auto inline-flex rounded-lg border bg-card p-0.5">
@@ -306,15 +343,15 @@ export function VisitasPageClient({
         // cabecera y la fila de días quedan fuera del área que se mueve.
         <div className="min-h-0 flex-1">
           <VisitasCalendar
-            visitas={visitas}
+            visitas={visibles}
             mes={mesVisible}
             onMesChange={handleMesChange}
           />
         </div>
-      ) : visitas.length === 0 ? (
+      ) : visibles.length === 0 ? (
         <EmptyState message="No hay visitas para este periodo" />
       ) : (
-        <VisitasTable visitas={visitas} />
+        <VisitasTable visitas={visibles} />
       )}
     </>
   );

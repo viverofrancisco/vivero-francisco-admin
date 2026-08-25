@@ -81,14 +81,16 @@ export async function POST(request: Request) {
     );
   }
   try {
-    const orden = await generarOrden(viewer, {
+    // Devuelve **varias**: una por suscripción y otra con las visitas sueltas,
+    // porque una orden no puede mezclar los dos orígenes.
+    const ordenes = await generarOrden(viewer, {
       clienteId: parsed.data.clienteId,
       desde: new Date(parsed.data.desde),
       hasta: new Date(parsed.data.hasta),
       fecha: parsed.data.fecha ? new Date(parsed.data.fecha) : undefined,
       notas: parsed.data.notas || null,
     });
-    return NextResponse.json(orden, { status: 201 });
+    return NextResponse.json({ ordenes }, { status: 201 });
   } catch (error) {
     return serviceErrorResponse(error);
   }

@@ -127,7 +127,11 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
                   <TableRow
                     key={o.id}
                     className="cursor-pointer"
-                    onClick={() => router.push(`/dashboard/ordenes/${o.id}`)}
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/ordenes/${o.id}?from=/dashboard/ordenes/borradores`
+                      )
+                    }
                   >
                     <TableCell className="font-bold tabular-nums">
                       #{o.numero}

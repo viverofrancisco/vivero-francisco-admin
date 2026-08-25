@@ -7,11 +7,17 @@ import { OrdenDetail } from "@/components/ordenes/orden-detail";
 
 export default async function OrdenRoute({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const viewer = await viewerFromSession();
   const { id } = await params;
+  const { from } = await searchParams;
+  // Solo rutas internas del dashboard: evita un open redirect.
+  const backHref =
+    from && from.startsWith("/dashboard/") ? from : "/dashboard/ordenes";
 
   let orden;
   try {
@@ -59,10 +65,12 @@ export default async function OrdenRoute({
   return (
     <div className="p-4 md:p-6">
       <OrdenDetail
+        backHref={backHref}
         orden={{
           id: orden.id,
           numero: orden.numero,
           fecha: orden.fecha.toISOString(),
+          createdAt: orden.createdAt.toISOString(),
           estado: orden.estado,
           notas: orden.notas,
           datoFacturacionId: orden.datoFacturacionId,
@@ -76,6 +84,14 @@ export default async function OrdenRoute({
             empresa: orden.cliente.empresa,
             datosFacturacion: datosFacturacion,
           },
+          visita: orden.visita
+            ? {
+                id: orden.visita.id,
+                numero: orden.visita.numero,
+                fecha: orden.visita.fechaProgramada.toISOString(),
+              }
+            : null,
+          suscripcion: orden.suscripcion,
           lineas: orden.lineas.map((l) => ({
             id: l.id,
             descripcion: l.descripcion,
@@ -88,6 +104,7 @@ export default async function OrdenRoute({
             productoId: l.productoId,
             visitaProductoId: l.visitaProductoId,
             suscripcionItemId: l.suscripcionItemId,
+            suscripcionId: l.suscripcionItem?.suscripcionId ?? null,
             visita: l.visitaProducto
               ? {
                   id: l.visitaProducto.visita.id,
@@ -107,6 +124,7 @@ export default async function OrdenRoute({
             razonSocial: f.razonSocial,
             identificacion: f.identificacion,
             contificoDocumentoId: f.contificoDocumentoId,
+            createdAt: f.createdAt.toISOString(),
             datoFacturacion: f.datoFacturacion,
           })),
         }}

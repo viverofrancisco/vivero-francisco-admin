@@ -346,7 +346,7 @@ export function ClienteDetailTabs({
                     {ordenes.slice(0, 3).map((o) => (
                       <Link
                         key={o.id}
-                        href={`/dashboard/ordenes/${o.id}`}
+                        href={`/dashboard/ordenes/${o.id}?from=/dashboard/clientes/${cliente.id}`}
                         className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
                       >
                         <div className="min-w-0">
@@ -510,7 +510,9 @@ export function ClienteDetailTabs({
                             size="icon"
                             className="h-7 w-7"
                             onClick={() =>
-                              router.push(`/dashboard/visitas/${v.id}`)
+                              router.push(
+                                `/dashboard/visitas/${v.id}?from=/dashboard/clientes/${cliente.id}`
+                              )
                             }
                           >
                             <Eye className="h-3 w-3" />

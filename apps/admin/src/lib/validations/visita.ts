@@ -3,12 +3,6 @@ import { z } from "zod/v4";
 /** Un producto de la visita. Sin plata: eso se decide al facturar. */
 export const productoDeVisitaSchema = z.object({
   productoId: z.string().min(1),
-  /**
-   * Si el cliente tiene un plan con este producto, ¿esta visita se descuenta de
-   * él? Por omisión sí — es el caso normal y lo que hacían los clientes viejos
-   * de la API. En `false` la visita queda como trabajo suelto y se cotiza.
-   */
-  cubrirConPlan: z.boolean().optional(),
 });
 
 export const crearVisitasSchema = z.object({
@@ -18,6 +12,8 @@ export const crearVisitasSchema = z.object({
     .min(1, "Selecciona al menos un producto"),
   fechas: z.array(z.string().min(1)).min(1, "Selecciona al menos una fecha"),
   grupoId: z.string().optional().or(z.literal("")),
+  /// De qué plan es la visita. Vacío = trabajo aparte, se cobra en una orden.
+  suscripcionId: z.string().nullable().optional().or(z.literal("")),
   personalIds: z.array(z.string()).default([]),
   notas: z.string().optional().or(z.literal("")),
 });
@@ -34,9 +30,10 @@ export const actualizarVisitaSchema = z.object({
   horaEntrada: z.string().nullable().optional(),
   horaSalida: z.string().nullable().optional(),
   productoIds: z.array(z.string().min(1)).min(1).optional(),
-  /// Igual que `productoIds` pero pudiendo decir qué se descuenta del plan.
   productos: z.array(productoDeVisitaSchema).min(1).optional(),
   grupoId: z.string().nullable().optional(),
+  /// `null` la desvincula del plan: todo su trabajo pasa a cobrarse aparte.
+  suscripcionId: z.string().nullable().optional(),
   notas: z.string().nullable().optional(),
   /// Va en el mismo PUT que el resto: la pantalla de edición guarda todo junto.
   personalIds: z.array(z.string()).optional(),

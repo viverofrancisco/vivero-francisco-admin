@@ -22,6 +22,7 @@ export default async function SuscripcionesPage({
       <SuscripcionesTable
         suscripciones={items.map((s) => ({
           id: s.id,
+          numero: s.numero,
           estado: s.estado,
           periodicidad: s.periodicidad,
           fechaInicio: s.fechaInicio.toISOString(),

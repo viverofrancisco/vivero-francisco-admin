@@ -29,6 +29,8 @@ import { nombreCliente } from "@vivero/shared";
 import {
   money,
   fecha,
+  hora,
+  mismoDia,
   estadoLabel,
   estadoVariant,
   estadoCobro,
@@ -39,6 +41,10 @@ import {
   ESTADO_FACTURA_AYUDA,
   ESTADO_FACTURA_LABEL,
 } from "@/components/facturas/estado";
+import {
+  PERIODICIDAD_LABEL,
+  estadoVariant as estadoSuscripcionVariant,
+} from "@/components/suscripciones/formato";
 import {
   OrdenLineasEditor,
   type LineaEditable,
@@ -71,6 +77,8 @@ interface OrdenData {
   id: string;
   numero: number;
   fecha: string;
+  /** Cuándo se creó de verdad. `fecha` es una columna DATE y no tiene hora. */
+  createdAt: string;
   estado: string;
   notas: string | null;
   /** Con qué se va a facturar; null = el predeterminado del cliente. */
@@ -86,6 +94,19 @@ interface OrdenData {
     /** Cuántos datos de facturación tiene cargados: sin ninguno no se emite. */
     datosFacturacion: number;
   };
+  /**
+   * De qué es la orden: de una visita, de un plan, o de nada.
+   *
+   * Nunca las dos —lo impide un CHECK— y sale de las columnas de la orden, no
+   * de sus líneas: agregarle un producto a mano no la convierte en otra cosa.
+   */
+  visita: { id: string; numero: number; fecha: string } | null;
+  suscripcion: {
+    id: string;
+    numero: number;
+    periodicidad: string;
+    estado: string;
+  } | null;
   lineas: {
     id: string;
     descripcion: string;
@@ -101,6 +122,8 @@ interface OrdenData {
     /** De qué visita salió la línea, cuando salió de una. */
     visita?: { id: string; fecha: string } | null;
     suscripcionItemId: string | null;
+    /** De qué plan salió, cuando salió de un período. */
+    suscripcionId?: string | null;
   }[];
   facturas: {
     id: string;
@@ -117,6 +140,8 @@ interface OrdenData {
     identificacion: string | null;
     /** El id del documento en Contífico, para buscarlo allá. */
     contificoDocumentoId: string | null;
+    /** Cuándo la emitió el portal. Con hora, a diferencia de `fechaEmision`. */
+    createdAt: string;
     /**
      * El resto de lo que se imprimió. La razón social y la identificación son
      * el snapshot —esos no se mueven—; dirección, teléfono y correo salen del
@@ -136,8 +161,11 @@ export function OrdenDetail({
   orden,
   productos,
   clientes,
+  backHref = "/dashboard/ordenes",
 }: {
   orden: OrdenData;
+  /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
+  backHref?: string;
   productos: ProductoCatalogo[];
   /** Para poder cambiar de cliente mientras la orden sea borrador. */
   clientes: ClienteOpcion[];
@@ -173,6 +201,33 @@ export function OrdenDetail({
    * acá, y un menú vacío es peor que ninguno: promete opciones y no tiene.
    */
   const hayAccionesDeOrden = !facturaVigente || sePuedeAnular;
+
+  /**
+   * Las líneas por procedencia: períodos de plan, trabajo de visitas y lo
+   * agregado a mano. Una orden puede mezclar las tres —a un cliente se le
+   * emite **una** factura, no una por origen— y agrupar es lo que hace que eso
+   * se lea en vez de confundir.
+   */
+  const grupos = [
+    {
+      clave: "plan",
+      titulo: "Períodos de suscripción",
+      lineas: orden.lineas.filter((l) => l.periodoInicio),
+    },
+    {
+      clave: "visitas",
+      titulo: "Trabajo de visitas",
+      lineas: orden.lineas.filter((l) => !l.periodoInicio && l.visitaProductoId),
+    },
+    {
+      clave: "extra",
+      titulo: "Agregado a mano",
+      lineas: orden.lineas.filter(
+        (l) => !l.periodoInicio && !l.visitaProductoId
+      ),
+    },
+  ].filter((g) => g.lineas.length > 0);
+  const hayVariosOrigenes = grupos.length > 1;
 
   /** Las líneas cuyo trabajo se libera al anular, para poder mostrarlas. */
   const lineasEnlazadas = orden.lineas.filter(
@@ -375,7 +430,9 @@ export function OrdenDetail({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/ordenes">
+        {/* Vuelve de donde vino: llegar desde una visita y salir a la lista de
+            órdenes es perder el lugar donde uno estaba. */}
+        <Link href={backHref}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -401,6 +458,8 @@ export function OrdenDetail({
           </div>
           <p className="text-sm text-muted-foreground">
             {nombreCliente(orden.cliente)} · {fecha(orden.fecha)}
+            {mismoDia(orden.fecha, orden.createdAt) &&
+              ` · ${hora(orden.createdAt)}`}
           </p>
         </div>
         {orden.estado !== "ANULADA" && !editando && (
@@ -509,14 +568,27 @@ export function OrdenDetail({
                 }))}
                 notasIniciales={orden.notas ?? ""}
                 productos={productos}
+                clienteNombre={nombreCliente(orden.cliente)}
                 guardando={cargando === "guardar"}
                 onGuardar={guardarEdicion}
                 onCancelar={() => setEditando(false)}
               />
             ) : (
             <>
+            {/* Agrupadas por procedencia. Sueltas quedaban un "Visita,
+                Visita, Suscripción, Visita" sin estructura, y no se entendía
+                de qué estaba hecha la orden. Los grupos aparecen solo cuando
+                hay más de uno: con todo del mismo origen sobran los títulos. */}
             <div className="divide-y">
-              {orden.lineas.map((l) => (
+              {grupos.map(({ clave, titulo, lineas }) => (
+                <div key={clave} className={hayVariosOrigenes ? "py-1" : ""}>
+                  {hayVariosOrigenes && (
+                    <p className="pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {titulo}
+                    </p>
+                  )}
+                  <div className="divide-y">
+              {lineas.map((l) => (
                 <div
                   key={l.id}
                   className="flex items-start justify-between gap-4 py-3"
@@ -528,11 +600,23 @@ export function OrdenDetail({
                         mano no dice nada que no se vea. */}
                     <p className="text-xs text-muted-foreground">
                       {l.periodoInicio ? (
-                        `Suscripción · ${fecha(l.periodoInicio)} → ${fecha(l.periodoFin!)} · `
+                        <>
+                          {l.suscripcionId ? (
+                            <Link
+                              href={`/dashboard/suscripciones/${l.suscripcionId}`}
+                              className="text-primary hover:underline"
+                            >
+                              Suscripción
+                            </Link>
+                          ) : (
+                            "Suscripción"
+                          )}
+                          {` · ${fecha(l.periodoInicio)} → ${fecha(l.periodoFin!)} · `}
+                        </>
                       ) : l.visita ? (
                         <>
                           <Link
-                            href={`/dashboard/visitas/${l.visita.id}`}
+                            href={`/dashboard/visitas/${l.visita.id}?from=/dashboard/ordenes/${orden.id}`}
                             className="text-primary hover:underline"
                           >
                             Visita del {fecha(l.visita.fecha)}
@@ -550,6 +634,9 @@ export function OrdenDetail({
                   <span className="flex-none font-semibold tabular-nums">
                     {money(l.total)}
                   </span>
+                </div>
+              ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -571,6 +658,59 @@ export function OrdenDetail({
             )}
           </CardContent>
         </Card>
+
+        {/* De qué es la orden. Antes solo se veía línea por línea, y una
+            orden con un producto suelto agregado a mano no decía en ningún
+            lado que igual era la de esa visita o la de ese plan. */}
+        {(orden.suscripcion || orden.visita) && (
+          <Card className="mt-6">
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">
+                {orden.suscripcion ? "Suscripción" : "Visita"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {orden.suscripcion ? (
+                <Link
+                  href={`/dashboard/suscripciones/${orden.suscripcion.id}?from=/dashboard/ordenes/${orden.id}`}
+                  className="flex items-start justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-bold">
+                      Suscripción #{orden.suscripcion.numero}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {PERIODICIDAD_LABEL[orden.suscripcion.periodicidad] ??
+                        orden.suscripcion.periodicidad}
+                    </span>
+                  </span>
+                  <Badge
+                    variant={
+                      estadoSuscripcionVariant[orden.suscripcion.estado] ??
+                      "outline"
+                    }
+                    className="flex-none"
+                  >
+                    {orden.suscripcion.estado.charAt(0) +
+                      orden.suscripcion.estado.slice(1).toLowerCase()}
+                  </Badge>
+                </Link>
+              ) : (
+                <Link
+                  href={`/dashboard/visitas/${orden.visita!.id}?from=/dashboard/ordenes/${orden.id}`}
+                  className="block rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                >
+                  <span className="block text-sm font-bold">
+                    Visita #{orden.visita!.numero}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {fecha(orden.visita!.fecha)}
+                  </span>
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Los cobros van debajo del detalle y no en un popup: son parte de la
             historia de la orden, no una consulta aparte. Solo con factura
@@ -726,9 +866,20 @@ export function OrdenDetail({
                     className="font-medium tabular-nums"
                   />
                 </div>
+                {/* Una sola fila. `fechaEmision` es la fecha del documento
+                    —la que ve el SRI, sin hora— y la hora sale de `createdAt`,
+                    que es cuándo salió del portal. Se juntan solo si caen el
+                    mismo día: si la orden tiene fecha vieja no son lo mismo y
+                    mezclarlas sería inventar una hora que ese día no tuvo. */}
                 <div className="flex justify-between gap-3">
                   <span className="text-muted-foreground">Fecha</span>
-                  <span>{fecha(facturaVigente.fechaEmision)}</span>
+                  <span>
+                    {fecha(facturaVigente.fechaEmision)}
+                    {mismoDia(
+                      facturaVigente.fechaEmision,
+                      facturaVigente.createdAt
+                    ) && ` · ${hora(facturaVigente.createdAt)}`}
+                  </span>
                 </div>
                 <div className="flex justify-between gap-3">
                   <span className="text-muted-foreground">Estado</span>

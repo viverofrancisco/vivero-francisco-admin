@@ -154,15 +154,41 @@ own: the same product is monthly for one cliente and quarterly for another.
 `VisitaProducto.suscripcionItemId` is what marks a visit as covered (and
 therefore *not* separately billable).
 
-The visita wizard offers the **whole catalog** to any cliente: since a visita
-carries no money, there's nothing to decide at scheduling time. What a plan
-covers is linked to its `SuscripcionItem` **by default, and whoever schedules
-can turn that off per product** (`cubrirConPlan: false`) — extra work agreed
-outside the plan is real, and the system guessing it away was not something
-anyone could undo. The flag is a boolean, never a `suscripcionItemId` from the
-client: the server resolves which item, so nobody can hook a visita onto someone
-else's plan. Anything unlinked falls through to pending work and is priced when
-invoiced.
+**A visita belongs to a plan, or to none — the choice is per visita, not per
+product.** `Visita.suscripcionId` is picked in the wizard (and can be unset when
+editing); from there `coberturaDelPlan()` derives each product's
+`suscripcionItemId` by intersecting what was done with what that plan holds. So
+a plan visit that also carries an unrelated product bills only that product, and
+unlinking the plan turns the whole visit into loose work. Asking per product was
+the earlier design and was wrong: nobody schedules half a visit against a plan,
+and the question appeared on every product of every visit, plan or not.
+
+The wizard offers the **whole catalog** to any cliente: a visita carries no
+money, so there's nothing to price at scheduling time. The client never sends a
+`suscripcionItemId` — only the `suscripcionId`, which the server checks belongs
+to that cliente, so nobody can hook a visita onto someone else's plan. Changing
+the plan on an existing visita re-derives coverage for its products **except
+those already on an order line**: flipping a billed product to "covered" would
+leave it charged and covered at once.
+
+A subscription's page has a **Nueva visita** shortcut that pre-fills its plan,
+which is how most plan visits get created.
+
+**Completing a visita creates its draft order.** `borradorDeVisita()` runs on
+the real transition to `COMPLETADA` (not on re-edits) and opens a `BORRADOR`
+with the loose work at **$0** — the visita carries no money, so the draft exists
+for someone to price. Not at scheduling time: a scheduled visita still moves,
+gets edited or cancelled, and an order would freeze its products too early. If
+the order can't be created (a product not linked to Contífico), **the visita
+still completes** and the work stays in pendientes: finishing a visit in the
+field can't depend on catalog config.
+
+**And a billed product can't be removed from its visita.** `OrdenLinea.visitaProductoId`
+is `onDelete: SetNull`, so deleting it left the line charging while silently
+losing where it came from. Now `updateVisitaInfo` refuses and names the order —
+annul it first. Editing a **subscription's** products is free by contrast: each
+order covers a closed period, so the plan changes going forward and past orders
+are history.
 
 **A visita is invoiced from its own page.** "Crear orden" opens the order screen
 with that visit's pending work already loaded, ready to have more products added.
@@ -181,9 +207,14 @@ charging a period up front stays a deliberate, separate decision.
 quarterly plan's number is visits per quarter — and it is **informative, not a
 cap**. Scheduling is never blocked by it, and every visit of a subscribed
 product links to its `SuscripcionItem`. Deciding whether extra work gets charged
-belongs to whoever builds the order, not to whoever schedules. A recurring
-product also can't be added to an order by hand — see
-[the invoicing doc](./.claude/docs/facturacion-contifico.md).
+belongs to whoever builds the order, not to whoever schedules. A subscribed
+product **can** be put on an order by hand as an extra; the UI warns, it doesn't
+block. See [the invoicing doc](./.claude/docs/facturacion-contifico.md).
+
+**Órdenes, visitas and suscripciones each have a short `numero`** — a per-table
+`autoincrement()`, so #12 can be an orden, a visita and a suscripción at once
+and that's fine: nothing ever shows a bare number without saying what it is.
+The cuid stays the identity and the URL; the number is what people say out loud.
 
 **A visita is editable in any state**, including `COMPLETADA`. The state records
 what happened to the work, not whether the row is right: fixing a wrong date or
@@ -203,7 +234,29 @@ editing the record later never rewrites history.
 
 **Orden** / **OrdenLinea** are the single sales ledger: every peso lives on a
 line, whether it came from a subscription period, a one-off visita, or (later) a
-product. That keeps a sales report to one query instead of a union per revenue
+product. **One order never mixes subscription periods with visit work** —
+`ensureNoMezclaOrigenes` rejects it: the plan is what was agreed and renews on
+its own, a loose visit is something that happened and gets quoted, and merging
+them produced an order whose total you couldn't explain without opening it.
+Hand-added lines belong in either. `generarOrden()` therefore returns **several**
+orders: one per subscription plus one for the loose visits.
+
+Because an order has exactly one origin, it says so in its own columns:
+**`Orden.visitaId` / `Orden.suscripcionId`**, at most one of the two (a `CHECK`
+enforces it), set by `origenDeLaOrden()` from the lines at creation. Adding
+extra catalog products doesn't change it — the order is still *that visit's*.
+Both are `onDelete: Restrict`: a visit with an order can't be deleted out from
+under it. Before these existed, "which visit is this order for?" meant walking
+the lines back through `visitaProductoId`, which broke the moment someone added
+a loose product.
+
+**And what gets billed together gets billed whole.** `ensureTrabajoCompleto`
+rejects an order that takes part of a visit or part of a subscription period:
+touch one and you take everything that visit/period still owes. The unique
+indexes only stop *double* billing, not *partial* billing — two products of the
+same visit could land in two different orders and nothing complained. Adding
+loose catalog products on top is still fine: the rule is about what's missing,
+not what's extra. That keeps a sales report to one query instead of a union per revenue
 type, and keeps the history in our own database. **Factura** mirrors the invoice
 that lives in Contífico — see [the invoicing doc](./.claude/docs/facturacion-contifico.md).
 

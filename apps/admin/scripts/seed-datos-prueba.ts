@@ -497,7 +497,7 @@ async function sembrar(
   await prisma.visitaProducto.createMany({
     data: creadas.flatMap((v) => {
       const clave = `${v.clienteId}|${v.fechaProgramada.toISOString().slice(0, 10)}`;
-      return (productosDe.get(clave) ?? []).map((productoId, orden) => {
+      return (productosDe.get(clave) ?? []).map((productoId, posicion) => {
         const item = cubre.get(`${v.clienteId}|${productoId}`) ?? null;
         return {
           visitaId: v.id,
@@ -506,7 +506,7 @@ async function sembrar(
           // es lo que hace quien agenda un trabajo extra acordado por fuera.
           // Sin esto no habría en la base ninguna visita con ese estado.
           suscripcionItemId: item && chance(0.83) ? item : null,
-          orden,
+          posicion,
         };
       });
     }),
@@ -541,80 +541,95 @@ async function sembrar(
 
   // ── 7. Órdenes ────────────────────────────────────────────────────────
   console.log("órdenes...");
-  const { generarOrden, actualizarOrden, getOrden } = await import(
-    "@/lib/services/orden.service"
-  );
+  const {
+    generarOrden,
+    generarBorradoresDeVisitas,
+    actualizarOrden,
+    getOrden,
+  } = await import("@/lib/services/orden.service");
   const { cobrarOrden, facturarOrden } = await import(
     "@/lib/services/factura.service"
   );
+
+  // Las visitas se escriben con Prisma directo, así que `completeVisita` nunca
+  // corrió y sus borradores no existen. Esto los arma igual que el cron: es el
+  // mismo camino que sigue el portal en producción.
+  const deVisitas = await generarBorradoresDeVisitas();
+  for (const c of deVisitas.creadas) m.ordenes.push(c.ordenId);
+  console.log(`  ${deVisitas.creadas.length} borrador(es) de visitas completadas`);
+
   for (const c of algunos(conFacturacion, 16)) {
     try {
-      const orden = await generarOrden(viewer, {
+      // Una orden por suscripción y otra con las visitas sueltas: mezclarlas
+      // está prohibido, así que esto devuelve varias.
+      const creadas = await generarOrden(viewer, {
         clienteId: c.id,
         desde: masMeses(hoy, -6),
         hasta: hoy,
       });
-      m.ordenes.push(orden.id);
 
-      // Lo que viene de una visita suelta entra en $0: la visita no lleva
-      // precio, se cotiza al armar la orden. Acá se cotiza, porque un borrador
-      // lleno de ceros no sirve para ver nada.
-      const completa = await getOrden(viewer, orden.id);
-      if (completa.lineas.some((l) => Number(l.precioUnitario) === 0)) {
-        await actualizarOrden(viewer, orden.id, {
-          lineas: completa.lineas.map((l) => ({
-            descripcion: l.descripcion,
-            cantidad: Number(l.cantidad),
-            precioUnitario:
-              Number(l.precioUnitario) || entre(45, 260),
-            ivaTasa: Number(l.ivaTasa),
-            productoId: l.productoId,
-            visitaProductoId: l.visitaProductoId,
-            suscripcionItemId: l.suscripcionItemId,
-            periodoInicio: l.periodoInicio,
-            periodoFin: l.periodoFin,
-          })),
-        });
-      }
+      for (const orden of creadas) {
+        m.ordenes.push(orden.id);
 
-      // Un reparto que muestre los tres estados de cobro. Sin él la pantalla
-      // "Por cobrar" queda vacía y no se ve nada de lo que hace el portal.
-      //
-      // Emitir crea documentos **de verdad** en Contífico, y no hay DELETE: por
-      // eso `--sin-contifico` deja todo en borrador, que es como las deja el
-      // cron. La cuenta de pruebas aguanta; una de producción no.
-      if (sinContifico) continue;
-
-      const suerte = rnd();
-      if (suerte < 0.2) continue; // se queda en borrador
-
-      // El total **después** de repreciar: `completa` es de antes del update y
-      // usarlo dejaba el cobro por encima del saldo, que Contífico rechaza.
-      const total = Number((await getOrden(viewer, orden.id)).total);
-
-      if (suerte < 0.4) {
-        // Facturada y sin cobrar: la venta a crédito.
-        const { factura, errorFactura } = await facturarOrden(viewer, orden.id);
-        if (factura) {
-          m.facturas.push(factura.facturaId);
-          console.log(`    ${factura.numero} · sin cobrar`);
-        } else {
-          console.log(`    ⚠ ${c.nombre}: ${errorFactura}`);
+        // Lo que viene de una visita suelta entra en $0: la visita no lleva
+        // precio, se cotiza al armar la orden. Acá se cotiza, porque un
+        // borrador lleno de ceros no sirve para ver nada.
+        const completa = await getOrden(viewer, orden.id);
+        if (completa.lineas.some((l) => Number(l.precioUnitario) === 0)) {
+          await actualizarOrden(viewer, orden.id, {
+            lineas: completa.lineas.map((l) => ({
+              descripcion: l.descripcion,
+              cantidad: Number(l.cantidad),
+              precioUnitario: Number(l.precioUnitario) || entre(45, 260),
+              ivaTasa: Number(l.ivaTasa),
+              productoId: l.productoId,
+              visitaProductoId: l.visitaProductoId,
+              suscripcionItemId: l.suscripcionItemId,
+              periodoInicio: l.periodoInicio,
+              periodoFin: l.periodoFin,
+            })),
+          });
         }
-        continue;
-      }
 
-      const parcial = suerte < 0.7;
-      const monto = parcial ? Math.round(total * 0.4 * 100) / 100 : total;
-      const { facturaId, numero } = await cobrarOrden(viewer, orden.id, {
-        formaCobro: "EF",
-        monto,
-        fecha: hoy.toISOString().slice(0, 10),
-      });
-      m.facturas.push(facturaId);
-      console.log(
-        `    ${numero} · ${parcial ? "cobrado parcialmente" : "cobrado"}`
-      );
+        // Un reparto que muestre los tres estados de cobro. Sin él la pantalla
+        // "Por cobrar" queda vacía y no se ve nada de lo que hace el portal.
+        //
+        // Emitir crea documentos **de verdad** en Contífico, y no hay DELETE:
+        // por eso `--sin-contifico` deja todo en borrador, que es como las deja
+        // el cron. La cuenta de pruebas aguanta; una de producción no.
+        if (sinContifico) continue;
+
+        const suerte = rnd();
+        if (suerte < 0.2) continue; // se queda en borrador
+
+        // El total **después** de repreciar: `completa` es de antes del update
+        // y usarlo dejaba el cobro por encima del saldo, que Contífico rechaza.
+        const total = Number((await getOrden(viewer, orden.id)).total);
+
+        if (suerte < 0.4) {
+          // Facturada y sin cobrar: la venta a crédito.
+          const { factura, errorFactura } = await facturarOrden(viewer, orden.id);
+          if (factura) {
+            m.facturas.push(factura.facturaId);
+            console.log(`    ${factura.numero} · sin cobrar`);
+          } else {
+            console.log(`    ⚠ ${c.nombre}: ${errorFactura}`);
+          }
+          continue;
+        }
+
+        const parcial = suerte < 0.7;
+        const monto = parcial ? Math.round(total * 0.4 * 100) / 100 : total;
+        const { facturaId, numero } = await cobrarOrden(viewer, orden.id, {
+          formaCobro: "EF",
+          monto,
+          fecha: hoy.toISOString().slice(0, 10),
+        });
+        m.facturas.push(facturaId);
+        console.log(
+          `    ${numero} · ${parcial ? "cobrado parcialmente" : "cobrado"}`
+        );
+      }
     } catch (e) {
       // "No hay nada pendiente" es lo normal para muchos clientes, pero un
       // fallo al facturar no: en silencio quedaba una factura emitida sin su
@@ -623,6 +638,46 @@ async function sembrar(
       if (!msg.includes("pendiente")) console.log(`    ⚠ ${c.nombre}: ${msg}`);
     }
   }
+  // Los borradores que salieron de visitas quedan en $0. Se le pone precio a
+  // buena parte y se factura, para que el portal muestre las cuatro etapas
+  // —borrador, sin cobrar, cobrado en parte, cobrado— y no una fila de ceros.
+  if (!sinContifico) {
+    for (const { ordenId } of deVisitas.creadas) {
+      if (chance(0.45)) continue; // se queda en borrador, en $0
+      try {
+        const o = await getOrden(viewer, ordenId);
+        await actualizarOrden(viewer, ordenId, {
+          lineas: o.lineas.map((l) => ({
+            descripcion: l.descripcion,
+            cantidad: Number(l.cantidad),
+            precioUnitario: Number(l.precioUnitario) || entre(45, 260),
+            ivaTasa: Number(l.ivaTasa),
+            productoId: l.productoId,
+            visitaProductoId: l.visitaProductoId,
+            suscripcionItemId: l.suscripcionItemId,
+            periodoInicio: l.periodoInicio,
+            periodoFin: l.periodoFin,
+          })),
+        });
+        const total = Number((await getOrden(viewer, ordenId)).total);
+        const suerte = rnd();
+        if (suerte < 0.3) {
+          const { factura } = await facturarOrden(viewer, ordenId);
+          if (factura) m.facturas.push(factura.facturaId);
+        } else {
+          const { facturaId } = await cobrarOrden(viewer, ordenId, {
+            formaCobro: "EF",
+            monto: suerte < 0.65 ? Math.round(total * 0.4 * 100) / 100 : total,
+            fecha: hoy.toISOString().slice(0, 10),
+          });
+          m.facturas.push(facturaId);
+        }
+      } catch (e) {
+        console.log(`    ⚠ ${(e as Error).message.slice(0, 70)}`);
+      }
+    }
+  }
+
   console.log(`  ${m.ordenes.length} creadas`);
 }
 

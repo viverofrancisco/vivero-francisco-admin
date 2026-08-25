@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { EditarVisitaPage } from "@/components/visitas/editar-visita-page";
-import { productosSuscritos } from "@/lib/services/suscripcion.service";
 
 export default async function EditarVisitaRoute({
   params,
@@ -27,6 +26,7 @@ export default async function EditarVisitaRoute({
         estado: true,
         notas: true,
         grupoId: true,
+        suscripcionId: true,
         cliente: {
           select: {
             id: true,
@@ -37,7 +37,7 @@ export default async function EditarVisitaRoute({
           },
         },
         productos: {
-          orderBy: { orden: "asc" },
+          orderBy: { posicion: "asc" },
           select: { productoId: true, suscripcionItemId: true },
         },
         personal: { where: { removedAt: null }, select: { personalId: true } },
@@ -62,10 +62,27 @@ export default async function EditarVisitaRoute({
 
   if (!visita) notFound();
 
-  // Qué del catálogo podría descontarse de un plan de ESTE cliente. Es lo que
-  // decide si la fila muestra el interruptor de cobertura; el enlace concreto
-  // lo resuelve el servidor al guardar.
-  const cubribles = await productosSuscritos(visita.cliente.id);
+  // Sus planes activos, más el que la visita ya tenga aunque esté pausado:
+  // si no, editar una visita vieja la desvincularía sin querer.
+  const planes = await prisma.suscripcion.findMany({
+    where: {
+      clienteId: visita.cliente.id,
+      OR: [{ estado: "ACTIVO" }, { id: visita.suscripcionId ?? "" }],
+    },
+    select: {
+      id: true,
+      numero: true,
+      estado: true,
+      periodicidad: true,
+      items: {
+        select: {
+          visitasPorPeriodo: true,
+          producto: { select: { id: true, nombre: true } },
+        },
+      },
+    },
+    orderBy: { numero: "asc" },
+  });
 
   return (
     <EditarVisitaPage
@@ -81,13 +98,23 @@ export default async function EditarVisitaRoute({
         cliente: visita.cliente,
         productos: visita.productos.map((p) => ({
           productoId: p.productoId,
-          cubierto: p.suscripcionItemId !== null,
         })),
-        cubribles,
+        suscripcionId: visita.suscripcionId,
         grupoId: visita.grupoId,
         personalIds: visita.personal.map((p) => p.personalId),
       }}
       catalogo={catalogo}
+      planes={planes.map((s) => ({
+        id: s.id,
+        numero: s.numero,
+        estado: s.estado,
+        periodicidad: s.periodicidad as string,
+        productos: s.items.map((i) => ({
+          productoId: i.producto.id,
+          nombre: i.producto.nombre,
+          visitasPorPeriodo: i.visitasPorPeriodo,
+        })),
+      }))}
       grupos={grupos.map((g) => ({
         id: g.id,
         nombre: g.nombre,

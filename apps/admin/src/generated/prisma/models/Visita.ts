@@ -20,13 +20,25 @@ export type VisitaModel = runtime.Types.Result.DefaultSelection<Prisma.$VisitaPa
 
 export type AggregateVisita = {
   _count: VisitaCountAggregateOutputType | null
+  _avg: VisitaAvgAggregateOutputType | null
+  _sum: VisitaSumAggregateOutputType | null
   _min: VisitaMinAggregateOutputType | null
   _max: VisitaMaxAggregateOutputType | null
 }
 
+export type VisitaAvgAggregateOutputType = {
+  numero: number | null
+}
+
+export type VisitaSumAggregateOutputType = {
+  numero: number | null
+}
+
 export type VisitaMinAggregateOutputType = {
   id: string | null
+  numero: number | null
   clienteId: string | null
+  suscripcionId: string | null
   fechaProgramada: Date | null
   fechaRealizada: Date | null
   horaEntrada: string | null
@@ -44,7 +56,9 @@ export type VisitaMinAggregateOutputType = {
 
 export type VisitaMaxAggregateOutputType = {
   id: string | null
+  numero: number | null
   clienteId: string | null
+  suscripcionId: string | null
   fechaProgramada: Date | null
   fechaRealizada: Date | null
   horaEntrada: string | null
@@ -62,7 +76,9 @@ export type VisitaMaxAggregateOutputType = {
 
 export type VisitaCountAggregateOutputType = {
   id: number
+  numero: number
   clienteId: number
+  suscripcionId: number
   fechaProgramada: number
   fechaRealizada: number
   horaEntrada: number
@@ -80,9 +96,19 @@ export type VisitaCountAggregateOutputType = {
 }
 
 
+export type VisitaAvgAggregateInputType = {
+  numero?: true
+}
+
+export type VisitaSumAggregateInputType = {
+  numero?: true
+}
+
 export type VisitaMinAggregateInputType = {
   id?: true
+  numero?: true
   clienteId?: true
+  suscripcionId?: true
   fechaProgramada?: true
   fechaRealizada?: true
   horaEntrada?: true
@@ -100,7 +126,9 @@ export type VisitaMinAggregateInputType = {
 
 export type VisitaMaxAggregateInputType = {
   id?: true
+  numero?: true
   clienteId?: true
+  suscripcionId?: true
   fechaProgramada?: true
   fechaRealizada?: true
   horaEntrada?: true
@@ -118,7 +146,9 @@ export type VisitaMaxAggregateInputType = {
 
 export type VisitaCountAggregateInputType = {
   id?: true
+  numero?: true
   clienteId?: true
+  suscripcionId?: true
   fechaProgramada?: true
   fechaRealizada?: true
   horaEntrada?: true
@@ -173,6 +203,18 @@ export type VisitaAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: VisitaAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: VisitaSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: VisitaMinAggregateInputType
@@ -203,13 +245,17 @@ export type VisitaGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: VisitaCountAggregateInputType | true
+  _avg?: VisitaAvgAggregateInputType
+  _sum?: VisitaSumAggregateInputType
   _min?: VisitaMinAggregateInputType
   _max?: VisitaMaxAggregateInputType
 }
 
 export type VisitaGroupByOutputType = {
   id: string
+  numero: number
   clienteId: string
+  suscripcionId: string | null
   fechaProgramada: Date
   fechaRealizada: Date | null
   horaEntrada: string | null
@@ -224,6 +270,8 @@ export type VisitaGroupByOutputType = {
   createdById: string | null
   updatedById: string | null
   _count: VisitaCountAggregateOutputType | null
+  _avg: VisitaAvgAggregateOutputType | null
+  _sum: VisitaSumAggregateOutputType | null
   _min: VisitaMinAggregateOutputType | null
   _max: VisitaMaxAggregateOutputType | null
 }
@@ -248,7 +296,9 @@ export type VisitaWhereInput = {
   OR?: Prisma.VisitaWhereInput[]
   NOT?: Prisma.VisitaWhereInput | Prisma.VisitaWhereInput[]
   id?: Prisma.StringFilter<"Visita"> | string
+  numero?: Prisma.IntFilter<"Visita"> | number
   clienteId?: Prisma.StringFilter<"Visita"> | string
+  suscripcionId?: Prisma.StringNullableFilter<"Visita"> | string | null
   fechaProgramada?: Prisma.DateTimeFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableFilter<"Visita"> | string | null
@@ -273,11 +323,15 @@ export type VisitaWhereInput = {
   messages?: Prisma.VisitaMessageListRelationFilter
   chatReads?: Prisma.VisitaChatReadListRelationFilter
   informes?: Prisma.InformeVisitaListRelationFilter
+  ordenes?: Prisma.OrdenListRelationFilter
+  suscripcion?: Prisma.XOR<Prisma.SuscripcionNullableScalarRelationFilter, Prisma.SuscripcionWhereInput> | null
 }
 
 export type VisitaOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  suscripcionId?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrderInput | Prisma.SortOrder
   horaEntrada?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -302,14 +356,18 @@ export type VisitaOrderByWithRelationInput = {
   messages?: Prisma.VisitaMessageOrderByRelationAggregateInput
   chatReads?: Prisma.VisitaChatReadOrderByRelationAggregateInput
   informes?: Prisma.InformeVisitaOrderByRelationAggregateInput
+  ordenes?: Prisma.OrdenOrderByRelationAggregateInput
+  suscripcion?: Prisma.SuscripcionOrderByWithRelationInput
 }
 
 export type VisitaWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  numero?: number
   AND?: Prisma.VisitaWhereInput | Prisma.VisitaWhereInput[]
   OR?: Prisma.VisitaWhereInput[]
   NOT?: Prisma.VisitaWhereInput | Prisma.VisitaWhereInput[]
   clienteId?: Prisma.StringFilter<"Visita"> | string
+  suscripcionId?: Prisma.StringNullableFilter<"Visita"> | string | null
   fechaProgramada?: Prisma.DateTimeFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableFilter<"Visita"> | string | null
@@ -334,11 +392,15 @@ export type VisitaWhereUniqueInput = Prisma.AtLeast<{
   messages?: Prisma.VisitaMessageListRelationFilter
   chatReads?: Prisma.VisitaChatReadListRelationFilter
   informes?: Prisma.InformeVisitaListRelationFilter
-}, "id">
+  ordenes?: Prisma.OrdenListRelationFilter
+  suscripcion?: Prisma.XOR<Prisma.SuscripcionNullableScalarRelationFilter, Prisma.SuscripcionWhereInput> | null
+}, "id" | "numero">
 
 export type VisitaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  suscripcionId?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrderInput | Prisma.SortOrder
   horaEntrada?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -353,8 +415,10 @@ export type VisitaOrderByWithAggregationInput = {
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.VisitaCountOrderByAggregateInput
+  _avg?: Prisma.VisitaAvgOrderByAggregateInput
   _max?: Prisma.VisitaMaxOrderByAggregateInput
   _min?: Prisma.VisitaMinOrderByAggregateInput
+  _sum?: Prisma.VisitaSumOrderByAggregateInput
 }
 
 export type VisitaScalarWhereWithAggregatesInput = {
@@ -362,7 +426,9 @@ export type VisitaScalarWhereWithAggregatesInput = {
   OR?: Prisma.VisitaScalarWhereWithAggregatesInput[]
   NOT?: Prisma.VisitaScalarWhereWithAggregatesInput | Prisma.VisitaScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Visita"> | string
+  numero?: Prisma.IntWithAggregatesFilter<"Visita"> | number
   clienteId?: Prisma.StringWithAggregatesFilter<"Visita"> | string
+  suscripcionId?: Prisma.StringNullableWithAggregatesFilter<"Visita"> | string | null
   fechaProgramada?: Prisma.DateTimeWithAggregatesFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableWithAggregatesFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableWithAggregatesFilter<"Visita"> | string | null
@@ -380,6 +446,7 @@ export type VisitaScalarWhereWithAggregatesInput = {
 
 export type VisitaCreateInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -401,11 +468,15 @@ export type VisitaCreateInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -426,6 +497,7 @@ export type VisitaUncheckedCreateInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaUpdateInput = {
@@ -451,11 +523,15 @@ export type VisitaUpdateInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -476,11 +552,14 @@ export type VisitaUncheckedUpdateInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateManyInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -512,7 +591,9 @@ export type VisitaUpdateManyMutationInput = {
 
 export type VisitaUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -540,7 +621,9 @@ export type VisitaOrderByRelationAggregateInput = {
 
 export type VisitaCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  suscripcionId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrder
   horaEntrada?: Prisma.SortOrder
@@ -556,9 +639,15 @@ export type VisitaCountOrderByAggregateInput = {
   updatedById?: Prisma.SortOrder
 }
 
+export type VisitaAvgOrderByAggregateInput = {
+  numero?: Prisma.SortOrder
+}
+
 export type VisitaMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  suscripcionId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrder
   horaEntrada?: Prisma.SortOrder
@@ -576,7 +665,9 @@ export type VisitaMaxOrderByAggregateInput = {
 
 export type VisitaMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  suscripcionId?: Prisma.SortOrder
   fechaProgramada?: Prisma.SortOrder
   fechaRealizada?: Prisma.SortOrder
   horaEntrada?: Prisma.SortOrder
@@ -590,6 +681,10 @@ export type VisitaMinOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
+}
+
+export type VisitaSumOrderByAggregateInput = {
+  numero?: Prisma.SortOrder
 }
 
 export type VisitaScalarRelationFilter = {
@@ -725,6 +820,48 @@ export type VisitaUncheckedUpdateManyWithoutClienteNestedInput = {
   connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
   update?: Prisma.VisitaUpdateWithWhereUniqueWithoutClienteInput | Prisma.VisitaUpdateWithWhereUniqueWithoutClienteInput[]
   updateMany?: Prisma.VisitaUpdateManyWithWhereWithoutClienteInput | Prisma.VisitaUpdateManyWithWhereWithoutClienteInput[]
+  deleteMany?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
+}
+
+export type VisitaCreateNestedManyWithoutSuscripcionInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutSuscripcionInput, Prisma.VisitaUncheckedCreateWithoutSuscripcionInput> | Prisma.VisitaCreateWithoutSuscripcionInput[] | Prisma.VisitaUncheckedCreateWithoutSuscripcionInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutSuscripcionInput | Prisma.VisitaCreateOrConnectWithoutSuscripcionInput[]
+  createMany?: Prisma.VisitaCreateManySuscripcionInputEnvelope
+  connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+}
+
+export type VisitaUncheckedCreateNestedManyWithoutSuscripcionInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutSuscripcionInput, Prisma.VisitaUncheckedCreateWithoutSuscripcionInput> | Prisma.VisitaCreateWithoutSuscripcionInput[] | Prisma.VisitaUncheckedCreateWithoutSuscripcionInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutSuscripcionInput | Prisma.VisitaCreateOrConnectWithoutSuscripcionInput[]
+  createMany?: Prisma.VisitaCreateManySuscripcionInputEnvelope
+  connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+}
+
+export type VisitaUpdateManyWithoutSuscripcionNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutSuscripcionInput, Prisma.VisitaUncheckedCreateWithoutSuscripcionInput> | Prisma.VisitaCreateWithoutSuscripcionInput[] | Prisma.VisitaUncheckedCreateWithoutSuscripcionInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutSuscripcionInput | Prisma.VisitaCreateOrConnectWithoutSuscripcionInput[]
+  upsert?: Prisma.VisitaUpsertWithWhereUniqueWithoutSuscripcionInput | Prisma.VisitaUpsertWithWhereUniqueWithoutSuscripcionInput[]
+  createMany?: Prisma.VisitaCreateManySuscripcionInputEnvelope
+  set?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  disconnect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  delete?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  update?: Prisma.VisitaUpdateWithWhereUniqueWithoutSuscripcionInput | Prisma.VisitaUpdateWithWhereUniqueWithoutSuscripcionInput[]
+  updateMany?: Prisma.VisitaUpdateManyWithWhereWithoutSuscripcionInput | Prisma.VisitaUpdateManyWithWhereWithoutSuscripcionInput[]
+  deleteMany?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
+}
+
+export type VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutSuscripcionInput, Prisma.VisitaUncheckedCreateWithoutSuscripcionInput> | Prisma.VisitaCreateWithoutSuscripcionInput[] | Prisma.VisitaUncheckedCreateWithoutSuscripcionInput[]
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutSuscripcionInput | Prisma.VisitaCreateOrConnectWithoutSuscripcionInput[]
+  upsert?: Prisma.VisitaUpsertWithWhereUniqueWithoutSuscripcionInput | Prisma.VisitaUpsertWithWhereUniqueWithoutSuscripcionInput[]
+  createMany?: Prisma.VisitaCreateManySuscripcionInputEnvelope
+  set?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  disconnect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  delete?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  connect?: Prisma.VisitaWhereUniqueInput | Prisma.VisitaWhereUniqueInput[]
+  update?: Prisma.VisitaUpdateWithWhereUniqueWithoutSuscripcionInput | Prisma.VisitaUpdateWithWhereUniqueWithoutSuscripcionInput[]
+  updateMany?: Prisma.VisitaUpdateManyWithWhereWithoutSuscripcionInput | Prisma.VisitaUpdateManyWithWhereWithoutSuscripcionInput[]
   deleteMany?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
 }
 
@@ -874,8 +1011,25 @@ export type VisitaUpdateOneRequiredWithoutInformesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaUpdateToOneWithWhereWithoutInformesInput, Prisma.VisitaUpdateWithoutInformesInput>, Prisma.VisitaUncheckedUpdateWithoutInformesInput>
 }
 
+export type VisitaCreateNestedOneWithoutOrdenesInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutOrdenesInput, Prisma.VisitaUncheckedCreateWithoutOrdenesInput>
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutOrdenesInput
+  connect?: Prisma.VisitaWhereUniqueInput
+}
+
+export type VisitaUpdateOneWithoutOrdenesNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaCreateWithoutOrdenesInput, Prisma.VisitaUncheckedCreateWithoutOrdenesInput>
+  connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutOrdenesInput
+  upsert?: Prisma.VisitaUpsertWithoutOrdenesInput
+  disconnect?: Prisma.VisitaWhereInput | boolean
+  delete?: Prisma.VisitaWhereInput | boolean
+  connect?: Prisma.VisitaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaUpdateToOneWithWhereWithoutOrdenesInput, Prisma.VisitaUpdateWithoutOrdenesInput>, Prisma.VisitaUncheckedUpdateWithoutOrdenesInput>
+}
+
 export type VisitaCreateWithoutCreatedByInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -896,11 +1050,15 @@ export type VisitaCreateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutCreatedByInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -920,6 +1078,7 @@ export type VisitaUncheckedCreateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutCreatedByInput = {
@@ -934,6 +1093,7 @@ export type VisitaCreateManyCreatedByInputEnvelope = {
 
 export type VisitaCreateWithoutUpdatedByInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -954,11 +1114,15 @@ export type VisitaCreateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutUpdatedByInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -978,6 +1142,7 @@ export type VisitaUncheckedCreateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutUpdatedByInput = {
@@ -1011,7 +1176,9 @@ export type VisitaScalarWhereInput = {
   OR?: Prisma.VisitaScalarWhereInput[]
   NOT?: Prisma.VisitaScalarWhereInput | Prisma.VisitaScalarWhereInput[]
   id?: Prisma.StringFilter<"Visita"> | string
+  numero?: Prisma.IntFilter<"Visita"> | number
   clienteId?: Prisma.StringFilter<"Visita"> | string
+  suscripcionId?: Prisma.StringNullableFilter<"Visita"> | string | null
   fechaProgramada?: Prisma.DateTimeFilter<"Visita"> | Date | string
   fechaRealizada?: Prisma.DateTimeNullableFilter<"Visita"> | Date | string | null
   horaEntrada?: Prisma.StringNullableFilter<"Visita"> | string | null
@@ -1045,6 +1212,7 @@ export type VisitaUpdateManyWithWhereWithoutUpdatedByInput = {
 
 export type VisitaCreateWithoutClienteInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1065,10 +1233,14 @@ export type VisitaCreateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutClienteInput = {
   id?: string
+  numero?: number
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1089,6 +1261,7 @@ export type VisitaUncheckedCreateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutClienteInput = {
@@ -1117,8 +1290,89 @@ export type VisitaUpdateManyWithWhereWithoutClienteInput = {
   data: Prisma.XOR<Prisma.VisitaUpdateManyMutationInput, Prisma.VisitaUncheckedUpdateManyWithoutClienteInput>
 }
 
+export type VisitaCreateWithoutSuscripcionInput = {
+  id?: string
+  numero?: number
+  fechaProgramada: Date | string
+  fechaRealizada?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  estado?: $Enums.EstadoVisita
+  notas?: string | null
+  notasIncompleto?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
+  grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
+  media?: Prisma.VisitaMediaCreateNestedManyWithoutVisitaInput
+  personal?: Prisma.VisitaPersonalCreateNestedManyWithoutVisitaInput
+  notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
+  messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
+  chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
+  informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+}
+
+export type VisitaUncheckedCreateWithoutSuscripcionInput = {
+  id?: string
+  numero?: number
+  clienteId: string
+  fechaProgramada: Date | string
+  fechaRealizada?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  estado?: $Enums.EstadoVisita
+  grupoId?: string | null
+  notas?: string | null
+  notasIncompleto?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
+  media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
+  personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
+  notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
+  messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
+  chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
+  informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+}
+
+export type VisitaCreateOrConnectWithoutSuscripcionInput = {
+  where: Prisma.VisitaWhereUniqueInput
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutSuscripcionInput, Prisma.VisitaUncheckedCreateWithoutSuscripcionInput>
+}
+
+export type VisitaCreateManySuscripcionInputEnvelope = {
+  data: Prisma.VisitaCreateManySuscripcionInput | Prisma.VisitaCreateManySuscripcionInput[]
+  skipDuplicates?: boolean
+}
+
+export type VisitaUpsertWithWhereUniqueWithoutSuscripcionInput = {
+  where: Prisma.VisitaWhereUniqueInput
+  update: Prisma.XOR<Prisma.VisitaUpdateWithoutSuscripcionInput, Prisma.VisitaUncheckedUpdateWithoutSuscripcionInput>
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutSuscripcionInput, Prisma.VisitaUncheckedCreateWithoutSuscripcionInput>
+}
+
+export type VisitaUpdateWithWhereUniqueWithoutSuscripcionInput = {
+  where: Prisma.VisitaWhereUniqueInput
+  data: Prisma.XOR<Prisma.VisitaUpdateWithoutSuscripcionInput, Prisma.VisitaUncheckedUpdateWithoutSuscripcionInput>
+}
+
+export type VisitaUpdateManyWithWhereWithoutSuscripcionInput = {
+  where: Prisma.VisitaScalarWhereInput
+  data: Prisma.XOR<Prisma.VisitaUpdateManyMutationInput, Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionInput>
+}
+
 export type VisitaCreateWithoutGrupoInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1139,11 +1393,15 @@ export type VisitaCreateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutGrupoInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1163,6 +1421,7 @@ export type VisitaUncheckedCreateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutGrupoInput = {
@@ -1193,6 +1452,7 @@ export type VisitaUpdateManyWithWhereWithoutGrupoInput = {
 
 export type VisitaCreateWithoutProductosInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1213,11 +1473,15 @@ export type VisitaCreateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutProductosInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1237,6 +1501,7 @@ export type VisitaUncheckedCreateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutProductosInput = {
@@ -1277,11 +1542,15 @@ export type VisitaUpdateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutProductosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1301,10 +1570,12 @@ export type VisitaUncheckedUpdateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutPersonalInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1325,11 +1596,15 @@ export type VisitaCreateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutPersonalInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1349,6 +1624,7 @@ export type VisitaUncheckedCreateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutPersonalInput = {
@@ -1389,11 +1665,15 @@ export type VisitaUpdateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutPersonalInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1413,10 +1693,12 @@ export type VisitaUncheckedUpdateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutMediaInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1437,11 +1719,15 @@ export type VisitaCreateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutMediaInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1461,6 +1747,7 @@ export type VisitaUncheckedCreateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutMediaInput = {
@@ -1501,11 +1788,15 @@ export type VisitaUpdateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutMediaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1525,10 +1816,12 @@ export type VisitaUncheckedUpdateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutMessagesInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1549,11 +1842,15 @@ export type VisitaCreateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutMessagesInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1573,6 +1870,7 @@ export type VisitaUncheckedCreateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutMessagesInput = {
@@ -1613,11 +1911,15 @@ export type VisitaUpdateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1637,10 +1939,12 @@ export type VisitaUncheckedUpdateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutChatReadsInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1661,11 +1965,15 @@ export type VisitaCreateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutChatReadsInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1685,6 +1993,7 @@ export type VisitaUncheckedCreateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutChatReadsInput = {
@@ -1725,11 +2034,15 @@ export type VisitaUpdateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutChatReadsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1749,10 +2062,12 @@ export type VisitaUncheckedUpdateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutNotificacionesInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1773,11 +2088,15 @@ export type VisitaCreateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutNotificacionesInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1797,6 +2116,7 @@ export type VisitaUncheckedCreateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutNotificacionesInput = {
@@ -1837,11 +2157,15 @@ export type VisitaUpdateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutNotificacionesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1861,10 +2185,12 @@ export type VisitaUncheckedUpdateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutInformesInput = {
   id?: string
+  numero?: number
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1885,11 +2211,15 @@ export type VisitaCreateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
 export type VisitaUncheckedCreateWithoutInformesInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1909,6 +2239,7 @@ export type VisitaUncheckedCreateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutInformesInput = {
@@ -1949,11 +2280,15 @@ export type VisitaUpdateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutInformesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1973,11 +2308,137 @@ export type VisitaUncheckedUpdateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+}
+
+export type VisitaCreateWithoutOrdenesInput = {
+  id?: string
+  numero?: number
+  fechaProgramada: Date | string
+  fechaRealizada?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  estado?: $Enums.EstadoVisita
+  notas?: string | null
+  notasIncompleto?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  cliente: Prisma.ClienteCreateNestedOneWithoutVisitasInput
+  productos?: Prisma.VisitaProductoCreateNestedManyWithoutVisitaInput
+  grupo?: Prisma.GrupoCreateNestedOneWithoutVisitasInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutVisitasCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutVisitasUpdatedInput
+  media?: Prisma.VisitaMediaCreateNestedManyWithoutVisitaInput
+  personal?: Prisma.VisitaPersonalCreateNestedManyWithoutVisitaInput
+  notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
+  messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
+  chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
+  informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
+  suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
+}
+
+export type VisitaUncheckedCreateWithoutOrdenesInput = {
+  id?: string
+  numero?: number
+  clienteId: string
+  suscripcionId?: string | null
+  fechaProgramada: Date | string
+  fechaRealizada?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  estado?: $Enums.EstadoVisita
+  grupoId?: string | null
+  notas?: string | null
+  notasIncompleto?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  productos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutVisitaInput
+  media?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutVisitaInput
+  personal?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutVisitaInput
+  notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
+  messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
+  chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
+  informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
+}
+
+export type VisitaCreateOrConnectWithoutOrdenesInput = {
+  where: Prisma.VisitaWhereUniqueInput
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutOrdenesInput, Prisma.VisitaUncheckedCreateWithoutOrdenesInput>
+}
+
+export type VisitaUpsertWithoutOrdenesInput = {
+  update: Prisma.XOR<Prisma.VisitaUpdateWithoutOrdenesInput, Prisma.VisitaUncheckedUpdateWithoutOrdenesInput>
+  create: Prisma.XOR<Prisma.VisitaCreateWithoutOrdenesInput, Prisma.VisitaUncheckedCreateWithoutOrdenesInput>
+  where?: Prisma.VisitaWhereInput
+}
+
+export type VisitaUpdateToOneWithWhereWithoutOrdenesInput = {
+  where?: Prisma.VisitaWhereInput
+  data: Prisma.XOR<Prisma.VisitaUpdateWithoutOrdenesInput, Prisma.VisitaUncheckedUpdateWithoutOrdenesInput>
+}
+
+export type VisitaUpdateWithoutOrdenesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoVisitaFieldUpdateOperationsInput | $Enums.EstadoVisita
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notasIncompleto?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
+  grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
+  media?: Prisma.VisitaMediaUpdateManyWithoutVisitaNestedInput
+  personal?: Prisma.VisitaPersonalUpdateManyWithoutVisitaNestedInput
+  notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
+  messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
+  chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
+  informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
+}
+
+export type VisitaUncheckedUpdateWithoutOrdenesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoVisitaFieldUpdateOperationsInput | $Enums.EstadoVisita
+  grupoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notasIncompleto?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
+  media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
+  personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
+  notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
+  messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
+  chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
+  informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateManyCreatedByInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -1994,7 +2455,9 @@ export type VisitaCreateManyCreatedByInput = {
 
 export type VisitaCreateManyUpdatedByInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -2031,11 +2494,15 @@ export type VisitaUpdateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2055,11 +2522,14 @@ export type VisitaUncheckedUpdateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2096,11 +2566,15 @@ export type VisitaUpdateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2120,11 +2594,14 @@ export type VisitaUncheckedUpdateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2141,6 +2618,8 @@ export type VisitaUncheckedUpdateManyWithoutUpdatedByInput = {
 
 export type VisitaCreateManyClienteInput = {
   id?: string
+  numero?: number
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -2178,10 +2657,14 @@ export type VisitaUpdateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2202,10 +2685,104 @@ export type VisitaUncheckedUpdateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoVisitaFieldUpdateOperationsInput | $Enums.EstadoVisita
+  grupoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notasIncompleto?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type VisitaCreateManySuscripcionInput = {
+  id?: string
+  numero?: number
+  clienteId: string
+  fechaProgramada: Date | string
+  fechaRealizada?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  estado?: $Enums.EstadoVisita
+  grupoId?: string | null
+  notas?: string | null
+  notasIncompleto?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+}
+
+export type VisitaUpdateWithoutSuscripcionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoVisitaFieldUpdateOperationsInput | $Enums.EstadoVisita
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notasIncompleto?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutVisitasNestedInput
+  productos?: Prisma.VisitaProductoUpdateManyWithoutVisitaNestedInput
+  grupo?: Prisma.GrupoUpdateOneWithoutVisitasNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutVisitasCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutVisitasUpdatedNestedInput
+  media?: Prisma.VisitaMediaUpdateManyWithoutVisitaNestedInput
+  personal?: Prisma.VisitaPersonalUpdateManyWithoutVisitaNestedInput
+  notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
+  messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
+  chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
+  informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+}
+
+export type VisitaUncheckedUpdateWithoutSuscripcionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoVisitaFieldUpdateOperationsInput | $Enums.EstadoVisita
+  grupoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notasIncompleto?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput
+  media?: Prisma.VisitaMediaUncheckedUpdateManyWithoutVisitaNestedInput
+  personal?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput
+  notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
+  messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
+  chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
+  informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+}
+
+export type VisitaUncheckedUpdateManyWithoutSuscripcionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2223,7 +2800,9 @@ export type VisitaUncheckedUpdateManyWithoutClienteInput = {
 
 export type VisitaCreateManyGrupoInput = {
   id?: string
+  numero?: number
   clienteId: string
+  suscripcionId?: string | null
   fechaProgramada: Date | string
   fechaRealizada?: Date | string | null
   horaEntrada?: string | null
@@ -2260,11 +2839,15 @@ export type VisitaUpdateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutGrupoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2284,11 +2867,14 @@ export type VisitaUncheckedUpdateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutGrupoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaProgramada?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaRealizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2316,6 +2902,7 @@ export type VisitaCountOutputType = {
   messages: number
   chatReads: number
   informes: number
+  ordenes: number
 }
 
 export type VisitaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2326,6 +2913,7 @@ export type VisitaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   messages?: boolean | VisitaCountOutputTypeCountMessagesArgs
   chatReads?: boolean | VisitaCountOutputTypeCountChatReadsArgs
   informes?: boolean | VisitaCountOutputTypeCountInformesArgs
+  ordenes?: boolean | VisitaCountOutputTypeCountOrdenesArgs
 }
 
 /**
@@ -2387,10 +2975,19 @@ export type VisitaCountOutputTypeCountInformesArgs<ExtArgs extends runtime.Types
   where?: Prisma.InformeVisitaWhereInput
 }
 
+/**
+ * VisitaCountOutputType without action
+ */
+export type VisitaCountOutputTypeCountOrdenesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenWhereInput
+}
+
 
 export type VisitaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
+  suscripcionId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2415,12 +3012,16 @@ export type VisitaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   messages?: boolean | Prisma.Visita$messagesArgs<ExtArgs>
   chatReads?: boolean | Prisma.Visita$chatReadsArgs<ExtArgs>
   informes?: boolean | Prisma.Visita$informesArgs<ExtArgs>
+  ordenes?: boolean | Prisma.Visita$ordenesArgs<ExtArgs>
+  suscripcion?: boolean | Prisma.Visita$suscripcionArgs<ExtArgs>
   _count?: boolean | Prisma.VisitaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["visita"]>
 
 export type VisitaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
+  suscripcionId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2438,11 +3039,14 @@ export type VisitaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
+  suscripcion?: boolean | Prisma.Visita$suscripcionArgs<ExtArgs>
 }, ExtArgs["result"]["visita"]>
 
 export type VisitaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
+  suscripcionId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2460,11 +3064,14 @@ export type VisitaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
+  suscripcion?: boolean | Prisma.Visita$suscripcionArgs<ExtArgs>
 }, ExtArgs["result"]["visita"]>
 
 export type VisitaSelectScalar = {
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
+  suscripcionId?: boolean
   fechaProgramada?: boolean
   fechaRealizada?: boolean
   horaEntrada?: boolean
@@ -2480,7 +3087,7 @@ export type VisitaSelectScalar = {
   updatedById?: boolean
 }
 
-export type VisitaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "fechaProgramada" | "fechaRealizada" | "horaEntrada" | "horaSalida" | "estado" | "grupoId" | "notas" | "notasIncompleto" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById", ExtArgs["result"]["visita"]>
+export type VisitaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero" | "clienteId" | "suscripcionId" | "fechaProgramada" | "fechaRealizada" | "horaEntrada" | "horaSalida" | "estado" | "grupoId" | "notas" | "notasIncompleto" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById", ExtArgs["result"]["visita"]>
 export type VisitaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   productos?: boolean | Prisma.Visita$productosArgs<ExtArgs>
@@ -2493,6 +3100,8 @@ export type VisitaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   messages?: boolean | Prisma.Visita$messagesArgs<ExtArgs>
   chatReads?: boolean | Prisma.Visita$chatReadsArgs<ExtArgs>
   informes?: boolean | Prisma.Visita$informesArgs<ExtArgs>
+  ordenes?: boolean | Prisma.Visita$ordenesArgs<ExtArgs>
+  suscripcion?: boolean | Prisma.Visita$suscripcionArgs<ExtArgs>
   _count?: boolean | Prisma.VisitaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VisitaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2500,12 +3109,14 @@ export type VisitaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
+  suscripcion?: boolean | Prisma.Visita$suscripcionArgs<ExtArgs>
 }
 export type VisitaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   grupo?: boolean | Prisma.Visita$grupoArgs<ExtArgs>
   createdBy?: boolean | Prisma.Visita$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Visita$updatedByArgs<ExtArgs>
+  suscripcion?: boolean | Prisma.Visita$suscripcionArgs<ExtArgs>
 }
 
 export type $VisitaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2522,10 +3133,32 @@ export type $VisitaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     messages: Prisma.$VisitaMessagePayload<ExtArgs>[]
     chatReads: Prisma.$VisitaChatReadPayload<ExtArgs>[]
     informes: Prisma.$InformeVisitaPayload<ExtArgs>[]
+    ordenes: Prisma.$OrdenPayload<ExtArgs>[]
+    suscripcion: Prisma.$SuscripcionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    /**
+     * Número corto para nombrarla: "Visita #34".
+     * 
+     * Secuencia propia, como la de órdenes y suscripciones. En pantalla siempre
+     * va con su prefijo, así que que coexistan la orden #34 y la visita #34 no
+     * confunde a nadie.
+     */
+    numero: number
     clienteId: string
+    /**
+     * De qué plan es esta visita, si es de alguno.
+     * 
+     * La decisión es **de la visita**, no de cada producto: "esta visita es del
+     * plan mensual" o "esta visita es un trabajo aparte". Con el plan puesto,
+     * cada producto que **esté en ese plan** queda cubierto —eso ya no se
+     * decide, se deduce del plan— y lo que no esté se cobra como trabajo suelto.
+     * 
+     * En null, todo lo que se haga se cobra aparte. Es lo que permite hacerle a
+     * alguien una visita extra de algo que igual tiene contratado.
+     */
+    suscripcionId: string | null
     fechaProgramada: Date
     fechaRealizada: Date | null
     horaEntrada: string | null
@@ -2944,6 +3577,8 @@ export interface Prisma__VisitaClient<T, Null = never, ExtArgs extends runtime.T
   messages<T extends Prisma.Visita$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatReads<T extends Prisma.Visita$chatReadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$chatReadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaChatReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informes<T extends Prisma.Visita$informesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$informesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeVisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ordenes<T extends Prisma.Visita$ordenesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$ordenesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  suscripcion<T extends Prisma.Visita$suscripcionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$suscripcionArgs<ExtArgs>>): Prisma.Prisma__SuscripcionClient<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2974,7 +3609,9 @@ export interface Prisma__VisitaClient<T, Null = never, ExtArgs extends runtime.T
  */
 export interface VisitaFieldRefs {
   readonly id: Prisma.FieldRef<"Visita", 'String'>
+  readonly numero: Prisma.FieldRef<"Visita", 'Int'>
   readonly clienteId: Prisma.FieldRef<"Visita", 'String'>
+  readonly suscripcionId: Prisma.FieldRef<"Visita", 'String'>
   readonly fechaProgramada: Prisma.FieldRef<"Visita", 'DateTime'>
   readonly fechaRealizada: Prisma.FieldRef<"Visita", 'DateTime'>
   readonly horaEntrada: Prisma.FieldRef<"Visita", 'String'>
@@ -3611,6 +4248,49 @@ export type Visita$informesArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.InformeVisitaScalarFieldEnum | Prisma.InformeVisitaScalarFieldEnum[]
+}
+
+/**
+ * Visita.ordenes
+ */
+export type Visita$ordenesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Orden
+   */
+  select?: Prisma.OrdenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Orden
+   */
+  omit?: Prisma.OrdenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrdenInclude<ExtArgs> | null
+  where?: Prisma.OrdenWhereInput
+  orderBy?: Prisma.OrdenOrderByWithRelationInput | Prisma.OrdenOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrdenScalarFieldEnum | Prisma.OrdenScalarFieldEnum[]
+}
+
+/**
+ * Visita.suscripcion
+ */
+export type Visita$suscripcionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Suscripcion
+   */
+  select?: Prisma.SuscripcionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Suscripcion
+   */
+  omit?: Prisma.SuscripcionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SuscripcionInclude<ExtArgs> | null
+  where?: Prisma.SuscripcionWhereInput
 }
 
 /**

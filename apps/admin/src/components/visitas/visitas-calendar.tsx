@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { hoyISOEcuador } from "@/lib/fechas";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -67,7 +68,7 @@ export function VisitasCalendar({
   onMesChange: (mes: string) => void;
 }) {
   const [anio, mesNum] = mes.split("-").map(Number);
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = hoyISOEcuador();
 
   const porDia = new Map<string, VisitaEnCalendario[]>();
   for (const v of visitas) {

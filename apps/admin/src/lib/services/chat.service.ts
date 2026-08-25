@@ -278,7 +278,7 @@ const INBOX_INCLUDE = {
     },
   },
   productos: {
-    orderBy: { orden: "asc" },
+    orderBy: { posicion: "asc" },
     include: { producto: { select: { id: true, nombre: true } } },
   },
 } as const;

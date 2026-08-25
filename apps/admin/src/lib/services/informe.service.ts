@@ -124,7 +124,7 @@ export async function listVisitasParaInforme(
     where,
     include: {
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: {
           producto: {
                 select: { id: true, nombre: true, descripcion: true },
@@ -186,7 +186,7 @@ export async function listServiciosParaInforme(
               select: { id: true, nombre: true, descripcion: true },
         },
       },
-      orderBy: { orden: "asc" },
+      orderBy: { posicion: "asc" },
     }),
     prisma.visitaMedia.groupBy({
       by: ["productoId"],

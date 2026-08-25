@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
@@ -42,10 +41,9 @@ interface VisitaEditable {
     empresa?: string | null;
     sector: { nombre: string } | null;
   };
-  /** Productos de la visita, con el enlace al plan que tengan hoy. */
-  productos: { productoId: string; cubierto: boolean }[];
-  /** Qué productos podría cubrir un plan activo de este cliente. */
-  cubribles: string[];
+  productos: { productoId: string }[];
+  /** De qué plan es hoy la visita, si es de alguno. */
+  suscripcionId: string | null;
   grupoId: string | null;
   personalIds: string[];
 }
@@ -84,14 +82,25 @@ const fechaLarga = (iso: string) =>
  * Moverla dejaría trabajo descontándose del plan de otro y cobrado en la orden
  * equivocada. Para eso se agenda una visita nueva y se cancela esta.
  */
+interface PlanOpcion {
+  id: string;
+  numero: number;
+  estado: string;
+  periodicidad: string;
+  productos: { productoId: string; nombre: string; visitasPorPeriodo: number | null }[];
+}
+
 export function EditarVisitaPage({
   visita,
   catalogo,
+  planes,
   grupos,
   personalList,
 }: {
   visita: VisitaEditable;
   catalogo: ProductoElegible[];
+  /** Los planes del cliente, más el que la visita ya tenga. */
+  planes: PlanOpcion[];
   grupos: Grupo[];
   personalList: PersonalOption[];
 }) {
@@ -106,10 +115,9 @@ export function EditarVisitaPage({
   const [productoIds, setProductoIds] = useState(
     visita.productos.map((p) => p.productoId)
   );
-  // Se guarda lo excluido, no lo incluido: agregar un producto nuevo cae en el
-  // default de cubrir sin tener que acordarse de marcarlo.
-  const [sinPlan, setSinPlan] = useState<string[]>(
-    visita.productos.filter((p) => !p.cubierto).map((p) => p.productoId)
+  /** De qué plan es. Vacío la desvincula: todo pasa a cobrarse aparte. */
+  const [suscripcionId, setSuscripcionId] = useState(
+    visita.suscripcionId ?? ""
   );
   const [grupoId, setGrupoId] = useState(visita.grupoId ?? "");
   const [personalIds, setPersonalIds] = useState(visita.personalIds);
@@ -119,14 +127,6 @@ export function EditarVisitaPage({
 
   const alternarProducto = (id: string) =>
     setProductoIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-
-  const cubre = (id: string) =>
-    visita.cubribles.includes(id) && !sinPlan.includes(id);
-
-  const alternarCobertura = (id: string) =>
-    setSinPlan((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
 
@@ -151,10 +151,9 @@ export function EditarVisitaPage({
           fechaRealizada: realizada || null,
           horaEntrada: entrada || null,
           horaSalida: salida || null,
-          productos: productoIds.map((productoId) => ({
-            productoId,
-            cubrirConPlan: !sinPlan.includes(productoId),
-          })),
+          productos: productoIds.map((productoId) => ({ productoId })),
+          // `null` la desvincula del plan y todo pasa a cobrarse aparte.
+          suscripcionId: suscripcionId || null,
           grupoId: grupoId || null,
           personalIds,
           notas: notas.trim() || null,
@@ -190,10 +189,22 @@ export function EditarVisitaPage({
             {nombreCliente(visita.cliente)} · {fechaLarga(visita.fechaProgramada)}
           </p>
         </div>
-        <Button onClick={guardar} disabled={guardando || !elegidos.length}>
-          {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Guardar cambios
-        </Button>
+        {/* Cancelar al lado de guardar, no solo la flecha de atrás: salir sin
+            guardar es una decisión y merece un botón con nombre. */}
+        <div className="flex flex-none items-center gap-2">
+          <Link href={`/dashboard/visitas/${visita.id}`}>
+            <Button variant="outline" disabled={guardando}>
+              Cancelar
+            </Button>
+          </Link>
+          <Button
+            onClick={guardar}
+            disabled={guardando || !elegidos.length}
+          >
+            {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Guardar cambios
+          </Button>
+        </div>
       </div>
 
       <div className="grid items-start gap-6 px-4 md:px-6 lg:grid-cols-3">
@@ -224,19 +235,6 @@ export function EditarVisitaPage({
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">
                         {p.nombre}
                       </span>
-                      {visita.cubribles.includes(p.id) && (
-                        <label className="flex flex-none cursor-pointer items-center gap-1.5 text-xs">
-                          <Checkbox
-                            checked={cubre(p.id)}
-                            onCheckedChange={() => alternarCobertura(p.id)}
-                          />
-                          <span
-                            className={cubre(p.id) ? "" : "text-muted-foreground"}
-                          >
-                            {cubre(p.id) ? "Cubierto por el plan" : "Se cobra aparte"}
-                          </span>
-                        </label>
-                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -261,6 +259,33 @@ export function EditarVisitaPage({
               </Button>
             </CardContent>
           </Card>
+
+          {/* De qué plan es la visita, si es de alguno. La X la desvincula: no
+              hace falta una opción "Ninguna" que diga lo mismo. */}
+          {planes.length > 0 && (
+            <Card className="overflow-visible">
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-base">Suscripción</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CustomSelect
+                  value={suscripcionId}
+                  onChange={setSuscripcionId}
+                  options={planes.map((sus) => ({
+                    value: sus.id,
+                    label: `Suscripción #${sus.numero}${
+                      sus.estado === "ACTIVO"
+                        ? ""
+                        : ` · ${sus.estado.charAt(0)}${sus.estado.slice(1).toLowerCase()}`
+                    }`,
+                    hint: sus.productos.map((x) => x.nombre).join(", "),
+                  }))}
+                  placeholder="Sin suscripción"
+                  clearable
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Las dos fechas juntas: se comparan de un vistazo, que es lo que
               se hace al corregirlas. Un mes por calendario alcanza —para irse
@@ -375,11 +400,6 @@ export function EditarVisitaPage({
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Personal</CardTitle>
-              <CardAction>
-                <span className="text-xs text-muted-foreground">
-                  {personalIds.length}
-                </span>
-              </CardAction>
             </CardHeader>
             <CardContent className="space-y-3">
               {grupos.length > 0 && (

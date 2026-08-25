@@ -46,7 +46,7 @@ export async function GET(
         },
       },
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: {
           producto: {
                 select: { id: true, nombre: true, descripcion: true, tipo: true },
@@ -122,6 +122,7 @@ export async function PUT(
       notas,
       productoIds,
       productos,
+      suscripcionId,
     } = generalResult.data;
     const soloPersonal =
       fechaProgramada === undefined &&
@@ -131,7 +132,8 @@ export async function PUT(
       grupoId === undefined &&
       notas === undefined &&
       productoIds === undefined &&
-      productos === undefined;
+      productos === undefined &&
+      suscripcionId === undefined;
     if (soloPersonal) return NextResponse.json({ success: true });
 
     const visita = await updateVisitaInfo(id, viewer, {
@@ -152,6 +154,7 @@ export async function PUT(
       ...(notas !== undefined ? { notas: notas || null } : {}),
       ...(productoIds !== undefined ? { productoIds } : {}),
       ...(productos !== undefined ? { productos } : {}),
+      ...(suscripcionId !== undefined ? { suscripcionId } : {}),
     });
     return NextResponse.json(visita);
   } catch (error) {

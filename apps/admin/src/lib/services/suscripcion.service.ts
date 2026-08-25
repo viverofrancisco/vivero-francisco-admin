@@ -304,6 +304,113 @@ export async function listarSuscripciones(
   });
 }
 
+/**
+ * Las órdenes que salieron de los períodos de esta suscripción.
+ *
+ * Tampoco es una relación directa: se llega por las líneas que citan alguno de
+ * sus ítems. Se listan **órdenes y no facturas** porque el borrador que crea el
+ * cron todavía no tiene factura, y era justo lo que no se veía desde acá.
+ */
+export async function ordenesDeSuscripcion(viewer: Viewer, suscripcionId: string) {
+  const suscripcion = await getSuscripcion(viewer, suscripcionId);
+  const itemIds = suscripcion.items.map((i) => i.id);
+  if (itemIds.length === 0) return [];
+
+  const ordenes = await prisma.orden.findMany({
+    where: { lineas: { some: { suscripcionItemId: { in: itemIds } } } },
+    select: {
+      id: true,
+      numero: true,
+      fecha: true,
+      estado: true,
+      total: true,
+      lineas: {
+        where: { suscripcionItemId: { in: itemIds } },
+        select: { periodoInicio: true, periodoFin: true, total: true },
+        orderBy: { periodoInicio: "asc" },
+      },
+      facturas: {
+        where: { anulada: false },
+        select: { numero: true, estado: true, saldo: true },
+        take: 1,
+      },
+    },
+    orderBy: { fecha: "desc" },
+  });
+
+  return ordenes.map((o) => ({
+    id: o.id,
+    numero: o.numero,
+    fecha: o.fecha,
+    estado: o.estado,
+    total: Number(o.total),
+    // Lo que aportó **este** plan, que puede ser menos que el total de la orden
+    // si adentro hay además una visita suelta.
+    delPlan: o.lineas.reduce((a, l) => a + Number(l.total), 0),
+    periodoInicio: o.lineas[0]?.periodoInicio ?? null,
+    periodoFin: o.lineas[o.lineas.length - 1]?.periodoFin ?? null,
+    periodos: o.lineas.length,
+    factura: o.facturas[0]
+      ? {
+          numero: o.facturas[0].numero,
+          estado: o.facturas[0].estado,
+          saldo:
+            o.facturas[0].saldo === null ? null : Number(o.facturas[0].saldo),
+        }
+      : null,
+  }));
+}
+
+/**
+ * Las visitas en las que esta suscripción cubrió algo.
+ *
+ * La relación no es directa: va por `VisitaProducto.suscripcionItemId`, que es
+ * lo que marca "esto lo paga el plan". Una visita con dos productos, uno
+ * cubierto y otro no, aparece igual —cubrió algo— y por eso se lista qué
+ * producto de la visita fue el cubierto.
+ */
+export async function visitasDeSuscripcion(viewer: Viewer, suscripcionId: string) {
+  const suscripcion = await getSuscripcion(viewer, suscripcionId);
+  const itemIds = suscripcion.items.map((i) => i.id);
+  if (itemIds.length === 0) return [];
+
+  const productos = await prisma.visitaProducto.findMany({
+    where: { suscripcionItemId: { in: itemIds }, visita: { deletedAt: null } },
+    select: {
+      producto: { select: { nombre: true } },
+      visita: {
+        select: {
+          id: true,
+          numero: true,
+          fechaProgramada: true,
+          fechaRealizada: true,
+          estado: true,
+        },
+      },
+    },
+    orderBy: { visita: { fechaProgramada: "desc" } },
+  });
+
+  // Una visita puede cubrir dos productos del mismo plan: es una sola fila.
+  const porVisita = new Map<
+    string,
+    {
+      id: string;
+      numero: number;
+      fechaProgramada: Date;
+      fechaRealizada: Date | null;
+      estado: string;
+      productos: string[];
+    }
+  >();
+  for (const vp of productos) {
+    const actual = porVisita.get(vp.visita.id);
+    if (actual) actual.productos.push(vp.producto.nombre);
+    else porVisita.set(vp.visita.id, { ...vp.visita, productos: [vp.producto.nombre] });
+  }
+  return [...porVisita.values()];
+}
+
 export async function getSuscripcion(viewer: Viewer, id: string) {
   if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
     throw new ForbiddenError();

@@ -71,6 +71,7 @@ export async function POST(request: Request) {
     const visitas = await createVisitasBatch(viewerFromSession(user), {
       clienteId: result.data.clienteId,
       productos: result.data.productos,
+      suscripcionId: result.data.suscripcionId || null,
       fechas: result.data.fechas.map((f) => new Date(f)),
       grupoId: result.data.grupoId || null,
       notas: result.data.notas || null,

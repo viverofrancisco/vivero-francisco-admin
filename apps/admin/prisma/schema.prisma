@@ -264,6 +264,13 @@ model Producto {
 /// el mismo ciclo: cada renovación genera una orden con una línea por ítem.
 model Suscripcion {
   id           String         @id @default(cuid())
+  /// Número corto para nombrarla: "Suscripción #12".
+  ///
+  /// Secuencia **propia**, independiente de la de órdenes. Que exista una orden
+  /// #12 y una suscripción #12 a la vez está bien: son cosas distintas y en
+  /// pantalla siempre van con su prefijo. Compartir una sola secuencia las
+  /// dejaría salteadas —#3, #17, #40— sin ganar nada a cambio.
+  numero       Int            @unique @default(autoincrement())
   clienteId    String
   estado       EstadoServicio @default(ACTIVO)
   /// El ciclo lo define la suscripción, no el producto: el mismo producto puede
@@ -282,6 +289,8 @@ model Suscripcion {
   createdBy User?             @relation("SuscripcionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy User?             @relation("SuscripcionUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   items     SuscripcionItem[]
+  ordenes   Orden[]
+  visitas   Visita[]
 
   @@index([clienteId, estado])
 }
@@ -351,7 +360,23 @@ model Grupo {
 
 model Visita {
   id              String       @id @default(cuid())
+  /// Número corto para nombrarla: "Visita #34".
+  ///
+  /// Secuencia propia, como la de órdenes y suscripciones. En pantalla siempre
+  /// va con su prefijo, así que que coexistan la orden #34 y la visita #34 no
+  /// confunde a nadie.
+  numero          Int          @unique @default(autoincrement())
   clienteId       String
+  /// De qué plan es esta visita, si es de alguno.
+  ///
+  /// La decisión es **de la visita**, no de cada producto: "esta visita es del
+  /// plan mensual" o "esta visita es un trabajo aparte". Con el plan puesto,
+  /// cada producto que **esté en ese plan** queda cubierto —eso ya no se
+  /// decide, se deduce del plan— y lo que no esté se cobra como trabajo suelto.
+  ///
+  /// En null, todo lo que se haga se cobra aparte. Es lo que permite hacerle a
+  /// alguien una visita extra de algo que igual tiene contratado.
+  suscripcionId   String?
   fechaProgramada DateTime     @db.Date
   fechaRealizada  DateTime?    @db.Date
   horaEntrada     String?
@@ -377,8 +402,11 @@ model Visita {
   messages       VisitaMessage[]
   chatReads      VisitaChatRead[]
   informes       InformeVisita[]
+  ordenes        Orden[]
+  suscripcion    Suscripcion?      @relation(fields: [suscripcionId], references: [id], onDelete: SetNull)
 
   @@index([clienteId])
+  @@index([suscripcionId])
   @@index([fechaProgramada])
 }
 
@@ -396,7 +424,19 @@ model VisitaProducto {
   /// Puesto = el plan lo cubre y no se cobra aparte. Null = trabajo suelto, se
   /// factura creando una orden. No es plata: es cobertura.
   suscripcionItemId String?
-  orden             Int     @default(0)
+  /// En qué lugar de la lista va, nada más. Se llamaba `orden` y se leía como
+  /// "a qué orden pertenece", que es justo lo que **no** es: eso vive en
+  /// `OrdenLinea.visitaProductoId`. `OrdenLinea` ya usaba `posicion` para lo
+  /// mismo.
+  posicion          Int     @default(0)
+  /// Cuándo se soltó de una orden anulada.
+  ///
+  /// Anular libera la procedencia, así que el trabajo vuelve a "pendiente" y no
+  /// queda ni rastro de que alguna vez estuvo facturado. Sin esta marca, el
+  /// proceso que arma borradores lo volvería a agarrar y pisaría la decisión de
+  /// no cobrarlo. Facturarlo a mano sigue siendo posible: esto solo frena a los
+  /// automatismos.
+  liberadoAt        DateTime?
 
   visita          Visita           @relation(fields: [visitaId], references: [id], onDelete: Cascade)
   producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
@@ -785,6 +825,22 @@ model Orden {
   datoFacturacionId String?
   /// Correlativo interno legible. No es el número de factura del SRI.
   numero            Int         @unique @default(autoincrement())
+
+  /// De qué es esta orden. Como mucho una de las dos, nunca las dos.
+  ///
+  /// Las líneas ya dicen de dónde sale **cada peso** —`visitaProductoId`,
+  /// `suscripcionItemId` + período— pero eso responde otra pregunta. Esto
+  /// responde "¿de qué es esta orden?", que es la que se hace primero y la que
+  /// no tenía respuesta sin recorrer las líneas.
+  ///
+  /// Es coherente porque las reglas ya lo garantizan: una orden no mezcla plan
+  /// con visitas (`ensureNoMezclaOrigenes`) y se lleva el trabajo entero de lo
+  /// que toca (`ensureTrabajoCompleto`). Que además tenga productos agregados a
+  /// mano no la hace menos "de esa visita".
+  ///
+  /// Las dos en null = orden suelta, armada a mano.
+  visitaId          String?
+  suscripcionId     String?
   fecha             DateTime    @db.Date
   estado            EstadoOrden @default(BORRADOR)
   notas             String?     @db.Text
@@ -801,6 +857,9 @@ model Orden {
 
   cliente         Cliente          @relation(fields: [clienteId], references: [id], onDelete: Restrict)
   datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
+  /// `Restrict`: una visita con orden no se borra sin resolver la orden antes.
+  visita          Visita?          @relation(fields: [visitaId], references: [id], onDelete: Restrict)
+  suscripcion     Suscripcion?     @relation(fields: [suscripcionId], references: [id], onDelete: Restrict)
   createdBy       User?            @relation("OrdenCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy       User?            @relation("OrdenUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   lineas          OrdenLinea[]
@@ -809,6 +868,8 @@ model Orden {
   @@index([clienteId, fecha])
   @@index([estado])
   @@index([datoFacturacionId])
+  @@index([visitaId])
+  @@index([suscripcionId])
 }
 
 model OrdenLinea {

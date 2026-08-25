@@ -16,6 +16,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { money } from "./formato";
+import { hoyISOEcuador } from "@/lib/fechas";
 
 const FORMAS = [
   { value: "EF", label: "Efectivo" },
@@ -74,7 +75,7 @@ export function CobroDialog({
   const [guardando, setGuardando] = useState(false);
   const [forma, setForma] = useState("EF");
   const [monto, setMonto] = useState("");
-  const [fecha, setFecha] = useState(() => new Date().toISOString().slice(0, 10));
+  const [fecha, setFecha] = useState(() => hoyISOEcuador());
   const [numeroCheque, setNumeroCheque] = useState("");
   const [cuentaBancariaId, setCuentaBancariaId] = useState("");
   const [tipoPing, setTipoPing] = useState("D");

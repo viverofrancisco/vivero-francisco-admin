@@ -195,7 +195,9 @@ export function ClienteVisitasPage({
                         variant="ghost"
                         size="icon"
                         onClick={() =>
-                          router.push(`/dashboard/visitas/${v.id}`)
+                          router.push(
+                            `/dashboard/visitas/${v.id}?from=/dashboard/clientes/${clienteId}/visitas`
+                          )
                         }
                       >
                         <Eye className="h-4 w-4" />

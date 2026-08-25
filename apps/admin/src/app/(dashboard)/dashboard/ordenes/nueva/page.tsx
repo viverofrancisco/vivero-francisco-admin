@@ -113,6 +113,8 @@ export default async function NuevaOrdenRoute({
               precio: String(p.precio),
               ivaTasa: String(p.ivaTasa),
               visitaProductoId: p.visitaProductoId,
+              // Para poder agregar la visita entera de una: se factura completa.
+              visitaId: p.visitaId,
               fecha: p.fecha.toISOString(),
             }
           : {
@@ -122,6 +124,8 @@ export default async function NuevaOrdenRoute({
               precio: String(p.precio),
               ivaTasa: String(p.ivaTasa),
               suscripcionItemId: p.suscripcionItemId,
+              // Un período se factura completo: hace falta saber de qué plan es.
+              suscripcionId: p.suscripcionId,
               periodoInicio: p.periodoInicio.toISOString(),
               periodoFin: p.periodoFin.toISOString(),
             }

@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import {
   ArrowLeft,
@@ -18,14 +17,24 @@ import {
   MessageSquare,
   Pencil,
   Play,
-  Receipt,
+  Plus,
 } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { CompletarVisitaForm } from "@/components/visitas/completar-visita-form";
 import {
   MediaViewer,
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  estadoLabel as estadoOrdenLabel,
+  estadoVariant as estadoOrdenVariant,
+} from "@/components/ordenes/formato";
+import {
+  PERIODICIDAD_LABEL,
+  estadoVariant as estadoSuscripcionVariant,
+} from "@/components/suscripciones/formato";
 import { nombreCliente } from "@vivero/shared";
 import {
   listaProductos,
@@ -34,6 +43,7 @@ import {
 
 interface VisitaDetailData {
   id: string;
+  numero: number;
   fechaProgramada: string;
   fechaRealizada: string | null;
   horaEntrada: string | null;
@@ -64,11 +74,14 @@ interface VisitaDetailProps {
   visita: VisitaDetailData;
   userRole?: string;
   hasMessages?: boolean;
+  /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
+  backHref?: string;
 }
 
 export function VisitaDetail({
   visita,
   userRole,
+  backHref = "/dashboard/visitas",
   hasMessages = false,
 }: VisitaDetailProps) {
   const [completarOpen, setCompletarOpen] = useState(false);
@@ -90,21 +103,72 @@ export function VisitaDetail({
    * `listarPendientes` tampoco la ofrece.
    */
   const facturable = visita.estado !== "CANCELADA";
+  /** Algo que no cubre ningún plan, así que en algún momento va a una orden. */
+  const hayTrabajoSuelto = visita.productos.some((vs) => !vs.suscripcionItemId);
   const porFacturar = visita.productos.filter(
     (vs) => !vs.suscripcionItemId && !vs.ordenLinea
   );
-  const facturados = visita.productos.filter((vs) => vs.ordenLinea);
+
+  /**
+   * Los planes que cubren algo de esta visita, uno por suscripción.
+   *
+   * Ninguno genera orden: lo que se cobra es el **período** del plan, en su
+   * propia orden, que no sabe nada de esta visita. Por eso van en su propia
+   * tarjeta y no como una fila de Órdenes.
+   */
+  const planes = [
+    ...visita.productos
+      .filter((vs) => vs.suscripcionItem)
+      .reduce((mapa, vs) => {
+        const si = vs.suscripcionItem!;
+        const actual = mapa.get(si.suscripcionId);
+        if (actual) actual.productos.push(vs.producto.nombre);
+        else
+          mapa.set(si.suscripcionId, {
+            id: si.suscripcionId,
+            numero: si.suscripcion.numero,
+            cliente: nombreCliente(si.suscripcion.cliente),
+            periodicidad: si.suscripcion.periodicidad,
+            estado: si.suscripcion.estado,
+            productos: [vs.producto.nombre],
+          });
+        return mapa;
+      }, new Map<string, { id: string; numero: number; cliente: string; periodicidad: string; estado: string; productos: string[] }>())
+      .values(),
+  ];
+
+  /**
+   * Las órdenes donde cayó el trabajo de esta visita, una fila por orden.
+   *
+   * Dos productos de la misma visita pueden ir en la misma orden, así que se
+   * agrupan: si no, la orden salía repetida.
+   */
   const ordenes = [
-    ...new Map(
-      facturados.map((vs) => [vs.ordenLinea!.ordenId, vs.ordenLinea!])
-    ).values(),
+    ...visita.productos
+      .filter((vs) => vs.ordenLinea)
+      .reduce((mapa, vs) => {
+        const l = vs.ordenLinea!;
+        const actual = mapa.get(l.ordenId);
+        if (actual) actual.productos.push(vs.producto.nombre);
+        else
+          mapa.set(l.ordenId, {
+            id: l.ordenId,
+            numero: l.orden.numero,
+            estado: l.orden.estado,
+            productos: [vs.producto.nombre],
+          });
+        return mapa;
+      }, new Map<string, { id: string; numero: number; estado: string; productos: string[] }>())
+      .values(),
   ];
 
   return (
     <>
       <div className="sticky top-0 z-20 -mx-4 md:-mx-6 -mt-4 md:-mt-6 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b mb-6">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/visitas">
+          {/* Vuelve de donde vino: llegar desde una suscripción y salir a la
+              lista de visitas es perder el lugar donde uno estaba. */}
+          <Link href={backHref}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -112,7 +176,7 @@ export function VisitaDetail({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-extrabold tracking-tight truncate">
-                Detalle de Visita
+                Visita #{visita.numero}
               </h1>
               <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
             </div>
@@ -130,16 +194,6 @@ export function VisitaDetail({
                   Editar
                 </Button>
               </Link>
-              {facturable && porFacturar.length > 0 && (
-                <Link
-                  href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
-                >
-                  <Button variant="outline">
-                    <Receipt className="mr-2 h-4 w-4" />
-                    Crear orden
-                  </Button>
-                </Link>
-              )}
               {isProgramada && (
                 <Button onClick={() => setCompletarOpen(true)}>
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -151,98 +205,148 @@ export function VisitaDetail({
         </div>
       </div>
 
-      {/* Una banda con lo que identifica la visita —cuándo, para quién, qué—
-          y debajo casillas chicas con el resto. La lista de etiqueta/valor
-          dejaba media pantalla vacía y obligaba a leer en zigzag. */}
-      <div className="flex flex-wrap items-start gap-5 rounded-2xl border bg-card p-5">
-        <TarjetaFecha iso={visita.fechaProgramada} />
-
-        <div className="min-w-0 flex-1 space-y-2">
-          <Link
-            href={`/dashboard/clientes/${visita.cliente.id}`}
-            className="block truncate text-xl font-bold hover:underline"
-          >
-            {nombreCliente(visita.cliente)}
-          </Link>
-          <p className="text-sm text-muted-foreground">
-            {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
-              .filter(Boolean)
-              .join(" · ") || "Sin sector"}
-          </p>
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {/* Lo cubierto por un plan se marca por visita, que es donde el
-                dato existe: el catálogo no sabe qué tiene contratado quién. */}
-            {visita.productos.map((vs) => (
-              <Badge
-                key={vs.productoId}
-                variant={vs.suscripcionItemId ? "secondary" : "outline"}
-                title={
-                  vs.suscripcionItemId
-                    ? "Cubierto por la suscripción del cliente"
-                    : vs.ordenLinea
-                      ? `Facturado en la orden #${vs.ordenLinea.orden.numero}`
-                      : "Pendiente de facturar"
-                }
-              >
-                {vs.producto.nombre}
-                {!vs.suscripcionItemId && !vs.ordenLinea && (
-                  <span className="ml-1 text-amber-700">·</span>
-                )}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Dato etiqueta="Realizada">
-          {visita.fechaRealizada ? (
-            <span className="capitalize">{formatCorta(visita.fechaRealizada)}</span>
-          ) : (
-            <span className="text-muted-foreground">Todavía no</span>
-          )}
-        </Dato>
-        <Dato etiqueta="Horario">
-          {visita.horaEntrada || visita.horaSalida ? (
-            `${visita.horaEntrada ?? "—"} a ${visita.horaSalida ?? "—"}`
-          ) : (
-            <span className="text-muted-foreground">Sin registrar</span>
-          )}
-        </Dato>
-        <Dato etiqueta="Duración">
-          {duracion(visita.horaEntrada, visita.horaSalida) ?? (
-            <span className="text-muted-foreground">—</span>
-          )}
-        </Dato>
-        <Dato etiqueta="Facturación">
-          {porFacturar.length > 0 && !facturable ? (
-            <span className="text-muted-foreground">Cancelada</span>
-          ) : porFacturar.length > 0 ? (
-            <span className="text-amber-700">
-              {porFacturar.length === visita.productos.length
-                ? "Pendiente"
-                : `${porFacturar.length} sin facturar`}
-            </span>
-          ) : ordenes.length > 0 ? (
-            <span className="flex flex-wrap gap-x-2">
-              {ordenes.map((o) => (
-                <Link
-                  key={o.ordenId}
-                  href={`/dashboard/ordenes/${o.ordenId}`}
-                  className="text-primary hover:underline"
-                >
-                  Orden #{o.orden.numero}
-                </Link>
-              ))}
-            </span>
-          ) : (
-            <span className="text-muted-foreground">Cubierta por el plan</span>
-          )}
-        </Dato>
-      </div>
-
       <div className="grid items-start gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <div className="space-y-6 lg:col-span-2">
+        {/* Qué se hizo, y cómo se cobra cada cosa. Es la pregunta que se
+            responde producto por producto: uno puede estar en el plan y otro
+            cobrarse aparte en la misma visita. */}
+        <Card>
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Productos y servicios</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y">
+              {visita.productos.map((vs) => (
+                <li
+                  key={vs.productoId}
+                  className="flex items-center justify-between gap-3 py-2.5"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">
+                      {vs.producto.nombre}
+                    </span>
+                    {vs.producto.descripcion && (
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {vs.producto.descripcion}
+                      </span>
+                    )}
+                  </span>
+                  {/* Lo cubierto por el plan no dice nada acá: la tarjeta de
+                      Suscripción de abajo lo cuenta con el plan y su estado. */}
+                  {vs.suscripcionItem ? null : vs.ordenLinea ? (
+                    <span className="flex-none text-xs text-muted-foreground">
+                      Orden #{vs.ordenLinea.orden.numero}
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {planes.length > 0 && (
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">
+                {planes.length === 1 ? "Suscripción" : "Suscripciones"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-1">
+                {planes.map((p) => (
+                  <li key={p.id}>
+                    <Link
+                      href={`/dashboard/suscripciones/${p.id}?from=/dashboard/visitas/${visita.id}`}
+                      className="flex items-start justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-bold">
+                          Suscripción #{p.numero}
+                        </span>
+                        <span className="block truncate text-xs font-semibold text-muted-foreground">
+                          {p.cliente} ·{" "}
+                          {PERIODICIDAD_LABEL[p.periodicidad] ?? p.periodicidad}
+                        </span>
+                        {/* Qué cubre de **esta** visita: el plan puede tener
+                            más productos que los que se hicieron hoy. */}
+                        <span className="block truncate text-xs text-muted-foreground">
+                          Cubre: {p.productos.join(", ")}
+                        </span>
+                      </span>
+                      <Badge
+                        variant={estadoSuscripcionVariant[p.estado] ?? "outline"}
+                        className="flex-none"
+                      >
+                        {p.estado.charAt(0) + p.estado.slice(1).toLowerCase()}
+                      </Badge>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Solo si hay trabajo suelto. Con todo cubierto por un plan no va a
+            haber ninguna orden nunca —se cobra el período, no la visita— y una
+            tarjeta vacía sugiere que falta algo por hacer. */}
+        {hayTrabajoSuelto && (
+        <Card>
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Órdenes</CardTitle>
+            {canModify && facturable && porFacturar.length > 0 && (
+              <CardAction>
+                <Link
+                  href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
+                >
+                  <Button size="sm" variant="ghost" title="Crear orden">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardAction>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {ordenes.length === 0 ? (
+              <EmptyState
+                message={
+                  !facturable
+                    ? "La visita está cancelada"
+                    : porFacturar.length > 0
+                      ? "Sin órdenes"
+                      : "No hace falta: el plan lo cubre"
+                }
+              />
+            ) : (
+              <div className="space-y-1">
+                {ordenes.map((o) => (
+                  <Link
+                    key={o.id}
+                    href={`/dashboard/ordenes/${o.id}?from=/dashboard/visitas/${visita.id}`}
+                    className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold">Orden #{o.numero}</p>
+                      <p className="text-xs font-semibold text-muted-foreground">
+                        {o.productos.join(", ")}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={estadoOrdenVariant[o.estado] ?? "outline"}
+                      className="flex-none"
+                    >
+                      {estadoOrdenLabel[o.estado] ?? o.estado}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+          </CardContent>
+        </Card>
+        )}
+
+        <Card>
           <CardHeader className="border-b py-3">
             <CardTitle className="text-base">Notas</CardTitle>
           </CardHeader>
@@ -266,15 +370,78 @@ export function VisitaDetail({
             )}
           </CardContent>
         </Card>
+        </div>
+
+        <div className="space-y-6">
+        <Card>
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Cliente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link
+              href={`/dashboard/clientes/${visita.cliente.id}`}
+              className="block truncate font-bold hover:underline"
+            >
+              {nombreCliente(visita.cliente)}
+            </Link>
+            <p className="text-xs text-muted-foreground">
+              {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
+                .filter(Boolean)
+                .join(" · ") || "Sin sector"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Las dos fechas juntas: para cuándo se agendó y cuándo se hizo. Verlas
+            una al lado de la otra es la forma de notar que se corrió. */}
+        <Card>
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Detalles</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="space-y-1.5 text-sm">
+              <Fila etiqueta="Programada">
+                <span className="capitalize">
+                  {formatCorta(visita.fechaProgramada)}
+                </span>
+              </Fila>
+              <Fila etiqueta="Realizada">
+                {visita.fechaRealizada ? (
+                  <span className="capitalize">
+                    {formatCorta(visita.fechaRealizada)}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Todavía no</span>
+                )}
+              </Fila>
+              <Fila etiqueta="Horario">
+                {visita.horaEntrada || visita.horaSalida ? (
+                  `${visita.horaEntrada ?? "—"} a ${visita.horaSalida ?? "—"}`
+                ) : (
+                  <span className="text-muted-foreground">Sin registrar</span>
+                )}
+              </Fila>
+              <Fila etiqueta="Duración">
+                {duracion(visita.horaEntrada, visita.horaSalida) ?? (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </Fila>
+            </dl>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader className="border-b py-3">
             <CardTitle className="text-base">Personal</CardTitle>
-            <CardAction>
-              <span className="text-xs text-muted-foreground">
-                {visita.personal.length}
-              </span>
-            </CardAction>
+            {/* El grupo nombra a este conjunto de gente: va con ellos y no con
+                las fechas, que es donde estaba. */}
+            {visita.grupo && (
+              <CardAction>
+                <span className="text-xs text-muted-foreground">
+                  {visita.grupo.nombre}
+                </span>
+              </CardAction>
+            )}
           </CardHeader>
           <CardContent>
             {visita.personal.length === 0 ? (
@@ -295,6 +462,7 @@ export function VisitaDetail({
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {visita.media.length > 0 && (
@@ -375,31 +543,10 @@ export function VisitaDetail({
   );
 }
 
-/** El día de la visita como una hoja de calendario. */
-function TarjetaFecha({ iso }: { iso: string }) {
-  const d = new Date(iso + "T00:00:00Z");
-  const mes = d
-    .toLocaleDateString("es-EC", { month: "short", timeZone: "UTC" })
-    .replace(".", "");
-  const dia = d.toLocaleDateString("es-EC", { weekday: "short", timeZone: "UTC" });
-
-  return (
-    <div className="flex w-20 flex-none flex-col items-center overflow-hidden rounded-xl border">
-      <span className="w-full bg-primary py-1 text-center text-[11px] font-bold uppercase tracking-wide text-primary-foreground">
-        {mes}
-      </span>
-      <span className="py-1 text-3xl font-bold leading-none">
-        {d.getUTCDate()}
-      </span>
-      <span className="pb-1.5 text-[11px] capitalize text-muted-foreground">
-        {dia}
-      </span>
-    </div>
-  );
-}
 
 /** Casilla chica: etiqueta arriba, valor abajo. */
-function Dato({
+/** Etiqueta a la izquierda, valor a la derecha. */
+function Fila({
   etiqueta,
   children,
 }: {
@@ -407,9 +554,9 @@ function Dato({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border bg-card px-4 py-3">
-      <p className="text-xs text-muted-foreground">{etiqueta}</p>
-      <p className="mt-0.5 truncate text-sm font-semibold">{children}</p>
+    <div className="flex justify-between gap-3">
+      <dt className="flex-none text-muted-foreground">{etiqueta}</dt>
+      <dd className="min-w-0 truncate text-right">{children}</dd>
     </div>
   );
 }

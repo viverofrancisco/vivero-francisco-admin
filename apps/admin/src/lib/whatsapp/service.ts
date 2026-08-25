@@ -186,7 +186,7 @@ export async function enviarConfirmacionVisita(visitaId: string) {
     include: {
       cliente: true,
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: { producto: { select: { nombre: true } } },
       },
     },
@@ -235,7 +235,7 @@ export async function enviarRecordatorioCliente(visitaId: string) {
     include: {
       cliente: true,
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: { producto: { select: { nombre: true } } },
       },
     },
@@ -294,7 +294,7 @@ export async function enviarAlertaVisitaCompletada(visitaId: string) {
     include: {
       cliente: { select: { nombre: true, apellido: true, empresa: true } },
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: { producto: { select: { nombre: true } } },
       },
     },
@@ -352,7 +352,7 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
     include: {
       cliente: { select: { nombre: true, apellido: true, empresa: true } },
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: { producto: { select: { nombre: true } } },
       },
     },
@@ -422,7 +422,7 @@ export async function enviarResumenDiarioAdmin() {
     include: {
       cliente: { select: { nombre: true, apellido: true, empresa: true, direccion: true } },
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         include: { producto: { select: { nombre: true } } },
       },
       grupo: { select: { nombre: true } },

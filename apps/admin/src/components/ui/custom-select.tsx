@@ -57,7 +57,6 @@ export function CustomSelect({
   const popupRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const openAbove = caja?.above ?? false;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -224,7 +223,7 @@ export function CustomSelect({
                     // entonces el motivo nunca se llegaría a ver.
                     aria-disabled={option.disabled}
                     className={cn(
-                      "flex w-full items-center rounded-md px-2.5 py-1.5 text-sm text-left transition-colors",
+                      "flex w-full items-start rounded-md px-2.5 py-1.5 text-sm text-left transition-colors",
                       option.disabled
                         ? "cursor-not-allowed text-muted-foreground/60"
                         : value === option.value
@@ -232,24 +231,18 @@ export function CustomSelect({
                           : "hover:bg-gray-100"
                     )}
                   >
-                    <span className="truncate">{option.label}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate">{option.label}</span>
+                      {option.hint && (
+                        <span className="block text-[11px] leading-snug text-muted-foreground">
+                          {option.hint}
+                        </span>
+                      )}
+                    </span>
                     {option.disabled && (
-                      <Ban className="ml-auto h-3.5 w-3.5 flex-none opacity-60" />
+                      <Ban className="ml-2 h-3.5 w-3.5 flex-none opacity-60" />
                     )}
                   </button>
-                  {option.disabled && option.hint && (
-                    <div
-                      role="tooltip"
-                      className={cn(
-                        "pointer-events-none absolute left-2 right-2 z-10 hidden rounded-md bg-gray-900 px-2.5 py-1.5 text-[11px] leading-snug text-white shadow-lg group-hover/opt:block",
-                        // Acompaña la dirección del desplegable: si abre hacia
-                        // arriba, el motivo abajo se saldría de la tarjeta.
-                        openAbove ? "bottom-full" : "top-full"
-                      )}
-                    >
-                      {option.hint}
-                    </div>
-                  )}
                 </div>
               ))
             )}

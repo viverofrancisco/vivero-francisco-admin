@@ -33,6 +33,7 @@ export function MultiDateCalendar({
   onChange,
   meses = 2,
   minDate,
+  mesInicial,
   className,
 }: {
   value: string[];
@@ -40,12 +41,20 @@ export function MultiDateCalendar({
   meses?: number;
   /** `YYYY-MM-DD`; los días anteriores quedan deshabilitados. */
   minDate?: string;
+  /**
+   * `YYYY-MM-DD` con el que abrir cuando no hay nada elegido.
+   *
+   * Editar una visita de agosto y que el calendario abra en el mes de hoy
+   * obliga a navegar hasta donde ya se sabía que estaba.
+   */
+  mesInicial?: string;
   className?: string;
 }) {
-  const hoy = new Date();
-  const [base, setBase] = useState({
-    anio: hoy.getFullYear(),
-    mes: hoy.getMonth(),
+  // Lo elegido manda; después el mes sugerido; y si no hay nada, hoy.
+  const [base, setBase] = useState(() => {
+    const ancla = value[0] ?? mesInicial;
+    const d = ancla ? new Date(`${ancla}T00:00:00`) : new Date();
+    return { anio: d.getFullYear(), mes: d.getMonth() };
   });
 
   const mover = (paso: number) => {
@@ -62,6 +71,7 @@ export function MultiDateCalendar({
     );
   };
 
+  const hoy = new Date();
   const hoyClave = clave(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
 
   return (

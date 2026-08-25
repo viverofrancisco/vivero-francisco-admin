@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
-import { generarRenovaciones } from "@/lib/services/orden.service";
+import {
+  generarBorradoresDeVisitas,
+  generarRenovaciones,
+} from "@/lib/services/orden.service";
 
 /**
- * Crea los borradores de las suscripciones cuyo período ya venció.
+ * Arma los borradores que faltan: períodos de suscripción vencidos y visitas
+ * completadas que se quedaron sin orden.
  *
- * Diario y idempotente: lo que ya tiene orden se saltea. Deja todo en BORRADOR
+ * Diario e idempotente: lo que ya tiene orden se saltea. Deja todo en BORRADOR
  * a propósito — el cron arma el trabajo, la decisión de cobrar sigue siendo de
- * una persona, que hasta confirmar puede ajustar precios o sumar adicionales.
+ * una persona, que hasta facturar puede ajustar precios o sumar adicionales.
+ *
+ * Lo de las visitas es una **red**: lo normal es que la orden nazca al
+ * completar la visita, y esto agarra lo que se escapó.
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -15,13 +22,23 @@ export async function GET(request: Request) {
   }
 
   try {
-    const resultado = await generarRenovaciones();
+    const [suscripciones, visitas] = await Promise.all([
+      generarRenovaciones(),
+      generarBorradoresDeVisitas(),
+    ]);
     return NextResponse.json({
-      creadas: resultado.creadas.length,
-      omitidas: resultado.omitidas.length,
-      // Las omitidas necesitan que alguien haga algo (vincular un producto),
-      // así que van con detalle en la respuesta del cron.
-      detalleOmitidas: resultado.omitidas,
+      suscripciones: {
+        creadas: suscripciones.creadas.length,
+        omitidas: suscripciones.omitidas.length,
+        // Las omitidas necesitan que alguien haga algo (vincular un producto),
+        // así que van con detalle en la respuesta del cron.
+        detalleOmitidas: suscripciones.omitidas,
+      },
+      visitas: {
+        creadas: visitas.creadas.length,
+        omitidas: visitas.omitidas.length,
+        detalleOmitidas: visitas.omitidas,
+      },
     });
   } catch (error) {
     return NextResponse.json(

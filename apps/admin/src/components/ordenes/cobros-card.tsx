@@ -6,6 +6,21 @@ import { Loader2 } from "lucide-react";
 import { money } from "./formato";
 
 /**
+ * Contífico devuelve la fecha del cobro como `DD/MM/YYYY` y **sin hora**: no la
+ * guarda. Acá solo se reformatea para que se lea igual que el resto del portal.
+ */
+function fechaCobro(ddmmyyyy: string): string {
+  const [d, m, a] = ddmmyyyy.split("/");
+  if (!d || !m || !a) return ddmmyyyy;
+  return new Date(`${a}-${m}-${d}T00:00:00.000Z`).toLocaleDateString("es-EC", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+/**
  * Contífico no devuelve los mismos códigos que recibe: un cobro mandado como
  * `EF` vuelve como `CAJA`. Por eso el mapa tiene las dos formas.
  */
@@ -125,7 +140,7 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
                       {FORMA_LABEL[c.formaCobro] ?? c.formaCobro}
                       {c.fecha && (
                         <span className="ml-2 text-xs font-normal text-muted-foreground">
-                          {c.fecha}
+                          {fechaCobro(c.fecha)}
                         </span>
                       )}
                     </p>

@@ -16,17 +16,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
-import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
-import {
-  FacturasTable,
-  type FacturaRow,
-} from "@/components/facturas/facturas-table";
 import {
   PERIODICIDAD_LABEL,
   PERIODICIDAD_SUFIJO,
   estadoVariant,
+  fecha,
   money,
 } from "./formato";
 
@@ -41,6 +38,8 @@ interface ItemData {
 
 interface SuscripcionData {
   id: string;
+  /** Para nombrarla: "Suscripción #12". Secuencia propia, no la de órdenes. */
+  numero: number;
   estado: string;
   periodicidad: string;
   fechaInicio: string;
@@ -76,16 +75,67 @@ const ESTADOS = ["ACTIVO", "PAUSADO", "CANCELADO"];
 export function SuscripcionDetail({
   suscripcion,
   backHref,
-  facturas,
+  ordenes,
+  visitas,
 }: {
   suscripcion: SuscripcionData;
   /** Las que salieron de los períodos de esta suscripción. */
-  facturas: FacturaRow[];
+  ordenes: {
+    id: string;
+    numero: number;
+    fecha: string;
+    estado: string;
+    /** El total de la orden, que puede incluir cosas de otro origen. */
+    total: number;
+    delPlan: number;
+    periodoInicio: string | null;
+    periodoFin: string | null;
+    periodos: number;
+    factura: { numero: string; estado: string; saldo: number | null } | null;
+  }[];
+  /** Visitas donde este plan cubrió al menos un producto. */
+  visitas: {
+    id: string;
+    numero: number;
+    fechaProgramada: string;
+    fechaRealizada: string | null;
+    estado: string;
+    productos: string[];
+  }[];
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref: string;
 }) {
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
+  const [generando, setGenerando] = useState(false);
+
+  /**
+   * Crea a mano los borradores de los períodos vencidos de este plan.
+   *
+   * Lo mismo que hace el cron cada noche, acotado a esta suscripción. Es la
+   * salida cuando el cron falló o no se quiere esperar hasta mañana.
+   */
+  const generarOrdenes = async () => {
+    setGenerando(true);
+    try {
+      const res = await fetch(`/api/suscripciones/${suscripcion.id}/renovar`, {
+        method: "POST",
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      toast.success(
+        body.creadas === 0
+          ? "No había períodos por generar"
+          : `${body.creadas} ${body.creadas === 1 ? "orden creada" : "órdenes creadas"} en borrador`
+      );
+      for (const o of body.omitidas ?? []) toast.warning(o.motivo);
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos generar");
+    } finally {
+      setGenerando(false);
+    }
+  };
   const [disponibles, setDisponibles] = useState<ProductoSuscribible[]>([]);
 
   const [periodicidad, setPeriodicidad] = useState(suscripcion.periodicidad);
@@ -211,7 +261,8 @@ export function SuscripcionDetail({
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Suscripción · todos sus productos se cobran juntos, en una factura.
+            Suscripción #{suscripcion.numero} · todos sus productos se cobran
+            juntos, en una factura.
           </p>
         </div>
         <Link href={`/dashboard/clientes/${suscripcion.cliente.id}`}>
@@ -320,18 +371,142 @@ export function SuscripcionDetail({
               )}
             </CardContent>
           </Card>
+          {/* Las visitas que este plan cubrió. La relación no es directa: va
+              por `VisitaProducto.suscripcionItemId`, o sea por lo que se marcó
+              como cubierto al agendar. */}
           <Card>
             <CardHeader className="border-b">
-              <CardTitle className="text-base">Facturas</CardTitle>
+              <CardTitle className="text-base">Visitas cubiertas</CardTitle>
               <CardAction>
-                <span className="text-xs text-muted-foreground">
-                  {facturas.length}{" "}
-                  {facturas.length === 1 ? "emitida" : "emitidas"}
-                </span>
+                {/* Llega con el plan ya puesto: "nueva visita de este plan" es
+                    una sola acción, no elegir cliente y plan de nuevo. */}
+                <Link
+                  href={`/dashboard/visitas/nueva?suscripcion=${suscripcion.id}`}
+                >
+                  <Button size="sm" variant="ghost" title="Nueva visita">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </Link>
               </CardAction>
             </CardHeader>
             <CardContent>
-              <FacturasTable facturas={facturas} mostrarCliente={false} compacta />
+              {visitas.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Todavía ninguna visita quedó cubierta por este plan.
+                </p>
+              ) : (
+                <ul className="divide-y">
+                  {visitas.map((v) => (
+                    <li key={v.id}>
+                      <Link
+                        href={`/dashboard/visitas/${v.id}?from=/dashboard/suscripciones/${suscripcion.id}`}
+                        className="flex items-start justify-between gap-3 rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-muted/50"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">
+                            Visita #{v.numero}
+                            <span className="ml-2 text-xs font-normal text-muted-foreground">
+                              {fecha(v.fechaProgramada)}
+                            </span>
+                          </span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {v.productos.join(", ")}
+                            {v.fechaRealizada &&
+                              ` · realizada ${fecha(v.fechaRealizada)}`}
+                          </span>
+                        </span>
+                        <span className="flex-none text-xs text-muted-foreground">
+                          {v.estado.charAt(0) + v.estado.slice(1).toLowerCase()}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Órdenes y no facturas: el borrador que crea el cron todavía no
+              tiene factura, y era justo lo que no se veía desde acá. */}
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="text-base">Órdenes</CardTitle>
+              <CardAction>
+                {/* Lo hace el cron todas las noches; esto es la salida de
+                    emergencia. Idempotente: apretarlo de más no duplica. */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={generarOrdenes}
+                  disabled={generando}
+                >
+                  {generando ? (
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-2 h-3.5 w-3.5" />
+                  )}
+                  Generar órdenes
+                </Button>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              {ordenes.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Todavía no se generó ninguna orden de este plan.
+                </p>
+              ) : (
+                <ul className="divide-y">
+                  {ordenes.map((o) => (
+                    <li key={o.id}>
+                      <Link
+                        href={`/dashboard/ordenes/${o.id}?from=/dashboard/suscripciones/${suscripcion.id}`}
+                        className="flex items-start justify-between gap-3 rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-muted/50"
+                      >
+                        <span className="min-w-0">
+                          <span className="block font-medium">
+                            Orden #{o.numero}
+                            {o.factura && (
+                              <span className="ml-2 font-normal text-muted-foreground tabular-nums">
+                                {o.factura.numero}
+                              </span>
+                            )}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {o.periodoInicio
+                              ? `${fecha(o.periodoInicio)} → ${fecha(o.periodoFin!)}`
+                              : fecha(o.fecha)}
+                            {o.periodos > 1 && ` · ${o.periodos} períodos`}
+                          </span>
+                        </span>
+                        <span className="flex-none text-right">
+                          <span className="block font-semibold tabular-nums">
+                            {money(o.delPlan)}
+                          </span>
+                          {/* La orden puede llevar productos sueltos agregados
+                              a mano encima del período. Sin decirlo, el número
+                              de acá no cuadraba con el de la orden. */}
+                          {o.delPlan < o.total - 0.001 && (
+                            <span className="block text-xs text-muted-foreground">
+                              de {money(o.total)} en total
+                            </span>
+                          )}
+                          <span className="block text-xs text-muted-foreground">
+                            {o.estado === "BORRADOR"
+                              ? "Borrador"
+                              : o.estado === "ANULADA"
+                                ? "Anulada"
+                                : !o.factura || o.factura.saldo === null
+                                  ? "Facturada"
+                                  : o.factura.saldo <= 0.001
+                                    ? "Cobrado"
+                                    : "Por cobrar"}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </div>

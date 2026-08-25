@@ -33,6 +33,7 @@ import {
 
 interface SuscripcionRow {
   id: string;
+  numero: number;
   estado: string;
   periodicidad: string;
   fechaInicio: string;
@@ -112,6 +113,7 @@ export function SuscripcionesTable({
       const q = query.toLowerCase();
       r = r.filter(
         (s) =>
+          String(s.numero).includes(q) ||
           nombreCliente(s.cliente).toLowerCase().includes(q) ||
           s.items.some((i) => i.producto.nombre.toLowerCase().includes(q)),
       );
@@ -233,6 +235,7 @@ export function SuscripcionesTable({
             <Table containerClassName="h-full overflow-y-auto">
               <TableHeader sticky>
                 <TableRow>
+                  <TableHead className="w-20">N.º</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Productos</TableHead>
                   <TableHead className="text-right">Precio</TableHead>
@@ -252,6 +255,9 @@ export function SuscripcionesTable({
                       )
                     }
                   >
+                    <TableCell className="font-bold tabular-nums">
+                      #{s.numero}
+                    </TableCell>
                     <TableCell className="font-medium">
                       {nombreCliente(s.cliente)}
                     </TableCell>

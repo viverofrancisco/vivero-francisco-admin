@@ -44,7 +44,7 @@ export async function GET(request: Request) {
             fechaProgramada: true,
             cliente: { select: { nombre: true, apellido: true, empresa: true } },
             productos: {
-              orderBy: { orden: "asc" },
+              orderBy: { posicion: "asc" },
               select: { producto: { select: { nombre: true } } },
             },
           },

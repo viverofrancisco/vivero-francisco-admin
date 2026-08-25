@@ -42,7 +42,7 @@ export async function getClienteProfile(viewer: Viewer) {
       fechaProgramada: true,
       horaEntrada: true,
       productos: {
-        orderBy: { orden: "asc" },
+        orderBy: { posicion: "asc" },
         select: {
           producto: {
             select: { id: true, nombre: true, tipo: true },

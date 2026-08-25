@@ -32,11 +32,11 @@ export type AggregateVisitaProducto = {
 }
 
 export type VisitaProductoAvgAggregateOutputType = {
-  orden: number | null
+  posicion: number | null
 }
 
 export type VisitaProductoSumAggregateOutputType = {
-  orden: number | null
+  posicion: number | null
 }
 
 export type VisitaProductoMinAggregateOutputType = {
@@ -44,7 +44,8 @@ export type VisitaProductoMinAggregateOutputType = {
   visitaId: string | null
   productoId: string | null
   suscripcionItemId: string | null
-  orden: number | null
+  posicion: number | null
+  liberadoAt: Date | null
 }
 
 export type VisitaProductoMaxAggregateOutputType = {
@@ -52,7 +53,8 @@ export type VisitaProductoMaxAggregateOutputType = {
   visitaId: string | null
   productoId: string | null
   suscripcionItemId: string | null
-  orden: number | null
+  posicion: number | null
+  liberadoAt: Date | null
 }
 
 export type VisitaProductoCountAggregateOutputType = {
@@ -60,17 +62,18 @@ export type VisitaProductoCountAggregateOutputType = {
   visitaId: number
   productoId: number
   suscripcionItemId: number
-  orden: number
+  posicion: number
+  liberadoAt: number
   _all: number
 }
 
 
 export type VisitaProductoAvgAggregateInputType = {
-  orden?: true
+  posicion?: true
 }
 
 export type VisitaProductoSumAggregateInputType = {
-  orden?: true
+  posicion?: true
 }
 
 export type VisitaProductoMinAggregateInputType = {
@@ -78,7 +81,8 @@ export type VisitaProductoMinAggregateInputType = {
   visitaId?: true
   productoId?: true
   suscripcionItemId?: true
-  orden?: true
+  posicion?: true
+  liberadoAt?: true
 }
 
 export type VisitaProductoMaxAggregateInputType = {
@@ -86,7 +90,8 @@ export type VisitaProductoMaxAggregateInputType = {
   visitaId?: true
   productoId?: true
   suscripcionItemId?: true
-  orden?: true
+  posicion?: true
+  liberadoAt?: true
 }
 
 export type VisitaProductoCountAggregateInputType = {
@@ -94,7 +99,8 @@ export type VisitaProductoCountAggregateInputType = {
   visitaId?: true
   productoId?: true
   suscripcionItemId?: true
-  orden?: true
+  posicion?: true
+  liberadoAt?: true
   _all?: true
 }
 
@@ -189,7 +195,8 @@ export type VisitaProductoGroupByOutputType = {
   visitaId: string
   productoId: string
   suscripcionItemId: string | null
-  orden: number
+  posicion: number
+  liberadoAt: Date | null
   _count: VisitaProductoCountAggregateOutputType | null
   _avg: VisitaProductoAvgAggregateOutputType | null
   _sum: VisitaProductoSumAggregateOutputType | null
@@ -220,7 +227,8 @@ export type VisitaProductoWhereInput = {
   visitaId?: Prisma.StringFilter<"VisitaProducto"> | string
   productoId?: Prisma.StringFilter<"VisitaProducto"> | string
   suscripcionItemId?: Prisma.StringNullableFilter<"VisitaProducto"> | string | null
-  orden?: Prisma.IntFilter<"VisitaProducto"> | number
+  posicion?: Prisma.IntFilter<"VisitaProducto"> | number
+  liberadoAt?: Prisma.DateTimeNullableFilter<"VisitaProducto"> | Date | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
   suscripcionItem?: Prisma.XOR<Prisma.SuscripcionItemNullableScalarRelationFilter, Prisma.SuscripcionItemWhereInput> | null
@@ -232,7 +240,8 @@ export type VisitaProductoOrderByWithRelationInput = {
   visitaId?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   suscripcionItemId?: Prisma.SortOrderInput | Prisma.SortOrder
-  orden?: Prisma.SortOrder
+  posicion?: Prisma.SortOrder
+  liberadoAt?: Prisma.SortOrderInput | Prisma.SortOrder
   visita?: Prisma.VisitaOrderByWithRelationInput
   producto?: Prisma.ProductoOrderByWithRelationInput
   suscripcionItem?: Prisma.SuscripcionItemOrderByWithRelationInput
@@ -248,7 +257,8 @@ export type VisitaProductoWhereUniqueInput = Prisma.AtLeast<{
   visitaId?: Prisma.StringFilter<"VisitaProducto"> | string
   productoId?: Prisma.StringFilter<"VisitaProducto"> | string
   suscripcionItemId?: Prisma.StringNullableFilter<"VisitaProducto"> | string | null
-  orden?: Prisma.IntFilter<"VisitaProducto"> | number
+  posicion?: Prisma.IntFilter<"VisitaProducto"> | number
+  liberadoAt?: Prisma.DateTimeNullableFilter<"VisitaProducto"> | Date | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
   suscripcionItem?: Prisma.XOR<Prisma.SuscripcionItemNullableScalarRelationFilter, Prisma.SuscripcionItemWhereInput> | null
@@ -260,7 +270,8 @@ export type VisitaProductoOrderByWithAggregationInput = {
   visitaId?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   suscripcionItemId?: Prisma.SortOrderInput | Prisma.SortOrder
-  orden?: Prisma.SortOrder
+  posicion?: Prisma.SortOrder
+  liberadoAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.VisitaProductoCountOrderByAggregateInput
   _avg?: Prisma.VisitaProductoAvgOrderByAggregateInput
   _max?: Prisma.VisitaProductoMaxOrderByAggregateInput
@@ -276,12 +287,14 @@ export type VisitaProductoScalarWhereWithAggregatesInput = {
   visitaId?: Prisma.StringWithAggregatesFilter<"VisitaProducto"> | string
   productoId?: Prisma.StringWithAggregatesFilter<"VisitaProducto"> | string
   suscripcionItemId?: Prisma.StringNullableWithAggregatesFilter<"VisitaProducto"> | string | null
-  orden?: Prisma.IntWithAggregatesFilter<"VisitaProducto"> | number
+  posicion?: Prisma.IntWithAggregatesFilter<"VisitaProducto"> | number
+  liberadoAt?: Prisma.DateTimeNullableWithAggregatesFilter<"VisitaProducto"> | Date | string | null
 }
 
 export type VisitaProductoCreateInput = {
   id?: string
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutProductosInput
   producto: Prisma.ProductoCreateNestedOneWithoutVisitaProductosInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
@@ -293,13 +306,15 @@ export type VisitaProductoUncheckedCreateInput = {
   visitaId: string
   productoId: string
   suscripcionItemId?: string | null
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutProductosNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVisitaProductosNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
@@ -311,7 +326,8 @@ export type VisitaProductoUncheckedUpdateInput = {
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
@@ -320,12 +336,14 @@ export type VisitaProductoCreateManyInput = {
   visitaId: string
   productoId: string
   suscripcionItemId?: string | null
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
 }
 
 export type VisitaProductoUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaProductoUncheckedUpdateManyInput = {
@@ -333,7 +351,8 @@ export type VisitaProductoUncheckedUpdateManyInput = {
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaProductoListRelationFilter = {
@@ -356,11 +375,12 @@ export type VisitaProductoCountOrderByAggregateInput = {
   visitaId?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   suscripcionItemId?: Prisma.SortOrder
-  orden?: Prisma.SortOrder
+  posicion?: Prisma.SortOrder
+  liberadoAt?: Prisma.SortOrder
 }
 
 export type VisitaProductoAvgOrderByAggregateInput = {
-  orden?: Prisma.SortOrder
+  posicion?: Prisma.SortOrder
 }
 
 export type VisitaProductoMaxOrderByAggregateInput = {
@@ -368,7 +388,8 @@ export type VisitaProductoMaxOrderByAggregateInput = {
   visitaId?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   suscripcionItemId?: Prisma.SortOrder
-  orden?: Prisma.SortOrder
+  posicion?: Prisma.SortOrder
+  liberadoAt?: Prisma.SortOrder
 }
 
 export type VisitaProductoMinOrderByAggregateInput = {
@@ -376,11 +397,12 @@ export type VisitaProductoMinOrderByAggregateInput = {
   visitaId?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   suscripcionItemId?: Prisma.SortOrder
-  orden?: Prisma.SortOrder
+  posicion?: Prisma.SortOrder
+  liberadoAt?: Prisma.SortOrder
 }
 
 export type VisitaProductoSumOrderByAggregateInput = {
-  orden?: Prisma.SortOrder
+  posicion?: Prisma.SortOrder
 }
 
 export type VisitaProductoNullableScalarRelationFilter = {
@@ -514,14 +536,6 @@ export type VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput = {
   deleteMany?: Prisma.VisitaProductoScalarWhereInput | Prisma.VisitaProductoScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type VisitaProductoCreateNestedOneWithoutOrdenLineaInput = {
   create?: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaInput>
   connectOrCreate?: Prisma.VisitaProductoCreateOrConnectWithoutOrdenLineaInput
@@ -540,7 +554,8 @@ export type VisitaProductoUpdateOneWithoutOrdenLineaNestedInput = {
 
 export type VisitaProductoCreateWithoutProductoInput = {
   id?: string
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutProductosInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
   ordenLinea?: Prisma.OrdenLineaCreateNestedOneWithoutVisitaProductoInput
@@ -550,7 +565,8 @@ export type VisitaProductoUncheckedCreateWithoutProductoInput = {
   id?: string
   visitaId: string
   suscripcionItemId?: string | null
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
@@ -588,12 +604,14 @@ export type VisitaProductoScalarWhereInput = {
   visitaId?: Prisma.StringFilter<"VisitaProducto"> | string
   productoId?: Prisma.StringFilter<"VisitaProducto"> | string
   suscripcionItemId?: Prisma.StringNullableFilter<"VisitaProducto"> | string | null
-  orden?: Prisma.IntFilter<"VisitaProducto"> | number
+  posicion?: Prisma.IntFilter<"VisitaProducto"> | number
+  liberadoAt?: Prisma.DateTimeNullableFilter<"VisitaProducto"> | Date | string | null
 }
 
 export type VisitaProductoCreateWithoutSuscripcionItemInput = {
   id?: string
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutProductosInput
   producto: Prisma.ProductoCreateNestedOneWithoutVisitaProductosInput
   ordenLinea?: Prisma.OrdenLineaCreateNestedOneWithoutVisitaProductoInput
@@ -603,7 +621,8 @@ export type VisitaProductoUncheckedCreateWithoutSuscripcionItemInput = {
   id?: string
   visitaId: string
   productoId: string
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
@@ -635,7 +654,8 @@ export type VisitaProductoUpdateManyWithWhereWithoutSuscripcionItemInput = {
 
 export type VisitaProductoCreateWithoutVisitaInput = {
   id?: string
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   producto: Prisma.ProductoCreateNestedOneWithoutVisitaProductosInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
   ordenLinea?: Prisma.OrdenLineaCreateNestedOneWithoutVisitaProductoInput
@@ -645,7 +665,8 @@ export type VisitaProductoUncheckedCreateWithoutVisitaInput = {
   id?: string
   productoId: string
   suscripcionItemId?: string | null
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
@@ -677,7 +698,8 @@ export type VisitaProductoUpdateManyWithWhereWithoutVisitaInput = {
 
 export type VisitaProductoCreateWithoutOrdenLineaInput = {
   id?: string
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutProductosInput
   producto: Prisma.ProductoCreateNestedOneWithoutVisitaProductosInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
@@ -688,7 +710,8 @@ export type VisitaProductoUncheckedCreateWithoutOrdenLineaInput = {
   visitaId: string
   productoId: string
   suscripcionItemId?: string | null
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
 }
 
 export type VisitaProductoCreateOrConnectWithoutOrdenLineaInput = {
@@ -709,7 +732,8 @@ export type VisitaProductoUpdateToOneWithWhereWithoutOrdenLineaInput = {
 
 export type VisitaProductoUpdateWithoutOrdenLineaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutProductosNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVisitaProductosNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
@@ -720,19 +744,22 @@ export type VisitaProductoUncheckedUpdateWithoutOrdenLineaInput = {
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaProductoCreateManyProductoInput = {
   id?: string
   visitaId: string
   suscripcionItemId?: string | null
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
 }
 
 export type VisitaProductoUpdateWithoutProductoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutProductosNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
   ordenLinea?: Prisma.OrdenLineaUpdateOneWithoutVisitaProductoNestedInput
@@ -742,7 +769,8 @@ export type VisitaProductoUncheckedUpdateWithoutProductoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
@@ -750,19 +778,22 @@ export type VisitaProductoUncheckedUpdateManyWithoutProductoInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaProductoCreateManySuscripcionItemInput = {
   id?: string
   visitaId: string
   productoId: string
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
 }
 
 export type VisitaProductoUpdateWithoutSuscripcionItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutProductosNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVisitaProductosNestedInput
   ordenLinea?: Prisma.OrdenLineaUpdateOneWithoutVisitaProductoNestedInput
@@ -772,7 +803,8 @@ export type VisitaProductoUncheckedUpdateWithoutSuscripcionItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
@@ -780,19 +812,22 @@ export type VisitaProductoUncheckedUpdateManyWithoutSuscripcionItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaProductoCreateManyVisitaInput = {
   id?: string
   productoId: string
   suscripcionItemId?: string | null
-  orden?: number
+  posicion?: number
+  liberadoAt?: Date | string | null
 }
 
 export type VisitaProductoUpdateWithoutVisitaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVisitaProductosNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
   ordenLinea?: Prisma.OrdenLineaUpdateOneWithoutVisitaProductoNestedInput
@@ -802,7 +837,8 @@ export type VisitaProductoUncheckedUpdateWithoutVisitaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
@@ -810,7 +846,8 @@ export type VisitaProductoUncheckedUpdateManyWithoutVisitaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -820,7 +857,8 @@ export type VisitaProductoSelect<ExtArgs extends runtime.Types.Extensions.Intern
   visitaId?: boolean
   productoId?: boolean
   suscripcionItemId?: boolean
-  orden?: boolean
+  posicion?: boolean
+  liberadoAt?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.VisitaProducto$suscripcionItemArgs<ExtArgs>
@@ -832,7 +870,8 @@ export type VisitaProductoSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   visitaId?: boolean
   productoId?: boolean
   suscripcionItemId?: boolean
-  orden?: boolean
+  posicion?: boolean
+  liberadoAt?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.VisitaProducto$suscripcionItemArgs<ExtArgs>
@@ -843,7 +882,8 @@ export type VisitaProductoSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   visitaId?: boolean
   productoId?: boolean
   suscripcionItemId?: boolean
-  orden?: boolean
+  posicion?: boolean
+  liberadoAt?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.VisitaProducto$suscripcionItemArgs<ExtArgs>
@@ -854,10 +894,11 @@ export type VisitaProductoSelectScalar = {
   visitaId?: boolean
   productoId?: boolean
   suscripcionItemId?: boolean
-  orden?: boolean
+  posicion?: boolean
+  liberadoAt?: boolean
 }
 
-export type VisitaProductoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "productoId" | "suscripcionItemId" | "orden", ExtArgs["result"]["visitaProducto"]>
+export type VisitaProductoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "productoId" | "suscripcionItemId" | "posicion" | "liberadoAt", ExtArgs["result"]["visitaProducto"]>
 export type VisitaProductoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
@@ -898,7 +939,23 @@ export type $VisitaProductoPayload<ExtArgs extends runtime.Types.Extensions.Inte
      * factura creando una orden. No es plata: es cobertura.
      */
     suscripcionItemId: string | null
-    orden: number
+    /**
+     * En qué lugar de la lista va, nada más. Se llamaba `orden` y se leía como
+     * "a qué orden pertenece", que es justo lo que **no** es: eso vive en
+     * `OrdenLinea.visitaProductoId`. `OrdenLinea` ya usaba `posicion` para lo
+     * mismo.
+     */
+    posicion: number
+    /**
+     * Cuándo se soltó de una orden anulada.
+     * 
+     * Anular libera la procedencia, así que el trabajo vuelve a "pendiente" y no
+     * queda ni rastro de que alguna vez estuvo facturado. Sin esta marca, el
+     * proceso que arma borradores lo volvería a agarrar y pisaría la decisión de
+     * no cobrarlo. Facturarlo a mano sigue siendo posible: esto solo frena a los
+     * automatismos.
+     */
+    liberadoAt: Date | null
   }, ExtArgs["result"]["visitaProducto"]>
   composites: {}
 }
@@ -1330,7 +1387,8 @@ export interface VisitaProductoFieldRefs {
   readonly visitaId: Prisma.FieldRef<"VisitaProducto", 'String'>
   readonly productoId: Prisma.FieldRef<"VisitaProducto", 'String'>
   readonly suscripcionItemId: Prisma.FieldRef<"VisitaProducto", 'String'>
-  readonly orden: Prisma.FieldRef<"VisitaProducto", 'Int'>
+  readonly posicion: Prisma.FieldRef<"VisitaProducto", 'Int'>
+  readonly liberadoAt: Prisma.FieldRef<"VisitaProducto", 'DateTime'>
 }
     
 

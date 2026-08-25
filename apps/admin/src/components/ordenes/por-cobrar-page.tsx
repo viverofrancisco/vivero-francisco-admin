@@ -124,7 +124,11 @@ export function PorCobrarPage({
                 <TableRow
                   key={o.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`/dashboard/ordenes/${o.id}`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/ordenes/${o.id}?from=/dashboard/ordenes/por-cobrar`
+                    )
+                  }
                 >
                   <TableCell>
                     <span className="block font-medium tabular-nums">
