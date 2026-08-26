@@ -182,6 +182,12 @@ export function InformeWizard({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [savedInformeId, setSavedInformeId] = useState<string | null>(null);
 
+  /**
+   * El informe ya se generó. De acá no se vuelve: existe, tiene número y no se
+   * edita. Lo que sigue es descargarlo, abrir su ficha o salir.
+   */
+  const terminado = step === 5 && savedInformeId != null;
+
   const [addPhotosFor, setAddPhotosFor] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
     null
@@ -473,8 +479,9 @@ export function InformeWizard({
           <VerticalStepper
             step={step}
             onJump={(s) => {
-              if (s <= step) setStep(s);
+              if (!terminado && s <= step) setStep(s);
             }}
+            terminado={terminado}
           />
         </aside>
 
@@ -561,16 +568,25 @@ export function InformeWizard({
 
           {/* Nav footer — only spans the right column. */}
           <div className="border-t bg-card px-6 py-3">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                disabled={step === 1 || generating}
-                onClick={() =>
-                  setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
-                }
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
-              </Button>
+            <div
+              className={`flex items-center ${
+                terminado ? "justify-end" : "justify-between"
+              }`}
+            >
+              {/* Una vez generado no hay Atrás: el informe ya existe y no se
+                  edita, así que volver solo serviría para generar un segundo
+                  informe casi igual sin querer. */}
+              {!terminado ? (
+                <Button
+                  variant="ghost"
+                  disabled={step === 1 || generating}
+                  onClick={() =>
+                    setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
+                  }
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
+                </Button>
+              ) : null}
               {step === 1 ? (
                 <Button onClick={nextFromStep1} disabled={!clienteId}>
                   Continuar <ChevronRight className="h-4 w-4 ml-1" />
@@ -848,9 +864,12 @@ function Step4Firmantes({
 function VerticalStepper({
   step,
   onJump,
+  terminado,
 }: {
   step: WizardStep;
   onJump: (s: WizardStep) => void;
+  /** El informe ya existe: no se vuelve a ningún paso. */
+  terminado: boolean;
 }) {
   const items: Array<{ n: WizardStep; label: string; description: string }> = [
     { n: 1, label: "Cliente", description: "Selecciona el cliente" },
@@ -864,7 +883,7 @@ function VerticalStepper({
       {items.map((it, i) => {
         const completed = it.n < step;
         const current = it.n === step;
-        const clickable = it.n <= step;
+        const clickable = !terminado && it.n <= step;
         const isLast = i === items.length - 1;
         return (
           <li key={it.n} className="relative">

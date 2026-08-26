@@ -10,6 +10,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
+      // Arriba a la derecha: abajo tapaban la paginación de los listados y la
+      // barra de acciones de los formularios, que es justo lo que uno acaba de
+      // tocar cuando aparece el aviso.
+      position="top-right"
       className="toaster group"
       icons={{
         success: (
