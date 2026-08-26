@@ -529,6 +529,7 @@ export type SetPasswordTokenScalarFieldEnum = (typeof SetPasswordTokenScalarFiel
 export const InformeScalarFieldEnum = {
   id: 'id',
   clienteId: 'clienteId',
+  numero: 'numero',
   titulo: 'titulo',
   fecha: 'fecha',
   fechaDesde: 'fechaDesde',

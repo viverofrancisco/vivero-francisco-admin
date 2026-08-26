@@ -705,6 +705,10 @@ model SetPasswordToken {
 model Informe {
   id            String    @id @default(cuid())
   clienteId     String
+  /// Correlativo corto, para nombrarlo en voz alta. Como el de visitas y
+  /// órdenes: cada tabla tiene su propia secuencia y eso está bien, porque
+  /// nunca se muestra un número sin decir de qué es.
+  numero        Int       @unique @default(autoincrement())
   titulo        String
   /// La fecha que **sale impresa** en el PDF, y solo eso.
   ///

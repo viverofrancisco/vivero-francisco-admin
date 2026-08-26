@@ -1,123 +1,265 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Download, Pencil, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { TablePagination } from "@/components/shared/table-pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Download, Eye, MoreVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface InformeListItem {
   id: string;
+  numero: number;
   titulo: string;
-  fechaDesde: string | null;
-  fechaHasta: string | null;
   pdfUrl: string;
   generatedAt: string;
   cliente: { id: string; nombre: string };
-  generatedBy: { nombre: string };
-  visitasCount: number;
 }
 
-export function InformesTable({ items }: { items: InformeListItem[] }) {
+/**
+ * La lista de informes.
+ *
+ * Muestra **cuándo se generó**, no la fecha impresa del informe: son dos
+ * fechas distintas —un informe de agosto puede armarse en septiembre— y acá
+ * la pregunta es "¿cuál es el último que hice?".
+ *
+ * La paginación la resuelve el servidor (`?page=` en la URL), así que este
+ * componente solo dibuja el pie: recibe la página que ya vino cortada, en vez
+ * de cortarla él como las otras tablas.
+ */
+export function InformesTable({
+  items,
+  page,
+  total,
+  porPagina,
+}: {
+  items: InformeListItem[];
+  page: number;
+  total: number;
+  porPagina: number;
+}) {
   const router = useRouter();
+  const params = useSearchParams();
+  /** El informe que se está mirando en el diálogo. */
+  const [viendo, setViendo] = useState<InformeListItem | null>(null);
+  /** El que está por eliminarse, mientras se confirma. */
+  const [borrando, setBorrando] = useState<InformeListItem | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
-  async function deleteInforme(id: string) {
-    if (!confirm("¿Eliminar este informe? El PDF también será eliminado.")) return;
-    const res = await fetch(`/api/admin/informes/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      router.refresh();
+  /** Cambiar de página es navegar: la lista la corta el servidor. */
+  function irAPagina(p: number) {
+    const qs = new URLSearchParams(params.toString());
+    if (p <= 1) qs.delete("page");
+    else qs.set("page", String(p));
+    const texto = qs.toString();
+    router.push(`/dashboard/informes${texto ? `?${texto}` : ""}`);
+  }
+
+  async function eliminar() {
+    if (!borrando) return;
+    setEliminando(true);
+    try {
+      const res = await fetch(`/api/admin/informes/${borrando.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+      setBorrando(null);
       toast.success("Informe eliminado");
-    } else {
+      router.refresh();
+    } catch {
       toast.error("No pudimos eliminar");
+    } finally {
+      setEliminando(false);
     }
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="rounded-lg border bg-white p-12 text-center">
-        <h3 className="text-base font-medium">No hay informes</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Genera el primero pulsando &quot;Generar nuevo informe&quot;.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-2">
-      {items.map((item) => (
-        <Card key={item.id}>
-          <CardContent className="flex items-center justify-between gap-4 py-4">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-medium">{item.titulo}</p>
-                <span className="text-xs text-muted-foreground">
-                  · {item.cliente.nombre}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {item.visitasCount} visita{item.visitasCount === 1 ? "" : "s"}
-                {item.fechaDesde && item.fechaHasta ? (
-                  <>
-                    {" · "}
-                    {formatRange(item.fechaDesde, item.fechaHasta)}
-                  </>
-                ) : null}
-                {" · Generado por "}
-                {item.generatedBy.nombre || "—"}
-                {" · "}
-                {formatGeneratedAt(item.generatedAt)}
-              </p>
-            </div>
-            <div className="flex flex-none items-center gap-1">
-              <a href={item.pdfUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" title="Descargar PDF">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </a>
-              <Link href={`/dashboard/informes/${item.id}`}>
-                <Button variant="ghost" size="icon" title="Editar / regenerar">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => deleteInforme(item.id)}
-                title="Eliminar"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {items.length === 0 ? (
+          <EmptyState message="No hay informes que coincidan" />
+        ) : (
+          <Table containerClassName="h-full overflow-y-auto">
+            <TableHeader sticky>
+              <TableRow>
+                <TableHead className="w-20">N.º</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Generado</TableHead>
+                <TableHead className="w-32 text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((item) => (
+                <TableRow
+                  key={item.id}
+                  className="cursor-pointer"
+                  onClick={() => router.push(`/dashboard/informes/${item.id}`)}
+                >
+                  <TableCell className="font-bold tabular-nums">
+                    #{item.numero}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {item.cliente.nombre}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {generadoEl(item.generatedAt)}
+                  </TableCell>
+                  <TableCell
+                    className="text-right"
+                    // Las acciones son sobre la fila, no "abrir": sin esto,
+                    // tocar el menú además navegaba al editor.
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Editar no está: para eso se toca la fila. Lo que queda
+                        son las tres cosas que se le hacen al PDF. */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Acciones del informe #${item.numero}`}
+                          />
+                        }
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setViendo(item)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Vista previa
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          render={
+                            <a
+                              href={item.pdfUrl}
+                              download={nombreArchivo(item)}
+                            />
+                          }
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Descargar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setBorrando(item)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+
+      <Dialog
+        open={borrando !== null}
+        onOpenChange={(v) => !v && setBorrando(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Eliminar el informe #{borrando?.numero}
+            </DialogTitle>
+            {/* Dice lo que de verdad hace: el PDF se va del bucket, así que
+                el link deja de abrir para quien ya lo tenga. */}
+            <DialogDescription>
+              Se borra el informe de {borrando?.cliente.nombre}, sus secciones y
+              el PDF. El enlace deja de abrir, también para quien ya lo haya
+              recibido. No se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBorrando(null)}
+              disabled={eliminando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={eliminar}
+              disabled={eliminando}
+            >
+              {eliminando ? "Eliminando…" : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Se ve acá adentro y no en otra pestaña: mirar un informe para saber
+          si es el que se busca no debería sacar a nadie del portal. */}
+      <Dialog open={viendo !== null} onOpenChange={(v) => !v && setViendo(null)}>
+        <DialogContent className="flex h-[85vh] w-full !max-w-5xl flex-col">
+          <DialogHeader>
+            <DialogTitle className="truncate pr-8">
+              {viendo ? `Informe #${viendo.numero} · ${viendo.cliente.nombre}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {viendo && (
+            <iframe
+              // `#toolbar=0`: la barra nativa del visor de Chrome duplica lo
+              // que ya ofrece el menú de la fila.
+              src={`${viendo.pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+              title={`Informe #${viendo.numero}`}
+              className="min-h-0 flex-1 rounded-md border bg-neutral-200"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <TablePagination
+        page={page}
+        total={total}
+        porPagina={porPagina}
+        onPageChange={irAPagina}
+        sustantivo="informe"
+      />
     </div>
   );
 }
 
-function formatRange(fromIso: string, toIso: string): string {
-  const from = new Date(fromIso);
-  const to = new Date(toIso);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("es-EC", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  if (
-    from.getUTCFullYear() === to.getUTCFullYear() &&
-    from.getUTCMonth() === to.getUTCMonth() &&
-    from.getUTCDate() === to.getUTCDate()
-  ) {
-    return fmt(from);
-  }
-  return `${fmt(from)} → ${fmt(to)}`;
+/** Nombre con el que se guarda el PDF, sin caracteres que rompan el sistema. */
+function nombreArchivo(item: InformeListItem): string {
+  return `${item.titulo || `informe-${item.numero}`}.pdf`.replace(
+    /[\\/:*?"<>|]+/g,
+    "_"
+  );
 }
 
-function formatGeneratedAt(iso: string): string {
+/** "26 ago 2026, 11:33" — con hora, que es lo que distingue dos del mismo día. */
+function generadoEl(iso: string): string {
   return new Date(iso).toLocaleString("es-EC", {
     day: "numeric",
     month: "short",

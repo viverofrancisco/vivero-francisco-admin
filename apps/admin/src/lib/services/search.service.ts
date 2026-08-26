@@ -200,14 +200,20 @@ export async function globalSearch(
 
   // ── Informes (staff + sector-scoped personal_admin) ──
   let informeWhere: Prisma.InformeWhereInput | null = null;
-  if ((staff || personalAdmin) && !soloNumero) {
-    informeWhere = {
-      ...(personalAdmin ? { cliente: { sectorId: { in: sectorIds } } } : {}),
-      OR: [
-        { titulo: { contains: term, ...insensitive } },
-        { cliente: clienteNameMatch() },
-      ],
-    };
+  if (staff || personalAdmin) {
+    const sector = personalAdmin
+      ? { cliente: { sectorId: { in: sectorIds } } }
+      : {};
+    informeWhere = soloNumero
+      ? { ...sector, numero: numero! }
+      : {
+          ...sector,
+          OR: [
+            ...(numero !== null ? [{ numero }] : []),
+            { titulo: { contains: term, ...insensitive } },
+            { cliente: clienteNameMatch() },
+          ],
+        };
   }
 
   const [
@@ -288,6 +294,7 @@ export async function globalSearch(
           where: informeWhere,
           select: {
             id: true,
+            numero: true,
             titulo: true,
             generatedAt: true,
             cliente: { select: { nombre: true, apellido: true, empresa: true } },
@@ -357,7 +364,8 @@ export async function globalSearch(
     items: informes.map((r) => ({
       type: "informe",
       id: r.id,
-      title: r.titulo,
+      title: `Informe #${r.numero}`,
+      detalle: r.titulo,
       subtitle: `${nombreCliente(
         r.cliente
       )} · ${fmtDate(r.generatedAt)}`,

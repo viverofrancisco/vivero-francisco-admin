@@ -35,7 +35,10 @@ export function InformesFilters({ clientes, clienteId, from, to }: Props) {
   const hasFilters = !!(clienteId || from || to);
 
   return (
-    <div className="rounded-lg border bg-white p-3">
+    /* Sin card: los filtros son controles de la lista, no una sección aparte.
+       Con el card, la pantalla eran dos recuadros apilados y la tabla parecía
+       lo secundario. */
+    <div className="flex-none">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)_minmax(0,180px)_auto] sm:items-end">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">

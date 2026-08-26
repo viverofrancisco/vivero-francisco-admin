@@ -3,7 +3,13 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { hoyEnEcuador } from "@/lib/fechas";
-import { s3, BUCKET_NAME, publicUrlForKey, getUploadUrl } from "@/lib/s3";
+import {
+  s3,
+  BUCKET_NAME,
+  publicUrlForKey,
+  getUploadUrl,
+  deleteObjects,
+} from "@/lib/s3";
 import {
   ForbiddenError,
   NotFoundError,
@@ -554,6 +560,29 @@ export async function generateInforme(
   );
   const pdfUrl = publicUrlForKey(pdfKey);
 
+  /**
+   * Lo que este informe tenía antes de regenerarse.
+   *
+   * Cada regeneración escribe un PDF nuevo con otra key, así que el anterior
+   * queda sin dueño. Se borra **después** de que la escritura salga bien: si
+   * se borrara antes y la transacción fallara, el informe quedaría apuntando
+   * a un archivo que ya no existe. Así nunca hay más de una versión guardada,
+   * y borrar el informe alcanza para no dejar nada.
+   */
+  const anterior = payload.informeId
+    ? await prisma.informe.findUnique({
+        where: { id: payload.informeId },
+        select: {
+          pdfKey: true,
+          secciones: {
+            select: {
+              fotos: { where: { visitaMediaId: null }, select: { key: true } },
+            },
+          },
+        },
+      })
+    : null;
+
   // Persist (or update) in a transaction.
   const result = await prisma.$transaction(async (tx) => {
     if (payload.informeId) {
@@ -642,6 +671,23 @@ export async function generateInforme(
     }
   });
 
+  if (anterior) {
+    // Las subidas que siguen en el informe se conservan; solo se van las que
+    // quedaron fuera al reeditarlo. Las que vienen de una visita no se tocan:
+    // son de la visita, no del informe.
+    const siguenEnUso = new Set(
+      seccionesResueltas.flatMap((sec) =>
+        sec.fotos.filter((f) => !f.visitaMediaId).map((f) => f.key)
+      )
+    );
+    await deleteObjects([
+      anterior.pdfKey,
+      ...anterior.secciones
+        .flatMap((sec) => sec.fotos.map((f) => f.key))
+        .filter((key) => !siguenEnUso.has(key)),
+    ]);
+  }
+
   return { id: result.id, pdfUrl };
 }
 
@@ -691,7 +737,33 @@ export async function getInforme(viewer: Viewer, id: string) {
 
 export async function deleteInforme(viewer: Viewer, id: string) {
   ensureInformeWriter(viewer);
-  // Cascade deletes the join + secciones rows. The PDF in R2 stays as
-  // orphan for now (cleanup can be a fast-follow cron).
+
+  /**
+   * Qué archivos son de este informe y de nadie más.
+   *
+   * El PDF, siempre. Y las fotos que se subieron **al informe**: las que
+   * vienen de una visita (`visitaMediaId`) son de la visita, siguen en su
+   * ficha y borrarlas dejaría esa galería con huecos.
+   */
+  const informe = await prisma.informe.findUnique({
+    where: { id },
+    select: {
+      pdfKey: true,
+      secciones: {
+        select: {
+          fotos: { where: { visitaMediaId: null }, select: { key: true } },
+        },
+      },
+    },
+  });
+  if (!informe) throw new NotFoundError("Informe no encontrado");
+
+  // La fila primero: es la fuente de verdad. Si después falla R2 sobra un
+  // archivo; al revés quedaría un informe con el PDF ya borrado.
   await prisma.informe.delete({ where: { id } });
+
+  await deleteObjects([
+    informe.pdfKey,
+    ...informe.secciones.flatMap((s) => s.fotos.map((f) => f.key)),
+  ]);
 }

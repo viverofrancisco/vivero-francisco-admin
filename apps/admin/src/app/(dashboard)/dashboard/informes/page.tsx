@@ -5,7 +5,6 @@ import { listClientes } from "@/lib/services/cliente.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { InformesTable } from "@/components/informes/informes-table";
 import { InformesFilters } from "@/components/informes/informes-filters";
-import { InformesPagination } from "@/components/informes/informes-pagination";
 
 const PAGE_SIZE = 20;
 
@@ -50,19 +49,14 @@ export default async function InformesPage({
 
   const serialized = items.map((i) => ({
     id: i.id,
+    numero: i.numero,
     titulo: i.titulo,
-    fechaDesde: i.fechaDesde?.toISOString() ?? null,
-    fechaHasta: i.fechaHasta?.toISOString() ?? null,
     pdfUrl: i.pdfUrl,
     generatedAt: i.generatedAt.toISOString(),
     cliente: {
       id: i.cliente.id,
       nombre: nombreCliente(i.cliente),
     },
-    generatedBy: {
-      nombre: `${i.generatedBy.name ?? ""} ${i.generatedBy.apellido ?? ""}`.trim(),
-    },
-    visitasCount: i._count.visitas,
   }));
 
   const clientesOptions = clientesPage.items.map((c) => ({
@@ -70,10 +64,8 @@ export default async function InformesPage({
     label: nombreCliente(c),
   }));
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
       <PageHeader
         title="Informes"
         description="Informes mensuales generados por cliente."
@@ -94,16 +86,12 @@ export default async function InformesPage({
         to={params.to ?? null}
       />
 
-      <InformesTable items={serialized} />
-
-      {total > 0 ? (
-        <InformesPagination
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          pageSize={PAGE_SIZE}
-        />
-      ) : null}
+      <InformesTable
+        items={serialized}
+        page={page}
+        total={total}
+        porPagina={PAGE_SIZE}
+      />
     </div>
   );
 }
