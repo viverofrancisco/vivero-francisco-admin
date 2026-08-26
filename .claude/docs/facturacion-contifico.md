@@ -863,9 +863,18 @@ No hay webhook ni callback. Firma, transmite, recibe la autorización del SRI y
 registra cobros desde su propia interfaz **sin decirnos nada**. Todo lo que el
 portal sabe de una factura después de emitirla salió de habérselo preguntado.
 
-Por eso existe `/api/cron/facturas`, cada hora —el mismo ritmo al que Contífico
-procesa—: `sincronizarPendientes()` relee todas las facturas que todavía pueden
-cambiar. El corte es *"ya no queda nada por saber"*: **anulada**, o **autorizada
+Por eso existe `/api/cron/facturas`: `sincronizarPendientes()` relee todas las
+facturas que todavía pueden cambiar.
+
+**Corre una vez por día, y es un límite del plan, no una decisión.** El ritmo
+que corresponde es cada hora —el mismo al que Contífico procesa— pero el tier
+Hobby de Vercel **rechaza el deploy entero** si un cron dispara más de una vez
+al día: `0 * * * *` no falla en tiempo de ejecución, hace que el deployment no
+llegue a existir. Con Pro se puede volver a `0 * * * *`; sin Pro, un scheduler
+externo (GitHub Actions, cron-job.org) puede pegarle al endpoint con el
+`CRON_SECRET` y mantener el ritmo horario. Mientras tanto, una factura puede
+tardar hasta un día en mostrar su RIDE, y el botón *Actualizar* de la ficha
+sigue estando para forzarlo. El corte es *"ya no queda nada por saber"*: **anulada**, o **autorizada
 y saldada**. Cualquier otra combinación se relee, porque puede avanzar de estado
 o recibir un cobro cargado del otro lado. Verificado caso por caso el 24/08/2026.
 
