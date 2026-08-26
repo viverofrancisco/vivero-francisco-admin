@@ -26,7 +26,7 @@ export const informeFirmanteSchema = z.object({
   cedula: z.string().max(30).nullable().optional(),
 });
 
-/** Cuerpo compartido por POST /informes (crear) y PUT /informes/[id] (regenerar). */
+/** Cuerpo de POST /informes. No hay PUT: un informe no se edita. */
 export const informeGenerateSchema = z.object({
   clienteId: z.string().min(1),
   titulo: z.string().min(1).max(200),

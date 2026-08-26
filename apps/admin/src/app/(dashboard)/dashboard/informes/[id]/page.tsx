@@ -1,17 +1,21 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { nombreCliente } from "@vivero/shared";
 import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
 import { getInforme } from "@/lib/services/informe.service";
-import { InformeWizard } from "@/components/informes/informe-wizard";
+import { hrefDeVuelta } from "@/lib/navegacion";
+import { InformeDetail } from "@/components/informes/informe-detail";
 
 export default async function InformeDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   await requireAuth();
   const viewer = await viewerFromSession();
   const { id } = await params;
+  const { from } = await searchParams;
 
   let informe;
   try {
@@ -21,47 +25,61 @@ export default async function InformeDetailPage({
   }
   if (!informe) notFound();
 
+  // `firmantes` es JSON: lo que hay adentro no lo garantiza el esquema.
   const firmantesRaw = informe.firmantes as
     | Array<{ nombre?: unknown; cedula?: unknown }>
     | null
     | undefined;
   const firmantes = (firmantesRaw ?? [])
-    .filter((f): f is { nombre: string } =>
-      typeof f?.nombre === "string" && f.nombre.length > 0
+    .filter(
+      (f): f is { nombre: string } =>
+        typeof f?.nombre === "string" && f.nombre.length > 0
     )
     .map((f) => ({
-      nombre: String(f.nombre),
+      nombre: f.nombre,
       cedula:
         "cedula" in f && typeof (f as { cedula: unknown }).cedula === "string"
           ? ((f as { cedula: string }).cedula as string)
           : null,
     }));
 
-  const initial = {
-    informeId: informe.id,
-    clienteId: informe.clienteId,
-    titulo: informe.titulo,
-    fecha: informe.fecha.toISOString().split("T")[0],
-    visitaIds: informe.visitas.map((v) => v.visitaId),
-    firmantes,
-    secciones: informe.secciones.map((s) => ({
-      productoId: s.productoId,
-      titulo: s.titulo,
-      descripcion: s.descripcion,
-      fotos: s.fotos.map((f) => ({
-        visitaMediaId: f.visitaMediaId,
-        key: f.key,
-        url: f.url,
-      })),
-    })),
-    pdfUrl: informe.pdfUrl,
-  };
+  const generadoPor = informe.generatedBy
+    ? `${informe.generatedBy.name ?? ""} ${informe.generatedBy.apellido ?? ""}`.trim()
+    : "";
 
-  const catalogo = await prisma.producto.findMany({
-    where: { deletedAt: null },
-    orderBy: { nombre: "asc" },
-    select: { id: true, nombre: true, descripcion: true },
-  });
-
-  return <InformeWizard initial={initial} catalogo={catalogo} />;
+  return (
+    <div className="h-full p-4 md:p-6">
+      <InformeDetail
+        backHref={hrefDeVuelta(from, "/dashboard/informes")}
+        informe={{
+          id: informe.id,
+          numero: informe.numero,
+          titulo: informe.titulo,
+          fecha: informe.fecha.toISOString().split("T")[0],
+          generatedAt: informe.generatedAt.toISOString(),
+          pdfUrl: informe.pdfUrl,
+          cliente: {
+            id: informe.cliente.id,
+            nombre: nombreCliente(informe.cliente),
+          },
+          generadoPor: generadoPor || null,
+          firmantes,
+          visitas: informe.visitas
+            .filter((v) => v.visita != null)
+            .map((v) => ({
+              id: v.visita.id,
+              numero: v.visita.numero,
+              estado: v.visita.estado,
+              fecha: (
+                v.visita.fechaRealizada ?? v.visita.fechaProgramada
+              ).toISOString(),
+            })),
+          secciones: informe.secciones.map((s) => ({
+            titulo: s.titulo,
+            fotos: s.fotos.length,
+          })),
+        }}
+      />
+    </div>
+  );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import {
   ChevronRight,
   Download,
   ExternalLink,
+  FileText,
   GripVertical,
   Pencil,
   Plus,
@@ -116,27 +118,6 @@ interface FirmanteDraft {
   cedula: string;
 }
 
-interface InitialData {
-  informeId: string;
-  clienteId: string;
-  titulo: string;
-  /** La que sale impresa, `YYYY-MM-DD`. */
-  fecha: string;
-  visitaIds: string[];
-  firmantes: Array<{ nombre: string; cedula: string | null }>;
-  secciones: Array<{
-    productoId: string | null;
-    titulo: string;
-    descripcion: string | null;
-    fotos: Array<{
-      visitaMediaId: string | null;
-      key: string;
-      url: string;
-    }>;
-  }>;
-  pdfUrl?: string;
-}
-
 type WizardStep = 1 | 2 | 3 | 4 | 5;
 
 interface SavedFirmante {
@@ -147,26 +128,22 @@ interface SavedFirmante {
 }
 
 export function InformeWizard({
-  initial,
   defaultFirmantes,
   catalogo = [],
 }: {
-  initial?: InitialData;
   defaultFirmantes?: Array<{ nombre: string; cedula: string | null }>;
   /** Todo el catálogo activo, para secciones de algo que no se visitó. */
   catalogo?: ProductoCatalogo[];
 }) {
   const router = useRouter();
-  const [step, setStep] = useState<WizardStep>(initial ? 3 : 1);
+  const [step, setStep] = useState<WizardStep>(1);
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [serviciosDisponibles, setServiciosDisponibles] = useState<
     ServicioParaSeccion[]
   >([]);
   const [firmantesCatalog, setFirmantesCatalog] = useState<SavedFirmante[]>([]);
-  const [clienteId, setClienteId] = useState<string | null>(
-    initial?.clienteId ?? null
-  );
+  const [clienteId, setClienteId] = useState<string | null>(null);
 
   const [dateRange, setDateRange] = useState<{
     label: string;
@@ -176,46 +153,21 @@ export function InformeWizard({
 
   const [availableVisitas, setAvailableVisitas] = useState<VisitaParaInforme[]>([]);
   const [selectedVisitaIds, setSelectedVisitaIds] = useState<Set<string>>(
-    new Set(initial?.visitaIds ?? [])
+    new Set()
   );
   const [loadingVisitas, setLoadingVisitas] = useState(false);
 
   const [pool, setPool] = useState<MediaPoolItem[]>([]);
-  const [titulo, setTitulo] = useState(initial?.titulo ?? "");
-  const [secciones, setSecciones] = useState<SeccionDraft[]>(
-    initial
-      ? initial.secciones.map((s, i) => ({
-          tempId: `existing-${i}`,
-          productoId: s.productoId,
-          titulo: s.titulo,
-          descripcion: s.descripcion ?? "",
-          fotos: s.fotos.map((f, j) => ({
-            uid: f.visitaMediaId
-              ? `visita-${f.visitaMediaId}`
-              : `upload-${f.key || j}`,
-            visitaMediaId: f.visitaMediaId,
-            key: f.visitaMediaId ? null : f.key,
-            url: f.url,
-          })),
-        }))
-      : []
-  );
+  const [titulo, setTitulo] = useState("");
+  const [secciones, setSecciones] = useState<SeccionDraft[]>([]);
 
   /**
    * La fecha que sale impresa. Arranca en hoy, que es lo más común, pero un
    * informe de agosto se puede estar armando en septiembre.
    */
-  const [fecha, setFecha] = useState(initial?.fecha ?? hoyISOEcuador());
+  const [fecha, setFecha] = useState(hoyISOEcuador());
 
   const [firmantes, setFirmantes] = useState<FirmanteDraft[]>(() => {
-    const initialFirmantes = initial?.firmantes ?? [];
-    if (initialFirmantes.length > 0) {
-      return initialFirmantes.map((f, i) => ({
-        tempId: `existing-${i}`,
-        nombre: f.nombre,
-        cedula: f.cedula ?? "",
-      }));
-    }
     if (defaultFirmantes && defaultFirmantes.length > 0) {
       return defaultFirmantes.slice(0, 3).map((f, i) => ({
         tempId: `default-${i}`,
@@ -227,10 +179,8 @@ export function InformeWizard({
   });
 
   const [generating, setGenerating] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(initial?.pdfUrl ?? null);
-  const [savedInformeId, setSavedInformeId] = useState<string | null>(
-    initial?.informeId ?? null
-  );
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [savedInformeId, setSavedInformeId] = useState<string | null>(null);
 
   const [addPhotosFor, setAddPhotosFor] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
@@ -315,7 +265,7 @@ export function InformeWizard({
    * Ya se armaron las secciones solas. Volver al paso 2 y adelante no las
    * vuelve a armar: lo que hay en pantalla es lo que alguien dejó.
    */
-  const autogeneradas = useRef(initial != null);
+  const autogeneradas = useRef(false);
 
   // Los servicios que cubren las visitas seleccionadas son el catálogo de
   // secciones: título = nombre del servicio, descripción = la del servicio.
@@ -432,12 +382,8 @@ export function InformeWizard({
     setGenerating(true);
     setPdfUrl(null);
     try {
-      const url = savedInformeId
-        ? `/api/admin/informes/${savedInformeId}`
-        : "/api/admin/informes";
-      const method = savedInformeId ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
+      const res = await fetch("/api/admin/informes", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clienteId,
@@ -526,9 +472,8 @@ export function InformeWizard({
         <aside className="hidden md:block w-64 flex-none border-r bg-muted/20 px-4 py-6 overflow-y-auto">
           <VerticalStepper
             step={step}
-            initial={!!initial}
             onJump={(s) => {
-              if (initial || s <= step) setStep(s);
+              if (s <= step) setStep(s);
             }}
           />
         </aside>
@@ -606,7 +551,11 @@ export function InformeWizard({
             ) : null}
 
             {step === 5 && pdfUrl ? (
-              <Step5Preview pdfUrl={pdfUrl} titulo={titulo} />
+              <Step5Preview
+                pdfUrl={pdfUrl}
+                titulo={titulo}
+                informeId={savedInformeId}
+              />
             ) : null}
           </div>
 
@@ -899,11 +848,9 @@ function Step4Firmantes({
 function VerticalStepper({
   step,
   onJump,
-  initial,
 }: {
   step: WizardStep;
   onJump: (s: WizardStep) => void;
-  initial: boolean;
 }) {
   const items: Array<{ n: WizardStep; label: string; description: string }> = [
     { n: 1, label: "Cliente", description: "Selecciona el cliente" },
@@ -917,7 +864,7 @@ function VerticalStepper({
       {items.map((it, i) => {
         const completed = it.n < step;
         const current = it.n === step;
-        const clickable = initial || it.n <= step;
+        const clickable = it.n <= step;
         const isLast = i === items.length - 1;
         return (
           <li key={it.n} className="relative">
@@ -2285,9 +2232,12 @@ function PhotoPickerModal({
 function Step5Preview({
   pdfUrl,
   titulo,
+  informeId,
 }: {
   pdfUrl: string;
   titulo: string;
+  /** El informe recién creado, para poder abrir su ficha. */
+  informeId: string | null;
 }) {
   const filename = `${titulo || "informe"}.pdf`.replace(/[\\/:*?"<>|]+/g, "_");
   // Hide the browser's native PDF toolbar — Chrome/Edge respect these params.
@@ -2305,6 +2255,18 @@ function Step5Preview({
           </p>
         </div>
         <div className="flex flex-none items-center gap-2">
+          {/* La ficha es donde el informe vive de acá en adelante: desde ahí
+              se descarga y se elimina si salió mal. */}
+          {informeId ? (
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href={`/dashboard/informes/${informeId}`} />}
+            >
+              <FileText className="h-4 w-4 mr-1.5" /> Ver informe
+            </Button>
+          ) : null}
           <Button
             variant="outline"
             size="sm"
@@ -2314,6 +2276,7 @@ function Step5Preview({
           </Button>
           <Button
             size="sm"
+            nativeButton={false}
             render={<a href={pdfUrl} download={filename} />}
           >
             <Download className="h-4 w-4 mr-1.5" /> Descargar

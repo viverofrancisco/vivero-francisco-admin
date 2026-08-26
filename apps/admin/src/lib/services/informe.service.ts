@@ -327,8 +327,15 @@ export interface InformeSeccionFotoInput {
   key?: string | null;
 }
 
+/**
+ * Lo que hace falta para armar un informe. **No** lleva el id de uno
+ * existente: un informe no se edita.
+ *
+ * Es un documento firmado que ya salió: si dice algo que no era, lo que
+ * corresponde es eliminarlo y hacer el correcto, no reescribirlo por debajo
+ * dejando al cliente con un PDF que ya no coincide con el nuestro.
+ */
 export interface InformeGeneratePayload {
-  informeId?: string; // if present = update existing
   clienteId: string;
   titulo: string;
   /**
@@ -560,64 +567,23 @@ export async function generateInforme(
   );
   const pdfUrl = publicUrlForKey(pdfKey);
 
-  /**
-   * Lo que este informe tenía antes de regenerarse.
-   *
-   * Cada regeneración escribe un PDF nuevo con otra key, así que el anterior
-   * queda sin dueño. Se borra **después** de que la escritura salga bien: si
-   * se borrara antes y la transacción fallara, el informe quedaría apuntando
-   * a un archivo que ya no existe. Así nunca hay más de una versión guardada,
-   * y borrar el informe alcanza para no dejar nada.
-   */
-  const anterior = payload.informeId
-    ? await prisma.informe.findUnique({
-        where: { id: payload.informeId },
-        select: {
-          pdfKey: true,
-          secciones: {
-            select: {
-              fotos: { where: { visitaMediaId: null }, select: { key: true } },
-            },
-          },
-        },
-      })
-    : null;
-
-  // Persist (or update) in a transaction.
   const result = await prisma.$transaction(async (tx) => {
-    if (payload.informeId) {
-      // Update path
-      await tx.informeVisita.deleteMany({
-        where: { informeId: payload.informeId },
-      });
-      await tx.informeSeccion.deleteMany({
-        where: { informeId: payload.informeId },
-      });
-      const updated = await tx.informe.update({
-        where: { id: payload.informeId },
-        data: {
-          clienteId: payload.clienteId,
-          titulo: payload.titulo,
-          fecha: fechaImpresa,
-          fechaDesde,
-          fechaHasta,
-          pdfKey,
-          pdfUrl,
-          firmantes: firmantesNormalizados,
-          // generatedById intentionally left as the original creator. Could
-          // also overwrite it; leaving as audit detail.
+    const created = await tx.informe.create({
+      data: {
+        clienteId: payload.clienteId,
+        titulo: payload.titulo,
+        fecha: fechaImpresa,
+        fechaDesde,
+        fechaHasta,
+        pdfKey,
+        pdfUrl,
+        firmantes: firmantesNormalizados,
+        generatedById: viewer.id,
+        visitas: {
+          create: payload.visitaIds.map((vid) => ({ visitaId: vid })),
         },
-      });
-      await tx.informeVisita.createMany({
-        data: payload.visitaIds.map((vid) => ({
-          informeId: updated.id,
-          visitaId: vid,
-        })),
-      });
-      for (const [idx, sec] of seccionesResueltas.entries()) {
-        await tx.informeSeccion.create({
-          data: {
-            informeId: updated.id,
+        secciones: {
+          create: seccionesResueltas.map((sec, idx) => ({
             productoId: sec.productoId ?? null,
             titulo: sec.titulo,
             descripcion: sec.descripcion?.trim() || null,
@@ -630,63 +596,12 @@ export async function generateInforme(
                 visitaMediaId: foto.visitaMediaId,
               })),
             },
-          },
-        });
-      }
-      return updated;
-    } else {
-      const created = await tx.informe.create({
-        data: {
-          clienteId: payload.clienteId,
-          titulo: payload.titulo,
-          fecha: fechaImpresa,
-          fechaDesde,
-          fechaHasta,
-          pdfKey,
-          pdfUrl,
-          firmantes: firmantesNormalizados,
-          generatedById: viewer.id,
-          visitas: {
-            create: payload.visitaIds.map((vid) => ({ visitaId: vid })),
-          },
-          secciones: {
-            create: seccionesResueltas.map((sec, idx) => ({
-              productoId: sec.productoId ?? null,
-              titulo: sec.titulo,
-              descripcion: sec.descripcion?.trim() || null,
-              orden: idx * 10,
-              fotos: {
-                create: sec.fotos.map((foto, fIdx) => ({
-                  orden: fIdx,
-                  key: foto.key,
-                  url: foto.url,
-                  visitaMediaId: foto.visitaMediaId,
-                })),
-              },
-            })),
-          },
+          })),
         },
-      });
-      return created;
-    }
+      },
+    });
+    return created;
   });
-
-  if (anterior) {
-    // Las subidas que siguen en el informe se conservan; solo se van las que
-    // quedaron fuera al reeditarlo. Las que vienen de una visita no se tocan:
-    // son de la visita, no del informe.
-    const siguenEnUso = new Set(
-      seccionesResueltas.flatMap((sec) =>
-        sec.fotos.filter((f) => !f.visitaMediaId).map((f) => f.key)
-      )
-    );
-    await deleteObjects([
-      anterior.pdfKey,
-      ...anterior.secciones
-        .flatMap((sec) => sec.fotos.map((f) => f.key))
-        .filter((key) => !siguenEnUso.has(key)),
-    ]);
-  }
 
   return { id: result.id, pdfUrl };
 }
@@ -705,7 +620,21 @@ export async function getInforme(viewer: Viewer, id: string) {
       generatedBy: {
         select: { id: true, name: true, apellido: true },
       },
-      visitas: { select: { visitaId: true } },
+      visitas: {
+        select: {
+          visitaId: true,
+          // La ficha del informe las lista para poder saltar a cada una.
+          visita: {
+            select: {
+              id: true,
+              numero: true,
+              estado: true,
+              fechaProgramada: true,
+              fechaRealizada: true,
+            },
+          },
+        },
+      },
       secciones: {
         orderBy: { orden: "asc" },
         include: {

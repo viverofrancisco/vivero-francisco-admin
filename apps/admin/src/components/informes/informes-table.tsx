@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/shared/table-pagination";
+import { aca } from "@/lib/filtros-url";
 import {
   Dialog,
   DialogContent,
@@ -117,7 +118,11 @@ export function InformesTable({
                 <TableRow
                   key={item.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`/dashboard/informes/${item.id}`)}
+                  // Con `?from=` la flecha de la ficha vuelve a esta lista
+                  // como estaba: mismos filtros, misma página.
+                  onClick={() =>
+                    router.push(`/dashboard/informes/${item.id}?from=${aca()}`)
+                  }
                 >
                   <TableCell className="font-bold tabular-nums">
                     #{item.numero}

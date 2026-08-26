@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
-import { informeGenerateSchema } from "@/lib/validations/informe";
 import { viewerFromSession } from "@/lib/auth-helpers";
-import {
-  deleteInforme,
-  generateInforme,
-  getInforme,
-} from "@/lib/services/informe.service";
+import { deleteInforme, getInforme } from "@/lib/services/informe.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 export async function GET(
@@ -17,32 +12,6 @@ export async function GET(
   try {
     const informe = await getInforme(viewer, id);
     return NextResponse.json(informe);
-  } catch (error) {
-    return serviceErrorResponse(error);
-  }
-}
-
-const updateSchema = informeGenerateSchema;
-
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const viewer = await viewerFromSession();
-  const { id } = await params;
-  const parsed = updateSchema.safeParse(await request.json().catch(() => ({})));
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Datos inválidos", details: parsed.error.issues },
-      { status: 400 }
-    );
-  }
-  try {
-    const result = await generateInforme(viewer, {
-      ...parsed.data,
-      informeId: id,
-    });
-    return NextResponse.json(result);
   } catch (error) {
     return serviceErrorResponse(error);
   }
