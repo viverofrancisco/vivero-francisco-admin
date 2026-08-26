@@ -1,15 +1,20 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-helpers";
+import { hrefDeVuelta } from "@/lib/navegacion";
 import { SectorDetailClient } from "@/components/sectores/sector-detail-client";
 
 export default async function SectorDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   await requireAdmin();
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = hrefDeVuelta(from, "/dashboard/sectores");
 
   const [sector, allClientes, personalAdmins] = await Promise.all([
     prisma.sector.findUnique({
@@ -46,6 +51,7 @@ export default async function SectorDetailPage({
   return (
     <div>
       <SectorDetailClient
+      backHref={backHref}
         sector={sector}
         unassignedClientes={unassignedClientes}
         personalAdmins={personalAdmins}

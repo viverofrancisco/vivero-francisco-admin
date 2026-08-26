@@ -125,7 +125,7 @@ Services throw typed errors from `src/lib/services/errors.ts` (`NotFoundError`, 
 
 Prisma schema: `apps/admin/prisma/schema.prisma` (PostgreSQL via `@prisma/adapter-pg`). The generated client is committed at `apps/admin/src/generated/prisma` — import types from `@/generated/prisma/client`, not `@prisma/client`.
 
-Core entities: **Cliente** (customer) → **Visita** (a scheduled visit) carried out by **Personal** (organized into **Grupo**s), scoped by **Sector** (geographic; admins are scoped via `SectorAdmin`). A visita covers one or more products via **VisitaProducto**, accumulates **VisitaMedia** (photos/videos, optionally tagged to one of the visita's products), has an in-visit chat (**VisitaMessage**), and rolls up into **Informe**s (PDF reports, rendered with `@react-pdf/renderer` in `src/lib/informes/`). Soft-delete is used on several models. **NotificacionPlantilla/Log/Config** drive WhatsApp + push notifications.
+Core entities: **Cliente** (customer) → **Visita** (a scheduled visit) carried out by **Personal** (organized into **Grupo**s), scoped by **Sector** (geographic; admins are scoped via `SectorAdmin`). A visita covers one or more products via **VisitaProducto**, accumulates **VisitaMedia** (photos/videos, optionally tagged to one of the visita's products), has an in-visit chat (**VisitaMessage**), and rolls up into **Informe**s (PDF reports, rendered with `@react-pdf/renderer` in `src/lib/informes/`; `Informe.fecha` is the date **printed** on the PDF and `generatedAt` the instant it was built — a report for August can be assembled in September, and regenerating it to fix a photo must not re-date the document the client already has). Soft-delete is used on several models. **NotificacionPlantilla/Log/Config** drive WhatsApp + push notifications.
 
 **Producto** is the single catalog — services and (later) retail goods. Its only
 classifying axis is `tipo`: `SERVICIO` | `BIEN` — what it *is*, mapped to
@@ -174,6 +174,13 @@ leave it charged and covered at once.
 A subscription's page has a **Nueva visita** shortcut that pre-fills its plan,
 which is how most plan visits get created.
 
+**Nueva orden ends in one of two ways**, and both write the same thing —
+`crearOrden` always opens a `BORRADOR`, the only editable state. *Crear y
+cobrar* goes straight into the cobro dialog (which emits and charges in one
+call); *Guardar borrador* lands on the order's page. The difference that matters
+is what each demands first: a draft may have unpriced lines, because pricing is
+exactly what it's waiting for; charging may not.
+
 **Completing a visita creates its draft order.** `borradorDeVisita()` runs on
 the real transition to `COMPLETADA` (not on re-edits) and opens a `BORRADOR`
 with the loose work at **$0** — the visita carries no money, so the draft exists
@@ -190,18 +197,24 @@ annul it first. Editing a **subscription's** products is free by contrast: each
 order covers a closed period, so the plan changes going forward and past orders
 are history.
 
-**A visita is invoiced from its own page.** "Crear orden" opens the order screen
-with that visit's pending work already loaded, ready to have more products added.
-**Scheduled visits count too** — billing before the work happens is normal here;
-the only visita that never becomes billable is a cancelled one. The trade-off is
-that you can invoice something that later doesn't happen, and the way out is
-annulling the order. The visita's `Facturación` tile reads the state straight off
-the data — covered by a plan, linked to an `OrdenLinea` (with the order number),
-or still pending.
+**A visita is invoiced from its own page, or picked on the order.** "Crear
+orden" opens the order screen with that visit's pending work already loaded; and
+**Nueva orden** has a *Visita* selector listing the client's visits that still
+have unbilled work, which does the same thing from the other side. Either way
+the assignment *is* loading the visit's work — `Orden.visitaId` is derived from
+the lines' provenance, so an assignment that brought no lines would be one
+nothing records. Picking a visit hides the pendientes panel; adding a
+subscription period instead greys the selector out, because an order is one or
+the other. **Scheduled visits count too** — billing before the work happens is
+normal here; the only visita that never becomes billable is a cancelled one. The
+trade-off is that you can invoice something that later doesn't happen, and the
+way out is annulling the order.
 
-`listarPendientes` takes a separate `hastaVisitas` bound so arriving from a
-future visita doesn't also offer subscription periods that haven't started —
-charging a period up front stays a deliberate, separate decision.
+`listarPendientes` takes a separate `hastaVisitas` bound, and the web passes
+`VISITAS_SIN_TOPE`: **visits are never cut off by date, subscription periods are**
+(end of the current month). A visit scheduled for October is exactly what someone
+wants to assign to an order today, while charging a period that hasn't started
+stays a deliberate, separate decision.
 
 `SuscripcionItem.visitasPorPeriodo` counts visits **per billing period** — a
 quarterly plan's number is visits per quarter — and it is **informative, not a
@@ -215,6 +228,36 @@ block. See [the invoicing doc](./.claude/docs/facturacion-contifico.md).
 `autoincrement()`, so #12 can be an orden, a visita and a suscripción at once
 and that's fine: nothing ever shows a bare number without saying what it is.
 The cuid stays the identity and the URL; the number is what people say out loud.
+
+**Files belong to the visita, not to any form.** `ArchivosVisita` lives on the
+visita's own page and every change — upload, re-tag, delete — goes out on its
+own, in any state. Photos get taken *while* the job happens: whoever is in the
+garden uploads what they have and carries on, and making them wait for a save
+button on another screen, or for the visit to be closed, is asking them to
+remember. So neither *Completar* nor *Editar* touches files.
+
+**Closing a visita is its own page** (`/dashboard/visitas/[id]/completar`), not
+a dialog, and it collects what happened and when — nothing else. Each file is
+tagged to one of the visit's products so the informe can group them — **that tag
+is what makes
+the informe wizard work**: on reaching step 3 it builds one section per product
+that has photos, titled and described from the product, with those photos
+already in it. Sections are still editable and the picker offers the whole
+active catalog (visit products first, searchable), because a section can be
+about something these visits didn't cover. Photos come from one *Agregar fotos*
+dialog that does all three things at once — pick from the visits, drop files,
+browse the computer; the old floating photo pool is gone. The tag picker shows even
+with a single product — it used to hide below two, so the common case silently
+produced untagged media. A file can be tagged with **any active
+product**, not only the visit's: in the field you photograph what shows up — a
+watering problem during a pruning — and restricting the tag to what was
+scheduled left those photos unclassified. Files show grouped by product,
+untagged last, and adding happens *inside* a group, so where you drop it is the
+tag; there is no separate "which product" field. **`archivoSubibleSchema` in `@vivero/shared` is
+the one gate for uploads** (web and mobile): only `image/*` and `video/*`, at
+most `MAX_ARCHIVOS_POR_SUBIDA` per call. The content type matters because it is
+what gets *signed* — the presigned URL carries it and R2 stores whatever
+arrives, and `tipo` is derived as "video" or, for everything else, "imagen".
 
 **A visita is editable in any state**, including `COMPLETADA`. The state records
 what happened to the work, not whether the row is right: fixing a wrong date or
@@ -309,12 +352,12 @@ twice — they are never the source of the price.
 - **Contífico** (accounting / SRI e-invoicing) — `src/lib/contifico/`. The portal pushes orders as invoices; Contífico signs and transmits to the SRI. Env: `CONTIFICO_API_KEY`, `CONTIFICO_TOKEN`, `CONTIFICO_ESTABLECIMIENTO`, `CONTIFICO_PUNTO_EMISION`, `CONTIFICO_SECUENCIAL_INICIAL`. **Read [the doc](./.claude/docs/facturacion-contifico.md) before touching it** — its API has several traps that cost hours to rediscover.
 - **Cron** — `/api/cron/notificaciones` (scheduled notifications), `/api/cron/renovaciones` (creates BORRADOR orders for due subscription periods; idempotent) and `/api/cron/facturas` (hourly; re-reads from Contífico every invoice that can still change). All gated by `CRON_SECRET` and registered in `apps/admin/vercel.json`. **Contífico never calls us back** — it signs, transmits and collects on its own, and `url_ride`/`url_xml` only exist once it signs, so without that hourly sweep an invoice sits at "Sin firmar" with no PDF until someone happens to press *Actualizar* by hand. Those drafts surface as a counted notice on **Por cobrar** (`borradoresSinConfirmar`) rather than as rows, so the cron's output never goes unnoticed without pretending a draft is money owed.
 
-Other env: `DATABASE_URL`, `MOBILE_OTP_DEV_BYPASS` (skip real OTP in dev).
+Other env: `DATABASE_URL`, plus `NEXTAUTH_SECRET` / `NEXTAUTH_URL` — **required in production**: without the secret next-auth doesn't sign sessions and nobody can log into the dashboard, and dev auto-generates one so the problem only shows up on deploy. `apps/admin/.env.example` lists every variable with what breaks without it.
 
 ## Conventions
 
 - Admin imports use the `@/*` alias → `apps/admin/src/*`. Mobile uses `@/*` → `apps/mobile/*`.
 - Validation: Zod schemas shared cross-app live in `@vivero/shared`; admin-web-only schemas live in `src/lib/validations/`. Validate request bodies/queries at the route boundary with `safeParse`.
-- Admin UI: shadcn/Base UI components in `src/components/ui/`, Tailwind v4, feature components grouped by domain (`src/components/visitas`, `clientes`, etc.). **Every dashboard route segment has a `loading.tsx`** (`src/components/shared/page-skeletons.tsx`): without one the App Router waits for the server component's queries *before* navigating and the click feels stuck. Add one when you add a route. **List pages follow one layout**: the page root is `flex h-full flex-col` — `h-full`, never `min-h-full`, or the content grows past the viewport and pushes the pager below the fold. The card is a `flex flex-col` holding a `min-h-0 flex-1` scroll area (`<Table containerClassName="h-full overflow-y-auto">` + `<TableHeader sticky>`) and, as its footer, `<TablePagination>` (`src/components/shared/table-pagination.tsx`), which renders even with a single page. So only the rows scroll — filters, header and pager stay put — and the height comes from the container instead of a hand-tuned `calc`. `FILAS_POR_PAGINA` is the one page size for every listing; card grids pass `suelta` to drop the footer styling. Anything else that can outgrow the viewport does the same internally: the visits calendar is a `flex h-full flex-col` card whose month header stays outside the scroll area and whose weekday row is `sticky top-0` with an **opaque** background — a translucent one lets the rows show through as they pass under it. Date filters use `DateRangePicker` (one field, two months, shortcuts for hoy/ayer/mañana/semana/mes) rather than a Desde+Hasta pair — a single day travels as `desde === hasta`. Any calendar heading is a `MonthYearPicker` so jumping to another year is three clicks, not twenty. Mobile UI: react-native-paper, theme primary `#2e7d32` (green).
+- Admin UI: shadcn/Base UI components in `src/components/ui/`, Tailwind v4, feature components grouped by domain (`src/components/visitas`, `clientes`, etc.). **Every dashboard route segment has a `loading.tsx`** (`src/components/shared/page-skeletons.tsx`): without one the App Router waits for the server component's queries *before* navigating and the click feels stuck. Add one when you add a route. **List pages follow one layout**: the page root is `flex h-full flex-col` — `h-full`, never `min-h-full`, or the content grows past the viewport and pushes the pager below the fold. The card is a `flex flex-col` holding a `min-h-0 flex-1` scroll area (`<Table containerClassName="h-full overflow-y-auto">` + `<TableHeader sticky>`) and, as its footer, `<TablePagination>` (`src/components/shared/table-pagination.tsx`), which renders even with a single page. So only the rows scroll — filters, header and pager stay put — and the height comes from the container instead of a hand-tuned `calc`. `FILAS_POR_PAGINA` is the one page size for every listing; card grids pass `suelta` to drop the footer styling. **A list's filters, search and page number live in the query string**, via `useFiltroUrl` (`src/lib/filtros-url.ts`) — a drop-in for `useState` that mirrors the value into the URL with `history.replaceState`. Opening a record and pressing back re-creates the page from scratch, so anything held only in React state is lost and has to be typed again; the URL is what the browser actually remembers. **Every row link carries `?from=` built with `aca()`** (or `useAca()` when the href is built during render — `window` doesn't exist on the server and a differing href is a hydration error), and every detail's back arrow honours it via `hrefDeVuelta()` (`src/lib/navegacion.ts`), which rejects anything outside `/dashboard/`. That arrow — not the browser's — is how people actually go back, so a hard-coded `href="/dashboard/x"` there throws the filters away. Only the value that differs from the default is written, so an untouched list keeps a clean URL. The one page whose filters the **server** reads is `/dashboard/visitas`, because its list is a server query — and there the filters must be applied with `router.replace`, not `useFiltroUrl`: rewriting the URL by hand asks the server for nothing, so the table kept showing the previous month's visits while the controls said otherwise. `replace` and not `push` so back leaves the list instead of undoing one filter at a time. Anything else that can outgrow the viewport does the same internally: the visits calendar is a `flex h-full flex-col` card whose month header stays outside the scroll area and whose weekday row is `sticky top-0` with an **opaque** background — a translucent one lets the rows show through as they pass under it. Date filters use `DateRangePicker` (one field, two months, shortcuts for hoy/ayer/mañana/semana/mes) rather than a Desde+Hasta pair — a single day travels as `desde === hasta`. Any calendar heading is a `MonthYearPicker` so jumping to another year is three clicks, not twenty. Mobile UI: react-native-paper, theme primary `#2e7d32` (green).
 - Mobile state: Zustand stores in `apps/mobile/lib/` (`auth-store.ts` holds the token pair; `lib/api.ts` is the fetch wrapper that auto-refreshes access tokens on 401). The mobile app reaches the server via `EXPO_PUBLIC_API_BASE_URL` (set to your LAN IP for a real device; defaults to `http://localhost:3001`).
 - React 19 across the monorepo; root `package.json` pins shared native/React versions via `overrides`.

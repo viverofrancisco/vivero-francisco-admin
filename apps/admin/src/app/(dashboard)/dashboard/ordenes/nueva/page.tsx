@@ -4,7 +4,10 @@ import {
   getUserSectorIds,
   viewerFromUser,
 } from "@/lib/auth-helpers";
-import { listarPendientes } from "@/lib/services/orden.service";
+import {
+  listarPendientes,
+  VISITAS_SIN_TOPE,
+} from "@/lib/services/orden.service";
 import { productosSuscritos } from "@/lib/services/suscripcion.service";
 import { NuevaOrdenPage } from "@/components/ordenes/nueva-orden-page";
 
@@ -44,9 +47,7 @@ export default async function NuevaOrdenRoute({
   // Con cliente en la URL se resuelven acá: la pantalla llega completa.
   const visible = clientes.some((c) => c.id === clienteInicial);
 
-  // Viniendo de una visita, su trabajo entra ya cargado. La visita puede estar
-  // agendada a futuro, así que el tope de fechas se estira hasta ella —solo
-  // para las visitas: los períodos de suscripción siguen cortados en el mes.
+  // Viniendo de una visita, su trabajo entra ya cargado.
   const laVisita = visita
     ? await prisma.visitaProducto.findMany({
         where: { visitaId: visita, visita: { clienteId: clienteInicial } },
@@ -57,21 +58,19 @@ export default async function NuevaOrdenRoute({
   const finDeMes = new Date(
     Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 0)
   );
-  const hastaVisitas = laVisita.reduce(
-    (tope, vp) =>
-      vp.visita.fechaProgramada > tope ? vp.visita.fechaProgramada : tope,
-    finDeMes
-  );
 
   const [pendientes, suscritos] =
     clienteInicial && visible
       ? await Promise.all([
+          // Los períodos de suscripción se cortan en el mes; las visitas no,
+          // porque son las que se le asignan a la orden y muchas están
+          // agendadas para más adelante.
           listarPendientes(
             viewer,
             clienteInicial,
             new Date(Date.UTC(2000, 0, 1)),
             finDeMes,
-            hastaVisitas
+            VISITAS_SIN_TOPE
           ),
           productosSuscritos(clienteInicial),
         ])
@@ -115,6 +114,7 @@ export default async function NuevaOrdenRoute({
               visitaProductoId: p.visitaProductoId,
               // Para poder agregar la visita entera de una: se factura completa.
               visitaId: p.visitaId,
+              visitaNumero: p.visitaNumero,
               fecha: p.fecha.toISOString(),
             }
           : {

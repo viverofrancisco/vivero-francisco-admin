@@ -28,6 +28,7 @@ export type InformeMinAggregateOutputType = {
   id: string | null
   clienteId: string | null
   titulo: string | null
+  fecha: Date | null
   fechaDesde: Date | null
   fechaHasta: Date | null
   pdfKey: string | null
@@ -41,6 +42,7 @@ export type InformeMaxAggregateOutputType = {
   id: string | null
   clienteId: string | null
   titulo: string | null
+  fecha: Date | null
   fechaDesde: Date | null
   fechaHasta: Date | null
   pdfKey: string | null
@@ -54,6 +56,7 @@ export type InformeCountAggregateOutputType = {
   id: number
   clienteId: number
   titulo: number
+  fecha: number
   fechaDesde: number
   fechaHasta: number
   pdfKey: number
@@ -70,6 +73,7 @@ export type InformeMinAggregateInputType = {
   id?: true
   clienteId?: true
   titulo?: true
+  fecha?: true
   fechaDesde?: true
   fechaHasta?: true
   pdfKey?: true
@@ -83,6 +87,7 @@ export type InformeMaxAggregateInputType = {
   id?: true
   clienteId?: true
   titulo?: true
+  fecha?: true
   fechaDesde?: true
   fechaHasta?: true
   pdfKey?: true
@@ -96,6 +101,7 @@ export type InformeCountAggregateInputType = {
   id?: true
   clienteId?: true
   titulo?: true
+  fecha?: true
   fechaDesde?: true
   fechaHasta?: true
   pdfKey?: true
@@ -183,6 +189,7 @@ export type InformeGroupByOutputType = {
   id: string
   clienteId: string
   titulo: string
+  fecha: Date
   fechaDesde: Date | null
   fechaHasta: Date | null
   pdfKey: string
@@ -218,6 +225,7 @@ export type InformeWhereInput = {
   id?: Prisma.StringFilter<"Informe"> | string
   clienteId?: Prisma.StringFilter<"Informe"> | string
   titulo?: Prisma.StringFilter<"Informe"> | string
+  fecha?: Prisma.DateTimeFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   pdfKey?: Prisma.StringFilter<"Informe"> | string
@@ -236,6 +244,7 @@ export type InformeOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaHasta?: Prisma.SortOrderInput | Prisma.SortOrder
   pdfKey?: Prisma.SortOrder
@@ -257,6 +266,7 @@ export type InformeWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.InformeWhereInput | Prisma.InformeWhereInput[]
   clienteId?: Prisma.StringFilter<"Informe"> | string
   titulo?: Prisma.StringFilter<"Informe"> | string
+  fecha?: Prisma.DateTimeFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   pdfKey?: Prisma.StringFilter<"Informe"> | string
@@ -275,6 +285,7 @@ export type InformeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaHasta?: Prisma.SortOrderInput | Prisma.SortOrder
   pdfKey?: Prisma.SortOrder
@@ -295,6 +306,7 @@ export type InformeScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Informe"> | string
   clienteId?: Prisma.StringWithAggregatesFilter<"Informe"> | string
   titulo?: Prisma.StringWithAggregatesFilter<"Informe"> | string
+  fecha?: Prisma.DateTimeWithAggregatesFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableWithAggregatesFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableWithAggregatesFilter<"Informe"> | Date | string | null
   pdfKey?: Prisma.StringWithAggregatesFilter<"Informe"> | string
@@ -308,6 +320,7 @@ export type InformeScalarWhereWithAggregatesInput = {
 export type InformeCreateInput = {
   id?: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -325,6 +338,7 @@ export type InformeUncheckedCreateInput = {
   id?: string
   clienteId: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -340,6 +354,7 @@ export type InformeUncheckedCreateInput = {
 export type InformeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -357,6 +372,7 @@ export type InformeUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -373,6 +389,7 @@ export type InformeCreateManyInput = {
   id?: string
   clienteId: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -386,6 +403,7 @@ export type InformeCreateManyInput = {
 export type InformeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -399,6 +417,7 @@ export type InformeUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -423,6 +442,7 @@ export type InformeCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrder
   fechaHasta?: Prisma.SortOrder
   pdfKey?: Prisma.SortOrder
@@ -437,6 +457,7 @@ export type InformeMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrder
   fechaHasta?: Prisma.SortOrder
   pdfKey?: Prisma.SortOrder
@@ -450,6 +471,7 @@ export type InformeMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrder
   fechaHasta?: Prisma.SortOrder
   pdfKey?: Prisma.SortOrder
@@ -579,6 +601,7 @@ export type InformeUpdateOneRequiredWithoutSeccionesNestedInput = {
 export type InformeCreateWithoutGeneratedByInput = {
   id?: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -595,6 +618,7 @@ export type InformeUncheckedCreateWithoutGeneratedByInput = {
   id?: string
   clienteId: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -639,6 +663,7 @@ export type InformeScalarWhereInput = {
   id?: Prisma.StringFilter<"Informe"> | string
   clienteId?: Prisma.StringFilter<"Informe"> | string
   titulo?: Prisma.StringFilter<"Informe"> | string
+  fecha?: Prisma.DateTimeFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   pdfKey?: Prisma.StringFilter<"Informe"> | string
@@ -652,6 +677,7 @@ export type InformeScalarWhereInput = {
 export type InformeCreateWithoutClienteInput = {
   id?: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -667,6 +693,7 @@ export type InformeCreateWithoutClienteInput = {
 export type InformeUncheckedCreateWithoutClienteInput = {
   id?: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -708,6 +735,7 @@ export type InformeUpdateManyWithWhereWithoutClienteInput = {
 export type InformeCreateWithoutVisitasInput = {
   id?: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -724,6 +752,7 @@ export type InformeUncheckedCreateWithoutVisitasInput = {
   id?: string
   clienteId: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -754,6 +783,7 @@ export type InformeUpdateToOneWithWhereWithoutVisitasInput = {
 export type InformeUpdateWithoutVisitasInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -770,6 +800,7 @@ export type InformeUncheckedUpdateWithoutVisitasInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -784,6 +815,7 @@ export type InformeUncheckedUpdateWithoutVisitasInput = {
 export type InformeCreateWithoutSeccionesInput = {
   id?: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -800,6 +832,7 @@ export type InformeUncheckedCreateWithoutSeccionesInput = {
   id?: string
   clienteId: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -830,6 +863,7 @@ export type InformeUpdateToOneWithWhereWithoutSeccionesInput = {
 export type InformeUpdateWithoutSeccionesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -846,6 +880,7 @@ export type InformeUncheckedUpdateWithoutSeccionesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -861,6 +896,7 @@ export type InformeCreateManyGeneratedByInput = {
   id?: string
   clienteId: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -873,6 +909,7 @@ export type InformeCreateManyGeneratedByInput = {
 export type InformeUpdateWithoutGeneratedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -889,6 +926,7 @@ export type InformeUncheckedUpdateWithoutGeneratedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -904,6 +942,7 @@ export type InformeUncheckedUpdateManyWithoutGeneratedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -916,6 +955,7 @@ export type InformeUncheckedUpdateManyWithoutGeneratedByInput = {
 export type InformeCreateManyClienteInput = {
   id?: string
   titulo: string
+  fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
   pdfKey: string
@@ -929,6 +969,7 @@ export type InformeCreateManyClienteInput = {
 export type InformeUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -944,6 +985,7 @@ export type InformeUpdateWithoutClienteInput = {
 export type InformeUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -959,6 +1001,7 @@ export type InformeUncheckedUpdateWithoutClienteInput = {
 export type InformeUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1013,6 +1056,7 @@ export type InformeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   clienteId?: boolean
   titulo?: boolean
+  fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
   pdfKey?: boolean
@@ -1032,6 +1076,7 @@ export type InformeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   clienteId?: boolean
   titulo?: boolean
+  fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
   pdfKey?: boolean
@@ -1048,6 +1093,7 @@ export type InformeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   clienteId?: boolean
   titulo?: boolean
+  fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
   pdfKey?: boolean
@@ -1064,6 +1110,7 @@ export type InformeSelectScalar = {
   id?: boolean
   clienteId?: boolean
   titulo?: boolean
+  fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
   pdfKey?: boolean
@@ -1074,7 +1121,7 @@ export type InformeSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InformeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "titulo" | "fechaDesde" | "fechaHasta" | "pdfKey" | "pdfUrl" | "firmantes" | "generatedById" | "generatedAt" | "updatedAt", ExtArgs["result"]["informe"]>
+export type InformeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "titulo" | "fecha" | "fechaDesde" | "fechaHasta" | "pdfKey" | "pdfUrl" | "firmantes" | "generatedById" | "generatedAt" | "updatedAt", ExtArgs["result"]["informe"]>
 export type InformeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1103,6 +1150,16 @@ export type $InformePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     clienteId: string
     titulo: string
+    /**
+     * La fecha que **sale impresa** en el PDF, y solo eso.
+     * 
+     * Va aparte de `generatedAt` porque son dos hechos distintos: cuándo se
+     * armó el archivo y con qué fecha se entrega. Un informe de agosto se puede
+     * generar el 2 de septiembre y tiene que decir agosto; y regenerarlo para
+     * corregir una foto no puede cambiarle la fecha al documento que el cliente
+     * ya tiene. `generatedAt` sigue siendo el instante real, para auditoría.
+     */
+    fecha: Date
     fechaDesde: Date | null
     fechaHasta: Date | null
     pdfKey: string
@@ -1541,6 +1598,7 @@ export interface InformeFieldRefs {
   readonly id: Prisma.FieldRef<"Informe", 'String'>
   readonly clienteId: Prisma.FieldRef<"Informe", 'String'>
   readonly titulo: Prisma.FieldRef<"Informe", 'String'>
+  readonly fecha: Prisma.FieldRef<"Informe", 'DateTime'>
   readonly fechaDesde: Prisma.FieldRef<"Informe", 'DateTime'>
   readonly fechaHasta: Prisma.FieldRef<"Informe", 'DateTime'>
   readonly pdfKey: Prisma.FieldRef<"Informe", 'String'>

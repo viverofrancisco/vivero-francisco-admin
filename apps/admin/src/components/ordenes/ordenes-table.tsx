@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -22,6 +22,7 @@ import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { nombreCliente } from "@vivero/shared";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   money,
   fecha,
@@ -64,9 +65,9 @@ const FILTROS = [
 
 export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
   const router = useRouter();
-  const [page, setPage] = useState(1);
-  const [busqueda, setBusqueda] = useState("");
-  const [estado, setEstado] = useState("");
+  const [page, setPage] = useFiltroUrl("pagina", 1);
+  const [busqueda, setBusqueda] = useFiltroUrl("q", "");
+  const [estado, setEstado] = useFiltroUrl("estado", "");
 
   /** Cualquier filtro que cambie vuelve a la primera página. */
   const cambiar = (fn: () => void) => {
@@ -163,7 +164,9 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
                   <TableRow
                     key={o.id}
                     className="cursor-pointer"
-                    onClick={() => router.push(`/dashboard/ordenes/${o.id}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/ordenes/${o.id}?from=${aca()}`)
+                    }
                   >
                     <TableCell className="font-bold tabular-nums">
                       #{o.numero}

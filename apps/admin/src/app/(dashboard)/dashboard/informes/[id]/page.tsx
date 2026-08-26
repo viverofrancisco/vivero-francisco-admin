@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
 import { getInforme } from "@/lib/services/informe.service";
 import { InformeWizard } from "@/components/informes/informe-wizard";
@@ -40,6 +41,7 @@ export default async function InformeDetailPage({
     informeId: informe.id,
     clienteId: informe.clienteId,
     titulo: informe.titulo,
+    fecha: informe.fecha.toISOString().split("T")[0],
     visitaIds: informe.visitas.map((v) => v.visitaId),
     firmantes,
     secciones: informe.secciones.map((s) => ({
@@ -55,5 +57,11 @@ export default async function InformeDetailPage({
     pdfUrl: informe.pdfUrl,
   };
 
-  return <InformeWizard initial={initial} />;
+  const catalogo = await prisma.producto.findMany({
+    where: { deletedAt: null },
+    orderBy: { nombre: "asc" },
+    select: { id: true, nombre: true, descripcion: true },
+  });
+
+  return <InformeWizard initial={initial} catalogo={catalogo} />;
 }

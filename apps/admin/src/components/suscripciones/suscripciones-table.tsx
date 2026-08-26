@@ -16,14 +16,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
-import { Loader2, Plus, RefreshCw, Search } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   PERIODICIDAD_LABEL,
   estadoVariant,
@@ -66,10 +73,24 @@ export function SuscripcionesTable({
   soloPendientes?: boolean;
 }) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [estado, setEstado] = useState<string | null>("ACTIVO");
-  const [pendientes, setPendientes] = useState(soloPendientes);
+  const [query, setQuery] = useFiltroUrl("q", "");
+  const [estado, setEstado] = useFiltroUrl<string | null>("estado", "ACTIVO");
+  const [pendientes, setPendientes] = useFiltroUrl(
+    "sinOrden",
+    soloPendientes
+  );
   const [generando, setGenerando] = useState(false);
+
+  /**
+   * Cuántos filtros están puestos, para el contador del botón. El buscador no
+   * cuenta: está a la vista y con su texto adentro.
+   */
+  const filtrosActivos = (estado ? 1 : 0) + (pendientes ? 1 : 0);
+
+  const limpiarFiltros = () => {
+    setEstado(null);
+    setPendientes(false);
+  };
 
   /** Cuántas suscripciones esperan que se les cree la orden del período. */
   const conPendientes = suscripciones.filter(
@@ -137,7 +158,7 @@ export function SuscripcionesTable({
       );
   }, [filtradas]);
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useFiltroUrl("pagina", 1);
   const totalPages = Math.max(
     1,
     Math.ceil(filtradas.length / FILAS_POR_PAGINA),
@@ -166,6 +187,8 @@ export function SuscripcionesTable({
         </Link>
       </div>
 
+      {/* El buscador afuera, el resto adentro: es lo que se usa siempre, y
+          cuatro controles en fila ocupaban el ancho de la tabla. */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[220px] flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -176,46 +199,80 @@ export function SuscripcionesTable({
             className="pl-9"
           />
         </div>
-        <div className="w-40">
-          <CustomSelect
-            value={estado ?? ""}
-            onChange={(v) => setEstado(v || null)}
-            options={[
-              { value: "", label: "Todas" },
-              ...ESTADOS.map((e) => ({
-                value: e,
-                label: e.charAt(0) + e.slice(1).toLowerCase(),
-              })),
-            ]}
-            placeholder="Todas"
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button variant="outline" size="sm" className="h-9">
+                <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
+                Filtros
+                {filtrosActivos > 0 && (
+                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+                    {filtrosActivos}
+                  </span>
+                )}
+              </Button>
+            }
           />
-        </div>
-        {/* Con el cron sano no hay ninguna, y un filtro que nunca encuentra nada
-            solo ocupa lugar. Se muestra igual si está prendido, para poder
-            apagarlo en vez de quedar con una lista vacía sin explicación. */}
-        {(conPendientes > 0 || pendientes) && (
-          <>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <Checkbox
-                checked={pendientes}
-                onCheckedChange={(v) => setPendientes(v === true)}
+          <PopoverContent className="w-80 space-y-4">
+            <div className="space-y-1">
+              <Label className="text-xs">Estado</Label>
+              <CustomSelect
+                value={estado ?? ""}
+                onChange={(v) => setEstado(v || null)}
+                options={[
+                  { value: "", label: "Todas" },
+                  ...ESTADOS.map((e) => ({
+                    value: e,
+                    label: e.charAt(0) + e.slice(1).toLowerCase(),
+                  })),
+                ]}
+                placeholder="Todas"
               />
-              Con períodos sin orden ({conPendientes})
-            </label>
+            </div>
+            {/* Con el cron sano no hay ninguna, y un filtro que nunca encuentra
+                nada solo ocupa lugar. Se muestra igual si está prendido, para
+                poder apagarlo en vez de quedar con una lista vacía sin
+                explicación. */}
+            {(conPendientes > 0 || pendientes) && (
+              <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2.5">
+                <Checkbox
+                  checked={pendientes}
+                  onCheckedChange={(v) => setPendientes(v === true)}
+                  className="mt-0.5"
+                />
+                <span className="text-sm">
+                  Con períodos sin orden
+                  <span className="block text-xs text-muted-foreground">
+                    {conPendientes} esperan que se les cree la orden
+                  </span>
+                </span>
+              </label>
+            )}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={generarRenovaciones}
-              disabled={generando}
+              className="w-full"
+              onClick={limpiarFiltros}
+              disabled={filtrosActivos === 0}
             >
-              {generando ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Generar órdenes
+              Limpiar filtros
             </Button>
-          </>
+          </PopoverContent>
+        </Popover>
+        {(conPendientes > 0 || pendientes) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={generarRenovaciones}
+            disabled={generando}
+          >
+            {generando ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            Generar órdenes
+          </Button>
         )}
         {mensualizado > 0 && (
           <span className="ml-auto text-sm text-muted-foreground">
@@ -251,7 +308,7 @@ export function SuscripcionesTable({
                     className="cursor-pointer"
                     onClick={() =>
                       router.push(
-                        `/dashboard/suscripciones/${s.id}?from=/dashboard/suscripciones`,
+                        `/dashboard/suscripciones/${s.id}?from=${aca()}`,
                       )
                     }
                   >

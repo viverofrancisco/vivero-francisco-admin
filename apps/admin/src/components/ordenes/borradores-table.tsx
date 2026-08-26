@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 import { Plus, Search } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
 import { money, fecha } from "./formato";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface OrdenRow {
   id: string;
@@ -46,8 +47,8 @@ interface OrdenRow {
  */
 export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
   const router = useRouter();
-  const [page, setPage] = useState(1);
-  const [busqueda, setBusqueda] = useState("");
+  const [page, setPage] = useFiltroUrl("pagina", 1);
+  const [busqueda, setBusqueda] = useFiltroUrl("q", "");
 
   const filtradas = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -129,7 +130,7 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
                     className="cursor-pointer"
                     onClick={() =>
                       router.push(
-                        `/dashboard/ordenes/${o.id}?from=/dashboard/ordenes/borradores`
+                        `/dashboard/ordenes/${o.id}?from=${aca()}`
                       )
                     }
                   >

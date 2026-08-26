@@ -1,15 +1,20 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { hrefDeVuelta } from "@/lib/navegacion";
 import { PersonalDetail } from "@/components/personal/personal-detail";
 
 export default async function EditarPersonalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   await requireAuth();
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = hrefDeVuelta(from, "/dashboard/personal");
 
   const personal = await prisma.personal.findUnique({
     where: { id, deletedAt: null },
@@ -34,6 +39,7 @@ export default async function EditarPersonalPage({
   return (
     <div>
       <PersonalDetail
+        backHref={backHref}
         personal={{
           id: personal.id,
           nombre: personal.nombre,

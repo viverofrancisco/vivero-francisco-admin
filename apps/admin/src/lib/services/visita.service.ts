@@ -60,6 +60,49 @@ export async function removeVisitaMedia(
   await prisma.visitaMedia.delete({ where: { id: mediaId } });
 }
 
+/**
+ * Cambiar a qué producto corresponde un archivo.
+ *
+ * No tiene que ser de la visita. En el campo se fotografía lo que aparece —un
+ * problema de riego durante una poda, material que se dejó— y obligar a que la
+ * etiqueta saliera de los productos agendados dejaba esas fotos sin clasificar.
+ * El informe ya arma secciones con cualquier producto del catálogo.
+ *
+ * Sí tiene que existir y estar activo: una etiqueta a un producto borrado no
+ * agrupa nada y no se puede volver a elegir.
+ */
+export async function etiquetarVisitaMedia(
+  visitaId: string,
+  mediaId: string,
+  productoId: string | null,
+  viewer: Viewer
+) {
+  if (viewer.role !== "PERSONAL_ADMIN" && !isAdminRole(viewer.role)) {
+    throw new ForbiddenError();
+  }
+  await getVisitaForViewer(visitaId, viewer);
+
+  const media = await prisma.visitaMedia.findFirst({
+    where: { id: mediaId, visitaId },
+    select: { id: true },
+  });
+  if (!media) throw new NotFoundError("Archivo no encontrado");
+
+  if (productoId) {
+    const producto = await prisma.producto.findFirst({
+      where: { id: productoId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!producto) throw new ValidationError("Ese producto no existe");
+  }
+
+  return prisma.visitaMedia.update({
+    where: { id: mediaId },
+    data: { productoId },
+    select: { id: true, productoId: true },
+  });
+}
+
 export async function requestVisitaMediaUploads(
   visitaId: string,
   viewer: Viewer,

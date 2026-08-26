@@ -530,6 +530,7 @@ export const InformeScalarFieldEnum = {
   id: 'id',
   clienteId: 'clienteId',
   titulo: 'titulo',
+  fecha: 'fecha',
   fechaDesde: 'fechaDesde',
   fechaHasta: 'fechaHasta',
   pdfKey: 'pdfKey',

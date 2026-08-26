@@ -30,6 +30,7 @@ import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search, ChevronDown, X } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Cliente {
   id: string;
@@ -58,9 +59,9 @@ export function ClientesTable({
   devTools?: boolean;
 }) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sectorFilter, setSectorFilter] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
+  const [sectorFilter, setSectorFilter] = useFiltroUrl<string | null>("sector", null);
+  const [page, setPage] = useFiltroUrl("pagina", 1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<null | "soft" | "hard">(null);
   const [deleting, setDeleting] = useState(false);
@@ -351,7 +352,7 @@ export function ClientesTable({
                       key={cliente.id}
                       className="cursor-pointer"
                       onClick={() =>
-                        router.push(`/dashboard/clientes/${cliente.id}`)
+                        router.push(`/dashboard/clientes/${cliente.id}?from=${aca()}`)
                       }
                     >
                       <TableCell

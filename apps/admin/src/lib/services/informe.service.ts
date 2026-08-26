@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
+import { hoyEnEcuador } from "@/lib/fechas";
 import { s3, BUCKET_NAME, publicUrlForKey, getUploadUrl } from "@/lib/s3";
 import {
   ForbiddenError,
@@ -324,6 +325,14 @@ export interface InformeGeneratePayload {
   informeId?: string; // if present = update existing
   clienteId: string;
   titulo: string;
+  /**
+   * La que sale impresa, `YYYY-MM-DD`. Sin esto, el día de hoy.
+   *
+   * Un informe de agosto puede armarse el 2 de septiembre y tiene que decir
+   * agosto; y regenerarlo para corregir una foto no le cambia la fecha al
+   * documento que el cliente ya tiene.
+   */
+  fecha?: string;
   visitaIds: string[];
   firmantes: InformeFirmanteInput[]; // 1 to 3
   secciones: Array<{
@@ -516,8 +525,14 @@ export async function generateInforme(
     }
   }
 
+  // Mediodía UTC y no medianoche: en Ecuador (UTC-5) medianoche cae el día
+  // anterior, y el PDF saldría con la fecha corrida.
+  const fechaImpresa = payload.fecha
+    ? new Date(`${payload.fecha}T12:00:00.000Z`)
+    : hoyEnEcuador();
+
   const renderData: InformeRenderData = {
-    fecha: new Date(),
+    fecha: fechaImpresa,
     titulo: payload.titulo.toUpperCase(),
     subtitulo: subtituloDefault,
     secciones: renderSecciones,
@@ -554,6 +569,7 @@ export async function generateInforme(
         data: {
           clienteId: payload.clienteId,
           titulo: payload.titulo,
+          fecha: fechaImpresa,
           fechaDesde,
           fechaHasta,
           pdfKey,
@@ -594,6 +610,7 @@ export async function generateInforme(
         data: {
           clienteId: payload.clienteId,
           titulo: payload.titulo,
+          fecha: fechaImpresa,
           fechaDesde,
           fechaHasta,
           pdfKey,

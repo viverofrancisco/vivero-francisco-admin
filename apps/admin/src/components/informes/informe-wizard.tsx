@@ -6,19 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Plus,
-  Trash2,
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  X,
-  ChevronDown,
-  Search,
-  GripVertical,
-  ZoomIn,
   Download,
   ExternalLink,
-  Check,
+  GripVertical,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
   Upload,
+  X,
 } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
 import {
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/media-viewer";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { hoyISOEcuador } from "@/lib/fechas";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -57,6 +58,19 @@ interface MediaPoolItem {
   visitaFecha: string;
   /// Servicio de la visita con el que se etiquetó la foto, si lo tiene.
   productoId: string | null;
+}
+
+/** Con qué viaja una foto que se arrastra para reordenarla. */
+const TIPO_FOTO = "application/x-foto";
+
+/** Valor del selector para la sección sin producto detrás. */
+const PERSONALIZADA = "__personalizada__";
+
+/** Un producto del catálogo, para armar una sección con cualquiera. */
+interface ProductoCatalogo {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
 }
 
 /** Servicio cubierto por las visitas seleccionadas. Origen de cada sección. */
@@ -106,6 +120,8 @@ interface InitialData {
   informeId: string;
   clienteId: string;
   titulo: string;
+  /** La que sale impresa, `YYYY-MM-DD`. */
+  fecha: string;
   visitaIds: string[];
   firmantes: Array<{ nombre: string; cedula: string | null }>;
   secciones: Array<{
@@ -133,9 +149,12 @@ interface SavedFirmante {
 export function InformeWizard({
   initial,
   defaultFirmantes,
+  catalogo = [],
 }: {
   initial?: InitialData;
   defaultFirmantes?: Array<{ nombre: string; cedula: string | null }>;
+  /** Todo el catálogo activo, para secciones de algo que no se visitó. */
+  catalogo?: ProductoCatalogo[];
 }) {
   const router = useRouter();
   const [step, setStep] = useState<WizardStep>(initial ? 3 : 1);
@@ -162,7 +181,6 @@ export function InformeWizard({
   const [loadingVisitas, setLoadingVisitas] = useState(false);
 
   const [pool, setPool] = useState<MediaPoolItem[]>([]);
-  const [loadingPool, setLoadingPool] = useState(false);
   const [titulo, setTitulo] = useState(initial?.titulo ?? "");
   const [secciones, setSecciones] = useState<SeccionDraft[]>(
     initial
@@ -182,6 +200,12 @@ export function InformeWizard({
         }))
       : []
   );
+
+  /**
+   * La fecha que sale impresa. Arranca en hoy, que es lo más común, pero un
+   * informe de agosto se puede estar armando en septiembre.
+   */
+  const [fecha, setFecha] = useState(initial?.fecha ?? hoyISOEcuador());
 
   const [firmantes, setFirmantes] = useState<FirmanteDraft[]>(() => {
     const initialFirmantes = initial?.firmantes ?? [];
@@ -275,7 +299,6 @@ export function InformeWizard({
       setPool([]);
       return;
     }
-    setLoadingPool(true);
     fetch("/api/admin/informes/media", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -285,9 +308,14 @@ export function InformeWizard({
       .then((data: { items: MediaPoolItem[] }) => {
         setPool(data.items ?? []);
       })
-      .catch(() => {})
-      .finally(() => setLoadingPool(false));
+      .catch(() => {});
   }, [step, selectedVisitaIds]);
+
+  /**
+   * Ya se armaron las secciones solas. Volver al paso 2 y adelante no las
+   * vuelve a armar: lo que hay en pantalla es lo que alguien dejó.
+   */
+  const autogeneradas = useRef(initial != null);
 
   // Los servicios que cubren las visitas seleccionadas son el catálogo de
   // secciones: título = nombre del servicio, descripción = la del servicio.
@@ -298,14 +326,64 @@ export function InformeWizard({
       setServiciosDisponibles([]);
       return;
     }
-    fetch("/api/admin/informes/servicios", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visitaIds: ids }),
-    })
-      .then((r) => r.json())
-      .then((data: { items: ServicioParaSeccion[] }) => {
-        setServiciosDisponibles(data.items ?? []);
+    /**
+     * Las fotos se piden acá de nuevo, junto con los servicios.
+     *
+     * El paso 2 ya las trae, pero pasar rápido de un paso al otro dejaba las
+     * secciones armadas y vacías: se generaban con el pool todavía en camino.
+     * Pedirlas de nuevo cuesta una llamada y saca la carrera del medio.
+     */
+    Promise.all([
+      fetch("/api/admin/informes/servicios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visitaIds: ids }),
+      }).then((r) => r.json()),
+      fetch("/api/admin/informes/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visitaIds: ids }),
+      }).then((r) => r.json()),
+    ])
+      .then(([servicios, media]: [
+        { items: ServicioParaSeccion[] },
+        { items: MediaPoolItem[] },
+      ]) => {
+        const items = servicios.items ?? [];
+        const fotosDelPool = media.items ?? [];
+        setPool(fotosDelPool);
+        setServiciosDisponibles(items);
+
+        /**
+         * Una sección por producto de las visitas elegidas, tengan fotos o no.
+         *
+         * Es lo que se hacía a mano, uno por uno, en el 100% de los informes:
+         * el producto da el título y la descripción, y sus fotos etiquetadas
+         * ya saben a qué sección van. Las que quedan vacías se llenan o se
+         * borran de a una, que es menos trabajo que agregarlas de a una.
+         *
+         * Solo la primera vez: si ya hay secciones, son de alguien que las
+         * tocó (o de un informe que se está editando) y no se pisan.
+         */
+        if (autogeneradas.current) return;
+        autogeneradas.current = true;
+        setSecciones((prev) => {
+          if (prev.length > 0) return prev;
+          const usadas = new Set<string>();
+          return items.map((sv) => {
+              const fotos = fotosDelPool.filter(
+                (m) => m.productoId === sv.productoId && !usadas.has(m.id)
+              );
+              fotos.forEach((m) => usadas.add(m.id));
+            return {
+              tempId: `auto-${sv.productoId}`,
+              productoId: sv.productoId,
+              titulo: sv.nombre,
+              descripcion: sv.descripcion ?? "",
+              fotos: fotos.map(fotoDeVisita),
+            };
+          });
+        });
       })
       .catch(() => {});
   }, [step, selectedVisitaIds]);
@@ -365,7 +443,8 @@ export function InformeWizard({
           clienteId,
           titulo: titulo.trim(),
           visitaIds: Array.from(selectedVisitaIds),
-          firmantes: validFirmantes,
+          fecha,
+      firmantes: validFirmantes,
           secciones: secciones.map((s) => ({
             productoId: s.productoId,
             titulo: s.titulo,
@@ -410,8 +489,8 @@ export function InformeWizard({
         "Arma las secciones del informe asignándole fotos del pool a cada una.",
     },
     4: {
-      title: "Firmantes",
-      description: "Personas que firman este informe. Pueden ser de 1 a 3.",
+      title: "Firma y fecha",
+      description: "Con qué fecha sale el informe y quién lo firma.",
     },
     5: {
       title: "Vista previa",
@@ -422,7 +501,10 @@ export function InformeWizard({
   const heading = stepHeadings[step];
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-background">
+    /* `h-full` y no un `calc` con la altura del header: el header no mide
+       4rem —tiene la barra de búsqueda— así que el wizard sobresalía y la
+       barra de Atrás/Continuar quedaba cortada abajo. */
+    <div className="flex h-full flex-col bg-background">
       {/* Sticky top: step heading */}
       <div className="border-b bg-card px-6 py-4">
         <div className="flex items-center justify-between gap-4">
@@ -499,10 +581,10 @@ export function InformeWizard({
                 titulo={titulo}
                 onTituloChange={setTitulo}
                 pool={unassignedPool}
-                loadingPool={loadingPool}
                 secciones={secciones}
                 onSeccionesChange={setSecciones}
                 productos={serviciosDisponibles}
+                catalogo={catalogo}
                 clienteId={clienteId}
                 allPool={pool}
                 addPhotosFor={addPhotosFor}
@@ -518,6 +600,8 @@ export function InformeWizard({
                 firmantes={firmantes}
                 onChange={setFirmantes}
                 catalog={firmantesCatalog}
+                fecha={fecha}
+                onFechaChange={setFecha}
               />
             ) : null}
 
@@ -584,10 +668,14 @@ function Step4Firmantes({
   firmantes,
   onChange,
   catalog,
+  fecha,
+  onFechaChange,
 }: {
   firmantes: FirmanteDraft[];
   onChange: (next: FirmanteDraft[]) => void;
   catalog: SavedFirmante[];
+  fecha: string;
+  onFechaChange: (v: string) => void;
 }) {
   function update(tempId: string, patch: Partial<FirmanteDraft>) {
     onChange(
@@ -637,6 +725,18 @@ function Step4Firmantes({
 
   return (
     <div className="max-w-3xl space-y-5">
+      {/* La fecha del documento, no la de cuándo se generó: esa se guarda
+          igual y no se toca. */}
+      <div className="space-y-1.5">
+        <h3 className="text-base font-semibold">Fecha del informe</h3>
+        <p className="text-sm text-muted-foreground">
+          Es la que sale impresa. Regenerar el informe no la cambia.
+        </p>
+        <div className="w-56 pt-1">
+          <DatePicker value={fecha} onChange={(v) => onFechaChange(v || fecha)} />
+        </div>
+      </div>
+
       <div>
         <h3 className="text-base font-semibold">Firmantes del informe</h3>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -755,14 +855,16 @@ function Step4Firmantes({
             <Plus className="h-4 w-4 mr-1" /> Agregar firmante{" "}
             <ChevronDown className="h-4 w-4 ml-1" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          {/* Ancho fijo: los nombres y la cédula debajo entran justos en el
+              ancho del botón, y una lista de personas se lee mejor holgada. */}
+          <DropdownMenuContent className="w-72">
             <DropdownMenuItem onClick={add}>
-              Custom (vacío)
+              Firmante nuevo
             </DropdownMenuItem>
             {catalog.length > 0 ? (
               <>
-                <div className="px-2 py-1 text-xs text-muted-foreground">
-                  Pre-configurados:
+                <div className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Guardados
                 </div>
                 {catalog.map((s) => {
                   const alreadyAdded = firmantes.some(
@@ -807,7 +909,7 @@ function VerticalStepper({
     { n: 1, label: "Cliente", description: "Selecciona el cliente" },
     { n: 2, label: "Visitas", description: "Visitas a incluir" },
     { n: 3, label: "Componer secciones", description: "Asigna fotos a cada sección" },
-    { n: 4, label: "Firmantes", description: "Quién firma el informe" },
+    { n: 4, label: "Firma y fecha", description: "Fecha del informe y quién firma" },
     { n: 5, label: "Vista previa", description: "Descarga y comparte" },
   ];
   return (
@@ -1247,10 +1349,10 @@ function Step3Secciones({
   titulo,
   onTituloChange,
   pool,
-  loadingPool,
   secciones,
   onSeccionesChange,
   productos,
+  catalogo,
   clienteId,
   allPool,
   addPhotosFor,
@@ -1260,10 +1362,10 @@ function Step3Secciones({
   titulo: string;
   onTituloChange: (v: string) => void;
   pool: MediaPoolItem[];
-  loadingPool: boolean;
   secciones: SeccionDraft[];
   onSeccionesChange: (s: SeccionDraft[]) => void;
   productos: ServicioParaSeccion[];
+  catalogo: ProductoCatalogo[];
   clienteId: string | null;
   allPool: MediaPoolItem[];
   addPhotosFor: string | null;
@@ -1283,8 +1385,6 @@ function Step3Secciones({
 
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadTargetRef = useRef<string | null>(null);
   const [photoDragOverId, setPhotoDragOverId] = useState<string | null>(null);
   const [draggingSectionId, setDraggingSectionId] = useState<string | null>(
     null
@@ -1293,6 +1393,14 @@ function Step3Secciones({
     null
   );
   const [dragArmedId, setDragArmedId] = useState<string | null>(null);
+  /** Reordenar fotos dentro de una sección. */
+  const [fotoArrastrada, setFotoArrastrada] = useState<string | null>(null);
+  /** Dónde caería la foto: sobre cuál y de qué lado. */
+  const [fotoSobre, setFotoSobre] = useState<{
+    uid: string;
+    antes: boolean;
+  } | null>(null);
+  const [editandoTitulo, setEditandoTitulo] = useState(false);
 
   function toggleCollapsed(tempId: string) {
     setCollapsed((prev) => {
@@ -1328,6 +1436,67 @@ function Step3Secciones({
     onSeccionesChange([...secciones, draft]);
   }
 
+  /**
+   * Qué se puede convertir en sección: lo de las visitas primero, después el
+   * resto del catálogo, y la personalizada al final.
+   *
+   * Lo que ya tiene sección queda en gris: dos secciones del mismo producto
+   * salen iguales en el PDF y no hay forma de distinguirlas después.
+   */
+  const opcionesDeSeccion = useMemo(() => {
+    const deVisitas = new Set(productos.map((p) => p.productoId));
+    const usado = (productoId: string) =>
+      secciones.some((sec) => sec.productoId === productoId);
+    const delCatalogo = catalogo.filter((p) => !deVisitas.has(p.id));
+    return [
+      ...(productos.length > 0
+        ? [
+            { encabezado: "De estas visitas" },
+            ...productos.map((sv) => ({
+              value: sv.productoId,
+              label: sv.nombre,
+              disabled: usado(sv.productoId),
+              hint: usado(sv.productoId)
+                ? "Ya tiene sección"
+                : sv.fotosCount > 0
+                  ? `${sv.fotosCount} foto${sv.fotosCount === 1 ? "" : "s"}`
+                  : "Sin fotos",
+            })),
+          ]
+        : []),
+      ...(delCatalogo.length > 0
+        ? [
+            { encabezado: "Resto del catálogo" },
+            ...delCatalogo.map((p) => ({
+              value: p.id,
+              label: p.nombre,
+              disabled: usado(p.id),
+              hint: usado(p.id) ? "Ya tiene sección" : undefined,
+            })),
+          ]
+        : []),
+      { encabezado: "Otra" },
+      { value: PERSONALIZADA, label: "Sección personalizada (vacía)" },
+    ];
+  }, [productos, catalogo, secciones]);
+
+  /** Alta desde el selector: puede ser de las visitas, del catálogo o vacía. */
+  function agregarDesdeCatalogo(value: string) {
+    if (!value) return;
+    if (value === PERSONALIZADA) return addSeccion(null);
+    const deVisita = productos.find((p) => p.productoId === value);
+    if (deVisita) return addSeccion(deVisita);
+    const delCatalogo = catalogo.find((p) => p.id === value);
+    if (!delCatalogo) return;
+    addSeccion({
+      productoId: delCatalogo.id,
+      nombre: delCatalogo.nombre,
+      descripcion: delCatalogo.descripcion,
+      visitasCount: 0,
+      fotosCount: 0,
+    });
+  }
+
   function updateSeccion(tempId: string, patch: Partial<SeccionDraft>) {
     onSeccionesChange(
       secciones.map((s) => (s.tempId === tempId ? { ...s, ...patch } : s))
@@ -1347,6 +1516,31 @@ function Step3Secciones({
     const [moved] = next.splice(fromIdx, 1);
     next.splice(toIdx, 0, moved);
     onSeccionesChange(next);
+  }
+
+  /**
+   * Meter una foto antes o después de otra, dentro de la misma sección.
+   *
+   * El lugar se calcula **después** de sacarla de donde estaba: si no, mover
+   * hacia la derecha cae siempre un casillero antes de lo que se ve.
+   */
+  function reordenarFotos(
+    tempId: string,
+    fromUid: string,
+    toUid: string,
+    antes: boolean
+  ) {
+    if (fromUid === toUid) return;
+    const seccion = secciones.find((x) => x.tempId === tempId);
+    if (!seccion) return;
+    const desde = seccion.fotos.findIndex((f) => f.uid === fromUid);
+    // Arrastrada desde otra sección: acá solo se reordena dentro de la misma.
+    if (desde < 0 || !seccion.fotos.some((f) => f.uid === toUid)) return;
+    const fotos = [...seccion.fotos];
+    const [movida] = fotos.splice(desde, 1);
+    const ref = fotos.findIndex((f) => f.uid === toUid);
+    fotos.splice(antes ? ref : ref + 1, 0, movida);
+    updateSeccion(tempId, { fotos });
   }
 
   function removeFotoFromSeccion(tempId: string, uid: string) {
@@ -1434,11 +1628,6 @@ function Step3Secciones({
     }
   }
 
-  function abrirSelectorDeArchivos(tempId: string) {
-    uploadTargetRef.current = tempId;
-    fileInputRef.current?.click();
-  }
-
   function handleDragOver(e: React.DragEvent, sectionTempId: string) {
     e.preventDefault();
     const types = e.dataTransfer.types;
@@ -1494,26 +1683,64 @@ function Step3Secciones({
     }
   }
 
-  const totalAssigned = secciones.reduce((sum, s) => sum + s.fotos.length, 0);
-
   return (
-    <div className="space-y-5">
-      <Card>
-        <CardContent className="py-4">
-          <label className="text-sm font-medium block mb-1.5">
-            Título del informe
-          </label>
+    <div className="flex h-full flex-col gap-4">
+      {/* Fija arriba: el título y el botón de agregar son de todo el paso, no
+          de una sección, así que no viajan con el scroll. */}
+      <div className="flex flex-none items-center gap-3 rounded-lg border bg-card px-4 py-3">
+        {editandoTitulo ? (
           <Input
+            autoFocus
             value={titulo}
             onChange={(e) => onTituloChange(e.target.value)}
+            onBlur={() => setEditandoTitulo(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === "Escape") {
+                e.preventDefault();
+                setEditandoTitulo(false);
+              }
+            }}
             placeholder="Ej. Informe de Áreas Verdes — Enero 2026 — Pacífica"
+            className="flex-1"
           />
-        </CardContent>
-      </Card>
+        ) : (
+          <>
+            {/* Texto y no un campo: se escribe una vez y después estorba. */}
+            <span
+              className={`min-w-0 flex-1 truncate text-base font-semibold ${
+                titulo ? "" : "text-muted-foreground"
+              }`}
+              title={titulo || undefined}
+            >
+              {titulo || "Sin título"}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setEditandoTitulo(true)}
+              aria-label="Editar el título"
+              className="flex-none"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+        <div className="w-56 flex-none">
+          <CustomSelect
+            value=""
+            onChange={agregarDesdeCatalogo}
+            options={opcionesDeSeccion}
+            placeholder="+ Agregar sección"
+            searchable
+            searchPlaceholder="Buscar producto o servicio..."
+            anchoMinimo={380}
+          />
+        </div>
+      </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-        {/* Sections column (left) */}
-        <div className="space-y-3">
+      {/* Lo único que scrollea. Ancho completo: el pool vivía al costado y ya
+          no existe; las fotos se eligen desde la sección. */}
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
           {secciones.length === 0 ? (
             <Card>
               <CardContent className="py-16">
@@ -1648,14 +1875,80 @@ function Step3Secciones({
                         <>
                           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
                             {s.fotos.map((f) => (
+                              /* Arrastrable para reordenar: en el PDF salen en
+                                 este orden, y "la del antes primero" es una
+                                 decisión que se toma acá. */
                               <div
                                 key={f.uid}
-                                className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                                draggable
+                                onDragStart={(e) => {
+                                  e.stopPropagation();
+                                  e.dataTransfer.setData(TIPO_FOTO, f.uid);
+                                  e.dataTransfer.effectAllowed = "move";
+                                  // La miniatura pegada al cursor, centrada:
+                                  // por omisión el navegador arrastra una
+                                  // copia del recuadro entero, botones y todo.
+                                  const caja =
+                                    e.currentTarget.getBoundingClientRect();
+                                  e.dataTransfer.setDragImage(
+                                    e.currentTarget,
+                                    caja.width / 2,
+                                    caja.height / 2
+                                  );
+                                  setFotoArrastrada(f.uid);
+                                }}
+                                onDragEnd={() => {
+                                  setFotoArrastrada(null);
+                                  setFotoSobre(null);
+                                }}
+                                onDragOver={(e) => {
+                                  if (!e.dataTransfer.types.includes(TIPO_FOTO))
+                                    return;
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  // De qué mitad: es lo que decide si cae
+                                  // antes o después, y lo que dibuja la barra.
+                                  const caja =
+                                    e.currentTarget.getBoundingClientRect();
+                                  setFotoSobre({
+                                    uid: f.uid,
+                                    antes: e.clientX < caja.left + caja.width / 2,
+                                  });
+                                }}
+                                onDrop={(e) => {
+                                  const uid = e.dataTransfer.getData(TIPO_FOTO);
+                                  if (!uid) return;
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const caja =
+                                    e.currentTarget.getBoundingClientRect();
+                                  const antes =
+                                    e.clientX < caja.left + caja.width / 2;
+                                  setFotoSobre(null);
+                                  setFotoArrastrada(null);
+                                  reordenarFotos(s.tempId, uid, f.uid, antes);
+                                }}
+                                className={`group relative aspect-square cursor-grab rounded-md border bg-muted active:cursor-grabbing ${
+                                  fotoArrastrada === f.uid ? "opacity-30" : ""
+                                }`}
                               >
+                                {/* La barra dice dónde va a caer. Un anillo
+                                    sobre la de destino decía "cambiala por
+                                    esta", que es otra cosa. */}
+                                {fotoSobre?.uid === f.uid &&
+                                fotoArrastrada !== f.uid ? (
+                                  <span
+                                    className={`pointer-events-none absolute inset-y-0 z-10 w-1 rounded-full bg-primary ${
+                                      fotoSobre.antes ? "-left-1.5" : "-right-1.5"
+                                    }`}
+                                  />
+                                ) : null}
                                 <button
                                   type="button"
                                   onClick={() => onViewMedia(f.url)}
-                                  className="block h-full w-full"
+                                  // `overflow-hidden` acá y no en el recuadro:
+                                  // ahí recortaría la barra que asoma al lado.
+                                  className="block h-full w-full overflow-hidden rounded-md"
                                   title="Ver en grande"
                                 >
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1691,25 +1984,15 @@ function Step3Secciones({
                               {s.fotos.length} foto
                               {s.fotos.length === 1 ? "" : "s"}
                             </p>
-                            <div className="flex items-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setAddPhotosFor(s.tempId)}
-                                disabled={pool.length === 0}
-                              >
-                                <Plus className="h-4 w-4 mr-1" /> De las visitas
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => abrirSelectorDeArchivos(s.tempId)}
-                                disabled={isUploading}
-                              >
-                                <Upload className="h-4 w-4 mr-1" />
-                                {isUploading ? "Subiendo…" : "Subir"}
-                              </Button>
-                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setAddPhotosFor(s.tempId)}
+                              disabled={isUploading}
+                            >
+                              <Plus className="mr-1 h-4 w-4" />
+                              {isUploading ? "Subiendo…" : "Agregar fotos"}
+                            </Button>
                           </div>
                         </>
                       ) : (
@@ -1717,24 +2000,16 @@ function Step3Secciones({
                           <p className="text-sm text-muted-foreground">
                             {isUploading
                               ? "Subiendo imágenes…"
-                              : "Arrastra fotos del pool o imágenes de tu computadora"}
+                              : "Arrastrá imágenes acá, o elegilas de las visitas."}
                           </p>
-                          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                          <div className="mt-2 flex justify-center">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => setAddPhotosFor(s.tempId)}
-                              disabled={pool.length === 0}
-                            >
-                              <Plus className="h-4 w-4 mr-1" /> De las visitas
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => abrirSelectorDeArchivos(s.tempId)}
                               disabled={isUploading}
                             >
-                              <Upload className="h-4 w-4 mr-1" /> Subir imágenes
+                              <Plus className="mr-1 h-4 w-4" /> Agregar fotos
                             </Button>
                           </div>
                         </div>
@@ -1746,110 +2021,18 @@ function Step3Secciones({
             );
           })}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" />}>
-              <Plus className="h-4 w-4 mr-1" /> Agregar sección{" "}
-              <ChevronDown className="h-4 w-4 ml-1" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => addSeccion(null)}>
-                Sección personalizada (vacía)
-              </DropdownMenuItem>
-              {productos.length > 0 ? (
-                <>
-                  <div className="px-2 py-1 text-xs text-muted-foreground">
-                    Servicios de las visitas seleccionadas:
-                  </div>
-                  {productos.map((sv) => {
-                    const yaAgregado = secciones.some(
-                      (sec) => sec.productoId === sv.productoId
-                    );
-                    return (
-                      <DropdownMenuItem
-                        key={sv.productoId}
-                        onClick={() => addSeccion(sv)}
-                      >
-                        <span className="flex-1">{sv.nombre}</span>
-                        <span className="ml-3 text-xs text-muted-foreground">
-                          {yaAgregado
-                            ? "ya agregado"
-                            : sv.fotosCount > 0
-                              ? `${sv.fotosCount} foto${sv.fotosCount === 1 ? "" : "s"}`
-                              : ""}
-                        </span>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </>
-              ) : (
-                <div className="px-2 py-1 text-xs text-muted-foreground">
-                  Las visitas seleccionadas no tienen servicios.
-                </div>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Pool sidebar (right) */}
-        <div className="lg:sticky lg:top-0 self-start">
-          <Card>
-            <CardContent className="py-4">
-              <div className="mb-3 flex items-center gap-2">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">Pool de fotos</p>
-                  <p className="text-xs text-muted-foreground">
-                    {pool.length} sin asignar · {totalAssigned} en secciones
-                  </p>
-                </div>
-              </div>
-              {pool.length > 0 ? (
-                <p className="mb-2 text-[11px] text-muted-foreground">
-                  Click para verlas. Arrástralas a una sección para asignarlas.
-                </p>
-              ) : null}
-              {loadingPool ? (
-                <EmptyState text="Cargando fotos…" />
-              ) : pool.length === 0 && totalAssigned === 0 ? (
-                <EmptyState text="No hay fotos en las visitas seleccionadas." />
-              ) : pool.length === 0 ? (
-                <EmptyState text="Todas las fotos están asignadas a secciones." />
-              ) : (
-                <div className="grid grid-cols-3 gap-1.5 max-h-[60vh] overflow-y-auto">
-                  {pool.map((m) => (
-                    <PoolPhoto
-                      key={m.id}
-                      media={m}
-                      onView={() => onViewMedia(m.url)}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+          {/* Buscable y con todo el catálogo: una sección puede ser de algo
+              que estas visitas no cubrieron. Lo de las visitas va primero
+              porque es lo que se elige el 90% de las veces. */}
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={(e) => {
-          const tempId = uploadTargetRef.current;
-          const files = Array.from(e.target.files ?? []);
-          e.target.value = "";
-          uploadTargetRef.current = null;
-          if (tempId && files.length > 0) void subirArchivos(tempId, files);
-        }}
-      />
 
       {addPhotosFor !== null ? (
         <PhotoPickerModal
           pool={pool}
+          clienteId={clienteId}
           onClose={() => setAddPhotosFor(null)}
-          onConfirm={(ids) => {
-            addFotosToSeccion(addPhotosFor, fotosDesdePool(ids));
+          onConfirm={(fotos) => {
+            addFotosToSeccion(addPhotosFor, fotos);
             setAddPhotosFor(null);
           }}
         />
@@ -1858,112 +2041,238 @@ function Step3Secciones({
   );
 }
 
-function PoolPhoto({
-  media,
-  onView,
-}: {
-  media: MediaPoolItem;
-  onView: () => void;
-}) {
-  return (
-    <div className="group relative aspect-square">
-      <button
-        type="button"
-        draggable
-        onDragStart={(e) => {
-          e.dataTransfer.setData("text/plain", media.id);
-          e.dataTransfer.effectAllowed = "move";
-        }}
-        onClick={onView}
-        className="block h-full w-full cursor-grab overflow-hidden rounded border bg-muted active:cursor-grabbing"
-        title="Click para ver, arrastra a una sección"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={media.url}
-          alt=""
-          className="h-full w-full object-cover transition-transform group-hover:scale-105"
-        />
-      </button>
-      <span className="pointer-events-none absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
-        <ZoomIn className="h-3 w-3" />
-      </span>
-    </div>
-  );
-}
-
+/**
+ * De dónde salen las fotos de una sección, todo en un lugar.
+ *
+ * Antes eran dos botones —"De las visitas" y "Subir"— y un pool al costado
+ * para arrastrar. Son tres formas de contestar la misma pregunta, así que van
+ * juntas: se elige de lo que trajeron las visitas, se sueltan archivos encima
+ * o se buscan en la computadora.
+ */
 function PhotoPickerModal({
   pool,
+  clienteId,
   onClose,
   onConfirm,
 }: {
   pool: MediaPoolItem[];
+  clienteId: string | null;
   onClose: () => void;
-  onConfirm: (ids: string[]) => void;
+  onConfirm: (fotos: SeccionFotoDraft[]) => void;
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  /** Ya subidas a R2 en este modal. Entran elegidas: por algo se subieron. */
+  const [subidas, setSubidas] = useState<SeccionFotoDraft[]>([]);
+  const [subiendo, setSubiendo] = useState(false);
+  const [arrastrando, setArrastrando] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function subir(files: File[]) {
+    const imagenes = files.filter((f) => f.type.startsWith("image/"));
+    if (imagenes.length < files.length) {
+      toast.error(
+        imagenes.length === 0
+          ? "Solo se pueden agregar imágenes"
+          : "Se descartaron los archivos que no son imágenes"
+      );
+    }
+    if (imagenes.length === 0) return;
+    if (!clienteId) return toast.error("Selecciona un cliente primero");
+
+    setSubiendo(true);
+    try {
+      const res = await fetch("/api/admin/informes/uploads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clienteId,
+          files: imagenes.map((f) => ({
+            fileName: f.name,
+            contentType: f.type,
+          })),
+        }),
+      });
+      if (!res.ok) throw new Error("No pudimos preparar la subida.");
+      const { uploads } = (await res.json()) as {
+        uploads: Array<{ key: string; uploadUrl: string; url: string }>;
+      };
+      const nuevas: SeccionFotoDraft[] = [];
+      await Promise.all(
+        uploads.map(async (u, i) => {
+          const file = imagenes[i];
+          const put = await fetch(u.uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          if (!put.ok) throw new Error(`No se pudo subir ${file.name}.`);
+          nuevas.push(fotoSubida(u.key, u.url));
+        })
+      );
+      setSubidas((prev) => [...prev, ...nuevas]);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al subir imágenes");
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
+  const total = selected.size + subidas.length;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl rounded-lg bg-card p-4 shadow-lg flex flex-col max-h-[85vh]"
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-lg bg-card p-4 shadow-lg"
         onClick={(e) => e.stopPropagation()}
+        // El drop se escucha en todo el modal: apuntarle a un recuadro chico
+        // mientras se arrastra es más trabajo del que vale.
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setArrastrando((n) => n + 1);
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        onDragLeave={() => setArrastrando((n) => Math.max(0, n - 1))}
+        onDrop={(e) => {
+          e.preventDefault();
+          setArrastrando(0);
+          const files = Array.from(e.dataTransfer.files ?? []);
+          if (files.length > 0) void subir(files);
+        }}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">
-            Selecciona fotos ({selected.size})
+            Agregar fotos {total > 0 ? `(${total})` : ""}
           </h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-4 gap-2">
-            {pool.map((m) => {
-              const isSel = selected.has(m.id);
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => {
-                    setSelected((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(m.id)) next.delete(m.id);
-                      else next.add(m.id);
-                      return next;
-                    });
-                  }}
-                  className={`relative aspect-square overflow-hidden rounded border ${
-                    isSel ? "ring-2 ring-primary" : ""
-                  }`}
+
+        <div
+          className={`mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border-2 border-dashed px-3 py-2.5 transition-colors ${
+            arrastrando > 0
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25"
+          }`}
+        >
+          <p className="text-sm text-muted-foreground">
+            {subiendo
+              ? "Subiendo imágenes…"
+              : arrastrando > 0
+                ? "Soltá las imágenes acá"
+                : "Arrastrá imágenes de tu computadora, o"}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => inputRef.current?.click()}
+            disabled={subiendo}
+          >
+            <Upload className="mr-1 h-4 w-4" /> Buscar en mi computadora
+          </Button>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              e.target.value = "";
+              if (files.length > 0) void subir(files);
+            }}
+          />
+        </div>
+
+        {/* `p-1`: el anillo de "seleccionada" se dibuja *afuera* de la
+            miniatura, y pegado al borde del área con scroll quedaba cortado. */}
+        <div className="flex-1 overflow-y-auto p-1">
+          {pool.length === 0 && subidas.length === 0 ? (
+            <EmptyState text="No quedan fotos de las visitas sin asignar. Podés subir las tuyas." />
+          ) : (
+            <div className="grid grid-cols-4 gap-2">
+              {subidas.map((f) => (
+                <div
+                  key={f.uid}
+                  className="relative aspect-square overflow-hidden rounded border ring-2 ring-primary"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={m.url}
+                    src={f.url}
                     alt=""
                     className="h-full w-full object-cover"
                   />
-                  {isSel ? (
-                    <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
-                      ✓
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+                  <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                    Subida
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSubidas((prev) => prev.filter((x) => x.uid !== f.uid))
+                    }
+                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
+                    title="Quitar"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {pool.map((m) => {
+                const isSel = selected.has(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => {
+                      setSelected((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(m.id)) next.delete(m.id);
+                        else next.add(m.id);
+                        return next;
+                      });
+                    }}
+                    className={`relative aspect-square overflow-hidden rounded border ${
+                      isSel ? "ring-2 ring-primary" : ""
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={m.url}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                    {isSel ? (
+                      <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                        ✓
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
+
         <div className="mt-3 flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
           <Button
-            disabled={selected.size === 0}
-            onClick={() => onConfirm(Array.from(selected))}
+            disabled={total === 0 || subiendo}
+            onClick={() =>
+              onConfirm([
+                ...Array.from(selected)
+                  .map((id) => pool.find((m) => m.id === id))
+                  .filter((m): m is MediaPoolItem => Boolean(m))
+                  .map(fotoDeVisita),
+                ...subidas,
+              ])
+            }
           >
-            Agregar {selected.size > 0 ? `(${selected.size})` : ""}
+            Agregar {total > 0 ? `(${total})` : ""}
           </Button>
         </div>
       </div>

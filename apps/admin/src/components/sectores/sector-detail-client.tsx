@@ -44,6 +44,8 @@ interface SectorData {
 }
 
 interface SectorDetailClientProps {
+  /** La lista de la que se vino, con sus filtros. */
+  backHref?: string;
   sector: SectorData;
   unassignedClientes: ClienteRow[];
   personalAdmins: AdminUser[];
@@ -68,6 +70,7 @@ export function SectorDetailClient({
   sector,
   unassignedClientes,
   personalAdmins,
+  backHref = "/dashboard/sectores",
 }: SectorDetailClientProps) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -214,7 +217,7 @@ export function SectorDetailClient({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push("/dashboard/sectores")}
+            onClick={() => router.push(backHref)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

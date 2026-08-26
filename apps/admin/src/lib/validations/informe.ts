@@ -30,6 +30,11 @@ export const informeFirmanteSchema = z.object({
 export const informeGenerateSchema = z.object({
   clienteId: z.string().min(1),
   titulo: z.string().min(1).max(200),
+  /** La que se imprime, `YYYY-MM-DD`. Ausente = hoy. */
+  fecha: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida")
+    .optional(),
   visitaIds: z.array(z.string().min(1)).min(1),
   firmantes: z.array(informeFirmanteSchema).min(1).max(3),
   secciones: z.array(informeSeccionSchema).min(1),

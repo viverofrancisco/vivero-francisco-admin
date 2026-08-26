@@ -6,11 +6,20 @@ import {
   type SearchResultItem,
 } from "@/lib/services/search.service";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
-import { Users, CalendarDays, FileText, ChevronRight } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronRight,
+  DollarSign,
+  FileText,
+  RefreshCw,
+  Users,
+} from "lucide-react";
 
 const groupMeta = {
   clientes: { label: "Clientes", icon: Users },
   visitas: { label: "Visitas", icon: CalendarDays },
+  ordenes: { label: "Órdenes", icon: DollarSign },
+  suscripciones: { label: "Suscripciones", icon: RefreshCw },
   informes: { label: "Informes", icon: FileText },
 } as const;
 
@@ -27,6 +36,11 @@ function ResultRow({ item }: { item: SearchResultItem }) {
         <div className="truncate text-[12.5px] font-semibold text-muted-foreground">
           {item.subtitle}
         </div>
+        {item.detalle && (
+          <div className="truncate text-[12.5px] font-semibold text-muted-foreground">
+            {item.detalle}
+          </div>
+        )}
       </div>
       {item.estado && (
         <StatusBadge estado={item.estado as EstadoVisitaUI} size="sm" />
@@ -95,6 +109,8 @@ export default async function BuscarPage({
         <div className="space-y-4">
           <Section groupKey="clientes" group={result.clientes} />
           <Section groupKey="visitas" group={result.visitas} />
+          <Section groupKey="ordenes" group={result.ordenes} />
+          <Section groupKey="suscripciones" group={result.suscripciones} />
           <Section groupKey="informes" group={result.informes} />
         </div>
       )}

@@ -34,6 +34,8 @@ interface GrupoData {
 }
 
 interface Props {
+  /** La lista de la que se vino, con sus filtros. */
+  backHref?: string;
   grupo: GrupoData;
   miembrosIds: string[];
   personalList: PersonalOption[];
@@ -62,7 +64,12 @@ function InfoRow({
   );
 }
 
-export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
+export function GrupoDetail({
+  grupo,
+  miembrosIds,
+  personalList,
+  backHref = "/dashboard/grupos",
+}: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -127,7 +134,7 @@ export function GrupoDetail({ grupo, miembrosIds, personalList }: Props) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push("/dashboard/grupos")}
+            onClick={() => router.push(backHref)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

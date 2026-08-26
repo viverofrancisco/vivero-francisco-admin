@@ -10,20 +10,41 @@ interface Option {
   label: string;
   /** Se muestra pero no se puede elegir. */
   disabled?: boolean;
-  /** Por qué no se puede elegir. Aparece al pasar el mouse por encima. */
+  /** Un renglón chico debajo del nombre. */
   hint?: string;
+}
+
+/**
+ * Un título que parte la lista en grupos. No se elige ni se cuenta: sirve
+ * cuando las opciones vienen de dos lados distintos y la diferencia importa
+ * más que lo que entre en un `hint` repetido en cada fila.
+ */
+interface Encabezado {
+  encabezado: string;
+}
+
+type Item = Option | Encabezado;
+
+function esEncabezado(i: Item): i is Encabezado {
+  return "encabezado" in i;
 }
 
 interface CustomSelectProps {
   value: string | undefined;
   onChange: (value: string) => void;
-  options: Option[];
+  options: Item[];
   placeholder?: string;
   searchable?: boolean;
   searchPlaceholder?: string;
   clearable?: boolean;
   disabled?: boolean;
   className?: string;
+  /**
+   * Ancho mínimo del desplegable, en px. Por omisión sale del ancho del
+   * disparador, que alcanza cuando la opción es corta; con nombres largos, o
+   * si el disparador es un botón chico, conviene forzarlo.
+   */
+  anchoMinimo?: number;
 }
 
 export function CustomSelect({
@@ -36,6 +57,7 @@ export function CustomSelect({
   clearable = false,
   disabled = false,
   className,
+  anchoMinimo,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   /**
@@ -106,10 +128,21 @@ export function CustomSelect({
   const filtered = useMemo(() => {
     if (!searchable || !search.trim()) return options;
     const q = search.toLowerCase();
-    return options.filter((o) => o.label.toLowerCase().includes(q));
+    const coinciden = options.filter(
+      (o) => esEncabezado(o) || o.label.toLowerCase().includes(q)
+    );
+    // Un encabezado sin nada debajo es un título de una lista vacía.
+    return coinciden.filter((o, i) => {
+      if (!esEncabezado(o)) return true;
+      const siguiente = coinciden[i + 1];
+      return siguiente !== undefined && !esEncabezado(siguiente);
+    });
   }, [options, search, searchable]);
 
-  const selectedLabel = value ? options.find((o) => o.value === value)?.label : undefined;
+  const elegida = value
+    ? options.find((o): o is Option => !esEncabezado(o) && o.value === value)
+    : undefined;
+  const selectedLabel = elegida?.label;
 
   const handleSelect = (option: Option) => {
     if (option.disabled) return;
@@ -123,11 +156,23 @@ export function CustomSelect({
   const handleToggle = () => {
     if (!open && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const above = window.innerHeight - rect.bottom < ALTO_MAX;
+      // Abre hacia arriba si abajo no entra… salvo que arriba entre todavía
+      // menos, que es lo que pasa con un disparador cerca del borde superior.
+      const abajo = window.innerHeight - rect.bottom;
+      const arriba = rect.top;
+      const above = abajo < ALTO_MAX && arriba > abajo;
+      // Y no se sale de costado: con `anchoMinimo` la caja es más ancha que el
+      // disparador, así que pegada a la derecha se iba fuera de la pantalla.
+      const width = Math.max(rect.width, anchoMinimo ?? 0);
+      const MARGEN = 8;
+      const left = Math.max(
+        MARGEN,
+        Math.min(rect.left, window.innerWidth - width - MARGEN)
+      );
       setCaja({
         top: above ? rect.top : rect.bottom,
-        left: rect.left,
-        width: rect.width,
+        left,
+        width,
         above,
       });
     }
@@ -150,7 +195,11 @@ export function CustomSelect({
           !value && "text-muted-foreground"
         )}
       >
-        <span className="truncate">{selectedLabel ?? placeholder}</span>
+        {/* `title`: en un disparador angosto el nombre se corta, y el que
+            está puesto es justo el que hay que poder leer. */}
+        <span className="truncate" title={selectedLabel ?? undefined}>
+          {selectedLabel ?? placeholder}
+        </span>
         <div className="flex items-center gap-1">
           {clearable && value && (
             <span
@@ -213,7 +262,15 @@ export function CustomSelect({
                 Sin resultados
               </p>
             ) : (
-              filtered.map((option) => (
+              filtered.map((option) =>
+                esEncabezado(option) ? (
+                  <p
+                    key={`h-${option.encabezado}`}
+                    className="px-2.5 pb-1 pt-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground first:pt-1"
+                  >
+                    {option.encabezado}
+                  </p>
+                ) : (
                 <div key={option.value} className="group/opt relative">
                   <button
                     type="button"
@@ -244,7 +301,8 @@ export function CustomSelect({
                     )}
                   </button>
                 </div>
-              ))
+                )
+              )
             )}
           </div>
           </div>,

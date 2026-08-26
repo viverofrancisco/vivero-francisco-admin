@@ -1,15 +1,20 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { hrefDeVuelta } from "@/lib/navegacion";
 import { GrupoDetail } from "@/components/grupos/grupo-detail";
 
 export default async function EditarGrupoPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   await requireAuth();
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = hrefDeVuelta(from, "/dashboard/grupos");
 
   const [grupo, personalList] = await Promise.all([
     prisma.grupo.findUnique({
@@ -34,6 +39,7 @@ export default async function EditarGrupoPage({
   return (
     <div>
       <GrupoDetail
+        backHref={backHref}
         grupo={{
           id: grupo.id,
           nombre: grupo.nombre,

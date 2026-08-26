@@ -16,6 +16,7 @@ import { ArrowRight, Plus } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
 import { money, fecha } from "./formato";
 import { ESTADO_FACTURA_LABEL } from "@/components/facturas/estado";
+import { aca } from "@/lib/filtros-url";
 
 interface OrdenRow {
   id: string;
@@ -126,7 +127,7 @@ export function PorCobrarPage({
                   className="cursor-pointer"
                   onClick={() =>
                     router.push(
-                      `/dashboard/ordenes/${o.id}?from=/dashboard/ordenes/por-cobrar`
+                      `/dashboard/ordenes/${o.id}?from=${aca()}`
                     )
                   }
                 >

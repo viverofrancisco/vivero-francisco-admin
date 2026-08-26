@@ -32,6 +32,8 @@ interface GrupoInfo {
 }
 
 interface Props {
+  /** La lista de la que se vino, con sus filtros. */
+  backHref?: string;
   personal: PersonalData;
   grupos: GrupoInfo[];
 }
@@ -44,7 +46,11 @@ function formatDate(dateStr: string) {
   });
 }
 
-export function PersonalDetail({ personal, grupos }: Props) {
+export function PersonalDetail({
+  personal,
+  grupos,
+  backHref = "/dashboard/personal",
+}: Props) {
   const router = useRouter();
   const [cardsEditing, setCardsEditing] = useState(false);
 
@@ -58,7 +64,7 @@ export function PersonalDetail({ personal, grupos }: Props) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push("/dashboard/personal")}
+            onClick={() => router.push(backHref)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

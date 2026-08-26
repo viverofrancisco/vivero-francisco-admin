@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -21,6 +21,7 @@ import {
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { StatCards } from "@/components/shared/stat-cards";
 import { Search } from "lucide-react";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Personal {
   id: string;
@@ -73,10 +74,10 @@ function crewNames(p: Personal): string {
 
 export function PersonalTable({ personal }: { personal: Personal[] }) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [estadoFilter, setEstadoFilter] = useState<string | null>(null);
-  const [tipoFilter, setTipoFilter] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
+  const [estadoFilter, setEstadoFilter] = useFiltroUrl<string | null>("estado", null);
+  const [tipoFilter, setTipoFilter] = useFiltroUrl<string | null>("tipo", null);
+  const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
     let result = personal;
@@ -198,7 +199,9 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                   <TableRow
                     key={p.id}
                     className="cursor-pointer"
-                    onClick={() => router.push(`/dashboard/personal/${p.id}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/personal/${p.id}?from=${aca()}`)
+                    }
                   >
                     <TableCell>
                       <div className="flex items-center gap-2.5">

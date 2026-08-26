@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/preview-card";
 import { nombreCliente } from "@vivero/shared";
 import { listaProductos, type ProductoDeVisita } from "@/lib/visita-productos";
+import { useAca } from "@/lib/filtros-url";
 
 interface VisitaEnCalendario {
   id: string;
@@ -234,13 +235,15 @@ function VisitaEnDia({ visita }: { visita: VisitaEnCalendario }) {
   const meta =
     statusMeta[visita.estado as EstadoVisitaUI] ?? statusMeta.COMPLETADA;
   const productos = visita.productos ?? [];
+  /** Para volver al calendario con sus filtros, y no a la lista pelada. */
+  const volverA = useAca();
 
   return (
     <PreviewCard>
       <PreviewCardTrigger
         render={
           <Link
-            href={`/dashboard/visitas/${visita.id}`}
+            href={`/dashboard/visitas/${visita.id}?from=${volverA}`}
             className="flex items-center gap-1.5 rounded px-1 py-0.5 hover:bg-accent"
           >
             <span

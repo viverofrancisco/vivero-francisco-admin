@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -21,6 +21,7 @@ import {
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
 import { ArrowLeft, Eye, Search } from "lucide-react";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   nombresProductos,
   resumenProductos,
@@ -85,9 +86,12 @@ export function ClienteVisitasPage({
   visitas,
 }: Props) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [estadoFilter, setEstadoFilter] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
+  const [estadoFilter, setEstadoFilter] = useFiltroUrl<string | null>(
+    "estado",
+    null
+  );
+  const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
     let result = visitas;
@@ -196,7 +200,7 @@ export function ClienteVisitasPage({
                         size="icon"
                         onClick={() =>
                           router.push(
-                            `/dashboard/visitas/${v.id}?from=/dashboard/clientes/${clienteId}/visitas`
+                            `/dashboard/visitas/${v.id}?from=${aca()}`
                           )
                         }
                       >

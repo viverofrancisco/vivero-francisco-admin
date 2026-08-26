@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
 import { money, fecha } from "./formato";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
+import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 
 interface Cliente {
   id: string;
@@ -48,6 +49,7 @@ interface Pendiente {
   ivaTasa: string;
   visitaProductoId?: string;
   visitaId?: string;
+  visitaNumero?: number;
   suscripcionItemId?: string;
   suscripcionId?: string;
   fecha?: string;
@@ -185,11 +187,19 @@ export function NuevaOrdenPage({
    * quien entró por acá viene a cobrar esta visita, no a revisar todo lo que el
    * cliente debe. Lo que sí se puede es sumar productos del catálogo.
    */
-  const esDeUnaVisita = desdeVisita != null && (preseleccion?.length ?? 0) > 0;
-  const fijada = (l: Linea) =>
-    esDeUnaVisita &&
-    !!l.visitaProductoId &&
-    preseleccion!.includes(l.visitaProductoId);
+  /**
+   * A qué visita es esta orden. Vacío = todavía a ninguna.
+   *
+   * Se llega con una puesta al entrar desde la ficha de la visita, y si no se
+   * elige acá. En los dos casos manda lo mismo: sus productos entran completos
+   * —una visita se factura entera— y no se sacan de a uno.
+   */
+  const [visitaId, setVisitaId] = useState(
+    desdeVisita && (preseleccion?.length ?? 0) > 0 ? desdeVisita.id : ""
+  );
+  /** Se entró desde la visita: cambiarla acá sería no ser esa orden. */
+  const bloqueada = desdeVisita != null && (preseleccion?.length ?? 0) > 0;
+  const fijada = (l: Linea) => visitaId !== "" && !!l.visitaProductoId;
   const nombreDelCliente = (() => {
     const c = clientes.find((x) => x.id === clienteId);
     return c ? nombreCliente(c) : "El cliente";
@@ -199,6 +209,8 @@ export function NuevaOrdenPage({
   );
   const [cargandoPendientes, setCargandoPendientes] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  /** La orden recién creada, mientras se le registra el cobro. */
+  const [cobrando, setCobrando] = useState<FacturaCobrable | null>(null);
   const [productoAAgregar, setProductoAAgregar] = useState("");
   // Con qué se va a facturar. Se elige acá, con el cliente delante.
   const [datoFacturacionId, setDatoFacturacionId] = useState<string | null>(null);
@@ -267,6 +279,31 @@ export function NuevaOrdenPage({
   );
 
   /**
+   * Las visitas del cliente que todavía no están facturadas, para elegir una.
+   *
+   * Salen de lo mismo que el panel de pendientes: una visita aparece acá
+   * mientras le quede algún producto sin línea de orden. Las que ya se
+   * facturaron no están, que es justo lo que se pidió.
+   */
+  const visitasPendientes = [
+    ...pendientes
+      .filter((p) => p.tipo === "visita")
+      .reduce((mapa, p) => {
+        const actual = mapa.get(p.visitaId!);
+        if (actual) actual.productos.push(p.descripcion);
+        else
+          mapa.set(p.visitaId!, {
+            id: p.visitaId!,
+            numero: p.visitaNumero!,
+            fecha: p.fecha!,
+            productos: [p.descripcion],
+          });
+        return mapa;
+      }, new Map<string, { id: string; numero: number; fecha: string; productos: string[] }>())
+      .values(),
+  ].sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+  /**
    * Qué origen tiene ya esta orden. Una orden no mezcla períodos de plan con
    * trabajo de visitas —el servicio lo rechaza— así que el primero que entra
    * define de qué es. Lo agregado a mano no cuenta: es el extra de cualquiera.
@@ -298,6 +335,46 @@ export function NuevaOrdenPage({
           otro.suscripcionId === p.suscripcionId &&
           otro.periodoInicio === p.periodoInicio
     );
+
+  /**
+   * Asignar la orden a una visita, o soltarla.
+   *
+   * No es solo una etiqueta: es cargar su trabajo. `Orden.visitaId` se deduce
+   * en el servidor de la procedencia de las líneas, así que una asignación que
+   * no las traiga sería una que no queda registrada en ningún lado.
+   */
+  const asignarVisita = (id: string) => {
+    const previa = visitaId;
+    setVisitaId(id);
+    setLineas((prev) => {
+      // Fuera lo de la visita anterior; lo agregado a mano se queda.
+      const deOtraVisita = new Set(
+        pendientes
+          .filter((p) => p.tipo === "visita" && p.visitaId === previa)
+          .map((p) => p.visitaProductoId)
+      );
+      const resto = prev.filter(
+        (l) => !l.visitaProductoId || !deOtraVisita.has(l.visitaProductoId)
+      );
+      if (!id) return resto;
+      const yaEstan = new Set(
+        resto
+          .map((l) => l.visitaProductoId)
+          .filter((x): x is string => x !== null)
+      );
+      return [
+        ...resto,
+        ...pendientes
+          .filter(
+            (p) =>
+              p.tipo === "visita" &&
+              p.visitaId === id &&
+              !yaEstan.has(p.visitaProductoId!)
+          )
+          .map(lineaDesde),
+      ];
+    });
+  };
 
   const agregarPendiente = (p: Pendiente) => {
     if (chocaConElOrigen(p)) {
@@ -345,16 +422,28 @@ export function NuevaOrdenPage({
     { subtotal: 0, iva: 0, total: 0 }
   );
 
-  const crear = async () => {
+  /**
+   * Crear la orden, y de ahí a cobrarla o a dejarla en borrador.
+   *
+   * Las dos escriben lo mismo: `crearOrden` abre siempre un `BORRADOR`, que es
+   * el único estado editable. La diferencia es qué pasa después —abrir el cobro
+   * o irse al detalle— y qué se exige antes: un borrador puede quedar sin
+   * precios, porque existe justamente para que alguien los ponga. Para cobrar
+   * no, que ahí ya hay una factura de por medio.
+   */
+  const crear = async ({ cobrar }: { cobrar: boolean }) => {
     if (!clienteId) return toast.error("Selecciona un cliente");
     if (lineas.length === 0) return toast.error("Agregá al menos un producto");
     const sinDescripcion = lineas.find((l) => !l.descripcion.trim());
     if (sinDescripcion) return toast.error("Hay un producto sin descripción");
-    const sinPrecio = lineas.find(
-      (l) => l.precioUnitario.trim() === "" || Number(l.precioUnitario) < 0
-    );
-    if (sinPrecio)
-      return toast.error(`Falta el precio de "${sinPrecio.descripcion}"`);
+    const negativo = lineas.find((l) => Number(l.precioUnitario) < 0);
+    if (negativo)
+      return toast.error(`El precio de "${negativo.descripcion}" es negativo`);
+    if (cobrar) {
+      const sinPrecio = lineas.find((l) => l.precioUnitario.trim() === "");
+      if (sinPrecio)
+        return toast.error(`Falta el precio de "${sinPrecio.descripcion}"`);
+    }
 
     setGuardando(true);
     try {
@@ -380,8 +469,21 @@ export function NuevaOrdenPage({
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
       const orden = await res.json();
+      if (!cobrar) {
+        toast.success(`Borrador #${orden.numero} guardado`);
+        router.push(`/dashboard/ordenes/${orden.id}`);
+        return;
+      }
+      // El cobro va contra la orden y no contra una factura: el endpoint
+      // confirma, emite y registra en una sola llamada.
       toast.success(`Orden #${orden.numero} creada`);
-      router.push(`/dashboard/ordenes/${orden.id}`);
+      setCobrando({
+        id: orden.id,
+        numero: `Orden #${orden.numero}`,
+        total: totales.total,
+        saldo: totales.total,
+        url: `/api/ordenes/${orden.id}/cobro`,
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos crear la orden");
     } finally {
@@ -422,8 +524,8 @@ export function NuevaOrdenPage({
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Armá la orden con lo que se vendió. La factura se emite después,
-              desde el detalle.
+              Armá la orden con lo que se vendió. Cobrala ahora o guardala como
+              borrador para terminarla después.
             </p>
           )}
         </div>
@@ -432,6 +534,40 @@ export function NuevaOrdenPage({
       <div className="grid gap-6 lg:grid-cols-[1fr_360px] items-start">
         {/* ── Líneas ─────────────────────────────────────────────── */}
         <div className="space-y-6">
+          {/* De qué visita es la orden. Solo visitas: los períodos de un plan
+              se cobran solos con la renovación, no se asignan a mano. Elegir
+              una carga su trabajo entero, que es lo que la vuelve "de esa
+              visita" cuando el servidor mira la procedencia de las líneas. */}
+          {clienteId && (visitasPendientes.length > 0 || visitaId !== "") && (
+            <Card className="overflow-visible">
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-base">Visita</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CustomSelect
+                  value={visitaId}
+                  onChange={asignarVisita}
+                  options={visitasPendientes.map((v) => ({
+                    value: v.id,
+                    label: `Visita #${v.numero} · ${fecha(v.fecha)}`,
+                    hint: v.productos.join(", "),
+                  }))}
+                  placeholder="Sin visita"
+                  clearable={!bloqueada}
+                  disabled={bloqueada || origen === "PLAN"}
+                  searchable
+                  searchPlaceholder="Buscar visita..."
+                />
+                {origen === "PLAN" && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Esta orden es de un período de suscripción. El trabajo de
+                    una visita va en otra orden.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Productos</CardTitle>
@@ -578,7 +714,7 @@ export function NuevaOrdenPage({
           </Card>
 
           {/* ── Pendientes de facturar ───────────────────────────── */}
-          {clienteId && !esDeUnaVisita && (
+          {clienteId && visitaId === "" && (
             <Card>
               <CardHeader className="border-b py-3">
                 <CardTitle className="text-base">
@@ -666,6 +802,18 @@ export function NuevaOrdenPage({
           )}
         </div>
 
+        {/* Se abre con la orden ya creada. Al cerrarlo —haya cobrado o no—
+            se va a su ficha: existe igual, y quedarse en un formulario vacío
+            haría pensar que no se guardó nada. */}
+        <CobroDialog
+          factura={cobrando}
+          onClose={() => {
+            const id = cobrando?.id;
+            setCobrando(null);
+            if (id) router.push(`/dashboard/ordenes/${id}`);
+          }}
+        />
+
         {/* ── Cliente y totales ──────────────────────────────────── */}
         <div className="space-y-6 lg:sticky lg:top-6">
           <Card className="overflow-visible">
@@ -724,11 +872,22 @@ export function NuevaOrdenPage({
               </div>
               <Button
                 className="mt-3 w-full"
-                onClick={crear}
+                onClick={() => crear({ cobrar: true })}
                 disabled={guardando || !clienteId || lineas.length === 0}
               >
                 {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Crear orden
+                Crear y cobrar
+              </Button>
+              {/* Lo mismo por debajo: las dos abren un borrador. Esta se queda
+                  ahí, para una orden que todavía hay que precisar o que se
+                  cobra en otro momento. */}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => crear({ cobrar: false })}
+                disabled={guardando || !clienteId || lineas.length === 0}
+              >
+                Guardar borrador
               </Button>
             </CardContent>
           </Card>

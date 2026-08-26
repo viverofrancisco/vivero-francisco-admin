@@ -46,7 +46,7 @@ export default async function VisitaDetailPage({
         include: { personal: { select: { id: true, nombre: true, apellido: true } } },
       },
       media: {
-        select: { id: true, url: true, tipo: true },
+        select: { id: true, url: true, tipo: true, productoId: true },
         orderBy: { createdAt: "asc" as const },
       },
     },
@@ -55,6 +55,14 @@ export default async function VisitaDetailPage({
   if (!visita) {
     notFound();
   }
+
+  // Para etiquetar una foto con algo que no se agendó: en el campo aparece de
+  // todo, y el informe arma secciones con cualquier producto del catálogo.
+  const catalogo = await prisma.producto.findMany({
+    where: { deletedAt: null },
+    orderBy: { nombre: "asc" },
+    select: { id: true, nombre: true },
+  });
 
   // Controla el botón "Ver mensajes".
   const messageCount = await prisma.visitaMessage.count({
@@ -86,6 +94,10 @@ export default async function VisitaDetailPage({
         visita={serialized}
         userRole={user.role}
         hasMessages={hasMessages}
+        catalogo={catalogo.map((p) => ({
+          productoId: p.id,
+          nombre: p.nombre,
+        }))}
       />
     </div>
   );

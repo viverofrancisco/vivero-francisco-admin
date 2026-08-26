@@ -6,10 +6,19 @@ import { PageHeader } from "@/components/shared/page-header";
 export default async function ServiciosPage() {
   await requireAuth();
 
+  // `select` y no la fila entera: `ivaTasa` es un `Decimal` de Prisma, que no
+  // se puede serializar hacia un componente cliente —Next lo avisa por consola
+  // en cada carga— y la tabla no lo usa. Igual que `_count`, que tampoco.
   const servicios = await prisma.producto.findMany({
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { suscripcionItems: true } } },
+    select: {
+      id: true,
+      nombre: true,
+      tipo: true,
+      descripcion: true,
+      contificoProductoId: true,
+    },
   });
 
   return (

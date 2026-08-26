@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Users, CalendarDays, FileText } from "lucide-react";
+import {
+  CalendarDays,
+  DollarSign,
+  FileText,
+  RefreshCw,
+  Search,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
   GlobalSearchResult,
@@ -13,6 +20,8 @@ import type {
 const typeMeta: Record<SearchType, { label: string; icon: typeof Users }> = {
   cliente: { label: "Cliente", icon: Users },
   visita: { label: "Visita", icon: CalendarDays },
+  orden: { label: "Orden", icon: DollarSign },
+  suscripcion: { label: "Suscripción", icon: RefreshCw },
   informe: { label: "Informe", icon: FileText },
 };
 
@@ -72,6 +81,8 @@ export function GlobalSearch({ className }: { className?: string }) {
     ? [
         ...result.clientes.items,
         ...result.visitas.items,
+        ...result.ordenes.items,
+        ...result.suscripciones.items,
         ...result.informes.items,
       ].slice(0, PREVIEW)
     : [];
@@ -103,7 +114,7 @@ export function GlobalSearch({ className }: { className?: string }) {
             if (e.key === "Enter") goToResults();
             if (e.key === "Escape") setOpen(false);
           }}
-          placeholder="Buscar clientes, visitas o informes…"
+          placeholder="Buscar..."
           className="h-10 w-full rounded-xl border border-border bg-card pl-9 pr-3 text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-3 focus:ring-primary/15"
         />
       </div>
@@ -140,6 +151,11 @@ export function GlobalSearch({ className }: { className?: string }) {
                         <span className="block truncate text-xs font-medium text-muted-foreground">
                           {item.subtitle}
                         </span>
+                        {item.detalle && (
+                          <span className="block truncate text-xs font-medium text-muted-foreground">
+                            {item.detalle}
+                          </span>
+                        )}
                       </span>
                       <span className="flex-none text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                         {typeMeta[item.type].label}

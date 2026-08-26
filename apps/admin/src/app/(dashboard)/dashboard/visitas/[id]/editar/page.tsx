@@ -38,7 +38,11 @@ export default async function EditarVisitaRoute({
         },
         productos: {
           orderBy: { posicion: "asc" },
-          select: { productoId: true, suscripcionItemId: true },
+          select: {
+            productoId: true,
+            suscripcionItemId: true,
+            producto: { select: { nombre: true } },
+          },
         },
         personal: { where: { removedAt: null }, select: { personalId: true } },
       },
@@ -98,6 +102,7 @@ export default async function EditarVisitaRoute({
         cliente: visita.cliente,
         productos: visita.productos.map((p) => ({
           productoId: p.productoId,
+          nombre: p.producto.nombre,
         })),
         suscripcionId: visita.suscripcionId,
         grupoId: visita.grupoId,

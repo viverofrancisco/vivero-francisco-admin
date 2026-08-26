@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Link2, Pencil } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Link2, Pencil } from "lucide-react";
 import { CopyField } from "@/components/shared/copy-field";
 import { toast } from "sonner";
 import {
@@ -45,9 +46,12 @@ interface ServicioData {
 export function ServicioDetail({
   servicio,
   clienteRows,
+  backHref = "/dashboard/productos",
 }: {
   servicio: ServicioData;
   clienteRows: ServicioClienteRow[];
+  /** La lista de la que se vino, con sus filtros. */
+  backHref?: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -146,9 +150,17 @@ export function ServicioDetail({
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{data.nombre}</h1>
-          <p className="text-muted-foreground">Detalle del producto</p>
+        <div className="flex items-start gap-3">
+          {/* Faltaba: era la única ficha sin forma de volver al listado. */}
+          <Link href={backHref}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{data.nombre}</h1>
+            <p className="text-muted-foreground">Detalle del producto</p>
+          </div>
         </div>
         {!editing && (
           <Button variant="outline" onClick={startEdit}>

@@ -706,6 +706,14 @@ model Informe {
   id            String    @id @default(cuid())
   clienteId     String
   titulo        String
+  /// La fecha que **sale impresa** en el PDF, y solo eso.
+  ///
+  /// Va aparte de `generatedAt` porque son dos hechos distintos: cuándo se
+  /// armó el archivo y con qué fecha se entrega. Un informe de agosto se puede
+  /// generar el 2 de septiembre y tiene que decir agosto; y regenerarlo para
+  /// corregir una foto no puede cambiarle la fecha al documento que el cliente
+  /// ya tiene. `generatedAt` sigue siendo el instante real, para auditoría.
+  fecha         DateTime  @db.Date
   fechaDesde    DateTime?
   fechaHasta    DateTime?
   pdfKey        String

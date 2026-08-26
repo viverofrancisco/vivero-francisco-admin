@@ -42,17 +42,37 @@ export const incompleteVisitaSchema = z.object({
 });
 export type IncompleteVisitaBody = z.infer<typeof incompleteVisitaSchema>;
 
+/**
+ * Cuántos archivos entran en un pedido de subida.
+ *
+ * Es un tope por llamada, no por visita: se puede volver a subir. Existe para
+ * que un cliente roto no pida mil URLs firmadas de una, no porque veinte fotos
+ * sean muchas para una visita.
+ */
+export const MAX_ARCHIVOS_POR_SUBIDA = 20;
+
+/**
+ * Un archivo que se quiere subir a una visita.
+ *
+ * El `contentType` se valida acá porque es lo que se firma: la URL prefirmada
+ * sale con ese tipo y el bucket lo acepta sin preguntar. Sin este filtro, un
+ * pedido armado a mano subía un ejecutable y quedaba guardado como "imagen"
+ * —`tipo` se deduce de si empieza con `video/`, y todo lo demás cae en imagen.
+ */
+export const archivoSubibleSchema = z.object({
+  fileName: z.string().min(1),
+  contentType: z
+    .string()
+    .min(1)
+    .refine(
+      (t) => t.startsWith("image/") || t.startsWith("video/"),
+      "Solo se pueden subir imágenes o videos"
+    ),
+});
+
 // Schema for /api/mobile/visitas/[id]/media POST (request presigned URLs)
 export const requestUploadUrlsSchema = z.object({
-  files: z
-    .array(
-      z.object({
-        fileName: z.string().min(1),
-        contentType: z.string().min(1),
-      })
-    )
-    .min(1)
-    .max(20),
+  files: z.array(archivoSubibleSchema).min(1).max(MAX_ARCHIVOS_POR_SUBIDA),
 });
 export type RequestUploadUrlsBody = z.infer<typeof requestUploadUrlsSchema>;
 

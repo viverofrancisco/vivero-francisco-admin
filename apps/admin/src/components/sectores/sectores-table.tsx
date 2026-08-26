@@ -13,6 +13,7 @@ import {
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Trash2, Search, MapPin, Users, UserCog } from "lucide-react";
 import { toast } from "sonner";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface AdminUser {
   id: string;
@@ -52,8 +53,8 @@ function SecMeta({
 export function SectoresTable({ sectores }: SectoresTableProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
+  const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return sectores;
@@ -119,7 +120,9 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
               return (
                 <div
                   key={s.id}
-                  onClick={() => router.push(`/dashboard/sectores/${s.id}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/sectores/${s.id}?from=${aca()}`)
+                  }
                   className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-md"
                 >
                   {/* Striped header with pin */}

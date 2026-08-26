@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { hoyISOEcuador } from "@/lib/fechas";
+import { useFiltroUrl } from "@/lib/filtros-url";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,6 +32,7 @@ const ESTADOS = [
 
 interface VisitaRow {
   id: string;
+  numero: number;
   fechaProgramada: string;
   fechaRealizada: string | null;
   estado: string;
@@ -60,6 +63,11 @@ interface VisitasPageClientProps {
   initialVisitas: VisitaRow[];
   initialDesde: string;
   initialHasta: string;
+  /**
+   * Los filtros que ya aplicó el servidor. Vienen de él y no de la URL leída
+   * acá para que la pantalla no pueda mostrar un filtro que la lista no tiene.
+   */
+  filtros: { estado?: string; cliente?: string; producto?: string };
   userRole?: string;
   clientes: ClienteFilterOption[];
   productos: FilterOption[];
@@ -69,79 +77,70 @@ export function VisitasPageClient({
   initialVisitas,
   initialDesde,
   initialHasta,
+  filtros,
   userRole,
   clientes,
   productos,
 }: VisitasPageClientProps) {
-  const [visitas, setVisitas] = useState(initialVisitas);
-  const [desde, setDesde] = useState(initialDesde);
-  const [hasta, setHasta] = useState(initialHasta);
-  const [estado, setEstado] = useState("ALL");
-  /**
-   * Solo las que tienen trabajo suelto sin cobrar.
-   *
-   * Se filtra en el cliente y no en la API porque la respuesta ya trae la
-   * procedencia de cada producto: agregar un parámetro al endpoint sería pedir
-   * de vuelta lo que ya está en la mano.
-   */
-  const [soloSinOrden, setSoloSinOrden] = useState(false);
-  const [clienteId, setClienteId] = useState("ALL");
-  const [productoId, setServicioId] = useState("ALL");
-  const [loadingFilter, setLoadingFilter] = useState(false);
-  const [vista, setVista] = useState<"tabla" | "calendario">("tabla");
+  const router = useRouter();
+  const [navegando, startTransition] = useTransition();
 
-  const fetchVisitas = async (
-    d: string,
-    h: string,
-    e: string,
-    cId: string,
-    sId: string
-  ) => {
-    setLoadingFilter(true);
-    try {
-      const params = new URLSearchParams();
-      if (d) params.set("desde", d);
-      if (h) params.set("hasta", h);
-      if (e !== "ALL") params.set("estado", e);
-      if (cId !== "ALL") params.set("clienteId", cId);
-      if (sId !== "ALL") params.set("productoId", sId);
-      const res = await fetch(`/api/visitas?${params}`);
-      if (res.ok) {
-        const data: VisitaRow[] = await res.json();
-        // La API serializa la fecha como ISO completo y el server component
-        // como `YYYY-MM-DD`. Se unifica acá para que nadie aguas abajo tenga
-        // que saber de dónde vino la lista.
-        setVisitas(
-          data.map((v) => ({
-            ...v,
-            fechaProgramada: v.fechaProgramada.slice(0, 10),
-          }))
-        );
-      }
-    } finally {
-      setLoadingFilter(false);
+  /**
+   * La lista la arma el servidor, así que los filtros que la recortan viajan
+   * en la URL y se aplican navegando.
+   *
+   * `router.replace` y no `history.replaceState`: cambiar la URL a mano no le
+   * pide nada al servidor, así que la tabla se quedaba con las visitas de
+   * antes. Y `replace` en vez de `push` para no dejar una entrada de historial
+   * por cada filtro tocado —volver atrás tiene que salir de la lista, no
+   * deshacer filtro por filtro— pero sí deja la URL filtrada en la entrada
+   * actual, que es lo que hace que volver desde una visita la recupere.
+   */
+  const desde = initialDesde;
+  const hasta = initialHasta;
+  const estado = filtros.estado ?? "ALL";
+  const clienteId = filtros.cliente ?? "ALL";
+  const productoId = filtros.producto ?? "ALL";
+
+  const navegar = (patch: Record<string, string>) => {
+    const qs = new URLSearchParams(window.location.search);
+    for (const [clave, valor] of Object.entries(patch)) {
+      // El vacío se guarda igual: "sin fechas" no es lo mismo que "recién
+      // llegué", que es cuando vale el mes actual.
+      if (valor === "ALL") qs.delete(clave);
+      else qs.set(clave, valor);
     }
+    // Cambiar un filtro vuelve a la primera página: la 3 de la lista anterior
+    // no es la 3 de esta, y muchas veces ni existe.
+    qs.delete("pagina");
+    startTransition(() => {
+      router.replace(`/dashboard/visitas?${qs.toString()}`, { scroll: false });
+    });
   };
+
+  /**
+   * Estos dos no tocan la consulta: filtran y dibujan lo que ya llegó. Les
+   * alcanza con la URL a secas, sin pedirle nada al servidor.
+   */
+  const [soloSinOrden, setSoloSinOrden] = useFiltroUrl("sinOrden", false);
+  const [vista, setVista] = useFiltroUrl<"tabla" | "calendario">(
+    "vista",
+    "tabla"
+  );
+
+  const visitas = initialVisitas;
+  const loadingFilter = navegando;
 
   /**
    * El rango llega completo, así que no hay estado intermedio que validar: un
    * día suelto viaja como `desde === hasta` y la consulta devuelve solo ese día.
    */
-  const handleRangoChange = (d: string, h: string) => {
-    setDesde(d);
-    setHasta(h);
-    fetchVisitas(d, h, estado, clienteId, productoId);
-  };
+  const handleRangoChange = (d: string, h: string) =>
+    navegar({ desde: d, hasta: h });
 
-  const handleEstadoChange = (v: string) => {
-    setEstado(v);
-    fetchVisitas(desde, hasta, v, clienteId, productoId);
-  };
+  const handleEstadoChange = (v: string) => navegar({ estado: v });
 
-  const handleClienteChange = (v: string) => {
-    setClienteId(v);
-    fetchVisitas(desde, hasta, estado, v, productoId);
-  };
+  const handleClienteChange = (v: string) => navegar({ cliente: v });
 
   /**
    * Cuántos filtros están puestos, para el contador del botón. El estado no
@@ -160,13 +159,14 @@ export function VisitasPageClient({
     (desde || hasta ? 1 : 0);
 
   const limpiarFiltros = () => {
-    setClienteId("ALL");
-    setServicioId("ALL");
-    setEstado("ALL");
     setSoloSinOrden(false);
-    setDesde("");
-    setHasta("");
-    fetchVisitas("", "", "ALL", "ALL", "ALL");
+    navegar({
+      cliente: "ALL",
+      producto: "ALL",
+      estado: "ALL",
+      desde: "",
+      hasta: "",
+    });
   };
 
   /** Le queda trabajo suelto que todavía no entró en ninguna orden. */
@@ -176,10 +176,7 @@ export function VisitasPageClient({
 
   const visibles = soloSinOrden ? visitas.filter(sinOrden) : visitas;
 
-  const handleServicioChange = (v: string) => {
-    setServicioId(v);
-    fetchVisitas(desde, hasta, estado, clienteId, v);
-  };
+  const handleServicioChange = (v: string) => navegar({ producto: v });
 
   /**
    * El mes que muestra el calendario sale del filtro de fechas, y navegarlo
@@ -192,9 +189,7 @@ export function VisitasPageClient({
     const [anio, m] = mes.split("-").map(Number);
     const primero = `${mes}-01`;
     const ultimo = new Date(Date.UTC(anio, m, 0)).toISOString().slice(0, 10);
-    setDesde(primero);
-    setHasta(ultimo);
-    fetchVisitas(primero, ultimo, estado, clienteId, productoId);
+    navegar({ desde: primero, hasta: ultimo });
   };
 
   return (

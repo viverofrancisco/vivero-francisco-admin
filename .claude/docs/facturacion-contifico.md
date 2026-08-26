@@ -609,10 +609,23 @@ apenas **agendada**: cobrar por adelantado es normal, y lo único que nunca entr
 es una visita cancelada. Los ids no se toman de la URL a ciegas: se preselecciona
 solo lo que ya devolvió `listarPendientes`, que filtra por cliente y por viewer.
 
-Si la visita es de un mes futuro, el tope de fechas se estira **solo para las
-visitas** (`hastaVisitas`): de otro modo, entrar desde una visita de septiembre
-ofrecería de paso el período de suscripción de septiembre sin que nadie lo
-pidiera.
+Y al revés: **Nueva orden** tiene un selector de *Visita* con las del cliente
+que todavía tienen trabajo sin facturar. Elegir una carga su trabajo entero —la
+asignación *es* eso: `Orden.visitaId` se deduce de la procedencia de las líneas,
+así que una asignación sin líneas no quedaría registrada en ningún lado— y
+esconde el panel de pendientes, que a esa altura solo mostraría cosas que van en
+otra orden. Si en cambio se agregó un período de suscripción, el selector queda
+en gris: una orden es de una visita **o** de un plan.
+
+Los períodos de plan **no** se asignan a mano. Son por período y los crea la
+renovación (`/api/cron/renovaciones`); ofrecerlos en un selector era invitar a
+armar a dedo lo que se genera solo.
+
+El tope de fechas es distinto para cada origen (`hastaVisitas`, aparte de
+`hasta`): las **visitas no se cortan** —el web pasa `VISITAS_SIN_TOPE`, porque
+una visita agendada para octubre es justo la que alguien quiere asignarle a una
+orden hoy— y los **períodos de suscripción sí**, hasta fin del mes actual.
+Cobrar un período que todavía no arrancó sigue siendo una decisión aparte.
 
 Una orden **sí puede mezclar** un período de suscripción con ventas sueltas: eso
 es una sola factura para el cliente. Separarlas en dos facturas es armar dos

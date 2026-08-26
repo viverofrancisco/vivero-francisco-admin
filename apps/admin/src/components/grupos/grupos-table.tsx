@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
@@ -11,6 +11,7 @@ import {
 } from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Search, ChevronRight } from "lucide-react";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Grupo {
   id: string;
@@ -33,8 +34,8 @@ const barColors = [
 
 export function GruposTable({ grupos }: { grupos: Grupo[] }) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
+  const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return grupos;
@@ -83,7 +84,9 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
               return (
                 <div
                   key={grupo.id}
-                  onClick={() => router.push(`/dashboard/grupos/${grupo.id}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/grupos/${grupo.id}?from=${aca()}`)
+                  }
                   className="cursor-pointer rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
                 >
                   <div className="mb-4 flex items-center gap-3">

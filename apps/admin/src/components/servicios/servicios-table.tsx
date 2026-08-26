@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -20,6 +20,7 @@ import {
 } from "@/components/shared/table-pagination";
 import { AlertTriangle, Search } from "lucide-react";
 import { toast } from "sonner";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Servicio {
   id: string;
@@ -39,10 +40,10 @@ const TIPO_LABEL: Record<string, string> = {
 
 export function ServiciosTable({ productos }: { productos: Servicio[] }) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [tipo, setTipo] = useState("");
-  const [contifico, setContifico] = useState("");
-  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
+  const [tipo, setTipo] = useFiltroUrl("tipo", "");
+  const [contifico, setContifico] = useFiltroUrl("contifico", "");
+  const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
     let result = productos;
@@ -145,7 +146,7 @@ export function ServiciosTable({ productos }: { productos: Servicio[] }) {
                     key={servicio.id}
                     className="cursor-pointer"
                     onClick={() =>
-                      router.push(`/dashboard/productos/${servicio.id}`)
+                      router.push(`/dashboard/productos/${servicio.id}?from=${aca()}`)
                     }
                   >
                     <TableCell>

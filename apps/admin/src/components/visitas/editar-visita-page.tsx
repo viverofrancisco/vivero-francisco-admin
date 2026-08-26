@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
@@ -15,7 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MultiDateCalendar } from "@/components/ui/multi-date-calendar";
+import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
 import { PersonalSelector } from "@/components/grupos/personal-selector";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
@@ -41,7 +41,7 @@ interface VisitaEditable {
     empresa?: string | null;
     sector: { nombre: string } | null;
   };
-  productos: { productoId: string }[];
+  productos: { productoId: string; nombre: string }[];
   /** De qué plan es hoy la visita, si es de alguno. */
   suscripcionId: string | null;
   grupoId: string | null;
@@ -160,16 +160,18 @@ export function EditarVisitaPage({
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
-      toast.success("Visita actualizada");
-      router.push(`/dashboard/visitas/${visita.id}`);
-      router.refresh();
     } catch (e) {
       toast.error(
         e instanceof Error ? e.message : "No pudimos actualizar la visita"
       );
-    } finally {
       setGuardando(false);
+      return;
     }
+
+    toast.success("Visita actualizada");
+    router.push(`/dashboard/visitas/${visita.id}`);
+    router.refresh();
+    setGuardando(false);
   };
 
   return (
@@ -287,76 +289,6 @@ export function EditarVisitaPage({
             </Card>
           )}
 
-          {/* Las dos fechas juntas: se comparan de un vistazo, que es lo que
-              se hace al corregirlas. Un mes por calendario alcanza —para irse
-              lejos está el salto de mes y año en el título. */}
-          <div className="grid gap-6 sm:grid-cols-2">
-            <Card>
-              <CardHeader className="border-b py-3">
-                <CardTitle className="text-base">Programada</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {/* El calendario es multi-select: quedarse con la última
-                    elegida lo convierte en "reemplazar". */}
-                <MultiDateCalendar
-                  meses={1}
-                  value={[fecha]}
-                  onChange={(v) => setFecha(v[v.length - 1] ?? fecha)}
-                />
-                <p className="text-xs capitalize text-muted-foreground">
-                  {fechaLarga(fecha)}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="border-b py-3">
-                <CardTitle className="text-base">Realizada</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <MultiDateCalendar
-                  meses={1}
-                  value={realizada ? [realizada] : []}
-                  // Sin `?? realizada`: volver a tocar el día elegido la borra,
-                  // que es como se marca una visita que no se hizo.
-                  onChange={(v) => setRealizada(v[v.length - 1] ?? "")}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {realizada ? (
-                    <span className="capitalize">{fechaLarga(realizada)}</span>
-                  ) : (
-                    "Todavía no se hizo. Tocá el día marcado para borrarlo."
-                  )}
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 border-t pt-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs" htmlFor="horaEntrada">
-                      Hora de entrada
-                    </Label>
-                    <Input
-                      id="horaEntrada"
-                      type="time"
-                      value={entrada}
-                      onChange={(e) => setEntrada(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs" htmlFor="horaSalida">
-                      Hora de salida
-                    </Label>
-                    <Input
-                      id="horaSalida"
-                      type="time"
-                      value={salida}
-                      onChange={(e) => setSalida(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           <Card>
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Notas</CardTitle>
@@ -394,6 +326,41 @@ export function EditarVisitaPage({
                 El cliente no se cambia. Si el trabajo era para otro, agendá una
                 visita nueva y cancelá esta.
               </p>
+            </CardContent>
+          </Card>
+
+          {/* Las cuatro juntas: fechas y horas son el mismo dato —cuándo—
+              y se corrigen de a una, no se comparan. Por eso van al costado y
+              con un campo que abre el calendario, en vez de dos calendarios
+              desplegados ocupando media pantalla. */}
+          <Card className="overflow-visible">
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">Detalles de la visita</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Fecha programada</Label>
+                <DatePicker value={fecha} onChange={(v) => setFecha(v || fecha)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Fecha realizada</Label>
+                <DatePicker value={realizada} onChange={setRealizada} />
+                <p className="text-xs text-muted-foreground">
+                  {realizada
+                    ? "Borrala si la visita todavía no se hizo."
+                    : "Todavía no se hizo."}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Hora de entrada</Label>
+                  <TimePicker value={entrada} onChange={setEntrada} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Hora de salida</Label>
+                  <TimePicker value={salida} onChange={setSalida} />
+                </div>
+              </div>
             </CardContent>
           </Card>
 

@@ -16,15 +16,14 @@ import {
   CheckCircle,
   MessageSquare,
   Pencil,
-  Play,
   Plus,
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
-import { CompletarVisitaForm } from "@/components/visitas/completar-visita-form";
 import {
   MediaViewer,
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
+import { ArchivosVisita } from "@/components/visitas/archivos-visita";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -51,7 +50,7 @@ interface VisitaDetailData {
   estado: string;
   notas: string | null;
   notasIncompleto: string | null;
-  media: { id: string; url: string; tipo: string }[];
+  media: { id: string; url: string; tipo: string; productoId: string | null }[];
   cliente: {
     id: string;
     nombre: string;
@@ -71,6 +70,8 @@ interface VisitaDetailData {
 
 
 interface VisitaDetailProps {
+  /** Catálogo activo, para etiquetar una foto con algo que no se agendó. */
+  catalogo?: { productoId: string; nombre: string }[];
   visita: VisitaDetailData;
   userRole?: string;
   hasMessages?: boolean;
@@ -83,8 +84,8 @@ export function VisitaDetail({
   userRole,
   backHref = "/dashboard/visitas",
   hasMessages = false,
+  catalogo = [],
 }: VisitaDetailProps) {
-  const [completarOpen, setCompletarOpen] = useState(false);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
     null
   );
@@ -195,10 +196,12 @@ export function VisitaDetail({
                 </Button>
               </Link>
               {isProgramada && (
-                <Button onClick={() => setCompletarOpen(true)}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Completar
-                </Button>
+                <Link href={`/dashboard/visitas/${visita.id}/completar`}>
+                  <Button>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Completar
+                  </Button>
+                </Link>
               )}
             </div>
           )}
@@ -346,6 +349,20 @@ export function VisitaDetail({
         </Card>
         )}
 
+        {/* Editable acá y no en el formulario de edición: las fotos se sacan
+            mientras se hace el trabajo, y quien las sube no tiene por qué
+            pasar por otra pantalla ni esperar a completar la visita. */}
+        <ArchivosVisita
+          visitaId={visita.id}
+          archivos={visita.media}
+          productos={visita.productos.map((vp) => ({
+            productoId: vp.productoId,
+            nombre: vp.producto.nombre,
+          }))}
+          catalogo={catalogo}
+          puedeEditar={canModify}
+        />
+
         <Card>
           <CardHeader className="border-b py-3">
             <CardTitle className="text-base">Notas</CardTitle>
@@ -465,48 +482,6 @@ export function VisitaDetail({
         </div>
       </div>
 
-      {visita.media.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Archivos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {visita.media.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setActiveMedia({ url: m.url, tipo: m.tipo })}
-                  className="relative rounded-md overflow-hidden border aspect-square bg-muted hover:opacity-80 transition-opacity"
-                >
-                  {m.tipo === "imagen" ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={m.url}
-                      alt="Foto de visita"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <>
-                      <video
-                        src={m.url}
-                        muted
-                        className="h-full w-full object-cover"
-                      />
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/30">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60">
-                          <Play className="h-5 w-5 fill-white text-white" />
-                        </span>
-                      </span>
-                    </>
-                  )}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {hasMessages ? (
         <Card>
           <CardContent className="flex items-center justify-between py-4">
@@ -527,13 +502,6 @@ export function VisitaDetail({
           </CardContent>
         </Card>
       ) : null}
-
-      <CompletarVisitaForm
-        visitaId={visita.id}
-        productos={visita.productos}
-        open={completarOpen}
-        onClose={() => setCompletarOpen(false)}
-      />
 
       <MediaViewer
         media={activeMedia}

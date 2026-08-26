@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -13,6 +12,7 @@ import {
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { nombreCliente } from "@vivero/shared";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
@@ -24,6 +24,7 @@ import {
 
 interface VisitaRow {
   id: string;
+  numero: number;
   fechaProgramada: string;
   fechaRealizada: string | null;
   estado: string;
@@ -49,7 +50,7 @@ function formatDate(dateStr: string) {
 
 export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
   const router = useRouter();
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const totalPages = Math.max(1, Math.ceil(visitas.length / FILAS_POR_PAGINA));
   const pagina = Math.min(page, totalPages);
@@ -65,9 +66,10 @@ export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
           <Table containerClassName="h-full overflow-y-auto">
             <TableHeader sticky>
               <TableRow>
+                <TableHead className="w-20">N.º</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Servicio</TableHead>
-                <TableHead>Cuadrilla</TableHead>
+                <TableHead>Grupo</TableHead>
                 <TableHead>Fecha</TableHead>
                 <TableHead className="text-right">Estado</TableHead>
               </TableRow>
@@ -79,8 +81,13 @@ export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
                   <TableRow
                     key={v.id}
                     className="cursor-pointer"
-                    onClick={() => router.push(`/dashboard/visitas/${v.id}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/visitas/${v.id}?from=${aca()}`)
+                    }
                   >
+                    <TableCell className="font-bold tabular-nums">
+                      #{v.numero}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
                         <InitialsAvatar name={nombre} size={32} />

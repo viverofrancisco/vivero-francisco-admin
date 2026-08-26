@@ -99,10 +99,22 @@ export function calcularLinea(
 // Qué está pendiente de facturar
 // ──────────────────────────────────────────────
 
+/**
+ * Tope de fechas para las visitas cuando no hay ninguno: todas.
+ *
+ * Una visita agendada a futuro es facturable —cobrar por adelantado es normal—
+ * así que cortarlas en el mes actual escondía justo las que alguien quiere
+ * asignarle a una orden. Los períodos de suscripción **sí** siguen cortados:
+ * cobrar un período que no arrancó es otra decisión.
+ */
+export const VISITAS_SIN_TOPE = new Date(Date.UTC(2100, 0, 1));
+
 export interface PendienteVisita {
   tipo: "visita";
   visitaProductoId: string;
   visitaId: string;
+  /** Para nombrarla: "Visita #94" es lo que se dice en voz alta. */
+  visitaNumero: number;
   productoId: string;
   descripcion: string;
   fecha: Date;
@@ -170,7 +182,7 @@ export async function listarPendientes(
         },
       },
       include: {
-        visita: { select: { id: true, fechaProgramada: true } },
+        visita: { select: { id: true, numero: true, fechaProgramada: true } },
         producto: {
           select: { id: true, nombre: true, ivaTasa: true },
         },
@@ -196,6 +208,7 @@ export async function listarPendientes(
     tipo: "visita" as const,
     visitaProductoId: vp.id,
     visitaId: vp.visita.id,
+    visitaNumero: vp.visita.numero,
     productoId: vp.producto.id,
     descripcion: vp.producto.nombre,
     fecha: vp.visita.fechaProgramada,

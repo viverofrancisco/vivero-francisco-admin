@@ -3,16 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
 import { z } from "zod/v4";
+import { requestUploadUrlsSchema } from "@vivero/shared";
 import { randomUUID } from "crypto";
 
-const uploadRequestSchema = z.object({
-  files: z.array(
-    z.object({
-      fileName: z.string().min(1),
-      contentType: z.string().min(1),
-    })
-  ).min(1).max(10),
-});
+// El mismo schema que usa la app móvil: es la misma subida, y tenerlo dos
+// veces ya había hecho que el web aceptara 10 archivos y el móvil 20.
+const uploadRequestSchema = requestUploadUrlsSchema;
 
 // POST - Get presigned upload URLs
 export async function POST(

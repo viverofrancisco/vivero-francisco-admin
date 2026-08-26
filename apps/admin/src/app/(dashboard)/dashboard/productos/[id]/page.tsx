@@ -2,15 +2,20 @@ import { notFound } from "next/navigation";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { hrefDeVuelta } from "@/lib/navegacion";
 import { ServicioDetail } from "@/components/servicios/servicio-detail";
 
 export default async function EditarServicioPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   await requireAuth();
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = hrefDeVuelta(from, "/dashboard/productos");
 
   const servicio = await prisma.producto.findUnique({ where: { id } });
 
@@ -58,6 +63,7 @@ export default async function EditarServicioPage({
   return (
     <div className="p-4 md:p-6">
       <ServicioDetail
+        backHref={backHref}
         servicio={{
           ...servicio,
           // Decimal no cruza a un componente cliente.
