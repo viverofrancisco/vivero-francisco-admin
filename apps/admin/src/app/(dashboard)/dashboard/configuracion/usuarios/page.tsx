@@ -48,12 +48,15 @@ export default async function UsuariosPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Usuarios</h1>
-        <p className="text-muted-foreground">Administra los usuarios del sistema</p>
-      </div>
-
-      <div className="flex justify-end">
+      {/* El botón a la altura del título, como en el resto del portal: en su
+          propia fila dejaba una franja vacía entre el encabezado y la tabla. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Usuarios</h1>
+          <p className="text-muted-foreground">
+            Administra los usuarios del sistema
+          </p>
+        </div>
         <InviteForm sectores={sectores} />
       </div>
 

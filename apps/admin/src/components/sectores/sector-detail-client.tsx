@@ -1,15 +1,27 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { EmptyState } from "@/components/shared/empty-state";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import {
+  TablePagination,
+  FILAS_POR_PAGINA,
+} from "@/components/shared/table-pagination";
 import { nombreCliente } from "@vivero/shared";
 import {
   Table,
@@ -19,8 +31,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, UserPlus, X, Pencil, Search } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Search, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
+import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface AdminUser {
   id: string;
@@ -43,32 +56,26 @@ interface SectorData {
   admins: { user: AdminUser }[];
 }
 
+/** Un cliente que se puede sumar, y de dónde saldría. */
+interface Candidato extends ClienteRow {
+  /** El sector donde está hoy, o null si no tiene ninguno. */
+  sectorActual: string | null;
+}
+
 interface SectorDetailClientProps {
   /** La lista de la que se vino, con sus filtros. */
   backHref?: string;
   sector: SectorData;
-  unassignedClientes: ClienteRow[];
+  /** Todos los clientes que hoy no están en este sector. */
+  candidatos: Candidato[];
   personalAdmins: AdminUser[];
 }
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | null | undefined;
-}) {
-  return (
-    <div className="flex justify-between py-2.5 border-b border-border last:border-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium text-right">{value || "—"}</span>
-    </div>
-  );
-}
+const nombreAdmin = (a: AdminUser) => a.name ?? a.email;
 
 export function SectorDetailClient({
   sector,
-  unassignedClientes,
+  candidatos,
   personalAdmins,
   backHref = "/dashboard/sectores",
 }: SectorDetailClientProps) {
@@ -76,37 +83,56 @@ export function SectorDetailClient({
   const [editing, setEditing] = useState(false);
   const [nombre, setNombre] = useState(sector.nombre);
   const [saving, setSaving] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showResults, setShowResults] = useState(false);
-  const [assigningAdmin, setAssigningAdmin] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
 
-  const filteredClientes = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.toLowerCase();
-    return unassignedClientes
-      .filter((c) =>
-        nombreCliente(c).toLowerCase().includes(q)
-      )
-      .slice(0, 10);
-  }, [searchQuery, unassignedClientes]);
+  const [busqueda, setBusqueda] = useFiltroUrl("q", "");
+  const [page, setPage] = useFiltroUrl("pagina", 1);
+  /** Los tildados, para sacarlos del sector de a varios. */
+  const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
+  const [agregando, setAgregando] = useState(false);
+  const [trabajando, setTrabajando] = useState(false);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowResults(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const filtrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return sector.clientes;
+    return sector.clientes.filter(
+      (c) =>
+        nombreCliente(c).toLowerCase().includes(q) ||
+        (c.ciudad ?? "").toLowerCase().includes(q)
+    );
+  }, [sector.clientes, busqueda]);
 
-  const assignedAdminIds = sector.admins.map((a) => a.user.id);
-  const availableAdmins = personalAdmins.filter(
-    (ja) => !assignedAdminIds.includes(ja.id)
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(filtrados.length / FILAS_POR_PAGINA)
   );
+  const pagina = Math.min(page, totalPaginas);
+  const enPagina = filtrados.slice(
+    (pagina - 1) * FILAS_POR_PAGINA,
+    pagina * FILAS_POR_PAGINA
+  );
+  const idsEnPagina = enPagina.map((c) => c.id);
+  const paginaEntera =
+    idsEnPagina.length > 0 && idsEnPagina.every((id) => seleccion.has(id));
 
-  const handleSaveName = async () => {
+  function alternar(id: string) {
+    setSeleccion((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function alternarPagina() {
+    setSeleccion((prev) => {
+      const next = new Set(prev);
+      if (paginaEntera) idsEnPagina.forEach((id) => next.delete(id));
+      else idsEnPagina.forEach((id) => next.add(id));
+      return next;
+    });
+  }
+
+  async function guardarNombre() {
     if (!nombre.trim() || nombre === sector.nombre) return;
     setSaving(true);
     try {
@@ -115,10 +141,7 @@ export function SectorDetailClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre: nombre.trim() }),
       });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error);
-      }
+      if (!res.ok) throw new Error((await res.json()).error);
       toast.success("Nombre actualizado");
       setEditing(false);
       router.refresh();
@@ -127,322 +150,477 @@ export function SectorDetailClient({
     } finally {
       setSaving(false);
     }
-  };
+  }
 
-  const handleCancel = () => {
-    setNombre(sector.nombre);
-    setEditing(false);
-  };
-
-  const handleAssignCliente = async (clienteId: string) => {
+  /** Suma clientes al sector. Sirve para uno o para veinte. */
+  async function agregarClientes(ids: string[]) {
+    if (ids.length === 0) return;
+    setTrabajando(true);
     try {
       const res = await fetch(`/api/sectores/${sector.id}/clientes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clienteIds: [clienteId] }),
+        body: JSON.stringify({ clienteIds: ids }),
       });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error);
-      }
-      toast.success("Cliente asignado al sector");
-      setSearchQuery("");
-      setShowResults(false);
+      if (!res.ok) throw new Error((await res.json()).error);
+      toast.success(
+        ids.length === 1 ? "Cliente agregado" : `${ids.length} clientes agregados`
+      );
+      setAgregando(false);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
+    } finally {
+      setTrabajando(false);
     }
-  };
+  }
 
-  const handleRemoveCliente = async (clienteId: string) => {
+  /** Los saca del sector. No los borra: quedan sin sector asignado. */
+  async function quitarClientes(ids: string[]) {
+    if (ids.length === 0) return;
+    setTrabajando(true);
     try {
       const res = await fetch(`/api/sectores/${sector.id}/clientes`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clienteId }),
+        body: JSON.stringify({ clienteIds: ids }),
       });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error);
-      }
-      toast.success("Cliente removido del sector");
+      if (!res.ok) throw new Error((await res.json()).error);
+      toast.success(
+        ids.length === 1
+          ? "Cliente quitado del sector"
+          : `${ids.length} clientes quitados del sector`
+      );
+      setSeleccion(new Set());
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
+    } finally {
+      setTrabajando(false);
     }
-  };
+  }
 
-  const handleAssignAdmin = async (userId: string) => {
+  async function cambiarAdmin(userId: string, agregar: boolean) {
     try {
       const res = await fetch(`/api/sectores/${sector.id}/admins`, {
-        method: "POST",
+        method: agregar ? "POST" : "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error);
-      }
-      toast.success("Admin asignado");
-      setAssigningAdmin(false);
+      if (!res.ok) throw new Error((await res.json()).error);
+      toast.success(agregar ? "Admin asignado" : "Admin removido");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
     }
-  };
+  }
 
-  const handleRemoveAdmin = async (userId: string) => {
-    try {
-      const res = await fetch(`/api/sectores/${sector.id}/admins`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error);
-      }
-      toast.success("Admin removido");
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error");
-    }
-  };
+  const asignados = sector.admins.map((a) => a.user.id);
+  const adminsDisponibles = personalAdmins.filter(
+    (a) => !asignados.includes(a.id)
+  );
 
   return (
-    <div>
-      {/* Sticky header */}
-      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push(backHref)}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-extrabold tracking-tight truncate">{sector.nombre}</h1>
-            <p className="text-sm text-muted-foreground">
-              {sector.clientes.length} cliente
-              {sector.clientes.length !== 1 && "s"} asignado
-              {sector.clientes.length !== 1 && "s"}
-            </p>
-          </div>
-          {editing ? (
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                Cancelar
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSaveName}
-                disabled={saving || !nombre.trim() || nombre === sector.nombre}
-              >
-                {saving ? "Guardando..." : "Guardar cambios"}
-              </Button>
+    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+      <div className="flex flex-none items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={() => router.push(backHref)}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-2xl font-bold">{sector.nombre}</h1>
+          <p className="text-sm text-muted-foreground">
+            {sector.clientes.length} cliente
+            {sector.clientes.length !== 1 && "s"} · {sector.admins.length} admin
+            {sector.admins.length !== 1 && "s"}
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+          <Pencil className="mr-1.5 h-3.5 w-3.5" />
+          Editar
+        </Button>
+      </div>
+
+      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-3">
+        {/* Los clientes son lo que se viene a ver acá, así que se llevan la
+            columna grande y toda la altura: filtros arriba, encabezado y
+            paginación fijos, y solo las filas scrollean. */}
+        <div className="flex min-h-0 flex-col gap-4 lg:col-span-2">
+          <div className="flex flex-none flex-wrap items-center gap-3">
+            <div className="relative min-w-[200px] max-w-sm flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar cliente en este sector..."
+                value={busqueda}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9"
+              />
             </div>
-          ) : (
+            <Button
+              size="sm"
+              onClick={() => setAgregando(true)}
+              disabled={candidatos.length === 0}
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              Agregar clientes
+            </Button>
+          </div>
+
+          {seleccion.size > 0 && (
+            <div className="flex flex-none flex-wrap items-center gap-3 rounded-xl border bg-card px-4 py-2.5">
+              <span className="text-sm font-semibold">
+                {seleccion.size} seleccionado{seleccion.size !== 1 ? "s" : ""}
+              </span>
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSeleccion(new Set())}
+                >
+                  Limpiar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={trabajando}
+                  onClick={() => quitarClientes([...seleccion])}
+                >
+                  Quitar del sector
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="min-h-0 flex-1 overflow-hidden">
+              {filtrados.length === 0 ? (
+                <EmptyState
+                  message={
+                    busqueda.trim()
+                      ? "Ningún cliente coincide"
+                      : "Este sector todavía no tiene clientes"
+                  }
+                />
+              ) : (
+                <Table containerClassName="h-full overflow-y-auto">
+                  <TableHeader sticky>
+                    <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={paginaEntera}
+                          onCheckedChange={alternarPagina}
+                          aria-label="Seleccionar página"
+                        />
+                      </TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Ciudad</TableHead>
+                      <TableHead className="w-16 text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {enPagina.map((c) => (
+                      <TableRow
+                        key={c.id}
+                        className="cursor-pointer"
+                        onClick={() =>
+                          router.push(`/dashboard/clientes/${c.id}?from=${aca()}`)
+                        }
+                      >
+                        <TableCell
+                          className="w-10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Checkbox
+                            checked={seleccion.has(c.id)}
+                            onCheckedChange={() => alternar(c.id)}
+                            aria-label={`Seleccionar ${nombreCliente(c)}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2.5">
+                            <InitialsAvatar name={nombreCliente(c)} size={36} />
+                            <span className="truncate font-bold text-foreground">
+                              {nombreCliente(c)}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {c.ciudad || "—"}
+                        </TableCell>
+                        <TableCell
+                          className="text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={trabajando}
+                            aria-label={`Quitar a ${nombreCliente(c)} del sector`}
+                            title="Quitar del sector"
+                            onClick={() => quitarClientes([c.id])}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+
+            <TablePagination
+              page={pagina}
+              total={filtrados.length}
+              onPageChange={setPage}
+              sustantivo="cliente"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-6 overflow-y-auto">
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">Información del sector</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-start justify-between gap-3">
+                <span className="flex-none text-muted-foreground">Nombre</span>
+                <span className="min-w-0 text-right font-medium">
+                  {sector.nombre}
+                </span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="flex-none text-muted-foreground">Clientes</span>
+                <span className="tabular-nums">{sector.clientes.length}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">
+                Admins del sector ({sector.admins.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {sector.admins.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nadie administra este sector todavía.
+                </p>
+              ) : (
+                <ul className="divide-y">
+                  {sector.admins.map(({ user }) => (
+                    <li
+                      key={user.id}
+                      className="flex items-center gap-2.5 py-2 first:pt-0 last:pb-0"
+                    >
+                      <InitialsAvatar name={nombreAdmin(user)} size={32} />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">
+                          {nombreAdmin(user)}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground">
+                          {user.email}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Quitar a ${nombreAdmin(user)}`}
+                        title="Quitar del sector"
+                        onClick={() => cambiarAdmin(user.id, false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Se agrega desde acá y no desde la ficha del usuario: cuando
+                  uno está mirando un sector, lo que tiene en la cabeza es
+                  quién lo lleva. */}
+              {adminsDisponibles.length > 0 ? (
+                <CustomSelect
+                  value=""
+                  onChange={(id) => id && cambiarAdmin(id, true)}
+                  options={adminsDisponibles.map((a) => ({
+                    value: a.id,
+                    label: nombreAdmin(a),
+                  }))}
+                  placeholder="Agregar admin…"
+                  searchable={adminsDisponibles.length > 8}
+                />
+              ) : (
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <UserPlus className="h-3.5 w-3.5" />
+                  {personalAdmins.length === 0
+                    ? "No hay usuarios con rol admin de sector."
+                    : "Ya están todos asignados a este sector."}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Dialog open={editing} onOpenChange={(v) => !v && setEditing(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar sector</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="nombre">Nombre</Label>
+            <Input
+              id="nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
             <Button
               variant="outline"
-              size="sm"
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setNombre(sector.nombre);
+                setEditing(false);
+              }}
             >
-              <Pencil className="mr-1.5 h-3.5 w-3.5" />
-              Editar
+              Cancelar
             </Button>
+            <Button
+              onClick={guardarNombre}
+              disabled={saving || !nombre.trim() || nombre === sector.nombre}
+            >
+              {saving ? "Guardando…" : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AgregarClientesDialog
+        abierto={agregando}
+        onCerrar={() => setAgregando(false)}
+        candidatos={candidatos}
+        trabajando={trabajando}
+        onAgregar={agregarClientes}
+      />
+    </div>
+  );
+}
+
+/**
+ * Elegir a quiénes sumar al sector.
+ *
+ * Aparecen todos los que hoy no están acá, incluidos los que pertenecen a otro
+ * sector: cada uno muestra de dónde sale, así que sumarlo es un movimiento
+ * visible y no una asignación a ciegas. Un cliente tiene un solo sector.
+ */
+function AgregarClientesDialog({
+  abierto,
+  onCerrar,
+  candidatos,
+  trabajando,
+  onAgregar,
+}: {
+  abierto: boolean;
+  onCerrar: () => void;
+  candidatos: Candidato[];
+  trabajando: boolean;
+  onAgregar: (ids: string[]) => void;
+}) {
+  const [busqueda, setBusqueda] = useState("");
+  const [elegidos, setElegidos] = useState<Set<string>>(new Set());
+
+  const visibles = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return candidatos;
+    return candidatos.filter((c) =>
+      nombreCliente(c).toLowerCase().includes(q)
+    );
+  }, [candidatos, busqueda]);
+
+  function cerrar() {
+    setBusqueda("");
+    setElegidos(new Set());
+    onCerrar();
+  }
+
+  return (
+    <Dialog open={abierto} onOpenChange={(v) => !v && cerrar()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Agregar clientes a este sector</DialogTitle>
+          <DialogDescription>
+            Un cliente pertenece a un solo sector: los que ya están en otro se
+            mudan a este.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar cliente..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        <div className="max-h-72 min-h-[8rem] overflow-y-auto rounded-md border">
+          {visibles.length === 0 ? (
+            <p className="p-4 text-center text-sm text-muted-foreground">
+              {candidatos.length === 0
+                ? "Todos los clientes ya están en este sector."
+                : "Ningún cliente coincide."}
+            </p>
+          ) : (
+            <ul className="divide-y">
+              {visibles.map((c) => (
+                <li key={c.id}>
+                  <label className="flex cursor-pointer items-center gap-2.5 px-3 py-2 hover:bg-muted/50">
+                    <Checkbox
+                      checked={elegidos.has(c.id)}
+                      onCheckedChange={() =>
+                        setElegidos((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(c.id)) next.delete(c.id);
+                          else next.add(c.id);
+                          return next;
+                        })
+                      }
+                    />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {nombreCliente(c)}
+                    </span>
+                    <span className="flex-none text-xs text-muted-foreground">
+                      {c.sectorActual ? `de ${c.sectorActual}` : "sin sector"}
+                    </span>
+                  </label>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="px-4 md:px-6 pt-6 pb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - Sector info + Clientes */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Informacion del Sector */}
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle>Informacion del Sector</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {editing ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="nombre">Nombre</Label>
-                    <Input
-                      id="nombre"
-                      value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <InfoRow label="Nombre" value={sector.nombre} />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Clientes en este sector */}
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle>Clientes en este sector</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Search bar */}
-                {unassignedClientes.length > 0 && (
-                  <div ref={searchRef} className="relative">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar cliente para agregar..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setShowResults(true);
-                        }}
-                        onFocus={() => setShowResults(true)}
-                        className="pl-9"
-                      />
-                    </div>
-                    {showResults && searchQuery.trim() && (
-                      <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
-                        {filteredClientes.length === 0 ? (
-                          <p className="p-3 text-sm text-muted-foreground">
-                            No se encontraron clientes
-                          </p>
-                        ) : (
-                          filteredClientes.map((c) => (
-                            <button
-                              key={c.id}
-                              onClick={() => handleAssignCliente(c.id)}
-                              className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-muted text-left"
-                            >
-                              <span className="font-medium">
-                                {nombreCliente(c)}
-                              </span>
-                              <span className="text-muted-foreground text-xs">
-                                {c.ciudad ?? ""}
-                              </span>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Table */}
-                {sector.clientes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No hay clientes asignados a este sector
-                  </p>
-                ) : (
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Cliente</TableHead>
-                          <TableHead>Ciudad</TableHead>
-                          <TableHead className="w-20"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sector.clientes.map((c) => (
-                          <TableRow key={c.id}>
-                            <TableCell>
-                              <Link
-                                href={`/dashboard/clientes/${c.id}`}
-                                className="flex items-center gap-2.5 font-bold hover:text-primary"
-                              >
-                                <InitialsAvatar
-                                  name={nombreCliente(c)}
-                                  size={32}
-                                />
-                                {nombreCliente(c)}
-                              </Link>
-                            </TableCell>
-                            <TableCell>{c.ciudad ?? "—"}</TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => handleRemoveCliente(c.id)}
-                              >
-                                <X className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right column - Admins */}
-          <div className="space-y-6">
-            {/* Personal Admin */}
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle>Personal Admin</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {sector.admins.map((a) => (
-                    <div
-                      key={a.user.id}
-                      className="flex items-center justify-between py-2 border-b border-border last:border-0"
-                    >
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        {a.user.name ?? a.user.email}
-                        <button
-                          onClick={() => handleRemoveAdmin(a.user.id)}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    </div>
-                  ))}
-                  {assigningAdmin ? (
-                    <CustomSelect
-                      value=""
-                      onChange={handleAssignAdmin}
-                      options={availableAdmins.map((ja) => ({
-                        value: ja.id,
-                        label: ja.name ?? ja.email,
-                      }))}
-                      placeholder="Seleccionar admin"
-                      className="h-8 text-xs"
-                    />
-                  ) : (
-                    availableAdmins.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => setAssigningAdmin(true)}
-                      >
-                        <UserPlus className="mr-2 h-3 w-3" />
-                        Asignar Admin
-                      </Button>
-                    )
-                  )}
-                  {sector.admins.length === 0 && !assigningAdmin && (
-                    <p className="text-sm text-muted-foreground py-2">
-                      Sin personal admin asignados
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={cerrar} disabled={trabajando}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => onAgregar([...elegidos])}
+            disabled={trabajando || elegidos.size === 0}
+          >
+            {trabajando
+              ? "Agregando…"
+              : elegidos.size > 0
+                ? `Agregar ${elegidos.size}`
+                : "Agregar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

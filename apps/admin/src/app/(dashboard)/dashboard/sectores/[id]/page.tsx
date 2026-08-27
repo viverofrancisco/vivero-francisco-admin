@@ -30,9 +30,21 @@ export default async function SectorDetailPage({
         },
       },
     }),
+    // Todos los que hoy no están en este sector, con el sector donde están.
+    // Incluir a los que ya tienen otro es a propósito: si solo se ofrecieran
+    // los sueltos, con todos los clientes asignados —que es lo normal— el
+    // botón de agregar no serviría nunca. Mover queda explícito porque el
+    // diálogo dice de dónde sale cada uno.
     prisma.cliente.findMany({
-      where: { OR: [{ sectorId: null }, { sectorId: id }], deletedAt: null },
-      select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true, sectorId: true },
+      where: { deletedAt: null, NOT: { sectorId: id } },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        empresa: true,
+        ciudad: true,
+        sector: { select: { nombre: true } },
+      },
       orderBy: { nombre: "asc" },
     }),
     prisma.user.findMany({
@@ -46,16 +58,15 @@ export default async function SectorDetailPage({
     notFound();
   }
 
-  const unassignedClientes = allClientes.filter((c) => c.sectorId !== id);
-
   return (
-    <div>
-      <SectorDetailClient
+    <SectorDetailClient
       backHref={backHref}
-        sector={sector}
-        unassignedClientes={unassignedClientes}
-        personalAdmins={personalAdmins}
-      />
-    </div>
+      sector={sector}
+      candidatos={allClientes.map(({ sector: s, ...c }) => ({
+        ...c,
+        sectorActual: s?.nombre ?? null,
+      }))}
+      personalAdmins={personalAdmins}
+    />
   );
 }

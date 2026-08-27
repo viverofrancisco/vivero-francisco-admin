@@ -48,16 +48,27 @@ export async function DELETE(
 
   const { id } = await params;
   const body = await request.json();
-  const { clienteId } = body as { clienteId: string };
+  // Acepta uno o varios: quitar de a uno y quitar los tildados son el mismo
+  // gesto y no merecen dos rutas.
+  const { clienteId, clienteIds } = body as {
+    clienteId?: string;
+    clienteIds?: string[];
+  };
+  const ids = clienteIds ?? (clienteId ? [clienteId] : []);
 
-  if (!clienteId) {
-    return NextResponse.json({ error: "clienteId requerido" }, { status: 400 });
+  if (ids.length === 0) {
+    return NextResponse.json(
+      { error: "Debes indicar al menos un cliente" },
+      { status: 400 }
+    );
   }
 
-  await prisma.cliente.update({
-    where: { id: clienteId },
+  // Acotado al sector: si un id no es de acá, no se toca. Así un id viejo o
+  // equivocado no puede sacarle el sector a un cliente de otro lado.
+  const { count } = await prisma.cliente.updateMany({
+    where: { id: { in: ids }, sectorId: id },
     data: { sectorId: null },
   });
 
-  return NextResponse.json({ message: "Cliente removido del sector" });
+  return NextResponse.json({ message: `${count} cliente(s) removidos del sector` });
 }
