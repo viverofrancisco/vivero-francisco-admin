@@ -82,14 +82,6 @@ export function UsersTable({
     | null
   >(null);
 
-  /**
-   * Emite un enlace nuevo. `enviarCorreo` distingue "mandáselo" de "dámelo
-   * para copiarlo": el segundo es para cuando la persona está al lado o se le
-   * manda por WhatsApp, y un correo de más solo confunde.
-   *
-   * En los dos casos se muestra el enlace, porque es la única vez que se puede
-   * ver, y en los dos casos el enlace anterior queda anulado.
-   */
   /** Corta o devuelve el acceso, sin tocar la cuenta ni lo que la persona hizo. */
   async function cambiarAcceso(user: UserData, revocado: boolean) {
     setGenerando(user.id);
@@ -112,20 +104,41 @@ export function UsersTable({
     }
   }
 
+  /**
+   * Emite un enlace nuevo y lo entrega según lo que se haya pedido.
+   *
+   * *Enviar* abre el diálogo, porque conviene ver a dónde fue y poder mandarlo
+   * también por otro lado. *Copiar* copia y ya está: pedirlo ya dice qué se
+   * quiere hacer con él, y un diálogo en el medio es un clic de más.
+   *
+   * El enlace no se puede volver a ver, así que si el portapapeles falla se
+   * muestra igual: quedarse sin nada después de haber anulado el anterior
+   * sería lo peor que puede pasar acá.
+   */
   async function generarEnlace(
     user: UserData,
     tipo: "invitacion" | "restablecer",
-    enviarCorreo: boolean
+    modo: "enviar" | "copiar"
   ) {
     setGenerando(user.id);
     try {
       const res = await fetch(`/api/users/${user.id}/enlace-acceso`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipo, enviarCorreo }),
+        body: JSON.stringify({ tipo, enviarCorreo: modo === "enviar" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "No pudimos generar el enlace");
+
+      if (modo === "copiar") {
+        try {
+          await navigator.clipboard.writeText(data.enlace);
+          toast.success("Enlace copiado");
+          return;
+        } catch {
+          // Sin portapapeles queda mostrarlo para copiarlo a mano.
+        }
+      }
       setEnlace({ ...data, correo: user.email, tipo });
     } catch (err) {
       toast.error(
@@ -231,7 +244,7 @@ export function UsersTable({
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() =>
-                              generarEnlace(user, "invitacion", true)
+                              generarEnlace(user, "invitacion", "enviar")
                             }
                           >
                             <Send className="mr-2 h-4 w-4" />
@@ -242,7 +255,7 @@ export function UsersTable({
                         <>
                           <DropdownMenuItem
                             onClick={() =>
-                              generarEnlace(user, "restablecer", true)
+                              generarEnlace(user, "restablecer", "enviar")
                             }
                           >
                             <KeyRound className="mr-2 h-4 w-4" />
@@ -250,7 +263,7 @@ export function UsersTable({
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() =>
-                              generarEnlace(user, "restablecer", false)
+                              generarEnlace(user, "restablecer", "copiar")
                             }
                           >
                             <Copy className="mr-2 h-4 w-4" />
@@ -261,7 +274,7 @@ export function UsersTable({
                         <>
                           <DropdownMenuItem
                             onClick={() =>
-                              generarEnlace(user, "invitacion", true)
+                              generarEnlace(user, "invitacion", "enviar")
                             }
                           >
                             <Send className="mr-2 h-4 w-4" />
@@ -269,7 +282,7 @@ export function UsersTable({
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() =>
-                              generarEnlace(user, "invitacion", false)
+                              generarEnlace(user, "invitacion", "copiar")
                             }
                           >
                             <Copy className="mr-2 h-4 w-4" />
