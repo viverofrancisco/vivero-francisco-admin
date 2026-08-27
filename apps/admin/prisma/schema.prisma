@@ -143,6 +143,8 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  /// Enlaces de invitación / restablecimiento pendientes o ya usados.
+  setPasswordTokens SetPasswordToken[]
 
   // Audit relations
   clientesCreated         Cliente[]         @relation("ClienteCreatedBy")
@@ -683,19 +685,30 @@ model ClienteImport {
   @@index([createdAt])
 }
 
-// Token de un solo uso para que un cliente establezca su contraseña. Se envía
-// como enlace por correo y WhatsApp; sólo se guarda el hash (sha256) del token.
+/// Token de un solo uso para establecer una contraseña: la invitación de un
+/// usuario del portal, la de un cliente, o el restablecimiento de cualquiera de
+/// los dos. Solo se guarda el hash (sha256): el token en claro existe una vez,
+/// dentro del enlace, y ni siquiera nosotros podemos volver a leerlo.
+///
+/// Apunta a **un** cliente o a **un** usuario, nunca a los dos ni a ninguno
+/// (un CHECK lo obliga). Son dos tablas de identidad distintas —el personal
+/// vive en User, los clientes en Cliente— pero el enlace, la página y el
+/// vencimiento son los mismos, y partirlo en dos tablas habría significado
+/// duplicar todo eso para variar solo la clave foránea.
 model SetPasswordToken {
   id        String    @id @default(cuid())
-  clienteId String
+  clienteId String?
+  userId    String?
   tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
 
-  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([clienteId])
+  @@index([userId])
 }
 
 // ──────────────────────────────────────────────

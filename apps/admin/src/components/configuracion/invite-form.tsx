@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { EnlaceAcceso, type EnlaceGenerado } from "./enlace-acceso";
 
 interface SectorOption {
   id: string;
@@ -33,8 +34,9 @@ export function InviteForm({ sectores }: InviteFormProps) {
   const [name, setName] = useState("");
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState("STAFF");
+  /** El enlace recién emitido. Mientras exista, el diálogo lo muestra. */
+  const [generado, setGenerado] = useState<EnlaceGenerado | null>(null);
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [sectorSearch, setSectorSearch] = useState("");
   const [error, setError] = useState("");
@@ -44,8 +46,8 @@ export function InviteForm({ sectores }: InviteFormProps) {
       setName("");
       setApellido("");
       setEmail("");
-      setPassword("");
       setRole("STAFF");
+      setGenerado(null);
       setSelectedSectors([]);
       setSectorSearch("");
       setError("");
@@ -91,19 +93,24 @@ export function InviteForm({ sectores }: InviteFormProps) {
           name,
           apellido: apellido || undefined,
           email,
-          password,
           role,
           sectorIds: role === "PERSONAL_ADMIN" ? selectedSectors : undefined,
         }),
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || "Error al crear usuario");
       }
 
-      toast.success("Usuario creado correctamente");
-      setOpen(false);
+      // El diálogo no se cierra: adentro está el enlace, y es la única vez que
+      // se puede ver.
+      setGenerado({
+        enlace: data.enlace,
+        expiraEl: data.expiraEl,
+        correoEnviado: data.correoEnviado,
+      });
+      toast.success("Usuario invitado");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear usuario");
@@ -120,8 +127,19 @@ export function InviteForm({ sectores }: InviteFormProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Invitar nuevo usuario</DialogTitle>
+          <DialogTitle>
+            {generado ? "Usuario invitado" : "Invitar nuevo usuario"}
+          </DialogTitle>
         </DialogHeader>
+
+        {generado ? (
+          <div className="space-y-4">
+            <EnlaceAcceso datos={generado} correo={email} />
+            <div className="flex justify-end">
+              <Button onClick={() => setOpen(false)}>Listo</Button>
+            </div>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -150,18 +168,6 @@ export function InviteForm({ sectores }: InviteFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="invite-password">Contraseña temporal</Label>
-            <Input
-              id="invite-password"
-              type="text"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
-              required
-              minLength={6}
             />
           </div>
           <div className="space-y-2">
@@ -235,10 +241,11 @@ export function InviteForm({ sectores }: InviteFormProps) {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creando..." : "Crear Usuario"}
+              {loading ? "Invitando..." : "Enviar invitación"}
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );

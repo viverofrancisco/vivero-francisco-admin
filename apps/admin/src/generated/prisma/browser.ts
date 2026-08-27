@@ -163,7 +163,16 @@ export type RefreshToken = Prisma.RefreshTokenModel
 export type ClienteImport = Prisma.ClienteImportModel
 /**
  * Model SetPasswordToken
+ * Token de un solo uso para establecer una contraseña: la invitación de un
+ * usuario del portal, la de un cliente, o el restablecimiento de cualquiera de
+ * los dos. Solo se guarda el hash (sha256): el token en claro existe una vez,
+ * dentro del enlace, y ni siquiera nosotros podemos volver a leerlo.
  * 
+ * Apunta a **un** cliente o a **un** usuario, nunca a los dos ni a ninguno
+ * (un CHECK lo obliga). Son dos tablas de identidad distintas —el personal
+ * vive en User, los clientes en Cliente— pero el enlace, la página y el
+ * vencimiento son los mismos, y partirlo en dos tablas habría significado
+ * duplicar todo eso para variar solo la clave foránea.
  */
 export type SetPasswordToken = Prisma.SetPasswordTokenModel
 /**

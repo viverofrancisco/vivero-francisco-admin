@@ -15,6 +15,14 @@ import {
 
 type Estado = "cargando" | "valido" | "invalido" | "listo";
 
+/**
+ * A dónde entra quien abre el enlace. El mecanismo es el mismo para todos; lo
+ * que cambia es qué se le dice después, y mandar a alguien del personal a
+ * "abrir la app" cuando su lugar de trabajo es el portal es mandarlo al lugar
+ * equivocado.
+ */
+type Destino = "portal" | "app";
+
 export function SetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -23,6 +31,7 @@ export function SetPasswordForm() {
     token ? "cargando" : "invalido"
   );
   const [nombre, setNombre] = useState<string | null>(null);
+  const [destino, setDestino] = useState<Destino>("app");
   const [password, setPassword] = useState("");
   const [confirmar, setConfirmar] = useState("");
   const [error, setError] = useState("");
@@ -32,9 +41,10 @@ export function SetPasswordForm() {
     if (!token) return;
     fetch(`/api/auth/set-password?token=${encodeURIComponent(token)}`)
       .then((r) => r.json())
-      .then((data: { valid: boolean; nombre?: string }) => {
+      .then((data: { valid: boolean; nombre?: string; destino?: Destino }) => {
         if (data.valid) {
           setNombre(data.nombre ?? null);
+          setDestino(data.destino ?? "app");
           setEstado("valido");
         } else {
           setEstado("invalido");
@@ -84,7 +94,9 @@ export function SetPasswordForm() {
           <CardDescription>
             {estado === "listo"
               ? "Contraseña creada"
-              : "Crea tu contraseña para acceder a la app"}
+              : destino === "portal"
+                ? "Crea tu contraseña para entrar al portal"
+                : "Crea tu contraseña para acceder a la app"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -96,17 +108,32 @@ export function SetPasswordForm() {
 
           {estado === "invalido" && (
             <p className="text-center text-sm text-red-600">
-              El enlace no es válido, ya fue usado o caducó. Solicita uno nuevo
-              desde la app.
+              El enlace no es válido, ya fue usado o caducó. Pide uno nuevo a
+              quien te lo envió.
             </p>
           )}
 
-          {estado === "listo" && (
-            <p className="text-center text-sm text-green-700">
-              ¡Listo! Ya puedes abrir la app de Vivero Francisco e iniciar sesión
-              con tu teléfono o correo y tu nueva contraseña.
-            </p>
-          )}
+          {estado === "listo" &&
+            (destino === "portal" ? (
+              <div className="space-y-4 text-center">
+                <p className="text-sm text-green-700">
+                  ¡Listo! Ya puedes entrar al portal con tu correo y tu nueva
+                  contraseña.
+                </p>
+                <Button
+                  className="w-full"
+                  nativeButton={false}
+                  render={<a href="/login" />}
+                >
+                  Ir a iniciar sesión
+                </Button>
+              </div>
+            ) : (
+              <p className="text-center text-sm text-green-700">
+                ¡Listo! Ya puedes abrir la app de Vivero Francisco e iniciar
+                sesión con tu teléfono o correo y tu nueva contraseña.
+              </p>
+            ))}
 
           {estado === "valido" && (
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,9 +1,14 @@
-# Autenticación de clientes (app móvil)
+# Contraseñas: invitaciones y restablecimientos
 
-Los **clientes** inician sesión en la app móvil con **teléfono o correo + contraseña**.
-La contraseña la establece el propio cliente mediante un **enlace de invitación** de
-un solo uso. (El flujo anterior por OTP de WhatsApp fue retirado.) El **personal**
-sigue usando correo + contraseña por `/api/mobile/auth/login` (ver `CLAUDE.md`).
+Nadie elige la contraseña de otro. Todas las cuentas —clientes y personal— nacen
+sin contraseña y la establece su dueño abriendo un **enlace de un solo uso**. Es
+el mismo mecanismo, la misma tabla (`SetPasswordToken`) y la misma página
+pública para los dos; lo que cambia es a quién apunta el token y cuánto vive.
+
+Los **clientes** inician sesión en la app móvil con **teléfono o correo +
+contraseña**. (El flujo anterior por OTP de WhatsApp fue retirado.) El
+**personal** usa correo + contraseña, en el portal (NextAuth) o por
+`/api/mobile/auth/login` (ver `CLAUDE.md`).
 
 ## Flujo
 
@@ -27,16 +32,49 @@ sigue usando correo + contraseña por `/api/mobile/auth/login` (ver `CLAUDE.md`)
    haber exactamente una coincidencia). El mismo flujo de invitación sirve como
    **restablecimiento de contraseña**.
 
+## Usuarios del portal (staff y admins de sector)
+
+Invitar a alguien **no crea una contraseña temporal**. El usuario se crea con
+`password: null` —los dos caminos de login rechazan a un usuario sin
+contraseña, así que la cuenta existe pero no entra— y se emite un enlace que el
+admin puede copiar y mandar por donde quiera. El correo se envía además
+automáticamente; el enlace se muestra en pantalla igual, porque el correo puede
+demorar, caer en spam o ir a una casilla que nadie mira.
+
+- **Invitar**: `POST /api/users/invite` `{ name, apellido?, email, role, sectorIds? }`
+  → crea el usuario, emite el enlace, manda el correo y devuelve
+  `{ enlace, expiraEl, correoEnviado }`.
+- **Restablecer**: `POST /api/users/[id]/enlace-acceso` → lo mismo para una
+  cuenta que ya existe. Sirve igual para quien perdió su contraseña y para quien
+  nunca abrió su invitación.
+- Ambos son **solo para ADMIN**, y ambos **anulan el enlace anterior** que
+  siguiera sin usar.
+
+**Las vigencias son distintas a propósito** (`VIGENCIA_MS` en
+`acceso.service.ts`):
+
+| Enlace | Dura | Por qué |
+|---|---|---|
+| Invitación de usuario | 7 días | La cuenta todavía no entra a ningún lado; la respuesta normal a "te invitamos" es "lo hago el lunes". |
+| Restablecer contraseña | 1 hora | La cuenta ya funciona: el enlace es una llave que la abre. |
+| Invitación / restablecimiento de cliente | 24 h | Lo pide la propia persona desde la app, pero puede tener que abrir el correo en otro dispositivo. |
+
+El token **no se puede volver a ver**: en la base solo queda su `sha256`. Si se
+pierde, se genera otro (y eso anula el perdido, que es justo lo que se quiere
+cuando se mandó a la persona equivocada).
+
 ## Piezas clave
 
 | Pieza | Ruta |
 |---|---|
-| Servicio (resolver, invitar, set-password, login) | `apps/admin/src/lib/services/cliente-invite.service.ts` |
+| Ciclo del token (emitir, leer, consumir) — clientes y usuarios | `apps/admin/src/lib/services/acceso.service.ts` |
+| Servicio de cliente (resolver por teléfono/correo, invitar, login) | `apps/admin/src/lib/services/cliente-invite.service.ts` |
+| Invitar / restablecer usuarios del portal | `apps/admin/src/app/api/users/{invite,[id]/enlace-acceso}/route.ts` |
 | Rutas mobile | `apps/admin/src/app/api/mobile/auth/cliente/{login,request-invite}/route.ts` |
 | Rutas públicas set-password | `apps/admin/src/app/api/auth/set-password/route.ts` |
 | Invitación desde admin | `apps/admin/src/app/api/clientes/[id]/invitar/route.ts` |
 | Página pública | `apps/admin/src/app/establecer-contrasena/` |
-| Modelo del token | `SetPasswordToken` en `prisma/schema.prisma` |
+| Modelo del token | `SetPasswordToken` en `prisma/schema.prisma` — apunta a **un** `clienteId` **o** a **un** `userId`, nunca a los dos (`CHECK`) |
 | Pantallas móviles | `apps/mobile/app/(auth)/{onboarding,solicitar-acceso}.tsx` |
 
 Nota: `User.email` de un cliente siempre es un placeholder (`cliente+{id}@…`). El login

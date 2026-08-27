@@ -1045,10 +1045,12 @@ export type ClienteCreateNestedOneWithoutSetPasswordTokensInput = {
   connect?: Prisma.ClienteWhereUniqueInput
 }
 
-export type ClienteUpdateOneRequiredWithoutSetPasswordTokensNestedInput = {
+export type ClienteUpdateOneWithoutSetPasswordTokensNestedInput = {
   create?: Prisma.XOR<Prisma.ClienteCreateWithoutSetPasswordTokensInput, Prisma.ClienteUncheckedCreateWithoutSetPasswordTokensInput>
   connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutSetPasswordTokensInput
   upsert?: Prisma.ClienteUpsertWithoutSetPasswordTokensInput
+  disconnect?: Prisma.ClienteWhereInput | boolean
+  delete?: Prisma.ClienteWhereInput | boolean
   connect?: Prisma.ClienteWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ClienteUpdateToOneWithWhereWithoutSetPasswordTokensInput, Prisma.ClienteUpdateWithoutSetPasswordTokensInput>, Prisma.ClienteUncheckedUpdateWithoutSetPasswordTokensInput>
 }

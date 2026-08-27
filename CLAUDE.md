@@ -10,7 +10,7 @@ Extended context lives in [`.claude/docs/`](./.claude/docs/) (see [`.claude/docs
 
 - [Database & migrations](./.claude/docs/base-de-datos-y-migraciones.md) — Neon branches (**never point the local `.env` at production**), migrations applied automatically on deploy, when to hand-write the SQL, and how to verify against real data.
 - [Contífico invoicing](./.claude/docs/facturacion-contifico.md) — the accounting system integration: ownership boundary, the API's traps (product list that hangs, `codigo` as the anti-duplicate key, 15% IVA in a field named `subtotal_12`), and SRI numbering.
-- [Cliente authentication](./.claude/docs/autenticacion-clientes.md) — cliente login (phone/email + password), the invite/set-password flow, and email via the Gmail API.
+- [Passwords & invites](./.claude/docs/autenticacion-clientes.md) — nobody sets anyone else's password: every account starts without one and its owner sets it through a single-use link. Covers cliente login (phone/email + password), portal-user invites and resets, the three link lifetimes, and email via the Gmail API.
 - [WhatsApp notifications](./.claude/docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
 
 ### Keep the docs current
@@ -103,7 +103,7 @@ There is no test suite configured.
 
 The admin app has **two parallel auth mechanisms**, and which API namespace you touch determines which one applies:
 
-1. **Web dashboard** (`/api/*`, server components, `/dashboard/*`): **NextAuth** (`next-auth`, JWT strategy, credentials provider) in `src/lib/auth.ts`. Guard server code with helpers in `src/lib/auth-helpers.ts` (`requireAuth`, `requireAdmin`, `requireRole`). `src/middleware.ts` protects `/dashboard/*`. Web users are always staff (`ADMIN`/`STAFF`), never `CLIENTE`.
+1. **Web dashboard** (`/api/*`, server components, `/dashboard/*`): **NextAuth** (`next-auth`, JWT strategy, credentials provider) in `src/lib/auth.ts`. Guard server code with helpers in `src/lib/auth-helpers.ts` (`requireAuth`, `requireAdmin`, `requireRole`). `src/middleware.ts` protects `/dashboard/*`. Web users are always staff (`ADMIN`/`STAFF`), never `CLIENTE`. **Inviting a user creates no password** — the row is written with `password: null` (both login paths reject that) and the person sets their own through a single-use link that the admin can copy or that goes out by email; the same endpoint reissues one for an existing account. See [the passwords doc](./.claude/docs/autenticacion-clientes.md).
 
 2. **Mobile** (`/api/mobile/*`): **custom JWT** (`jose`) with separate access/refresh secrets (`MOBILE_ACCESS_SECRET`, `MOBILE_REFRESH_SECRET`), see `src/lib/mobile/jwt.ts`. Personnel log in with email/password; **clients log in with phone-or-email + a self-set password** delivered via an invite link (see [.claude/docs/autenticacion-clientes.md](./.claude/docs/autenticacion-clientes.md) — the old WhatsApp OTP login is gone). Guard mobile routes with `requireMobileUser` / `requireMobileRole` + the `isMobileUser` type guard from `src/lib/mobile/auth.ts` (these return either a `MobileUser` or a `NextResponse`, so always narrow before use).
 

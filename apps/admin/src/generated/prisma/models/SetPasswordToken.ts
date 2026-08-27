@@ -14,7 +14,16 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model SetPasswordToken
+ * Token de un solo uso para establecer una contraseña: la invitación de un
+ * usuario del portal, la de un cliente, o el restablecimiento de cualquiera de
+ * los dos. Solo se guarda el hash (sha256): el token en claro existe una vez,
+ * dentro del enlace, y ni siquiera nosotros podemos volver a leerlo.
  * 
+ * Apunta a **un** cliente o a **un** usuario, nunca a los dos ni a ninguno
+ * (un CHECK lo obliga). Son dos tablas de identidad distintas —el personal
+ * vive en User, los clientes en Cliente— pero el enlace, la página y el
+ * vencimiento son los mismos, y partirlo en dos tablas habría significado
+ * duplicar todo eso para variar solo la clave foránea.
  */
 export type SetPasswordTokenModel = runtime.Types.Result.DefaultSelection<Prisma.$SetPasswordTokenPayload>
 
@@ -27,6 +36,7 @@ export type AggregateSetPasswordToken = {
 export type SetPasswordTokenMinAggregateOutputType = {
   id: string | null
   clienteId: string | null
+  userId: string | null
   tokenHash: string | null
   expiresAt: Date | null
   usedAt: Date | null
@@ -36,6 +46,7 @@ export type SetPasswordTokenMinAggregateOutputType = {
 export type SetPasswordTokenMaxAggregateOutputType = {
   id: string | null
   clienteId: string | null
+  userId: string | null
   tokenHash: string | null
   expiresAt: Date | null
   usedAt: Date | null
@@ -45,6 +56,7 @@ export type SetPasswordTokenMaxAggregateOutputType = {
 export type SetPasswordTokenCountAggregateOutputType = {
   id: number
   clienteId: number
+  userId: number
   tokenHash: number
   expiresAt: number
   usedAt: number
@@ -56,6 +68,7 @@ export type SetPasswordTokenCountAggregateOutputType = {
 export type SetPasswordTokenMinAggregateInputType = {
   id?: true
   clienteId?: true
+  userId?: true
   tokenHash?: true
   expiresAt?: true
   usedAt?: true
@@ -65,6 +78,7 @@ export type SetPasswordTokenMinAggregateInputType = {
 export type SetPasswordTokenMaxAggregateInputType = {
   id?: true
   clienteId?: true
+  userId?: true
   tokenHash?: true
   expiresAt?: true
   usedAt?: true
@@ -74,6 +88,7 @@ export type SetPasswordTokenMaxAggregateInputType = {
 export type SetPasswordTokenCountAggregateInputType = {
   id?: true
   clienteId?: true
+  userId?: true
   tokenHash?: true
   expiresAt?: true
   usedAt?: true
@@ -155,7 +170,8 @@ export type SetPasswordTokenGroupByArgs<ExtArgs extends runtime.Types.Extensions
 
 export type SetPasswordTokenGroupByOutputType = {
   id: string
-  clienteId: string
+  clienteId: string | null
+  userId: string | null
   tokenHash: string
   expiresAt: Date
   usedAt: Date | null
@@ -185,22 +201,26 @@ export type SetPasswordTokenWhereInput = {
   OR?: Prisma.SetPasswordTokenWhereInput[]
   NOT?: Prisma.SetPasswordTokenWhereInput | Prisma.SetPasswordTokenWhereInput[]
   id?: Prisma.StringFilter<"SetPasswordToken"> | string
-  clienteId?: Prisma.StringFilter<"SetPasswordToken"> | string
+  clienteId?: Prisma.StringNullableFilter<"SetPasswordToken"> | string | null
+  userId?: Prisma.StringNullableFilter<"SetPasswordToken"> | string | null
   tokenHash?: Prisma.StringFilter<"SetPasswordToken"> | string
   expiresAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
   usedAt?: Prisma.DateTimeNullableFilter<"SetPasswordToken"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
-  cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
+  cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
+  user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type SetPasswordTokenOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  clienteId?: Prisma.SortOrder
+  clienteId?: Prisma.SortOrderInput | Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   tokenHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   usedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   cliente?: Prisma.ClienteOrderByWithRelationInput
+  user?: Prisma.UserOrderByWithRelationInput
 }
 
 export type SetPasswordTokenWhereUniqueInput = Prisma.AtLeast<{
@@ -209,16 +229,19 @@ export type SetPasswordTokenWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.SetPasswordTokenWhereInput | Prisma.SetPasswordTokenWhereInput[]
   OR?: Prisma.SetPasswordTokenWhereInput[]
   NOT?: Prisma.SetPasswordTokenWhereInput | Prisma.SetPasswordTokenWhereInput[]
-  clienteId?: Prisma.StringFilter<"SetPasswordToken"> | string
+  clienteId?: Prisma.StringNullableFilter<"SetPasswordToken"> | string | null
+  userId?: Prisma.StringNullableFilter<"SetPasswordToken"> | string | null
   expiresAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
   usedAt?: Prisma.DateTimeNullableFilter<"SetPasswordToken"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
-  cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
+  cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
+  user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id" | "tokenHash">
 
 export type SetPasswordTokenOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  clienteId?: Prisma.SortOrder
+  clienteId?: Prisma.SortOrderInput | Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   tokenHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   usedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -233,7 +256,8 @@ export type SetPasswordTokenScalarWhereWithAggregatesInput = {
   OR?: Prisma.SetPasswordTokenScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SetPasswordTokenScalarWhereWithAggregatesInput | Prisma.SetPasswordTokenScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"SetPasswordToken"> | string
-  clienteId?: Prisma.StringWithAggregatesFilter<"SetPasswordToken"> | string
+  clienteId?: Prisma.StringNullableWithAggregatesFilter<"SetPasswordToken"> | string | null
+  userId?: Prisma.StringNullableWithAggregatesFilter<"SetPasswordToken"> | string | null
   tokenHash?: Prisma.StringWithAggregatesFilter<"SetPasswordToken"> | string
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"SetPasswordToken"> | Date | string
   usedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SetPasswordToken"> | Date | string | null
@@ -246,12 +270,14 @@ export type SetPasswordTokenCreateInput = {
   expiresAt: Date | string
   usedAt?: Date | string | null
   createdAt?: Date | string
-  cliente: Prisma.ClienteCreateNestedOneWithoutSetPasswordTokensInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutSetPasswordTokensInput
+  user?: Prisma.UserCreateNestedOneWithoutSetPasswordTokensInput
 }
 
 export type SetPasswordTokenUncheckedCreateInput = {
   id?: string
-  clienteId: string
+  clienteId?: string | null
+  userId?: string | null
   tokenHash: string
   expiresAt: Date | string
   usedAt?: Date | string | null
@@ -264,12 +290,14 @@ export type SetPasswordTokenUpdateInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  cliente?: Prisma.ClienteUpdateOneRequiredWithoutSetPasswordTokensNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutSetPasswordTokensNestedInput
+  user?: Prisma.UserUpdateOneWithoutSetPasswordTokensNestedInput
 }
 
 export type SetPasswordTokenUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -278,7 +306,8 @@ export type SetPasswordTokenUncheckedUpdateInput = {
 
 export type SetPasswordTokenCreateManyInput = {
   id?: string
-  clienteId: string
+  clienteId?: string | null
+  userId?: string | null
   tokenHash: string
   expiresAt: Date | string
   usedAt?: Date | string | null
@@ -295,7 +324,8 @@ export type SetPasswordTokenUpdateManyMutationInput = {
 
 export type SetPasswordTokenUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -315,6 +345,7 @@ export type SetPasswordTokenOrderByRelationAggregateInput = {
 export type SetPasswordTokenCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   tokenHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   usedAt?: Prisma.SortOrder
@@ -324,6 +355,7 @@ export type SetPasswordTokenCountOrderByAggregateInput = {
 export type SetPasswordTokenMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   tokenHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   usedAt?: Prisma.SortOrder
@@ -333,10 +365,53 @@ export type SetPasswordTokenMaxOrderByAggregateInput = {
 export type SetPasswordTokenMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   tokenHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   usedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type SetPasswordTokenCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.SetPasswordTokenCreateWithoutUserInput, Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput> | Prisma.SetPasswordTokenCreateWithoutUserInput[] | Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput | Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.SetPasswordTokenCreateManyUserInputEnvelope
+  connect?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+}
+
+export type SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.SetPasswordTokenCreateWithoutUserInput, Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput> | Prisma.SetPasswordTokenCreateWithoutUserInput[] | Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput | Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.SetPasswordTokenCreateManyUserInputEnvelope
+  connect?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+}
+
+export type SetPasswordTokenUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.SetPasswordTokenCreateWithoutUserInput, Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput> | Prisma.SetPasswordTokenCreateWithoutUserInput[] | Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput | Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.SetPasswordTokenUpsertWithWhereUniqueWithoutUserInput | Prisma.SetPasswordTokenUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.SetPasswordTokenCreateManyUserInputEnvelope
+  set?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  disconnect?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  delete?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  connect?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  update?: Prisma.SetPasswordTokenUpdateWithWhereUniqueWithoutUserInput | Prisma.SetPasswordTokenUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.SetPasswordTokenUpdateManyWithWhereWithoutUserInput | Prisma.SetPasswordTokenUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.SetPasswordTokenScalarWhereInput | Prisma.SetPasswordTokenScalarWhereInput[]
+}
+
+export type SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.SetPasswordTokenCreateWithoutUserInput, Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput> | Prisma.SetPasswordTokenCreateWithoutUserInput[] | Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput | Prisma.SetPasswordTokenCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.SetPasswordTokenUpsertWithWhereUniqueWithoutUserInput | Prisma.SetPasswordTokenUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.SetPasswordTokenCreateManyUserInputEnvelope
+  set?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  disconnect?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  delete?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  connect?: Prisma.SetPasswordTokenWhereUniqueInput | Prisma.SetPasswordTokenWhereUniqueInput[]
+  update?: Prisma.SetPasswordTokenUpdateWithWhereUniqueWithoutUserInput | Prisma.SetPasswordTokenUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.SetPasswordTokenUpdateManyWithWhereWithoutUserInput | Prisma.SetPasswordTokenUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.SetPasswordTokenScalarWhereInput | Prisma.SetPasswordTokenScalarWhereInput[]
 }
 
 export type SetPasswordTokenCreateNestedManyWithoutClienteInput = {
@@ -381,16 +456,75 @@ export type SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput = {
   deleteMany?: Prisma.SetPasswordTokenScalarWhereInput | Prisma.SetPasswordTokenScalarWhereInput[]
 }
 
-export type SetPasswordTokenCreateWithoutClienteInput = {
+export type SetPasswordTokenCreateWithoutUserInput = {
   id?: string
+  tokenHash: string
+  expiresAt: Date | string
+  usedAt?: Date | string | null
+  createdAt?: Date | string
+  cliente?: Prisma.ClienteCreateNestedOneWithoutSetPasswordTokensInput
+}
+
+export type SetPasswordTokenUncheckedCreateWithoutUserInput = {
+  id?: string
+  clienteId?: string | null
   tokenHash: string
   expiresAt: Date | string
   usedAt?: Date | string | null
   createdAt?: Date | string
 }
 
+export type SetPasswordTokenCreateOrConnectWithoutUserInput = {
+  where: Prisma.SetPasswordTokenWhereUniqueInput
+  create: Prisma.XOR<Prisma.SetPasswordTokenCreateWithoutUserInput, Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput>
+}
+
+export type SetPasswordTokenCreateManyUserInputEnvelope = {
+  data: Prisma.SetPasswordTokenCreateManyUserInput | Prisma.SetPasswordTokenCreateManyUserInput[]
+  skipDuplicates?: boolean
+}
+
+export type SetPasswordTokenUpsertWithWhereUniqueWithoutUserInput = {
+  where: Prisma.SetPasswordTokenWhereUniqueInput
+  update: Prisma.XOR<Prisma.SetPasswordTokenUpdateWithoutUserInput, Prisma.SetPasswordTokenUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.SetPasswordTokenCreateWithoutUserInput, Prisma.SetPasswordTokenUncheckedCreateWithoutUserInput>
+}
+
+export type SetPasswordTokenUpdateWithWhereUniqueWithoutUserInput = {
+  where: Prisma.SetPasswordTokenWhereUniqueInput
+  data: Prisma.XOR<Prisma.SetPasswordTokenUpdateWithoutUserInput, Prisma.SetPasswordTokenUncheckedUpdateWithoutUserInput>
+}
+
+export type SetPasswordTokenUpdateManyWithWhereWithoutUserInput = {
+  where: Prisma.SetPasswordTokenScalarWhereInput
+  data: Prisma.XOR<Prisma.SetPasswordTokenUpdateManyMutationInput, Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserInput>
+}
+
+export type SetPasswordTokenScalarWhereInput = {
+  AND?: Prisma.SetPasswordTokenScalarWhereInput | Prisma.SetPasswordTokenScalarWhereInput[]
+  OR?: Prisma.SetPasswordTokenScalarWhereInput[]
+  NOT?: Prisma.SetPasswordTokenScalarWhereInput | Prisma.SetPasswordTokenScalarWhereInput[]
+  id?: Prisma.StringFilter<"SetPasswordToken"> | string
+  clienteId?: Prisma.StringNullableFilter<"SetPasswordToken"> | string | null
+  userId?: Prisma.StringNullableFilter<"SetPasswordToken"> | string | null
+  tokenHash?: Prisma.StringFilter<"SetPasswordToken"> | string
+  expiresAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
+  usedAt?: Prisma.DateTimeNullableFilter<"SetPasswordToken"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
+}
+
+export type SetPasswordTokenCreateWithoutClienteInput = {
+  id?: string
+  tokenHash: string
+  expiresAt: Date | string
+  usedAt?: Date | string | null
+  createdAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutSetPasswordTokensInput
+}
+
 export type SetPasswordTokenUncheckedCreateWithoutClienteInput = {
   id?: string
+  userId?: string | null
   tokenHash: string
   expiresAt: Date | string
   usedAt?: Date | string | null
@@ -423,20 +557,45 @@ export type SetPasswordTokenUpdateManyWithWhereWithoutClienteInput = {
   data: Prisma.XOR<Prisma.SetPasswordTokenUpdateManyMutationInput, Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteInput>
 }
 
-export type SetPasswordTokenScalarWhereInput = {
-  AND?: Prisma.SetPasswordTokenScalarWhereInput | Prisma.SetPasswordTokenScalarWhereInput[]
-  OR?: Prisma.SetPasswordTokenScalarWhereInput[]
-  NOT?: Prisma.SetPasswordTokenScalarWhereInput | Prisma.SetPasswordTokenScalarWhereInput[]
-  id?: Prisma.StringFilter<"SetPasswordToken"> | string
-  clienteId?: Prisma.StringFilter<"SetPasswordToken"> | string
-  tokenHash?: Prisma.StringFilter<"SetPasswordToken"> | string
-  expiresAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
-  usedAt?: Prisma.DateTimeNullableFilter<"SetPasswordToken"> | Date | string | null
-  createdAt?: Prisma.DateTimeFilter<"SetPasswordToken"> | Date | string
+export type SetPasswordTokenCreateManyUserInput = {
+  id?: string
+  clienteId?: string | null
+  tokenHash: string
+  expiresAt: Date | string
+  usedAt?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type SetPasswordTokenUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cliente?: Prisma.ClienteUpdateOneWithoutSetPasswordTokensNestedInput
+}
+
+export type SetPasswordTokenUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SetPasswordTokenUncheckedUpdateManyWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SetPasswordTokenCreateManyClienteInput = {
   id?: string
+  userId?: string | null
   tokenHash: string
   expiresAt: Date | string
   usedAt?: Date | string | null
@@ -449,10 +608,12 @@ export type SetPasswordTokenUpdateWithoutClienteInput = {
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutSetPasswordTokensNestedInput
 }
 
 export type SetPasswordTokenUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -461,6 +622,7 @@ export type SetPasswordTokenUncheckedUpdateWithoutClienteInput = {
 
 export type SetPasswordTokenUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -472,61 +634,73 @@ export type SetPasswordTokenUncheckedUpdateManyWithoutClienteInput = {
 export type SetPasswordTokenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   clienteId?: boolean
+  userId?: boolean
   tokenHash?: boolean
   expiresAt?: boolean
   usedAt?: boolean
   createdAt?: boolean
-  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.SetPasswordToken$clienteArgs<ExtArgs>
+  user?: boolean | Prisma.SetPasswordToken$userArgs<ExtArgs>
 }, ExtArgs["result"]["setPasswordToken"]>
 
 export type SetPasswordTokenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   clienteId?: boolean
+  userId?: boolean
   tokenHash?: boolean
   expiresAt?: boolean
   usedAt?: boolean
   createdAt?: boolean
-  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.SetPasswordToken$clienteArgs<ExtArgs>
+  user?: boolean | Prisma.SetPasswordToken$userArgs<ExtArgs>
 }, ExtArgs["result"]["setPasswordToken"]>
 
 export type SetPasswordTokenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   clienteId?: boolean
+  userId?: boolean
   tokenHash?: boolean
   expiresAt?: boolean
   usedAt?: boolean
   createdAt?: boolean
-  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.SetPasswordToken$clienteArgs<ExtArgs>
+  user?: boolean | Prisma.SetPasswordToken$userArgs<ExtArgs>
 }, ExtArgs["result"]["setPasswordToken"]>
 
 export type SetPasswordTokenSelectScalar = {
   id?: boolean
   clienteId?: boolean
+  userId?: boolean
   tokenHash?: boolean
   expiresAt?: boolean
   usedAt?: boolean
   createdAt?: boolean
 }
 
-export type SetPasswordTokenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "tokenHash" | "expiresAt" | "usedAt" | "createdAt", ExtArgs["result"]["setPasswordToken"]>
+export type SetPasswordTokenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "userId" | "tokenHash" | "expiresAt" | "usedAt" | "createdAt", ExtArgs["result"]["setPasswordToken"]>
 export type SetPasswordTokenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.SetPasswordToken$clienteArgs<ExtArgs>
+  user?: boolean | Prisma.SetPasswordToken$userArgs<ExtArgs>
 }
 export type SetPasswordTokenIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.SetPasswordToken$clienteArgs<ExtArgs>
+  user?: boolean | Prisma.SetPasswordToken$userArgs<ExtArgs>
 }
 export type SetPasswordTokenIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  cliente?: boolean | Prisma.SetPasswordToken$clienteArgs<ExtArgs>
+  user?: boolean | Prisma.SetPasswordToken$userArgs<ExtArgs>
 }
 
 export type $SetPasswordTokenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "SetPasswordToken"
   objects: {
-    cliente: Prisma.$ClientePayload<ExtArgs>
+    cliente: Prisma.$ClientePayload<ExtArgs> | null
+    user: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    clienteId: string
+    clienteId: string | null
+    userId: string | null
     tokenHash: string
     expiresAt: Date
     usedAt: Date | null
@@ -925,7 +1099,8 @@ readonly fields: SetPasswordTokenFieldRefs;
  */
 export interface Prisma__SetPasswordTokenClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  cliente<T extends Prisma.ClienteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClienteDefaultArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  cliente<T extends Prisma.SetPasswordToken$clienteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SetPasswordToken$clienteArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  user<T extends Prisma.SetPasswordToken$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SetPasswordToken$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -957,6 +1132,7 @@ export interface Prisma__SetPasswordTokenClient<T, Null = never, ExtArgs extends
 export interface SetPasswordTokenFieldRefs {
   readonly id: Prisma.FieldRef<"SetPasswordToken", 'String'>
   readonly clienteId: Prisma.FieldRef<"SetPasswordToken", 'String'>
+  readonly userId: Prisma.FieldRef<"SetPasswordToken", 'String'>
   readonly tokenHash: Prisma.FieldRef<"SetPasswordToken", 'String'>
   readonly expiresAt: Prisma.FieldRef<"SetPasswordToken", 'DateTime'>
   readonly usedAt: Prisma.FieldRef<"SetPasswordToken", 'DateTime'>
@@ -1359,6 +1535,44 @@ export type SetPasswordTokenDeleteManyArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many SetPasswordTokens to delete.
    */
   limit?: number
+}
+
+/**
+ * SetPasswordToken.cliente
+ */
+export type SetPasswordToken$clienteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Cliente
+   */
+  select?: Prisma.ClienteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Cliente
+   */
+  omit?: Prisma.ClienteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClienteInclude<ExtArgs> | null
+  where?: Prisma.ClienteWhereInput
+}
+
+/**
+ * SetPasswordToken.user
+ */
+export type SetPasswordToken$userArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

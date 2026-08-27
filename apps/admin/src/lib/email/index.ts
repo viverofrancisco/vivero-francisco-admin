@@ -122,3 +122,52 @@ export async function sendSetPasswordEmail(
   `;
   return sendEmail({ to, subject, html, text });
 }
+
+/**
+ * El enlace de acceso al **portal**, para alguien del personal.
+ *
+ * Aparte del de clientes porque dice otra cosa: los clientes entran a la app,
+ * el personal al portal, y el enlace de invitación dura otra cantidad de días
+ * que el de restablecer. Un solo correo genérico terminaba mandando a la mitad
+ * de la gente al lugar equivocado.
+ */
+export async function sendEnlacePortalEmail(
+  to: string,
+  nombre: string,
+  link: string,
+  tipo: "invitacion" | "restablecer",
+  /** Cuánto dura, ya escrito: "7 días", "1 hora". */
+  vigencia: string
+): Promise<SendEmailResult> {
+  const saludo = nombre ? `Hola ${nombre},` : "Hola,";
+  const esInvitacion = tipo === "invitacion";
+  const subject = esInvitacion
+    ? "Tu acceso al portal — Vivero Francisco"
+    : "Restablece tu contraseña — Vivero Francisco";
+  const intro = esInvitacion
+    ? "Te damos acceso al portal de <strong>Vivero Francisco</strong>. Crea tu contraseña para entrar:"
+    : "Pediste restablecer tu contraseña del portal de <strong>Vivero Francisco</strong>. Elige una nueva:";
+  const introTexto = esInvitacion
+    ? "Te damos acceso al portal de Vivero Francisco. Crea tu contraseña para entrar:"
+    : "Pediste restablecer tu contraseña del portal de Vivero Francisco. Elige una nueva:";
+  const boton = esInvitacion ? "Crear mi contraseña" : "Cambiar mi contraseña";
+  const caducidad = `El enlace caduca en ${vigencia}. Si no esperabas este correo, ignóralo.`;
+
+  const text = `${saludo}\n\n${introTexto}\n${link}\n\n${caducidad}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; color: #222; max-width: 480px; margin: 0 auto;">
+      <p>${saludo}</p>
+      <p>${intro}</p>
+      <p style="text-align: center; margin: 28px 0;">
+        <a href="${link}" style="background: #2e7d32; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+          ${boton}
+        </a>
+      </p>
+      <p style="font-size: 13px; color: #666;">O copia este enlace en tu navegador:<br />
+        <a href="${link}" style="color: #2e7d32;">${link}</a>
+      </p>
+      <p style="font-size: 13px; color: #666;">${caducidad}</p>
+    </div>
+  `;
+  return sendEmail({ to, subject, html, text });
+}

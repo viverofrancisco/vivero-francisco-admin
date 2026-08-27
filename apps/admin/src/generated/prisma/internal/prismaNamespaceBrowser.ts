@@ -517,6 +517,7 @@ export type ClienteImportScalarFieldEnum = (typeof ClienteImportScalarFieldEnum)
 export const SetPasswordTokenScalarFieldEnum = {
   id: 'id',
   clienteId: 'clienteId',
+  userId: 'userId',
   tokenHash: 'tokenHash',
   expiresAt: 'expiresAt',
   usedAt: 'usedAt',
