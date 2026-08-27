@@ -225,27 +225,18 @@ export function VisitaDetail({
           <CardContent>
             <ul className="divide-y">
               {visita.productos.map((vs) => (
-                <li
-                  key={vs.productoId}
-                  className="flex items-center justify-between gap-3 py-2.5"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium">
-                      {vs.producto.nombre}
-                    </span>
-                    {vs.producto.descripcion && (
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {vs.producto.descripcion}
-                      </span>
-                    )}
+                // Qué se hizo, y nada más. Ni el plan que lo cubre ni la
+                // orden donde se cobró: las dos cosas tienen su propia tarjeta
+                // más abajo, y repetirlas acá era decirlo dos veces.
+                <li key={vs.productoId} className="py-2.5">
+                  <span className="block truncate text-sm font-medium">
+                    {vs.producto.nombre}
                   </span>
-                  {/* Lo cubierto por el plan no dice nada acá: la tarjeta de
-                      Suscripción de abajo lo cuenta con el plan y su estado. */}
-                  {vs.suscripcionItem ? null : vs.ordenLinea ? (
-                    <span className="flex-none text-xs text-muted-foreground">
-                      Orden #{vs.ordenLinea.orden.numero}
+                  {vs.producto.descripcion && (
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {vs.producto.descripcion}
                     </span>
-                  ) : null}
+                  )}
                 </li>
               ))}
             </ul>
