@@ -37,8 +37,13 @@ export function DeleteDialog({
       toast.success("Eliminado correctamente");
       setOpen(false);
       onSuccess?.();
-    } catch {
-      toast.error("Error al eliminar");
+    } catch (err) {
+      // El mensaje del servidor dice *por qué* no se pudo —"tiene clientes
+      // asignados"— y eso es lo único accionable; "Error al eliminar" manda a
+      // adivinar.
+      toast.error(
+        err instanceof Error && err.message ? err.message : "Error al eliminar"
+      );
     } finally {
       setLoading(false);
     }
