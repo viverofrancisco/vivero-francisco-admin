@@ -167,6 +167,7 @@ model User {
   suscripcionesUpdated    Suscripcion[]     @relation("SuscripcionUpdatedBy")
   visitasCreated          Visita[]          @relation("VisitaCreatedBy")
   visitasUpdated          Visita[]          @relation("VisitaUpdatedBy")
+  visitasCompletadas      Visita[]          @relation("VisitaCompletadaPor")
   visitaPersonalAdded     VisitaPersonal[]  @relation("VisitaPersonalAddedBy")
   visitaPersonalRemoved   VisitaPersonal[]  @relation("VisitaPersonalRemovedBy")
   personal                Personal?
@@ -400,12 +401,27 @@ model Visita {
   deletedAt       DateTime?
   createdById     String?
   updatedById     String?
+  /// Cuándo se cerró como completada, y quién apretó el botón.
+  ///
+  /// No es `fechaRealizada`: esa es el **día en que se hizo el trabajo**, la
+  /// elige quien la cierra y puede ser anterior —el lunes se cierra una visita
+  /// hecha el viernes—. Esto es el instante en que quedó registrada.
+  ///
+  /// Y no es `updatedById`: ese es el último que la tocó por cualquier motivo,
+  /// así que una corrección de fecha tres semanas después borra el rastro de
+  /// quién la completó. Por eso son campos aparte.
+  ///
+  /// Se ponen al pasar a COMPLETADA y se limpian si sale de ese estado: si la
+  /// visita ya no está completada, no hay nadie que la haya completado.
+  completadaEl    DateTime?
+  completadaPorId String?
 
   cliente        Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   productos      VisitaProducto[]
   grupo          Grupo?            @relation(fields: [grupoId], references: [id], onDelete: SetNull)
   createdBy      User?             @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy      User?             @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  completadaPor  User?             @relation("VisitaCompletadaPor", fields: [completadaPorId], references: [id], onDelete: SetNull)
   media          VisitaMedia[]
   personal       VisitaPersonal[]
   notificaciones NotificacionLog[]
@@ -418,6 +434,8 @@ model Visita {
   @@index([clienteId])
   @@index([suscripcionId])
   @@index([fechaProgramada])
+  /// Para filtrar "completadas entre estas fechas" sin recorrer la tabla.
+  @@index([completadaEl])
 }
 
 /// Una visita puede cubrir varios servicios contratados del mismo cliente.

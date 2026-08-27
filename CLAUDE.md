@@ -264,6 +264,8 @@ most `MAX_ARCHIVOS_POR_SUBIDA` per call. The content type matters because it is
 what gets *signed* — the presigned URL carries it and R2 stores whatever
 arrives, and `tipo` is derived as "video" or, for everything else, "imagen".
 
+**Who closed a visita is its own pair of columns.** `completadaEl` / `completadaPorId` are stamped on the transition **into** `COMPLETADA` and cleared when it leaves, so re-saving the form to fix an hour doesn't make the corrector the one who completed it. They are not `fechaRealizada` — that is the *day the work happened*, chosen by whoever closes it and often earlier — and not `updatedById`, which any later edit overwrites. The visitas list filters by both (`completadaPor`, `completadaDesde`/`completadaHasta`), and the person dropdown only lists people who actually closed something.
+
 **A visita is editable in any state**, including `COMPLETADA`. The state records
 what happened to the work, not whether the row is right: fixing a wrong date or
 product shouldn't mean deleting and rebuilding a visit, which would lose its

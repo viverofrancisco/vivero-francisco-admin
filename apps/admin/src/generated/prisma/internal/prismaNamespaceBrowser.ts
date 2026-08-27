@@ -292,7 +292,9 @@ export const VisitaScalarFieldEnum = {
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
   createdById: 'createdById',
-  updatedById: 'updatedById'
+  updatedById: 'updatedById',
+  completadaEl: 'completadaEl',
+  completadaPorId: 'completadaPorId'
 } as const
 
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]

@@ -18,6 +18,9 @@ export default async function VisitasPage({
     estado?: string;
     cliente?: string;
     producto?: string;
+    completadaPor?: string;
+    completadaDesde?: string;
+    completadaHasta?: string;
   }>;
 }) {
   const user = await requireAuth();
@@ -54,6 +57,22 @@ export default async function VisitasPage({
   if (filtros.producto && filtros.producto !== "ALL") {
     visitasWhere.productos = { some: { productoId: filtros.producto } };
   }
+  // Quién la cerró y cuándo. Van juntos porque responden la misma pregunta
+  // —"¿qué cerró fulano la semana pasada?"— y las dos condiciones son sobre
+  // el mismo par de columnas.
+  if (filtros.completadaPor && filtros.completadaPor !== "ALL") {
+    visitasWhere.completadaPorId = filtros.completadaPor;
+  }
+  if (filtros.completadaDesde || filtros.completadaHasta) {
+    const cuando: { gte?: Date; lte?: Date } = {};
+    if (filtros.completadaDesde) {
+      cuando.gte = new Date(`${filtros.completadaDesde}T00:00:00.000Z`);
+    }
+    if (filtros.completadaHasta) {
+      cuando.lte = new Date(`${filtros.completadaHasta}T23:59:59.999Z`);
+    }
+    visitasWhere.completadaEl = cuando;
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clientesWhere: any = { deletedAt: null };
@@ -78,7 +97,7 @@ export default async function VisitasPage({
     }
   }
 
-  const [visitas, clientes, servicios] = await Promise.all([
+  const [visitas, clientes, servicios, cerradores] = await Promise.all([
     prisma.visita.findMany({
       where: { ...visitasWhere, deletedAt: null },
       orderBy: { fechaProgramada: "asc" },
@@ -98,6 +117,13 @@ export default async function VisitasPage({
       select: { id: true, nombre: true },
       orderBy: { nombre: "asc" },
     }),
+    // Solo quienes de verdad cerraron alguna: un desplegable con todo el
+    // personal obliga a adivinar cuál de esos nombres da resultados.
+    prisma.user.findMany({
+      where: { visitasCompletadas: { some: { deletedAt: null } } },
+      select: { id: true, name: true, apellido: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const serialized = visitas.map((v) => ({
@@ -106,6 +132,7 @@ export default async function VisitasPage({
     fechaProgramada: v.fechaProgramada.toISOString().split("T")[0],
     fechaRealizada: v.fechaRealizada?.toISOString().split("T")[0] ?? null,
     estado: v.estado,
+    completadaEl: v.completadaEl?.toISOString() ?? null,
     notas: v.notas,
     cliente: v.cliente,
     productos: v.productos,
@@ -129,7 +156,14 @@ export default async function VisitasPage({
           estado: filtros.estado,
           cliente: filtros.cliente,
           producto: filtros.producto,
+          completadaPor: filtros.completadaPor,
+          completadaDesde: filtros.completadaDesde,
+          completadaHasta: filtros.completadaHasta,
         }}
+        cerradores={cerradores.map((u) => ({
+          id: u.id,
+          nombre: [u.name, u.apellido].filter(Boolean).join(" ") || "Sin nombre",
+        }))}
         userRole={user.role}
         clientes={clienteOptions}
         productos={servicios}

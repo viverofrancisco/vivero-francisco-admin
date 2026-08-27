@@ -45,6 +45,12 @@ interface VisitaDetailData {
   numero: number;
   fechaProgramada: string;
   fechaRealizada: string | null;
+  /** Cuándo se la marcó como completada, en ISO. */
+  completadaEl?: string | null;
+  completadaPor?: { name: string | null; apellido: string | null } | null;
+  /** Última modificación, sea del tipo que sea. */
+  actualizadaEl?: string | null;
+  actualizadaPor?: { name: string | null; apellido: string | null } | null;
   horaEntrada: string | null;
   horaSalida: string | null;
   estado: string;
@@ -439,6 +445,29 @@ export function VisitaDetail({
                   <span className="text-muted-foreground">—</span>
                 )}
               </Fila>
+              {/* "Realizada" es el día del trabajo; esto es cuándo y quién la
+                  cerró en el sistema, que no tiene por qué ser el mismo día ni
+                  la misma persona. */}
+              {visita.completadaEl && (
+                <Fila etiqueta="Completada">
+                  <span className="block">{momento(visita.completadaEl)}</span>
+                  {nombreDe(visita.completadaPor) && (
+                    <span className="block text-xs text-muted-foreground">
+                      por {nombreDe(visita.completadaPor)}
+                    </span>
+                  )}
+                </Fila>
+              )}
+              {visita.actualizadaEl && (
+                <Fila etiqueta="Última edición">
+                  <span className="block">{momento(visita.actualizadaEl)}</span>
+                  {nombreDe(visita.actualizadaPor) && (
+                    <span className="block text-xs text-muted-foreground">
+                      por {nombreDe(visita.actualizadaPor)}
+                    </span>
+                  )}
+                </Fila>
+              )}
             </dl>
           </CardContent>
         </Card>
@@ -534,6 +563,25 @@ const formatCorta = (iso: string) =>
   });
 
 /** "3 h 30 min" a partir de las horas cargadas al cerrar la visita. */
+/** "27 ago 2026, 2:11 p. m." — el instante en que alguien apretó el botón. */
+function momento(iso: string): string {
+  return new Date(iso).toLocaleString("es-EC", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** El nombre de quien hizo algo, o null si el usuario ya no existe. */
+function nombreDe(
+  u: { name: string | null; apellido: string | null } | null | undefined
+): string | null {
+  if (!u) return null;
+  return [u.name, u.apellido].filter(Boolean).join(" ") || null;
+}
+
 function duracion(entrada: string | null, salida: string | null): string | null {
   if (!entrada || !salida) return null;
   const min = (h: string) => {

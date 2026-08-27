@@ -67,7 +67,16 @@ interface VisitasPageClientProps {
    * Los filtros que ya aplicó el servidor. Vienen de él y no de la URL leída
    * acá para que la pantalla no pueda mostrar un filtro que la lista no tiene.
    */
-  filtros: { estado?: string; cliente?: string; producto?: string };
+  filtros: {
+    estado?: string;
+    cliente?: string;
+    producto?: string;
+    completadaPor?: string;
+    completadaDesde?: string;
+    completadaHasta?: string;
+  };
+  /** Quiénes cerraron alguna visita: los únicos por los que tiene sentido filtrar. */
+  cerradores: { id: string; nombre: string }[];
   userRole?: string;
   clientes: ClienteFilterOption[];
   productos: FilterOption[];
@@ -78,6 +87,7 @@ export function VisitasPageClient({
   initialDesde,
   initialHasta,
   filtros,
+  cerradores,
   userRole,
   clientes,
   productos,
@@ -101,6 +111,9 @@ export function VisitasPageClient({
   const estado = filtros.estado ?? "ALL";
   const clienteId = filtros.cliente ?? "ALL";
   const productoId = filtros.producto ?? "ALL";
+  const completadaPor = filtros.completadaPor ?? "ALL";
+  const completadaDesde = filtros.completadaDesde ?? "";
+  const completadaHasta = filtros.completadaHasta ?? "";
 
   const navegar = (patch: Record<string, string>) => {
     const qs = new URLSearchParams(window.location.search);
@@ -156,7 +169,9 @@ export function VisitasPageClient({
     (productoId !== "ALL" ? 1 : 0) +
     (estado !== "ALL" ? 1 : 0) +
     (soloSinOrden ? 1 : 0) +
-    (desde || hasta ? 1 : 0);
+    (desde || hasta ? 1 : 0) +
+    (completadaPor !== "ALL" ? 1 : 0) +
+    (completadaDesde || completadaHasta ? 1 : 0);
 
   const limpiarFiltros = () => {
     setSoloSinOrden(false);
@@ -166,6 +181,9 @@ export function VisitasPageClient({
       estado: "ALL",
       desde: "",
       hasta: "",
+      completadaPor: "ALL",
+      completadaDesde: "",
+      completadaHasta: "",
     });
   };
 
@@ -274,6 +292,39 @@ export function VisitasPageClient({
                 searchPlaceholder="Buscar..."
               />
             </div>
+            {/* Quién la cerró y cuándo. Aparte de "Fechas", que es cuándo
+                estaba programada: una visita del 3 se puede cerrar el 10. */}
+            {cerradores.length > 0 && (
+              <>
+                <div className="space-y-1">
+                  <Label className="text-xs">Completada por</Label>
+                  <CustomSelect
+                    value={completadaPor}
+                    onChange={(v) => navegar({ completadaPor: v })}
+                    options={[
+                      { value: "ALL", label: "Cualquiera" },
+                      ...cerradores.map((c) => ({
+                        value: c.id,
+                        label: c.nombre,
+                      })),
+                    ]}
+                    placeholder="Cualquiera"
+                    searchable={cerradores.length > 8}
+                    searchPlaceholder="Buscar..."
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Completada entre</Label>
+                  <DateRangePicker
+                    desde={completadaDesde}
+                    hasta={completadaHasta}
+                    onChange={(d, h) =>
+                      navegar({ completadaDesde: d, completadaHasta: h })
+                    }
+                  />
+                </div>
+              </>
+            )}
             {/* Lo que falta cobrar de trabajo suelto. Lo cubierto por un plan
                 no cuenta: no se factura aparte. */}
             <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2.5">

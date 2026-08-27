@@ -49,6 +49,9 @@ export default async function VisitaDetailPage({
         select: { id: true, url: true, tipo: true, productoId: true },
         orderBy: { createdAt: "asc" as const },
       },
+      // Quién la cerró y quién la tocó al final: solo el nombre.
+      completadaPor: { select: { name: true, apellido: true } },
+      updatedBy: { select: { name: true, apellido: true } },
     },
   });
 
@@ -75,6 +78,11 @@ export default async function VisitaDetailPage({
     numero: visita.numero,
     fechaProgramada: visita.fechaProgramada.toISOString().split("T")[0],
     fechaRealizada: visita.fechaRealizada?.toISOString().split("T")[0] ?? null,
+    // Con hora: son instantes, no días.
+    completadaEl: visita.completadaEl?.toISOString() ?? null,
+    completadaPor: visita.completadaPor,
+    actualizadaEl: visita.updatedAt.toISOString(),
+    actualizadaPor: visita.updatedBy,
     horaEntrada: visita.horaEntrada,
     horaSalida: visita.horaSalida,
     estado: visita.estado,
