@@ -5,6 +5,7 @@ import {
   cancelVisita,
   completeVisita,
   markVisitaIncomplete,
+  updateVisitaPersonal,
 } from "@/lib/services/visita.service";
 import {
   ServiceError,
@@ -42,6 +43,12 @@ export async function POST(
   const horaSalida = data.horaSalida || null;
 
   try {
+    // El personal primero: si el cambio de estado falla, no queda una visita
+    // cerrada con la gente equivocada. Al revés sí se puede corregir después.
+    if (data.personalIds) {
+      await updateVisitaPersonal(id, viewer, data.personalIds);
+    }
+
     let updated;
     if (data.estado === "COMPLETADA") {
       updated = await completeVisita(id, viewer, {

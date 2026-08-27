@@ -19,19 +19,29 @@ export default async function CompletarVisitaRoute({
   // PERSONAL es solo lectura: no debería llegar ni por URL escrita a mano.
   if (user.role === "PERSONAL") notFound();
 
-  const visita = await prisma.visita.findUnique({
-    where: { id, deletedAt: null },
-    select: {
-      id: true,
-      numero: true,
-      estado: true,
-      fechaProgramada: true,
-      cliente: {
-        select: { nombre: true, apellido: true, empresa: true },
+  const [visita, personalList] = await Promise.all([
+    prisma.visita.findUnique({
+      where: { id, deletedAt: null },
+      select: {
+        id: true,
+        numero: true,
+        estado: true,
+        fechaProgramada: true,
+        cliente: {
+          select: { nombre: true, apellido: true, empresa: true },
+        },
+        productos: PRODUCTOS_DE_VISITA_SELECT,
+        // Quién estaba asignado al agendar: el punto de partida para
+        // corregir quién fue de verdad.
+        personal: { where: { removedAt: null }, select: { personalId: true } },
       },
-      productos: PRODUCTOS_DE_VISITA_SELECT,
-    },
-  });
+    }),
+    prisma.personal.findMany({
+      where: { deletedAt: null, estado: "ACTIVO" },
+      select: { id: true, nombre: true, apellido: true },
+      orderBy: { nombre: "asc" },
+    }),
+  ]);
 
   if (!visita) notFound();
 
@@ -45,7 +55,9 @@ export default async function CompletarVisitaRoute({
         fechaProgramada: visita.fechaProgramada.toISOString().split("T")[0],
         cliente: visita.cliente,
         productos: visita.productos,
+        personalIds: visita.personal.map((p) => p.personalId),
       }}
+      personalList={personalList}
     />
   );
 }

@@ -934,6 +934,17 @@ export async function updateVisitaPersonal(
   if (!visita) throw new NotFoundError("Visita no encontrada");
 
   const newIds = new Set(personalIds);
+  // Un id que no existe reventaba con la clave foránea y salía como "Error
+  // interno". Es un dato mal mandado, no una falla nuestra.
+  if (newIds.size > 0) {
+    const existen = await prisma.personal.count({
+      where: { id: { in: [...newIds] }, deletedAt: null },
+    });
+    if (existen !== newIds.size) {
+      throw new ValidationError("Alguien del personal ya no existe.");
+    }
+  }
+
   const currentPersonal = await prisma.visitaPersonal.findMany({
     where: { visitaId, removedAt: null },
   });

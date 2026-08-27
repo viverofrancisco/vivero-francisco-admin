@@ -21,6 +21,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { PersonalSelector } from "@/components/grupos/personal-selector";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -39,6 +40,8 @@ interface VisitaData {
     empresa?: string | null;
   };
   productos: ProductoDeVisita[];
+  /** Quiénes estaban asignados al agendar. */
+  personalIds: string[];
 }
 
 const fechaLarga = (iso: string) =>
@@ -59,14 +62,22 @@ const fechaLarga = (iso: string) =>
  */
 export function CompletarVisitaPage({
   visita,
+  personalList,
   backHref,
 }: {
   visita: VisitaData;
+  personalList: { id: string; nombre: string; apellido: string | null }[];
   /** A dónde vuelve al cancelar o al terminar. */
   backHref: string;
 }) {
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
+  /**
+   * Quién fue de verdad. Arranca con lo asignado al agendar, que es una
+   * intención: el día del trabajo cambia quién pudo ir, y este es el momento
+   * en que alguien lo sabe.
+   */
+  const [personalIds, setPersonalIds] = useState(visita.personalIds);
 
   const {
     register,
@@ -95,7 +106,7 @@ export function CompletarVisitaPage({
       const res = await fetch(`/api/visitas/${visita.id}/completar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, personalIds }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Error");
 
@@ -264,6 +275,7 @@ export function CompletarVisitaPage({
           </Card>
         </div>
 
+        <div className="space-y-6">
         {/* Qué se fue a hacer, para tenerlo delante al escribir las notas. */}
         <Card>
           <CardHeader className="border-b py-3">
@@ -285,6 +297,20 @@ export function CompletarVisitaPage({
             )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Quién fue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PersonalSelector
+              personalList={personalList}
+              selectedIds={personalIds}
+              onChange={setPersonalIds}
+            />
+          </CardContent>
+        </Card>
+        </div>
       </div>
     </form>
   );

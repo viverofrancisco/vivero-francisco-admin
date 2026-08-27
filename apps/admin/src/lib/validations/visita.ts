@@ -50,6 +50,14 @@ export const completarVisitaSchema = z.object({
   horaSalida: z.string().optional().or(z.literal("")),
   notas: z.string().optional().or(z.literal("")),
   notasIncompleto: z.string().optional().or(z.literal("")),
+  /**
+   * Quién fue de verdad. Se manda desde la pantalla de cerrar la visita porque
+   * es ahí donde se sabe: lo que se asignó al agendar es una intención, y el
+   * que faltó ese día no tiene por qué quedar figurando.
+   *
+   * Ausente = no se toca. Vacío = nadie fue.
+   */
+  personalIds: z.array(z.string()).optional(),
 });
 
 export type CompletarVisitaFormData = z.infer<typeof completarVisitaSchema>;
