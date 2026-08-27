@@ -144,9 +144,16 @@ export function UsersTable({
       toast.error(
         err instanceof Error ? err.message : "No pudimos generar el enlace"
       );
+      return;
     } finally {
       setGenerando(null);
     }
+    // La fila se relee después de cualquier acción sobre el usuario. Hoy
+    // emitir un enlace no le cambia el estado —el bloqueo se levanta recién
+    // cuando la persona lo usa— pero la lista sale del servidor y quedarse con
+    // una versión vieja en pantalla es el tipo de cosa que aparece cuando algo
+    // de esto cambia y nadie se acuerda de este renglón.
+    router.refresh();
   }
 
   return (
