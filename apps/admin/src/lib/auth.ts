@@ -30,6 +30,13 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Credenciales inválidas");
         }
 
+        // Acá el mensaje sí es específico: quien tipeó el correo ya lo conoce,
+        // y "credenciales inválidas" mandaría a alguien del equipo a probar
+        // contraseñas durante media hora antes de preguntar.
+        if (user.accesoRevocadoEl) {
+          throw new Error("Tu acceso fue revocado. Habla con un administrador.");
+        }
+
         // El panel web es solo para staff; los clientes inician sesión en la
         // app móvil (resuelve por la ficha del cliente, no por User.email).
         // Bloqueo explícito con error genérico para no revelar el rol.

@@ -5,9 +5,24 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { User, UserRole } from "@/generated/prisma/client";
 
+/**
+ * El usuario de la sesión, o null.
+ *
+ * Además de leer la sesión **relee la fila**, porque la sesión es un JWT que
+ * vive semanas: sin esto, revocarle el acceso a alguien no lo sacaría hasta
+ * que su token venciera solo. Es una búsqueda por clave primaria y es el
+ * único embudo por el que pasan páginas y rutas, así que el costo es una
+ * consulta por request y la garantía es que revocar surte efecto ya.
+ */
 export async function getCurrentUser() {
   const session = await getServerSession(authOptions);
-  return session?.user ?? null;
+  if (!session?.user) return null;
+  const vigente = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { accesoRevocadoEl: true },
+  });
+  if (!vigente || vigente.accesoRevocadoEl) return null;
+  return session.user;
 }
 
 export async function requireAuth() {
@@ -85,6 +100,8 @@ export async function validateCredentials(
 ): Promise<User | null> {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.password) return null;
+  // Con el acceso revocado la contraseña deja de importar.
+  if (user.accesoRevocadoEl) return null;
   const valid = await bcrypt.compare(password, user.password);
   return valid ? user : null;
 }

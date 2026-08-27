@@ -10,6 +10,11 @@ export interface EnlaceGenerado {
   /** ISO. Cuándo deja de servir. */
   expiraEl: string;
   correoEnviado: boolean;
+  /**
+   * Si se intentó mandar el correo. Distingue "no salió" de "no se pidió", que
+   * son cosas muy distintas para quien está mirando: una es un problema.
+   */
+  correoIntentado?: boolean;
 }
 
 /**
@@ -30,6 +35,8 @@ export function EnlaceAcceso({
   correo: string;
 }) {
   const [copiado, setCopiado] = useState(false);
+  const seIntento = datos.correoIntentado ?? true;
+  const fallo = seIntento && !datos.correoEnviado;
 
   async function copiar() {
     try {
@@ -46,18 +53,23 @@ export function EnlaceAcceso({
     <div className="space-y-3">
       <div
         className={`flex items-start gap-2 rounded-md border px-3 py-2 text-sm ${
-          datos.correoEnviado
-            ? "border-primary/30 bg-primary/5"
-            : "border-amber-300 bg-amber-50 text-amber-900"
+          fallo
+            ? "border-amber-300 bg-amber-50 text-amber-900"
+            : "border-primary/30 bg-primary/5"
         }`}
       >
-        {datos.correoEnviado ? (
-          <Mail className="mt-0.5 h-4 w-4 flex-none text-primary" />
-        ) : (
+        {fallo ? (
           <MailX className="mt-0.5 h-4 w-4 flex-none" />
+        ) : (
+          <Mail className="mt-0.5 h-4 w-4 flex-none text-primary" />
         )}
         <p>
-          {datos.correoEnviado ? (
+          {!seIntento ? (
+            <>
+              No enviamos ningún correo. Copiá el enlace y mandáselo por donde
+              prefieras.
+            </>
+          ) : datos.correoEnviado ? (
             <>
               Le enviamos el enlace a <strong>{correo}</strong>. Podés mandárselo
               también por otro medio.
@@ -93,8 +105,8 @@ export function EnlaceAcceso({
 
       <p className="text-xs text-muted-foreground">
         Caduca {vencimiento(datos.expiraEl)}. Al abrirlo elige su contraseña y ya
-        puede entrar. Este enlace no se vuelve a mostrar: si lo perdés, generá
-        uno nuevo.
+        puede entrar. Este enlace no se vuelve a mostrar y anula cualquier otro
+        que le hayas mandado antes; si lo perdés, generá uno nuevo.
       </p>
     </div>
   );

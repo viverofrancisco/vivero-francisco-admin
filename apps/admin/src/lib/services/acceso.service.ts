@@ -243,3 +243,50 @@ export async function establecerContrasena(
 
   return { ok: true, destino: "app" };
 }
+
+// ──────────────────────────────────────────────
+// Revocar y devolver el acceso
+// ──────────────────────────────────────────────
+
+/**
+ * Le cierra la puerta a alguien sin borrar su cuenta.
+ *
+ * No se borra porque su nombre sigue firmando las visitas y los informes que
+ * hizo; borrarlo dejaría huecos en el historial. Lo que se corta es todo lo
+ * que sirve para entrar:
+ *
+ * - la marca en `accesoRevocadoEl`, que los dos caminos de login consultan;
+ * - los enlaces de contraseña pendientes, para que uno viejo no la reabra;
+ * - los refresh tokens del móvil, para que la app no siga renovando sola.
+ *
+ * Lo que **no** se toca es la contraseña: si mañana vuelve, quitar el bloqueo
+ * alcanza y no hay que inventar nada nuevo.
+ */
+export async function revocarAcceso(userId: string): Promise<void> {
+  const ahora = new Date();
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { accesoRevocadoEl: ahora },
+    }),
+    prisma.setPasswordToken.updateMany({
+      where: { userId, usedAt: null },
+      data: { usedAt: ahora },
+    }),
+    prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: ahora },
+    }),
+  ]);
+}
+
+/**
+ * Le devuelve el acceso. Vuelve con la contraseña que ya tenía; si no la
+ * recuerda —o nunca llegó a ponerse una— lo que sigue es un enlace nuevo.
+ */
+export async function restaurarAcceso(userId: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { accesoRevocadoEl: null },
+  });
+}

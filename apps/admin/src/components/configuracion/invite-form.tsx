@@ -125,7 +125,7 @@ export function InviteForm({ sectores }: InviteFormProps) {
         <Plus className="mr-2 h-4 w-4" />
         Invitar Usuario
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {generado ? "Usuario invitado" : "Invitar nuevo usuario"}

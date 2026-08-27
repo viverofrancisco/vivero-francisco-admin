@@ -138,6 +138,14 @@ model User {
   image         String?
   password      String?
   role          UserRole  @default(STAFF)
+  /// Cuándo se le revocó el acceso, o null si lo tiene.
+  ///
+  /// Una fecha y no un booleano: cuando alguien pregunta "¿desde cuándo no
+  /// entra?" la respuesta ya está guardada. Revocar no borra la cuenta —su
+  /// nombre sigue firmando las visitas e informes que hizo— solo cierra la
+  /// puerta: los dos caminos de login la rechazan, sus enlaces pendientes se
+  /// anulan y sus sesiones móviles dejan de renovarse.
+  accesoRevocadoEl DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

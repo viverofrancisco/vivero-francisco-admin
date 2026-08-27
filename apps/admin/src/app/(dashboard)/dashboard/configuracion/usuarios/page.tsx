@@ -4,7 +4,7 @@ import { InviteForm } from "@/components/configuracion/invite-form";
 import { UsersTable } from "@/components/configuracion/users-table";
 
 export default async function UsuariosPage() {
-  await requireAdmin();
+  const actual = await requireAdmin();
 
   const [users, sectores] = await Promise.all([
     prisma.user.findMany({
@@ -18,6 +18,10 @@ export default async function UsuariosPage() {
         email: true,
         role: true,
         createdAt: true,
+        // Solo para saber si ya eligió contraseña. El hash no sale de acá:
+        // se convierte en un booleano antes de llegar al cliente.
+        password: true,
+        accesoRevocadoEl: true,
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -40,9 +44,12 @@ export default async function UsuariosPage() {
       </div>
 
       <UsersTable
-        users={users.map((u) => ({
+        usuarioActualId={actual.id}
+        users={users.map(({ password, accesoRevocadoEl, ...u }) => ({
           ...u,
           createdAt: u.createdAt.toISOString(),
+          tieneContrasena: password !== null,
+          revocado: accesoRevocadoEl !== null,
         }))}
       />
     </div>

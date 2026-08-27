@@ -50,6 +50,32 @@ demorar, caer en spam o ir a una casilla que nadie mira.
 - Ambos son **solo para ADMIN**, y ambos **anulan el enlace anterior** que
   siguiera sin usar.
 
+### Revocar el acceso
+
+**Revocar no borra la cuenta.** El nombre de esa persona firma las visitas y
+los informes que hizo; borrarla dejaría huecos en el historial. Lo que se corta
+es todo lo que sirve para entrar (`revocarAcceso()`):
+
+- se marca `User.accesoRevocadoEl` — una fecha, no un booleano, para que
+  "¿desde cuándo?" ya esté respondido;
+- se anulan sus enlaces de contraseña pendientes, para que uno viejo no reabra
+  la puerta;
+- se anulan sus refresh tokens, para que la app móvil deje de renovar sola.
+
+La contraseña **no** se toca: si vuelve, *Quitar el bloqueo* alcanza.
+
+Se comprueba en tres lugares, y hacen falta los tres: `authorize()` de NextAuth
+y `validateCredentials()` impiden iniciar sesión, y **`getCurrentUser()` relee
+la fila en cada request** porque la sesión es un JWT que vive semanas — sin eso,
+revocar no sacaría a nadie hasta que su token venciera solo.
+
+*Volver a invitar* a alguien bloqueado le devuelve el acceso en el mismo paso:
+mandarle un enlace a alguien que sigue bloqueado sería darle una contraseña que
+no sirve para entrar.
+
+Un admin **no puede revocarse a sí mismo**: dejarse afuera no tiene arreglo
+desde adentro.
+
 **Las vigencias son distintas a propósito** (`VIGENCIA_MS` en
 `acceso.service.ts`):
 
