@@ -24,7 +24,7 @@ type Estado = "cargando" | "valido" | "invalido" | "listo";
 type Destino = "portal" | "app";
 
 /** Por qué el enlace no sirve. Cada caso tiene una salida distinta. */
-type Motivo = "vencido" | "usado" | "desconocido";
+type Motivo = "vencido" | "usado" | "anulado" | "desconocido";
 
 export function SetPasswordForm() {
   const searchParams = useSearchParams();
@@ -123,9 +123,12 @@ export function SetPasswordForm() {
             </p>
           )}
 
+          {/* Sin rojo: que un enlace haya caducado o lo hayan reemplazado no es
+              un error de quien lo abre, y pintarlo de alarma solo asusta a
+              alguien que no hizo nada mal. */}
           {estado === "invalido" && (
             <div className="space-y-4 text-center">
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-muted-foreground">
                 {motivo === "vencido" ? (
                   <>
                     Este enlace caducó.{" "}
@@ -137,6 +140,13 @@ export function SetPasswordForm() {
                   <>
                     Este enlace ya se usó. Si ya elegiste tu contraseña, entra
                     con ella; si no fuiste tú, avisa a un administrador.
+                  </>
+                ) : motivo === "anulado" ? (
+                  <>
+                    Este enlace fue reemplazado por uno más nuevo.{" "}
+                    {destino === "portal"
+                      ? "Busca el último que te enviaron, o pídele uno a un administrador."
+                      : "Busca el último que te enviamos, o pide uno nuevo desde la app."}
                   </>
                 ) : (
                   <>

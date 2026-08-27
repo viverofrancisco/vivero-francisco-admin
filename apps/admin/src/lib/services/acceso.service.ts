@@ -107,8 +107,8 @@ async function emitir(
 
   await prisma.$transaction([
     prisma.setPasswordToken.updateMany({
-      where: { ...dueno, usedAt: null },
-      data: { usedAt: new Date() },
+      where: { ...dueno, usedAt: null, anuladoEl: null },
+      data: { anuladoEl: new Date() },
     }),
     prisma.setPasswordToken.create({
       data: { ...dueno, tokenHash: sha256(token), expiresAt },
@@ -142,7 +142,7 @@ export function crearEnlaceParaCliente(
  * tres juntas —"no es válido, ya fue usado o caducó"— deja a la persona sin
  * saber cuál le tocó ni qué hacer.
  */
-export type MotivoInvalido = "vencido" | "usado" | "desconocido";
+export type MotivoInvalido = "vencido" | "usado" | "anulado" | "desconocido";
 
 export interface InfoDeEnlace {
   valido: boolean;
@@ -187,6 +187,9 @@ export async function infoDeEnlace(token: string): Promise<InfoDeEnlace> {
       undefined;
 
   if (record.usedAt) return { valido: false, motivo: "usado", destino, nombre };
+  if (record.anuladoEl) {
+    return { valido: false, motivo: "anulado", destino, nombre };
+  }
   if (record.expiresAt.getTime() < Date.now()) {
     return { valido: false, motivo: "vencido", destino, nombre };
   }
@@ -211,7 +214,9 @@ export async function establecerContrasena(
   const record = await prisma.setPasswordToken.findUnique({
     where: { tokenHash: sha256(token) },
   });
-  if (!record || record.usedAt) return { ok: false, motivo: "invalido" };
+  if (!record || record.usedAt || record.anuladoEl) {
+    return { ok: false, motivo: "invalido" };
+  }
   if (record.expiresAt.getTime() < Date.now()) {
     return { ok: false, motivo: "vencido" };
   }
@@ -307,8 +312,8 @@ export async function revocarAcceso(userId: string): Promise<void> {
       data: { accesoRevocadoEl: ahora },
     }),
     prisma.setPasswordToken.updateMany({
-      where: { userId, usedAt: null },
-      data: { usedAt: ahora },
+      where: { userId, usedAt: null, anuladoEl: null },
+      data: { anuladoEl: ahora },
     }),
     prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },

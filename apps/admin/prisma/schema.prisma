@@ -709,7 +709,15 @@ model SetPasswordToken {
   userId    String?
   tokenHash String    @unique
   expiresAt DateTime
+  /// Cuándo alguien lo abrió y eligió una contraseña. Solo eso.
   usedAt    DateTime?
+  /// Cuándo lo dimos de baja nosotros: porque se emitió uno más nuevo, o
+  /// porque se le revocó el acceso a la persona.
+  ///
+  /// Aparte de `usedAt` porque no son lo mismo y la diferencia se ve: decirle
+  /// "este enlace ya se usó" a quien nunca lo abrió lo manda a preguntarse
+  /// quién entró con él.
+  anuladoEl DateTime?
   createdAt DateTime  @default(now())
 
   cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)

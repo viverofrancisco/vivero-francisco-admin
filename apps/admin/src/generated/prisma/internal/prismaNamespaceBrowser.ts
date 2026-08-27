@@ -522,6 +522,7 @@ export const SetPasswordTokenScalarFieldEnum = {
   tokenHash: 'tokenHash',
   expiresAt: 'expiresAt',
   usedAt: 'usedAt',
+  anuladoEl: 'anuladoEl',
   createdAt: 'createdAt'
 } as const
 
