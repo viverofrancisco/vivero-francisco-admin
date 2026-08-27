@@ -23,6 +23,9 @@ type Estado = "cargando" | "valido" | "invalido" | "listo";
  */
 type Destino = "portal" | "app";
 
+/** Por qué el enlace no sirve. Cada caso tiene una salida distinta. */
+type Motivo = "vencido" | "usado" | "desconocido";
+
 export function SetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -31,7 +34,8 @@ export function SetPasswordForm() {
     token ? "cargando" : "invalido"
   );
   const [nombre, setNombre] = useState<string | null>(null);
-  const [destino, setDestino] = useState<Destino>("app");
+  const [destino, setDestino] = useState<Destino | null>(null);
+  const [motivo, setMotivo] = useState<Motivo>("desconocido");
   const [password, setPassword] = useState("");
   const [confirmar, setConfirmar] = useState("");
   const [error, setError] = useState("");
@@ -41,15 +45,23 @@ export function SetPasswordForm() {
     if (!token) return;
     fetch(`/api/auth/set-password?token=${encodeURIComponent(token)}`)
       .then((r) => r.json())
-      .then((data: { valid: boolean; nombre?: string; destino?: Destino }) => {
-        if (data.valid) {
+      .then(
+        (data: {
+          valid: boolean;
+          nombre?: string;
+          destino?: Destino;
+          motivo?: Motivo;
+        }) => {
           setNombre(data.nombre ?? null);
-          setDestino(data.destino ?? "app");
-          setEstado("valido");
-        } else {
-          setEstado("invalido");
+          setDestino(data.destino ?? null);
+          if (data.valid) {
+            setEstado("valido");
+          } else {
+            setMotivo(data.motivo ?? "desconocido");
+            setEstado("invalido");
+          }
         }
-      })
+      )
       .catch(() => setEstado("invalido"));
   }, [token]);
 
@@ -92,11 +104,16 @@ export function SetPasswordForm() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Vivero Francisco</CardTitle>
           <CardDescription>
+            {/* Sin saber a dónde entra la persona no se dice nada: mandar a
+                alguien del personal a "abrir la app" porque su enlace caducó
+                es mandarlo al lugar equivocado con un problema encima. */}
             {estado === "listo"
               ? "Contraseña creada"
-              : destino === "portal"
-                ? "Crea tu contraseña para entrar al portal"
-                : "Crea tu contraseña para acceder a la app"}
+              : estado === "invalido"
+                ? "Enlace de acceso"
+                : destino === "portal"
+                  ? "Crea tu contraseña para entrar al portal"
+                  : "Crea tu contraseña para acceder a la app"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -107,10 +124,39 @@ export function SetPasswordForm() {
           )}
 
           {estado === "invalido" && (
-            <p className="text-center text-sm text-red-600">
-              El enlace no es válido, ya fue usado o caducó. Pide uno nuevo a
-              quien te lo envió.
-            </p>
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-red-600">
+                {motivo === "vencido" ? (
+                  <>
+                    Este enlace caducó.{" "}
+                    {destino === "portal"
+                      ? "Pídele uno nuevo a un administrador."
+                      : "Pide uno nuevo desde la app."}
+                  </>
+                ) : motivo === "usado" ? (
+                  <>
+                    Este enlace ya se usó. Si ya elegiste tu contraseña, entra
+                    con ella; si no fuiste tú, avisa a un administrador.
+                  </>
+                ) : (
+                  <>
+                    El enlace no es válido. Revisa que lo hayas copiado
+                    completo, o pide uno nuevo a quien te lo envió.
+                  </>
+                )}
+              </p>
+              {/* Si ya tenía contraseña, lo que necesita es la puerta, no una
+                  explicación. */}
+              {motivo === "usado" && destino === "portal" ? (
+                <Button
+                  className="w-full"
+                  nativeButton={false}
+                  render={<a href="/login" />}
+                >
+                  Ir a iniciar sesión
+                </Button>
+              ) : null}
+            </div>
           )}
 
           {estado === "listo" &&

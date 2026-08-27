@@ -137,11 +137,24 @@ export function crearEnlaceParaCliente(
 // Leer y consumir
 // ──────────────────────────────────────────────
 
+/**
+ * Por qué un enlace no sirve. Cada caso tiene una salida distinta, y decir las
+ * tres juntas —"no es válido, ya fue usado o caducó"— deja a la persona sin
+ * saber cuál le tocó ni qué hacer.
+ */
+export type MotivoInvalido = "vencido" | "usado" | "desconocido";
+
 export interface InfoDeEnlace {
   valido: boolean;
   /** Para saludar a quien abre el enlace. */
   nombre?: string;
+  /**
+   * A dónde entra. Se devuelve **también cuando el enlace ya no sirve**: la
+   * página tiene que saber si mandar a alguien al portal o a la app, y un
+   * token muerto no revela nada que valga la pena esconder.
+   */
   destino?: DestinoAcceso;
+  motivo?: MotivoInvalido;
 }
 
 /** Qué hay detrás de un token, para que la página sepa qué decir. */
@@ -155,24 +168,29 @@ export async function infoDeEnlace(token: string): Promise<InfoDeEnlace> {
       user: { select: { name: true, apellido: true } },
     },
   });
-  if (!record || record.usedAt || record.expiresAt.getTime() < Date.now()) {
-    return { valido: false };
+  if (!record) return { valido: false, motivo: "desconocido" };
+
+  const destino: DestinoAcceso | undefined = record.cliente
+    ? "app"
+    : record.user
+      ? "portal"
+      : undefined;
+  // Sin dueño (o con un cliente borrado) no hay nada que ofrecer, y tampoco
+  // vale la pena explicar por qué.
+  if (!destino || record.cliente?.deletedAt) {
+    return { valido: false, motivo: "desconocido" };
   }
-  if (record.cliente) {
-    if (record.cliente.deletedAt) return { valido: false };
-    return {
-      valido: true,
-      nombre: nombreCliente(record.cliente),
-      destino: "app",
-    };
+
+  const nombre = record.cliente
+    ? nombreCliente(record.cliente)
+    : [record.user?.name, record.user?.apellido].filter(Boolean).join(" ") ||
+      undefined;
+
+  if (record.usedAt) return { valido: false, motivo: "usado", destino, nombre };
+  if (record.expiresAt.getTime() < Date.now()) {
+    return { valido: false, motivo: "vencido", destino, nombre };
   }
-  if (record.user) {
-    const nombre = [record.user.name, record.user.apellido]
-      .filter(Boolean)
-      .join(" ");
-    return { valido: true, nombre: nombre || undefined, destino: "portal" };
-  }
-  return { valido: false };
+  return { valido: true, destino, nombre };
 }
 
 export type ResultadoEstablecer =
