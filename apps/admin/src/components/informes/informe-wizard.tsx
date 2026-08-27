@@ -2258,7 +2258,6 @@ function Step5Preview({
   /** El informe recién creado, para poder abrir su ficha. */
   informeId: string | null;
 }) {
-  const filename = `${titulo || "informe"}.pdf`.replace(/[\\/:*?"<>|]+/g, "_");
   // Hide the browser's native PDF toolbar — Chrome/Edge respect these params.
   const cleanUrl = `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
 
@@ -2293,10 +2292,20 @@ function Step5Preview({
           >
             <ExternalLink className="h-4 w-4 mr-1.5" /> Abrir en pestaña
           </Button>
+          {/* Igual que en la ficha: `download` no funciona entre dominios,
+              así que la descarga pasa por nuestra ruta. */}
           <Button
             size="sm"
             nativeButton={false}
-            render={<a href={pdfUrl} download={filename} />}
+            render={
+              <a
+                href={
+                  informeId
+                    ? `/api/admin/informes/${informeId}/descargar`
+                    : pdfUrl
+                }
+              />
+            }
           >
             <Download className="h-4 w-4 mr-1.5" /> Descargar
           </Button>

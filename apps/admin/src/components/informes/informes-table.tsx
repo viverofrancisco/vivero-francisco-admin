@@ -65,8 +65,6 @@ export function InformesTable({
 }) {
   const router = useRouter();
   const params = useSearchParams();
-  /** El informe que se está mirando en el diálogo. */
-  const [viendo, setViendo] = useState<InformeListItem | null>(null);
   /** El que está por eliminarse, mientras se confirma. */
   const [borrando, setBorrando] = useState<InformeListItem | null>(null);
   const [eliminando, setEliminando] = useState(false);
@@ -154,16 +152,27 @@ export function InformesTable({
                         <MoreVertical className="h-4 w-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setViendo(item)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Vista previa
-                        </DropdownMenuItem>
+                        {/* El PDF, en una pestaña aparte: mirarlo para saber
+                            si es el que se busca no debería sacar a nadie de
+                            la lista. */}
                         <DropdownMenuItem
                           render={
                             <a
                               href={item.pdfUrl}
-                              download={nombreArchivo(item)}
+                              target="_blank"
+                              rel="noopener noreferrer"
                             />
+                          }
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Vista previa
+                        </DropdownMenuItem>
+                        {/* Por nuestra ruta y no directo a R2: `download` no
+                            funciona entre dominios, así que el enlace crudo
+                            abría el PDF en vez de guardarlo. */}
+                        <DropdownMenuItem
+                          render={
+                            <a href={`/api/admin/informes/${item.id}/descargar`} />
                           }
                         >
                           <Download className="mr-2 h-4 w-4" />
@@ -223,27 +232,6 @@ export function InformesTable({
         </DialogContent>
       </Dialog>
 
-      {/* Se ve acá adentro y no en otra pestaña: mirar un informe para saber
-          si es el que se busca no debería sacar a nadie del portal. */}
-      <Dialog open={viendo !== null} onOpenChange={(v) => !v && setViendo(null)}>
-        <DialogContent className="flex h-[85vh] w-full !max-w-5xl flex-col">
-          <DialogHeader>
-            <DialogTitle className="truncate pr-8">
-              {viendo ? `Informe #${viendo.numero} · ${viendo.cliente.nombre}` : ""}
-            </DialogTitle>
-          </DialogHeader>
-          {viendo && (
-            <iframe
-              // `#toolbar=0`: la barra nativa del visor de Chrome duplica lo
-              // que ya ofrece el menú de la fila.
-              src={`${viendo.pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
-              title={`Informe #${viendo.numero}`}
-              className="min-h-0 flex-1 rounded-md border bg-neutral-200"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
       <TablePagination
         page={page}
         total={total}
@@ -252,14 +240,6 @@ export function InformesTable({
         sustantivo="informe"
       />
     </div>
-  );
-}
-
-/** Nombre con el que se guarda el PDF, sin caracteres que rompan el sistema. */
-function nombreArchivo(item: InformeListItem): string {
-  return `${item.titulo || `informe-${item.numero}`}.pdf`.replace(
-    /[\\/:*?"<>|]+/g,
-    "_"
   );
 }
 

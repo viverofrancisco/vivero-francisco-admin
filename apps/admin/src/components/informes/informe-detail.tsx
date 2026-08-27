@@ -70,11 +70,6 @@ export function InformeDetail({
   const [borrando, setBorrando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
 
-  const nombreArchivo = `${informe.titulo || `informe-${informe.numero}`}.pdf`.replace(
-    /[\\/:*?"<>|]+/g,
-    "_"
-  );
-
   async function eliminar() {
     setEliminando(true);
     try {
@@ -124,10 +119,13 @@ export function InformeDetail({
           >
             <ExternalLink className="mr-1.5 h-4 w-4" /> Abrir
           </Button>
+          {/* Por nuestra ruta y no directo a R2: `download` no funciona
+              entre dominios, así que el enlace crudo abría el PDF en vez de
+              guardarlo. */}
           <Button
             size="sm"
             nativeButton={false}
-            render={<a href={informe.pdfUrl} download={nombreArchivo} />}
+            render={<a href={`/api/admin/informes/${informe.id}/descargar`} />}
           >
             <Download className="mr-1.5 h-4 w-4" /> Descargar
           </Button>

@@ -38,12 +38,38 @@ export async function getUploadUrl(key: string, contentType: string) {
   return getSignedUrl(s3, command, { expiresIn: 600 });
 }
 
-export async function getDownloadUrl(key: string) {
+/**
+ * URL firmada para bajar un objeto.
+ *
+ * Con `nombreArchivo`, R2 responde con `Content-Disposition: attachment`, que
+ * es lo único que hace que el navegador **guarde** el archivo en vez de
+ * abrirlo. El atributo `download` de un `<a>` no sirve acá: los navegadores lo
+ * ignoran cuando el archivo está en otro dominio, y el nuestro vive en R2.
+ */
+export async function getDownloadUrl(
+  key: string,
+  nombreArchivo?: string
+) {
   const command = new GetObjectCommand({
     Bucket: BUCKET_NAME,
     Key: key,
+    ...(nombreArchivo
+      ? { ResponseContentDisposition: disposicion(nombreArchivo) }
+      : {}),
   });
   return getSignedUrl(s3, command, { expiresIn: 3600 });
+}
+
+/**
+ * `Content-Disposition` con el nombre en las dos formas que pide la RFC 5987:
+ * una ASCII de respaldo y otra en UTF-8. Sin la segunda, "Jardín" llega como
+ * "Jard_n"; sin la primera, los clientes viejos no entienden nada.
+ */
+function disposicion(nombre: string): string {
+  const ascii = nombre.replace(/[^\x20-\x7E]/g, "_").replace(/"/g, "'");
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(
+    nombre
+  )}`;
 }
 
 /**
