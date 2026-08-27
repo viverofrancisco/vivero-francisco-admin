@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
+import { isAdminRole } from "@/lib/services/viewer";
 import { listarOrdenes } from "@/lib/services/orden.service";
 import { ClienteDetailTabs } from "@/components/clientes/cliente-detail-tabs";
 import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
@@ -61,8 +62,10 @@ export default async function EditarClientePage({
       id: i.id,
       suscripcionId: s.id,
       productoId: i.productoId,
-      precio: Number(i.precio),
-      ivaTasa: Number(i.ivaTasa),
+      // El precio solo viaja si quien mira puede verlo.
+      ...(verPlata
+        ? { precio: Number(i.precio), ivaTasa: Number(i.ivaTasa) }
+        : {}),
       visitasPorPeriodo: i.visitasPorPeriodo,
       estado: s.estado,
       periodicidad: s.periodicidad,
@@ -86,15 +89,22 @@ export default async function EditarClientePage({
     grupo: v.grupo,
   }));
 
+  /**
+   * Un admin de sector no ve plata: ni las órdenes del cliente, ni los precios
+   * de sus suscripciones, ni sus datos de facturación. Y no es solo que no se
+   * muestren —`listarOrdenes` lo rechaza— así que ni siquiera se piden.
+   */
+  const verPlata = isAdminRole(user.role);
+
   // Las facturas no van en la ficha: son parte de la orden que las generó.
-  const { items: ordenes } = await listarOrdenes(viewerFromUser(user), {
-    clienteId: id,
-    limit: 100,
-  });
+  const { items: ordenes } = verPlata
+    ? await listarOrdenes(viewerFromUser(user), { clienteId: id, limit: 100 })
+    : { items: [] };
 
   return (
     <div>
       <ClienteDetailTabs
+        verPlata={verPlata}
         cliente={{
           id: cliente.id,
           nombre: cliente.nombre,

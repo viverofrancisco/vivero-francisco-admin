@@ -185,12 +185,10 @@ export async function globalSearch(
    * ficha ya las lista. `PERSONAL` no las ve, como el resto de la plata.
    */
   const porNumero = numero !== null && (staff || personalAdmin);
-  const ordenWhere: Prisma.OrdenWhereInput | null = porNumero
-    ? {
-        numero,
-        ...(personalAdmin ? { cliente: { sectorId: { in: sectorIds } } } : {}),
-      }
-    : null;
+  // Las órdenes son plata: solo la oficina. Encontrar una que después no se
+  // puede abrir es peor que no encontrarla.
+  const ordenWhere: Prisma.OrdenWhereInput | null =
+    numero !== null && staff ? { numero } : null;
   const suscripcionWhere: Prisma.SuscripcionWhereInput | null = porNumero
     ? {
         numero,
@@ -198,16 +196,12 @@ export async function globalSearch(
       }
     : null;
 
-  // ── Informes (staff + sector-scoped personal_admin) ──
+  // ── Informes (solo staff: el admin de sector no los ve) ──
   let informeWhere: Prisma.InformeWhereInput | null = null;
-  if (staff || personalAdmin) {
-    const sector = personalAdmin
-      ? { cliente: { sectorId: { in: sectorIds } } }
-      : {};
+  if (staff) {
     informeWhere = soloNumero
-      ? { ...sector, numero: numero! }
+      ? { numero: numero! }
       : {
-          ...sector,
           OR: [
             ...(numero !== null ? [{ numero }] : []),
             { titulo: { contains: term, ...insensitive } },

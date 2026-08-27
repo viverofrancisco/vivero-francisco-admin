@@ -44,7 +44,8 @@ interface SuscripcionRow {
   estado: string;
   periodicidad: string;
   fechaInicio: string;
-  totalPeriodo: number;
+  /** Lo que se cobra por período. Ausente para quien no ve precios. */
+  totalPeriodo?: number;
   cliente: {
     id: string;
     nombre: string;
@@ -53,13 +54,16 @@ interface SuscripcionRow {
   };
   items: {
     id: string;
-    precio: number;
-    ivaTasa: number;
+    precio?: number;
+    ivaTasa?: number;
     visitasPorPeriodo: number | null;
     producto: { id: string; nombre: string };
   }[];
-  /** Períodos vencidos que todavía no tienen orden. Con el cron sano, 0. */
-  periodosPendientes: number;
+  /**
+   * Períodos vencidos que todavía no tienen orden. Con el cron sano, 0.
+   * Ausente para quien no ve precios: es un pendiente de facturación.
+   */
+  periodosPendientes?: number;
 }
 
 const ESTADOS = ["ACTIVO", "PAUSADO", "CANCELADO"] as const;
@@ -67,10 +71,17 @@ const ESTADOS = ["ACTIVO", "PAUSADO", "CANCELADO"] as const;
 export function SuscripcionesTable({
   suscripciones,
   soloPendientes = false,
+  verPrecios = true,
 }: {
   suscripciones: SuscripcionRow[];
   /** Se llega así desde el aviso de "Por facturar". */
   soloPendientes?: boolean;
+  /**
+   * Si se muestran precios y todo lo que cuelga de ellos: el total del
+   * período, el equivalente mensual y los avisos de facturación. Un admin de
+   * sector ve la suscripción para agendar, no para cobrar.
+   */
+  verPrecios?: boolean;
 }) {
   const router = useRouter();
   const [query, setQuery] = useFiltroUrl("q", "");
@@ -94,7 +105,7 @@ export function SuscripcionesTable({
 
   /** Cuántas suscripciones esperan que se les cree la orden del período. */
   const conPendientes = suscripciones.filter(
-    (s) => s.periodosPendientes > 0
+    (s) => (s.periodosPendientes ?? 0) > 0
   ).length;
 
   /**
@@ -128,7 +139,7 @@ export function SuscripcionesTable({
 
   const filtradas = useMemo(() => {
     let r = suscripciones;
-    if (pendientes) r = r.filter((s) => s.periodosPendientes > 0);
+    if (pendientes) r = r.filter((s) => (s.periodosPendientes ?? 0) > 0);
     if (estado) r = r.filter((s) => s.estado === estado);
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -153,7 +164,7 @@ export function SuscripcionesTable({
     return filtradas
       .filter((s) => s.estado === "ACTIVO")
       .reduce(
-        (acc, s) => acc + s.totalPeriodo / (meses[s.periodicidad] ?? 1),
+        (acc, s) => acc + (s.totalPeriodo ?? 0) / (meses[s.periodicidad] ?? 1),
         0,
       );
   }, [filtradas]);
@@ -233,7 +244,7 @@ export function SuscripcionesTable({
                 nada solo ocupa lugar. Se muestra igual si está prendido, para
                 poder apagarlo en vez de quedar con una lista vacía sin
                 explicación. */}
-            {(conPendientes > 0 || pendientes) && (
+            {verPrecios && (conPendientes > 0 || pendientes) && (
               <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2.5">
                 <Checkbox
                   checked={pendientes}
@@ -259,7 +270,7 @@ export function SuscripcionesTable({
             </Button>
           </PopoverContent>
         </Popover>
-        {(conPendientes > 0 || pendientes) && (
+        {verPrecios && (conPendientes > 0 || pendientes) && (
           <Button
             variant="outline"
             size="sm"
@@ -274,7 +285,7 @@ export function SuscripcionesTable({
             Generar órdenes
           </Button>
         )}
-        {mensualizado > 0 && (
+        {verPrecios && mensualizado > 0 && (
           <span className="ml-auto text-sm text-muted-foreground">
             Equivalente mensual:{" "}
             <span className="font-semibold text-foreground tabular-nums">
@@ -295,21 +306,30 @@ export function SuscripcionesTable({
                   <TableHead className="w-20">N.º</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Productos</TableHead>
-                  <TableHead className="text-right">Precio</TableHead>
+                  {verPrecios && (
+                    <TableHead className="text-right">Precio</TableHead>
+                  )}
                   <TableHead>Período</TableHead>
                   <TableHead>Desde</TableHead>
                   <TableHead className="text-right">Estado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {/* La ficha es una pantalla de precios y órdenes, así que
+                    para quien no los ve la fila no lleva a ningún lado: lo que
+                    necesita para agendar —qué tiene contratado cada cliente—
+                    está en esta misma tabla. */}
                 {paginadas.map((s) => (
                   <TableRow
                     key={s.id}
-                    className="cursor-pointer"
-                    onClick={() =>
-                      router.push(
-                        `/dashboard/suscripciones/${s.id}?from=${aca()}`,
-                      )
+                    className={verPrecios ? "cursor-pointer" : undefined}
+                    onClick={
+                      verPrecios
+                        ? () =>
+                            router.push(
+                              `/dashboard/suscripciones/${s.id}?from=${aca()}`,
+                            )
+                        : undefined
                     }
                   >
                     <TableCell className="font-bold tabular-nums">
@@ -323,19 +343,23 @@ export function SuscripcionesTable({
                         {s.items.map((i) => (
                           <span key={i.id} className="truncate">
                             {i.producto.nombre}
-                            <span className="ml-2 text-xs tabular-nums">
-                              {money(i.precio)}
-                              {i.ivaTasa > 0 && ` +${i.ivaTasa}%`}
-                            </span>
+                            {verPrecios && (
+                              <span className="ml-2 text-xs tabular-nums">
+                                {money(i.precio ?? 0)}
+                                {(i.ivaTasa ?? 0) > 0 && ` +${i.ivaTasa}%`}
+                              </span>
+                            )}
                           </span>
                         ))}
                       </div>
                     </TableCell>
                     {/* Sin el sufijo: la columna de al lado dice el período,
                         y repetirlo en cada fila era leer dos veces lo mismo. */}
-                    <TableCell className="text-right font-semibold tabular-nums">
-                      {money(s.totalPeriodo)}
-                    </TableCell>
+                    {verPrecios && (
+                      <TableCell className="text-right font-semibold tabular-nums">
+                        {money(s.totalPeriodo ?? 0)}
+                      </TableCell>
+                    )}
                     <TableCell className="text-muted-foreground">
                       {PERIODICIDAD_LABEL[s.periodicidad]}
                     </TableCell>

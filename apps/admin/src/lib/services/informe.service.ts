@@ -25,8 +25,16 @@ import type {
   InformeRenderSeccion,
 } from "@/lib/informes/template-data";
 
-function ensureInformeWriter(viewer: Viewer): void {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+/**
+ * Informes: solo ADMIN y STAFF, para leerlos y para armarlos.
+ *
+ * Un `PERSONAL_ADMIN` lleva el trabajo de campo de sus sectores —sus clientes,
+ * sus visitas, sus mensajes— y no arma ni reparte los informes que se le
+ * entregan al cliente. Antes entraba con el alcance de sus sectores; el corte
+ * no es "de quién es el cliente" sino "esto sale de la oficina".
+ */
+function ensureInformes(viewer: Viewer): void {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
 }
@@ -45,7 +53,9 @@ export async function listInformes(
     offset?: number;
   } = {}
 ) {
-  // PERSONAL_ADMIN: solo informes cuyos clientes están en sus sectores.
+  // Listar también es ver: sin esta línea el corte quedaba solo en escribir.
+  ensureInformes(viewer);
+
   const where: Record<string, unknown> = {};
   if (options.clienteId) where.clienteId = options.clienteId;
   if (options.from || options.to) {
@@ -59,14 +69,7 @@ export async function listInformes(
     }
     where.generatedAt = range;
   }
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectorAdmins = await prisma.sectorAdmin.findMany({
-      where: { userId: viewer.id },
-      select: { sectorId: true },
-    });
-    const sectorIds = sectorAdmins.map((s) => s.sectorId);
-    where.cliente = { sectorId: { in: sectorIds } };
-  }
+
 
   const limit = Math.min(Math.max(options.limit ?? 30, 1), 100);
   const offset = Math.max(0, options.offset ?? 0);
@@ -103,7 +106,7 @@ export async function listVisitasParaInforme(
   clienteId: string,
   options: { from?: Date; to?: Date } = {}
 ) {
-  ensureInformeWriter(viewer);
+  ensureInformes(viewer);
   // Authorization piggybacks on viewer being able to see at least one visita
   // of this cliente; we apply the same `clienteId` filter and let the DB
   // do the rest. PERSONAL_ADMIN: also filter by sector match.
@@ -118,14 +121,7 @@ export async function listVisitasParaInforme(
     if (options.to) range.lte = options.to;
     where.fechaProgramada = range;
   }
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectorAdmins = await prisma.sectorAdmin.findMany({
-      where: { userId: viewer.id },
-      select: { sectorId: true },
-    });
-    const sectorIds = sectorAdmins.map((s) => s.sectorId);
-    where.cliente = { sectorId: { in: sectorIds } };
-  }
+
 
   const visitas = await prisma.visita.findMany({
     where,
@@ -180,7 +176,7 @@ export async function listServiciosParaInforme(
   viewer: Viewer,
   visitaIds: string[]
 ): Promise<ServicioParaSeccion[]> {
-  ensureInformeWriter(viewer);
+  ensureInformes(viewer);
   if (visitaIds.length === 0) return [];
   // Verifica que el viewer pueda ver cada visita.
   await Promise.all(visitaIds.map((id) => getVisitaForViewer(id, viewer)));
@@ -236,7 +232,7 @@ export async function getMediaPoolDeVisitas(
   viewer: Viewer,
   visitaIds: string[]
 ) {
-  ensureInformeWriter(viewer);
+  ensureInformes(viewer);
   if (visitaIds.length === 0) return [];
   // Verify viewer can see each visita.
   await Promise.all(
@@ -284,7 +280,7 @@ export async function requestInformeUploadUrls(
   clienteId: string,
   files: Array<{ fileName: string; contentType: string }>
 ): Promise<InformeUploadDescriptor[]> {
-  ensureInformeWriter(viewer);
+  ensureInformes(viewer);
   if (files.length === 0) return [];
 
   const invalido = files.find((f) => !f.contentType.startsWith("image/"));
@@ -368,7 +364,7 @@ export async function generateInforme(
   viewer: Viewer,
   payload: InformeGeneratePayload
 ) {
-  ensureInformeWriter(viewer);
+  ensureInformes(viewer);
 
   if (payload.visitaIds.length === 0) {
     throw new ValidationError("Selecciona al menos una visita.");
@@ -654,27 +650,12 @@ export async function getInforme(viewer: Viewer, id: string) {
     },
   });
   if (!informe) throw new NotFoundError();
-  // PERSONAL_ADMIN may only read informes whose cliente is in their sectors.
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectorAdmins = await prisma.sectorAdmin.findMany({
-      where: { userId: viewer.id },
-      select: { sectorId: true },
-    });
-    const sectorIds = sectorAdmins.map((s) => s.sectorId);
-    if (
-      !informe.cliente.sectorId ||
-      !sectorIds.includes(informe.cliente.sectorId)
-    ) {
-      throw new ForbiddenError();
-    }
-  } else if (!isAdminRole(viewer.role)) {
-    throw new ForbiddenError();
-  }
+  if (!isAdminRole(viewer.role)) throw new ForbiddenError();
   return informe;
 }
 
 export async function deleteInforme(viewer: Viewer, id: string) {
-  ensureInformeWriter(viewer);
+  ensureInformes(viewer);
 
   /**
    * Qué archivos son de este informe y de nadie más.

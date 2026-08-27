@@ -1,4 +1,4 @@
-import { viewerFromSession } from "@/lib/auth-helpers";
+import { viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { listarOrdenes } from "@/lib/services/orden.service";
 import { OrdenesTable } from "@/components/ordenes/ordenes-table";
 
@@ -7,6 +7,7 @@ export default async function OrdenesPage({
 }: {
   searchParams: Promise<{ cliente?: string }>;
 }) {
+  await requireStaff();
   const viewer = await viewerFromSession();
   const { cliente } = await searchParams;
   // Los borradores tienen su propia página: acá va lo que ya se decidió cobrar.

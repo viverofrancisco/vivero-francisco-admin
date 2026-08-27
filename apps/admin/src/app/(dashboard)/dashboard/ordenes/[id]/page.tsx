@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getUserSectorIds, viewerFromSession } from "@/lib/auth-helpers";
+import { getUserSectorIds, viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { getOrden } from "@/lib/services/orden.service";
 import { NotFoundError } from "@/lib/services/errors";
 import { OrdenDetail } from "@/components/ordenes/orden-detail";
@@ -12,6 +12,7 @@ export default async function OrdenRoute({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
+  await requireStaff();
   const viewer = await viewerFromSession();
   const { id } = await params;
   const { from } = await searchParams;

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { nombreCliente } from "@vivero/shared";
-import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
+import { requireAuth, viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { getInforme } from "@/lib/services/informe.service";
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { InformeDetail } from "@/components/informes/informe-detail";
@@ -12,6 +12,7 @@ export default async function InformeDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
+  await requireStaff();
   await requireAuth();
   const viewer = await viewerFromSession();
   const { id } = await params;

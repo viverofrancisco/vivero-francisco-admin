@@ -41,6 +41,22 @@ export async function requireAdmin() {
   return user;
 }
 
+/**
+ * Solo el personal de oficina: ADMIN y STAFF.
+ *
+ * Es el corte de "esto es plata o es un documento que se le entrega al
+ * cliente" —órdenes, facturas, informes—. Un `PERSONAL_ADMIN` lleva el trabajo
+ * de campo de sus sectores: sus clientes, sus visitas y sus mensajes, y nada
+ * de lo que se factura.
+ */
+export async function requireStaff() {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN" && user.role !== "STAFF") {
+    redirect("/dashboard");
+  }
+  return user;
+}
+
 export async function requireRole(...roles: UserRole[]) {
   const user = await requireAuth();
   if (!roles.includes(user.role)) {

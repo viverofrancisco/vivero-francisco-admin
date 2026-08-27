@@ -67,7 +67,7 @@ const mainItems: NavItem[] = [
     label: "Informes",
     href: "/dashboard/informes",
     icon: FileText,
-    roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
+    roles: ["ADMIN", "STAFF"],
     children: [
       { label: "Generar nuevo", href: "/dashboard/informes/nuevo" },
       { label: "Firmantes", href: "/dashboard/configuracion/firmantes" },
@@ -83,7 +83,7 @@ const mainItems: NavItem[] = [
     label: "Órdenes",
     href: "/dashboard/ordenes",
     icon: Receipt,
-    roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
+    roles: ["ADMIN", "STAFF"],
     children: [
       { label: "Borradores", href: "/dashboard/ordenes/borradores" },
       { label: "Por cobrar", href: "/dashboard/ordenes/por-cobrar" },

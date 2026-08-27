@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-helpers";
+import { requireAuth, requireStaff } from "@/lib/auth-helpers";
 import { listDefaultFirmantes } from "@/lib/services/firmante.service";
 import { InformeWizard } from "@/components/informes/informe-wizard";
 
 export default async function NuevoInformePage() {
+  await requireStaff();
   await requireAuth();
   const defaults = await listDefaultFirmantes();
   // Todo el catálogo activo: una sección puede ser de algo que no se hizo en

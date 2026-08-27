@@ -1,5 +1,5 @@
 import { nombreCliente } from "@vivero/shared";
-import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
+import { requireAuth, viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { listInformes } from "@/lib/services/informe.service";
 import { listClientes } from "@/lib/services/cliente.service";
 import { PageHeader } from "@/components/shared/page-header";
@@ -26,6 +26,7 @@ export default async function InformesPage({
     page?: string;
   }>;
 }) {
+  await requireStaff();
   await requireAuth();
   const viewer = await viewerFromSession();
   const params = await searchParams;

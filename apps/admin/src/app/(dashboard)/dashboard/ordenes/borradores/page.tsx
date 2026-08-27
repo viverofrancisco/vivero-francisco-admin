@@ -1,8 +1,9 @@
-import { viewerFromSession } from "@/lib/auth-helpers";
+import { viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { listarOrdenes } from "@/lib/services/orden.service";
 import { BorradoresTable } from "@/components/ordenes/borradores-table";
 
 export default async function BorradoresPage() {
+  await requireStaff();
   const viewer = await viewerFromSession();
   const { items } = await listarOrdenes(viewer, {
     limit: 100,

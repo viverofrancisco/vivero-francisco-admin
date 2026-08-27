@@ -39,13 +39,21 @@ import {
 } from "@/lib/contifico/documentos";
 
 function ensureCanRead(viewer: Viewer): void {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
 }
 
+/**
+ * Plata: solo ADMIN y STAFF.
+ *
+ * Un `PERSONAL_ADMIN` lleva el trabajo de campo de sus sectores —sus clientes,
+ * sus visitas, sus mensajes— y no ve lo que se cobra. Antes entraba con el
+ * alcance de sus sectores; el corte no es "de quién es el cliente" sino "esto
+ * es dinero".
+ */
 function ensureCanWrite(viewer: Viewer): void {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
 }

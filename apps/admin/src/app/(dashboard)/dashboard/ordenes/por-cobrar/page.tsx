@@ -1,4 +1,4 @@
-import { viewerFromSession } from "@/lib/auth-helpers";
+import { viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import {
   borradoresSinConfirmar,
   listarOrdenesPorCobrar,
@@ -6,6 +6,7 @@ import {
 import { PorCobrarPage } from "@/components/ordenes/por-cobrar-page";
 
 export default async function PorCobrarRoute() {
+  await requireStaff();
   const viewer = await viewerFromSession();
   const [ordenes, borradores] = await Promise.all([
     listarOrdenesPorCobrar(viewer),

@@ -110,7 +110,9 @@ The admin app has **two parallel auth mechanisms**, and which API namespace you 
 
 2. **Mobile** (`/api/mobile/*`): **custom JWT** (`jose`) with separate access/refresh secrets (`MOBILE_ACCESS_SECRET`, `MOBILE_REFRESH_SECRET`), see `src/lib/mobile/jwt.ts`. Personnel log in with email/password; **clients log in with phone-or-email + a self-set password** delivered via an invite link (see [.claude/docs/autenticacion-clientes.md](./.claude/docs/autenticacion-clientes.md) — the old WhatsApp OTP login is gone). Guard mobile routes with `requireMobileUser` / `requireMobileRole` + the `isMobileUser` type guard from `src/lib/mobile/auth.ts` (these return either a `MobileUser` or a `NextResponse`, so always narrow before use).
 
-Roles (`UserRole` enum): `ADMIN`, `STAFF`, `PERSONAL_ADMIN`, `PERSONAL`, `CLIENTE`. `PERSONAL` is read-only field staff; `PERSONAL_ADMIN` is a lead with write access.
+Roles (`UserRole` enum): `ADMIN`, `STAFF`, `PERSONAL_ADMIN`, `PERSONAL`, `CLIENTE`. `PERSONAL` is read-only field staff; `PERSONAL_ADMIN` is a lead with write access **over the sectors they administer** (`SectorAdmin`).
+
+**A `PERSONAL_ADMIN` sees no money.** The line isn't "whose client is this" but "does this leave the office": órdenes, facturas and informes are `ADMIN`/`STAFF` only, enforced in `orden.service`, `factura.service` and `informe.service` themselves (`ensureCanRead` / `ensureInformes`), so it holds for pages, API routes and the global search alike — plus `requireStaff()` on the pages so they get a redirect instead of a crash. They **do** see their clients' subscriptions, because that's what says which plan a visit belongs to when scheduling — but **without prices**: `precio`, `ivaTasa` and the period total are left out on the server, not hidden with CSS, and the subscription's own page is closed to them because it is a pricing screen. Same on a cliente's page: no órdenes card, no billing identity, no prices on their plans. Everything else — clientes, visitas, mensajes — is scoped to their sectors, and that scoping lives in each service.
 
 ## Service layer & the Viewer pattern
 

@@ -1,9 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import {
-  requireAuth,
-  getUserSectorIds,
-  viewerFromUser,
-} from "@/lib/auth-helpers";
+import { requireAuth, getUserSectorIds, viewerFromUser, requireStaff } from "@/lib/auth-helpers";
 import {
   listarPendientes,
   VISITAS_SIN_TOPE,
@@ -16,6 +12,7 @@ export default async function NuevaOrdenRoute({
 }: {
   searchParams: Promise<{ cliente?: string; visita?: string }>;
 }) {
+  await requireStaff();
   const { cliente: clienteInicial, visita } = await searchParams;
   const user = await requireAuth();
   const viewer = viewerFromUser(user);

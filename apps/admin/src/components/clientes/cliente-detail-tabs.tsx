@@ -66,8 +66,8 @@ interface Asignacion {
   id: string;
   suscripcionId: string;
   productoId: string;
-  precio: number;
-  ivaTasa: number;
+  precio?: number;
+  ivaTasa?: number;
   visitasPorPeriodo: number | null;
   estado: string;
   periodicidad: string;
@@ -111,6 +111,11 @@ interface ClienteDetailTabsProps {
   asignaciones: Asignacion[];
   datosFacturacion: DatoFacturacion[];
   ordenes: OrdenResumen[];
+  /**
+   * Si se muestran órdenes, precios y datos de facturación. Un admin de sector
+   * ve la ficha para trabajar el jardín, no para cobrarlo.
+   */
+  verPlata?: boolean;
   visitas: VisitaRow[];
   /** A dónde vuelve el botón "atrás" (depende de dónde se llegó). */
   backHref?: string;
@@ -150,6 +155,7 @@ export function ClienteDetailTabs({
   asignaciones,
   datosFacturacion,
   ordenes,
+  verPlata = true,
   visitas,
   backHref = "/dashboard/clientes",
 }: ClienteDetailTabsProps) {
@@ -232,7 +238,7 @@ export function ClienteDetailTabs({
           total: 0,
         };
         grupo.items.push(a);
-        grupo.total += a.precio;
+        grupo.total += a.precio ?? 0;
         mapa.set(a.suscripcionId, grupo);
         return mapa;
       }, new Map<string, {
@@ -327,6 +333,7 @@ export function ClienteDetailTabs({
         onEditDone={() => setCardsEditing(false)}
         actividadContent={<>            {/* Órdenes primero: es lo que se factura, y lo que más se
                 consulta al entrar a un cliente. */}
+            {verPlata && (
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Órdenes</CardTitle>
@@ -385,6 +392,7 @@ export function ClienteDetailTabs({
                 )}
               </CardContent>
             </Card>
+            )}
 
             {/* Services Card */}
             <Card>
@@ -450,7 +458,7 @@ export function ClienteDetailTabs({
                                 {a.producto.nombre}
                               </p>
                               <p className="flex-none text-xs font-semibold text-muted-foreground tabular-nums">
-                                {formatPrice(a.precio)}
+                                {verPlata ? formatPrice(a.precio ?? 0) : ""}
                                 {a.visitasPorPeriodo
                                   ? ` · ${a.visitasPorPeriodo}${PERIODICIDAD_SUFIJO[sus.periodicidad] ?? ""}`
                                   : ""}
@@ -534,10 +542,12 @@ export function ClienteDetailTabs({
               </CardContent>
             </Card>
 
-            <DatosFacturacionCard
-              clienteId={cliente.id}
-              datos={datosFacturacion}
-            />
+            {verPlata && (
+              <DatosFacturacionCard
+                clienteId={cliente.id}
+                datos={datosFacturacion}
+              />
+            )}
 </>}
         rightColumnContent={
           <>

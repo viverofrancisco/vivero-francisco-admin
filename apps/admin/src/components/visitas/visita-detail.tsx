@@ -92,6 +92,11 @@ export function VisitaDetail({
 
   const isProgramada = visita.estado === "PROGRAMADA";
   const canModify = userRole !== "PERSONAL";
+  /**
+   * Las órdenes de la visita son plata: solo la oficina. Un admin de sector
+   * agenda y cierra la visita; lo que se cobra por ella no es asunto suyo.
+   */
+  const vePlata = userRole === "ADMIN" || userRole === "STAFF";
 
   /**
    * Qué falta cobrar de esta visita.
@@ -293,7 +298,7 @@ export function VisitaDetail({
         {/* Solo si hay trabajo suelto. Con todo cubierto por un plan no va a
             haber ninguna orden nunca —se cobra el período, no la visita— y una
             tarjeta vacía sugiere que falta algo por hacer. */}
-        {hayTrabajoSuelto && (
+        {vePlata && hayTrabajoSuelto && (
         <Card>
           <CardHeader className="border-b py-3">
             <CardTitle className="text-base">Órdenes</CardTitle>

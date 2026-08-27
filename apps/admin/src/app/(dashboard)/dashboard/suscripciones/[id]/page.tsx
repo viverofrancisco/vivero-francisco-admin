@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { viewerFromSession } from "@/lib/auth-helpers";
+import { requireStaff, viewerFromUser } from "@/lib/auth-helpers";
 import {
   getSuscripcion,
   ordenesDeSuscripcion,
@@ -15,7 +15,10 @@ export default async function SuscripcionRoute({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
-  const viewer = await viewerFromSession();
+  // La ficha muestra precios, totales y las órdenes del plan, y desde acá se
+  // editan: es una pantalla de facturación. Un admin de sector ve la lista
+  // para saber qué tiene contratado cada cliente, y hasta ahí.
+  const viewer = viewerFromUser(await requireStaff());
   const { id } = await params;
   const { from } = await searchParams;
   // Solo rutas internas del dashboard: evita un open redirect.
