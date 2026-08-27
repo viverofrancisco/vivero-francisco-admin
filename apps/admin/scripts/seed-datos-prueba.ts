@@ -215,7 +215,13 @@ async function main() {
   const m = vacio(host);
   const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
   if (!admin) throw new Error("No hay usuario ADMIN. Corré `npx tsx prisma/seed.ts` primero.");
-  const viewer = { id: admin.id, role: "ADMIN" as const, personalId: null, clienteId: null };
+  const viewer = {
+    id: admin.id,
+    role: "ADMIN" as const,
+    personalId: null,
+    clienteId: null,
+    nombre: admin.name ?? "Datos de prueba",
+  };
 
   try {
     await sembrar(prisma, viewer, m, sinContifico);

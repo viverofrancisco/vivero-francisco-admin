@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
+import { getCurrentUser, isReadOnly, viewerFromUser } from "@/lib/auth-helpers";
 import { completarVisitaSchema } from "@/lib/validations/visita";
 import {
   cancelVisita,
@@ -10,7 +10,6 @@ import {
   ServiceError,
   httpStatusForServiceError,
 } from "@/lib/services/errors";
-import type { Viewer } from "@/lib/services/viewer";
 
 export async function POST(
   request: Request,
@@ -37,12 +36,7 @@ export async function POST(
   }
 
   const data = result.data;
-  const viewer: Viewer = {
-    id: user.id,
-    role: user.role,
-    personalId: user.personalId ?? null,
-    clienteId: null,
-  };
+  const viewer = viewerFromUser(user);
   const fechaRealizada = new Date(data.fechaRealizada);
   const horaEntrada = data.horaEntrada || null;
   const horaSalida = data.horaSalida || null;

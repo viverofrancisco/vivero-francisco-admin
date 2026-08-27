@@ -47,10 +47,11 @@ interface VisitaDetailData {
   fechaRealizada: string | null;
   /** Cuándo se la marcó como completada, en ISO. */
   completadaEl?: string | null;
-  completadaPor?: { name: string | null; apellido: string | null } | null;
+  /** Cómo se llamaba quien la completó, guardado en ese momento. */
+  completadaPorNombre?: string | null;
   /** Última modificación, sea del tipo que sea. */
   actualizadaEl?: string | null;
-  actualizadaPor?: { name: string | null; apellido: string | null } | null;
+  actualizadaPorNombre?: string | null;
   horaEntrada: string | null;
   horaSalida: string | null;
   estado: string;
@@ -451,9 +452,9 @@ export function VisitaDetail({
               {visita.completadaEl && (
                 <Fila etiqueta="Completada">
                   <span className="block">{momento(visita.completadaEl)}</span>
-                  {nombreDe(visita.completadaPor) && (
+                  {visita.completadaPorNombre && (
                     <span className="block text-xs text-muted-foreground">
-                      por {nombreDe(visita.completadaPor)}
+                      por {visita.completadaPorNombre}
                     </span>
                   )}
                 </Fila>
@@ -461,9 +462,9 @@ export function VisitaDetail({
               {visita.actualizadaEl && (
                 <Fila etiqueta="Última edición">
                   <span className="block">{momento(visita.actualizadaEl)}</span>
-                  {nombreDe(visita.actualizadaPor) && (
+                  {visita.actualizadaPorNombre && (
                     <span className="block text-xs text-muted-foreground">
-                      por {nombreDe(visita.actualizadaPor)}
+                      por {visita.actualizadaPorNombre}
                     </span>
                   )}
                 </Fila>
@@ -572,14 +573,6 @@ function momento(iso: string): string {
     hour: "numeric",
     minute: "2-digit",
   });
-}
-
-/** El nombre de quien hizo algo, o null si el usuario ya no existe. */
-function nombreDe(
-  u: { name: string | null; apellido: string | null } | null | undefined
-): string | null {
-  if (!u) return null;
-  return [u.name, u.apellido].filter(Boolean).join(" ") || null;
 }
 
 function duracion(entrada: string | null, salida: string | null): string | null {

@@ -9,6 +9,7 @@ export function viewerFromMobileUser(user: MobileUser): Viewer {
     role: user.role,
     personalId: user.personalId,
     clienteId: user.clienteId,
+    nombre: [user.name, user.apellido].filter(Boolean).join(" ") || null,
   };
 }
 

@@ -101,12 +101,15 @@ export function viewerFromUser(user: {
   id: string;
   role: UserRole;
   personalId?: string | null;
+  name?: string | null;
+  apellido?: string | null;
 }): Viewer {
   return {
     id: user.id,
     role: user.role,
     personalId: user.personalId ?? null,
     clienteId: null, // web admin users are never CLIENTE
+    nombre: [user.name, user.apellido].filter(Boolean).join(" ") || null,
   };
 }
 

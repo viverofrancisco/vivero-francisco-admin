@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
+import { getCurrentUser, isReadOnly, viewerFromUser } from "@/lib/auth-helpers";
 import { crearVisitasSchema } from "@/lib/validations/visita";
 import {
   createVisitasBatch,
@@ -9,17 +9,9 @@ import {
   ServiceError,
   httpStatusForServiceError,
 } from "@/lib/services/errors";
-import type { Viewer } from "@/lib/services/viewer";
 import type { EstadoVisita } from "@/generated/prisma/client";
 
-function viewerFromSession(user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>): Viewer {
-  return {
-    id: user.id,
-    role: user.role,
-    personalId: user.personalId ?? null,
-    clienteId: null,
-  };
-}
+const viewerFromSession = viewerFromUser;
 
 export async function GET(request: Request) {
   const user = await getCurrentUser();

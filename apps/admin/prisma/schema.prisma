@@ -401,6 +401,13 @@ model Visita {
   deletedAt       DateTime?
   createdById     String?
   updatedById     String?
+  /// El nombre de quien la tocó al final, tal como se llamaba entonces.
+  ///
+  /// Junto al id y no en su lugar: el id sirve para filtrar por persona, pero
+  /// se queda sin dueño si la cuenta se elimina, y si alguien se cambia el
+  /// apellido no corresponde reescribir lo que ya pasó. El texto es lo que se
+  /// muestra; el id, lo que se consulta.
+  updatedByNombre String?
   /// Cuándo se cerró como completada, y quién apretó el botón.
   ///
   /// No es `fechaRealizada`: esa es el **día en que se hizo el trabajo**, la
@@ -413,8 +420,11 @@ model Visita {
   ///
   /// Se ponen al pasar a COMPLETADA y se limpian si sale de ese estado: si la
   /// visita ya no está completada, no hay nadie que la haya completado.
-  completadaEl    DateTime?
-  completadaPorId String?
+  completadaEl        DateTime?
+  completadaPorId     String?
+  /// El nombre de quien la completó, congelado en ese momento. Ver
+  /// `updatedByNombre`: mismo motivo.
+  completadaPorNombre String?
 
   cliente        Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   productos      VisitaProducto[]

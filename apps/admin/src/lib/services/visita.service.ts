@@ -181,10 +181,6 @@ const VISITA_DETAIL_INCLUDE = {
   },
   grupo: { select: { id: true, nombre: true } },
   media: { orderBy: { createdAt: "asc" } },
-  // Quién la cerró y quién la tocó al final. Solo el nombre: la ficha lo
-  // muestra, no necesita el correo ni el rol.
-  completadaPor: { select: { id: true, name: true, apellido: true } },
-  updatedBy: { select: { id: true, name: true, apellido: true } },
 } as const;
 
 async function ensureViewerCanSeeVisita(
@@ -377,15 +373,24 @@ async function transitionToTerminal(
         notas: patch.notas ?? visita.notas,
         notasIncompleto: patch.notasIncompleto ?? null,
         updatedById: viewer.id,
+        updatedByNombre: viewer.nombre,
         // Quién la completó se sella **en la transición**, no en cada guardado:
         // volver a abrir el formulario para corregir una hora no convierte a
         // quien corrige en quien la completó. Y si sale de COMPLETADA se
         // limpia, porque ya no hay nadie que la haya completado.
         ...(estado === "COMPLETADA"
           ? stateChanged
-            ? { completadaEl: new Date(), completadaPorId: viewer.id }
+            ? {
+                completadaEl: new Date(),
+                completadaPorId: viewer.id,
+                completadaPorNombre: viewer.nombre,
+              }
             : {}
-          : { completadaEl: null, completadaPorId: null }),
+          : {
+              completadaEl: null,
+              completadaPorId: null,
+              completadaPorNombre: null,
+            }),
       },
     });
 
@@ -872,6 +877,7 @@ export async function createVisitasBatch(
         notas: payload.notas || null,
         createdById: viewer.id,
         updatedById: viewer.id,
+        updatedByNombre: viewer.nombre,
       })),
     });
 
@@ -950,7 +956,7 @@ export async function updateVisitaPersonal(
     ),
     prisma.visita.update({
       where: { id: visitaId },
-      data: { updatedById: viewer.id },
+      data: { updatedById: viewer.id, updatedByNombre: viewer.nombre },
     }),
   ]);
 }
@@ -1169,6 +1175,7 @@ export async function updateVisitaInfo(
           : {}),
         ...(payload.notas !== undefined ? { notas: payload.notas } : {}),
         updatedById: viewer.id,
+        updatedByNombre: viewer.nombre,
       },
     });
   });
@@ -1200,7 +1207,11 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
   try {
     await prisma.visita.update({
       where: { id: visitaId },
-      data: { deletedAt: new Date(), updatedById: viewer.id },
+      data: {
+        deletedAt: new Date(),
+        updatedById: viewer.id,
+        updatedByNombre: viewer.nombre,
+      },
     });
   } catch {
     throw new NotFoundError("Visita no encontrada");
