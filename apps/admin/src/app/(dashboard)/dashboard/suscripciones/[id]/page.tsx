@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { requireStaff, viewerFromUser } from "@/lib/auth-helpers";
+import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
+import { isAdminRole } from "@/lib/services/viewer";
 import {
   getSuscripcion,
   ordenesDeSuscripcion,
@@ -15,11 +16,17 @@ export default async function SuscripcionRoute({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
-  // La ficha muestra precios, totales y las órdenes del plan, y desde acá se
-  // editan: es una pantalla de facturación. Un admin de sector ve la lista
-  // para saber qué tiene contratado cada cliente, y hasta ahí.
-  const viewer = viewerFromUser(await requireStaff());
+  const user = await requireAuth();
+  const viewer = viewerFromUser(user);
   const { id } = await params;
+
+  /**
+   * Un admin de sector entra a ver de qué se trata el plan —qué cubre y
+   * cuántas visitas por período— porque es lo que necesita para agendar. No ve
+   * precios ni órdenes, y no puede cambiar nada: el plan es un acuerdo
+   * comercial y se toca desde la oficina.
+   */
+  const soloLectura = !isAdminRole(user.role);
   const { from } = await searchParams;
   // Solo rutas internas del dashboard: evita un open redirect.
   const backHref =
@@ -37,13 +44,15 @@ export default async function SuscripcionRoute({
   // líneas que citan alguno de sus ítems, y a las visitas por los
   // `VisitaProducto` marcados como cubiertos por esos mismos ítems.
   const [ordenes, visitas] = await Promise.all([
-    ordenesDeSuscripcion(viewer, id),
+    // `ordenesDeSuscripcion` rechaza a quien no ve plata, así que ni se pide.
+    soloLectura ? Promise.resolve([]) : ordenesDeSuscripcion(viewer, id),
     visitasDeSuscripcion(viewer, id),
   ]);
 
   return (
     <div className="p-4 md:p-6">
       <SuscripcionDetail
+        soloLectura={soloLectura}
         backHref={backHref}
         visitas={visitas.map((v) => ({
           id: v.id,
@@ -76,8 +85,9 @@ export default async function SuscripcionRoute({
             id: i.id,
             productoId: i.productoId,
             nombre: i.producto.nombre,
-            precio: Number(i.precio),
-            ivaTasa: Number(i.ivaTasa),
+            // Los precios no salen del servidor para quien no los ve.
+            precio: soloLectura ? 0 : Number(i.precio),
+            ivaTasa: soloLectura ? 0 : Number(i.ivaTasa),
             visitasPorPeriodo: i.visitasPorPeriodo,
           })),
         }}

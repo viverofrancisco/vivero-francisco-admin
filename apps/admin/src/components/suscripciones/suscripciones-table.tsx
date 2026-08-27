@@ -315,21 +315,14 @@ export function SuscripcionesTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* La ficha es una pantalla de precios y órdenes, así que
-                    para quien no los ve la fila no lleva a ningún lado: lo que
-                    necesita para agendar —qué tiene contratado cada cliente—
-                    está en esta misma tabla. */}
                 {paginadas.map((s) => (
                   <TableRow
                     key={s.id}
-                    className={verPrecios ? "cursor-pointer" : undefined}
-                    onClick={
-                      verPrecios
-                        ? () =>
-                            router.push(
-                              `/dashboard/suscripciones/${s.id}?from=${aca()}`,
-                            )
-                        : undefined
+                    className="cursor-pointer"
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/suscripciones/${s.id}?from=${aca()}`,
+                      )
                     }
                   >
                     <TableCell className="font-bold tabular-nums">

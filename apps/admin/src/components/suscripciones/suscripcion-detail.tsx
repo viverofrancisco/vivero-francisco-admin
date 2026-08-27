@@ -77,6 +77,7 @@ export function SuscripcionDetail({
   backHref,
   ordenes,
   visitas,
+  soloLectura = false,
 }: {
   suscripcion: SuscripcionData;
   /** Las que salieron de los períodos de esta suscripción. */
@@ -104,6 +105,12 @@ export function SuscripcionDetail({
   }[];
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref: string;
+  /**
+   * Un admin de sector entra a ver de qué se trata el plan —qué productos
+   * cubre y cuántas visitas por período— para agendar. No ve precios ni
+   * órdenes, y no puede cambiar nada.
+   */
+  soloLectura?: boolean;
 }) {
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
@@ -275,14 +282,16 @@ export function SuscripcionDetail({
           <Card className="overflow-visible">
             <CardHeader className="border-b">
               <CardTitle className="text-base">Productos</CardTitle>
-              <CardAction>
-                <span className="text-sm font-semibold tabular-nums">
-                  {money(totalPeriodo)}
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {sufijo}
+              {!soloLectura && (
+                <CardAction>
+                  <span className="text-sm font-semibold tabular-nums">
+                    {money(totalPeriodo)}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {sufijo}
+                    </span>
                   </span>
-                </span>
-              </CardAction>
+                </CardAction>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               {items.length === 0 ? (
@@ -299,15 +308,26 @@ export function SuscripcionDetail({
                       <span className="flex-1 text-sm font-medium">
                         {i.nombre}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => quitar(i.productoId)}
-                        aria-label={`Quitar ${i.nombre}`}
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
+                      {!soloLectura && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => quitar(i.productoId)}
+                          aria-label={`Quitar ${i.nombre}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      )}
                     </div>
+                    {soloLectura ? (
+                      // Lo único que necesita quien agenda: cuántas visitas
+                      // cubre el plan por período. Ni precio ni IVA.
+                      <p className="text-sm text-muted-foreground">
+                        {i.visitasPorPeriodo || "—"} visita
+                        {Number(i.visitasPorPeriodo) === 1 ? "" : "s"}
+                        {sufijo}
+                      </p>
+                    ) : (
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div className="space-y-1">
                         <Label className="text-xs">Precio{sufijo} *</Label>
@@ -348,11 +368,12 @@ export function SuscripcionDetail({
                         />
                       </div>
                     </div>
+                    )}
                   </div>
                 ))
               )}
 
-              {sinAgregar.length > 0 && (
+              {!soloLectura && sinAgregar.length > 0 && (
                 <CustomSelect
                   value=""
                   onChange={agregar}
@@ -426,6 +447,8 @@ export function SuscripcionDetail({
             </CardContent>
           </Card>
 
+          {!soloLectura && (
+          <>
           {/* Órdenes y no facturas: el borrador que crea el cron todavía no
               tiene factura, y era justo lo que no se veía desde acá. */}
           <Card>
@@ -509,6 +532,8 @@ export function SuscripcionDetail({
               )}
             </CardContent>
           </Card>
+          </>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -516,6 +541,30 @@ export function SuscripcionDetail({
             <CardHeader className="border-b">
               <CardTitle className="text-base">Términos</CardTitle>
             </CardHeader>
+            {soloLectura ? (
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="flex-none text-muted-foreground">
+                    Se cobra
+                  </span>
+                  <span>{PERIODICIDAD_LABEL[periodicidad]}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="flex-none text-muted-foreground">Estado</span>
+                  <span>{estado.charAt(0) + estado.slice(1).toLowerCase()}</span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="flex-none text-muted-foreground">Desde</span>
+                  <span className="tabular-nums">{fechaInicio}</span>
+                </div>
+                {notas ? (
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground">Notas</span>
+                    <p className="whitespace-pre-wrap">{notas}</p>
+                  </div>
+                ) : null}
+              </CardContent>
+            ) : (
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Se cobra</Label>
@@ -571,6 +620,7 @@ export function SuscripcionDetail({
                 Guardar cambios
               </Button>
             </CardContent>
+            )}
           </Card>
         </div>
       </div>
