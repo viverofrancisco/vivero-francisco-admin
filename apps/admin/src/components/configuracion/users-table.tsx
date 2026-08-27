@@ -234,14 +234,13 @@ export function UsersTable({
                           pasó. */}
                       {user.revocado ? (
                         <>
-                          {/* Volver con la contraseña que ya tenía, o con una
-                              nueva si no la recuerda. */}
-                          <DropdownMenuItem
-                            onClick={() => cambiarAcceso(user, false)}
-                          >
-                            <Undo2 className="mr-2 h-4 w-4" />
-                            Quitar el bloqueo
-                          </DropdownMenuItem>
+                          {/* Volver a invitar le manda una contraseña nueva;
+                              remover el bloqueo lo deja entrar con la que ya
+                              tenía. Lo segundo va al final y marcado, en el
+                              mismo lugar donde está *Revocar acceso* cuando la
+                              persona tiene acceso: son las dos caras de la
+                              misma decisión y conviene que se busquen en el
+                              mismo renglón. */}
                           <DropdownMenuItem
                             onClick={() =>
                               generarEnlace(user, "invitacion", "enviar")
@@ -249,6 +248,14 @@ export function UsersTable({
                           >
                             <Send className="mr-2 h-4 w-4" />
                             Volver a invitar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => cambiarAcceso(user, false)}
+                            className="text-destructive"
+                          >
+                            <Undo2 className="mr-2 h-4 w-4" />
+                            Remover bloqueo
                           </DropdownMenuItem>
                         </>
                       ) : user.tieneContrasena ? (

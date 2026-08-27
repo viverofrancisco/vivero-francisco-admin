@@ -229,7 +229,12 @@ export async function establecerContrasena(
     await prisma.$transaction([
       prisma.user.update({
         where: { id: user.id },
-        data: { password: hashed },
+        // Poner la contraseña levanta el bloqueo, si lo había. Ese es el
+        // momento correcto: la persona probó que recibió el enlace y eligió
+        // una clave nueva. Revocar anula los enlaces que había, así que el
+        // único que puede llegar hasta acá es uno emitido después, o sea una
+        // decisión deliberada de un admin.
+        data: { password: hashed, accesoRevocadoEl: null },
       }),
       prisma.setPasswordToken.update({
         where: { id: record.id },

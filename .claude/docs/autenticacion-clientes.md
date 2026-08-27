@@ -69,9 +69,16 @@ y `validateCredentials()` impiden iniciar sesión, y **`getCurrentUser()` relee
 la fila en cada request** porque la sesión es un JWT que vive semanas — sin eso,
 revocar no sacaría a nadie hasta que su token venciera solo.
 
-*Volver a invitar* a alguien bloqueado le devuelve el acceso en el mismo paso:
-mandarle un enlace a alguien que sigue bloqueado sería darle una contraseña que
-no sirve para entrar.
+A alguien bloqueado **sí** se le puede emitir un enlace, y **usarlo es lo que
+le devuelve el acceso**: `establecerContrasena()` limpia `accesoRevocadoEl` al
+guardar la contraseña nueva. El desbloqueo no ocurre al *generar* el enlace,
+porque entre generarlo y que la persona lo abra pasan horas y en el medio la
+cuenta volvería a servir con la contraseña vieja —sin que haya hecho nada—,
+que es justo lo que revocar quería evitar.
+
+Eso es seguro porque revocar anula los enlaces que hubiera, así que el único
+que puede llegar a usarse es uno emitido *después* de la revocación: una
+decisión deliberada de un admin.
 
 Un admin **no puede revocarse a sí mismo**: dejarse afuera no tiene arreglo
 desde adentro.

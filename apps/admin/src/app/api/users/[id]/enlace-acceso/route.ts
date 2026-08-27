@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import {
   crearEnlaceParaUsuario,
-  restaurarAcceso,
   VIGENCIA_TEXTO,
 } from "@/lib/services/acceso.service";
 import { sendEnlacePortalEmail } from "@/lib/email";
@@ -74,10 +73,11 @@ export async function POST(
     );
   }
 
-  // Mandarle un enlace a alguien bloqueado sería darle una contraseña que no
-  // sirve para entrar. Emitir el enlace *es* volver a darle acceso.
-  if (user.accesoRevocadoEl) await restaurarAcceso(user.id);
-
+  // A alguien bloqueado se le puede emitir un enlace: usarlo es lo que le
+  // devuelve el acceso. No se desbloquea acá porque entre generar el enlace y
+  // que lo abra pasan horas, y en el medio la cuenta volvería a servir con la
+  // contraseña vieja —sin que la persona haya hecho nada—, que es justo lo que
+  // revocar quería evitar.
   const enlace = await crearEnlaceParaUsuario(user.id, tipo);
 
   let correoEnviado = false;
