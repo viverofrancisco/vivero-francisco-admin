@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CustomSelect } from "@/components/ui/custom-select";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import {
@@ -31,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Pencil, Plus, Search, UserPlus, X } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
@@ -89,6 +94,9 @@ export function SectorDetailClient({
   /** Los tildados, para sacarlos del sector de a varios. */
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
   const [agregando, setAgregando] = useState(false);
+  const [agregandoAdmin, setAgregandoAdmin] = useState(false);
+  /** Quién se está agregando o quitando, para mostrar el spinner en su fila. */
+  const [adminEnCurso, setAdminEnCurso] = useState<string | null>(null);
   const [trabajando, setTrabajando] = useState(false);
 
   const filtrados = useMemo(() => {
@@ -201,6 +209,7 @@ export function SectorDetailClient({
   }
 
   async function cambiarAdmin(userId: string, agregar: boolean) {
+    setAdminEnCurso(userId);
     try {
       const res = await fetch(`/api/sectores/${sector.id}/admins`, {
         method: agregar ? "POST" : "DELETE",
@@ -209,9 +218,12 @@ export function SectorDetailClient({
       });
       if (!res.ok) throw new Error((await res.json()).error);
       toast.success(agregar ? "Admin asignado" : "Admin removido");
+      setAgregandoAdmin(false);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error");
+    } finally {
+      setAdminEnCurso(null);
     }
   }
 
@@ -234,42 +246,45 @@ export function SectorDetailClient({
             {sector.admins.length !== 1 && "s"}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-          <Pencil className="mr-1.5 h-3.5 w-3.5" />
-          Editar
-        </Button>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-3">
-        {/* Los clientes son lo que se viene a ver acá, así que se llevan la
-            columna grande y toda la altura: filtros arriba, encabezado y
-            paginación fijos, y solo las filas scrollean. */}
-        <div className="flex min-h-0 flex-col gap-4 lg:col-span-2">
-          <div className="flex flex-none flex-wrap items-center gap-3">
-            <div className="relative min-w-[200px] max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar cliente en este sector..."
-                value={busqueda}
-                onChange={(e) => {
-                  setBusqueda(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9"
-              />
-            </div>
-            <Button
-              size="sm"
-              onClick={() => setAgregando(true)}
-              disabled={candidatos.length === 0}
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              Agregar clientes
-            </Button>
+      {/* La barra de filtros ocupa su propia fila a lo ancho de la grilla —no
+          la columna izquierda— para que la tabla y los cards empiecen a la
+          misma altura. Antes los cards quedaban un renglón más arriba. */}
+      <div className="grid min-h-0 flex-1 gap-x-6 gap-y-4 lg:grid-cols-3 lg:grid-rows-[auto_minmax(0,1fr)]">
+        <div className="flex flex-wrap items-center gap-3 lg:col-span-3">
+          <div className="relative min-w-[200px] max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar cliente en este sector..."
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+            />
           </div>
+          <Button
+            size="sm"
+            className="ml-auto"
+            onClick={() => setAgregando(true)}
+            disabled={candidatos.length === 0}
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
+            Agregar clientes
+          </Button>
+        </div>
 
+        {/* Los clientes son lo que se viene a ver acá: se llevan la columna
+            grande y toda la altura, con encabezado y paginación fijos y solo
+            las filas scrolleando. */}
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card lg:col-span-2">
+          {/* La barra de selección va adentro del card y no encima: si
+              apareciera afuera empujaría la tabla hacia abajo y la dejaría
+              desalineada con los cards cada vez que se tilda algo. */}
           {seleccion.size > 0 && (
-            <div className="flex flex-none flex-wrap items-center gap-3 rounded-xl border bg-card px-4 py-2.5">
+            <div className="flex flex-none flex-wrap items-center gap-3 border-b bg-muted/40 px-4 py-2">
               <span className="text-sm font-semibold">
                 {seleccion.size} seleccionado{seleccion.size !== 1 ? "s" : ""}
               </span>
@@ -293,97 +308,107 @@ export function SectorDetailClient({
             </div>
           )}
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="min-h-0 flex-1 overflow-hidden">
-              {filtrados.length === 0 ? (
-                <EmptyState
-                  message={
-                    busqueda.trim()
-                      ? "Ningún cliente coincide"
-                      : "Este sector todavía no tiene clientes"
-                  }
-                />
-              ) : (
-                <Table containerClassName="h-full overflow-y-auto">
-                  <TableHeader sticky>
-                    <TableRow>
-                      <TableHead className="w-10">
-                        <Checkbox
-                          checked={paginaEntera}
-                          onCheckedChange={alternarPagina}
-                          aria-label="Seleccionar página"
-                        />
-                      </TableHead>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead>Ciudad</TableHead>
-                      <TableHead className="w-16 text-right">Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {enPagina.map((c) => (
-                      <TableRow
-                        key={c.id}
-                        className="cursor-pointer"
-                        onClick={() =>
-                          router.push(`/dashboard/clientes/${c.id}?from=${aca()}`)
-                        }
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {filtrados.length === 0 ? (
+              <EmptyState
+                message={
+                  busqueda.trim()
+                    ? "Ningún cliente coincide"
+                    : "Este sector todavía no tiene clientes"
+                }
+              />
+            ) : (
+              <Table containerClassName="h-full overflow-y-auto">
+                <TableHeader sticky>
+                  <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={paginaEntera}
+                        onCheckedChange={alternarPagina}
+                        aria-label="Seleccionar página"
+                      />
+                    </TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Ciudad</TableHead>
+                    <TableHead className="w-16 text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {enPagina.map((c) => (
+                    <TableRow
+                      key={c.id}
+                      className="cursor-pointer"
+                      onClick={() =>
+                        router.push(`/dashboard/clientes/${c.id}?from=${aca()}`)
+                      }
+                    >
+                      <TableCell
+                        className="w-10"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <TableCell
-                          className="w-10"
-                          onClick={(e) => e.stopPropagation()}
+                        <Checkbox
+                          checked={seleccion.has(c.id)}
+                          onCheckedChange={() => alternar(c.id)}
+                          aria-label={`Seleccionar ${nombreCliente(c)}`}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
+                          <InitialsAvatar name={nombreCliente(c)} size={36} />
+                          <span className="truncate font-bold text-foreground">
+                            {nombreCliente(c)}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {c.ciudad || "—"}
+                      </TableCell>
+                      <TableCell
+                        className="text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={trabajando}
+                          aria-label={`Quitar a ${nombreCliente(c)} del sector`}
+                          title="Quitar del sector"
+                          onClick={() => quitarClientes([c.id])}
                         >
-                          <Checkbox
-                            checked={seleccion.has(c.id)}
-                            onCheckedChange={() => alternar(c.id)}
-                            aria-label={`Seleccionar ${nombreCliente(c)}`}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2.5">
-                            <InitialsAvatar name={nombreCliente(c)} size={36} />
-                            <span className="truncate font-bold text-foreground">
-                              {nombreCliente(c)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {c.ciudad || "—"}
-                        </TableCell>
-                        <TableCell
-                          className="text-right"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={trabajando}
-                            aria-label={`Quitar a ${nombreCliente(c)} del sector`}
-                            title="Quitar del sector"
-                            onClick={() => quitarClientes([c.id])}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
-
-            <TablePagination
-              page={pagina}
-              total={filtrados.length}
-              onPageChange={setPage}
-              sustantivo="cliente"
-            />
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          )}
           </div>
+
+          <TablePagination
+            page={pagina}
+            total={filtrados.length}
+            onPageChange={setPage}
+            sustantivo="cliente"
+          />
         </div>
 
         <div className="space-y-6 overflow-y-auto">
           <Card>
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Información del sector</CardTitle>
+              <CardTitle className="text-base">Detalles</CardTitle>
+              {/* Editar vive acá y no en el encabezado de la página: lo que se
+                  edita es lo que este card muestra. */}
+              <CardAction>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditing(true)}
+                >
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                  Editar
+                </Button>
+              </CardAction>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-start justify-between gap-3">
@@ -404,6 +429,17 @@ export function SectorDetailClient({
               <CardTitle className="text-base">
                 Admins del sector ({sector.admins.length})
               </CardTitle>
+              <CardAction>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAgregandoAdmin(true)}
+                  disabled={adminsDisponibles.length === 0}
+                >
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  Agregar
+                </Button>
+              </CardAction>
             </CardHeader>
             <CardContent className="space-y-3">
               {sector.admins.length === 0 ? (
@@ -429,39 +465,22 @@ export function SectorDetailClient({
                       <Button
                         variant="ghost"
                         size="icon"
+                        disabled={adminEnCurso === user.id}
                         aria-label={`Quitar a ${nombreAdmin(user)}`}
                         title="Quitar del sector"
                         onClick={() => cambiarAdmin(user.id, false)}
                       >
-                        <X className="h-4 w-4" />
+                        {adminEnCurso === user.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
                       </Button>
                     </li>
                   ))}
                 </ul>
               )}
 
-              {/* Se agrega desde acá y no desde la ficha del usuario: cuando
-                  uno está mirando un sector, lo que tiene en la cabeza es
-                  quién lo lleva. */}
-              {adminsDisponibles.length > 0 ? (
-                <CustomSelect
-                  value=""
-                  onChange={(id) => id && cambiarAdmin(id, true)}
-                  options={adminsDisponibles.map((a) => ({
-                    value: a.id,
-                    label: nombreAdmin(a),
-                  }))}
-                  placeholder="Agregar admin…"
-                  searchable={adminsDisponibles.length > 8}
-                />
-              ) : (
-                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <UserPlus className="h-3.5 w-3.5" />
-                  {personalAdmins.length === 0
-                    ? "No hay usuarios con rol admin de sector."
-                    : "Ya están todos asignados a este sector."}
-                </p>
-              )}
             </CardContent>
           </Card>
         </div>
@@ -506,6 +525,14 @@ export function SectorDetailClient({
         candidatos={candidatos}
         trabajando={trabajando}
         onAgregar={agregarClientes}
+      />
+
+      <AgregarAdminDialog
+        abierto={agregandoAdmin}
+        onCerrar={() => setAgregandoAdmin(false)}
+        disponibles={adminsDisponibles}
+        enCurso={adminEnCurso}
+        onAgregar={(id) => cambiarAdmin(id, true)}
       />
     </div>
   );
@@ -618,6 +645,114 @@ function AgregarClientesDialog({
               : elegidos.size > 0
                 ? `Agregar ${elegidos.size}`
                 : "Agregar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Elegir a quién le toca administrar este sector.
+ *
+ * Un clic por persona: la fila muestra su propio spinner mientras se guarda,
+ * porque el que hace falta ver es *ese* y no un cartel general. Solo aparecen
+ * los que tienen rol de admin de sector y todavía no están acá.
+ */
+function AgregarAdminDialog({
+  abierto,
+  onCerrar,
+  disponibles,
+  enCurso,
+  onAgregar,
+}: {
+  abierto: boolean;
+  onCerrar: () => void;
+  disponibles: AdminUser[];
+  /** El id que se está guardando ahora, o null. */
+  enCurso: string | null;
+  onAgregar: (userId: string) => void;
+}) {
+  const [busqueda, setBusqueda] = useState("");
+
+  const visibles = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return disponibles;
+    return disponibles.filter(
+      (a) =>
+        nombreAdmin(a).toLowerCase().includes(q) ||
+        a.email.toLowerCase().includes(q)
+    );
+  }, [disponibles, busqueda]);
+
+  function cerrar() {
+    setBusqueda("");
+    onCerrar();
+  }
+
+  return (
+    <Dialog open={abierto} onOpenChange={(v) => !v && cerrar()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Agregar un admin al sector</DialogTitle>
+          <DialogDescription>
+            Solo se listan los usuarios con rol de admin de sector.
+          </DialogDescription>
+        </DialogHeader>
+
+        {disponibles.length > 6 && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre o correo..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        )}
+
+        <div className="max-h-72 min-h-[6rem] overflow-y-auto rounded-md border">
+          {visibles.length === 0 ? (
+            <p className="p-4 text-center text-sm text-muted-foreground">
+              {disponibles.length === 0
+                ? "Ya están todos asignados a este sector."
+                : "Nadie coincide."}
+            </p>
+          ) : (
+            <ul className="divide-y">
+              {visibles.map((a) => (
+                <li key={a.id}>
+                  <button
+                    type="button"
+                    disabled={enCurso !== null}
+                    onClick={() => onAgregar(a.id)}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-muted/50 disabled:opacity-60"
+                  >
+                    <InitialsAvatar name={nombreAdmin(a)} size={32} />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium">
+                        {nombreAdmin(a)}
+                      </div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {a.email}
+                      </div>
+                    </div>
+                    {enCurso === a.id ? (
+                      <Loader2 className="h-4 w-4 flex-none animate-spin text-muted-foreground" />
+                    ) : (
+                      <Plus className="h-4 w-4 flex-none text-muted-foreground" />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={cerrar} disabled={enCurso !== null}>
+            Cerrar
           </Button>
         </DialogFooter>
       </DialogContent>
