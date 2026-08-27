@@ -22,6 +22,20 @@ export default async function UsuariosPage() {
         // se convierte en un booleano antes de llegar al cliente.
         password: true,
         accesoRevocadoEl: true,
+        // Un enlace vivo significa "ya le mandamos la invitación, falta que la
+        // use". Sin esto, alguien revocado al que acaban de reinvitar se ve
+        // exactamente igual que uno al que nadie tocó.
+        _count: {
+          select: {
+            setPasswordTokens: {
+              where: {
+                usedAt: null,
+                anuladoEl: null,
+                expiresAt: { gt: new Date() },
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -45,11 +59,12 @@ export default async function UsuariosPage() {
 
       <UsersTable
         usuarioActualId={actual.id}
-        users={users.map(({ password, accesoRevocadoEl, ...u }) => ({
+        users={users.map(({ password, accesoRevocadoEl, _count, ...u }) => ({
           ...u,
           createdAt: u.createdAt.toISOString(),
           tieneContrasena: password !== null,
           revocado: accesoRevocadoEl !== null,
+          enlacePendiente: _count.setPasswordTokens > 0,
         }))}
       />
     </div>

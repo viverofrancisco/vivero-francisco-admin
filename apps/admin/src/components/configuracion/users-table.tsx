@@ -48,6 +48,8 @@ interface UserData {
   tieneContrasena: boolean;
   /** Si se le cortó el acceso. La cuenta existe; no puede entrar. */
   revocado: boolean;
+  /** Si tiene un enlace vivo sin usar: se le mandó y falta que lo abra. */
+  enlacePendiente: boolean;
 }
 
 /** Role pill style: ADMIN green, sector-admin sky, others neutral. */
@@ -180,21 +182,45 @@ export function UsersTable({
                 className="cursor-pointer"
                 onClick={() => router.push(`/dashboard/configuracion/usuarios/${user.id}`)}
               >
-                <TableCell>
+                {/* El estado va **debajo** del nombre, no al lado: son
+                    hasta dos etiquetas y en la misma línea le comían el
+                    espacio al nombre, que es lo primero que uno busca en la
+                    fila. `w-full max-w-0` deja que esta celda se quede con el
+                    sobrante y trunque en vez de empujar a las demás fuera de
+                    la pantalla. */}
+                <TableCell className="w-full max-w-0">
                   <div className="flex items-center gap-2.5">
                     <InitialsAvatar name={name} size={36} />
-                    <span className="font-bold text-foreground">{name}</span>
-                    {/* Sin esto no hay forma de saber quién nunca entró, y el
-                        menú de la fila parecería ofrecer cosas al azar. */}
-                    {user.revocado ? (
-                      <span className="flex-none rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-bold text-destructive">
-                        Acceso revocado
-                      </span>
-                    ) : !user.tieneContrasena ? (
-                      <span className="flex-none rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">
-                        Invitación pendiente
-                      </span>
-                    ) : null}
+                    <div className="min-w-0">
+                      <div className="truncate font-bold text-foreground">
+                        {name}
+                      </div>
+                      {user.revocado || !user.tieneContrasena || user.enlacePendiente ? (
+                        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                          {user.revocado ? (
+                            <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-bold text-destructive">
+                              Acceso revocado
+                            </span>
+                          ) : !user.tieneContrasena ? (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">
+                              Invitación pendiente
+                            </span>
+                          ) : null}
+                          {/* Que el enlace esté enviado y sin abrir es un
+                              estado en sí mismo: explica por qué la fila no
+                              cambió después de invitar, y evita reenviarlo
+                              tres veces creyendo que no salió. */}
+                          {user.enlacePendiente ? (
+                            <span
+                              className="rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground"
+                              title="Ya se le envió el enlace; falta que lo abra y elija su contraseña."
+                            >
+                              Enlace enviado
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
