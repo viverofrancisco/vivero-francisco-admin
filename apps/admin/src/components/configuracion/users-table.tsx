@@ -135,7 +135,13 @@ export function UsersTable({
       if (modo === "copiar") {
         try {
           await navigator.clipboard.writeText(data.enlace);
-          toast.success("Enlace copiado");
+          // Cada enlace es nuevo —del anterior solo guardamos el hash, no se
+          // puede recuperar— así que copiar mata el que se haya mandado antes.
+          // Sin este aviso, mandar el mismo acceso por correo y por WhatsApp
+          // deja el del correo muerto sin que nadie se entere.
+          toast.success("Enlace copiado", {
+            description: "El anterior, si le habías mandado uno, dejó de servir.",
+          });
           return;
         } catch {
           // Sin portapapeles queda mostrarlo para copiarlo a mano.
@@ -281,6 +287,14 @@ export function UsersTable({
                           >
                             <Send className="mr-2 h-4 w-4" />
                             Volver a invitar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              generarEnlace(user, "invitacion", "copiar")
+                            }
+                          >
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copiar enlace de invitación
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
