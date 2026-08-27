@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -1822,16 +1828,11 @@ function Step3Secciones({
                     <div className="border-t" />
                     {/* Description */}
                     <div className="px-4 pt-3">
-                      <textarea
+                      <DescripcionSeccion
                         value={s.descripcion}
-                        onChange={(e) =>
-                          updateSeccion(s.tempId, {
-                            descripcion: e.target.value,
-                          })
+                        onChange={(descripcion) =>
+                          updateSeccion(s.tempId, { descripcion })
                         }
-                        rows={2}
-                        className="block w-full max-h-32 resize-none overflow-y-auto rounded-md border-0 bg-transparent px-0 py-1 text-sm leading-relaxed text-muted-foreground focus:text-foreground focus:outline-none"
-                        placeholder="Descripción de la sección (opcional)"
                       />
                     </div>
 
@@ -2247,6 +2248,43 @@ function PhotoPickerModal({
 }
 
 // ───────────── Step 3 ─────────────
+
+/**
+ * La descripción de una sección, en un campo que crece con lo que se escribe.
+ *
+ * Es un párrafo, no un renglón: con dos líneas fijas se escribía mirando por
+ * una ranura y había que desplazar para releer lo que uno mismo acababa de
+ * poner. Arranca en cuatro líneas y se estira hasta el tope; recién ahí
+ * aparece la barra.
+ */
+function DescripcionSeccion({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Primero a `auto`: si no, `scrollHeight` nunca baja y el campo solo crece.
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={4}
+      className="block max-h-72 w-full resize-none overflow-y-auto rounded-md border-0 bg-transparent px-0 py-1 text-sm leading-relaxed text-muted-foreground focus:text-foreground focus:outline-none"
+      placeholder="Descripción de la sección (opcional)"
+    />
+  );
+}
 
 function Step5Preview({
   pdfUrl,
