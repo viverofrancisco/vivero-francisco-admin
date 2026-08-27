@@ -172,7 +172,7 @@ export function SetPasswordForm() {
           {estado === "listo" &&
             (destino === "portal" ? (
               <div className="space-y-4 text-center">
-                <p className="text-sm text-green-700">
+                <p className="text-sm text-muted-foreground">
                   ¡Listo! Ya puedes entrar al portal con tu correo y tu nueva
                   contraseña.
                 </p>
@@ -185,7 +185,7 @@ export function SetPasswordForm() {
                 </Button>
               </div>
             ) : (
-              <p className="text-center text-sm text-green-700">
+              <p className="text-center text-sm text-muted-foreground">
                 ¡Listo! Ya puedes abrir la app de Vivero Francisco e iniciar
                 sesión con tu teléfono o correo y tu nueva contraseña.
               </p>
@@ -221,7 +221,10 @@ export function SetPasswordForm() {
                   required
                 />
               </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {/* Tampoco en rojo. Es la única página que ve alguien de
+                  afuera y con una sola cosa que hacer; el texto normal alcanza
+                  para leerlo y no lo trata como si hubiera roto algo. */}
+              {error && <p className="text-sm text-foreground">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Guardando…" : "Crear contraseña"}
               </Button>

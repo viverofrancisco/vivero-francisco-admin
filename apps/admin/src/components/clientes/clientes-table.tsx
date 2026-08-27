@@ -213,8 +213,12 @@ export function ClientesTable({
                 </button>
               )}
             </div>
+            {/* z-50 como el resto de los desplegables del portal: con z-10
+                empataba con el encabezado fijo de la tabla —que también es
+                z-10 y viene después en el DOM— y el buscador quedaba pintado
+                por debajo, como una caja vacía. */}
             {sectorDropdownOpen && (
-              <div className="absolute z-10 mt-1 w-64 rounded-xl border bg-popover shadow-lg">
+              <div className="absolute z-50 mt-1 w-64 rounded-xl border bg-popover shadow-lg">
                 <div className="p-2">
                   <Input
                     placeholder="Buscar sector..."

@@ -306,7 +306,7 @@ export function SectorDetailClient({
                       />
                     </div>
                     {showResults && searchQuery.trim() && (
-                      <div className="absolute z-10 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
                         {filteredClientes.length === 0 ? (
                           <p className="p-3 text-sm text-muted-foreground">
                             No se encontraron clientes
