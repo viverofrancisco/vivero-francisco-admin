@@ -426,9 +426,7 @@ export function SectorDetailClient({
 
           <Card>
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">
-                Admins del sector ({sector.admins.length})
-              </CardTitle>
+              <CardTitle className="text-base">Admins del sector</CardTitle>
               <CardAction>
                 <Button
                   variant="ghost"
