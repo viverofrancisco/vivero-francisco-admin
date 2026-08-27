@@ -24,6 +24,8 @@ export function EmpresaConfigForm({ initial }: { initial: InitialData }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(initial.logoUrl);
   const [logoKey, setLogoKey] = useState<string | null>(initial.logoKey);
   const [uploading, setUploading] = useState(false);
+  /** Hay algo encima de la zona, para marcarla mientras se arrastra. */
+  const [arrastrando, setArrastrando] = useState(false);
   const [saving, startSaving] = useTransition();
 
   async function handleFile(file: File) {
@@ -125,9 +127,39 @@ export function EmpresaConfigForm({ initial }: { initial: InitialData }) {
           <label className="block text-sm font-medium mb-1.5">
             Logo de la empresa
           </label>
-          <div className="rounded-lg border bg-muted/20 p-4">
+          {/* Todo el recuadro es la zona: soltar el archivo encima alcanza,
+              que es como llega un logo —arrastrado del escritorio— cuando uno
+              ya lo tiene abierto al lado. El botón sigue estando para quien
+              prefiere el explorador. */}
+          <div
+            className={`rounded-lg border p-4 transition-colors ${
+              arrastrando
+                ? "border-primary border-dashed bg-primary/5"
+                : "bg-muted/20"
+            }`}
+            onDragOver={(e) => {
+              if (!e.dataTransfer.types.includes("Files")) return;
+              e.preventDefault();
+              setArrastrando(true);
+            }}
+            onDragLeave={(e) => {
+              if (e.currentTarget === e.target) setArrastrando(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setArrastrando(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) void handleFile(file);
+            }}
+          >
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:items-start">
-              <div className="flex h-28 w-44 flex-none items-center justify-center rounded-md border bg-white">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                aria-label={logoUrl ? "Reemplazar el logo" : "Subir un logo"}
+                className="flex h-28 w-44 flex-none items-center justify-center overflow-hidden rounded-md border bg-white transition-colors hover:border-primary"
+              >
                 {logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -141,11 +173,11 @@ export function EmpresaConfigForm({ initial }: { initial: InitialData }) {
                     <span className="text-xs">Sin logo</span>
                   </div>
                 )}
-              </div>
+              </button>
               <div className="flex-1 space-y-2 text-sm">
                 <p className="text-muted-foreground">
-                  PNG, JPG o WEBP, máximo 2MB. Recomendado: PNG transparente
-                  ~400×200 px.
+                  Arrastrá la imagen acá o elegila del computador. PNG, JPG o
+                  WEBP, máximo 2MB. Recomendado: PNG transparente ~400×200 px.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <input
