@@ -56,11 +56,30 @@ export const VIGENCIA_TEXTO: Record<TipoEnlace, string> = {
  */
 const VIGENCIA_CLIENTE_MS = 24 * MS_POR_HORA;
 
+/**
+ * De dónde cuelga el enlace: la URL pública del portal.
+ *
+ * Cae en `NEXTAUTH_URL` si no hay `APP_BASE_URL`, porque son el mismo valor
+ * —dónde se sirve la app— y tener dos variables que deben coincidir es una
+ * trampa: se configura una, se olvida la otra, y el síntoma aparece recién en
+ * el correo de otra persona.
+ *
+ * Si no hay ninguna, en producción se rompe a propósito. Un enlace apuntando a
+ * `localhost` **no falla acá sino en la bandeja de quien lo recibe**, y para
+ * cuando alguien se entera ya se mandaron invitaciones que no abren; que
+ * reviente el botón de invitar es preferible, porque ahí hay alguien mirando.
+ */
 function baseUrl(): string {
-  return (process.env.APP_BASE_URL ?? "http://localhost:3001").replace(
-    /\/$/,
-    ""
-  );
+  const configurada = process.env.APP_BASE_URL ?? process.env.NEXTAUTH_URL;
+  if (!configurada) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "Falta APP_BASE_URL (o NEXTAUTH_URL): sin una de las dos los enlaces de contraseña saldrían apuntando a localhost."
+      );
+    }
+    return "http://localhost:3001";
+  }
+  return configurada.replace(/\/$/, "");
 }
 
 /** A dónde entra quien usa el enlace. Cambia el texto, no el mecanismo. */
