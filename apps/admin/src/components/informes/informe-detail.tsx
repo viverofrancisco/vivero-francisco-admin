@@ -170,8 +170,15 @@ export function InformeDetail({
                   el documento, la de generado es cuándo se armó. */}
               <Dato etiqueta="Fecha del informe">{fechaLarga(informe.fecha)}</Dato>
               <Dato etiqueta="Generado">
-                {generadoEl(informe.generatedAt)}
-                {informe.generadoPor ? ` · ${informe.generadoPor}` : ""}
+                {/* Quién lo hizo va abajo y no detrás de un punto: son dos
+                    datos distintos, y juntos en un renglón el corte caía en
+                    cualquier lado. */}
+                <span className="block">{generadoEl(informe.generatedAt)}</span>
+                {informe.generadoPor ? (
+                  <span className="block text-muted-foreground">
+                    {informe.generadoPor}
+                  </span>
+                ) : null}
               </Dato>
             </CardContent>
           </Card>

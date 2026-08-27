@@ -80,6 +80,14 @@
   --border: oklch(0.905 0.008 150);
   --input: oklch(0.905 0.008 150);
   --ring: oklch(0.52 0.11 152);
+  /* Avisos: el verde y el rojo de la paleta, apenas teñidos. Un aviso tiene
+     que leerse de reojo y desaparecer, no gritar. */
+  --toast-ok: oklch(0.975 0.02 152);
+  --toast-ok-border: oklch(0.9 0.05 152);
+  --toast-ok-foreground: oklch(0.42 0.1 152);
+  --toast-error: oklch(0.975 0.018 25);
+  --toast-error-border: oklch(0.9 0.05 25);
+  --toast-error-foreground: oklch(0.47 0.16 25);
   /* charts / categorical: green, sky, clay, amber, purple */
   --chart-1: oklch(0.52 0.11 152);
   --chart-2: oklch(0.58 0.075 232);
@@ -130,6 +138,12 @@
   --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.62 0.11 152);
+  --toast-ok: oklch(0.27 0.04 152);
+  --toast-ok-border: oklch(0.36 0.06 152);
+  --toast-ok-foreground: oklch(0.88 0.06 152);
+  --toast-error: oklch(0.27 0.05 25);
+  --toast-error-border: oklch(0.38 0.08 25);
+  --toast-error-foreground: oklch(0.88 0.07 25);
   --chart-1: oklch(0.62 0.11 152);
   --chart-2: oklch(0.65 0.09 232);
   --chart-3: oklch(0.68 0.12 48);

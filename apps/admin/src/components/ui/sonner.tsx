@@ -14,6 +14,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       // barra de acciones de los formularios, que es justo lo que uno acaba de
       // tocar cuando aparece el aviso.
       position="top-right"
+      // Verde para lo que salió bien, rojo para lo que no. `richColors` es lo
+      // que hace que sonner mire el tipo del aviso; los colores son los de la
+      // paleta, definidos en globals.css.
+      richColors
       className="toaster group"
       icons={{
         success: (
@@ -38,6 +42,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          "--success-bg": "var(--toast-ok)",
+          "--success-border": "var(--toast-ok-border)",
+          "--success-text": "var(--toast-ok-foreground)",
+          "--error-bg": "var(--toast-error)",
+          "--error-border": "var(--toast-error-border)",
+          "--error-text": "var(--toast-error-foreground)",
         } as React.CSSProperties
       }
       toastOptions={{
