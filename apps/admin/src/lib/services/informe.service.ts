@@ -532,6 +532,15 @@ export async function generateInforme(
         // @react-pdf/renderer supports png and jpg via the data buffer API.
         const format: "png" | "jpg" = ct.includes("png") ? "png" : "jpg";
         logo = { bytes: buf, format };
+      } else {
+        // Sin esto el informe sale sin logo ni marca de agua y nadie se
+        // entera: la falta de logo no rompe nada, y el PDF se ve "bien" hasta
+        // que alguien lo compara con uno viejo. Pasó cuando el logo quedó
+        // apuntando a un bucket que ya no existía.
+        console.warn(
+          `Logo de la empresa: ${res.status} al bajar ${empresaCfg.logoUrl}. ` +
+            `El informe sale sin logo; volvé a subirlo en Configuración → Empresa.`
+        );
       }
     } catch (err) {
       console.warn("Failed to fetch empresa logo for PDF", err);
