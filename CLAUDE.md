@@ -71,7 +71,10 @@ Admin-specific (run inside `apps/admin`):
 
 ```bash
 npx prisma generate    # regenerate client into src/generated/prisma
-npx prisma studio      # inspect the DB
+npx prisma studio      # inspect the DB — Prisma 7 picks its own port (it
+                       # prints it; it is NOT 5555), and it logs
+                       # ERR_STREAM_PREMATURE_CLOSE every time the browser
+                       # drops a stream. That's noise, not a failure.
 npm run prisma ...     # seed is configured as: npx tsx prisma/seed.ts
 
 # Datos de prueba para ver el portal con actividad (no inventa clientes ni
