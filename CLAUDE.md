@@ -341,7 +341,10 @@ A product can only be sold once it is **linked to Contífico**
 search their catalog and pick an existing product, because Contífico has no
 DELETE and a mistaken creation is permanent. Until it's linked, the product
 can't go on an order or a subscription; both services enforce it, and the
-pickers grey it out. That's why invoicing never syncs anything.
+pickers grey it out. **Scheduling a visita is not one of those places** — a
+visita carries no money, so requiring the link there only blocked planning work
+that hasn't been priced yet; the check belongs where the peso appears. That's
+why invoicing never syncs anything.
 
 Orders are written **only** through `crearOrden()` in
 `src/lib/services/orden.service.ts`. A line's `descripcion` and

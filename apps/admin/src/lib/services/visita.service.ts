@@ -702,27 +702,6 @@ export async function markVisitaIncomplete(
 // ──────────────────────────────────────────────
 
 /**
- * Un producto sin vincular con Contífico no entra a ningún lado.
- *
- * Se validaba recién al crear la orden, y para entonces el trabajo ya se había
- * hecho: descubrir ahí que no se puede facturar no le sirve a nadie. Vincular
- * es manual y a propósito —Contífico no tiene DELETE y un producto creado por
- * error queda para siempre—, así que lo que se corta es usarlo, no crearlo.
- */
-async function ensureVinculados(productoIds: string[]): Promise<void> {
-  const sinVincular = await prisma.producto.findMany({
-    where: { id: { in: productoIds }, contificoProductoId: null },
-    select: { nombre: true },
-  });
-  if (sinVincular.length > 0) {
-    const nombres = sinVincular.map((p) => `"${p.nombre}"`).join(", ");
-    throw new ValidationError(
-      `${nombres} ${sinVincular.length === 1 ? "no está vinculado" : "no están vinculados"} con Contífico, así que no se ${sinVincular.length === 1 ? "podría" : "podrían"} facturar. Vinculalo desde su ficha antes de usarlo.`
-    );
-  }
-}
-
-/**
  * Qué productos de esta selección cubre el plan de la visita.
  *
  * **No es una decisión, es una consulta.** Con la visita ligada a un plan, lo
@@ -815,7 +794,6 @@ export async function createVisitasBatch(
   if (productos.length !== seleccion.length) {
     throw new ValidationError("Alguno de los productos no existe.");
   }
-  await ensureVinculados(seleccion.map((p) => p.productoId));
 
   // Qué planes activos del cliente podrían cubrir estos productos. Enlazarlos o
   // no lo decide el payload: puede haber plan y aun así querer cobrar aparte un
@@ -1033,8 +1011,7 @@ export async function updateVisitaInfo(
     if (existen !== seleccion.length) {
       throw new ValidationError("Alguno de los productos no existe.");
     }
-    await ensureVinculados(seleccion.map((p) => p.productoId));
-  }
+    }
 
   const productos = seleccion;
   /** Borradores a los que se les sacó una línea: hay que recalcularlos. */
