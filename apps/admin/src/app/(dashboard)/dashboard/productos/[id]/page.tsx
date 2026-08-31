@@ -68,6 +68,8 @@ export default async function EditarServicioPage({
           ...servicio,
           // Decimal no cruza a un componente cliente.
           ivaTasa: servicio.ivaTasa === null ? null : Number(servicio.ivaTasa),
+          // La ficha de un archivado se abre igual, pero tiene que decirlo.
+          archivadoEl: servicio.deletedAt?.toISOString() ?? null,
         }}
         clienteRows={rows}
       />

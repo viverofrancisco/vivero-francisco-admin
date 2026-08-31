@@ -14,7 +14,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Link2, Pencil } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Link2,
+  Pencil,
+  Undo2,
+} from "lucide-react";
 import { CopyField } from "@/components/shared/copy-field";
 import { toast } from "sonner";
 import {
@@ -41,6 +48,8 @@ interface ServicioData {
   /** Llave anti-duplicados en Contífico. Se genera al sincronizar. */
   codigo: string | null;
   contificoProductoId: string | null;
+  /** Cuándo se archivó, o `null` si está en el catálogo. */
+  archivadoEl: string | null;
 }
 
 export function ServicioDetail({
@@ -58,6 +67,25 @@ export function ServicioDetail({
   const [saving, setSaving] = useState(false);
   const [syncOpen, setSyncOpen] = useState(false);
   const [guardandoVinculo, setGuardandoVinculo] = useState(false);
+  const [restaurando, setRestaurando] = useState(false);
+
+  /** Lo devuelve al catálogo. No toca el vínculo con Contífico. */
+  const restaurar = async () => {
+    setRestaurando(true);
+    try {
+      const res = await fetch(`/api/servicios/${servicio.id}/restaurar`, {
+        method: "POST",
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      toast.success("El producto vuelve al catálogo");
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error al restaurar");
+    } finally {
+      setRestaurando(false);
+    }
+  };
   const [contifico, setContifico] = useState<VinculoContifico>({
     codigo: servicio.codigo,
     contificoProductoId: servicio.contificoProductoId,
@@ -169,6 +197,27 @@ export function ServicioDetail({
           </Button>
         )}
       </div>
+
+      {/* Archivado, la ficha se abre igual —se llega desde el filtro, y desde
+          una orden vieja que lo nombra— pero tiene que decirlo: si no, se ve
+          idéntica a la de un producto que sigue a la venta. */}
+      {servicio.archivadoEl && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          <span>
+            Este producto está archivado: no se ofrece en visitas, órdenes ni
+            suscripciones. Lo que ya lo nombra sigue igual.
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={restaurar}
+            disabled={restaurando}
+          >
+            <Undo2 className="mr-2 h-4 w-4" />
+            Restaurar
+          </Button>
+        </div>
+      )}
 
       {/* El detalle manda; Contífico es estado de apoyo, va al costado. */}
       <div className="grid items-start gap-6 lg:grid-cols-3">

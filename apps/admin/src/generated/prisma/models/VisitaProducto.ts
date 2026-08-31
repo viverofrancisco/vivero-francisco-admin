@@ -232,7 +232,7 @@ export type VisitaProductoWhereInput = {
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
   suscripcionItem?: Prisma.XOR<Prisma.SuscripcionItemNullableScalarRelationFilter, Prisma.SuscripcionItemWhereInput> | null
-  ordenLinea?: Prisma.XOR<Prisma.OrdenLineaNullableScalarRelationFilter, Prisma.OrdenLineaWhereInput> | null
+  ordenLineaOrigen?: Prisma.XOR<Prisma.OrdenLineaOrigenNullableScalarRelationFilter, Prisma.OrdenLineaOrigenWhereInput> | null
 }
 
 export type VisitaProductoOrderByWithRelationInput = {
@@ -245,7 +245,7 @@ export type VisitaProductoOrderByWithRelationInput = {
   visita?: Prisma.VisitaOrderByWithRelationInput
   producto?: Prisma.ProductoOrderByWithRelationInput
   suscripcionItem?: Prisma.SuscripcionItemOrderByWithRelationInput
-  ordenLinea?: Prisma.OrdenLineaOrderByWithRelationInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenOrderByWithRelationInput
 }
 
 export type VisitaProductoWhereUniqueInput = Prisma.AtLeast<{
@@ -262,7 +262,7 @@ export type VisitaProductoWhereUniqueInput = Prisma.AtLeast<{
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
   suscripcionItem?: Prisma.XOR<Prisma.SuscripcionItemNullableScalarRelationFilter, Prisma.SuscripcionItemWhereInput> | null
-  ordenLinea?: Prisma.XOR<Prisma.OrdenLineaNullableScalarRelationFilter, Prisma.OrdenLineaWhereInput> | null
+  ordenLineaOrigen?: Prisma.XOR<Prisma.OrdenLineaOrigenNullableScalarRelationFilter, Prisma.OrdenLineaOrigenWhereInput> | null
 }, "id" | "visitaId_productoId">
 
 export type VisitaProductoOrderByWithAggregationInput = {
@@ -298,7 +298,7 @@ export type VisitaProductoCreateInput = {
   visita: Prisma.VisitaCreateNestedOneWithoutProductosInput
   producto: Prisma.ProductoCreateNestedOneWithoutVisitaProductosInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
-  ordenLinea?: Prisma.OrdenLineaCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoUncheckedCreateInput = {
@@ -308,7 +308,7 @@ export type VisitaProductoUncheckedCreateInput = {
   suscripcionItemId?: string | null
   posicion?: number
   liberadoAt?: Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoUpdateInput = {
@@ -318,7 +318,7 @@ export type VisitaProductoUpdateInput = {
   visita?: Prisma.VisitaUpdateOneRequiredWithoutProductosNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVisitaProductosNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
-  ordenLinea?: Prisma.OrdenLineaUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoUncheckedUpdateInput = {
@@ -328,7 +328,7 @@ export type VisitaProductoUncheckedUpdateInput = {
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoCreateManyInput = {
@@ -405,9 +405,9 @@ export type VisitaProductoSumOrderByAggregateInput = {
   posicion?: Prisma.SortOrder
 }
 
-export type VisitaProductoNullableScalarRelationFilter = {
-  is?: Prisma.VisitaProductoWhereInput | null
-  isNot?: Prisma.VisitaProductoWhereInput | null
+export type VisitaProductoScalarRelationFilter = {
+  is?: Prisma.VisitaProductoWhereInput
+  isNot?: Prisma.VisitaProductoWhereInput
 }
 
 export type VisitaProductoCreateNestedManyWithoutProductoInput = {
@@ -536,20 +536,18 @@ export type VisitaProductoUncheckedUpdateManyWithoutVisitaNestedInput = {
   deleteMany?: Prisma.VisitaProductoScalarWhereInput | Prisma.VisitaProductoScalarWhereInput[]
 }
 
-export type VisitaProductoCreateNestedOneWithoutOrdenLineaInput = {
-  create?: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaInput>
-  connectOrCreate?: Prisma.VisitaProductoCreateOrConnectWithoutOrdenLineaInput
+export type VisitaProductoCreateNestedOneWithoutOrdenLineaOrigenInput = {
+  create?: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaOrigenInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaOrigenInput>
+  connectOrCreate?: Prisma.VisitaProductoCreateOrConnectWithoutOrdenLineaOrigenInput
   connect?: Prisma.VisitaProductoWhereUniqueInput
 }
 
-export type VisitaProductoUpdateOneWithoutOrdenLineaNestedInput = {
-  create?: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaInput>
-  connectOrCreate?: Prisma.VisitaProductoCreateOrConnectWithoutOrdenLineaInput
-  upsert?: Prisma.VisitaProductoUpsertWithoutOrdenLineaInput
-  disconnect?: Prisma.VisitaProductoWhereInput | boolean
-  delete?: Prisma.VisitaProductoWhereInput | boolean
+export type VisitaProductoUpdateOneRequiredWithoutOrdenLineaOrigenNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaOrigenInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaOrigenInput>
+  connectOrCreate?: Prisma.VisitaProductoCreateOrConnectWithoutOrdenLineaOrigenInput
+  upsert?: Prisma.VisitaProductoUpsertWithoutOrdenLineaOrigenInput
   connect?: Prisma.VisitaProductoWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaProductoUpdateToOneWithWhereWithoutOrdenLineaInput, Prisma.VisitaProductoUpdateWithoutOrdenLineaInput>, Prisma.VisitaProductoUncheckedUpdateWithoutOrdenLineaInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaProductoUpdateToOneWithWhereWithoutOrdenLineaOrigenInput, Prisma.VisitaProductoUpdateWithoutOrdenLineaOrigenInput>, Prisma.VisitaProductoUncheckedUpdateWithoutOrdenLineaOrigenInput>
 }
 
 export type VisitaProductoCreateWithoutProductoInput = {
@@ -558,7 +556,7 @@ export type VisitaProductoCreateWithoutProductoInput = {
   liberadoAt?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutProductosInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
-  ordenLinea?: Prisma.OrdenLineaCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoUncheckedCreateWithoutProductoInput = {
@@ -567,7 +565,7 @@ export type VisitaProductoUncheckedCreateWithoutProductoInput = {
   suscripcionItemId?: string | null
   posicion?: number
   liberadoAt?: Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoCreateOrConnectWithoutProductoInput = {
@@ -614,7 +612,7 @@ export type VisitaProductoCreateWithoutSuscripcionItemInput = {
   liberadoAt?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutProductosInput
   producto: Prisma.ProductoCreateNestedOneWithoutVisitaProductosInput
-  ordenLinea?: Prisma.OrdenLineaCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoUncheckedCreateWithoutSuscripcionItemInput = {
@@ -623,7 +621,7 @@ export type VisitaProductoUncheckedCreateWithoutSuscripcionItemInput = {
   productoId: string
   posicion?: number
   liberadoAt?: Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoCreateOrConnectWithoutSuscripcionItemInput = {
@@ -658,7 +656,7 @@ export type VisitaProductoCreateWithoutVisitaInput = {
   liberadoAt?: Date | string | null
   producto: Prisma.ProductoCreateNestedOneWithoutVisitaProductosInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
-  ordenLinea?: Prisma.OrdenLineaCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoUncheckedCreateWithoutVisitaInput = {
@@ -667,7 +665,7 @@ export type VisitaProductoUncheckedCreateWithoutVisitaInput = {
   suscripcionItemId?: string | null
   posicion?: number
   liberadoAt?: Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedCreateNestedOneWithoutVisitaProductoInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedCreateNestedOneWithoutVisitaProductoInput
 }
 
 export type VisitaProductoCreateOrConnectWithoutVisitaInput = {
@@ -696,7 +694,7 @@ export type VisitaProductoUpdateManyWithWhereWithoutVisitaInput = {
   data: Prisma.XOR<Prisma.VisitaProductoUpdateManyMutationInput, Prisma.VisitaProductoUncheckedUpdateManyWithoutVisitaInput>
 }
 
-export type VisitaProductoCreateWithoutOrdenLineaInput = {
+export type VisitaProductoCreateWithoutOrdenLineaOrigenInput = {
   id?: string
   posicion?: number
   liberadoAt?: Date | string | null
@@ -705,7 +703,7 @@ export type VisitaProductoCreateWithoutOrdenLineaInput = {
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutVisitaProductosInput
 }
 
-export type VisitaProductoUncheckedCreateWithoutOrdenLineaInput = {
+export type VisitaProductoUncheckedCreateWithoutOrdenLineaOrigenInput = {
   id?: string
   visitaId: string
   productoId: string
@@ -714,23 +712,23 @@ export type VisitaProductoUncheckedCreateWithoutOrdenLineaInput = {
   liberadoAt?: Date | string | null
 }
 
-export type VisitaProductoCreateOrConnectWithoutOrdenLineaInput = {
+export type VisitaProductoCreateOrConnectWithoutOrdenLineaOrigenInput = {
   where: Prisma.VisitaProductoWhereUniqueInput
-  create: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaInput>
+  create: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaOrigenInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaOrigenInput>
 }
 
-export type VisitaProductoUpsertWithoutOrdenLineaInput = {
-  update: Prisma.XOR<Prisma.VisitaProductoUpdateWithoutOrdenLineaInput, Prisma.VisitaProductoUncheckedUpdateWithoutOrdenLineaInput>
-  create: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaInput>
+export type VisitaProductoUpsertWithoutOrdenLineaOrigenInput = {
+  update: Prisma.XOR<Prisma.VisitaProductoUpdateWithoutOrdenLineaOrigenInput, Prisma.VisitaProductoUncheckedUpdateWithoutOrdenLineaOrigenInput>
+  create: Prisma.XOR<Prisma.VisitaProductoCreateWithoutOrdenLineaOrigenInput, Prisma.VisitaProductoUncheckedCreateWithoutOrdenLineaOrigenInput>
   where?: Prisma.VisitaProductoWhereInput
 }
 
-export type VisitaProductoUpdateToOneWithWhereWithoutOrdenLineaInput = {
+export type VisitaProductoUpdateToOneWithWhereWithoutOrdenLineaOrigenInput = {
   where?: Prisma.VisitaProductoWhereInput
-  data: Prisma.XOR<Prisma.VisitaProductoUpdateWithoutOrdenLineaInput, Prisma.VisitaProductoUncheckedUpdateWithoutOrdenLineaInput>
+  data: Prisma.XOR<Prisma.VisitaProductoUpdateWithoutOrdenLineaOrigenInput, Prisma.VisitaProductoUncheckedUpdateWithoutOrdenLineaOrigenInput>
 }
 
-export type VisitaProductoUpdateWithoutOrdenLineaInput = {
+export type VisitaProductoUpdateWithoutOrdenLineaOrigenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -739,7 +737,7 @@ export type VisitaProductoUpdateWithoutOrdenLineaInput = {
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
 }
 
-export type VisitaProductoUncheckedUpdateWithoutOrdenLineaInput = {
+export type VisitaProductoUncheckedUpdateWithoutOrdenLineaOrigenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   visitaId?: Prisma.StringFieldUpdateOperationsInput | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -762,7 +760,7 @@ export type VisitaProductoUpdateWithoutProductoInput = {
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutProductosNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
-  ordenLinea?: Prisma.OrdenLineaUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoUncheckedUpdateWithoutProductoInput = {
@@ -771,7 +769,7 @@ export type VisitaProductoUncheckedUpdateWithoutProductoInput = {
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoUncheckedUpdateManyWithoutProductoInput = {
@@ -796,7 +794,7 @@ export type VisitaProductoUpdateWithoutSuscripcionItemInput = {
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutProductosNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVisitaProductosNestedInput
-  ordenLinea?: Prisma.OrdenLineaUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoUncheckedUpdateWithoutSuscripcionItemInput = {
@@ -805,7 +803,7 @@ export type VisitaProductoUncheckedUpdateWithoutSuscripcionItemInput = {
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoUncheckedUpdateManyWithoutSuscripcionItemInput = {
@@ -830,7 +828,7 @@ export type VisitaProductoUpdateWithoutVisitaInput = {
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVisitaProductosNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput
-  ordenLinea?: Prisma.OrdenLineaUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoUncheckedUpdateWithoutVisitaInput = {
@@ -839,7 +837,7 @@ export type VisitaProductoUncheckedUpdateWithoutVisitaInput = {
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   liberadoAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  ordenLinea?: Prisma.OrdenLineaUncheckedUpdateOneWithoutVisitaProductoNestedInput
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenUncheckedUpdateOneWithoutVisitaProductoNestedInput
 }
 
 export type VisitaProductoUncheckedUpdateManyWithoutVisitaInput = {
@@ -862,7 +860,7 @@ export type VisitaProductoSelect<ExtArgs extends runtime.Types.Extensions.Intern
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.VisitaProducto$suscripcionItemArgs<ExtArgs>
-  ordenLinea?: boolean | Prisma.VisitaProducto$ordenLineaArgs<ExtArgs>
+  ordenLineaOrigen?: boolean | Prisma.VisitaProducto$ordenLineaOrigenArgs<ExtArgs>
 }, ExtArgs["result"]["visitaProducto"]>
 
 export type VisitaProductoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -903,7 +901,7 @@ export type VisitaProductoInclude<ExtArgs extends runtime.Types.Extensions.Inter
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.VisitaProducto$suscripcionItemArgs<ExtArgs>
-  ordenLinea?: boolean | Prisma.VisitaProducto$ordenLineaArgs<ExtArgs>
+  ordenLineaOrigen?: boolean | Prisma.VisitaProducto$ordenLineaOrigenArgs<ExtArgs>
 }
 export type VisitaProductoIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
@@ -923,9 +921,10 @@ export type $VisitaProductoPayload<ExtArgs extends runtime.Types.Extensions.Inte
     producto: Prisma.$ProductoPayload<ExtArgs>
     suscripcionItem: Prisma.$SuscripcionItemPayload<ExtArgs> | null
     /**
-     * Dónde se cobró, si ya se cobró. Único: un trabajo se factura una sola vez.
+     * Dónde se cobró, si ya se cobró. El id es único en `OrdenLineaOrigen`, así
+     * que esto es a lo sumo uno: un trabajo se factura una sola vez.
      */
-    ordenLinea: Prisma.$OrdenLineaPayload<ExtArgs> | null
+    ordenLineaOrigen: Prisma.$OrdenLineaOrigenPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1353,7 +1352,7 @@ export interface Prisma__VisitaProductoClient<T, Null = never, ExtArgs extends r
   visita<T extends Prisma.VisitaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaDefaultArgs<ExtArgs>>): Prisma.Prisma__VisitaClient<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   producto<T extends Prisma.ProductoDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductoDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   suscripcionItem<T extends Prisma.VisitaProducto$suscripcionItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaProducto$suscripcionItemArgs<ExtArgs>>): Prisma.Prisma__SuscripcionItemClient<runtime.Types.Result.GetResult<Prisma.$SuscripcionItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  ordenLinea<T extends Prisma.VisitaProducto$ordenLineaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaProducto$ordenLineaArgs<ExtArgs>>): Prisma.Prisma__OrdenLineaClient<runtime.Types.Result.GetResult<Prisma.$OrdenLineaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  ordenLineaOrigen<T extends Prisma.VisitaProducto$ordenLineaOrigenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaProducto$ordenLineaOrigenArgs<ExtArgs>>): Prisma.Prisma__OrdenLineaOrigenClient<runtime.Types.Result.GetResult<Prisma.$OrdenLineaOrigenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1809,22 +1808,22 @@ export type VisitaProducto$suscripcionItemArgs<ExtArgs extends runtime.Types.Ext
 }
 
 /**
- * VisitaProducto.ordenLinea
+ * VisitaProducto.ordenLineaOrigen
  */
-export type VisitaProducto$ordenLineaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type VisitaProducto$ordenLineaOrigenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the OrdenLinea
+   * Select specific fields to fetch from the OrdenLineaOrigen
    */
-  select?: Prisma.OrdenLineaSelect<ExtArgs> | null
+  select?: Prisma.OrdenLineaOrigenSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the OrdenLinea
+   * Omit specific fields from the OrdenLineaOrigen
    */
-  omit?: Prisma.OrdenLineaOmit<ExtArgs> | null
+  omit?: Prisma.OrdenLineaOrigenOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.OrdenLineaInclude<ExtArgs> | null
-  where?: Prisma.OrdenLineaWhereInput
+  include?: Prisma.OrdenLineaOrigenInclude<ExtArgs> | null
+  where?: Prisma.OrdenLineaOrigenWhereInput
 }
 
 /**

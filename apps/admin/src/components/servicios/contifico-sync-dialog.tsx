@@ -80,7 +80,10 @@ export function ContificoSyncDialog({
   guardando?: boolean;
 }) {
   const [paso, setPaso] = useState<Paso>("elegir");
-  const [query, setQuery] = useState(producto.nombre);
+  // Vacío, no con el nombre del producto: el catálogo de Contífico usa otras
+  // palabras que las del portal, así que la búsqueda precargada casi nunca
+  // encontraba nada y había que borrarla antes de escribir la propia.
+  const [query, setQuery] = useState("");
   const [elegido, setElegido] = useState<ContificoProducto | null>(null);
   // Por defecto se renombra: si no, la factura sale con el nombre de ellos y la
   // diferencia se descubre recién cuando el cliente recibe el papel.
@@ -302,7 +305,10 @@ export function ContificoSyncDialog({
               </div>
             </div>
 
-            {elegido.nombre !== producto.nombre ? (
+            {/* Solo cuando los nombres difieren. Con nombres iguales no hay
+                decisión que tomar, y decir que no hay nada que hacer era una
+                línea más para leer. */}
+            {elegido.nombre !== producto.nombre && (
               <label className="flex cursor-pointer items-start gap-2.5 rounded-md bg-amber-50 p-3">
                 <Checkbox
                   checked={actualizarNombre}
@@ -320,19 +326,16 @@ export function ContificoSyncDialog({
                   </span>
                 </span>
               </label>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                Los nombres coinciden: no hace falta renombrar nada.
-              </p>
             )}
 
-            <div className="rounded-md border">
-              <div className="border-b bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground">
-                {actualizarNombre && elegido.nombre !== producto.nombre
-                  ? "Lo que se escribe en Contífico"
-                  : "No se escribe nada en Contífico"}
-              </div>
-              {actualizarNombre && elegido.nombre !== producto.nombre ? (
+            {/* Solo cuando hay algo que escribir allá. Un cuadro para decir
+                "no se escribe nada" era un bloque entero para informar que no
+                pasa nada. */}
+            {actualizarNombre && elegido.nombre !== producto.nombre && (
+              <div className="rounded-md border">
+                <div className="border-b bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground">
+                  Lo que se escribe en Contífico
+                </div>
                 <dl className="divide-y text-sm">
                   <div className="flex gap-3 px-3 py-2">
                     <dt className="w-28 flex-none text-muted-foreground">
@@ -351,12 +354,8 @@ export function ContificoSyncDialog({
                     </dd>
                   </div>
                 </dl>
-              ) : (
-                <p className="px-3 py-2 text-sm text-muted-foreground">
-                  Solo se guarda la referencia en el portal.
-                </p>
-              )}
-            </div>
+              </div>
+            )}
 
             {actualizarNombre && elegido.nombre !== producto.nombre && (
               <p className="text-xs text-muted-foreground">

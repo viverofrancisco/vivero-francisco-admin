@@ -15,13 +15,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
-import { Badge } from "@/components/ui/badge";
+import {
+  SelectorVisitas,
+  origenDeLinea,
+  rearmarPorVisitas,
+  visitasDePendientes,
+  nuevoUid,
+  type LineaEditable,
+  type Pendiente,
+} from "./selector-visitas";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
 import { money, fecha } from "./formato";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
-import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
+import { AvisoSinVincular } from "./aviso-sin-vincular";
 
 interface Cliente {
   id: string;
@@ -40,45 +48,12 @@ interface Producto {
   contificoProductoId: string | null;
 }
 
-/** Trabajo hecho y todavía sin facturar, tal como lo devuelve la API. */
-interface Pendiente {
-  tipo: "visita" | "suscripcion";
-  productoId: string;
-  descripcion: string;
-  precio: string;
-  ivaTasa: string;
-  visitaProductoId?: string;
-  visitaId?: string;
-  visitaNumero?: number;
-  suscripcionItemId?: string;
-  suscripcionId?: string;
-  fecha?: string;
-  periodoInicio?: string;
-  periodoFin?: string;
-}
-
 /**
- * Una línea del editor. Los importes se tipean como texto para no pelear con
- * el input mientras se escribe; se convierten a número recién al enviar.
+ * El tipo de línea, el de pendiente y el rearmado por visitas viven en
+ * `selector-visitas`: los comparte con la edición de un borrador, que es el
+ * mismo formulario en otro momento.
  */
-interface Linea {
-  uid: string;
-  descripcion: string;
-  cantidad: string;
-  precioUnitario: string;
-  ivaTasa: string;
-  productoId: string;
-  /** Procedencia. Solo la traen las líneas que salen de un pendiente. */
-  visitaProductoId: string | null;
-  suscripcionItemId: string | null;
-  periodoInicio: string | null;
-  periodoFin: string | null;
-  /** Qué la originó, para mostrarlo debajo del nombre. */
-  origen: string | null;
-}
-
-let contador = 0;
-const nuevoUid = () => `l${contador++}`;
+type Linea = LineaEditable;
 
 /**
  * Toda línea sale de un producto del catálogo.
@@ -93,11 +68,10 @@ function lineaBase(): Omit<Linea, "descripcion" | "productoId"> {
     cantidad: "1",
     precioUnitario: "",
     ivaTasa: "0",
-    visitaProductoId: null,
+    visitaProductoIds: [],
     suscripcionItemId: null,
     periodoInicio: null,
     periodoFin: null,
-    origen: null,
   };
 }
 
@@ -109,14 +83,10 @@ function lineaDesde(p: Pendiente): Linea {
     precioUnitario: String(Number(p.precio)),
     ivaTasa: String(Number(p.ivaTasa)),
     productoId: p.productoId,
-    visitaProductoId: p.visitaProductoId ?? null,
+    visitaProductoIds: p.visitaProductoId ? [p.visitaProductoId] : [],
     suscripcionItemId: p.suscripcionItemId ?? null,
     periodoInicio: p.periodoInicio ?? null,
     periodoFin: p.periodoFin ?? null,
-    origen:
-      p.tipo === "visita"
-        ? `Visita del ${fecha(p.fecha!)}`
-        : `Suscripción · ${fecha(p.periodoInicio!)} → ${fecha(p.periodoFin!)}`,
   };
 }
 
@@ -188,18 +158,20 @@ export function NuevaOrdenPage({
    * cliente debe. Lo que sí se puede es sumar productos del catálogo.
    */
   /**
-   * A qué visita es esta orden. Vacío = todavía a ninguna.
+   * De qué visitas es esta orden. Vacío = de ninguna todavía.
    *
-   * Se llega con una puesta al entrar desde la ficha de la visita, y si no se
-   * elige acá. En los dos casos manda lo mismo: sus productos entran completos
-   * —una visita se factura entera— y no se sacan de a uno.
+   * **Pueden ser varias**: cobrarle a alguien el mes entero en una sola orden
+   * es lo normal. Se llega con una puesta al entrar desde la ficha de una
+   * visita, y las demás se marcan acá. En todos los casos manda lo mismo: los
+   * productos de cada visita entran completos —una visita se factura entera— y
+   * no se sacan de a uno.
    */
-  const [visitaId, setVisitaId] = useState(
-    desdeVisita && (preseleccion?.length ?? 0) > 0 ? desdeVisita.id : ""
+  const [visitaIds, setVisitaIds] = useState<string[]>(
+    desdeVisita && (preseleccion?.length ?? 0) > 0 ? [desdeVisita.id] : []
   );
-  /** Se entró desde la visita: cambiarla acá sería no ser esa orden. */
+  /** Se entró desde la visita: sacarla sería no ser esa orden. */
   const bloqueada = desdeVisita != null && (preseleccion?.length ?? 0) > 0;
-  const fijada = (l: Linea) => visitaId !== "" && !!l.visitaProductoId;
+  const fijada = (l: Linea) => l.visitaProductoIds.length > 0;
   const nombreDelCliente = (() => {
     const c = clientes.find((x) => x.id === clienteId);
     return c ? nombreCliente(c) : "El cliente";
@@ -210,7 +182,6 @@ export function NuevaOrdenPage({
   const [cargandoPendientes, setCargandoPendientes] = useState(false);
   const [guardando, setGuardando] = useState(false);
   /** La orden recién creada, mientras se le registra el cobro. */
-  const [cobrando, setCobrando] = useState<FacturaCobrable | null>(null);
   const [productoAAgregar, setProductoAAgregar] = useState("");
   // Con qué se va a facturar. Se elige acá, con el cliente delante.
   const [datoFacturacionId, setDatoFacturacionId] = useState<string | null>(null);
@@ -235,7 +206,11 @@ export function NuevaOrdenPage({
   const seleccionarCliente = async (id: string) => {
     setClienteId(id);
     // Las líneas que venían de pendientes eran de otro cliente: no valen más.
-    setLineas((prev) => prev.filter((l) => l.origen === null));
+    setLineas((prev) =>
+      prev.filter(
+        (l) => l.visitaProductoIds.length === 0 && !l.suscripcionItemId
+      )
+    );
     setPendientes([]);
     setSuscritos([]);
     setDatoFacturacionId(null);
@@ -246,10 +221,6 @@ export function NuevaOrdenPage({
   const agregarProducto = (productoId: string) => {
     const p = productos.find((x) => x.id === productoId);
     if (!p) return;
-    if (!p.contificoProductoId) {
-      toast.error(`"${p.nombre}" no está sincronizado con Contífico`);
-      return;
-    }
     setLineas((prev) => [
       ...prev,
       {
@@ -265,17 +236,60 @@ export function NuevaOrdenPage({
   // Lo que ya está en la orden no vuelve a ofrecerse. La misma clave que usa
   // el índice único de OrdenLinea, así que coincide con lo que rechaza la BD.
   const yaEnLaOrden = new Set(
-    lineas
-      .map((l) =>
-        l.visitaProductoId ??
-        (l.suscripcionItemId
-          ? `${l.suscripcionItemId}:${l.periodoInicio}`
-          : null)
-      )
-      .filter((k): k is string => k !== null)
+    lineas.flatMap((l) => [
+      ...l.visitaProductoIds,
+      ...(l.suscripcionItemId
+        ? [`${l.suscripcionItemId}:${l.periodoInicio}`]
+        : []),
+    ])
   );
   const pendientesDisponibles = pendientes.filter(
     (p) => !yaEnLaOrden.has(clavePendiente(p))
+  );
+
+  /**
+   * Lo pendiente que **no** entra por el selector de visita.
+   *
+   * El trabajo de visitas se carga eligiendo la visita, que trae sus productos
+   * enteros —una visita se factura completa—, así que listarlos también acá,
+   * producto por producto y con su propio botón, era la misma acción escrita
+   * dos veces y una lista larguísima: cuatro filas por visita, veinte por
+   * cliente. Lo que sí necesita una puerta propia son los períodos de plan, que
+   * no tienen selector.
+   */
+  const periodosPendientes = pendientesDisponibles.filter(
+    (p) => p.tipo === "suscripcion"
+  );
+
+  /**
+   * Un período, no un producto suelto.
+   *
+   * Un período se factura entero igual que una visita —agregar uno arrastra a
+   * sus hermanos—, así que una fila por producto mostraba tres veces la misma
+   * acción y hacía la lista larga sin decir nada nuevo. Una fila por período,
+   * con lo que incluye debajo.
+   */
+  const periodosAgrupados = [
+    ...periodosPendientes
+      .reduce((mapa, p) => {
+        const clave = `${p.suscripcionId}:${p.periodoInicio}`;
+        const actual = mapa.get(clave);
+        if (actual) {
+          actual.productos.push(p.descripcion);
+          actual.total += Number(p.precio);
+        } else {
+          mapa.set(clave, {
+            clave,
+            muestra: p,
+            productos: [p.descripcion],
+            total: Number(p.precio),
+          });
+        }
+        return mapa;
+      }, new Map<string, { clave: string; muestra: Pendiente; productos: string[]; total: number }>())
+      .values(),
+  ].sort((a, b) =>
+    (a.muestra.periodoInicio ?? "").localeCompare(b.muestra.periodoInicio ?? "")
   );
 
   /**
@@ -285,23 +299,7 @@ export function NuevaOrdenPage({
    * mientras le quede algún producto sin línea de orden. Las que ya se
    * facturaron no están, que es justo lo que se pidió.
    */
-  const visitasPendientes = [
-    ...pendientes
-      .filter((p) => p.tipo === "visita")
-      .reduce((mapa, p) => {
-        const actual = mapa.get(p.visitaId!);
-        if (actual) actual.productos.push(p.descripcion);
-        else
-          mapa.set(p.visitaId!, {
-            id: p.visitaId!,
-            numero: p.visitaNumero!,
-            fecha: p.fecha!,
-            productos: [p.descripcion],
-          });
-        return mapa;
-      }, new Map<string, { id: string; numero: number; fecha: string; productos: string[] }>())
-      .values(),
-  ].sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const visitasPendientes = visitasDePendientes(pendientes);
 
   /**
    * Qué origen tiene ya esta orden. Una orden no mezcla períodos de plan con
@@ -312,7 +310,7 @@ export function NuevaOrdenPage({
     (l) => l.suscripcionItemId
   )
     ? "PLAN"
-    : lineas.some((l) => l.visitaProductoId)
+    : lineas.some((l) => l.visitaProductoIds.length > 0)
       ? "VISITAS"
       : null;
 
@@ -337,44 +335,23 @@ export function NuevaOrdenPage({
     );
 
   /**
-   * Asignar la orden a una visita, o soltarla.
+   * Marcar o desmarcar una visita, y con eso cargar o sacar su trabajo.
    *
-   * No es solo una etiqueta: es cargar su trabajo. `Orden.visitaId` se deduce
+   * No es una etiqueta: es cargar el trabajo. La cabecera de la orden se deduce
    * en el servidor de la procedencia de las líneas, así que una asignación que
    * no las traiga sería una que no queda registrada en ningún lado.
+   *
+   * **El mismo producto de dos visitas es una sola línea.** Dos visitas con
+   * "Control de plagas" son dos trabajos distintos —cada uno se factura una
+   * sola vez— pero un solo producto, y tenerlo dos veces en la orden no le dice
+   * nada a nadie y duplica la decisión de precio. Se junta en una línea con la
+   * cantidad sumada y las dos procedencias.
    */
-  const asignarVisita = (id: string) => {
-    const previa = visitaId;
-    setVisitaId(id);
-    setLineas((prev) => {
-      // Fuera lo de la visita anterior; lo agregado a mano se queda.
-      const deOtraVisita = new Set(
-        pendientes
-          .filter((p) => p.tipo === "visita" && p.visitaId === previa)
-          .map((p) => p.visitaProductoId)
-      );
-      const resto = prev.filter(
-        (l) => !l.visitaProductoId || !deOtraVisita.has(l.visitaProductoId)
-      );
-      if (!id) return resto;
-      const yaEstan = new Set(
-        resto
-          .map((l) => l.visitaProductoId)
-          .filter((x): x is string => x !== null)
-      );
-      return [
-        ...resto,
-        ...pendientes
-          .filter(
-            (p) =>
-              p.tipo === "visita" &&
-              p.visitaId === id &&
-              !yaEstan.has(p.visitaProductoId!)
-          )
-          .map(lineaDesde),
-      ];
-    });
+  const cambiarVisitas = (ids: string[]) => {
+    setVisitaIds(ids);
+    setLineas((prev) => rearmarPorVisitas(prev, ids, pendientes));
   };
+
 
   const agregarPendiente = (p: Pendiente) => {
     if (chocaConElOrigen(p)) {
@@ -397,8 +374,8 @@ export function NuevaOrdenPage({
   };
 
   /** Solo lo que combina con lo que ya hay: agregar todo no rompe la regla. */
-  const agregarTodosLosPendientes = () =>
-    pendientesDisponibles
+  const agregarTodosLosPeriodos = () =>
+    periodosPendientes
       .filter((p) => !chocaConElOrigen(p))
       .forEach((p) => setLineas((prev) => [...prev, lineaDesde(p)]));
 
@@ -423,13 +400,18 @@ export function NuevaOrdenPage({
   );
 
   /**
-   * Crear la orden, y de ahí a cobrarla o a dejarla en borrador.
+   * Crear la orden, y de ahí a facturarla o a dejarla en borrador.
    *
    * Las dos escriben lo mismo: `crearOrden` abre siempre un `BORRADOR`, que es
-   * el único estado editable. La diferencia es qué pasa después —abrir el cobro
-   * o irse al detalle— y qué se exige antes: un borrador puede quedar sin
-   * precios, porque existe justamente para que alguien los ponga. Para cobrar
-   * no, que ahí ya hay una factura de por medio.
+   * el único estado editable. La diferencia es qué pasa después —seguir al
+   * armador del documento o irse al detalle— y qué se exige antes: un borrador
+   * puede quedar sin precios, porque existe justamente para que alguien los
+   * ponga; para emitir no.
+   *
+   * Antes esta acción cobraba de una. Ya no: **qué sale impreso es una
+   * decisión** —varios trabajos pueden ir como una sola línea— y tomarla por
+   * omisión desde un botón de cobro era tomarla a ciegas. El cobro sigue a un
+   * paso: el armador termina en "Emitir y cobrar".
    */
   const crear = async ({ cobrar }: { cobrar: boolean }) => {
     if (!clienteId) return toast.error("Selecciona un cliente");
@@ -460,7 +442,7 @@ export function NuevaOrdenPage({
             precioUnitario: Number(l.precioUnitario),
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
-            visitaProductoId: l.visitaProductoId,
+            visitaProductoIds: l.visitaProductoIds,
             suscripcionItemId: l.suscripcionItemId,
             periodoInicio: l.periodoInicio,
             periodoFin: l.periodoFin,
@@ -474,16 +456,8 @@ export function NuevaOrdenPage({
         router.push(`/dashboard/ordenes/${orden.id}`);
         return;
       }
-      // El cobro va contra la orden y no contra una factura: el endpoint
-      // confirma, emite y registra en una sola llamada.
       toast.success(`Orden #${orden.numero} creada`);
-      setCobrando({
-        id: orden.id,
-        numero: `Orden #${orden.numero}`,
-        total: totales.total,
-        saldo: totales.total,
-        url: `/api/ordenes/${orden.id}/cobro`,
-      });
+      router.push(`/dashboard/ordenes/${orden.id}/facturar`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos crear la orden");
     } finally {
@@ -491,9 +465,38 @@ export function NuevaOrdenPage({
     }
   };
 
+  /**
+   * Los productos de la orden que todavía no están en Contífico.
+   *
+   * Entran igual —la orden registra lo que se vendió, y lo que tiene que
+   * existir allá es lo que sale impreso— pero sin vínculo no hay `producto_id`
+   * que mandar, así que facturar no es una opción todavía. Se dice acá, con la
+   * orden todavía sin crear, en vez de rebotar adentro del armador.
+   */
+  const sinVincular = (() => {
+    const mapa = new Map<string, { id: string; nombre: string }>();
+    for (const l of lineas) {
+      const p = productos.find((x) => x.id === l.productoId);
+      if (p && !p.contificoProductoId) mapa.set(p.id, { id: p.id, nombre: p.nombre });
+    }
+    return [...mapa.values()];
+  })();
+
+  const noSePuedeGuardar = guardando || !clienteId || lineas.length === 0;
+  /** El borrador se guarda igual: es justamente donde se arregla esto. */
+  const motivoSinFacturar =
+    sinVincular.length > 0
+      ? `${sinVincular.map((p) => `"${p.nombre}"`).join(", ")} ${
+          sinVincular.length === 1 ? "no está vinculado" : "no están vinculados"
+        } con Contífico.`
+      : null;
+
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <div className="flex items-center gap-3">
+    <div className="space-y-6 pb-6">
+      {/* Pegado arriba, con las acciones: una orden puede tener quince líneas y
+          guardar no puede quedar a un scroll de distancia de lo que se edita.
+          Los márgenes negativos lo hacen sangrar hasta los bordes. */}
+      <div className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur-sm md:px-6">
         {/* Vuelve de donde vino: si se entró desde una visita, cancelar tiene
             que devolver a esa visita y no a la lista de órdenes. */}
         <Link
@@ -507,7 +510,7 @@ export function NuevaOrdenPage({
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">Nueva orden</h1>
           {/* Llegando desde una visita hay que decirlo: si no, la línea ya
               cargada parece salida de la nada. */}
@@ -529,50 +532,43 @@ export function NuevaOrdenPage({
             </p>
           )}
         </div>
+        <div className="flex flex-none items-center gap-2">
+          {/* Las dos abren un borrador: `crearOrden` es el único escritor. La
+              diferencia es adónde va después —al armador del documento o al
+              detalle— y qué exige antes: un borrador puede quedar sin precios,
+              para emitir no. */}
+          <Button
+            variant="outline"
+            onClick={() => crear({ cobrar: false })}
+            disabled={noSePuedeGuardar}
+          >
+            Guardar borrador
+          </Button>
+          <Button
+            onClick={() => crear({ cobrar: true })}
+            disabled={noSePuedeGuardar || motivoSinFacturar !== null}
+            title={motivoSinFacturar ?? undefined}
+          >
+            {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Crear y facturar
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px] items-start">
+      <div className="grid items-start gap-6 px-4 md:px-6 lg:grid-cols-[1fr_360px]">
         {/* ── Líneas ─────────────────────────────────────────────── */}
         <div className="space-y-6">
-          {/* De qué visita es la orden. Solo visitas: los períodos de un plan
-              se cobran solos con la renovación, no se asignan a mano. Elegir
-              una carga su trabajo entero, que es lo que la vuelve "de esa
-              visita" cuando el servidor mira la procedencia de las líneas. */}
-          {clienteId && (visitasPendientes.length > 0 || visitaId !== "") && (
-            <Card className="overflow-visible">
-              <CardHeader className="border-b py-3">
-                <CardTitle className="text-base">Visita</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CustomSelect
-                  value={visitaId}
-                  onChange={asignarVisita}
-                  options={visitasPendientes.map((v) => ({
-                    value: v.id,
-                    label: `Visita #${v.numero} · ${fecha(v.fecha)}`,
-                    hint: v.productos.join(", "),
-                  }))}
-                  placeholder="Sin visita"
-                  clearable={!bloqueada}
-                  disabled={bloqueada || origen === "PLAN"}
-                  searchable
-                  searchPlaceholder="Buscar visita..."
-                />
-                {origen === "PLAN" && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Esta orden es de un período de suscripción. El trabajo de
-                    una visita va en otra orden.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Productos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Arriba de las líneas: explica por qué "Crear y facturar" está
+                  apagado, y con quince productos abajo quedaba a un scroll del
+                  botón que apaga. Es también donde lo pone la ficha de la
+                  orden, que muestra lo mismo. */}
+              <AvisoSinVincular productos={sinVincular} bloquea />
+
               {lineas.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
                   Todavía no hay nada en la orden.
@@ -587,19 +583,18 @@ export function NuevaOrdenPage({
                         className="rounded-md border p-3 space-y-2"
                       >
                         <div className="flex items-start gap-2">
-                          <div className="flex-1 space-y-1">
-                            <Input
-                              value={l.descripcion}
-                              onChange={(e) =>
-                                actualizar(l.uid, { descripcion: e.target.value })
-                              }
-                              placeholder="Descripción"
-                              className="font-medium"
-                            />
-                            {l.origen && (
-                              <p className="text-xs text-muted-foreground">
-                                {l.origen}
-                              </p>
+                          {/* El nombre no se edita acá. La orden registra
+                              **lo que se hizo**, y renombrarlo es una decisión
+                              de qué sale impreso: eso se toma al emitir, donde
+                              además se puede juntar todo en una sola línea. */}
+                          <div className="flex flex-1 flex-wrap items-baseline gap-x-2">
+                            <p className="text-sm font-medium">
+                              {l.descripcion}
+                            </p>
+                            {origenDeLinea(l) && (
+                              <span className="text-xs text-muted-foreground">
+                                {origenDeLinea(l)}
+                              </span>
                             )}
                           </div>
                           {!fijada(l) && (
@@ -677,14 +672,14 @@ export function NuevaOrdenPage({
                     onChange={agregarProducto}
                     // Lo que está en un plan del cliente **sí** se puede
                     // agregar: es un extra sobre lo que el plan cubre, y quien
-                    // arma la orden es quien decide si se cobra. Lo único que
-                    // no entra es lo que no se puede facturar.
+                    // arma la orden es quien decide si se cobra. Y uno sin
+                    // vincular a Contífico también entra: la orden es interna,
+                    // y lo que necesita estar allá es lo que sale impreso.
                     options={productos.map((p) => ({
                       value: p.id,
                       label: p.nombre,
-                      disabled: !p.contificoProductoId,
                       hint: !p.contificoProductoId
-                        ? "No se puede facturar: falta vincularlo con Contífico desde su ficha."
+                        ? "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto."
                         : suscritos.includes(p.id)
                           ? `${nombreDelCliente} tiene este producto en una suscripción.`
                           : undefined,
@@ -695,100 +690,109 @@ export function NuevaOrdenPage({
                   />
                 </div>
               </div>
+
+              {/* Los totales al pie de las líneas, que es de donde salen. En la
+                  columna de al lado obligaban a mirar a otro lado para ver el
+                  efecto de lo que se acaba de tipear. */}
+              {lineas.length > 0 && (
+                <div className="space-y-1.5 border-t pt-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="tabular-nums">
+                      {money(totales.subtotal)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">IVA</span>
+                    <span className="tabular-nums">{money(totales.iva)}</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-1.5 text-base font-bold">
+                    <span>Total</span>
+                    <span className="tabular-nums">{money(totales.total)}</span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Notas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                id="notas"
-                value={notas}
-                onChange={(e) => setNotas(e.target.value)}
-                placeholder="Opcional"
-                rows={3}
+          {/* Debajo de los productos porque **es** la forma de cargarlos: se
+              marcan las visitas y entra su trabajo entero. Marcar no es una
+              etiqueta —la cabecera de la orden sale de la procedencia de las
+              líneas—, así que marcar sin traer el trabajo sería una asignación
+              que no queda registrada en ningún lado.
+
+              Lista con casillas y no un desplegable: se eligen **varias**, y
+              hay que ver de un vistazo cuáles están marcadas. */}
+          {clienteId &&
+            (visitasPendientes.length > 0 || visitaIds.length > 0) && (
+              <SelectorVisitas
+                visitas={visitasPendientes}
+                marcadas={visitaIds}
+                onCambiar={cambiarVisitas}
+                fija={bloqueada ? desdeVisita?.id : null}
+                deshabilitado={origen === "PLAN"}
+                motivoDeshabilitado="Esta orden es de un período de suscripción. El trabajo de una visita va en otra orden."
               />
-            </CardContent>
-          </Card>
+            )}
 
-          {/* ── Pendientes de facturar ───────────────────────────── */}
-          {clienteId && visitaId === "" && (
+          {/* ── Períodos de suscripción por facturar ─────────────── */}
+          {clienteId &&
+            visitaIds.length === 0 &&
+            periodosPendientes.length > 0 && (
             <Card>
               <CardHeader className="border-b py-3">
                 <CardTitle className="text-base">
-                  Pendiente de facturar
+                  Períodos por facturar
                 </CardTitle>
-                {pendientesDisponibles.length > 0 && (
-                  <CardAction>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={agregarTodosLosPendientes}
-                    >
-                      Agregar todo
-                    </Button>
-                  </CardAction>
-                )}
+                <CardAction>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={agregarTodosLosPeriodos}
+                  >
+                    Agregar todos
+                  </Button>
+                </CardAction>
               </CardHeader>
               <CardContent>
                 {cargandoPendientes ? (
                   <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Buscando…
-                  </div>
-                ) : pendientesDisponibles.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    {pendientes.length === 0
-                      ? "Este cliente no tiene trabajo sin facturar."
-                      : "Ya agregaste todo lo pendiente a la orden."}
-                  </p>
+
+        </div>
                 ) : (
                   <div className="divide-y">
-                    {pendientesDisponibles.map((p) => (
+                    {periodosAgrupados.map((g) => (
                       <div
-                        key={clavePendiente(p)}
+                        key={g.clave}
                         className={`flex items-center justify-between gap-3 py-2.5 ${
-                          chocaConElOrigen(p) ? "opacity-50" : ""
+                          chocaConElOrigen(g.muestra) ? "opacity-50" : ""
                         }`}
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">
-                            {p.descripcion}
+                          <p className="text-sm font-medium">
+                            {fecha(g.muestra.periodoInicio!)} →{" "}
+                            {fecha(g.muestra.periodoFin!)}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {p.tipo === "visita"
-                              ? `Visita · ${fecha(p.fecha!)}`
-                              : `${fecha(p.periodoInicio!)} → ${fecha(p.periodoFin!)}`}
+                          <p className="truncate text-xs text-muted-foreground">
+                            {g.productos.join(", ")}
                           </p>
-                          {chocaConElOrigen(p) && (
+                          {chocaConElOrigen(g.muestra) && (
                             <p className="text-xs text-amber-700">
-                              Va en otra orden: esta es{" "}
-                              {origen === "PLAN"
-                                ? "de una suscripción"
-                                : "de visitas"}
-                              .
+                              Va en otra orden: esta es de visitas.
                             </p>
                           )}
                         </div>
                         <div className="flex flex-none items-center gap-3">
-                          <Badge
-                            variant={
-                              p.tipo === "visita" ? "outline" : "secondary"
-                            }
-                            className="text-xs"
-                          >
-                            {p.tipo === "visita" ? "Visita" : "Suscripción"}
-                          </Badge>
                           <span className="font-semibold tabular-nums">
-                            {money(p.precio)}
+                            {money(g.total)}
                           </span>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => agregarPendiente(p)}
-                            disabled={chocaConElOrigen(p)}
+                            onClick={() => agregarPendiente(g.muestra)}
+                            disabled={chocaConElOrigen(g.muestra)}
                           >
                             Agregar
                           </Button>
@@ -802,20 +806,8 @@ export function NuevaOrdenPage({
           )}
         </div>
 
-        {/* Se abre con la orden ya creada. Al cerrarlo —haya cobrado o no—
-            se va a su ficha: existe igual, y quedarse en un formulario vacío
-            haría pensar que no se guardó nada. */}
-        <CobroDialog
-          factura={cobrando}
-          onClose={() => {
-            const id = cobrando?.id;
-            setCobrando(null);
-            if (id) router.push(`/dashboard/ordenes/${id}`);
-          }}
-        />
-
-        {/* ── Cliente y totales ──────────────────────────────────── */}
-        <div className="space-y-6 lg:sticky lg:top-6">
+        {/* ── Cliente, facturación y notas ───────────────────────── */}
+        <div className="space-y-6">
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Cliente</CardTitle>
@@ -853,42 +845,21 @@ export function NuevaOrdenPage({
             </Card>
           )}
 
+          {/* Notas en la columna derecha, con lo demás que describe la orden y
+              no lo que se vendió. Entre las líneas y el catálogo interrumpía
+              el armado. */}
           <Card>
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Resumen</CardTitle>
+              <CardTitle className="text-base">Notas</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="tabular-nums">{money(totales.subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">IVA</span>
-                <span className="tabular-nums">{money(totales.iva)}</span>
-              </div>
-              <div className="flex justify-between border-t pt-2 font-bold">
-                <span>Total</span>
-                <span className="tabular-nums">{money(totales.total)}</span>
-              </div>
-              <Button
-                className="mt-3 w-full"
-                onClick={() => crear({ cobrar: true })}
-                disabled={guardando || !clienteId || lineas.length === 0}
-              >
-                {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Crear y cobrar
-              </Button>
-              {/* Lo mismo por debajo: las dos abren un borrador. Esta se queda
-                  ahí, para una orden que todavía hay que precisar o que se
-                  cobra en otro momento. */}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => crear({ cobrar: false })}
-                disabled={guardando || !clienteId || lineas.length === 0}
-              >
-                Guardar borrador
-              </Button>
+            <CardContent>
+              <Textarea
+                id="notas"
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+                placeholder="Opcional"
+                rows={3}
+              />
             </CardContent>
           </Card>
         </div>

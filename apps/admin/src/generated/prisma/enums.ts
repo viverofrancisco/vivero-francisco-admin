@@ -125,6 +125,14 @@ export const EstadoFactura = {
 export type EstadoFactura = (typeof EstadoFactura)[keyof typeof EstadoFactura]
 
 
+export const TipoDocumento = {
+  FACTURA: 'FACTURA',
+  NO_AUTORIZADO: 'NO_AUTORIZADO'
+} as const
+
+export type TipoDocumento = (typeof TipoDocumento)[keyof typeof TipoDocumento]
+
+
 export const TipoIdentificacion = {
   CEDULA: 'CEDULA',
   RUC: 'RUC'

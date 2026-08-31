@@ -30,8 +30,9 @@ export async function GET(request: Request) {
       suscripciones: {
         creadas: suscripciones.creadas.length,
         omitidas: suscripciones.omitidas.length,
-        // Las omitidas necesitan que alguien haga algo (vincular un producto),
-        // así que van con detalle en la respuesta del cron.
+        // Las omitidas necesitan que alguien haga algo —una suscripción sin
+        // productos activos, una visita que falló al armar su borrador—, así
+        // que van con detalle en la respuesta del cron.
         detalleOmitidas: suscripciones.omitidas,
       },
       visitas: {

@@ -339,8 +339,9 @@ export function ClienteDetailTabs({
                 <CardTitle>Órdenes</CardTitle>
                 <CardAction>
                   <Link href={`/dashboard/ordenes/nueva?cliente=${cliente.id}`}>
-                    <Button size="sm" variant="ghost" title="Nueva orden">
-                      <Plus className="h-4 w-4" />
+                    <Button size="sm" variant="outline">
+                      <Plus className="mr-2 h-3.5 w-3.5" />
+                      Nueva orden
                     </Button>
                   </Link>
                 </CardAction>
@@ -405,8 +406,9 @@ export function ClienteDetailTabs({
                   <Link
                     href={`/dashboard/suscripciones/nueva?cliente=${cliente.id}&from=${volverAca}`}
                   >
-                    <Button size="sm" variant="ghost" title="Agregar suscripción">
-                      <Plus className="h-4 w-4" />
+                    <Button size="sm" variant="outline">
+                      <Plus className="mr-2 h-3.5 w-3.5" />
+                      Nueva suscripción
                     </Button>
                   </Link>
                 </CardAction>

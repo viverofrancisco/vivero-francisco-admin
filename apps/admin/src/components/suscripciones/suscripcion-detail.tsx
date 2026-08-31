@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { ResumenSuscripcion } from "./resumen-suscripcion";
 import { ArrowLeft, Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
@@ -178,10 +179,6 @@ export function SuscripcionDetail({
   const agregar = (productoId: string) => {
     const p = disponibles.find((x) => x.id === productoId);
     if (!p) return;
-    if (!p.sincronizado) {
-      toast.error(`"${p.nombre}" no está sincronizado con Contífico`);
-      return;
-    }
     setItems((prev) => [
       ...prev,
       {
@@ -377,13 +374,15 @@ export function SuscripcionDetail({
                 <CustomSelect
                   value=""
                   onChange={agregar}
+                  // Sin vincular **entra igual**: el plan es el acuerdo
+                  // con el cliente, y el vínculo hace falta recién sobre lo que
+                  // sale impreso, que se decide al emitir.
                   options={sinAgregar.map((p) => ({
                     value: p.id,
                     label: p.nombre,
-                    disabled: !p.sincronizado,
                     hint: p.sincronizado
                       ? undefined
-                      : "No está vinculado con Contífico, así que no se puede facturar.",
+                      : "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto.",
                   }))}
                   placeholder="Agregar producto recurrente"
                   searchable
@@ -404,8 +403,12 @@ export function SuscripcionDetail({
                 <Link
                   href={`/dashboard/visitas/nueva?suscripcion=${suscripcion.id}`}
                 >
-                  <Button size="sm" variant="ghost" title="Nueva visita">
-                    <Plus className="h-4 w-4" />
+                  {/* Con su nombre y no un "+": es la acción de la card, igual
+                      que "Generar órdenes" en la de abajo, y un ícono solo
+                      obliga a adivinar o a esperar el tooltip. */}
+                  <Button size="sm" variant="outline">
+                    <Plus className="mr-2 h-3.5 w-3.5" />
+                    Crear visita
                   </Button>
                 </Link>
               </CardAction>
@@ -537,6 +540,13 @@ export function SuscripcionDetail({
         </div>
 
         <div className="space-y-6">
+          {/* Arriba de los términos: es lo que se mira seguido —cuánto paga el
+              cliente por cada cosa— mientras que los términos se tocan una vez.
+              Un `PERSONAL_ADMIN` no ve plata, así que para él no existe. */}
+          {!soloLectura && (
+            <ResumenSuscripcion items={items} sufijo={sufijo} />
+          )}
+
           <Card className="overflow-visible">
             <CardHeader className="border-b">
               <CardTitle className="text-base">Términos</CardTitle>

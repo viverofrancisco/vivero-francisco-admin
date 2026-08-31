@@ -119,7 +119,7 @@ export function VisitaDetail({
   /** Algo que no cubre ningún plan, así que en algún momento va a una orden. */
   const hayTrabajoSuelto = visita.productos.some((vs) => !vs.suscripcionItemId);
   const porFacturar = visita.productos.filter(
-    (vs) => !vs.suscripcionItemId && !vs.ordenLinea
+    (vs) => !vs.suscripcionItemId && !vs.ordenLineaOrigen
   );
 
   /**
@@ -158,9 +158,9 @@ export function VisitaDetail({
    */
   const ordenes = [
     ...visita.productos
-      .filter((vs) => vs.ordenLinea)
+      .filter((vs) => vs.ordenLineaOrigen)
       .reduce((mapa, vs) => {
-        const l = vs.ordenLinea!;
+        const l = vs.ordenLineaOrigen!.ordenLinea;
         const actual = mapa.get(l.ordenId);
         if (actual) actual.productos.push(vs.producto.nombre);
         else
@@ -305,8 +305,11 @@ export function VisitaDetail({
                 <Link
                   href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
                 >
-                  <Button size="sm" variant="ghost" title="Crear orden">
-                    <Plus className="h-4 w-4" />
+                  {/* Con su nombre y no un "+": es la acción de la card, y un
+                      ícono solo obliga a adivinar o a esperar el tooltip. */}
+                  <Button size="sm" variant="outline">
+                    <Plus className="mr-2 h-3.5 w-3.5" />
+                    Crear orden
                   </Button>
                 </Link>
               </CardAction>

@@ -269,6 +269,7 @@ model Producto {
   visitaMedia      VisitaMedia[]
   informeSecciones InformeSeccion[]
   ordenLineas      OrdenLinea[]
+  facturaLineas    FacturaLinea[]
 }
 
 /// Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
@@ -438,7 +439,7 @@ model Visita {
   messages       VisitaMessage[]
   chatReads      VisitaChatRead[]
   informes       InformeVisita[]
-  ordenes        Orden[]
+  ordenes        OrdenVisita[]
   suscripcion    Suscripcion?      @relation(fields: [suscripcionId], references: [id], onDelete: SetNull)
 
   @@index([clienteId])
@@ -479,8 +480,9 @@ model VisitaProducto {
   visita          Visita           @relation(fields: [visitaId], references: [id], onDelete: Cascade)
   producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
   suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
-  /// Dónde se cobró, si ya se cobró. Único: un trabajo se factura una sola vez.
-  ordenLinea      OrdenLinea?
+  /// Dónde se cobró, si ya se cobró. El id es único en `OrdenLineaOrigen`, así
+  /// que esto es a lo sumo uno: un trabajo se factura una sola vez.
+  ordenLineaOrigen OrdenLineaOrigen?
 
   @@unique([visitaId, productoId])
   @@index([productoId])
@@ -895,20 +897,12 @@ model Orden {
   /// Correlativo interno legible. No es el número de factura del SRI.
   numero            Int         @unique @default(autoincrement())
 
-  /// De qué es esta orden. Como mucho una de las dos, nunca las dos.
+  /// De qué plan es esta orden, cuando es de un plan.
   ///
-  /// Las líneas ya dicen de dónde sale **cada peso** —`visitaProductoId`,
-  /// `suscripcionItemId` + período— pero eso responde otra pregunta. Esto
-  /// responde "¿de qué es esta orden?", que es la que se hace primero y la que
-  /// no tenía respuesta sin recorrer las líneas.
+  /// Las visitas viven en `OrdenVisita` porque pueden ser **varias**; un plan
+  /// no: sus períodos se renuevan solos y cada orden cubre uno.
   ///
-  /// Es coherente porque las reglas ya lo garantizan: una orden no mezcla plan
-  /// con visitas (`ensureNoMezclaOrigenes`) y se lleva el trabajo entero de lo
-  /// que toca (`ensureTrabajoCompleto`). Que además tenga productos agregados a
-  /// mano no la hace menos "de esa visita".
-  ///
-  /// Las dos en null = orden suelta, armada a mano.
-  visitaId          String?
+  /// Null y sin `OrdenVisita` = orden suelta, armada a mano.
   suscripcionId     String?
   fecha             DateTime    @db.Date
   estado            EstadoOrden @default(BORRADOR)
@@ -926,19 +920,40 @@ model Orden {
 
   cliente         Cliente          @relation(fields: [clienteId], references: [id], onDelete: Restrict)
   datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
-  /// `Restrict`: una visita con orden no se borra sin resolver la orden antes.
-  visita          Visita?          @relation(fields: [visitaId], references: [id], onDelete: Restrict)
   suscripcion     Suscripcion?     @relation(fields: [suscripcionId], references: [id], onDelete: Restrict)
   createdBy       User?            @relation("OrdenCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy       User?            @relation("OrdenUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   lineas          OrdenLinea[]
   facturas        Factura[]
+  visitas         OrdenVisita[]
 
   @@index([clienteId, fecha])
   @@index([estado])
   @@index([datoFacturacionId])
-  @@index([visitaId])
   @@index([suscripcionId])
+}
+
+/// De qué visitas es una orden.
+///
+/// Es una lista y no una columna porque **una orden puede cubrir varias
+/// visitas**: es normal cobrar el mes entero de alguien de una vez. Lo mantiene
+/// el servidor desde la procedencia de las líneas, así que no se recibe de
+/// afuera — una asignación que no trajera trabajo sería una que no queda
+/// registrada en ningún lado.
+///
+/// Existe además de `OrdenLineaOrigen` porque contesta otra pregunta: aquélla
+/// dice de dónde sale cada peso, ésta "¿de qué es esta orden?", que es la que
+/// se hace primero y la que obligaba a recorrer las líneas.
+model OrdenVisita {
+  ordenId  String
+  visitaId String
+
+  orden  Orden  @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  /// `Restrict`: una visita con orden no se borra sin resolver la orden antes.
+  visita Visita @relation(fields: [visitaId], references: [id], onDelete: Restrict)
+
+  @@id([ordenId, visitaId])
+  @@index([visitaId])
 }
 
 model OrdenLinea {
@@ -963,9 +978,6 @@ model OrdenLinea {
   suscripcionItemId String?
   periodoInicio     DateTime? @db.Date
   periodoFin        DateTime? @db.Date
-  /// El VisitaProducto es la unidad facturable de un trabajo suelto: una visita
-  /// que cubre dos productos genera dos líneas.
-  visitaProductoId  String?   @unique
 
   orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Cascade)
   /// `Restrict` y no `SetNull`: un producto que ya se vendió no se puede
@@ -973,12 +985,36 @@ model OrdenLinea {
   /// factura sin con qué reconciliarse.
   producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
   suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
-  visitaProducto  VisitaProducto?  @relation(fields: [visitaProductoId], references: [id], onDelete: SetNull)
+  /// De qué trabajos de visita sale esta línea. Pueden ser varios.
+  origenes        OrdenLineaOrigen[]
 
   /// Impide facturar dos veces el mismo período de la misma suscripción.
   @@unique([suscripcionItemId, periodoInicio])
   @@index([ordenId, posicion])
   @@index([productoId])
+}
+
+/// Qué trabajo de qué visita paga una línea de orden.
+///
+/// Era una columna única en `OrdenLinea`, y eso obligaba a una línea por
+/// visita: el mismo producto hecho en dos visitas salía dos veces en la misma
+/// orden, lo que no le dice nada a nadie —es el mismo producto— y encima
+/// duplicaba la decisión de precio. Ahora una línea junta los dos trabajos.
+///
+/// `visitaProductoId` sigue siendo **único en toda la tabla**: eso es lo que
+/// impide cobrar el mismo trabajo dos veces, y no depende de ninguna
+/// validación de aplicación.
+model OrdenLineaOrigen {
+  ordenLineaId     String
+  visitaProductoId String @unique
+
+  ordenLinea     OrdenLinea     @relation(fields: [ordenLineaId], references: [id], onDelete: Cascade)
+  /// `Restrict`: el trabajo facturado no se borra. Como `VisitaProducto`
+  /// cascadea desde `Visita`, esto también protege a la visita entera.
+  visitaProducto VisitaProducto @relation(fields: [visitaProductoId], references: [id], onDelete: Restrict)
+
+  @@id([ordenLineaId, visitaProductoId])
+  @@index([ordenLineaId])
 }
 
 enum EstadoFactura {
@@ -987,6 +1023,19 @@ enum EstadoFactura {
   ENVIADO_SRI
   AUTORIZADO
   RECHAZADO
+}
+
+/// Qué documento se emite en Contífico por una orden.
+///
+/// `NO_AUTORIZADO` es el `DNA` de Contífico: un documento interno, para el
+/// cliente que no pide comprobante. Se crea, se cobra y se anula igual que una
+/// factura, pero **nunca toca el SRI** —no tiene autorización, ni XML, ni
+/// RIDE— y **no admite IVA**: Contífico rechaza cualquier impuesto en un DNA
+/// (`400 · 1016`). Tampoco valida su numeración, así que la unicidad la pone
+/// el portal.
+enum TipoDocumento {
+  FACTURA
+  NO_AUTORIZADO
 }
 
 /// Espejo de la factura que vive en Contífico. El portal no la emite ni la
@@ -1047,8 +1096,16 @@ model Factura {
   ordenId String
 
   contificoDocumentoId String?       @unique
-  numero               String
+  /// Único porque en un `NO_AUTORIZADO` **nadie más lo garantiza**: Contífico
+  /// acepta un número repetido y crea un segundo documento, al revés que en
+  /// una factura. Las dos series no se pisan: `001-002-000000123` contra
+  /// `VF-000000001`.
+  numero               String        @unique
+  tipo                 TipoDocumento @default(FACTURA)
   fechaEmision         DateTime      @db.Date
+  /// Lo que sale impreso en *Información Adicional*. Es el único texto libre
+  /// del documento: el nombre de cada línea lo decide el producto de Contífico.
+  descripcion          String?
   estado               EstadoFactura @default(PENDIENTE)
   /// Clave de acceso del SRI (49 dígitos), la genera Contífico.
   autorizacion         String?
@@ -1079,7 +1136,51 @@ model Factura {
 
   orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Restrict)
   datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
+  lineas          FacturaLinea[]
 
   @@index([ordenId])
   @@index([estado])
+}
+
+/// Lo que salió impreso en el documento, línea por línea.
+///
+/// Existe porque la factura **puede no tener la forma de la orden**: lo normal
+/// acá es cobrar varios trabajos de un período como una sola línea de
+/// "servicio de mantenimiento". Mientras las dos formas eran la misma, la
+/// factura se podía reconstruir desde la orden; en cuanto pueden diferir, esa
+/// reconstrucción es una mentira sobre un documento que ya se entregó.
+///
+/// No hay puente hacia `OrdenLinea` a propósito: la procedencia de cada peso
+/// —qué visita, qué período— vive en la orden, que es el libro de ventas. Esto
+/// es el espejo de lo legal. Lo que ata las dos caras es que **cuadren**: misma
+/// base imponible por cada tasa.
+model FacturaLinea {
+  id        String @id @default(cuid())
+  facturaId String
+  posicion  Int    @default(0)
+
+  /// Snapshot del nombre que Contífico imprimió, que es el de **su** producto.
+  descripcion    String
+  /// Acompaña al nombre en el papel: viaja como `nombre_manual` y sale en el
+  /// RIDE como "Detalle: …". **No lo reemplaza** — eso la API no lo permite.
+  detalle        String?
+  cantidad       Decimal @default(1) @db.Decimal(10, 2)
+  precioUnitario Decimal @db.Decimal(10, 2)
+  ivaTasa        Decimal @default(0) @db.Decimal(5, 2)
+  subtotal       Decimal @db.Decimal(10, 2)
+  iva            Decimal @db.Decimal(10, 2)
+  total          Decimal @db.Decimal(10, 2)
+
+  /// Obligatorio: `detalles[].producto_id` es lo único que Contífico acepta.
+  /// No hay líneas de texto libre ni líneas contables — verificado agotando
+  /// las variantes contra su API.
+  productoId String
+
+  factura  Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  /// `Restrict` como en `OrdenLinea`: un producto ya facturado no se borra, o
+  /// la factura se queda sin con qué reconciliarse.
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@index([facturaId, posicion])
+  @@index([productoId])
 }

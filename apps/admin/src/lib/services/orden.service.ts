@@ -172,7 +172,13 @@ export async function listarPendientes(
    * ofrecer de paso períodos de suscripción que todavía no arrancaron —cobrar
    * un período por adelantado tiene que seguir siendo una decisión aparte.
    */
-  hastaVisitas: Date = hasta
+  hastaVisitas: Date = hasta,
+  /**
+   * Una orden que se está editando. Su propio trabajo cuenta como disponible:
+   * si no, al abrir el editor las visitas que la orden ya cubre desaparecerían
+   * de la lista y no habría forma de desmarcarlas.
+   */
+  ordenId?: string
 ): Promise<Pendiente[]> {
   ensureCanRead(viewer);
 
@@ -181,7 +187,15 @@ export async function listarPendientes(
       where: {
         // Sin `suscripcionItemId` = trabajo suelto: hay que cobrarlo aparte.
         suscripcionItemId: null,
-        ordenLinea: null, // sin facturar
+        // Sin facturar, o facturado por la orden que se está editando.
+        ...(ordenId
+          ? {
+              OR: [
+                { ordenLineaOrigen: null },
+                { ordenLineaOrigen: { ordenLinea: { ordenId } } },
+              ],
+            }
+          : { ordenLineaOrigen: null }),
         visita: {
           clienteId,
           deletedAt: null,
@@ -267,7 +281,7 @@ export async function listarPendientes(
  * Una línea tal como la arma quien crea la orden.
  *
  * `descripcion` y `precioUnitario` son la verdad: el catálogo solo prellena el
- * formulario. `productoId` y la procedencia (`visitaProductoId` o
+ * formulario. `productoId` y la procedencia (`visitaProductoIds` o
  * `suscripcionItemId` + período) son para reportes y para que nada se facture
  * dos veces; nunca son la fuente del precio.
  */
@@ -278,10 +292,25 @@ export interface LineaOrdenInput {
   ivaTasa: number;
   /** Obligatorio: Contífico no acepta líneas sin producto. */
   productoId: string;
-  visitaProductoId?: string | null;
+  /**
+   * Qué trabajos de visita paga esta línea. **Pueden ser varios**: el mismo
+   * producto hecho en dos visitas es una sola línea, porque es el mismo
+   * producto y tener dos no le dice nada a nadie.
+   */
+  visitaProductoIds?: string[];
   suscripcionItemId?: string | null;
   periodoInicio?: Date | null;
   periodoFin?: Date | null;
+}
+
+/** Los ids de trabajo de una línea, sin nulos ni repetidos. */
+function origenesDe(l: LineaOrdenInput): string[] {
+  return [...new Set((l.visitaProductoIds ?? []).filter(Boolean))];
+}
+
+/** Todos los trabajos que toca un conjunto de líneas. */
+function todosLosOrigenes(lineas: LineaOrdenInput[]): string[] {
+  return [...new Set(lineas.flatMap(origenesDe))];
 }
 
 export interface CrearOrdenPayload {
@@ -316,7 +345,10 @@ export async function crearOrden(viewer: Viewer, payload: CrearOrdenPayload) {
     return await prisma.orden.create({
       data: {
         clienteId: payload.clienteId,
-        ...origen,
+        suscripcionId: origen.suscripcionId,
+        visitas: {
+          create: origen.visitaIds.map((visitaId) => ({ visitaId })),
+        },
         datoFacturacionId: payload.datoFacturacionId ?? null,
         fecha: payload.fecha ?? hoyEnEcuador(),
         estado: "BORRADOR",
@@ -374,10 +406,12 @@ function armarLineas(entrada: LineaOrdenInput[]) {
       l.ivaTasa
     ),
     productoId: l.productoId,
-    visitaProductoId: l.visitaProductoId ?? null,
     suscripcionItemId: l.suscripcionItemId ?? null,
     periodoInicio: l.periodoInicio ?? null,
     periodoFin: l.periodoFin ?? null,
+    origenes: {
+      create: origenesDe(l).map((visitaProductoId) => ({ visitaProductoId })),
+    },
   }));
 
   const subtotal = centavos(
@@ -427,6 +461,22 @@ async function validarLineas(
     // `producto_id` en cada `detalles[]` y no acepta texto libre. Se corta acá
     // y no al emitir, para no dejar armada una orden que no se va a poder
     // cobrar.
+    //
+    // Que ese producto esté **vinculado** a Contífico, en cambio, ya no se
+    // pide: la orden es el registro interno de lo que se vendió, y lo que tiene
+    // que estar vinculado es lo que sale impreso —que puede ser una sola línea
+    // por diez trabajos—. Eso lo valida `emitirFactura()`.
+    //
+    // Tampoco se bloquea un producto por estar en un plan del cliente. Se
+    // bloqueaba, con el argumento de que una línea a mano no choca contra
+    // ningún índice único y el mismo trabajo podría cobrarse dos veces. Pero
+    // esa protección **ninguna línea a mano la tiene**: dos órdenes con "Poda"
+    // escrita a mano tampoco chocan contra nada. No evitaba una clase de error,
+    // evitaba un caso de uno que igual es posible en los demás — y a cambio
+    // hacía imposible algo legítimo: cobrarle un saco de más a alguien que
+    // tiene el producto en su plan. Lo que sí protege la base sigue protegido:
+    // un período no se cobra dos veces (`[suscripcionItemId, periodoInicio]`) y
+    // una visita tampoco (`visitaProductoId`).
     if (!l.productoId) {
       throw new ValidationError(
         `"${l.descripcion}" no está vinculada a un producto del catálogo. Creá el producto y agregalo desde ahí.`
@@ -435,7 +485,6 @@ async function validarLineas(
   }
   ensureNoMezclaOrigenes(lineas);
   await ensureProcedenciaDelCliente(clienteId, lineas);
-  await ensureProductosVendibles(clienteId, lineas);
   await ensureTrabajoCompleto(lineas, ordenId);
 }
 
@@ -464,9 +513,7 @@ async function ensureTrabajoCompleto(
     l !== null && l.ordenId !== ordenId;
 
   // ── Visitas ───────────────────────────────────────────────────────────
-  const vpIds = lineas
-    .map((l) => l.visitaProductoId)
-    .filter((id): id is string => !!id);
+  const vpIds = todosLosOrigenes(lineas);
   if (vpIds.length > 0) {
     const enLaOrden = new Set(vpIds);
     const visitaIds = [
@@ -484,11 +531,13 @@ async function ensureTrabajoCompleto(
       select: {
         id: true,
         producto: { select: { nombre: true } },
-        ordenLinea: { select: { ordenId: true } },
+        ordenLineaOrigen: { select: { ordenLinea: { select: { ordenId: true } } } },
       },
     });
     const faltan = todos.filter(
-      (vp) => !enLaOrden.has(vp.id) && !enOtraOrden(vp.ordenLinea)
+      (vp) =>
+        !enLaOrden.has(vp.id) &&
+        !enOtraOrden(vp.ordenLineaOrigen?.ordenLinea ?? null)
     );
     if (faltan.length > 0) {
       throw new ValidationError(
@@ -618,7 +667,7 @@ export async function actualizarOrden(
     // Las líneas que no se reemplazan siguen apuntando al cliente viejo.
     if (!payload.lineas) {
       const conProcedencia = actual.lineas.filter(
-        (l) => l.visitaProductoId || l.suscripcionItemId
+        (l) => l.origenes.length > 0 || l.suscripcionItemId
       );
       if (conProcedencia.length > 0) {
         throw new ValidationError(
@@ -667,9 +716,23 @@ export async function actualizarOrden(
         // aparecer como pendientes, que es justo lo que se espera al sacar una
         // línea de un borrador.
         await tx.ordenLinea.deleteMany({ where: { ordenId: id } });
-        await tx.ordenLinea.createMany({
-          data: armadas.lineas.map((l) => ({ ...l, ordenId: id })),
-        });
+        // Una por una y no `createMany`: cada línea crea además sus filas de
+        // `OrdenLineaOrigen`, y `createMany` no anida relaciones. Son cuatro o
+        // cinco líneas por orden, no hay nada que optimizar.
+        for (const l of armadas.lineas) {
+          await tx.ordenLinea.create({ data: { ...l, ordenId: id } });
+        }
+      }
+
+      // La cabecera se recalcula con las líneas: sacar la última línea de una
+      // visita deja la orden sin esa visita.
+      if (origen) {
+        await tx.ordenVisita.deleteMany({ where: { ordenId: id } });
+        if (origen.visitaIds.length > 0) {
+          await tx.ordenVisita.createMany({
+            data: origen.visitaIds.map((visitaId) => ({ ordenId: id, visitaId })),
+          });
+        }
       }
 
       return tx.orden.update({
@@ -692,9 +755,7 @@ export async function actualizarOrden(
                 total: centavos(totales.subtotal.add(totales.iva)),
               }
             : {}),
-          // Si cambiaron las líneas, la cabecera se recalcula con ellas: sacar
-          // la última línea de una visita deja la orden sin dueño.
-          ...(origen ?? {}),
+          ...(origen ? { suscripcionId: origen.suscripcionId } : {}),
           updatedById: viewer.id,
         },
         include: { lineas: { orderBy: { posicion: "asc" } } },
@@ -711,53 +772,6 @@ export async function actualizarOrden(
     }
     throw error;
   }
-}
-
-/**
- * Qué puede entrar en una orden: producto vinculado a Contífico, y nada que ya
- * cubra una suscripción de este cliente sin decir de dónde viene.
- *
- * El bloqueo va acá y no al facturar: si la orden ya existe, el trabajo ya se
- * hizo y descubrir recién ahí que no se puede emitir no le sirve a nadie. Con
- * esta regla, además, ninguna orden puede llegar a facturación con productos
- * sin sincronizar.
- */
-async function ensureProductosVendibles(
-  clienteId: string,
-  lineas: LineaOrdenInput[]
-): Promise<void> {
-  const ids = [
-    ...new Set(lineas.map((l) => l.productoId).filter((id): id is string => !!id)),
-  ];
-  if (ids.length === 0) return;
-
-  const productos = await prisma.producto.findMany({
-    where: { id: { in: ids } },
-    select: { id: true, nombre: true, contificoProductoId: true },
-  });
-
-  const sinVincular = productos.filter((p) => !p.contificoProductoId);
-  if (sinVincular.length > 0) {
-    const nombres = sinVincular.map((p) => `"${p.nombre}"`).join(", ");
-    throw new ValidationError(
-      `${nombres} ${sinVincular.length === 1 ? "no está sincronizado" : "no están sincronizados"} con Contífico. Vinculá el producto desde su ficha antes de venderlo.`
-    );
-  }
-
-  // Acá **no** se bloquea un producto por estar en un plan del cliente.
-  //
-  // Lo hacíamos, con el argumento de que una línea a mano no choca contra
-  // ningún índice único y el mismo trabajo se podría cobrar dos veces. Pero esa
-  // protección **ninguna línea a mano la tiene**: dos órdenes con "Poda" escrita
-  // a mano tampoco chocan contra nada. La regla no evitaba una clase de error,
-  // evitaba un caso de un error que igual es posible en todos los demás — y a
-  // cambio hacía imposible algo legítimo: cobrarle un saco de más a alguien que
-  // tiene el producto en su plan.
-  //
-  // Lo que sí protege la base sigue protegido: un período no se cobra dos veces
-  // (`[suscripcionItemId, periodoInicio]`) y una visita tampoco
-  // (`visitaProductoId`). Que un extra se cobre o no lo decide quien arma la
-  // orden, y la UI le avisa que el cliente tiene ese producto en un plan.
 }
 
 /**
@@ -779,18 +793,17 @@ async function ensureProductosVendibles(
  * No se recibe de afuera: se calcula. Un `visitaId` mandado a mano podría no
  * tener nada que ver con las líneas, y entonces la cabecera mentiría.
  *
- * Una orden que toca dos visitas —o dos planes— no tiene cabecera posible, y
- * eso se rechaza: si "de qué es esta orden" no tiene una sola respuesta, la
- * orden está mal armada.
+ * **Las visitas pueden ser varias** —cobrar el mes entero de alguien en una
+ * orden es lo normal— y por eso viven en `OrdenVisita`. Los planes no: cada
+ * orden cubre un período de uno, y dos planes en la misma orden siguen siendo
+ * una orden mal armada.
  */
 async function origenDeLaOrden(
   lineas: LineaOrdenInput[]
-): Promise<{ visitaId: string | null; suscripcionId: string | null }> {
-  const vpIds = lineas
-    .map((l) => l.visitaProductoId)
-    .filter((id): id is string => !!id);
+): Promise<{ visitaIds: string[]; suscripcionId: string | null }> {
+  const vpIds = todosLosOrigenes(lineas);
   if (vpIds.length > 0) {
-    const visitas = [
+    const visitaIds = [
       ...new Set(
         (
           await prisma.visitaProducto.findMany({
@@ -800,12 +813,7 @@ async function origenDeLaOrden(
         ).map((v) => v.visitaId)
       ),
     ];
-    if (visitas.length > 1) {
-      throw new ValidationError(
-        "Una orden es de una sola visita. Armá una orden por visita."
-      );
-    }
-    return { visitaId: visitas[0] ?? null, suscripcionId: null };
+    return { visitaIds, suscripcionId: null };
   }
 
   const itemIds = lineas
@@ -827,16 +835,16 @@ async function origenDeLaOrden(
         "Una orden es de una sola suscripción. Armá una orden por plan."
       );
     }
-    return { visitaId: null, suscripcionId: planes[0] ?? null };
+    return { visitaIds: [], suscripcionId: planes[0] ?? null };
   }
 
   // Sin procedencia: una orden armada a mano, que no es de nada en particular.
-  return { visitaId: null, suscripcionId: null };
+  return { visitaIds: [], suscripcionId: null };
 }
 
 function ensureNoMezclaOrigenes(lineas: LineaOrdenInput[]): void {
   const conPeriodo = lineas.some((l) => l.suscripcionItemId);
-  const conVisita = lineas.some((l) => l.visitaProductoId);
+  const conVisita = lineas.some((l) => origenesDe(l).length > 0);
   if (conPeriodo && conVisita) {
     throw new ValidationError(
       "Una orden no puede mezclar períodos de suscripción con trabajo de visitas. Armá una orden para el plan y otra para las visitas."
@@ -852,9 +860,7 @@ async function ensureProcedenciaDelCliente(
   clienteId: string,
   lineas: LineaOrdenInput[]
 ): Promise<void> {
-  const visitaProductoIds = lineas
-    .map((l) => l.visitaProductoId)
-    .filter((id): id is string => !!id);
+  const visitaProductoIds = todosLosOrigenes(lineas);
   const suscripcionItemIds = lineas
     .map((l) => l.suscripcionItemId)
     .filter((id): id is string => !!id);
@@ -916,17 +922,18 @@ export async function generarOrden(
     throw new ValidationError("No hay nada pendiente de facturar en ese rango.");
   }
 
-  // Una orden por suscripción y una por visita. Mezclar está prohibido (ver
-  // `ensureNoMezclaOrigenes`) y además cada orden tiene **un** dueño en su
-  // cabecera: `visitaId` o `suscripcionId`, nunca dos de ninguno.
+  // Una orden por suscripción, y **una sola para todas las visitas**. Mezclar
+  // plan con visitas está prohibido (ver `ensureNoMezclaOrigenes`), pero varias
+  // visitas en una orden es justamente lo normal: cobrarle a alguien el mes
+  // entero de una vez.
   const porSuscripcion = new Map<string, Pendiente[]>();
-  const porVisita = new Map<string, Pendiente[]>();
+  const deVisitas: Pendiente[] = [];
   for (const p of pendientes) {
     if (p.tipo === "suscripcion") {
       const clave = p.suscripcionItemId;
       porSuscripcion.set(clave, [...(porSuscripcion.get(clave) ?? []), p]);
     } else {
-      porVisita.set(p.visitaId, [...(porVisita.get(p.visitaId) ?? []), p]);
+      deVisitas.push(p);
     }
   }
 
@@ -941,9 +948,6 @@ export async function generarOrden(
     const clave = cabecera.get(itemId) ?? itemId;
     grupos.set(clave, [...(grupos.get(clave) ?? []), ...ps]);
   }
-  // Una orden por visita: la cabecera `visitaId` no admite dos.
-  for (const [visitaId, ps] of porVisita) grupos.set(`v:${visitaId}`, ps);
-
   const ordenes = [];
   for (const ps of grupos.values()) {
     ordenes.push(
@@ -955,7 +959,53 @@ export async function generarOrden(
       })
     );
   }
+
+  // Todas las visitas en una, con el mismo producto de dos visitas juntado en
+  // una sola línea.
+  if (deVisitas.length > 0) {
+    ordenes.push(
+      await crearOrden(viewer, {
+        clienteId: payload.clienteId,
+        fecha: payload.fecha,
+        notas: payload.notas,
+        lineas: combinarPorProducto(deVisitas),
+      })
+    );
+  }
   return ordenes;
+}
+
+/**
+ * Junta los trabajos de visita del mismo producto en una sola línea.
+ *
+ * Dos visitas con "Control de plagas" son dos `VisitaProducto` distintos —cada
+ * uno con su id, y cada uno facturable una sola vez— pero **un solo producto**.
+ * Tenerlo dos veces en la misma orden no le dice nada a nadie y encima duplica
+ * la decisión de precio.
+ */
+export function combinarPorProducto(pendientes: Pendiente[]): LineaOrdenInput[] {
+  const porProducto = new Map<string, LineaOrdenInput>();
+  for (const p of pendientes) {
+    if (p.tipo !== "visita") continue;
+    const actual = porProducto.get(p.productoId);
+    if (actual) {
+      actual.cantidad += 1;
+      actual.visitaProductoIds = [
+        ...(actual.visitaProductoIds ?? []),
+        p.visitaProductoId,
+      ];
+    } else {
+      porProducto.set(p.productoId, {
+        descripcion: p.descripcion,
+        cantidad: 1,
+        precioUnitario: Number(p.precio),
+        ivaTasa: Number(p.ivaTasa),
+        productoId: p.productoId,
+        visitaProductoIds: [p.visitaProductoId],
+      });
+    }
+  }
+  return [...porProducto.values()];
 }
 
 /** Traduce algo pendiente a la línea de orden que lo representa. */
@@ -968,7 +1018,7 @@ export function lineaDesdePendiente(p: Pendiente): LineaOrdenInput {
     productoId: p.productoId,
   };
   return p.tipo === "visita"
-    ? { ...base, visitaProductoId: p.visitaProductoId }
+    ? { ...base, visitaProductoIds: [p.visitaProductoId] }
     : {
         ...base,
         suscripcionItemId: p.suscripcionItemId,
@@ -1110,7 +1160,7 @@ export async function generarBorradoresDeVisitas(
       ...(desde ? { fechaRealizada: { gte: desde } } : {}),
       // Le queda trabajo suelto sin cobrar y sin historia de anulación.
       productos: {
-        some: { suscripcionItemId: null, ordenLinea: null, liberadoAt: null },
+        some: { suscripcionItemId: null, ordenLineaOrigen: null, liberadoAt: null },
       },
       NOT: { productos: { some: { liberadoAt: { not: null } } } },
     },
@@ -1118,7 +1168,7 @@ export async function generarBorradoresDeVisitas(
       id: true,
       clienteId: true,
       productos: {
-        where: { suscripcionItemId: null, ordenLinea: null },
+        where: { suscripcionItemId: null, ordenLineaOrigen: null },
         orderBy: { posicion: "asc" },
         select: {
           id: true,
@@ -1136,18 +1186,10 @@ export async function generarBorradoresDeVisitas(
   });
 
   for (const v of visitas) {
-    // Ya no debería pasar —una visita no acepta productos sin vincular— pero
-    // los datos viejos sí pueden tenerlos, y una orden así no se puede emitir.
-    const sinVincular = v.productos.filter(
-      (vp) => !vp.producto.contificoProductoId
-    );
-    if (sinVincular.length > 0) {
-      resultado.omitidas.push({
-        visitaId: v.id,
-        motivo: `sin vincular con Contífico: ${sinVincular.map((vp) => vp.producto.nombre).join(", ")}`,
-      });
-      continue;
-    }
+    // Un producto sin vincular ya no impide el borrador: el vínculo se exige
+    // sobre las líneas del documento, al emitir. Saltear la visita acá dejaba
+    // el trabajo fuera de "por facturar" por un motivo de configuración del
+    // catálogo, que es justamente lo que se resuelve más tarde.
 
     const { lineas, subtotal, iva } = armarLineas(
       v.productos.map((vp) => ({
@@ -1157,7 +1199,7 @@ export async function generarBorradoresDeVisitas(
         precioUnitario: 0,
         ivaTasa: Number(vp.producto.ivaTasa ?? 0),
         productoId: vp.productoId,
-        visitaProductoId: vp.id,
+        visitaProductoIds: [vp.id],
       }))
     );
 
@@ -1171,6 +1213,8 @@ export async function generarBorradoresDeVisitas(
           iva,
           total: centavos(subtotal.add(iva)),
           lineas: { create: lineas },
+          // El borrador es de esa visita, y la cabecera lo dice.
+          visitas: { create: [{ visitaId: v.id }] },
         },
         select: { id: true, numero: true },
       });
@@ -1388,17 +1432,10 @@ export async function generarRenovaciones(
       });
       continue;
     }
-    // Un producto desvinculado después de armar la suscripción no se puede
-    // facturar. Se saltea la suscripción entera y se reporta, en vez de generar
-    // una orden que después no va a poder emitirse.
-    const sinVincular = activos.filter((i) => !i.producto.contificoProductoId);
-    if (sinVincular.length > 0) {
-      resultado.omitidas.push({
-        suscripcionId: sus.id,
-        motivo: `sin vincular con Contífico: ${sinVincular.map((i) => i.producto.nombre).join(", ")}`,
-      });
-      continue;
-    }
+    // Un producto sin vincular ya no saltea la renovación: el vínculo se exige
+    // sobre las líneas del documento, al emitir, y ahí se puede facturar el
+    // período con otro producto. Saltearla acá dejaba al cliente sin su orden
+    // del mes por un detalle de configuración del catálogo.
 
     const facturadosPorItem = new Map(
       activos.map((i) => [
@@ -1542,11 +1579,19 @@ export async function getOrden(viewer: Viewer, id: string) {
         orderBy: { posicion: "asc" },
         include: {
           producto: true,
-          // De qué visita salió la línea: sin esto la orden dice "trabajo de una
-          // visita" y no hay forma de saber cuál.
-          visitaProducto: {
+          // De qué visitas salió la línea: sin esto la orden dice "trabajo de
+          // una visita" y no hay forma de saber cuál. Son varias cuando el
+          // mismo producto se hizo en más de una.
+          origenes: {
             select: {
-              visita: { select: { id: true, fechaProgramada: true } },
+              visitaProductoId: true,
+              visitaProducto: {
+                select: {
+                  visita: {
+                    select: { id: true, numero: true, fechaProgramada: true },
+                  },
+                },
+              },
             },
           },
           // De qué plan salió, para poder ir hasta él. Lo de la visita ya
@@ -1557,6 +1602,9 @@ export async function getOrden(viewer: Viewer, id: string) {
       facturas: {
         orderBy: { createdAt: "desc" },
         include: {
+          // Lo que salió impreso. Puede no tener la forma de las líneas de la
+          // orden: varios trabajos se cobran como una sola línea.
+          lineas: { orderBy: { posicion: "asc" } },
           datoFacturacion: {
             select: {
               tipoIdentificacion: true,
@@ -1568,10 +1616,14 @@ export async function getOrden(viewer: Viewer, id: string) {
           },
         },
       },
-      // De qué es la orden. Sale de las columnas propias y no de dar la vuelta
-      // por las líneas: agregarle un producto suelto a mano no la vuelve otra
-      // cosa, y con las líneas la respuesta cambiaba según lo que llevara.
-      visita: { select: { id: true, numero: true, fechaProgramada: true } },
+      // De qué es la orden. Sale de su propia tabla y no de dar la vuelta por
+      // las líneas: agregarle un producto suelto a mano no la vuelve otra cosa,
+      // y con las líneas la respuesta cambiaba según lo que llevara.
+      visitas: {
+        select: {
+          visita: { select: { id: true, numero: true, fechaProgramada: true } },
+        },
+      },
       suscripcion: {
         select: { id: true, numero: true, periodicidad: true, estado: true },
       },
@@ -1609,20 +1661,26 @@ export async function liberarProcedencia(
   ordenId: string
 ) {
   // Se marca antes de soltar: después ya no se sabe cuáles eran.
-  const lineas = await tx.ordenLinea.findMany({
-    where: { ordenId, visitaProductoId: { not: null } },
+  const origenes = await tx.ordenLineaOrigen.findMany({
+    where: { ordenLinea: { ordenId } },
     select: { visitaProductoId: true },
   });
-  if (lineas.length > 0) {
+  if (origenes.length > 0) {
     await tx.visitaProducto.updateMany({
-      where: { id: { in: lineas.map((l) => l.visitaProductoId!) } },
+      where: { id: { in: origenes.map((o) => o.visitaProductoId) } },
       data: { liberadoAt: new Date() },
+    });
+    await tx.ordenLineaOrigen.deleteMany({
+      where: { ordenLinea: { ordenId } },
     });
   }
 
+  // Y la cabecera, que sale de esas mismas procedencias.
+  await tx.ordenVisita.deleteMany({ where: { ordenId } });
+
   await tx.ordenLinea.updateMany({
     where: { ordenId },
-    data: { visitaProductoId: null, suscripcionItemId: null, periodoInicio: null },
+    data: { suscripcionItemId: null, periodoInicio: null },
   });
 }
 
@@ -1653,7 +1711,7 @@ export async function anularOrden(
   }
 
   const enlazado = orden.lineas.filter(
-    (l) => l.visitaProductoId || l.suscripcionItemId
+    (l) => l.origenes.length > 0 || l.suscripcionItemId
   );
   if (enlazado.length > 0 && !opciones.liberarTrabajo) {
     throw new ConflictError(

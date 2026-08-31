@@ -138,7 +138,33 @@ export function NuevaVisitaPage({
 
   const elegirCliente = (id: string) => {
     setClienteId(id);
-    setSuscripcionId("");
+    elegirPlan("");
+  };
+
+  /**
+   * Elegir el plan **carga su trabajo**, igual que marcar una visita al armar
+   * una orden.
+   *
+   * Antes el plan era solo una etiqueta y había que agregar sus productos a
+   * mano; si se olvidaba uno, la visita decía ser del plan y cubría menos de lo
+   * que el plan incluye. Ahora entran solos y no se sacan de a uno: para
+   * quitarlos se suelta el plan.
+   */
+  const elegirPlan = (id: string) => {
+    const antes = new Set(
+      (planes.find((s) => s.id === suscripcionId)?.productos ?? []).map(
+        (p) => p.productoId
+      )
+    );
+    const ahora = (planes.find((s) => s.id === id)?.productos ?? []).map(
+      (p) => p.productoId
+    );
+    setSuscripcionId(id);
+    setProductoIds((prev) => [
+      // Lo agregado a mano se queda; lo del plan anterior se va con él.
+      ...prev.filter((x) => !antes.has(x) && !ahora.includes(x)),
+      ...ahora,
+    ]);
   };
 
   const alternarProducto = (id: string) =>
@@ -250,15 +276,24 @@ export function NuevaVisitaPage({
                         <span className="min-w-0 flex-1 truncate text-sm font-medium">
                           {p.nombre}
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 flex-none"
-                          onClick={() => alternarProducto(p.id)}
-                          aria-label={`Quitar ${p.nombre}`}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
+                        {/* Lo que trae el plan no se saca de a uno: la forma de
+                            quitarlo es soltar el plan, porque la visita cubre
+                            lo que el plan incluye o no es de ese plan. */}
+                        {cubiertos.has(p.id) ? (
+                          <span className="flex-none text-xs text-muted-foreground">
+                            Del plan
+                          </span>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 flex-none"
+                            onClick={() => alternarProducto(p.id)}
+                            aria-label={`Quitar ${p.nombre}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        )}
                       </div>
                     );
                   })}
@@ -362,7 +397,7 @@ export function NuevaVisitaPage({
               <CardContent>
                 <CustomSelect
                   value={suscripcionId}
-                  onChange={setSuscripcionId}
+                  onChange={elegirPlan}
                   options={planes.map((sus) => ({
                     value: sus.id,
                     label: `Suscripción #${sus.numero}`,
@@ -425,6 +460,8 @@ export function NuevaVisitaPage({
           const c = cubiertos.get(id);
           return c ? etiquetaCobertura(c, plan?.periodicidad ?? "") : null;
         }}
+        // Lo del plan entra y sale con el plan, no desde acá.
+        fijos={(id) => cubiertos.has(id)}
         onToggle={alternarProducto}
       />
 

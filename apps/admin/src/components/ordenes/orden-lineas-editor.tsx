@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
-import { Loader2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { money, fecha } from "./formato";
+import { money } from "./formato";
+import {
+  origenDeLinea,
+  nuevoUid,
+  type LineaEditable,
+} from "./selector-visitas";
+
+export type { LineaEditable };
 
 export interface ProductoCatalogo {
   id: string;
@@ -17,21 +22,11 @@ export interface ProductoCatalogo {
   contificoProductoId: string | null;
 }
 
-/** Una línea tal como viaja al servidor, con su procedencia intacta. */
-export interface LineaEditable {
-  uid: string;
-  descripcion: string;
-  cantidad: string;
-  precioUnitario: string;
-  ivaTasa: string;
-  productoId: string;
-  visitaProductoId: string | null;
-  suscripcionItemId: string | null;
-  periodoInicio: string | null;
-  periodoFin: string | null;
-}
-
-let contador = 0;
+/**
+ * El `form` al que apuntan Guardar y Cancelar, que viven en el encabezado de la
+ * página —fuera de este árbol— para no taparle nada al contenido de abajo.
+ */
+export const ORDEN_LINEAS_FORM_ID = "orden-lineas-form";
 
 /**
  * Toda línea sale de un producto del catálogo: Contífico exige `producto_id` en
@@ -40,11 +35,11 @@ let contador = 0;
  */
 function lineaBase(): Omit<LineaEditable, "descripcion" | "productoId"> {
   return {
-    uid: `nueva-${contador++}`,
+    uid: nuevoUid(),
     cantidad: "1",
     precioUnitario: "",
     ivaTasa: "0",
-    visitaProductoId: null,
+    visitaProductoIds: [],
     suscripcionItemId: null,
     periodoInicio: null,
     periodoFin: null,
@@ -57,45 +52,41 @@ function importes(l: LineaEditable) {
   return { subtotal, iva, total: subtotal + iva };
 }
 
-/** De dónde salió la línea. Se conserva al editar: es lo que evita cobrar dos veces. */
-function origen(l: LineaEditable): string | null {
-  if (l.periodoInicio && l.periodoFin) {
-    return `Suscripción · ${fecha(l.periodoInicio)} → ${fecha(l.periodoFin)}`;
-  }
-  if (l.visitaProductoId) return "Trabajo de una visita";
-  return null;
-}
-
 /**
  * Edita las líneas de una orden en borrador.
  *
- * La procedencia (`visitaProductoId`, `suscripcionItemId` + período) viaja
+ * La procedencia (`visitaProductoIds`, `suscripcionItemId` + período) viaja
  * intacta aunque se cambie la descripción o el precio: es lo que sostiene los
  * índices únicos que impiden facturar el mismo trabajo dos veces.
  */
 export function OrdenLineasEditor({
-  lineasIniciales,
-  notasIniciales,
+  lineas,
+  onLineasChange,
   productos,
   clienteNombre,
   suscritos = [],
-  guardando,
   onGuardar,
-  onCancelar,
 }: {
-  lineasIniciales: LineaEditable[];
-  notasIniciales: string;
+  /**
+   * Las líneas viven en la página, no acá: el card de **Visitas** —que está
+   * fuera de este componente, más abajo— trabaja sobre las mismas, y tenerlas
+   * en dos lugares las habría dejado en desacuerdo.
+   */
+  lineas: LineaEditable[];
+  onLineasChange: (lineas: LineaEditable[]) => void;
   productos: ProductoCatalogo[];
   /** Para nombrarlo en el aviso: "Fulano tiene este producto…". */
   clienteNombre?: string;
   /** Productos que este cliente ya tiene en un plan activo. */
   suscritos?: string[];
-  guardando: boolean;
-  onGuardar: (lineas: LineaEditable[], notas: string) => void;
-  onCancelar: () => void;
+  /**
+   * Guardar y cancelar no están acá: los dibuja el encabezado de la página,
+   * que es sticky. Este componente solo expone el `form` al que apuntan.
+   */
+  onGuardar: (lineas: LineaEditable[]) => void;
 }) {
-  const [lineas, setLineas] = useState<LineaEditable[]>(lineasIniciales);
-  const [notas, setNotas] = useState(notasIniciales);
+  const setLineas = (f: (prev: LineaEditable[]) => LineaEditable[]) =>
+    onLineasChange(f(lineas));
 
   const actualizar = (uid: string, patch: Partial<LineaEditable>) =>
     setLineas((prev) =>
@@ -108,10 +99,6 @@ export function OrdenLineasEditor({
   const agregarProducto = (productoId: string) => {
     const p = productos.find((x) => x.id === productoId);
     if (!p) return;
-    if (!p.contificoProductoId) {
-      toast.error(`"${p.nombre}" no está sincronizado con Contífico`);
-      return;
-    }
     setLineas((prev) => [
       ...prev,
       {
@@ -144,39 +131,59 @@ export function OrdenLineasEditor({
     );
     if (sinPrecio)
       return toast.error(`Falta el precio de "${sinPrecio.descripcion}"`);
-    onGuardar(lineas, notas);
+    onGuardar(lineas);
   };
 
   return (
-    <div className="space-y-4">
+    // Un `form` de verdad y no un `div` con un onClick: Guardar y Cancelar
+    // viven en el encabezado de la página, fuera de este árbol, y lo que los
+    // conecta con esto es el `form` al que apunta el botón.
+    <form
+      id={ORDEN_LINEAS_FORM_ID}
+      onSubmit={(e) => {
+        e.preventDefault();
+        guardar();
+      }}
+      className="space-y-4"
+    >
       <div className="space-y-3">
         {lineas.map((l) => {
           const i = importes(l);
-          const proc = origen(l);
+          const proc = origenDeLinea(l);
           return (
             <div key={l.uid} className="rounded-md border p-3 space-y-2">
               <div className="flex items-start gap-2">
-                <div className="flex-1 space-y-1">
-                  <Input
-                    value={l.descripcion}
-                    onChange={(e) =>
-                      actualizar(l.uid, { descripcion: e.target.value })
-                    }
-                    placeholder="Descripción"
-                    className="font-medium"
-                  />
-                  {proc && (
-                    <p className="text-xs text-muted-foreground">{proc}</p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => quitar(l.uid)}
-                  aria-label="Quitar producto"
-                >
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
+                  {/* El nombre no se edita acá. La orden registra **lo que
+                      se hizo**, y renombrarlo es una decisión de qué sale
+                      impreso: eso se toma al emitir, donde además se puede
+                      juntar todo en una sola línea. Editarlo en los dos lados
+                      dejaba a la orden mintiendo sobre sus propios ítems. */}
+                  {/* La procedencia al lado del nombre y no debajo: es una
+                      aclaración corta, y en su propio renglón hacía cada
+                      producto un tercio más alto sin decir más. */}
+                  <div className="flex flex-1 flex-wrap items-baseline gap-x-2">
+                    <p className="text-sm font-medium">{l.descripcion}</p>
+                    {proc && (
+                      <span className="text-xs text-muted-foreground">
+                        {proc}
+                      </span>
+                    )}
+                  </div>
+                {/* Solo lo agregado a mano se saca de a uno. Lo que viene
+                    de una visita se saca **desmarcando la visita**: una visita
+                    se factura completa, así que quitarle un producto dejaría
+                    una orden que el servidor rechaza al guardar. */}
+                {l.visitaProductoIds.length === 0 && !l.suscripcionItemId && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => quitar(l.uid)}
+                    aria-label="Quitar producto"
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                )}
               </div>
               <div className="flex flex-wrap items-end gap-3">
                 <div className="w-20 space-y-1">
@@ -233,12 +240,15 @@ export function OrdenLineasEditor({
           <CustomSelect
             value=""
             onChange={agregarProducto}
+            // Un producto sin vincular **entra igual**: la orden es el
+            // registro de lo que se vendió, y lo que necesita estar en
+            // Contífico es lo que sale impreso, que se decide al emitir. El
+            // aviso queda para que no sorprenda después.
             options={productos.map((p) => ({
               value: p.id,
               label: p.nombre,
-              disabled: !p.contificoProductoId,
               hint: !p.contificoProductoId
-                ? "No se puede facturar: falta vincularlo con Contífico desde su ficha."
+                ? "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto."
                 : suscritos.includes(p.id)
                   ? `${clienteNombre ?? "El cliente"} tiene este producto en una suscripción.`
                   : undefined,
@@ -248,17 +258,6 @@ export function OrdenLineasEditor({
             searchPlaceholder="Buscar producto..."
           />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notas-orden">Notas</Label>
-        <Textarea
-          id="notas-orden"
-          value={notas}
-          onChange={(e) => setNotas(e.target.value)}
-          placeholder="Opcional"
-          rows={2}
-        />
       </div>
 
       <div className="space-y-1.5 border-t pt-4 text-sm">
@@ -276,15 +275,6 @@ export function OrdenLineasEditor({
         </div>
       </div>
 
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onCancelar} disabled={guardando}>
-          Cancelar
-        </Button>
-        <Button onClick={guardar} disabled={guardando}>
-          {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Guardar cambios
-        </Button>
-      </div>
-    </div>
+    </form>
   );
 }

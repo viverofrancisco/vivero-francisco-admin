@@ -555,11 +555,28 @@ export type EnumTipoPersonaWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumTipoPersonaFilter<$PrismaModel>
 }
 
+export type EnumTipoDocumentoFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoDocumento | Prisma.EnumTipoDocumentoFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoDocumentoFilter<$PrismaModel> | $Enums.TipoDocumento
+}
+
 export type EnumEstadoFacturaFilter<$PrismaModel = never> = {
   equals?: $Enums.EstadoFactura | Prisma.EnumEstadoFacturaFieldRefInput<$PrismaModel>
   in?: $Enums.EstadoFactura[] | Prisma.ListEnumEstadoFacturaFieldRefInput<$PrismaModel>
   notIn?: $Enums.EstadoFactura[] | Prisma.ListEnumEstadoFacturaFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumEstadoFacturaFilter<$PrismaModel> | $Enums.EstadoFactura
+}
+
+export type EnumTipoDocumentoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoDocumento | Prisma.EnumTipoDocumentoFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoDocumentoWithAggregatesFilter<$PrismaModel> | $Enums.TipoDocumento
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTipoDocumentoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTipoDocumentoFilter<$PrismaModel>
 }
 
 export type EnumEstadoFacturaWithAggregatesFilter<$PrismaModel = never> = {
@@ -1088,11 +1105,28 @@ export type NestedEnumTipoPersonaWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumTipoPersonaFilter<$PrismaModel>
 }
 
+export type NestedEnumTipoDocumentoFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoDocumento | Prisma.EnumTipoDocumentoFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoDocumentoFilter<$PrismaModel> | $Enums.TipoDocumento
+}
+
 export type NestedEnumEstadoFacturaFilter<$PrismaModel = never> = {
   equals?: $Enums.EstadoFactura | Prisma.EnumEstadoFacturaFieldRefInput<$PrismaModel>
   in?: $Enums.EstadoFactura[] | Prisma.ListEnumEstadoFacturaFieldRefInput<$PrismaModel>
   notIn?: $Enums.EstadoFactura[] | Prisma.ListEnumEstadoFacturaFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumEstadoFacturaFilter<$PrismaModel> | $Enums.EstadoFactura
+}
+
+export type NestedEnumTipoDocumentoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoDocumento | Prisma.EnumTipoDocumentoFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoDocumento[] | Prisma.ListEnumTipoDocumentoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoDocumentoWithAggregatesFilter<$PrismaModel> | $Enums.TipoDocumento
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTipoDocumentoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTipoDocumentoFilter<$PrismaModel>
 }
 
 export type NestedEnumEstadoFacturaWithAggregatesFilter<$PrismaModel = never> = {

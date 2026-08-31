@@ -50,12 +50,125 @@ Todo esto está verificado contra la API real. Ahorra varias horas.
 
 ### El nombre de la factura sale de Contífico, no del portal
 
-`detalles[]` lleva solo `producto_id`, `cantidad`, `precio` y los porcentajes:
-**no hay campo de descripción**. Lo que se imprime en la factura del SRI es el
-nombre que Contífico tiene guardado para ese producto.
+Lo que sale impreso como **nombre del ítem** es el nombre que Contífico tiene
+guardado para ese producto, y no hay forma de pisarlo desde la API. Verificado
+sobre el XML autorizado de una factura real (`001-001-000002354`):
+
+```xml
+<detalle>
+  <codigoPrincipal>MANT-000001</codigoPrincipal>
+  <descripcion>SERVICIO DE MANTENIMIENTO</descripcion>   <!-- el producto -->
+  <detallesAdicionales>
+    <detAdicional nombre="Detalle" valor="AREAS VERDES"/> <!-- nombre_manual -->
+  </detallesAdicionales>
+</detalle>
+```
 
 Consecuencia: editar la descripción de una línea en el editor de órdenes cambia
 lo que muestra el portal, no lo que sale en el papel.
+
+**Pero sí hay texto libre por línea**, en dos campos que la documentación
+oficial no menciona y que el POST acepta y guarda (probado en el sandbox el
+27/08/2026):
+
+| Campo de `detalles[]` | Se guarda | Dónde aparece |
+|---|---|---|
+| `nombre_manual` | sí | RIDE, columna *Detalles Adicionales*, como `Detalle: <valor>`. **No reemplaza el nombre** |
+| `descripcion` | sí | no se pudo confirmar en el RIDE: ninguna factura real lo usa y el RIDE del sandbox pide sesión |
+
+Y a nivel documento, `descripcion` sale en *Información Adicional* como
+`<campoAdicional nombre="Descripción">` — es donde el vivero pone
+`"MANT. AREAS VERDES 01 AL 15 AGOSTO 2026"`.
+
+Así que para facturar varios trabajos como una sola línea de "servicios de
+mantenimiento" hay que **elegir el producto de Contífico que se quiere imprimir**
+(ellos tienen `MANT-000001 SERVICIO DE MANTENIMIENTO`) y mandar el detalle
+específico en `nombre_manual`. No alcanza con renombrar la línea.
+
+### Lo que la API **no** deja hacer en una línea
+
+En la interfaz de Contífico un documento puede tener líneas contables —pestaña
+*Cuentas*, sin producto, con cuenta contable y centro de costo— y así están
+hechos varios documentos del vivero: 44 de los 104 del último trimestre. El
+`MANT. 202607-0009`, por ejemplo, son $180 contra `4.1.2.1 Ingresos por Servicio
+de Mantenimiento`, centro de costo `VIVERO S.A.S. AURORA`.
+
+**Por API no se pueden crear.** El GET las devuelve dentro de `detalles` (con
+`producto_id: null`, `porcentaje_iva: null` y el monto en `base_no_gravable`),
+pero el POST rechaza cualquier forma de mandarlas. Probado en el sandbox el
+27/08/2026, agotando las variantes:
+
+| Lo que se manda | Resultado |
+|---|---|
+| `cuenta_id` sin `producto_id` | `400` · `1055` · *Falta campo producto_id* |
+| `cuenta_id` **+ `centro_costo_id`**, sin producto | igual: `400` · `1055` |
+| lo mismo con `tipo_documento: "DNA"` (el de esos documentos) | igual: `400` · `1055` |
+| `producto_id: null` o `producto_id: ""` presentes | igual: `400` · `1055` — valida el valor, no la clave |
+| `detalles: []` y las líneas en `cuentas` o `detalles_cuentas` | `400` · `1003` · *Falta campo detalle* |
+| `detalles[].tipo: "C"` como discriminador | `400` · `1055` |
+| `cuenta_id` junto al `producto_id` | acepta, pero lo ignora: vuelve en `null` |
+| `centro_costo_id` por línea | se ignora: Contífico asigna el suyo por defecto |
+
+No es cuestión del tipo de documento —un `DNA` con producto entra sin
+problema—, sino de que `detalles[]` es obligatorio y **cada elemento exige
+`producto_id`**.
+
+Y no son solo documentos internos: **42 de las 151 facturas electrónicas** del
+último trimestre están hechas así. En el XML autorizado la línea contable sale
+con el código y el nombre de la cuenta en lugar del producto
+(`001-001-000002359`):
+
+```xml
+<detalle>
+  <codigoPrincipal>4.1.2.1</codigoPrincipal>
+  <descripcion>Ingresos por Servicio de Mantenimiento</descripcion>
+  <precioUnitario>260.000000</precioUnitario>
+</detalle>
+```
+
+O sea que hoy facturan de dos formas: unas facturas imprimen el **nombre de la
+cuenta** y otras el **nombre del producto** con el detalle al lado. El portal
+solo puede hacer la segunda. Para que el papel diga algo en particular, se elige
+el producto de Contífico que lo diga —ellos ya tienen
+`MANT-000001 SERVICIO DE MANTENIMIENTO`—, no se escribe la línea.
+
+### `cruce_cuenta` no sirve para esto: cruza saldos, no arma líneas
+
+`POST /documento/<id>/cruce_cuenta/?tipo=CTA` ([docs][cruces]) suena a la puerta
+que falta —"cruce de un documento con una cuenta contable"— pero es de la parte
+de **cobros**: sus campos son `monto`, `fecha`, `descripcion` y `cuenta_id`, y
+lo que hace es bajar el saldo del documento contra esa cuenta. Los otros `tipo`
+son giftcards y plataformas de delivery (Uber, Rappi, Glovo), lo que confirma
+para qué está pensado.
+
+Probado en el sandbox el 28/08/2026 sobre una factura de $100: un cruce de $40
+dejó el `saldo` en `60.0` y **no tocó nada más** — mismo `total`, misma línea de
+producto, y ni siquiera aparece en `cobros`. Sirve para saldar una factura
+contra una cuenta contable; no para decidir qué se imprime en ella.
+
+[cruces]: https://contifico.github.io/registro/cruces/
+
+Es decir: **toda línea emitida desde el portal es una línea de producto**. Y eso
+no pierde nada contablemente, porque **el producto ya lleva su cuenta de
+ingreso**: `GET /producto/<id>/` devuelve `cuenta_venta_id`, y en
+`MANT-000001 SERVICIO DE MANTENIMIENTO` vale `4LmavvlyKfJJMa3N`, que es
+**exactamente la misma cuenta** que usan las líneas contables a mano
+(`4.1.2.1 Ingresos por Servicio de Mantenimiento`).
+
+O sea que vender ese producto y escribir la línea contra esa cuenta registran el
+ingreso en el mismo lugar; la línea contable no agrega nada, es otra forma de
+tipear lo mismo. Lo confirma el propio uso: de los 95 DNA del último trimestre,
+**29 ya están hechos con línea de producto** y no con cuenta.
+
+Si algún día hace falta separar ingresos por cuenta, se hace con productos
+distintos —cada uno con su `cuenta_venta_id`—, no con `cuenta_id` en la línea.
+
+### Dos tasas de IVA en el mismo documento se aceptan
+
+También verificado en el sandbox: un documento con una línea al 0% y otra al 15%
+entra sin problema, siempre que cada línea lleve su `base_cero` / `base_gravable`
+y los subtotales del encabezado cierren. Es lo que ya hacen en producción —14 de
+142 facturas mezclan servicios al 15% con bienes agrícolas al 0%.
 
 Por eso, al vincular, si el nombre de allá difiere del nuestro el diálogo ofrece
 **renombrarlo en Contífico** (marcado por defecto). Verificado contra la API
@@ -72,6 +185,19 @@ Es un cambio sobre su catálogo y afecta a cualquier otro uso de ese producto en
 Contífico, así que el aviso lo dice explícitamente. Renombrar en el portal
 *después* no se propaga solo: hay que volver a vincular.
 
+### Todos los endpoints llevan barra final
+
+Sin ella la API responde `301` a la misma URL con `/`. En código no molesta
+—`contificoRequest()` siempre la pone— pero en Postman o curl sí: al seguir la
+redirección, un `POST` se convierte en `GET` y pierde el cuerpo, y
+`GET /documento/` sin filtros **se cuelga** (ver abajo). El síntoma es una
+request que nunca vuelve, en vez de un error.
+
+```
+POST /documento   → 301 → /documento/   (y el cuerpo se pierde)
+POST /documento/  → responde al instante
+```
+
 ### `GET /producto/` sin filtro se cuelga
 
 No es un problema de permisos: intenta devolver el catálogo entero y **hace
@@ -85,6 +211,9 @@ timeout a los 240s**. Con cualquier filtro responde en ~1s.
 | `?codigo=PV-000035` | exacto · 1s |
 | `?categoria_id=<id>` | 30 items · 1s |
 | `?fecha_inicial=2026-08-20` | 14 items · 1s — modificados desde esa fecha |
+
+Lo mismo vale para **`GET /documento/`**: sin filtros no responde (medido: 60s
+sin un solo byte); con `fecha_inicial` y `tipo_registro` vuelve en segundos.
 
 `fecha_inicial` va en **`YYYY-MM-DD`**, al revés que el resto de la API, que usa
 `DD/MM/YYYY`. Mandarlo en `DD/MM/YYYY` devuelve 400.
@@ -119,18 +248,36 @@ el mismo producto al que ya estaba vinculado en vez de crear uno. Por eso
 
 `Producto.contificoProductoId` es **único**: dos productos del portal apuntando
 al mismo de Contífico harían ambigua la lectura hacia atrás de una factura. El
-buscador marca como *Tomado* lo que ya está vinculado en vez de esconderlo.
+buscador marca como *Tomado* lo que ya está vinculado en vez de esconderlo, y
+`vincularProducto()` corta con un 409 que **nombra** al que lo tiene, antes de
+tocar Contífico.
 
-### Sin vínculo no se vende
+**Salvo que quien lo tenga esté archivado.** Archivar no suelta el vínculo —el
+producto sigue existiendo con su historia—, así que sin excepción un producto de
+Contífico quedaba tomado para siempre por una ficha que ya no se ve en ninguna
+pantalla, y no había forma de liberarlo. Vincular se lo saca al archivado (junto
+con su `codigo`, que también es único) y se lo da al vivo, todo en una
+transacción.
 
-Un producto sin `contificoProductoId` **no se puede agregar a una orden ni
-contratar en una suscripción** — aparece en los selectores en gris, con el
-motivo al pasar el mouse. Se valida en el servicio (`orden.service.ts`, `suscripcion.service.ts`),
-no solo en la UI.
+### El vínculo se exige al emitir, no antes
 
-Esa regla es lo que hace que `emitirFactura` **no sincronice nada**: si una
-orden existe, sus productos ya están vinculados. Antes sincronizaba al emitir, y
-eso escondía la decisión de escribir en el catálogo ajeno detrás del botón de
+Un producto sin `contificoProductoId` **entra igual en una orden y en una
+suscripción**: la orden registra lo que se vendió y el plan lo que se acordó,
+que son datos del portal. Lo que tiene que existir allá es lo que **sale
+impreso**, y eso se decide al emitir — es lo que permite facturar diez trabajos
+como una sola línea, donde los otros nueve nunca tocan Contífico. La validación
+vive en `emitirFactura()` (`factura.service.ts`), que rechaza nombrando el
+producto.
+
+Antes se exigía en `orden.service.ts` y `suscripcion.service.ts`, y bloqueaba
+registrar trabajo hecho por una configuración de catálogo pendiente. Hoy los
+selectores lo **avisan** en vez de deshabilitarlo, y avisan también antes:
+*Nueva orden* deja guardar el borrador pero apaga **Crear y facturar**, y la
+ficha de una orden con productos sin vincular lista cuáles son —linkeados a su
+ficha, que es donde se vinculan— y apaga **Emitir factura**.
+
+Lo que no cambió: `emitirFactura` **no sincroniza nada**. Sincronizar al emitir
+escondía la decisión de escribir en el catálogo ajeno detrás del botón de
 facturar — el peor momento para descubrir un problema.
 
 ### El código es la llave, el nombre no
@@ -435,6 +582,104 @@ tipo `xgepglRKYkt36d1p`, y pedir el de la URL devuelve `id incorrecto`. Para
 encontrar un documento sin tener su id hay que listar con
 `GET /documento/?tipo_registro=CLI&fecha_emision=DD/MM/YYYY`.
 
+### `DNA` no es "consumidor final", y no lleva IVA
+
+Contífico tiene varios `tipo_documento` además de `FAC`. El que más usa el
+vivero es **`DNA` (Documento No Autorizado)**: 95 en el último trimestre contra
+152 facturas. Es un registro interno de una venta —con su cliente, su saldo y
+sus cobros— que **nunca toca el SRI**: no tiene autorización, ni XML, ni RIDE
+(la API devuelve `url_ride` y `url_xml` en `null`), y `GET /documento/<id>/estado/`
+dice siempre "No se ha firmado".
+
+Es fácil confundirlo con el comprobante a consumidor final. No lo es, y los
+datos lo confirman: **los 95 DNA tienen persona identificada** con cédula o RUC,
+ninguno es anónimo.
+
+Lo que sí se puede y no se puede, probado en el sandbox el 28/08/2026:
+
+| | Resultado |
+|---|---|
+| Crear un `DNA` por API, con producto | ✅ igual que una `FAC` |
+| Registrar cobros contra él | ✅ mismo endpoint, el saldo baja igual |
+| Anularlo | ✅ mismo `PUT` con `anulado: true` |
+| **Ponerle IVA** | ❌ `400` · `1016` · *No se permite Impuestos IVA/ICE en DNA* |
+| **Número repetido** | ⚠️ **lo acepta y crea un segundo documento** — no hay unicidad, al revés que en `FAC` |
+| PDF para el cliente | ❌ no hay: `url_ride`, `url_xml` y `url_` vienen los tres en `null` |
+
+El documento **existe** —número, cliente, líneas, saldo, cobros, todo
+consultable por API—; lo que no existe es el comprobante del SRI, que es
+justamente lo que significa *No Autorizado*. Si hay que darle un papel al
+cliente, **lo renderiza el portal**, como ya hace con los informes.
+
+**Por qué no se puede reusar la impresión de ellos.** Su interfaz sí imprime un
+*Comprobante de Compra/Venta* del DNA, pero por una ruta de la **aplicación
+web**, no de la API:
+`/sistema/registro/documento/consultar/<id numérico>/?imprimir=1`. Dos cosas la
+hacen inservible desde acá, las dos medidas el 30/08/2026:
+
+- pide sesión de navegador — sin cookie devuelve **302 al login**;
+- ese id numérico (`413986495`) **no aparece en ningún campo** de
+  `GET /documento/<id>/`: la API solo conoce el alfanumérico
+  (`MEeg5NVA11FZQbQ5`), así que la URL ni siquiera se puede armar.
+
+Comparado con una `FAC` ya firmada, donde el propio documento trae
+`url_ride` (`…/documento/ride/<hash>.pdf`) y `url_xml`, y ese link **sí es
+público**: verificado el mismo día, `200 application/pdf` sin sesión. Es el que
+el portal guarda en `Factura.urlRide` y ofrece como *Ver factura*. Además, el
+comprobante que imprime la web del DNA incluye el **asiento contable**: es un
+papel interno, no uno para darle al cliente.
+
+Las dos últimas filas son las que muerden. Un servicio gravado al 15% **no puede
+ir en un DNA**, y la numeración la tiene que garantizar el portal solo, sin la
+red de seguridad que sí existe en las facturas. La numeración actual, hecha a
+mano, ya muestra el problema: conviven `MANT. 202608-0015`, `MANT.202608-0011`,
+`Mant. …`, `MANT202606-00002`, `ADIC.`, `ADC.`, `VNTS`, `VENTA`.
+
+**El portal los emite** desde la misma pantalla que las facturas, eligiendo
+***Consumidor final*** en el tipo de documento (`Factura.tipo = NO_AUTORIZADO`).
+
+Ojo con ese nombre: en la pantalla dice *Consumidor final* porque es como se lo
+nombra en el vivero —el cliente que no pide comprobante—, pero **no** es la
+factura a consumidor final del SRI, que es una `FAC` con trece nueves y tope de
+$50 (la sección siguiente). Por eso la opción lleva pegada la aclaración *"no va
+al SRI y no lleva IVA"*: es lo que separa las dos cosas en el momento de elegir.
+Adentro del código el tipo se sigue llamando `NO_AUTORIZADO`, que es lo que es.
+
+Tres consecuencias de las reglas de arriba, todas en `factura.service.ts`:
+
+- La opción **se bloquea si la orden tiene IVA**, con el motivo. Dejar quitarle
+  el IVA al emitir haría que la orden y el documento digan números distintos
+  para la misma venta.
+- La numeración es una **serie propia y corrida** (`CONTIFICO_SERIE_DNA`, por
+  defecto `VF-000000001`), y `Factura.numero` es único: es la única garantía que
+  hay. Los números que ellos emiten a mano quedan como están.
+- La sincronización **no le pregunta al SRI**: `/estado/` devuelve "No se ha
+  firmado" para siempre, así que se relee solo el saldo y la anulación, y el
+  corte del cron es `saldo = 0` en vez de "autorizada y saldada".
+
+Lo que **no** hace el portal todavía es el PDF. Cuando toque, lo renderiza él
+—como los informes—: la API de Contífico no expone ninguno.
+
+### Consumidor final: es una `FAC` con trece nueves, y tope de $50
+
+El comprobante a consumidor final **sí** existe y es una factura electrónica
+normal, con `cliente.cedula: "9999999999999"`. Contífico normaliza la persona
+solo (queda como `Consumidor Final`, `cedula 9999999999`, `ruc 9999999999999`)
+y **hace cumplir el tope del SRI**:
+
+```
+total 115.00 → 400 · 1015 · El valor total del documento no puede exceder 50USD
+               para Consumidor Final
+total  34.50 → 201
+```
+
+Ojo con `validarIdentificacion()` en `contifico/cedula.ts`: `9999999999999` no
+pasa el módulo 10, así que si algún día se factura a consumidor final hay que
+exceptuarlo explícitamente.
+
+Hoy el vivero **no emite ninguno**: cero documentos a consumidor final en el
+último trimestre.
+
 ### `electronico`
 
 - `true` → Contífico firma, transmite y genera `url_ride` y `url_xml`. La
@@ -474,37 +719,94 @@ declararlo en el SRI.
 
 ## De la orden a la factura
 
-Hay dos formas de armar una orden, y las dos terminan en `crearOrden()`:
+Todas las órdenes nacen en `crearOrden()` —es el único escritor— y siempre como
+`BORRADOR`, el único estado editable. Lo que cambia es quién la arma:
 
 | Desde | Cómo | Cuándo conviene |
 |---|---|---|
-| `/dashboard/ordenes/nueva` | Se eligen productos, se ajusta precio/IVA por línea y se elige el cliente | Es el camino normal. Sirve igual para algo que no pasó por una visita |
+| `/dashboard/ordenes/nueva` | Se elige el cliente, se marcan sus visitas por facturar y se ajusta precio/IVA por línea | Es el camino normal. Sirve igual para algo que no pasó por una visita |
+| Completar una visita | `borradorDeVisita()` abre el borrador con el trabajo suelto a **$0** | Automático: la visita no lleva plata, así que el borrador existe para que alguien la ponga |
+| `/api/cron/renovaciones` | `generarRenovaciones()` por los períodos vencidos y `generarBorradoresDeVisitas()` como red de seguridad | Diario, sin que nadie apriete nada |
 | `generarOrden()` | Barrido: junta todo lo pendiente de un rango de fechas | Facturación de fin de mes de varios clientes |
 
-El editor muestra, apenas se elige el cliente, un panel de **pendiente de
-facturar**: visitas completadas de productos únicos y períodos de suscripción
-todavía sin orden. Agregarlos como líneas conserva la procedencia
-(`visitaServicioId`, o `suscripcionItemId` + `periodoInicio`), que es lo que
-impide facturarlos dos veces — lo garantizan los índices únicos de
-`OrdenLinea`, no la UI.
+En `/dashboard/ordenes/nueva`, apenas se elige el cliente aparecen sus **visitas
+con trabajo sin facturar**, con una casilla cada una (buscables por número,
+fecha o producto), y aparte los **períodos de suscripción** todavía sin orden.
+Marcar una visita **carga su trabajo entero** —una visita se factura completa— y
+el mismo producto de dos visitas queda en **una sola línea**, con la cantidad
+sumada. La procedencia viaja en `OrdenLineaOrigen` (o `suscripcionItemId` +
+`periodoInicio`), que es lo que impide facturar dos veces lo mismo: lo garantizan
+los índices únicos, no la UI.
 
-La descripción y el precio de la línea son un **snapshot**: se pueden editar
-sin tocar el catálogo, y sobreviven a que después renombren o borren el
-producto.
+El precio de la línea es un **snapshot** y se edita sin tocar el catálogo. El
+**nombre no**: la orden registra lo que se hizo, y decidir qué sale impreso es
+otra cosa, que se hace al emitir — ahí sí se renombra, se junta y se agrega
+detalle.
 
-### Toda línea sale del catálogo
+### La factura no tiene la forma de la orden
 
-No hay líneas de texto libre. `detalles[]` exige `producto_id` y Contífico no
-acepta descripciones sueltas, así que una línea sin producto sería una orden
-imposible de cobrar — y el problema aparecería recién al emitir. Si hay que
-cobrar algo que no está en el catálogo, se crea el producto primero.
+Se emite desde **`/dashboard/ordenes/[id]/facturar`**, una pantalla propia con
+las líneas de la orden ya cargadas una a una. Ese es el caso común y sigue
+siendo un clic. Lo que la pantalla hace posible es lo otro: **cobrar varios
+trabajos de un período como una sola línea** de "servicio de mantenimiento" con
+el detalle al costado, que es como se factura el mantenimiento acá y como el
+vivero ya lo hacía a mano.
 
-Lo garantiza la base: `OrdenLinea.productoId` es **NOT NULL** y la FK es
-`RESTRICT`, así que un producto ya vendido tampoco se puede borrar en duro —
-perder ese vínculo dejaría la línea fuera de todo reporte por producto y la
-factura sin con qué reconciliarse. (El portal borra en suave, así que en el uso
-normal no cambia nada.) Los servicios y el schema de Zod lo validan antes, para
-dar un mensaje útil en vez de un error de constraint.
+Por eso `Factura` guarda **sus propias líneas** (`FacturaLinea`). Mientras la
+factura era una copia de la orden se podía reconstruir desde ella; desde que
+pueden diferir, esa reconstrucción sería una mentira sobre un documento que ya
+se entregó.
+
+Lo que ata las dos caras es que **cuadren, base imponible por tasa**
+(`ensureFacturaCuadra()`). Comparar solo el total no alcanza: juntar una línea
+al 0% con una al 15% cierra el total y miente el IVA. Comparar por tasa
+garantiza las dos cosas de una, y es lo que deja a la orden siendo el libro de
+ventas aunque el papel tenga otra forma.
+
+`emitirFactura(viewer, ordenId, opciones)` recibe las líneas en `opciones`. Sin
+ellas emite las de la orden una a una, que es como sigue funcionando
+`cobrarOrden()` para una factura ya emitida.
+
+### Toda línea de la **factura** sale del catálogo
+
+No hay líneas de texto libre. `detalles[]` **exige `producto_id`** —una línea
+con solo `cuenta_id` da `400 Falta campo producto_id`—, así que una línea sin
+producto sería un documento imposible de emitir. Texto adicional sí se puede
+mandar (`nombre_manual`), pero acompaña al nombre del producto, no lo reemplaza.
+
+**El vínculo con Contífico se exige sobre la factura, no sobre la orden.** Se
+exigía sobre la orden, con el argumento de que así ninguna podía llegar a
+facturación con algo que no se puede emitir; eso valía cuando las dos eran lo
+mismo. Ahora la orden es el registro interno de lo que se vendió —diez trabajos
+que salen impresos como una línea— y pedir el vínculo ahí obligaba a cargar en
+el catálogo ajeno cosas que nunca iban a imprimirse. El chequeo vive en
+`emitirFactura()`, y el armador marca la línea que no lo tiene y no deja emitir
+hasta cambiarla.
+
+Con una salvedad que se agregó después: **la ficha de la orden apaga *Emitir
+factura*** mientras haya un producto sin vincular, así que a esa pantalla no se
+llega con líneas rotas. La marca del armador queda como red por si el vínculo se
+cae entre medio, y como el lugar donde se elige otro producto para esa línea.
+
+Lo que sí sigue valiendo para las dos: la línea **necesita un producto del
+catálogo del portal**. `OrdenLinea.productoId` y `FacturaLinea.productoId` son
+**NOT NULL** y la FK es `RESTRICT`, así que un producto ya vendido tampoco se
+puede borrar en duro — perder ese vínculo dejaría la línea fuera de todo reporte
+por producto y la factura sin con qué reconciliarse. (El portal borra en suave,
+así que en el uso normal no cambia nada.)
+
+### Una orden puede cubrir varias visitas
+
+Y el mismo producto de dos visitas es **una sola línea**. Eran dos límites del
+esquema, no del negocio: `Orden.visitaId` era una columna y
+`OrdenLinea.visitaProductoId` era único, así que una orden era "de una visita" y
+un producto hecho dos veces salía como dos líneas.
+
+Ahora son dos tablas puente —`OrdenVisita` y `OrdenLineaOrigen`— y cobrarle a
+alguien el mes entero en una orden es un caso normal. Lo que **no** cambió es la
+garantía: `OrdenLineaOrigen.visitaProductoId` sigue siendo único en toda la
+tabla, así que un trabajo se factura una sola vez y lo impide la base, no una
+validación.
 
 ### Lo que se factura junto se factura entero
 
@@ -514,7 +816,7 @@ esa visita le falten cobrar; si toca un período de un plan, entran todos los
 ítems de ese plan para ese período.
 
 Los índices únicos no alcanzaban. Garantizan que nada se cobre **dos veces**
-—`visitaProductoId` es único y `[suscripcionItemId, periodoInicio]` también—
+—`OrdenLineaOrigen.visitaProductoId` es único y `[suscripcionItemId, periodoInicio]` también—
 pero no que se cobre **junto**: dos productos de la misma visita podían terminar
 en dos órdenes distintas y nadie se quejaba. Media visita facturada es una
 conversación a medias con el cliente y una segunda factura por el resto que
@@ -536,7 +838,7 @@ completa entra sin problema.
 ### Una orden no mezcla plan con visitas
 
 `ensureNoMezclaOrigenes()` rechaza una orden que tenga a la vez líneas con
-`suscripcionItemId` y líneas con `visitaProductoId`. Son dos conversaciones
+`suscripcionItemId` y líneas con procedencia de visita. Son dos conversaciones
 distintas con el cliente: el plan es lo pactado y se renueva solo; la visita
 suelta es algo que pasó y se cotiza. Juntarlas daba una orden cuyo total no se
 podía explicar sin abrirla, y una factura que mezclaba la mensualidad con
@@ -547,8 +849,10 @@ ya está— y una orden de puro trabajo a mano también vale.
 
 Por eso `generarOrden()` devuelve **varias** órdenes: una por suscripción (sus
 períodos agrupados por la cabecera del plan, no todos juntos) y otra con las
-visitas sueltas. El armador de órdenes grisa lo que no combina con lo que ya
-hay y dice por qué, en vez de dejar apretar y fallar.
+visitas sueltas. En *Nueva orden*, agregado un período de plan la lista de
+visitas queda deshabilitada con el motivo escrito, y al revés un pendiente que
+no combina se rechaza diciendo en qué orden va: la regla se explica donde se
+está por romper, en vez de dejar apretar y fallar al guardar.
 
 ### Lo que cubre un plan entra por procedencia, o a mano como extra
 
@@ -556,7 +860,7 @@ Un producto que **este cliente** tiene en una suscripción activa llega a una
 orden de tres formas:
 
 - `suscripcionItemId` + período → la renovación del plan;
-- `visitaProductoId` → una visita que se hizo y **no** quedó cubierta;
+- una fila de `OrdenLineaOrigen` → trabajo de visita que **no** quedó cubierto;
 - a mano desde el catálogo → un extra, sin procedencia.
 
 **La tercera estuvo prohibida y ya no.** El argumento era que una línea a mano
@@ -568,11 +872,12 @@ y a cambio hacía imposible algo legítimo, como cobrarle un saco de más a algu
 que tiene ese producto en su plan.
 
 Lo que sí protege la base sigue protegido: un período no se cobra dos veces
-(`[suscripcionItemId, periodoInicio]`) y una visita tampoco (`visitaProductoId`).
+(`[suscripcionItemId, periodoInicio]`) y un trabajo de visita tampoco
+(`OrdenLineaOrigen.visitaProductoId`).
 
 El selector lo ofrece con la aclaración *"El cliente ya lo tiene en un plan.
-Agregalo solo si es un extra"*. Lo único que sigue en gris es lo que **no se
-puede facturar**: un producto sin vincular con Contífico.
+Agregalo solo si es un extra"*. Nada queda en gris: un producto sin vincular con
+Contífico también entra, con su propio aviso — lo que frena es emitir, no armar.
 
 ### El plan se elige por visita, no por producto
 
@@ -609,13 +914,20 @@ apenas **agendada**: cobrar por adelantado es normal, y lo único que nunca entr
 es una visita cancelada. Los ids no se toman de la URL a ciegas: se preselecciona
 solo lo que ya devolvió `listarPendientes`, que filtra por cliente y por viewer.
 
-Y al revés: **Nueva orden** tiene un selector de *Visita* con las del cliente
-que todavía tienen trabajo sin facturar. Elegir una carga su trabajo entero —la
-asignación *es* eso: `Orden.visitaId` se deduce de la procedencia de las líneas,
-así que una asignación sin líneas no quedaría registrada en ningún lado— y
-esconde el panel de pendientes, que a esa altura solo mostraría cosas que van en
-otra orden. Si en cambio se agregó un período de suscripción, el selector queda
-en gris: una orden es de una visita **o** de un plan.
+Y al revés: **Nueva orden** tiene una lista de *Visitas* con las del cliente que
+todavía tienen trabajo sin facturar, con **casillas**: se marcan varias, porque
+cobrarle a alguien el mes entero en una orden es lo normal. Marcar carga el
+trabajo entero de esa visita —la asignación *es* eso: `OrdenVisita` se deduce de
+la procedencia de las líneas, así que marcar sin traer trabajo no quedaría
+registrado en ningún lado— y esconde los períodos pendientes, que a esa altura
+solo mostrarían cosas que van en otra orden. Si en cambio se agregó un período de
+suscripción, la lista queda deshabilitada con el motivo: una orden es de visitas
+**o** de un plan.
+
+La misma lista aparece al **editar un borrador**, con sus propias visitas ya
+marcadas: desmarcar una saca sus productos. Por eso una línea que viene de una
+visita **no se puede sacar sola** —dejaría la orden a medias, que el servidor
+rechaza—; se saca desmarcando la visita.
 
 Los períodos de plan **no** se asignan a mano. Son por período y los crea la
 renovación (`/api/cron/renovaciones`); ofrecerlos en un selector era invitar a
@@ -649,10 +961,16 @@ facturar los cobraría todos al precio nuevo. Con la orden ya creada,
 siguiente.
 
 Es **idempotente** — lo que ya tiene línea se saltea, y el índice único atrapa
-las carreras — así que correrlo de más no rompe nada. Si un producto de la
-suscripción quedó sin vincular a Contífico, **omite esa suscripción entera** y
-lo reporta en la respuesta, en vez de generar una orden que después no se podría
-emitir.
+las carreras — así que correrlo de más no rompe nada. Lo único que omite es una
+suscripción **sin productos activos**, y lo reporta en la respuesta. Antes
+omitía también las que tuvieran un producto sin vincular a Contífico; dejó de
+hacerlo cuando el vínculo pasó a exigirse al emitir: saltearla dejaba al cliente
+sin su orden del mes por un detalle de configuración del catálogo, y el período
+igual se puede facturar con otro producto.
+
+El mismo cron corre `generarBorradoresDeVisitas()`, la red de seguridad para
+visitas completadas que quedaron sin su borrador —lo normal es que nazca al
+completar la visita— y que también deja lo suyo en `omitidas` con el motivo.
 
 ### Dónde se ven las facturas
 
@@ -679,14 +997,15 @@ listaba lo contrario —órdenes sin factura—; dejó de tener sentido cuando
 confirmar pasó a emitir: lo que hoy queda sin factura es un borrador, y un
 borrador es trabajo por aprobar, no plata por entrar.
 
-Los dos casos que **no** son deuda pero necesitan que alguien mire van como
-avisos arriba de la tabla:
+Lo que **no** es deuda pero necesita que alguien mire va como aviso arriba de la
+tabla: los **borradores** esperando revisión (`borradoresSinConfirmar`), que
+crean el cron de renovaciones y el completar una visita. Van contados y no como
+filas, para que la salida del cron no pase desapercibida sin por eso hacer pasar
+un borrador por plata a cobrar.
 
-- **borradores** esperando revisión, que los crea el cron de renovaciones
-  (`borradoresSinConfirmar`);
-- **órdenes confirmadas sin factura** (`ordenesConfirmadasSinFactura`), o sea
-  emisiones que fallaron. Con el flujo sano son cero, y por eso el aviso va en
-  ámbar: si aparece, algo hay que arreglar.
+Hubo un segundo aviso, de *órdenes confirmadas sin factura*, para las emisiones
+que fallaban. Dejó de existir junto con ese estado: hoy una emisión que falla
+deja la orden en `BORRADOR`, así que ya está contada en el primero.
 
 Una factura que nunca se sincronizó no tiene saldo conocido; entra igual, con el
 total como saldo y un `?` que lo aclara. No saber cuánto falta no es lo mismo
@@ -695,15 +1014,20 @@ que saber que no falta nada.
 ### El borrador se edita, lo confirmado no
 
 `actualizarOrden()` acepta cambios solo en `BORRADOR`: agregar o quitar líneas,
-ajustar precios, cambiar las notas. Confirmada la orden es lo que se le va a
-cobrar al cliente, y facturada Contífico no deja editarla por API — mover los
-números después sería mentirle al historial.
+ajustar precios y cantidades, cambiar de cliente, cambiar **qué visitas** cubre
+y las notas. Confirmada la orden es lo que se le va a cobrar al cliente, y
+facturada Contífico no deja editarla por API — mover los números después sería
+mentirle al historial.
 
 Al editar, `lineas` **reemplaza el conjunto entero** y la procedencia viaja
-intacta aunque cambien descripción o precio. Sacar una línea libera su
-procedencia: ese período o esa visita vuelven a aparecer como pendientes, que es
-justo lo que se espera. Y valen las mismas reglas que al crear —una sola función
-las aplica a las dos— así que por la puerta de atrás no entra nada.
+intacta aunque cambie el precio. Sacar una línea libera su procedencia: ese
+período o esa visita vuelven a aparecer como pendientes, que es justo lo que se
+espera. Y valen las mismas reglas que al crear —una sola función las aplica a las
+dos— así que por la puerta de atrás no entra nada.
+
+Lo que no se edita en la orden es el **nombre** de la línea: eso se decide al
+emitir. Y una línea con procedencia de visita no se saca sola —se desmarca la
+visita— porque una visita se factura completa.
 
 ### Tres estados, y cobrar no es uno de ellos
 
@@ -732,24 +1056,38 @@ con la columna de cobro.
 
 ### Una orden, una factura
 
-La acción principal de una orden es **"Registrar cobro"**, y por debajo
-`cobrarOrden()` hace los tres pasos que hagan falta: confirma, emite y registra
-el cobro. El orden **no se puede invertir** —un cobro se registra contra un
-documento de Contífico, así que la factura tiene que existir antes—, pero quien
-cobra no tiene por qué saberlo. Cada paso se saltea si ya está hecho, así que
-reintentar después de una falla a mitad de camino es seguro.
+La acción principal de una orden **cambia con lo que le falta**. Sin documento
+emitido dice **"Emitir factura"** y lleva al armador; con uno emitido y saldo
+pendiente, **"Registrar cobro"**. Ofrecer "Registrar cobro" sobre un borrador
+prometía un paso que en realidad empezaba por otro lado: un cobro se registra
+**contra** un documento de Contífico, así que la factura tiene que existir antes.
 
-Para vender a crédito está *"Emitir factura sin cobrar"* en el menú, que llama a
-`confirmarYFacturar()`. **Si emitir falla, la orden queda `CONFIRMADA` igual** y
-el motivo vuelve en `errorFactura` con HTTP 200: confirmar sí funcionó, y una
-orden aprobada sin factura es exactamente lo que cuenta el aviso de "Por cobrar".
-Verificado el 24/08/2026 desvinculando un producto — la orden quedó `CONFIRMADA`
-con cero facturas y el mensaje diciendo cuál faltaba.
+De ahí salen las dos funciones del servicio:
+
+- `facturarOrden()` — emite y nada más. Es la venta a crédito, y también lo que
+  usa *Emitir* en el armador.
+- `cobrarOrden()` — emite si hace falta y registra el cobro. Sobre una orden que
+  ya tiene factura cobra contra esa, así que reintentar después de una falla a
+  mitad de camino es seguro. Es lo que hay detrás de *Emitir y cobrar*.
+
+**Si emitir falla, la orden se queda en `BORRADOR`** y el motivo vuelve en
+`errorFactura` con HTTP 200 en vez de tirarse. Borrador es el único estado
+editable, o sea exactamente donde hay que estar para arreglar la causa: vincular
+el producto que faltaba, cargarle los datos al cliente. (Antes confirmar y emitir
+eran dos pasos y una emisión fallida dejaba la orden `CONFIRMADA` sin factura;
+`confirmarYFacturar()` ya no existe.)
 
 A nombre de quién sale la factura vive en `Orden.datoFacturacionId` y se elige
-**mientras la orden es borrador**, junto con todo lo demás que se puede decidir.
-No hay diálogo que lo pregunte al emitir: confirmada la orden, lo que se va a
-cobrar ya está resuelto.
+mientras la orden es borrador, pero **el armador lo vuelve a preguntar** y puede
+cambiarlo para esa emisión: `opciones.datoFacturacionId` gana, después el de la
+orden, y por último el predeterminado del cliente.
+
+**Antes de llegar al armador hay dos frenos, y los dos se ven en pantalla.** Sin
+datos de facturación cargados y con productos sin vincular a Contífico, *Emitir
+factura* queda apagado y dice cuál de las dos cosas falta; la ficha lista además
+los productos sin vincular, linkeados a su ficha. En *Nueva orden* el que se
+apaga es **Crear y facturar** —*Guardar borrador* sigue disponible, que es donde
+esto se arregla—.
 
 Emitir **no** manda nada al SRI: crea el documento en Contífico. La firma la
 pone Contífico sola y la transmisión sale en su tanda horaria.
@@ -761,7 +1099,7 @@ dejarlas nunca en desacuerdo. Anular es el final del camino: la orden no se
 reabre ni se vuelve a facturar, y para cobrar ese trabajo se arma una orden
 nueva.
 
-**Y acá está la trampa que casi nos comemos.** `visitaProductoId` y
+**Y acá está la trampa que casi nos comemos.** `OrdenLineaOrigen.visitaProductoId` y
 `[suscripcionItemId, periodoInicio]` son únicos **en toda la tabla, sin mirar el
 estado de la orden**, y `listarPendientes` da por facturado cualquier trabajo
 que tenga línea. Una orden anulada que se llevara sus líneas dejaría esas
@@ -792,23 +1130,29 @@ Como no hay factura que anular por separado en la UI, `/api/facturas/[id]/anular
 se eliminó: la única puerta es anular la orden.
 
 La dirección inversa no espeja. Si anulan la factura desde la interfaz de
-Contífico, `sincronizarFactura` devuelve la orden a `CONFIRMADA` en vez de
-matarla: el trabajo sigue enlazado, no se pierde nada, y se emite otra factura o
-se anula la orden por el camino explícito.
+Contífico, `sincronizarFactura` devuelve la orden a **`BORRADOR`** en vez de
+matarla: `CONFIRMADA` quiere decir "tiene factura viva", y quedarse ahí sin
+ninguna sería mentir. El trabajo sigue enlazado, no se pierde nada, y borrador
+es además el estado editable — si la anularon fue porque algo estaba mal.
 
 ## Flujo de emisión
 
 ```
-Orden CONFIRMADA
+Orden BORRADOR
+  ↓  resolver con qué datos se factura (los del armador, los de la orden, el predeterminado)
   ↓  validar cédula/RUC (módulo 10)
-  ↓  verificar que cada producto tenga contificoProductoId (no se sincroniza acá)
-  ↓  reservar secuencial
-  ↓  POST /documento/  (cliente embebido, tipo FAC, electronico: true)
-  ↓  guardar Factura + orden pasa a CONFIRMADA
+  ↓  armar las líneas del documento (las de la orden 1:1, o las del armador)
+  ↓  verificar que cuadren con la orden, base imponible por tasa
+  ↓  verificar que cada producto de esas líneas tenga contificoProductoId
+  ↓  reservar secuencial y fechar el documento con hoy (Ecuador)
+  ↓  POST /documento/  (cliente embebido, FAC electrónica o DNA interno)
+  ↓  guardar Factura + FacturaLinea, y la orden pasa a CONFIRMADA
 ```
 
-Los productos ya están vinculados (sin eso la orden no existiría), así que
-emitir no escribe nada en el catálogo.
+Emitir **no escribe nada en el catálogo**: si un producto de la factura no está
+vinculado, corta nombrándolo en vez de crearlo allá. Escribir en el catálogo
+ajeno es una decisión explícita, y el botón de facturar es el peor momento para
+tomarla sin darse cuenta.
 
 El estado inicial es siempre `PENDIENTE` ("No se ha firmado"). Contífico firma y
 transmite de forma **asincrónica**, procesando los pendientes cada hora, así que
@@ -982,6 +1326,41 @@ como envío manual de documentos ya creados.
 En el portal es *Enviar al SRI ahora*, en el menú de la factura dentro de la
 orden. Solo aparece en `PENDIENTE` y `FIRMADO`: enviada o autorizada ya no hay
 nada que apurar.
+
+### Al SRI solo se manda lo emitido **hoy**
+
+Verificado el 30/08/2026 sobre la `001-002-000900136`, emitida el 28:
+
+> El documento no puede ser enviado al SRI. Solo se permiten documentos con
+> fecha de emisión del día actual según la normativa vigente del SRI. Ingresa a
+> la nube para mandar a autorizar manualmente. Fecha de emisión del documento:
+> 28/08/2026. Fecha actual: 30/08/2026.
+
+Es del SRI, no de Contífico: un comprobante electrónico se autoriza el mismo día
+que se emite. La consecuencia para nosotros es que **la factura se emite con la
+fecha de hoy, no con la de la orden** (`hoyEnEcuador()` en `emitirFactura()`).
+Antes viajaba `orden.fecha`, y como una orden se arma un día y se cobra otro
+—los borradores del cron y de las visitas son de días anteriores por
+definición—, esas facturas nacían imposibles de transmitir. `Orden.fecha` sigue
+siendo la de la orden; `Factura.fechaEmision` es la del documento.
+
+Solo queda el caso de una factura vieja que nunca se transmitió: ahí no hay nada
+que hacer desde el portal, se autoriza a mano desde la nube de Contífico, y el
+mensaje ahora lo dice.
+
+### Lo que dice Contífico llega a la pantalla
+
+`ContificoError` no es un `ServiceError`, así que caía en el `catch` genérico de
+las rutas: la pantalla mostraba **"Error interno"** y el motivo de verdad —el de
+arriba, o *"No existe un contribuyente registrado con el RUC…"*— se quedaba en
+el log del servidor. Ahora `factura.service.ts` lo traduce con
+`conErrorDeContifico()` en las acciones que dispara una persona: enviar al SRI,
+registrar un cobro y anular. El mensaje llega entero, con su prefijo de contexto.
+
+**Ojo con el ambiente de pruebas.** La empresa del sandbox no tiene permiso de
+facturar en producción, así que sus documentos muestran *"ARCHIVO NO CUMPLE
+ESTRUCTURA XML (No existe un contribuyente registrado con el RUC …)"*. No es un
+problema del payload: es el RUC de prueba contra el SRI real.
 
 ## Pendiente
 

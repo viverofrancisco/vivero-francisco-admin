@@ -20,11 +20,24 @@
  * (`generarOrden`), que no llama a nada externo y aplica las reglas que evitan
  * facturar dos veces el mismo trabajo.
  *
- * **Emite facturas de verdad en Contífico** para que "Por cobrar" tenga algo que
- * mostrar: siete de cada diez órdenes se facturan y se cobran, entera o a
- * medias. Eso está bien contra la cuenta de pruebas y **no** contra una real:
- * Contífico no tiene DELETE y un documento emitido queda para siempre.
- * `--sin-contifico` deja todo en borrador.
+ * **Emite documentos de verdad en Contífico** para que "Por cobrar" tenga algo
+ * que mostrar: ocho de cada diez órdenes se emiten y la mayoría se cobra,
+ * entera o a medias. Eso está bien contra la cuenta de pruebas y **no** contra
+ * una real: Contífico no tiene DELETE y un documento emitido queda para
+ * siempre. `--sin-contifico` deja todo en borrador.
+ *
+ * Reparte las tres formas de emitir, para que se vean todas en el portal:
+ *
+ * - **línea por línea**, que es el documento igual a la orden;
+ * - **agrupada**, varias líneas juntadas en una sola de "mantenimiento" con el
+ *   detalle al costado — una por tasa de IVA, que es lo que hace que el
+ *   documento siga cuadrando con la orden;
+ * - **sin factura** (el `DNA` de Contífico), para el cliente que no pide
+ *   comprobante. Solo sobre órdenes al 0%: Contífico rechaza el IVA ahí.
+ *
+ * También deja trabajo con un producto **sin vincular** a Contífico, que la
+ * visita y la orden aceptan y el armador de la factura no: es el caso que
+ * muestra dónde vive esa regla.
  */
 import "dotenv/config";
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
@@ -320,11 +333,22 @@ async function sembrar(
   // para armar planes y el resto queda como trabajo suelto.
   const recurrentes = algunos(vendibles, Math.min(4, vendibles.length));
   const idsRecurrentes = new Set(recurrentes.map((p) => p.id));
-  const sueltos = vendibles.filter((p) => !idsRecurrentes.has(p.id));
+  // El sin vincular entra como trabajo suelto **a propósito**: una visita y una
+  // orden lo aceptan, y el vínculo se exige recién sobre las líneas del
+  // documento. Así se ve en el portal el aviso y el bloqueo al emitir, que es
+  // donde vive la regla.
+  const sinVincularParaVisitas = await prisma.producto.findMany({
+    where: { deletedAt: null, contificoProductoId: null },
+    select: { id: true, nombre: true, ivaTasa: true },
+  });
+  const sueltos = [
+    ...vendibles.filter((p) => !idsRecurrentes.has(p.id)),
+    ...sinVincularParaVisitas,
+  ];
   if (!vendibles.length) {
     throw new Error(
-      "Ningún producto quedó vinculado con Contífico: sin eso no se pueden crear " +
-        "suscripciones ni órdenes. Revisá las credenciales o corré sin --sin-contifico."
+      "Ningún producto quedó vinculado con Contífico: sin eso no se pueden " +
+        "emitir documentos. Revisá las credenciales o corré sin --sin-contifico."
     );
   }
 
@@ -553,9 +577,107 @@ async function sembrar(
     actualizarOrden,
     getOrden,
   } = await import("@/lib/services/orden.service");
-  const { cobrarOrden, facturarOrden } = await import(
+  const { facturarOrden, registrarCobro } = await import(
     "@/lib/services/factura.service"
   );
+
+  /**
+   * El producto con el que se agrupa una factura.
+   *
+   * Acá se factura el mantenimiento como **una sola línea** con el detalle al
+   * costado, y el nombre impreso lo decide el producto de Contífico, así que
+   * agrupar es elegir con qué producto sale. Es el mismo patrón que usa el
+   * vivero a mano: "SERVICIO DE MANTENIMIENTO" + "Detalle: AREAS VERDES".
+   */
+  const agrupador =
+    vendibles.find((p) => /áreas verdes|areas verdes/i.test(p.nombre)) ??
+    vendibles.find((p) => /mantenimiento/i.test(p.nombre)) ??
+    vendibles[0];
+
+  const NOMBRE_MES = [
+    "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+    "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE",
+  ];
+  const periodo = (d: Date) =>
+    `${NOMBRE_MES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+
+  /** Las líneas de la orden juntadas en una por tasa. */
+  function agrupadas(
+    lineas: { ivaTasa: unknown; subtotal: unknown }[],
+    detalle: string
+  ) {
+    const porTasa = new Map<number, number>();
+    for (const l of lineas) {
+      const tasa = Number(l.ivaTasa);
+      porTasa.set(tasa, (porTasa.get(tasa) ?? 0) + Number(l.subtotal));
+    }
+    return [...porTasa].map(([ivaTasa, base]) => ({
+      productoId: agrupador.id,
+      descripcion: agrupador.nombre,
+      detalle,
+      cantidad: 1,
+      precioUnitario: Math.round(base * 100) / 100,
+      ivaTasa,
+    }));
+  }
+
+  /**
+   * Emite una orden y le reparte el cobro, mostrando las variantes del flujo:
+   * factura línea por línea, factura agrupada, y documento sin factura.
+   *
+   * Devuelve el id de la factura, o `null` si la orden se queda en borrador.
+   */
+  async function emitirComoEnLaVida(ordenId: string): Promise<string | null> {
+    const o = await getOrden(viewer, ordenId);
+    const total = Number(o.total);
+    if (total <= 0) return null;
+
+    const suerte = rnd();
+    if (suerte < 0.2) return null; // se queda en borrador
+
+    // Sin factura: solo si la orden no lleva IVA, porque Contífico rechaza
+    // cualquier impuesto en un documento no autorizado.
+    const puedeSinFactura = o.lineas.every((l) => Number(l.ivaTasa) === 0);
+    const sinFacturaAhora = puedeSinFactura && chance(0.6);
+
+    // Agrupar solo tiene sentido con más de una línea.
+    const detalle = `ÁREAS VERDES · ${periodo(o.fecha)}`;
+    const lineas =
+      o.lineas.length > 1 && chance(0.6)
+        ? agrupadas(o.lineas, detalle)
+        : undefined;
+
+    const { factura, errorFactura } = await facturarOrden(viewer, ordenId, {
+      tipo: sinFacturaAhora ? "NO_AUTORIZADO" : "FACTURA",
+      descripcion: `MANTENIMIENTO ${periodo(o.fecha)}`,
+      lineas,
+    });
+    if (!factura) {
+      console.log(`    ⚠ ${errorFactura}`);
+      return null;
+    }
+    const como = sinFacturaAhora
+      ? "sin factura"
+      : lineas
+        ? `agrupada en ${lineas.length}`
+        : "línea por línea";
+
+    if (suerte < 0.4) {
+      console.log(`    ${factura.numero} · ${como} · sin cobrar`);
+      return factura.facturaId;
+    }
+
+    const parcial = suerte < 0.7;
+    await registrarCobro(viewer, factura.facturaId, {
+      formaCobro: "EF",
+      monto: parcial ? Math.round(total * 0.4 * 100) / 100 : total,
+      fecha: hoy.toISOString().slice(0, 10),
+    });
+    console.log(
+      `    ${factura.numero} · ${como} · ${parcial ? "cobrada en parte" : "cobrada"}`
+    );
+    return factura.facturaId;
+  }
 
   // Las visitas se escriben con Prisma directo, así que `completeVisita` nunca
   // corrió y sus borradores no existen. Esto los arma igual que el cron: es el
@@ -589,7 +711,7 @@ async function sembrar(
               precioUnitario: Number(l.precioUnitario) || entre(45, 260),
               ivaTasa: Number(l.ivaTasa),
               productoId: l.productoId,
-              visitaProductoId: l.visitaProductoId,
+              visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
               suscripcionItemId: l.suscripcionItemId,
               periodoInicio: l.periodoInicio,
               periodoFin: l.periodoFin,
@@ -597,44 +719,16 @@ async function sembrar(
           });
         }
 
-        // Un reparto que muestre los tres estados de cobro. Sin él la pantalla
-        // "Por cobrar" queda vacía y no se ve nada de lo que hace el portal.
+        // Un reparto que muestre los tres estados de cobro y las tres formas
+        // de emitir. Sin esto "Por cobrar" queda vacía y no se ve nada.
         //
         // Emitir crea documentos **de verdad** en Contífico, y no hay DELETE:
         // por eso `--sin-contifico` deja todo en borrador, que es como las deja
         // el cron. La cuenta de pruebas aguanta; una de producción no.
         if (sinContifico) continue;
 
-        const suerte = rnd();
-        if (suerte < 0.2) continue; // se queda en borrador
-
-        // El total **después** de repreciar: `completa` es de antes del update
-        // y usarlo dejaba el cobro por encima del saldo, que Contífico rechaza.
-        const total = Number((await getOrden(viewer, orden.id)).total);
-
-        if (suerte < 0.4) {
-          // Facturada y sin cobrar: la venta a crédito.
-          const { factura, errorFactura } = await facturarOrden(viewer, orden.id);
-          if (factura) {
-            m.facturas.push(factura.facturaId);
-            console.log(`    ${factura.numero} · sin cobrar`);
-          } else {
-            console.log(`    ⚠ ${c.nombre}: ${errorFactura}`);
-          }
-          continue;
-        }
-
-        const parcial = suerte < 0.7;
-        const monto = parcial ? Math.round(total * 0.4 * 100) / 100 : total;
-        const { facturaId, numero } = await cobrarOrden(viewer, orden.id, {
-          formaCobro: "EF",
-          monto,
-          fecha: hoy.toISOString().slice(0, 10),
-        });
-        m.facturas.push(facturaId);
-        console.log(
-          `    ${numero} · ${parcial ? "cobrado parcialmente" : "cobrado"}`
-        );
+        const facturaId = await emitirComoEnLaVida(orden.id);
+        if (facturaId) m.facturas.push(facturaId);
       }
     } catch (e) {
       // "No hay nada pendiente" es lo normal para muchos clientes, pero un
@@ -659,25 +753,14 @@ async function sembrar(
             precioUnitario: Number(l.precioUnitario) || entre(45, 260),
             ivaTasa: Number(l.ivaTasa),
             productoId: l.productoId,
-            visitaProductoId: l.visitaProductoId,
+            visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
             suscripcionItemId: l.suscripcionItemId,
             periodoInicio: l.periodoInicio,
             periodoFin: l.periodoFin,
           })),
         });
-        const total = Number((await getOrden(viewer, ordenId)).total);
-        const suerte = rnd();
-        if (suerte < 0.3) {
-          const { factura } = await facturarOrden(viewer, ordenId);
-          if (factura) m.facturas.push(factura.facturaId);
-        } else {
-          const { facturaId } = await cobrarOrden(viewer, ordenId, {
-            formaCobro: "EF",
-            monto: suerte < 0.65 ? Math.round(total * 0.4 * 100) / 100 : total,
-            fecha: hoy.toISOString().slice(0, 10),
-          });
-          m.facturas.push(facturaId);
-        }
+        const facturaId = await emitirComoEnLaVida(ordenId);
+        if (facturaId) m.facturas.push(facturaId);
       } catch (e) {
         console.log(`    ⚠ ${(e as Error).message.slice(0, 70)}`);
       }
@@ -690,6 +773,7 @@ async function sembrar(
 // ──────────────────────────────────────────────
 
 async function limpiarTodo(prisma: PrismaClient, host: string) {
+  const { serie } = await import("@/lib/contifico/documentos");
   if (!existsSync(MANIFIESTO)) {
     console.log("No hay manifiesto: nada que limpiar.");
     return;
@@ -709,8 +793,19 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
     console.log(`  ${nombre.padEnd(22)} ${count}`);
   };
 
-  // La factura se va de nuestra base; el documento sigue en Contífico, que no
-  // tiene DELETE. Por eso conviene revisar `CONTIFICO_SECUENCIAL_INICIAL`.
+  // El secuencial **antes** de borrar: después no hay de dónde sacarlo.
+  //
+  // La factura se va de nuestra base pero el documento sigue en Contífico, que
+  // no tiene DELETE, y el próximo número sale del máximo local. Sin subir el
+  // piso, la próxima emisión arranca en un número ya usado y se pasa los 25
+  // intentos que tolera `emitirFactura()` buscando uno libre.
+  const ultima = await prisma.factura.findFirst({
+    where: { numero: { startsWith: `${serie().establecimiento}-${serie().puntoEmision}-` } },
+    orderBy: { numero: "desc" },
+    select: { numero: true },
+  });
+  const piso = ultima ? Number(ultima.numero.slice(-9)) : 0;
+
   await borrar("factura", () =>
     prisma.factura.deleteMany({ where: { id: { in: m.facturas ?? [] } } })
   );
@@ -727,6 +822,30 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
   await borrar("visitaProducto", () =>
     prisma.visitaProducto.deleteMany({ where: { visitaId: { in: m.visitas } } })
   );
+  // Una orden ajena al manifiesto puede haberse enganchado a una visita del
+  // seed —el cron de borradores corre solo, y alguien pudo armar una a mano—.
+  // `OrdenVisita.visitaId` es `Restrict`, así que borrar la visita reventaba con un
+  // error de foreign key ilegible. Se nombran y se corta: **el script no borra
+  // nada que no haya creado**, y esa decisión es de quien mira.
+  const ajenas = await prisma.orden.findMany({
+    where: {
+      visitas: { some: { visitaId: { in: m.visitas } } },
+      id: { notIn: m.ordenes },
+    },
+    select: { id: true, numero: true, estado: true, total: true },
+  });
+  if (ajenas.length) {
+    console.error(
+      `\nHay ${ajenas.length} orden(es) que no creó este script pero que apuntan a ` +
+        `visitas suyas, y no se pueden borrar sin resolverlas:\n` +
+        ajenas
+          .map((o) => `  #${o.numero} · ${o.estado} · $${o.total}`)
+          .join("\n") +
+        `\n\nBorralas o desenganchalas de su visita y volvé a correr --limpiar.`
+    );
+    process.exit(1);
+  }
+
   await borrar("visita", () => prisma.visita.deleteMany({ where: { id: { in: m.visitas } } }));
   await borrar("suscripcionItem", () =>
     prisma.suscripcionItem.deleteMany({ where: { suscripcionId: { in: m.suscripciones } } })
@@ -759,6 +878,13 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
 
   unlinkSync(MANIFIESTO);
   console.log("\nListo. Los productos creados en Contífico siguen ahí: su API no borra.");
+  if (piso > 0) {
+    console.log(
+      `\n⚠  Subí CONTIFICO_SECUENCIAL_INICIAL a ${piso + 5} antes de volver a emitir.\n` +
+        `   Los documentos hasta ${piso} siguen existiendo en Contífico, y el próximo\n` +
+        `   número sale del máximo local, que se acaba de borrar.`
+    );
+  }
 }
 
 main().catch((e) => {

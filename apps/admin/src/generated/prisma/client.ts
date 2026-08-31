@@ -237,10 +237,39 @@ export type Firmante = Prisma.FirmanteModel
  */
 export type Orden = Prisma.OrdenModel
 /**
+ * Model OrdenVisita
+ * De qué visitas es una orden.
+ * 
+ * Es una lista y no una columna porque **una orden puede cubrir varias
+ * visitas**: es normal cobrar el mes entero de alguien de una vez. Lo mantiene
+ * el servidor desde la procedencia de las líneas, así que no se recibe de
+ * afuera — una asignación que no trajera trabajo sería una que no queda
+ * registrada en ningún lado.
+ * 
+ * Existe además de `OrdenLineaOrigen` porque contesta otra pregunta: aquélla
+ * dice de dónde sale cada peso, ésta "¿de qué es esta orden?", que es la que
+ * se hace primero y la que obligaba a recorrer las líneas.
+ */
+export type OrdenVisita = Prisma.OrdenVisitaModel
+/**
  * Model OrdenLinea
  * 
  */
 export type OrdenLinea = Prisma.OrdenLineaModel
+/**
+ * Model OrdenLineaOrigen
+ * Qué trabajo de qué visita paga una línea de orden.
+ * 
+ * Era una columna única en `OrdenLinea`, y eso obligaba a una línea por
+ * visita: el mismo producto hecho en dos visitas salía dos veces en la misma
+ * orden, lo que no le dice nada a nadie —es el mismo producto— y encima
+ * duplicaba la decisión de precio. Ahora una línea junta los dos trabajos.
+ * 
+ * `visitaProductoId` sigue siendo **único en toda la tabla**: eso es lo que
+ * impide cobrar el mismo trabajo dos veces, y no depende de ninguna
+ * validación de aplicación.
+ */
+export type OrdenLineaOrigen = Prisma.OrdenLineaOrigenModel
 /**
  * Model DatoFacturacion
  * Espejo de la factura que vive en Contífico. El portal no la emite ni la
@@ -262,3 +291,19 @@ export type DatoFacturacion = Prisma.DatoFacturacionModel
  * 
  */
 export type Factura = Prisma.FacturaModel
+/**
+ * Model FacturaLinea
+ * Lo que salió impreso en el documento, línea por línea.
+ * 
+ * Existe porque la factura **puede no tener la forma de la orden**: lo normal
+ * acá es cobrar varios trabajos de un período como una sola línea de
+ * "servicio de mantenimiento". Mientras las dos formas eran la misma, la
+ * factura se podía reconstruir desde la orden; en cuanto pueden diferir, esa
+ * reconstrucción es una mentira sobre un documento que ya se entregó.
+ * 
+ * No hay puente hacia `OrdenLinea` a propósito: la procedencia de cada peso
+ * —qué visita, qué período— vive en la orden, que es el libro de ventas. Esto
+ * es el espejo de lo legal. Lo que ata las dos caras es que **cuadren**: misma
+ * base imponible por cada tasa.
+ */
+export type FacturaLinea = Prisma.FacturaLineaModel

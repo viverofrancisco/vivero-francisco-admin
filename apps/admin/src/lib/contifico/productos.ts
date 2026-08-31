@@ -100,9 +100,12 @@ export async function vincularProducto(
 ): Promise<{ codigo: string; contificoProductoId: string }> {
   const yaVinculado = await prisma.producto.findFirst({
     where: { contificoProductoId: contifico.id, id: { not: productoId } },
-    select: { nombre: true },
+    select: { id: true, nombre: true, deletedAt: true },
   });
-  if (yaVinculado) {
+  // Dos productos del portal no pueden apuntar al mismo de Contífico: el
+  // `producto_id` de la factura dejaría de decir qué se vendió, y la columna
+  // es única, así que sin este corte el choque salía como un error de base.
+  if (yaVinculado && !yaVinculado.deletedAt) {
     throw new ContificoError(
       `Ese producto de Contífico ya está vinculado a "${yaVinculado.nombre}".`,
       409
@@ -119,10 +122,25 @@ export async function vincularProducto(
     await actualizarNombreEnContifico(contifico.id, propio.nombre);
   }
 
-  await prisma.producto.update({
-    where: { id: productoId },
-    data: { contificoProductoId: contifico.id, codigo: contifico.codigo },
-  });
+  // Un archivado que lo tenía lo suelta, y en la misma transacción: archivar
+  // no libera el vínculo —el producto sigue existiendo, con su historia—, así
+  // que sin esto un producto de Contífico quedaba tomado para siempre por una
+  // ficha que ya no se ve en ningún lado. `codigo` se va con él: también es
+  // único, y suelto no dice nada.
+  await prisma.$transaction([
+    ...(yaVinculado
+      ? [
+          prisma.producto.update({
+            where: { id: yaVinculado.id },
+            data: { contificoProductoId: null, codigo: null },
+          }),
+        ]
+      : []),
+    prisma.producto.update({
+      where: { id: productoId },
+      data: { contificoProductoId: contifico.id, codigo: contifico.codigo },
+    }),
+  ]);
   return { codigo: contifico.codigo, contificoProductoId: contifico.id };
 }
 

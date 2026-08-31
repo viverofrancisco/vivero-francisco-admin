@@ -61,7 +61,7 @@ export async function POST(request: Request) {
           precioUnitario: l.precioUnitario,
           ivaTasa: l.ivaTasa,
           productoId: l.productoId,
-          visitaProductoId: l.visitaProductoId ?? null,
+          visitaProductoIds: l.visitaProductoIds ?? [],
           suscripcionItemId: l.suscripcionItemId ?? null,
           periodoInicio: l.periodoInicio ? new Date(l.periodoInicio) : null,
           periodoFin: l.periodoFin ? new Date(l.periodoFin) : null,

@@ -25,6 +25,7 @@ import {
   esDocumentoDuplicado,
 } from "@/lib/contifico/client";
 import {
+  calcularTotales,
   consultarEstado,
   emitirDocumento,
   enviarAlSri,
@@ -36,7 +37,33 @@ import {
   obtenerDocumento,
   serie,
   type LineaFactura,
+  type TipoDocumentoContifico,
 } from "@/lib/contifico/documentos";
+import type { TipoDocumento } from "@/generated/prisma/client";
+import { hoyEnEcuador } from "@/lib/fechas";
+
+/**
+ * Corre algo contra Contífico y convierte su error en uno del servicio.
+ *
+ * Un `ContificoError` no es un `ServiceError`, así que caía en el `catch`
+ * genérico de las rutas y la pantalla decía "Error interno" mientras el motivo
+ * de verdad —"solo se permiten documentos con fecha de emisión del día actual",
+ * "no existe un contribuyente registrado con el RUC…"— se quedaba en el log del
+ * servidor. Lo que dice Contífico es justo lo que hace falta para arreglarlo.
+ */
+async function conErrorDeContifico<T>(
+  contexto: string,
+  fn: () => Promise<T>
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (error instanceof ContificoError) {
+      throw new ValidationError(`${contexto}: ${error.message}`);
+    }
+    throw error;
+  }
+}
 
 function ensureCanRead(viewer: Viewer): void {
   if (!isAdminRole(viewer.role)) {
@@ -89,8 +116,108 @@ async function siguienteSecuencial(
   return Math.max(emitido, piso) + 1;
 }
 
+/**
+ * Siguiente número de la serie de documentos sin factura.
+ *
+ * Serie propia y corrida (`VF-000000001`), no una mensual como la que usan a
+ * mano (`MANT. 202608-0015`): **Contífico no valida la numeración de un DNA**
+ * —acepta un repetido y crea un segundo documento— así que la única garantía es
+ * el índice único de `Factura.numero`, y contra eso conviene lo más simple.
+ */
+async function siguienteNumeroSinFactura(
+  tx: Prisma.TransactionClient
+): Promise<string> {
+  const prefijo = `${serieSinFactura()}-`;
+  const ultimo = await tx.factura.findFirst({
+    where: { numero: { startsWith: prefijo } },
+    orderBy: { numero: "desc" },
+    select: { numero: true },
+  });
+  const emitido = ultimo ? Number(ultimo.numero.slice(prefijo.length)) : 0;
+  return `${prefijo}${String(emitido + 1).padStart(9, "0")}`;
+}
+
+/** Prefijo de la serie sin factura. Aparte para no chocar con la del SRI. */
+function serieSinFactura(): string {
+  return process.env.CONTIFICO_SERIE_DNA ?? "VF";
+}
+
 /** Tope de números salteados antes de darse por vencido. */
 const MAX_INTENTOS_NUMERO = 25;
+
+/** Una línea tal como la arma quien emite, que puede no ser la de la orden. */
+export interface LineaFacturaInput {
+  productoId: string;
+  /** Lo que se factura. El nombre impreso igual lo pone Contífico. */
+  descripcion: string;
+  /** Acompaña al nombre en el papel (`nombre_manual`). */
+  detalle?: string | null;
+  cantidad: number;
+  precioUnitario: number;
+  ivaTasa: number;
+}
+
+export interface EmitirFacturaOpciones {
+  /** Con qué datos emitir. Sin esto se usa el predeterminado del cliente. */
+  datoFacturacionId?: string | null;
+  /** `FACTURA` por defecto. */
+  tipo?: TipoDocumento;
+  /** Lo que sale en *Información Adicional*. */
+  descripcion?: string | null;
+  /**
+   * Las líneas del documento. **Ausente = las de la orden, una a una**, que es
+   * como se emitía antes de que existiera el armador y sigue siendo el caso
+   * común: agrupar es una decisión, no el default.
+   */
+  lineas?: LineaFacturaInput[];
+}
+
+const centavos = (n: number) => Math.round(n * 100) / 100;
+const dinero = (n: number) => `$${centavos(n).toFixed(2)}`;
+
+/**
+ * La factura tiene que cuadrar con la orden, **base imponible por tasa**.
+ *
+ * Que coincida el total no alcanza: agrupar una línea al 0% con una al 15% en
+ * una sola al 15% cierra el total y miente el IVA. Comparar por tasa garantiza
+ * las dos cosas de una, y es lo que hace que la orden siga siendo el libro de
+ * ventas aunque el papel tenga otra forma.
+ */
+function ensureFacturaCuadra(
+  lineasOrden: { ivaTasa: unknown; subtotal: unknown }[],
+  lineasFactura: LineaFacturaInput[]
+): void {
+  const porTasa = (
+    filas: { tasa: number; base: number }[]
+  ): Map<number, number> => {
+    const m = new Map<number, number>();
+    for (const f of filas) m.set(f.tasa, centavos((m.get(f.tasa) ?? 0) + f.base));
+    return m;
+  };
+
+  const orden = porTasa(
+    lineasOrden.map((l) => ({
+      tasa: Number(l.ivaTasa),
+      base: Number(l.subtotal),
+    }))
+  );
+  const factura = porTasa(
+    lineasFactura.map((l) => ({
+      tasa: l.ivaTasa,
+      base: centavos(l.cantidad * l.precioUnitario),
+    }))
+  );
+
+  for (const tasa of new Set([...orden.keys(), ...factura.keys()])) {
+    const a = centavos(factura.get(tasa) ?? 0);
+    const b = centavos(orden.get(tasa) ?? 0);
+    if (Math.abs(a - b) > 0.005) {
+      throw new ValidationError(
+        `El documento no cuadra con la orden: al ${tasa}% suma ${dinero(a)} y la orden ${dinero(b)}.`
+      );
+    }
+  }
+}
 
 export interface EmitirFacturaResultado {
   facturaId: string;
@@ -177,10 +304,11 @@ export async function listarFacturas(
 export async function emitirFactura(
   viewer: Viewer,
   ordenId: string,
-  /** Con qué datos emitir. Sin esto se usa el predeterminado del cliente. */
-  datoFacturacionId?: string | null
+  opciones: EmitirFacturaOpciones = {}
 ): Promise<EmitirFacturaResultado> {
   ensureCanWrite(viewer);
+  const tipo: TipoDocumento = opciones.tipo ?? "FACTURA";
+  const sinFactura = tipo === "NO_AUTORIZADO";
 
   if (!contificoConfigurado()) {
     throw new ValidationError(
@@ -211,7 +339,7 @@ export async function emitirFactura(
   // datos cargados falle acá y no a mitad de la emisión.
   const dato = await resolverDatoParaFacturar(
     orden.cliente.id,
-    datoFacturacionId ?? orden.datoFacturacionId
+    opciones.datoFacturacionId ?? orden.datoFacturacionId
   );
   const errorId = validarIdentificacion(
     dato.tipoIdentificacion === "CEDULA" ? dato.identificacion : null,
@@ -219,31 +347,87 @@ export async function emitirFactura(
   );
   if (errorId) throw new ValidationError(errorId);
 
-  // Cada producto necesita su par en Contífico: `producto_id` es obligatorio y
-  // no existen líneas de texto libre.
-  //
-  // Acá **no** se sincroniza: un producto sin vincular no puede entrar en una
-  // orden, así que si llegó hasta acá es que ya está. Sincronizar al emitir
-  // escondía la decisión de escribir en el catálogo ajeno detrás del botón de
-  // facturar, que es el peor momento para descubrir un problema.
-  const lineas: LineaFactura[] = [];
-  for (const linea of orden.lineas) {
-    if (!linea.producto.contificoProductoId) {
+  // Qué se imprime. Sin líneas propias, las de la orden una a una —lo de
+  // siempre—; con ellas, lo que armó quien emite, que puede juntar cinco
+  // trabajos en un "servicio de mantenimiento".
+  const deLaOrden = opciones.lineas === undefined;
+  const propuestas: LineaFacturaInput[] =
+    opciones.lineas ??
+    orden.lineas.map((l) => ({
+      productoId: l.productoId,
+      descripcion: l.descripcion,
+      detalle: null,
+      cantidad: Number(l.cantidad),
+      precioUnitario: Number(l.precioUnitario),
+      ivaTasa: Number(l.ivaTasa),
+    }));
+
+  if (propuestas.length === 0) {
+    throw new ValidationError("El documento no tiene líneas.");
+  }
+
+  // Las líneas de la orden ya cuadran con la orden por construcción; las
+  // armadas a mano hay que mirarlas.
+  if (!deLaOrden) ensureFacturaCuadra(orden.lineas, propuestas);
+
+  // Contífico rechaza cualquier impuesto en un documento sin factura
+  // (`400 · 1016`). Se corta acá y con el motivo, en vez de dejar que lo diga
+  // él a mitad de la emisión.
+  if (sinFactura) {
+    const conIva = propuestas.find((l) => l.ivaTasa > 0);
+    if (conIva) {
       throw new ValidationError(
-        `"${linea.producto.nombre}" no está sincronizado con Contífico. Vinculalo desde la ficha del producto antes de facturar.`
+        `Un documento a consumidor final no puede llevar IVA, y "${conIva.descripcion}" está al ${conIva.ivaTasa}%. Emitilo como factura, o armá la orden sin IVA.`
+      );
+    }
+  }
+
+  // Cada producto necesita su par en Contífico: `producto_id` es obligatorio y
+  // no existen líneas de texto libre —ni contables: verificado agotando las
+  // variantes contra su API—.
+  //
+  // El chequeo vive acá y no en la orden: una orden es un documento interno y
+  // puede llevar trabajos que nunca salen impresos. Lo que sí tiene que estar
+  // vinculado es **lo que se imprime**.
+  //
+  // Y acá **no** se sincroniza: crear el producto en el catálogo ajeno es una
+  // decisión, y esconderla detrás del botón de facturar es el peor momento para
+  // descubrir un problema.
+  const productos = await prisma.producto.findMany({
+    where: { id: { in: [...new Set(propuestas.map((l) => l.productoId))] } },
+    select: { id: true, nombre: true, contificoProductoId: true },
+  });
+  const porId = new Map(productos.map((p) => [p.id, p]));
+
+  const lineas: LineaFactura[] = [];
+  for (const linea of propuestas) {
+    const producto = porId.get(linea.productoId);
+    if (!producto) {
+      throw new ValidationError(
+        `"${linea.descripcion}" no apunta a ningún producto del catálogo.`
+      );
+    }
+    if (!producto.contificoProductoId) {
+      throw new ValidationError(
+        `"${producto.nombre}" no está sincronizado con Contífico. Vinculalo desde la ficha del producto, o facturá con otro producto en su lugar.`
       );
     }
     lineas.push({
-      contificoProductoId: linea.producto.contificoProductoId,
-      cantidad: Number(linea.cantidad),
-      precioUnitario: Number(linea.precioUnitario),
-      ivaTasa: Number(linea.ivaTasa),
+      contificoProductoId: producto.contificoProductoId,
+      cantidad: linea.cantidad,
+      precioUnitario: linea.precioUnitario,
+      ivaTasa: linea.ivaTasa,
+      nombreManual: linea.detalle ?? null,
     });
   }
 
+  const totales = calcularTotales(lineas);
+
   // El número se reserva en una transacción corta; la llamada a Contífico va
   // afuera para no sostener la transacción durante la red.
-  let secuencial = await prisma.$transaction((tx) => siguienteSecuencial(tx));
+  let secuencial = sinFactura
+    ? 0
+    : await prisma.$transaction((tx) => siguienteSecuencial(tx));
 
   const datosCliente = {
     cedula: dato.tipoIdentificacion === "CEDULA" ? dato.identificacion : null,
@@ -264,22 +448,40 @@ export async function emitirFactura(
   // lo adoptaba como si lo hubiera creado —llegó a marcar una orden como
   // facturada apuntando a una factura vieja y anulada—. Por eso no alcanza con
   // atrapar el error: hay que mirar lo que volvió.
+  const descripcion =
+    opciones.descripcion?.trim() || `Orden #${orden.numero}`;
+  const tipoContifico: TipoDocumentoContifico = sinFactura ? "DNA" : "FAC";
+
+  // **La fecha del documento es hoy, no la de la orden.** El SRI solo autoriza
+  // comprobantes electrónicos el mismo día de su emisión —Contífico rechaza el
+  // envío con "solo se permiten documentos con fecha de emisión del día
+  // actual"—, así que una factura nacida con la fecha de una orden de la semana
+  // pasada no se puede transmitir nunca. `Orden.fecha` sigue siendo la de la
+  // orden; lo que se emite hoy lleva hoy.
+  const emitidaEl = hoyEnEcuador();
+
   let documento;
-  let numero = formatearNumero(secuencial);
+  // La serie sin factura la numeramos nosotros: Contífico no la valida, así que
+  // no hay contra qué chocar allá y el bucle de números tomados no aplica.
+  let numero = sinFactura
+    ? await prisma.$transaction((tx) => siguienteNumeroSinFactura(tx))
+    : formatearNumero(secuencial);
   for (let intento = 0; intento < MAX_INTENTOS_NUMERO; intento++) {
-    numero = formatearNumero(secuencial);
+    if (!sinFactura) numero = formatearNumero(secuencial);
     try {
       const creado = await emitirDocumento({
         numero,
-        fechaEmision: orden.fecha,
+        fechaEmision: emitidaEl,
         cliente: datosCliente,
         lineas,
-        descripcion: `Orden #${orden.numero}`,
+        descripcion,
+        tipo: tipoContifico,
       });
 
       const yaExistia =
-        creado.estado === "A" ||
-        Math.abs(Number(creado.total) - Number(orden.total)) > 0.01;
+        !sinFactura &&
+        (creado.estado === "A" ||
+          Math.abs(Number(creado.total) - Number(totales.total)) > 0.01);
       if (yaExistia) {
         secuencial += 1;
         continue;
@@ -288,13 +490,13 @@ export async function emitirFactura(
       documento = creado;
       break;
     } catch (error) {
-      if (esDocumentoDuplicado(error)) {
+      if (!sinFactura && esDocumentoDuplicado(error)) {
         secuencial += 1;
         continue;
       }
       if (error instanceof ContificoError) {
         throw new ValidationError(
-          `Contífico rechazó la factura: ${error.message}`
+          `Contífico rechazó el documento: ${error.message}`
         );
       }
       throw error;
@@ -312,7 +514,9 @@ export async function emitirFactura(
         ordenId: orden.id,
         contificoDocumentoId: documento.id,
         numero: documento.documento ?? numero,
-        fechaEmision: orden.fecha,
+        tipo,
+        descripcion,
+        fechaEmision: emitidaEl,
         estado: "PENDIENTE",
         autorizacion: documento.autorizacion || null,
         urlRide: documento.url_ride || null,
@@ -323,13 +527,36 @@ export async function emitirFactura(
         datoFacturacionId: dato.id,
         razonSocial: dato.razonSocial,
         identificacion: dato.identificacion,
-        subtotal0: 0,
-        subtotalGravado: orden.subtotal,
-        iva: orden.iva,
-        total: orden.total,
+        // Del documento y no de la orden: los dos suman lo mismo —la invariante
+        // lo garantiza— pero el reparto entre gravado y exento sale de las
+        // líneas que efectivamente se emitieron.
+        subtotal0: totales.subtotal0,
+        subtotalGravado: totales.subtotalGravado,
+        iva: totales.iva,
+        total: totales.total,
         // Recién emitida no tiene cobros, así que debe todo. Se actualiza al
         // sincronizar contra Contífico, que es quien lleva los cobros.
-        saldo: orden.total,
+        saldo: totales.total,
+        // Lo que salió impreso, congelado. La orden puede editarse si algún día
+        // vuelve a borrador; el papel que recibió el cliente no.
+        lineas: {
+          create: propuestas.map((l, i) => {
+            const subtotal = centavos(l.cantidad * l.precioUnitario);
+            const iva = centavos((subtotal * l.ivaTasa) / 100);
+            return {
+              posicion: i,
+              descripcion: l.descripcion,
+              detalle: l.detalle?.trim() || null,
+              cantidad: l.cantidad,
+              precioUnitario: l.precioUnitario,
+              ivaTasa: l.ivaTasa,
+              subtotal,
+              iva,
+              total: centavos(subtotal + iva),
+              productoId: l.productoId,
+            };
+          }),
+        },
       },
     });
     await tx.orden.update({
@@ -355,7 +582,7 @@ export async function sincronizarFactura(viewer: Viewer, facturaId: string) {
   ensureCanWrite(viewer);
   const factura = await prisma.factura.findUnique({
     where: { id: facturaId },
-    select: { id: true, contificoDocumentoId: true, ordenId: true },
+    select: { id: true, contificoDocumentoId: true, ordenId: true, tipo: true },
   });
   if (!factura) throw new NotFoundError("Factura no encontrada");
   // Valida el acceso del viewer a la orden.
@@ -366,7 +593,12 @@ export async function sincronizarFactura(viewer: Viewer, facturaId: string) {
   }
 
   return refrescarDesdeContifico(
-    { id: factura.id, contificoDocumentoId: factura.contificoDocumentoId, ordenId: factura.ordenId },
+    {
+      id: factura.id,
+      contificoDocumentoId: factura.contificoDocumentoId,
+      ordenId: factura.ordenId,
+      tipo: factura.tipo,
+    },
     viewer.id
   );
 }
@@ -376,7 +608,12 @@ export async function sincronizarFactura(viewer: Viewer, facturaId: string) {
  * hacen tanto una persona (ya validada) como el cron.
  */
 async function refrescarDesdeContifico(
-  factura: { id: string; contificoDocumentoId: string; ordenId: string },
+  factura: {
+    id: string;
+    contificoDocumentoId: string;
+    ordenId: string;
+    tipo: TipoDocumento;
+  },
   actorId: string | null
 ) {
   // Dos llamadas porque son dos cosas distintas: `/estado/` da el avance de la
@@ -384,13 +621,18 @@ async function refrescarDesdeContifico(
   // **no** delata una anulación —devuelve "No se ha firmado" igual que un
   // documento nuevo—, así que sin leer el documento el portal nunca se enteraría
   // de que la anularon desde la interfaz de Contífico.
-  const [{ estado }, documento] = await Promise.all([
-    consultarEstado(factura.contificoDocumentoId),
+  //
+  // Un documento sin factura no tiene firma que esperar: `/estado/` le devuelve
+  // "No se ha firmado" para siempre. Preguntarlo es una llamada de más que
+  // además invita a leer un estado que no significa nada ahí.
+  const sinFactura = factura.tipo === "NO_AUTORIZADO";
+  const [estadoSri, documento] = await Promise.all([
+    sinFactura ? null : consultarEstado(factura.contificoDocumentoId),
     obtenerDocumento(factura.contificoDocumentoId),
   ]);
 
   return marcarLocal(actorId, factura.id, factura.ordenId, {
-    estadoSri: mapearEstado(estado),
+    ...(estadoSri ? { estadoSri: mapearEstado(estadoSri.estado) } : {}),
     // `anulado` y `estado === "A"` dicen lo mismo; se miran los dos por si
     // alguno viniera vacío.
     anulada: documento.anulado === true || documento.estado === "A",
@@ -575,7 +817,9 @@ export async function registrarCobro(
     );
   }
 
-  await registrarCobroEnContifico(factura.contificoDocumentoId, cobro);
+  await conErrorDeContifico("Contífico rechazó el cobro", () =>
+    registrarCobroEnContifico(factura.contificoDocumentoId!, cobro)
+  );
 
   // El saldo nuevo lo dice Contífico, no se calcula acá: si alguien cargó otro
   // cobro por su interfaz, la resta local daría un número que no existe.
@@ -610,10 +854,18 @@ export async function anularFactura(viewer: Viewer, facturaId: string) {
       estado: true,
       anulada: true,
       contificoDocumentoId: true,
+      tipo: true,
     },
   });
   if (!factura) throw new NotFoundError("Factura no encontrada");
   await getOrden(viewer, factura.ordenId);
+
+  // Un documento sin factura no va al SRI, así que no hay nota de crédito que
+  // ofrecer ni firma con la que competir.
+  const sinFactura = factura.tipo === "NO_AUTORIZADO";
+  const salida = sinFactura
+    ? "Si hay que devolver la plata, se registra por fuera."
+    : "Si hay que devolver la plata, va una nota de crédito.";
 
   if (factura.anulada) {
     throw new ConflictError(`La factura ${factura.numero} ya está anulada.`);
@@ -637,7 +889,7 @@ export async function anularFactura(viewer: Viewer, facturaId: string) {
   const antes = await obtenerDocumento(factura.contificoDocumentoId);
   if (antes.saldo != null && Number(antes.saldo) <= 0.001) {
     throw new ConflictError(
-      `La factura ${factura.numero} ya está cobrada por completo: no se anula. Si hay que devolver la plata, va una nota de crédito.`
+      `${factura.numero} ya está cobrada por completo: no se anula. ${salida}`
     );
   }
 
@@ -649,7 +901,9 @@ export async function anularFactura(viewer: Viewer, facturaId: string) {
   // `1045 "El documento ya se encuentra firmado o autorizado, no es posible
   // realizar cambios"`. Como firma sola en su tanda horaria, la ventana para
   // anular es corta y no la maneja nadie de este lado.
-  const { estado } = await consultarEstado(factura.contificoDocumentoId);
+  const { estado } = sinFactura
+    ? { estado: "No se ha firmado" }
+    : await consultarEstado(factura.contificoDocumentoId);
   const estadoSri = mapearEstado(estado);
   if (estadoSri !== "PENDIENTE") {
     await prisma.factura.update({
@@ -663,7 +917,9 @@ export async function anularFactura(viewer: Viewer, facturaId: string) {
     );
   }
 
-  await anularDocumento(factura.contificoDocumentoId);
+  await conErrorDeContifico("Contífico no la pudo anular", () =>
+    anularDocumento(factura.contificoDocumentoId!)
+  );
 
   const documento = await obtenerDocumento(factura.contificoDocumentoId);
   if (!documento.anulado && documento.estado !== "A") {
@@ -729,7 +985,7 @@ export async function anularOrdenCompleta(
   const orden = await getOrden(viewer, ordenId);
 
   const enlazado = orden.lineas.filter(
-    (l) => l.visitaProductoId || l.suscripcionItemId
+    (l) => l.origenes.length > 0 || l.suscripcionItemId
   );
   if (enlazado.length > 0 && !opciones.liberarTrabajo) {
     throw new ConflictError(
@@ -759,13 +1015,17 @@ export async function anularOrdenCompleta(
  */
 export async function facturarOrden(
   viewer: Viewer,
-  ordenId: string
+  ordenId: string,
+  opciones: EmitirFacturaOpciones = {}
 ): Promise<{
   factura: EmitirFacturaResultado | null;
   errorFactura: string | null;
 }> {
   try {
-    return { factura: await emitirFactura(viewer, ordenId), errorFactura: null };
+    return {
+      factura: await emitirFactura(viewer, ordenId, opciones),
+      errorFactura: null,
+    };
   } catch (error) {
     return {
       factura: null,
@@ -796,11 +1056,26 @@ export async function sincronizarPendientes(limite = 100) {
     where: {
       anulada: false,
       contificoDocumentoId: { not: null },
-      NOT: { AND: [{ estado: "AUTORIZADO" }, { saldo: 0 }] },
+      // "Ya no queda nada por saber" es distinto según el documento: una
+      // factura tiene que llegar a autorizada **y** saldada; uno sin factura
+      // nunca se autoriza —no va al SRI— así que su único final es el saldo.
+      OR: [
+        {
+          tipo: "FACTURA",
+          NOT: { AND: [{ estado: "AUTORIZADO" }, { saldo: 0 }] },
+        },
+        { tipo: "NO_AUTORIZADO", NOT: { saldo: 0 } },
+      ],
     },
     orderBy: { fechaEmision: "desc" },
     take: limite,
-    select: { id: true, numero: true, contificoDocumentoId: true, ordenId: true },
+    select: {
+      id: true,
+      numero: true,
+      contificoDocumentoId: true,
+      ordenId: true,
+      tipo: true,
+    },
   });
 
   let actualizadas = 0;
@@ -816,6 +1091,7 @@ export async function sincronizarPendientes(limite = 100) {
           id: f.id,
           contificoDocumentoId: f.contificoDocumentoId!,
           ordenId: f.ordenId,
+          tipo: f.tipo,
         },
         null
       );
@@ -860,10 +1136,16 @@ export async function reenviarAlSri(viewer: Viewer, facturaId: string) {
       ordenId: true,
       anulada: true,
       estado: true,
+      tipo: true,
     },
   });
   if (!factura?.contificoDocumentoId) {
     throw new NotFoundError("Factura no encontrada");
+  }
+  if (factura.tipo === "NO_AUTORIZADO") {
+    throw new ConflictError(
+      "Este documento no va al SRI: se emitió sin factura."
+    );
   }
   // Quedó sin probar si el PUT desanula —no había ninguna anulada con la que
   // arriesgarse—, y mandar al SRI algo que se dio de baja no tiene sentido igual.
@@ -874,6 +1156,8 @@ export async function reenviarAlSri(viewer: Viewer, facturaId: string) {
     throw new ConflictError("El SRI ya la autorizó");
   }
   await getOrden(viewer, factura.ordenId);
-  await enviarAlSri(factura.contificoDocumentoId);
+  await conErrorDeContifico("Contífico no la pudo enviar al SRI", () =>
+    enviarAlSri(factura.contificoDocumentoId!)
+  );
   return sincronizarFactura(viewer, facturaId);
 }

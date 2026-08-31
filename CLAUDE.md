@@ -195,22 +195,30 @@ the order can't be created (a product not linked to Contífico), **the visita
 still completes** and the work stays in pendientes: finishing a visit in the
 field can't depend on catalog config.
 
-**And a billed product can't be removed from its visita.** `OrdenLinea.visitaProductoId`
-is `onDelete: SetNull`, so deleting it left the line charging while silently
-losing where it came from. Now `updateVisitaInfo` refuses and names the order —
-annul it first. Editing a **subscription's** products is free by contrast: each
+**And a billed product can't be removed from its visita.** Deleting it used to
+leave the line charging while silently losing where it came from. Now
+`updateVisitaInfo` refuses and names the order — annul it first. On a draft it
+releases just that `OrdenLineaOrigen` row, and drops the line only if it had no
+other origin: a line can pay for several visits, so deleting it whole would take
+the other visits' work with it. Editing a **subscription's** products is free by contrast: each
 order covers a closed period, so the plan changes going forward and past orders
 are history.
 
 **A visita is invoiced from its own page, or picked on the order.** "Crear
 orden" opens the order screen with that visit's pending work already loaded; and
-**Nueva orden** has a *Visita* selector listing the client's visits that still
-have unbilled work, which does the same thing from the other side. Either way
-the assignment *is* loading the visit's work — `Orden.visitaId` is derived from
-the lines' provenance, so an assignment that brought no lines would be one
-nothing records. Picking a visit hides the pendientes panel; adding a
-subscription period instead greys the selector out, because an order is one or
-the other. **Scheduled visits count too** — billing before the work happens is
+**Nueva orden** has a *Visitas* list of the client's visits that still have
+unbilled work, with a checkbox each. Either way the assignment *is* loading the
+visit's work — the header is derived from the lines' provenance, so an
+assignment that brought no lines would be one nothing records.
+
+**An order can cover several visits, and the same product across them is one
+line.** Billing someone's whole month in a single order is the normal case, so
+the visits list is multi-select. Two visits that both did "control de plagas"
+are two `VisitaProducto` rows —each billable exactly once— but **one product**:
+they collapse into a single line with the quantity summed and both provenances
+(`OrdenLineaOrigen`). Having the same product twice in one order says nothing to
+anyone and doubles the pricing decision. Subscription periods stay separate: an
+order is visits or a plan, never both. **Scheduled visits count too** — billing before the work happens is
 normal here; the only visita that never becomes billable is a cancelled one. The
 trade-off is that you can invoice something that later doesn't happen, and the
 way out is annulling the order.
@@ -266,6 +274,17 @@ arrives, and `tipo` is derived as "video" or, for everything else, "imagen".
 
 **Who closed a visita is its own pair of columns.** `completadaEl` / `completadaPorId` are stamped on the transition **into** `COMPLETADA` and cleared when it leaves, so re-saving the form to fix an hour doesn't make the corrector the one who completed it. They are not `fechaRealizada` — that is the *day the work happened*, chosen by whoever closes it and often earlier — and not `updatedById`, which any later edit overwrites. Each id is paired with a **name snapshot** (`completadaPorNombre`, `updatedByNombre`), the same split `Factura` and `OrdenLinea` already use: the id is what you filter by, the text is what happened. An id alone can't tell the story — `onDelete: SetNull` empties it when the account is removed, and a rename rewrites history — so the ficha shows the text and the list filters on the id. The filters are `completadaPor` and `completadaDesde`/`completadaHasta`, and the person dropdown only lists people who actually closed something.
 
+**One visita per cliente per day.** `createVisitasBatch` refuses a date the
+client already has a live visit on, and names it. The check used to be per
+product — the same day with a different product opened a second visita — but
+adding a service to a day that's already scheduled is *editing that visita*, not
+opening another: two visitas the same day for the same client are two trips, two
+chats and two informes for one job. Cancelled ones don't count — neither as
+blockers nor when moved. **Moving a date is checked too**: `updateVisitaInfo`
+runs the same rule (shared through `visitasDelDia()`, excluding the visita being
+moved) when `fechaProgramada` actually changes, because a rule only the create
+path enforces is one you get around by editing — the easier road of the two.
+
 **A visita is editable in any state**, including `COMPLETADA`. The state records
 what happened to the work, not whether the row is right: fixing a wrong date or
 product shouldn't mean deleting and rebuilding a visit, which would lose its
@@ -291,14 +310,14 @@ them produced an order whose total you couldn't explain without opening it.
 Hand-added lines belong in either. `generarOrden()` therefore returns **several**
 orders: one per subscription plus one for the loose visits.
 
-Because an order has exactly one origin, it says so in its own columns:
-**`Orden.visitaId` / `Orden.suscripcionId`**, at most one of the two (a `CHECK`
-enforces it), set by `origenDeLaOrden()` from the lines at creation. Adding
-extra catalog products doesn't change it — the order is still *that visit's*.
-Both are `onDelete: Restrict`: a visit with an order can't be deleted out from
-under it. Before these existed, "which visit is this order for?" meant walking
-the lines back through `visitaProductoId`, which broke the moment someone added
-a loose product.
+An order says what it's for in its own tables: **`OrdenVisita`** (several, since
+one order can cover several visits) and **`Orden.suscripcionId`** (one, since a
+plan's periods renew one at a time). Both are set by `origenDeLaOrden()` from the
+lines at creation, never received from outside. Adding extra catalog products
+doesn't change it — the order is still *those visits'*. Both are
+`onDelete: Restrict`: a visit with an order can't be deleted out from under it.
+Without them, "which visits is this order for?" meant walking the lines back
+through their provenance, which broke the moment someone added a loose product.
 
 **And what gets billed together gets billed whole.** `ensureTrabajoCompleto`
 rejects an order that takes part of a visit or part of a subscription period:
@@ -329,8 +348,8 @@ cause. `/dashboard/ordenes` lists confirmed (and annulled) orders with their
 payment status; drafts have their own page at `/dashboard/ordenes/borradores`.
 
 **Annulling an order releases the work it held, and never silently.**
-`visitaProductoId` and `[suscripcionItemId, periodoInicio]` are unique across
-the whole table regardless of order state, and `listarPendientes` treats any
+`OrdenLineaOrigen.visitaProductoId` and `[suscripcionItemId, periodoInicio]` are
+unique across the whole table regardless of order state, and `listarPendientes` treats any
 line as billed — so an annulled order that kept its lines would strand those
 visitas and periods forever. `anularOrden` therefore refuses while work is
 linked unless `liberarTrabajo` says otherwise, and the dialog lists exactly what
@@ -349,7 +368,7 @@ why invoicing never syncs anything.
 Orders are written **only** through `crearOrden()` in
 `src/lib/services/orden.service.ts`. A line's `descripcion` and
 `precioUnitario` are a snapshot and are the truth; `productoId` and the
-provenance fields (`visitaProductoId`, or `suscripcionItemId` + `periodoInicio`)
+provenance fields (`OrdenLineaOrigen`, or `suscripcionItemId` + `periodoInicio`)
 are for traceability and for the unique indexes that stop anything being billed
 twice — they are never the source of the price.
 

@@ -9,7 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { ArrowLeft } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
-import { NuevaSuscripcionForm } from "./nueva-suscripcion-form";
+import {
+  NuevaSuscripcionForm,
+  type ItemDraft,
+} from "./nueva-suscripcion-form";
+import { PERIODICIDAD_SUFIJO } from "./formato";
+import { ResumenSuscripcion } from "./resumen-suscripcion";
 
 interface Cliente {
   id: string;
@@ -31,6 +36,12 @@ export function NuevaSuscripcionPage({
 }) {
   const router = useRouter();
   const [clienteId, setClienteId] = useState(clienteInicial ?? "");
+  /**
+   * Los productos del plan viven acá y no en el formulario porque el resumen
+   * de la derecha necesita los mismos números: una sola fuente, dos columnas.
+   */
+  const [items, setItems] = useState<ItemDraft[]>([]);
+  const [periodicidad, setPeriodicidad] = useState("MENSUAL");
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -49,35 +60,55 @@ export function NuevaSuscripcionPage({
         </div>
       </div>
 
-      <Card className="max-w-2xl overflow-visible">
-        <CardHeader className="border-b py-3">
-          <CardTitle className="text-base">Datos</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Cliente *</Label>
-            <CustomSelect
-              value={clienteId}
-              onChange={setClienteId}
-              options={clientes.map((c) => ({
-                value: c.id,
-                label: nombreCliente(c),
-              }))}
-              placeholder="Seleccionar cliente"
-              searchable
-              searchPlaceholder="Buscar cliente..."
-            />
-          </div>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <Card className="overflow-visible">
+          <CardHeader className="border-b py-3">
+            <CardTitle className="text-base">Datos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Cliente *</Label>
+              <CustomSelect
+                value={clienteId}
+                onChange={(id) => {
+                  // Los productos disponibles son por cliente, así que lo
+                  // cargado hasta acá deja de tener sentido al cambiarlo.
+                  setClienteId(id);
+                  setItems([]);
+                }}
+                options={clientes.map((c) => ({
+                  value: c.id,
+                  label: nombreCliente(c),
+                }))}
+                placeholder="Seleccionar cliente"
+                searchable
+                searchPlaceholder="Buscar cliente..."
+              />
+            </div>
 
-          {clienteId && (
-            <NuevaSuscripcionForm
-              key={clienteId}
-              clienteId={clienteId}
-              onCreada={() => router.push(backHref)}
-            />
-          )}
-        </CardContent>
-      </Card>
+            {clienteId && (
+              <NuevaSuscripcionForm
+                key={clienteId}
+                clienteId={clienteId}
+                items={items}
+                onItemsChange={setItems}
+                periodicidad={periodicidad}
+                onPeriodicidadChange={setPeriodicidad}
+                onCreada={() => router.push(backHref)}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Cuánto termina pagando el cliente por cada cosa: el formulario pide
+            el precio sin IVA, así que de los campos solos no se puede leer. */}
+        <div className="lg:sticky lg:top-6">
+          <ResumenSuscripcion
+            items={items}
+            sufijo={PERIODICIDAD_SUFIJO[periodicidad] ?? ""}
+          />
+        </div>
+      </div>
     </div>
   );
 }

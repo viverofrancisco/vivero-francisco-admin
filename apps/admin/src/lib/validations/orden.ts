@@ -2,8 +2,10 @@ import { z } from "zod/v4";
 
 /**
  * Una línea del editor de órdenes. La descripción y el precio son la verdad:
- * el catálogo solo prellena. La procedencia (`visitaProductoId` o
+ * el catálogo solo prellena. La procedencia (`visitaProductoIds` o
  * `suscripcionItemId` + período) va cuando la línea viene de trabajo pendiente.
+ * Son **varios** trabajos cuando el mismo producto se hizo en más de una
+ * visita: eso es una sola línea, porque es un solo producto.
  *
  * `productoId` es obligatorio: Contífico exige `producto_id` en cada línea y no
  * acepta texto libre, así que una línea suelta sería una venta incobrable.
@@ -14,7 +16,7 @@ export const ordenLineaSchema = z.object({
   precioUnitario: z.number().min(0, "El precio no puede ser negativo"),
   ivaTasa: z.number().min(0).max(100).default(0),
   productoId: z.string().min(1, "Cada ítem necesita un producto del catálogo"),
-  visitaProductoId: z.string().min(1).nullable().optional(),
+  visitaProductoIds: z.array(z.string().min(1)).optional(),
   suscripcionItemId: z.string().min(1).nullable().optional(),
   periodoInicio: z.string().min(1).nullable().optional(),
   periodoFin: z.string().min(1).nullable().optional(),

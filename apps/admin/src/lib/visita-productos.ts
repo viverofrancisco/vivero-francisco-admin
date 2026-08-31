@@ -50,6 +50,12 @@ export function productoPrincipal(
 /**
  * `select` de Prisma para traer los servicios de una visita con la forma que
  * esperan los helpers de arriba. Reutilizable en cualquier query de visitas.
+ *
+ * **Ojo: `as const` lo saca del chequeo de tipos.** Al spreadearse dentro de un
+ * `include`, TypeScript no lo compara contra el esquema, así que un campo que
+ * cambió de nombre compila igual y revienta recién en tiempo de ejecución, en
+ * cada una de las ocho páginas que lo usan. Después de tocar `VisitaProducto`
+ * en el esquema, hay que abrir una de esas páginas para saber que sigue vivo.
  */
 export const PRODUCTOS_DE_VISITA_SELECT = {
   orderBy: { posicion: "asc" },
@@ -73,11 +79,17 @@ export const PRODUCTOS_DE_VISITA_SELECT = {
         },
       },
     },
-    // Si tiene línea de orden, este trabajo ya se cobró (o está por cobrarse).
-    ordenLinea: {
+    // Si tiene procedencia, este trabajo ya se cobró (o está por cobrarse).
+    // Va por `OrdenLineaOrigen` porque una línea puede pagar el mismo producto
+    // de varias visitas; desde la visita, en cambio, es a lo sumo una línea.
+    ordenLineaOrigen: {
       select: {
-        ordenId: true,
-        orden: { select: { numero: true, estado: true } },
+        ordenLinea: {
+          select: {
+            ordenId: true,
+            orden: { select: { numero: true, estado: true } },
+          },
+        },
       },
     },
     producto: {
@@ -104,9 +116,8 @@ export interface ProductoDeVisita {
       cliente: { nombre: string; apellido: string | null; empresa: string | null };
     };
   } | null;
-  ordenLinea: {
-    ordenId: string;
-    orden: { numero: number; estado: string };
+  ordenLineaOrigen: {
+    ordenLinea: { ordenId: string; orden: { numero: number; estado: string } };
   } | null;
   producto: {
     id: string;

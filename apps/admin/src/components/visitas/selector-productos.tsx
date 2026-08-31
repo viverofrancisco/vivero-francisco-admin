@@ -33,6 +33,7 @@ export function SelectorProductos({
   catalogo,
   seleccionados,
   etiqueta,
+  fijos,
   onToggle,
 }: {
   open: boolean;
@@ -41,6 +42,11 @@ export function SelectorProductos({
   seleccionados: string[];
   /** Etiqueta opcional por producto: qué cubre el plan del cliente. */
   etiqueta?: (id: string) => string | null;
+  /**
+   * Productos que no se pueden destildar acá. Son los que trae el plan
+   * elegido: la forma de sacarlos es soltar el plan, no de a uno.
+   */
+  fijos?: (id: string) => boolean;
   onToggle: (id: string) => void;
 }) {
   const [busqueda, setBusqueda] = useState("");
@@ -89,13 +95,17 @@ export function SelectorProductos({
               {visibles.map((p) => {
                 const elegido = seleccionados.includes(p.id);
                 const nota = etiqueta?.(p.id) ?? null;
+                const fijo = fijos?.(p.id) ?? false;
                 return (
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => onToggle(p.id)}
+                    onClick={() => !fijo && onToggle(p.id)}
                     aria-pressed={elegido}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50"
+                    disabled={fijo}
+                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-left ${
+                      fijo ? "opacity-60" : "hover:bg-accent/50"
+                    }`}
                   >
                     <span
                       className={`flex h-4 w-4 flex-none items-center justify-center rounded border ${

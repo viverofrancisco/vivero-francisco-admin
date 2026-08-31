@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { PERIODICIDAD_LABEL, PERIODICIDAD_SUFIJO, money } from "./formato";
+import { PERIODICIDAD_LABEL, PERIODICIDAD_SUFIJO } from "./formato";
 
 interface ProductoSuscribible {
   id: string;
@@ -21,7 +21,7 @@ interface ProductoSuscribible {
 }
 
 /** Un producto ya agregado a la suscripción que se está armando. */
-interface ItemDraft {
+export interface ItemDraft {
   productoId: string;
   nombre: string;
   precio: string;
@@ -32,19 +32,30 @@ interface ItemDraft {
 const PERIODICIDADES = ["MENSUAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL"];
 
 /**
- * Alta de una suscripción. Se usa tanto en su pantalla propia como dentro de
- * la ficha del cliente, por eso el cliente puede venir fijo desde afuera.
+ * Alta de una suscripción, para su pantalla propia.
  *
  * Una suscripción agrupa **uno o más** productos recurrentes, cada uno con su
  * precio e IVA. La periodicidad es de la suscripción, no del producto: todo lo que
  * está adentro se cobra junto, en el mismo período.
+ *
+ * Los productos y la periodicidad los guarda la **página**, no este formulario:
+ * el resumen de al lado necesita esos mismos números, y tenerlos en un solo
+ * lugar evita que las dos columnas digan cosas distintas.
  */
 export function NuevaSuscripcionForm({
   clienteId,
+  items,
+  onItemsChange,
+  periodicidad,
+  onPeriodicidadChange,
   onCreada,
   onCancelar,
 }: {
   clienteId: string;
+  items: ItemDraft[];
+  onItemsChange: (items: ItemDraft[]) => void;
+  periodicidad: string;
+  onPeriodicidadChange: (p: string) => void;
   onCreada?: () => void;
   onCancelar?: () => void;
 }) {
@@ -52,8 +63,6 @@ export function NuevaSuscripcionForm({
   const [productos, setProductos] = useState<ProductoSuscribible[]>([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
-  const [items, setItems] = useState<ItemDraft[]>([]);
-  const [periodicidad, setPeriodicidad] = useState("MENSUAL");
   const [fechaInicio, setFechaInicio] = useState(
     hoyISOEcuador()
   );
@@ -78,12 +87,8 @@ export function NuevaSuscripcionForm({
   const agregar = (productoId: string) => {
     const p = productos.find((x) => x.id === productoId);
     if (!p) return;
-    if (!p.sincronizado) {
-      toast.error(`"${p.nombre}" no está sincronizado con Contífico`);
-      return;
-    }
-    setItems((prev) => [
-      ...prev,
+    onItemsChange([
+      ...items,
       {
         productoId: p.id,
         nombre: p.nombre,
@@ -95,17 +100,12 @@ export function NuevaSuscripcionForm({
   };
 
   const actualizar = (productoId: string, patch: Partial<ItemDraft>) =>
-    setItems((prev) =>
-      prev.map((i) => (i.productoId === productoId ? { ...i, ...patch } : i))
+    onItemsChange(
+      items.map((i) => (i.productoId === productoId ? { ...i, ...patch } : i))
     );
 
   const quitar = (productoId: string) =>
-    setItems((prev) => prev.filter((i) => i.productoId !== productoId));
-
-  const totalPeriodo = items.reduce((acc, i) => {
-    const precio = Number(i.precio) || 0;
-    return acc + precio + (precio * (Number(i.ivaTasa) || 0)) / 100;
-  }, 0);
+    onItemsChange(items.filter((i) => i.productoId !== productoId));
 
   const guardar = async () => {
     if (items.length === 0) return toast.error("Agregá al menos un producto");
@@ -172,7 +172,7 @@ export function NuevaSuscripcionForm({
           <Label>Se cobra *</Label>
           <CustomSelect
             value={periodicidad}
-            onChange={setPeriodicidad}
+            onChange={onPeriodicidadChange}
             options={PERIODICIDADES.map((p) => ({
               value: p,
               label: PERIODICIDAD_LABEL[p],
@@ -273,13 +273,15 @@ export function NuevaSuscripcionForm({
           <CustomSelect
             value=""
             onChange={agregar}
+            // Sin vincular **entra igual**: el plan es el acuerdo con el
+            // cliente, y el vínculo hace falta recién sobre lo que sale
+            // impreso, que se decide al emitir.
             options={disponibles.map((p) => ({
               value: p.id,
               label: p.nombre,
-              disabled: !p.sincronizado,
               hint: p.sincronizado
                 ? undefined
-                : "No está vinculado con Contífico, así que no se puede facturar. Vinculalo desde la ficha del producto.",
+                : "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto.",
             }))}
             placeholder="Agregar producto recurrente"
             searchable
@@ -292,15 +294,6 @@ export function NuevaSuscripcionForm({
           </p>
         )}
       </div>
-
-      {items.length > 0 && (
-        <div className="flex items-center justify-between border-t pt-3 text-sm">
-          <span className="text-muted-foreground">Total por período</span>
-          <span className="text-lg font-bold tabular-nums">
-            {money(totalPeriodo)}
-          </span>
-        </div>
-      )}
 
       <div className="flex justify-end gap-2 pt-2">
         {onCancelar && (

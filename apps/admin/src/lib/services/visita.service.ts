@@ -155,10 +155,14 @@ const VISITA_DETAIL_INCLUDE = {
       // Misma forma que `PRODUCTOS_DE_VISITA_SELECT`: la lista del portal se
       // recarga por esta API al filtrar, y si las dos formas no coinciden el
       // filtro de "sin orden" funciona al cargar y deja de funcionar después.
-      ordenLinea: {
+      ordenLineaOrigen: {
         select: {
-          ordenId: true,
-          orden: { select: { numero: true, estado: true } },
+          ordenLinea: {
+            select: {
+              ordenId: true,
+              orden: { select: { numero: true, estado: true } },
+            },
+          },
         },
       },
       producto: {
@@ -472,7 +476,7 @@ export async function cancelVisita(
  */
 async function borradorDeVisita(visitaId: string, viewer: Viewer) {
   const sueltos = await prisma.visitaProducto.findMany({
-    where: { visitaId, suscripcionItemId: null, ordenLinea: null },
+    where: { visitaId, suscripcionItemId: null, ordenLineaOrigen: null },
     orderBy: { posicion: "asc" },
     select: {
       id: true,
@@ -494,7 +498,7 @@ async function borradorDeVisita(visitaId: string, viewer: Viewer) {
       precioUnitario: 0,
       ivaTasa: Number(vp.producto.ivaTasa ?? 0),
       productoId: vp.productoId,
-      visitaProductoId: vp.id,
+      visitaProductoIds: [vp.id],
     })),
   });
 }
@@ -519,7 +523,7 @@ async function recalcularBorrador(ordenId: string, viewer: Viewer) {
           precioUnitario: true,
           ivaTasa: true,
           productoId: true,
-          visitaProductoId: true,
+          origenes: { select: { visitaProductoId: true } },
           suscripcionItemId: true,
           periodoInicio: true,
           periodoFin: true,
@@ -542,7 +546,7 @@ async function recalcularBorrador(ordenId: string, viewer: Viewer) {
       precioUnitario: Number(l.precioUnitario),
       ivaTasa: Number(l.ivaTasa),
       productoId: l.productoId,
-      visitaProductoId: l.visitaProductoId,
+      visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
       suscripcionItemId: l.suscripcionItemId,
       periodoInicio: l.periodoInicio,
       periodoFin: l.periodoFin,
@@ -564,7 +568,12 @@ async function recalcularBorrador(ordenId: string, viewer: Viewer) {
  */
 async function sumarAlBorrador(visitaId: string, viewer: Viewer) {
   const nuevos = await prisma.visitaProducto.findMany({
-    where: { visitaId, suscripcionItemId: null, ordenLinea: null, liberadoAt: null },
+    where: {
+      visitaId,
+      suscripcionItemId: null,
+      ordenLineaOrigen: null,
+      liberadoAt: null,
+    },
     orderBy: { posicion: "asc" },
     select: {
       id: true,
@@ -574,11 +583,12 @@ async function sumarAlBorrador(visitaId: string, viewer: Viewer) {
   });
   if (nuevos.length === 0) return;
 
-  // La orden de esta visita, si está en borrador. Se llega por sus líneas.
+  // La orden de esta visita, si está en borrador. Se llega por su cabecera,
+  // que es justamente para lo que existe.
   const orden = await prisma.orden.findFirst({
     where: {
       estado: "BORRADOR",
-      lineas: { some: { visitaProducto: { visitaId } } },
+      visitas: { some: { visitaId } },
     },
     select: {
       id: true,
@@ -590,7 +600,7 @@ async function sumarAlBorrador(visitaId: string, viewer: Viewer) {
           precioUnitario: true,
           ivaTasa: true,
           productoId: true,
-          visitaProductoId: true,
+          origenes: { select: { visitaProductoId: true } },
           suscripcionItemId: true,
           periodoInicio: true,
           periodoFin: true,
@@ -609,7 +619,7 @@ async function sumarAlBorrador(visitaId: string, viewer: Viewer) {
         precioUnitario: Number(l.precioUnitario),
         ivaTasa: Number(l.ivaTasa),
         productoId: l.productoId,
-        visitaProductoId: l.visitaProductoId,
+        visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
         suscripcionItemId: l.suscripcionItemId,
         periodoInicio: l.periodoInicio,
         periodoFin: l.periodoFin,
@@ -620,7 +630,7 @@ async function sumarAlBorrador(visitaId: string, viewer: Viewer) {
         precioUnitario: 0,
         ivaTasa: Number(vp.producto.ivaTasa ?? 0),
         productoId: vp.productoId,
-        visitaProductoId: vp.id,
+        visitaProductoIds: [vp.id],
       })),
     ],
   });
@@ -816,26 +826,21 @@ export async function createVisitasBatch(
   const personalIds = payload.personalIds ?? [];
 
   const visitas = await prisma.$transaction(async (tx) => {
-    // Choque de fechas: ya hay visita ese día que cubre alguno de los productos.
-    const existing = await tx.visita.findMany({
-      where: {
-        clienteId: cliente.id,
-        fechaProgramada: { in: payload.fechas },
-        estado: { not: "CANCELADA" },
-        deletedAt: null,
-        productos: {
-          some: { productoId: { in: seleccion.map((p) => p.productoId) } },
-        },
-      },
-      select: { fechaProgramada: true },
-    });
+    // **Una visita por cliente y por día.**
+    //
+    // Antes el choque era por producto: el mismo día con otro producto creaba
+    // una segunda visita. Pero agregarle un servicio a un día que ya está
+    // agendado es editar esa visita, no abrir otra — dos visitas el mismo día
+    // al mismo cliente son dos viajes, dos chats y dos informes para un solo
+    // trabajo. Si de verdad son dos trabajos distintos, van en días distintos.
+    const existing = await visitasDelDia(tx, cliente.id, payload.fechas);
     if (existing.length > 0) {
-      const dupes = [
-        ...new Set(
-          existing.map((e) => e.fechaProgramada.toISOString().split("T")[0])
-        ),
-      ].join(", ");
-      throw new ConflictError(`Ya existen visitas para estas fechas: ${dupes}`);
+      const detalle = nombrarVisitas(existing);
+      throw new ConflictError(
+        existing.length === 1
+          ? `Este cliente ya tiene la visita ${detalle}.`
+          : `Este cliente ya tiene visitas esos días: ${detalle}.`
+      );
     }
 
     // Tres consultas, no tres por fecha.
@@ -958,6 +963,55 @@ export async function updateVisitaPersonal(
  * producto equivocado se corrige; obligar a borrarla y rehacerla perdería sus
  * fotos y su chat.
  */
+/**
+ * Las visitas vivas que el cliente ya tiene en esas fechas.
+ *
+ * **Una visita por cliente y por día.** Agregarle un servicio a un día que ya
+ * está agendado es editar esa visita, no abrir otra: dos visitas el mismo día
+ * al mismo cliente son dos viajes, dos chats y dos informes para un solo
+ * trabajo. Las canceladas no ocupan el día.
+ *
+ * Lo comparten el alta y la edición —`exceptoId` es la que se está moviendo,
+ * que obviamente no choca consigo misma—, porque la regla tiene que valer por
+ * las dos puertas: si solo la mira el alta, mover la fecha de una visita deja
+ * dos en el mismo día sin que nada se queje.
+ */
+async function visitasDelDia(
+  tx: { visita: { findMany: typeof prisma.visita.findMany } },
+  clienteId: string,
+  fechas: Date[],
+  exceptoId?: string
+) {
+  return tx.visita.findMany({
+    where: {
+      clienteId,
+      fechaProgramada: { in: fechas },
+      estado: { not: "CANCELADA" },
+      deletedAt: null,
+      ...(exceptoId ? { id: { not: exceptoId } } : {}),
+    },
+    select: { numero: true, fechaProgramada: true },
+    orderBy: { fechaProgramada: "asc" },
+  });
+}
+
+/** "#12 del 03 sep 2026", que es como se las nombra en voz alta. */
+function nombrarVisitas(
+  visitas: { numero: number; fechaProgramada: Date }[]
+): string {
+  return visitas
+    .map(
+      (v) =>
+        `#${v.numero} del ${v.fechaProgramada.toLocaleDateString("es-EC", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        })}`
+    )
+    .join(", ");
+}
+
 export interface UpdateVisitaInfoPayload {
   /** `null` la desvincula del plan y todo su trabajo pasa a cobrarse aparte. */
   suscripcionId?: string | null;
@@ -985,7 +1039,13 @@ export async function updateVisitaInfo(
 
   const visita = await prisma.visita.findFirst({
     where: { id: visitaId, deletedAt: null },
-    select: { id: true, clienteId: true, suscripcionId: true },
+    select: {
+      id: true,
+      clienteId: true,
+      suscripcionId: true,
+      estado: true,
+      fechaProgramada: true,
+    },
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
 
@@ -1014,6 +1074,29 @@ export async function updateVisitaInfo(
     }
 
   const productos = seleccion;
+
+  // Mover la fecha también tiene que respetar la visita por día. La regla vivía
+  // solo en el alta, así que se podía dejar dos el mismo día moviendo una —el
+  // camino más fácil de todos, porque nadie sospecha que mover valide menos que
+  // crear—. Una cancelada no ocupa el día, así que moverla no choca con nada.
+  if (
+    payload.fechaProgramada !== undefined &&
+    visita.estado !== "CANCELADA" &&
+    payload.fechaProgramada.getTime() !== visita.fechaProgramada.getTime()
+  ) {
+    const ocupado = await visitasDelDia(
+      prisma,
+      visita.clienteId,
+      [payload.fechaProgramada],
+      visita.id
+    );
+    if (ocupado.length > 0) {
+      throw new ConflictError(
+        `Este cliente ya tiene la visita ${nombrarVisitas(ocupado)}.`
+      );
+    }
+  }
+
   /** Borradores a los que se les sacó una línea: hay que recalcularlos. */
   let ordenesTocadas: string[] = [];
   const actualizada = await prisma.$transaction(async (tx) => {
@@ -1022,25 +1105,30 @@ export async function updateVisitaInfo(
 
       // No se saca de la visita algo que ya se cobró.
       //
-      // `OrdenLinea.visitaProductoId` es `onDelete: SetNull`, así que borrarlo
-      // no rompía nada a la vista: la línea seguía cobrando y perdía en silencio
-      // de dónde venía. El cliente pagaba por un trabajo que la visita ya no
-      // dice que se hizo, y nada quedaba registrado. Para deshacerlo hay que
-      // anular la orden, que es lo que libera la procedencia.
+      // Sin este chequeo, la línea seguía cobrando y perdía en silencio de
+      // dónde venía. El cliente pagaba por un trabajo que la visita ya no dice
+      // que se hizo, y nada quedaba registrado. Para deshacerlo hay que anular
+      // la orden, que es lo que libera la procedencia.
       const yaCobrados = await tx.visitaProducto.findMany({
         where: {
           visitaId,
           productoId: { notIn: ids },
-          ordenLinea: { isNot: null },
+          ordenLineaOrigen: { isNot: null },
         },
         select: {
           id: true,
           producto: { select: { nombre: true } },
-          ordenLinea: {
+          ordenLineaOrigen: {
             select: {
-              id: true,
-              ordenId: true,
-              orden: { select: { numero: true, estado: true } },
+              visitaProductoId: true,
+              ordenLinea: {
+                select: {
+                  id: true,
+                  ordenId: true,
+                  orden: { select: { numero: true, estado: true } },
+                  _count: { select: { origenes: true } },
+                },
+              },
             },
           },
         },
@@ -1048,30 +1136,46 @@ export async function updateVisitaInfo(
       // Un borrador todavía se edita: sacar el producto de la visita también lo
       // saca de la orden. Confirmada ya salió el documento y no se toca.
       const enFirme = yaCobrados.filter(
-        (vp) => vp.ordenLinea!.orden.estado !== "BORRADOR"
+        (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado !== "BORRADOR"
       );
       if (enFirme.length > 0) {
         const detalle = enFirme
           .map(
             (vp) =>
-              `"${vp.producto.nombre}" (orden #${vp.ordenLinea!.orden.numero})`
+              `"${vp.producto.nombre}" (orden #${vp.ordenLineaOrigen!.ordenLinea.orden.numero})`
           )
           .join(", ");
         throw new ConflictError(
           `No se puede quitar de la visita algo que ya está facturado: ${detalle}. Anulá la orden primero.`
         );
       }
-      // Las líneas del borrador se borran **antes** que el VisitaProducto: si
-      // no, `onDelete: SetNull` las deja huérfanas cobrando sin procedencia.
+      // En un borrador se suelta la procedencia **antes** de borrar el
+      // VisitaProducto, o el `Restrict` de `OrdenLineaOrigen` frena el borrado.
+      //
+      // Y se suelta el origen, no la línea: una línea puede pagar el mismo
+      // producto de **varias** visitas, y borrarla entera se llevaría puesto el
+      // trabajo de las otras. La línea se va solo si se queda sin ninguno.
       const enBorrador = yaCobrados.filter(
-        (vp) => vp.ordenLinea!.orden.estado === "BORRADOR"
+        (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado === "BORRADOR"
       );
       if (enBorrador.length > 0) {
-        await tx.ordenLinea.deleteMany({
-          where: { id: { in: enBorrador.map((vp) => vp.ordenLinea!.id) } },
+        await tx.ordenLineaOrigen.deleteMany({
+          where: {
+            visitaProductoId: {
+              in: enBorrador.map((vp) => vp.ordenLineaOrigen!.visitaProductoId),
+            },
+          },
         });
+        const sueltas = enBorrador
+          .filter((vp) => vp.ordenLineaOrigen!.ordenLinea._count.origenes === 1)
+          .map((vp) => vp.ordenLineaOrigen!.ordenLinea.id);
+        if (sueltas.length > 0) {
+          await tx.ordenLinea.deleteMany({ where: { id: { in: sueltas } } });
+        }
         ordenesTocadas = [
-          ...new Set(enBorrador.map((vp) => vp.ordenLinea!.ordenId)),
+          ...new Set(
+            enBorrador.map((vp) => vp.ordenLineaOrigen!.ordenLinea.ordenId)
+          ),
         ];
       }
 
@@ -1122,7 +1226,7 @@ export async function updateVisitaInfo(
         select: {
           id: true,
           productoId: true,
-          ordenLinea: { select: { id: true } },
+          ordenLineaOrigen: { select: { visitaProductoId: true } },
         },
       });
       const cobertura = await coberturaDelPlan(
@@ -1134,7 +1238,7 @@ export async function updateVisitaInfo(
       for (const vp of actuales) {
         // Lo ya facturado no se toca: marcarlo como cubierto lo dejaría
         // cobrado y cubierto a la vez.
-        if (vp.ordenLinea) continue;
+        if (vp.ordenLineaOrigen) continue;
         await tx.visitaProducto.update({
           where: { id: vp.id },
           data: { suscripcionItemId: cobertura.get(vp.productoId) ?? null },

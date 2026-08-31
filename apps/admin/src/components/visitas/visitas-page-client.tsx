@@ -190,7 +190,7 @@ export function VisitasPageClient({
   /** Le queda trabajo suelto que todavía no entró en ninguna orden. */
   const sinOrden = (v: VisitaRow) =>
     v.estado !== "CANCELADA" &&
-    v.productos.some((p) => !p.suscripcionItemId && !p.ordenLinea);
+    v.productos.some((p) => !p.suscripcionItemId && !p.ordenLineaOrigen);
 
   const visibles = soloSinOrden ? visitas.filter(sinOrden) : visitas;
 

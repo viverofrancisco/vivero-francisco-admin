@@ -45,7 +45,6 @@ export type OrdenMinAggregateOutputType = {
   clienteId: string | null
   datoFacturacionId: string | null
   numero: number | null
-  visitaId: string | null
   suscripcionId: string | null
   fecha: Date | null
   estado: $Enums.EstadoOrden | null
@@ -64,7 +63,6 @@ export type OrdenMaxAggregateOutputType = {
   clienteId: string | null
   datoFacturacionId: string | null
   numero: number | null
-  visitaId: string | null
   suscripcionId: string | null
   fecha: Date | null
   estado: $Enums.EstadoOrden | null
@@ -83,7 +81,6 @@ export type OrdenCountAggregateOutputType = {
   clienteId: number
   datoFacturacionId: number
   numero: number
-  visitaId: number
   suscripcionId: number
   fecha: number
   estado: number
@@ -118,7 +115,6 @@ export type OrdenMinAggregateInputType = {
   clienteId?: true
   datoFacturacionId?: true
   numero?: true
-  visitaId?: true
   suscripcionId?: true
   fecha?: true
   estado?: true
@@ -137,7 +133,6 @@ export type OrdenMaxAggregateInputType = {
   clienteId?: true
   datoFacturacionId?: true
   numero?: true
-  visitaId?: true
   suscripcionId?: true
   fecha?: true
   estado?: true
@@ -156,7 +151,6 @@ export type OrdenCountAggregateInputType = {
   clienteId?: true
   datoFacturacionId?: true
   numero?: true
-  visitaId?: true
   suscripcionId?: true
   fecha?: true
   estado?: true
@@ -262,7 +256,6 @@ export type OrdenGroupByOutputType = {
   clienteId: string
   datoFacturacionId: string | null
   numero: number
-  visitaId: string | null
   suscripcionId: string | null
   fecha: Date
   estado: $Enums.EstadoOrden
@@ -304,7 +297,6 @@ export type OrdenWhereInput = {
   clienteId?: Prisma.StringFilter<"Orden"> | string
   datoFacturacionId?: Prisma.StringNullableFilter<"Orden"> | string | null
   numero?: Prisma.IntFilter<"Orden"> | number
-  visitaId?: Prisma.StringNullableFilter<"Orden"> | string | null
   suscripcionId?: Prisma.StringNullableFilter<"Orden"> | string | null
   fecha?: Prisma.DateTimeFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenFilter<"Orden"> | $Enums.EstadoOrden
@@ -318,12 +310,12 @@ export type OrdenWhereInput = {
   updatedById?: Prisma.StringNullableFilter<"Orden"> | string | null
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
   datoFacturacion?: Prisma.XOR<Prisma.DatoFacturacionNullableScalarRelationFilter, Prisma.DatoFacturacionWhereInput> | null
-  visita?: Prisma.XOR<Prisma.VisitaNullableScalarRelationFilter, Prisma.VisitaWhereInput> | null
   suscripcion?: Prisma.XOR<Prisma.SuscripcionNullableScalarRelationFilter, Prisma.SuscripcionWhereInput> | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   lineas?: Prisma.OrdenLineaListRelationFilter
   facturas?: Prisma.FacturaListRelationFilter
+  visitas?: Prisma.OrdenVisitaListRelationFilter
 }
 
 export type OrdenOrderByWithRelationInput = {
@@ -331,7 +323,6 @@ export type OrdenOrderByWithRelationInput = {
   clienteId?: Prisma.SortOrder
   datoFacturacionId?: Prisma.SortOrderInput | Prisma.SortOrder
   numero?: Prisma.SortOrder
-  visitaId?: Prisma.SortOrderInput | Prisma.SortOrder
   suscripcionId?: Prisma.SortOrderInput | Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -345,12 +336,12 @@ export type OrdenOrderByWithRelationInput = {
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   cliente?: Prisma.ClienteOrderByWithRelationInput
   datoFacturacion?: Prisma.DatoFacturacionOrderByWithRelationInput
-  visita?: Prisma.VisitaOrderByWithRelationInput
   suscripcion?: Prisma.SuscripcionOrderByWithRelationInput
   createdBy?: Prisma.UserOrderByWithRelationInput
   updatedBy?: Prisma.UserOrderByWithRelationInput
   lineas?: Prisma.OrdenLineaOrderByRelationAggregateInput
   facturas?: Prisma.FacturaOrderByRelationAggregateInput
+  visitas?: Prisma.OrdenVisitaOrderByRelationAggregateInput
 }
 
 export type OrdenWhereUniqueInput = Prisma.AtLeast<{
@@ -361,7 +352,6 @@ export type OrdenWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OrdenWhereInput | Prisma.OrdenWhereInput[]
   clienteId?: Prisma.StringFilter<"Orden"> | string
   datoFacturacionId?: Prisma.StringNullableFilter<"Orden"> | string | null
-  visitaId?: Prisma.StringNullableFilter<"Orden"> | string | null
   suscripcionId?: Prisma.StringNullableFilter<"Orden"> | string | null
   fecha?: Prisma.DateTimeFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenFilter<"Orden"> | $Enums.EstadoOrden
@@ -375,12 +365,12 @@ export type OrdenWhereUniqueInput = Prisma.AtLeast<{
   updatedById?: Prisma.StringNullableFilter<"Orden"> | string | null
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
   datoFacturacion?: Prisma.XOR<Prisma.DatoFacturacionNullableScalarRelationFilter, Prisma.DatoFacturacionWhereInput> | null
-  visita?: Prisma.XOR<Prisma.VisitaNullableScalarRelationFilter, Prisma.VisitaWhereInput> | null
   suscripcion?: Prisma.XOR<Prisma.SuscripcionNullableScalarRelationFilter, Prisma.SuscripcionWhereInput> | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   lineas?: Prisma.OrdenLineaListRelationFilter
   facturas?: Prisma.FacturaListRelationFilter
+  visitas?: Prisma.OrdenVisitaListRelationFilter
 }, "id" | "numero">
 
 export type OrdenOrderByWithAggregationInput = {
@@ -388,7 +378,6 @@ export type OrdenOrderByWithAggregationInput = {
   clienteId?: Prisma.SortOrder
   datoFacturacionId?: Prisma.SortOrderInput | Prisma.SortOrder
   numero?: Prisma.SortOrder
-  visitaId?: Prisma.SortOrderInput | Prisma.SortOrder
   suscripcionId?: Prisma.SortOrderInput | Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -415,7 +404,6 @@ export type OrdenScalarWhereWithAggregatesInput = {
   clienteId?: Prisma.StringWithAggregatesFilter<"Orden"> | string
   datoFacturacionId?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
   numero?: Prisma.IntWithAggregatesFilter<"Orden"> | number
-  visitaId?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
   suscripcionId?: Prisma.StringNullableWithAggregatesFilter<"Orden"> | string | null
   fecha?: Prisma.DateTimeWithAggregatesFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenWithAggregatesFilter<"Orden"> | $Enums.EstadoOrden
@@ -442,12 +430,12 @@ export type OrdenCreateInput = {
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateInput = {
@@ -455,7 +443,6 @@ export type OrdenUncheckedCreateInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -469,6 +456,7 @@ export type OrdenUncheckedCreateInput = {
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUpdateInput = {
@@ -483,12 +471,12 @@ export type OrdenUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateInput = {
@@ -496,7 +484,6 @@ export type OrdenUncheckedUpdateInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -510,6 +497,7 @@ export type OrdenUncheckedUpdateInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateManyInput = {
@@ -517,7 +505,6 @@ export type OrdenCreateManyInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -548,7 +535,6 @@ export type OrdenUncheckedUpdateManyInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -577,7 +563,6 @@ export type OrdenCountOrderByAggregateInput = {
   clienteId?: Prisma.SortOrder
   datoFacturacionId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
-  visitaId?: Prisma.SortOrder
   suscripcionId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -603,7 +588,6 @@ export type OrdenMaxOrderByAggregateInput = {
   clienteId?: Prisma.SortOrder
   datoFacturacionId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
-  visitaId?: Prisma.SortOrder
   suscripcionId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -622,7 +606,6 @@ export type OrdenMinOrderByAggregateInput = {
   clienteId?: Prisma.SortOrder
   datoFacturacionId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
-  visitaId?: Prisma.SortOrder
   suscripcionId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -816,50 +799,22 @@ export type OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput = {
   deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
 }
 
-export type OrdenCreateNestedManyWithoutVisitaInput = {
-  create?: Prisma.XOR<Prisma.OrdenCreateWithoutVisitaInput, Prisma.OrdenUncheckedCreateWithoutVisitaInput> | Prisma.OrdenCreateWithoutVisitaInput[] | Prisma.OrdenUncheckedCreateWithoutVisitaInput[]
-  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutVisitaInput | Prisma.OrdenCreateOrConnectWithoutVisitaInput[]
-  createMany?: Prisma.OrdenCreateManyVisitaInputEnvelope
-  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-}
-
-export type OrdenUncheckedCreateNestedManyWithoutVisitaInput = {
-  create?: Prisma.XOR<Prisma.OrdenCreateWithoutVisitaInput, Prisma.OrdenUncheckedCreateWithoutVisitaInput> | Prisma.OrdenCreateWithoutVisitaInput[] | Prisma.OrdenUncheckedCreateWithoutVisitaInput[]
-  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutVisitaInput | Prisma.OrdenCreateOrConnectWithoutVisitaInput[]
-  createMany?: Prisma.OrdenCreateManyVisitaInputEnvelope
-  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-}
-
-export type OrdenUpdateManyWithoutVisitaNestedInput = {
-  create?: Prisma.XOR<Prisma.OrdenCreateWithoutVisitaInput, Prisma.OrdenUncheckedCreateWithoutVisitaInput> | Prisma.OrdenCreateWithoutVisitaInput[] | Prisma.OrdenUncheckedCreateWithoutVisitaInput[]
-  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutVisitaInput | Prisma.OrdenCreateOrConnectWithoutVisitaInput[]
-  upsert?: Prisma.OrdenUpsertWithWhereUniqueWithoutVisitaInput | Prisma.OrdenUpsertWithWhereUniqueWithoutVisitaInput[]
-  createMany?: Prisma.OrdenCreateManyVisitaInputEnvelope
-  set?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  disconnect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  delete?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  update?: Prisma.OrdenUpdateWithWhereUniqueWithoutVisitaInput | Prisma.OrdenUpdateWithWhereUniqueWithoutVisitaInput[]
-  updateMany?: Prisma.OrdenUpdateManyWithWhereWithoutVisitaInput | Prisma.OrdenUpdateManyWithWhereWithoutVisitaInput[]
-  deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
-}
-
-export type OrdenUncheckedUpdateManyWithoutVisitaNestedInput = {
-  create?: Prisma.XOR<Prisma.OrdenCreateWithoutVisitaInput, Prisma.OrdenUncheckedCreateWithoutVisitaInput> | Prisma.OrdenCreateWithoutVisitaInput[] | Prisma.OrdenUncheckedCreateWithoutVisitaInput[]
-  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutVisitaInput | Prisma.OrdenCreateOrConnectWithoutVisitaInput[]
-  upsert?: Prisma.OrdenUpsertWithWhereUniqueWithoutVisitaInput | Prisma.OrdenUpsertWithWhereUniqueWithoutVisitaInput[]
-  createMany?: Prisma.OrdenCreateManyVisitaInputEnvelope
-  set?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  disconnect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  delete?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  connect?: Prisma.OrdenWhereUniqueInput | Prisma.OrdenWhereUniqueInput[]
-  update?: Prisma.OrdenUpdateWithWhereUniqueWithoutVisitaInput | Prisma.OrdenUpdateWithWhereUniqueWithoutVisitaInput[]
-  updateMany?: Prisma.OrdenUpdateManyWithWhereWithoutVisitaInput | Prisma.OrdenUpdateManyWithWhereWithoutVisitaInput[]
-  deleteMany?: Prisma.OrdenScalarWhereInput | Prisma.OrdenScalarWhereInput[]
-}
-
 export type EnumEstadoOrdenFieldUpdateOperationsInput = {
   set?: $Enums.EstadoOrden
+}
+
+export type OrdenCreateNestedOneWithoutVisitasInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutVisitasInput, Prisma.OrdenUncheckedCreateWithoutVisitasInput>
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutVisitasInput
+  connect?: Prisma.OrdenWhereUniqueInput
+}
+
+export type OrdenUpdateOneRequiredWithoutVisitasNestedInput = {
+  create?: Prisma.XOR<Prisma.OrdenCreateWithoutVisitasInput, Prisma.OrdenUncheckedCreateWithoutVisitasInput>
+  connectOrCreate?: Prisma.OrdenCreateOrConnectWithoutVisitasInput
+  upsert?: Prisma.OrdenUpsertWithoutVisitasInput
+  connect?: Prisma.OrdenWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrdenUpdateToOneWithWhereWithoutVisitasInput, Prisma.OrdenUpdateWithoutVisitasInput>, Prisma.OrdenUncheckedUpdateWithoutVisitasInput>
 }
 
 export type OrdenCreateNestedOneWithoutLineasInput = {
@@ -945,11 +900,11 @@ export type OrdenCreateWithoutCreatedByInput = {
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateWithoutCreatedByInput = {
@@ -957,7 +912,6 @@ export type OrdenUncheckedCreateWithoutCreatedByInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -970,6 +924,7 @@ export type OrdenUncheckedCreateWithoutCreatedByInput = {
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutCreatedByInput = {
@@ -995,11 +950,11 @@ export type OrdenCreateWithoutUpdatedByInput = {
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateWithoutUpdatedByInput = {
@@ -1007,7 +962,6 @@ export type OrdenUncheckedCreateWithoutUpdatedByInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1020,6 +974,7 @@ export type OrdenUncheckedCreateWithoutUpdatedByInput = {
   createdById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutUpdatedByInput = {
@@ -1056,7 +1011,6 @@ export type OrdenScalarWhereInput = {
   clienteId?: Prisma.StringFilter<"Orden"> | string
   datoFacturacionId?: Prisma.StringNullableFilter<"Orden"> | string | null
   numero?: Prisma.IntFilter<"Orden"> | number
-  visitaId?: Prisma.StringNullableFilter<"Orden"> | string | null
   suscripcionId?: Prisma.StringNullableFilter<"Orden"> | string | null
   fecha?: Prisma.DateTimeFilter<"Orden"> | Date | string
   estado?: Prisma.EnumEstadoOrdenFilter<"Orden"> | $Enums.EstadoOrden
@@ -1098,19 +1052,18 @@ export type OrdenCreateWithoutClienteInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateWithoutClienteInput = {
   id?: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1124,6 +1077,7 @@ export type OrdenUncheckedCreateWithoutClienteInput = {
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutClienteInput = {
@@ -1165,11 +1119,11 @@ export type OrdenCreateWithoutSuscripcionInput = {
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateWithoutSuscripcionInput = {
@@ -1177,7 +1131,6 @@ export type OrdenUncheckedCreateWithoutSuscripcionInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
@@ -1190,6 +1143,7 @@ export type OrdenUncheckedCreateWithoutSuscripcionInput = {
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutSuscripcionInput = {
@@ -1218,7 +1172,7 @@ export type OrdenUpdateManyWithWhereWithoutSuscripcionInput = {
   data: Prisma.XOR<Prisma.OrdenUpdateManyMutationInput, Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionInput>
 }
 
-export type OrdenCreateWithoutVisitaInput = {
+export type OrdenCreateWithoutVisitasInput = {
   id?: string
   numero?: number
   fecha: Date | string
@@ -1238,7 +1192,7 @@ export type OrdenCreateWithoutVisitaInput = {
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
 }
 
-export type OrdenUncheckedCreateWithoutVisitaInput = {
+export type OrdenUncheckedCreateWithoutVisitasInput = {
   id?: string
   clienteId: string
   datoFacturacionId?: string | null
@@ -1258,30 +1212,59 @@ export type OrdenUncheckedCreateWithoutVisitaInput = {
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
-export type OrdenCreateOrConnectWithoutVisitaInput = {
+export type OrdenCreateOrConnectWithoutVisitasInput = {
   where: Prisma.OrdenWhereUniqueInput
-  create: Prisma.XOR<Prisma.OrdenCreateWithoutVisitaInput, Prisma.OrdenUncheckedCreateWithoutVisitaInput>
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutVisitasInput, Prisma.OrdenUncheckedCreateWithoutVisitasInput>
 }
 
-export type OrdenCreateManyVisitaInputEnvelope = {
-  data: Prisma.OrdenCreateManyVisitaInput | Prisma.OrdenCreateManyVisitaInput[]
-  skipDuplicates?: boolean
+export type OrdenUpsertWithoutVisitasInput = {
+  update: Prisma.XOR<Prisma.OrdenUpdateWithoutVisitasInput, Prisma.OrdenUncheckedUpdateWithoutVisitasInput>
+  create: Prisma.XOR<Prisma.OrdenCreateWithoutVisitasInput, Prisma.OrdenUncheckedCreateWithoutVisitasInput>
+  where?: Prisma.OrdenWhereInput
 }
 
-export type OrdenUpsertWithWhereUniqueWithoutVisitaInput = {
-  where: Prisma.OrdenWhereUniqueInput
-  update: Prisma.XOR<Prisma.OrdenUpdateWithoutVisitaInput, Prisma.OrdenUncheckedUpdateWithoutVisitaInput>
-  create: Prisma.XOR<Prisma.OrdenCreateWithoutVisitaInput, Prisma.OrdenUncheckedCreateWithoutVisitaInput>
+export type OrdenUpdateToOneWithWhereWithoutVisitasInput = {
+  where?: Prisma.OrdenWhereInput
+  data: Prisma.XOR<Prisma.OrdenUpdateWithoutVisitasInput, Prisma.OrdenUncheckedUpdateWithoutVisitasInput>
 }
 
-export type OrdenUpdateWithWhereUniqueWithoutVisitaInput = {
-  where: Prisma.OrdenWhereUniqueInput
-  data: Prisma.XOR<Prisma.OrdenUpdateWithoutVisitaInput, Prisma.OrdenUncheckedUpdateWithoutVisitaInput>
+export type OrdenUpdateWithoutVisitasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
+  datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
+  suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
+  lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
 }
 
-export type OrdenUpdateManyWithWhereWithoutVisitaInput = {
-  where: Prisma.OrdenScalarWhereInput
-  data: Prisma.XOR<Prisma.OrdenUpdateManyMutationInput, Prisma.OrdenUncheckedUpdateManyWithoutVisitaInput>
+export type OrdenUncheckedUpdateWithoutVisitasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
+  facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateWithoutLineasInput = {
@@ -1297,11 +1280,11 @@ export type OrdenCreateWithoutLineasInput = {
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateWithoutLineasInput = {
@@ -1309,7 +1292,6 @@ export type OrdenUncheckedCreateWithoutLineasInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1322,6 +1304,7 @@ export type OrdenUncheckedCreateWithoutLineasInput = {
   createdById?: string | null
   updatedById?: string | null
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutLineasInput = {
@@ -1352,11 +1335,11 @@ export type OrdenUpdateWithoutLineasInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutLineasInput = {
@@ -1364,7 +1347,6 @@ export type OrdenUncheckedUpdateWithoutLineasInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1377,6 +1359,7 @@ export type OrdenUncheckedUpdateWithoutLineasInput = {
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateWithoutDatoFacturacionInput = {
@@ -1391,19 +1374,18 @@ export type OrdenCreateWithoutDatoFacturacionInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateWithoutDatoFacturacionInput = {
   id?: string
   clienteId: string
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1417,6 +1399,7 @@ export type OrdenUncheckedCreateWithoutDatoFacturacionInput = {
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
   facturas?: Prisma.FacturaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutDatoFacturacionInput = {
@@ -1458,11 +1441,11 @@ export type OrdenCreateWithoutFacturasInput = {
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutOrdenesInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutOrdenesInput
-  visita?: Prisma.VisitaCreateNestedOneWithoutOrdenesInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutOrdenesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutOrdenesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutOrdenesUpdatedInput
   lineas?: Prisma.OrdenLineaCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenUncheckedCreateWithoutFacturasInput = {
@@ -1470,7 +1453,6 @@ export type OrdenUncheckedCreateWithoutFacturasInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1483,6 +1465,7 @@ export type OrdenUncheckedCreateWithoutFacturasInput = {
   createdById?: string | null
   updatedById?: string | null
   lineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutOrdenInput
+  visitas?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutOrdenInput
 }
 
 export type OrdenCreateOrConnectWithoutFacturasInput = {
@@ -1513,11 +1496,11 @@ export type OrdenUpdateWithoutFacturasInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutFacturasInput = {
@@ -1525,7 +1508,6 @@ export type OrdenUncheckedUpdateWithoutFacturasInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1538,6 +1520,7 @@ export type OrdenUncheckedUpdateWithoutFacturasInput = {
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenCreateManyCreatedByInput = {
@@ -1545,7 +1528,6 @@ export type OrdenCreateManyCreatedByInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1563,7 +1545,6 @@ export type OrdenCreateManyUpdatedByInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1588,11 +1569,11 @@ export type OrdenUpdateWithoutCreatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutCreatedByInput = {
@@ -1600,7 +1581,6 @@ export type OrdenUncheckedUpdateWithoutCreatedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1613,6 +1593,7 @@ export type OrdenUncheckedUpdateWithoutCreatedByInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1620,7 +1601,6 @@ export type OrdenUncheckedUpdateManyWithoutCreatedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1645,11 +1625,11 @@ export type OrdenUpdateWithoutUpdatedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutUpdatedByInput = {
@@ -1657,7 +1637,6 @@ export type OrdenUncheckedUpdateWithoutUpdatedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1670,6 +1649,7 @@ export type OrdenUncheckedUpdateWithoutUpdatedByInput = {
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -1677,7 +1657,6 @@ export type OrdenUncheckedUpdateManyWithoutUpdatedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1694,7 +1673,6 @@ export type OrdenCreateManyClienteInput = {
   id?: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1719,19 +1697,18 @@ export type OrdenUpdateWithoutClienteInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1745,13 +1722,13 @@ export type OrdenUncheckedUpdateWithoutClienteInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1770,7 +1747,6 @@ export type OrdenCreateManySuscripcionInput = {
   clienteId: string
   datoFacturacionId?: string | null
   numero?: number
-  visitaId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
   notas?: string | null
@@ -1795,11 +1771,11 @@ export type OrdenUpdateWithoutSuscripcionInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutSuscripcionInput = {
@@ -1807,7 +1783,6 @@ export type OrdenUncheckedUpdateWithoutSuscripcionInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1820,6 +1795,7 @@ export type OrdenUncheckedUpdateWithoutSuscripcionInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutSuscripcionInput = {
@@ -1827,82 +1803,6 @@ export type OrdenUncheckedUpdateManyWithoutSuscripcionInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
-  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type OrdenCreateManyVisitaInput = {
-  id?: string
-  clienteId: string
-  datoFacturacionId?: string | null
-  numero?: number
-  suscripcionId?: string | null
-  fecha: Date | string
-  estado?: $Enums.EstadoOrden
-  notas?: string | null
-  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  createdById?: string | null
-  updatedById?: string | null
-}
-
-export type OrdenUpdateWithoutVisitaInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
-  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
-  datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutOrdenesNestedInput
-  suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
-  createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
-  updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
-  lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
-  facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
-}
-
-export type OrdenUncheckedUpdateWithoutVisitaInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
-  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  numero?: Prisma.IntFieldUpdateOperationsInput | number
-  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
-  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
-  facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
-}
-
-export type OrdenUncheckedUpdateManyWithoutVisitaInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
-  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  numero?: Prisma.IntFieldUpdateOperationsInput | number
-  suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1919,7 +1819,6 @@ export type OrdenCreateManyDatoFacturacionInput = {
   id?: string
   clienteId: string
   numero?: number
-  visitaId?: string | null
   suscripcionId?: string | null
   fecha: Date | string
   estado?: $Enums.EstadoOrden
@@ -1944,19 +1843,18 @@ export type OrdenUpdateWithoutDatoFacturacionInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutOrdenesNestedInput
-  visita?: Prisma.VisitaUpdateOneWithoutOrdenesNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutOrdenesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutOrdenesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutOrdenesUpdatedNestedInput
   lineas?: Prisma.OrdenLineaUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateWithoutDatoFacturacionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1970,13 +1868,13 @@ export type OrdenUncheckedUpdateWithoutDatoFacturacionInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutOrdenNestedInput
   facturas?: Prisma.FacturaUncheckedUpdateManyWithoutOrdenNestedInput
+  visitas?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutOrdenNestedInput
 }
 
 export type OrdenUncheckedUpdateManyWithoutDatoFacturacionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
-  visitaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suscripcionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoOrdenFieldUpdateOperationsInput | $Enums.EstadoOrden
@@ -1998,11 +1896,13 @@ export type OrdenUncheckedUpdateManyWithoutDatoFacturacionInput = {
 export type OrdenCountOutputType = {
   lineas: number
   facturas: number
+  visitas: number
 }
 
 export type OrdenCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lineas?: boolean | OrdenCountOutputTypeCountLineasArgs
   facturas?: boolean | OrdenCountOutputTypeCountFacturasArgs
+  visitas?: boolean | OrdenCountOutputTypeCountVisitasArgs
 }
 
 /**
@@ -2029,13 +1929,19 @@ export type OrdenCountOutputTypeCountFacturasArgs<ExtArgs extends runtime.Types.
   where?: Prisma.FacturaWhereInput
 }
 
+/**
+ * OrdenCountOutputType without action
+ */
+export type OrdenCountOutputTypeCountVisitasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenVisitaWhereInput
+}
+
 
 export type OrdenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   clienteId?: boolean
   datoFacturacionId?: boolean
   numero?: boolean
-  visitaId?: boolean
   suscripcionId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -2049,12 +1955,12 @@ export type OrdenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Orden$datoFacturacionArgs<ExtArgs>
-  visita?: boolean | Prisma.Orden$visitaArgs<ExtArgs>
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
   lineas?: boolean | Prisma.Orden$lineasArgs<ExtArgs>
   facturas?: boolean | Prisma.Orden$facturasArgs<ExtArgs>
+  visitas?: boolean | Prisma.Orden$visitasArgs<ExtArgs>
   _count?: boolean | Prisma.OrdenCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["orden"]>
 
@@ -2063,7 +1969,6 @@ export type OrdenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   clienteId?: boolean
   datoFacturacionId?: boolean
   numero?: boolean
-  visitaId?: boolean
   suscripcionId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -2077,7 +1982,6 @@ export type OrdenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Orden$datoFacturacionArgs<ExtArgs>
-  visita?: boolean | Prisma.Orden$visitaArgs<ExtArgs>
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
@@ -2088,7 +1992,6 @@ export type OrdenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   clienteId?: boolean
   datoFacturacionId?: boolean
   numero?: boolean
-  visitaId?: boolean
   suscripcionId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -2102,7 +2005,6 @@ export type OrdenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Orden$datoFacturacionArgs<ExtArgs>
-  visita?: boolean | Prisma.Orden$visitaArgs<ExtArgs>
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
@@ -2113,7 +2015,6 @@ export type OrdenSelectScalar = {
   clienteId?: boolean
   datoFacturacionId?: boolean
   numero?: boolean
-  visitaId?: boolean
   suscripcionId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -2127,22 +2028,21 @@ export type OrdenSelectScalar = {
   updatedById?: boolean
 }
 
-export type OrdenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "datoFacturacionId" | "numero" | "visitaId" | "suscripcionId" | "fecha" | "estado" | "notas" | "subtotal" | "iva" | "total" | "createdAt" | "updatedAt" | "createdById" | "updatedById", ExtArgs["result"]["orden"]>
+export type OrdenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "datoFacturacionId" | "numero" | "suscripcionId" | "fecha" | "estado" | "notas" | "subtotal" | "iva" | "total" | "createdAt" | "updatedAt" | "createdById" | "updatedById", ExtArgs["result"]["orden"]>
 export type OrdenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Orden$datoFacturacionArgs<ExtArgs>
-  visita?: boolean | Prisma.Orden$visitaArgs<ExtArgs>
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
   lineas?: boolean | Prisma.Orden$lineasArgs<ExtArgs>
   facturas?: boolean | Prisma.Orden$facturasArgs<ExtArgs>
+  visitas?: boolean | Prisma.Orden$visitasArgs<ExtArgs>
   _count?: boolean | Prisma.OrdenCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrdenIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Orden$datoFacturacionArgs<ExtArgs>
-  visita?: boolean | Prisma.Orden$visitaArgs<ExtArgs>
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
@@ -2150,7 +2050,6 @@ export type OrdenIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type OrdenIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Orden$datoFacturacionArgs<ExtArgs>
-  visita?: boolean | Prisma.Orden$visitaArgs<ExtArgs>
   suscripcion?: boolean | Prisma.Orden$suscripcionArgs<ExtArgs>
   createdBy?: boolean | Prisma.Orden$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Orden$updatedByArgs<ExtArgs>
@@ -2161,15 +2060,12 @@ export type $OrdenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     cliente: Prisma.$ClientePayload<ExtArgs>
     datoFacturacion: Prisma.$DatoFacturacionPayload<ExtArgs> | null
-    /**
-     * `Restrict`: una visita con orden no se borra sin resolver la orden antes.
-     */
-    visita: Prisma.$VisitaPayload<ExtArgs> | null
     suscripcion: Prisma.$SuscripcionPayload<ExtArgs> | null
     createdBy: Prisma.$UserPayload<ExtArgs> | null
     updatedBy: Prisma.$UserPayload<ExtArgs> | null
     lineas: Prisma.$OrdenLineaPayload<ExtArgs>[]
     facturas: Prisma.$FacturaPayload<ExtArgs>[]
+    visitas: Prisma.$OrdenVisitaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2185,21 +2081,13 @@ export type $OrdenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
      */
     numero: number
     /**
-     * De qué es esta orden. Como mucho una de las dos, nunca las dos.
+     * De qué plan es esta orden, cuando es de un plan.
      * 
-     * Las líneas ya dicen de dónde sale **cada peso** —`visitaProductoId`,
-     * `suscripcionItemId` + período— pero eso responde otra pregunta. Esto
-     * responde "¿de qué es esta orden?", que es la que se hace primero y la que
-     * no tenía respuesta sin recorrer las líneas.
+     * Las visitas viven en `OrdenVisita` porque pueden ser **varias**; un plan
+     * no: sus períodos se renuevan solos y cada orden cubre uno.
      * 
-     * Es coherente porque las reglas ya lo garantizan: una orden no mezcla plan
-     * con visitas (`ensureNoMezclaOrigenes`) y se lleva el trabajo entero de lo
-     * que toca (`ensureTrabajoCompleto`). Que además tenga productos agregados a
-     * mano no la hace menos "de esa visita".
-     * 
-     * Las dos en null = orden suelta, armada a mano.
+     * Null y sin `OrdenVisita` = orden suelta, armada a mano.
      */
-    visitaId: string | null
     suscripcionId: string | null
     fecha: Date
     estado: $Enums.EstadoOrden
@@ -2610,12 +2498,12 @@ export interface Prisma__OrdenClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   cliente<T extends Prisma.ClienteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClienteDefaultArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   datoFacturacion<T extends Prisma.Orden$datoFacturacionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$datoFacturacionArgs<ExtArgs>>): Prisma.Prisma__DatoFacturacionClient<runtime.Types.Result.GetResult<Prisma.$DatoFacturacionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  visita<T extends Prisma.Orden$visitaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$visitaArgs<ExtArgs>>): Prisma.Prisma__VisitaClient<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   suscripcion<T extends Prisma.Orden$suscripcionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$suscripcionArgs<ExtArgs>>): Prisma.Prisma__SuscripcionClient<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   createdBy<T extends Prisma.Orden$createdByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$createdByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   updatedBy<T extends Prisma.Orden$updatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$updatedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   lineas<T extends Prisma.Orden$lineasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$lineasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenLineaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   facturas<T extends Prisma.Orden$facturasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$facturasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FacturaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  visitas<T extends Prisma.Orden$visitasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Orden$visitasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenVisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2649,7 +2537,6 @@ export interface OrdenFieldRefs {
   readonly clienteId: Prisma.FieldRef<"Orden", 'String'>
   readonly datoFacturacionId: Prisma.FieldRef<"Orden", 'String'>
   readonly numero: Prisma.FieldRef<"Orden", 'Int'>
-  readonly visitaId: Prisma.FieldRef<"Orden", 'String'>
   readonly suscripcionId: Prisma.FieldRef<"Orden", 'String'>
   readonly fecha: Prisma.FieldRef<"Orden", 'DateTime'>
   readonly estado: Prisma.FieldRef<"Orden", 'EstadoOrden'>
@@ -3081,25 +2968,6 @@ export type Orden$datoFacturacionArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
- * Orden.visita
- */
-export type Orden$visitaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Visita
-   */
-  select?: Prisma.VisitaSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Visita
-   */
-  omit?: Prisma.VisitaOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.VisitaInclude<ExtArgs> | null
-  where?: Prisma.VisitaWhereInput
-}
-
-/**
  * Orden.suscripcion
  */
 export type Orden$suscripcionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3202,6 +3070,30 @@ export type Orden$facturasArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.FacturaScalarFieldEnum | Prisma.FacturaScalarFieldEnum[]
+}
+
+/**
+ * Orden.visitas
+ */
+export type Orden$visitasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrdenVisita
+   */
+  select?: Prisma.OrdenVisitaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrdenVisita
+   */
+  omit?: Prisma.OrdenVisitaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrdenVisitaInclude<ExtArgs> | null
+  where?: Prisma.OrdenVisitaWhereInput
+  orderBy?: Prisma.OrdenVisitaOrderByWithRelationInput | Prisma.OrdenVisitaOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenVisitaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrdenVisitaScalarFieldEnum | Prisma.OrdenVisitaScalarFieldEnum[]
 }
 
 /**

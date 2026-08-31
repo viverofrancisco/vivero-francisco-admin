@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getUserSectorIds, viewerFromSession, requireStaff } from "@/lib/auth-helpers";
-import { getOrden } from "@/lib/services/orden.service";
+import {
+  getOrden,
+  listarPendientes,
+  VISITAS_SIN_TOPE,
+} from "@/lib/services/orden.service";
+import { hoyEnEcuador } from "@/lib/fechas";
 import { NotFoundError } from "@/lib/services/errors";
 import { OrdenDetail } from "@/components/ordenes/orden-detail";
 
@@ -19,6 +24,8 @@ export default async function OrdenRoute({
   // Solo rutas internas del dashboard: evita un open redirect.
   const backHref =
     from && from.startsWith("/dashboard/") ? from : "/dashboard/ordenes";
+
+  const hoy = hoyEnEcuador();
 
   let orden;
   try {
@@ -47,6 +54,24 @@ export default async function OrdenRoute({
   const datosFacturacion = await prisma.datoFacturacion.count({
     where: { clienteId: orden.cliente.id, archivado: false },
   });
+
+  // El trabajo que el editor puede marcar y desmarcar: lo pendiente del cliente
+  // **más lo que esta orden ya cubre**, que si no desaparecería de la lista.
+  // Las visitas no se cortan por fecha; los períodos de plan sí (fin de mes).
+  const finDeMes = new Date(
+    Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + 1, 0)
+  );
+  const pendientes =
+    orden.estado === "BORRADOR"
+      ? await listarPendientes(
+          viewer,
+          orden.cliente.id,
+          new Date(Date.UTC(2000, 0, 1)),
+          finDeMes,
+          VISITAS_SIN_TOPE,
+          orden.id
+        )
+      : [];
 
   // El catálogo solo hace falta para editar el borrador.
   const productos =
@@ -85,13 +110,11 @@ export default async function OrdenRoute({
             empresa: orden.cliente.empresa,
             datosFacturacion: datosFacturacion,
           },
-          visita: orden.visita
-            ? {
-                id: orden.visita.id,
-                numero: orden.visita.numero,
-                fecha: orden.visita.fechaProgramada.toISOString(),
-              }
-            : null,
+          visitas: orden.visitas.map((v) => ({
+            id: v.visita.id,
+            numero: v.visita.numero,
+            fecha: v.visita.fechaProgramada.toISOString(),
+          })),
           suscripcion: orden.suscripcion,
           lineas: orden.lineas.map((l) => ({
             id: l.id,
@@ -103,20 +126,34 @@ export default async function OrdenRoute({
             periodoInicio: l.periodoInicio?.toISOString() ?? null,
             periodoFin: l.periodoFin?.toISOString() ?? null,
             productoId: l.productoId,
-            visitaProductoId: l.visitaProductoId,
+            // Si el producto puede salir impreso tal cual. Sale de la línea y
+            // no del catálogo de al lado: ese solo se carga para editar un
+            // borrador, y uno dado de baja tampoco estaría ahí.
+            productoVinculado: l.producto.contificoProductoId !== null,
+            visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
             suscripcionItemId: l.suscripcionItemId,
             suscripcionId: l.suscripcionItem?.suscripcionId ?? null,
-            visita: l.visitaProducto
-              ? {
-                  id: l.visitaProducto.visita.id,
-                  fecha: l.visitaProducto.visita.fechaProgramada.toISOString(),
-                }
-              : null,
+            /** De qué visitas sale la línea. Varias si el mismo producto se hizo en más de una. */
+            visitas: l.origenes.map((o) => ({
+              id: o.visitaProducto.visita.id,
+              numero: o.visitaProducto.visita.numero,
+              fecha: o.visitaProducto.visita.fechaProgramada.toISOString(),
+            })),
           })),
           facturas: orden.facturas.map((f) => ({
             id: f.id,
             numero: f.numero,
+            tipo: f.tipo,
             estado: f.estado,
+            lineas: f.lineas.map((l) => ({
+              id: l.id,
+              descripcion: l.descripcion,
+              detalle: l.detalle,
+              cantidad: Number(l.cantidad),
+              precioUnitario: Number(l.precioUnitario),
+              ivaTasa: Number(l.ivaTasa),
+              total: Number(l.total),
+            })),
             fechaEmision: f.fechaEmision.toISOString(),
             urlRide: f.urlRide,
             total: Number(f.total),
@@ -134,6 +171,31 @@ export default async function OrdenRoute({
           ...p,
           ivaTasa: p.ivaTasa === null ? null : Number(p.ivaTasa),
         }))}
+        pendientes={pendientes.map((p) =>
+          p.tipo === "visita"
+            ? {
+                tipo: "visita" as const,
+                productoId: p.productoId,
+                descripcion: p.descripcion,
+                precio: String(p.precio),
+                ivaTasa: String(p.ivaTasa),
+                visitaProductoId: p.visitaProductoId,
+                visitaId: p.visitaId,
+                visitaNumero: p.visitaNumero,
+                fecha: p.fecha.toISOString(),
+              }
+            : {
+                tipo: "suscripcion" as const,
+                productoId: p.productoId,
+                descripcion: p.descripcion,
+                precio: String(p.precio),
+                ivaTasa: String(p.ivaTasa),
+                suscripcionItemId: p.suscripcionItemId,
+                suscripcionId: p.suscripcionId,
+                periodoInicio: p.periodoInicio.toISOString(),
+                periodoFin: p.periodoFin.toISOString(),
+              }
+        )}
       />
     </div>
   );

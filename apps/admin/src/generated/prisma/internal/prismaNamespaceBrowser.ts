@@ -86,9 +86,12 @@ export const ModelName = {
   EmpresaConfig: 'EmpresaConfig',
   Firmante: 'Firmante',
   Orden: 'Orden',
+  OrdenVisita: 'OrdenVisita',
   OrdenLinea: 'OrdenLinea',
+  OrdenLineaOrigen: 'OrdenLineaOrigen',
   DatoFacturacion: 'DatoFacturacion',
-  Factura: 'Factura'
+  Factura: 'Factura',
+  FacturaLinea: 'FacturaLinea'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -613,7 +616,6 @@ export const OrdenScalarFieldEnum = {
   clienteId: 'clienteId',
   datoFacturacionId: 'datoFacturacionId',
   numero: 'numero',
-  visitaId: 'visitaId',
   suscripcionId: 'suscripcionId',
   fecha: 'fecha',
   estado: 'estado',
@@ -630,6 +632,14 @@ export const OrdenScalarFieldEnum = {
 export type OrdenScalarFieldEnum = (typeof OrdenScalarFieldEnum)[keyof typeof OrdenScalarFieldEnum]
 
 
+export const OrdenVisitaScalarFieldEnum = {
+  ordenId: 'ordenId',
+  visitaId: 'visitaId'
+} as const
+
+export type OrdenVisitaScalarFieldEnum = (typeof OrdenVisitaScalarFieldEnum)[keyof typeof OrdenVisitaScalarFieldEnum]
+
+
 export const OrdenLineaScalarFieldEnum = {
   id: 'id',
   ordenId: 'ordenId',
@@ -644,11 +654,18 @@ export const OrdenLineaScalarFieldEnum = {
   productoId: 'productoId',
   suscripcionItemId: 'suscripcionItemId',
   periodoInicio: 'periodoInicio',
-  periodoFin: 'periodoFin',
-  visitaProductoId: 'visitaProductoId'
+  periodoFin: 'periodoFin'
 } as const
 
 export type OrdenLineaScalarFieldEnum = (typeof OrdenLineaScalarFieldEnum)[keyof typeof OrdenLineaScalarFieldEnum]
+
+
+export const OrdenLineaOrigenScalarFieldEnum = {
+  ordenLineaId: 'ordenLineaId',
+  visitaProductoId: 'visitaProductoId'
+} as const
+
+export type OrdenLineaOrigenScalarFieldEnum = (typeof OrdenLineaOrigenScalarFieldEnum)[keyof typeof OrdenLineaOrigenScalarFieldEnum]
 
 
 export const DatoFacturacionScalarFieldEnum = {
@@ -677,7 +694,9 @@ export const FacturaScalarFieldEnum = {
   ordenId: 'ordenId',
   contificoDocumentoId: 'contificoDocumentoId',
   numero: 'numero',
+  tipo: 'tipo',
   fechaEmision: 'fechaEmision',
+  descripcion: 'descripcion',
   estado: 'estado',
   autorizacion: 'autorizacion',
   urlRide: 'urlRide',
@@ -697,6 +716,24 @@ export const FacturaScalarFieldEnum = {
 } as const
 
 export type FacturaScalarFieldEnum = (typeof FacturaScalarFieldEnum)[keyof typeof FacturaScalarFieldEnum]
+
+
+export const FacturaLineaScalarFieldEnum = {
+  id: 'id',
+  facturaId: 'facturaId',
+  posicion: 'posicion',
+  descripcion: 'descripcion',
+  detalle: 'detalle',
+  cantidad: 'cantidad',
+  precioUnitario: 'precioUnitario',
+  ivaTasa: 'ivaTasa',
+  subtotal: 'subtotal',
+  iva: 'iva',
+  total: 'total',
+  productoId: 'productoId'
+} as const
+
+export type FacturaLineaScalarFieldEnum = (typeof FacturaLineaScalarFieldEnum)[keyof typeof FacturaLineaScalarFieldEnum]
 
 
 export const SortOrder = {

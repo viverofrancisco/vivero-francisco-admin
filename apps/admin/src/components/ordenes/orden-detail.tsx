@@ -13,11 +13,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
   DollarSign,
   FileText,
   Loader2,
+  Check,
+  ChevronDown,
   MoreVertical,
   Send,
   Pencil,
@@ -47,9 +50,16 @@ import {
 } from "@/components/suscripciones/formato";
 import {
   OrdenLineasEditor,
+  ORDEN_LINEAS_FORM_ID,
   type LineaEditable,
   type ProductoCatalogo,
 } from "./orden-lineas-editor";
+import {
+  SelectorVisitas,
+  rearmarPorVisitas,
+  visitasDePendientes,
+  type Pendiente,
+} from "./selector-visitas";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +75,7 @@ import {
 import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 import { CobrosCard } from "./cobros-card";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
+import { AvisoSinVincular } from "./aviso-sin-vincular";
 
 export interface ClienteOpcion {
   id: string;
@@ -100,7 +111,8 @@ interface OrdenData {
    * Nunca las dos —lo impide un CHECK— y sale de las columnas de la orden, no
    * de sus líneas: agregarle un producto a mano no la convierte en otra cosa.
    */
-  visita: { id: string; numero: number; fecha: string } | null;
+  /** De qué visitas es. Pueden ser varias: cobrar el mes entero en una orden. */
+  visitas: { id: string; numero: number; fecha: string }[];
   suscripcion: {
     id: string;
     numero: number;
@@ -118,9 +130,12 @@ interface OrdenData {
     periodoFin: string | null;
     /** Procedencia: se conserva al editar, es lo que evita cobrar dos veces. */
     productoId: string;
-    visitaProductoId: string | null;
-    /** De qué visita salió la línea, cuando salió de una. */
-    visita?: { id: string; fecha: string } | null;
+    /** Si su producto está en Contífico. Sin eso no puede salir impreso. */
+    productoVinculado: boolean;
+    /** Qué trabajos paga la línea. Varios si el producto se hizo en más visitas. */
+    visitaProductoIds: string[];
+    /** De qué visitas salió, ya resueltas para poder linkearlas. */
+    visitas: { id: string; numero: number; fecha: string }[];
     suscripcionItemId: string | null;
     /** De qué plan salió, cuando salió de un período. */
     suscripcionId?: string | null;
@@ -128,7 +143,19 @@ interface OrdenData {
   facturas: {
     id: string;
     numero: string;
+    /** `NO_AUTORIZADO` = documento sin factura: no va al SRI y no lleva IVA. */
+    tipo: "FACTURA" | "NO_AUTORIZADO";
     estado: string;
+    /** Lo que salió impreso. Puede no tener la forma de las líneas de la orden. */
+    lineas: {
+      id: string;
+      descripcion: string;
+      detalle: string | null;
+      cantidad: number;
+      precioUnitario: number;
+      ivaTasa: number;
+      total: number;
+    }[];
     fechaEmision: string;
     urlRide: string | null;
     total: number;
@@ -161,6 +188,7 @@ export function OrdenDetail({
   orden,
   productos,
   clientes,
+  pendientes = [],
   backHref = "/dashboard/ordenes",
 }: {
   orden: OrdenData;
@@ -169,9 +197,23 @@ export function OrdenDetail({
   productos: ProductoCatalogo[];
   /** Para poder cambiar de cliente mientras la orden sea borrador. */
   clientes: ClienteOpcion[];
+  /**
+   * Trabajo del cliente que el editor puede marcar, **incluido el de esta
+   * orden**: es lo que permite desmarcar sus propias visitas.
+   */
+  pendientes?: Pendiente[];
 }) {
   const router = useRouter();
   const [cargando, setCargando] = useState<string | null>(null);
+  /**
+   * Lo que se está editando vive acá y no en el editor de líneas porque el card
+   * de **Visitas** —que está más abajo, fuera de él— trabaja sobre lo mismo:
+   * marcar una visita cambia las líneas. En dos lugares habrían quedado en
+   * desacuerdo.
+   */
+  const [lineasEdit, setLineasEdit] = useState<LineaEditable[]>([]);
+  const [visitasEdit, setVisitasEdit] = useState<string[]>([]);
+  const [notasEdit, setNotasEdit] = useState("");
   const [editando, setEditando] = useState(false);
   /** Anular no se deshace y puede soltar trabajo: siempre se confirma. */
   const [anulando, setAnulando] = useState(false);
@@ -182,6 +224,48 @@ export function OrdenDetail({
    * mandan sobre nada: todas las acciones apuntan a la que está viva.
    */
   const facturaVigente = orden.facturas.find((f) => !f.anulada) ?? null;
+  /**
+   * Un documento sin factura no va al SRI: no tiene RIDE, ni firma que esperar,
+   * ni estado que mostrar. Lo que sí tiene —y es lo que importa— es saldo.
+   */
+  const sinFactura = facturaVigente?.tipo === "NO_AUTORIZADO";
+
+  /**
+   * ¿El papel tiene otra forma que la orden?
+   *
+   * Solo entonces vale mostrar sus líneas: cuando son las mismas, repetirlas es
+   * ruido. Lo normal acá es que difieran —varios trabajos se cobran como una
+   * sola línea de "servicio de mantenimiento"— y en ese caso hay que poder ver
+   * qué recibió el cliente sin salir de la orden.
+   */
+  const facturaDifiere =
+    facturaVigente !== null &&
+    facturaVigente.lineas.length > 0 &&
+    (facturaVigente.lineas.length !== orden.lineas.length ||
+      facturaVigente.lineas.some((f, i) => {
+        const o = orden.lineas[i];
+        return (
+          f.descripcion !== o.descripcion ||
+          f.detalle !== null ||
+          f.cantidad !== o.cantidad ||
+          f.precioUnitario !== o.precioUnitario ||
+          f.ivaTasa !== o.ivaTasa
+        );
+      }));
+
+  /**
+   * El período que cubre la orden.
+   *
+   * Es **uno solo**: `ensureTrabajoCompleto` obliga a llevarse el período
+   * entero, así que todas sus líneas de plan dicen lo mismo. Por eso va en la
+   * card de la suscripción y no repetido en cada línea — a diferencia de las
+   * visitas, que sí pueden ser varias y distintas por línea.
+   */
+  const periodo = orden.lineas.find((l) => l.periodoInicio && l.periodoFin);
+
+  /** Con una sola tasa decirla en cada línea es ruido; con dos, es el dato. */
+  const variasTasas =
+    new Set(facturaVigente?.lineas.map((l) => l.ivaTasa) ?? []).size > 1;
 
   /**
    * Cuándo todavía se puede anular.
@@ -200,7 +284,13 @@ export function OrdenDetail({
    * Con la factura emitida y cobrada no queda nada que hacerle a la orden desde
    * acá, y un menú vacío es peor que ninguno: promete opciones y no tiene.
    */
-  const hayAccionesDeOrden = !facturaVigente || sePuedeAnular;
+  /**
+   * Editar y anular viven en el menú; emitir y cobrar son botones propios
+   * porque son la acción del momento. Sin nada adentro el menú no se dibuja —
+   * un botón que abre un desplegable vacío es peor que no tenerlo.
+   */
+  const puedeEditar = orden.estado === "BORRADOR";
+  const hayAccionesDeOrden = puedeEditar || sePuedeAnular;
 
   /**
    * Las líneas por procedencia: períodos de plan, trabajo de visitas y lo
@@ -217,13 +307,15 @@ export function OrdenDetail({
     {
       clave: "visitas",
       titulo: "Trabajo de visitas",
-      lineas: orden.lineas.filter((l) => !l.periodoInicio && l.visitaProductoId),
+      lineas: orden.lineas.filter(
+        (l) => !l.periodoInicio && l.visitaProductoIds.length > 0
+      ),
     },
     {
       clave: "extra",
       titulo: "Agregado a mano",
       lineas: orden.lineas.filter(
-        (l) => !l.periodoInicio && !l.visitaProductoId
+        (l) => !l.periodoInicio && l.visitaProductoIds.length === 0
       ),
     },
   ].filter((g) => g.lineas.length > 0);
@@ -231,34 +323,59 @@ export function OrdenDetail({
 
   /** Las líneas cuyo trabajo se libera al anular, para poder mostrarlas. */
   const lineasEnlazadas = orden.lineas.filter(
-    (l) => l.visitaProductoId || l.suscripcionItemId
+    (l) => l.visitaProductoIds.length > 0 || l.suscripcionItemId
   );
 
   /**
-   * Cobrar entra por la orden mientras no haya factura: el endpoint confirma,
-   * emite y registra el cobro de una. Con la factura ya emitida va derecho
-   * contra ella, que es lo que espera Contífico.
+   * Cobrar con la factura emitida va derecho contra ella, que es lo que espera
+   * Contífico. **Sin factura pasa antes por el armador**: qué sale impreso es
+   * una decisión —varios trabajos pueden ir como una sola línea de "servicio de
+   * mantenimiento"— y tomarla por omisión desde un diálogo de cobro es tomarla
+   * a ciegas. El cobro sigue estando a un paso: la pantalla termina en
+   * "Emitir y cobrar".
    */
   const abrirCobro = () => {
-    setCobrando(
-      facturaVigente
-        ? {
-            id: facturaVigente.id,
-            numero: `Factura ${facturaVigente.numero}`,
-            total: facturaVigente.total,
-            saldo: facturaVigente.saldo,
-          }
-        : {
-            id: orden.id,
-            numero: `Orden #${orden.numero}`,
-            total: orden.total,
-            saldo: orden.total,
-            url: `/api/ordenes/${orden.id}/cobro`,
-          }
-    );
+    if (!facturaVigente) {
+      router.push(`/dashboard/ordenes/${orden.id}/facturar`);
+      return;
+    }
+    setCobrando({
+      id: facturaVigente.id,
+      numero: `Factura ${facturaVigente.numero}`,
+      total: facturaVigente.total,
+      saldo: facturaVigente.saldo,
+    });
   };
 
-  const guardarEdicion = async (lineas: LineaEditable[], notas: string) => {
+  /** Abrir el editor con lo que la orden dice hoy. */
+  const empezarAEditar = () => {
+    setLineasEdit(
+      orden.lineas.map((l) => ({
+        uid: l.id,
+        descripcion: l.descripcion,
+        cantidad: String(l.cantidad),
+        precioUnitario: String(l.precioUnitario),
+        ivaTasa: String(l.ivaTasa),
+        productoId: l.productoId,
+        visitaProductoIds: l.visitaProductoIds,
+        suscripcionItemId: l.suscripcionItemId,
+        periodoInicio: l.periodoInicio,
+        periodoFin: l.periodoFin,
+      }))
+    );
+    setVisitasEdit(orden.visitas.map((v) => v.id));
+    setNotasEdit(orden.notas ?? "");
+    setEditando(true);
+  };
+
+  /** Marcar o desmarcar visitas: es cargar o sacar su trabajo. */
+  const cambiarVisitas = (ids: string[]) => {
+    setVisitasEdit(ids);
+    setLineasEdit(rearmarPorVisitas(lineasEdit, ids, pendientes));
+  };
+
+  const guardarEdicion = async (lineas: LineaEditable[]) => {
+    const notas = notasEdit;
     setCargando("guardar");
     try {
       const res = await fetch(`/api/ordenes/${orden.id}`, {
@@ -272,7 +389,7 @@ export function OrdenDetail({
             precioUnitario: Number(l.precioUnitario),
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
-            visitaProductoId: l.visitaProductoId,
+            visitaProductoIds: l.visitaProductoIds,
             suscripcionItemId: l.suscripcionItemId,
             periodoInicio: l.periodoInicio,
             periodoFin: l.periodoFin,
@@ -293,6 +410,58 @@ export function OrdenDetail({
   // Sin datos de facturación cargados no se puede emitir. Se avisa acá y no al
   // apretar, para que no haya que descubrirlo dentro del diálogo.
   const faltaFacturacion = orden.cliente.datosFacturacion === 0;
+
+  /**
+   * Los productos de la orden que todavía no están en Contífico.
+   *
+   * La orden los acepta a propósito —registra lo que se vendió, y lo que tiene
+   * que existir allá es lo que sale impreso— pero el armador no deja emitir una
+   * línea sin vínculo, y eso se descubría recién adentro. Editando manda lo que
+   * hay en pantalla, que puede tener productos recién agregados; mirando, lo
+   * que resolvió el servidor con cada línea.
+   */
+  const sinVincular = (() => {
+    const catalogo = new Map(productos.map((p) => [p.id, p]));
+    const delServidor = new Map(
+      orden.lineas.map((l) => [l.productoId, l.productoVinculado])
+    );
+    const mapa = new Map<string, { id: string; nombre: string }>();
+    const actuales = editando
+      ? lineasEdit.map((l) => ({ productoId: l.productoId, nombre: l.descripcion }))
+      : orden.lineas.map((l) => ({ productoId: l.productoId, nombre: l.descripcion }));
+    for (const l of actuales) {
+      const p = catalogo.get(l.productoId);
+      // El catálogo es lo que está al día; para una orden que ya no es borrador
+      // no viene cargado, y ahí manda lo que trajo la línea.
+      const vinculado = p
+        ? p.contificoProductoId !== null
+        : (delServidor.get(l.productoId) ?? true);
+      if (!vinculado) {
+        mapa.set(l.productoId, { id: l.productoId, nombre: p?.nombre ?? l.nombre });
+      }
+    }
+    return [...mapa.values()];
+  })();
+
+  /**
+   * Por qué no se puede emitir todavía, o `null` si se puede.
+   *
+   * Las dos razones apagan el mismo botón, así que se dicen en el mismo lugar:
+   * con dos condiciones sueltas el botón quedaba apagado sin decir cuál de las
+   * dos faltaba.
+   */
+  const motivoNoEmitir =
+    faltaFacturacion && sinVincular.length > 0
+      ? "El cliente no tiene datos de facturación cargados, y hay productos sin vincular con Contífico."
+      : faltaFacturacion
+        ? "El cliente no tiene datos de facturación cargados."
+        : sinVincular.length > 0
+          ? `${sinVincular.map((p) => `"${p.nombre}"`).join(", ")} ${
+              sinVincular.length === 1
+                ? "no está vinculado"
+                : "no están vinculados"
+            } con Contífico.`
+          : null;
 
   // La confirmación vive en el diálogo: además de avisar que es irreversible,
   // hay que elegir con qué datos se emite.
@@ -404,32 +573,16 @@ export function OrdenDetail({
   };
 
   /** Emitir sin cobrar: la venta a crédito sigue siendo posible. */
-  const facturarSinCobrar = async () => {
-    setCargando("facturar");
-    try {
-      const res = await fetch(`/api/ordenes/${orden.id}/facturar`, {
-        method: "POST",
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Error");
-      if (body.factura) {
-        toast.success(`Factura ${body.factura.numero} emitida`);
-      } else {
-        // La orden se queda en borrador, editable, que es donde se arregla la
-        // causa. No es un fracaso del pedido: es un aviso.
-        toast.warning(`No se pudo emitir la factura: ${body.errorFactura}`);
-      }
-      router.refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error");
-    } finally {
-      setCargando(null);
-    }
-  };
+  const irAEmitir = () =>
+    router.push(`/dashboard/ordenes/${orden.id}/facturar`);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      {/* Pegado arriba: las acciones viven acá —también Guardar y Cancelar
+          mientras se edita— en vez de en una barra fija abajo, que le tapaba
+          el contenido al resto de la página. Los márgenes negativos lo hacen
+          sangrar hasta los bordes del contenedor con padding. */}
+      <div className="sticky top-0 z-20 -mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-6 flex items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur-sm md:px-6">
         {/* Vuelve de donde vino: llegar desde una visita y salir a la lista de
             órdenes es perder el lugar donde uno estaba. */}
         <Link href={backHref}>
@@ -462,83 +615,99 @@ export function OrdenDetail({
               ` · ${hora(orden.createdAt)}`}
           </p>
         </div>
+        {/* Editando, el encabezado pasa a ser la barra del formulario: el
+            botón manda el `form` del editor, que vive más abajo en la página.
+            Así guardar queda siempre a la vista sin tapar nada. */}
+        {editando && (
+          <div className="flex flex-none items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditando(false)}
+              disabled={cargando === "guardar"}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form={ORDEN_LINEAS_FORM_ID}
+              disabled={cargando === "guardar"}
+            >
+              {cargando === "guardar" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="mr-2 h-4 w-4" />
+              )}
+              Guardar cambios
+            </Button>
+          </div>
+        )}
+
         {orden.estado !== "ANULADA" && !editando && (
           <div className="flex flex-none items-center gap-2">
-            {orden.estado === "BORRADOR" && (
+            {/* La acción principal, y dice lo que hace en cada momento.
+                Sin documento emitido lo que toca es emitirlo —el cobro se
+                registra **contra** un documento de Contífico, así que antes no
+                hay nada que cobrar— y con uno emitido, cobrarlo. Ofrecer
+                "Registrar cobro" sobre un borrador prometía un paso que en
+                realidad empezaba por otro lado. Saldada no queda nada y
+                desaparece. */}
+            {!facturaVigente ? (
               <Button
-                variant="outline"
-                onClick={() => setEditando(true)}
-                disabled={cargando !== null}
+                onClick={irAEmitir}
+                disabled={cargando !== null || motivoNoEmitir !== null}
+                title={motivoNoEmitir ?? undefined}
               >
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
+                <FileText className="mr-2 h-4 w-4" />
+                Emitir factura
               </Button>
+            ) : (
+              (facturaVigente.saldo === null || facturaVigente.saldo > 0) && (
+                <Button
+                  onClick={abrirCobro}
+                  disabled={cargando !== null}
+                >
+                  <DollarSign className="mr-2 h-4 w-4" />
+                  Registrar cobro
+                </Button>
+              )
             )}
 
-            {/* La acción principal en todos los estados. Por debajo emite la
-                factura si falta y registra el cobro; el botón no lo cuenta
-                porque para quien cobra es un solo movimiento. Con la factura
-                saldada no queda nada que cobrar y desaparece. */}
-            {(!facturaVigente ||
-              facturaVigente.saldo === null ||
-              facturaVigente.saldo > 0) && (
-              <Button
-                onClick={abrirCobro}
-                disabled={cargando !== null || faltaFacturacion}
-                title={
-                  faltaFacturacion
-                    ? "El cliente no tiene datos de facturación cargados."
-                    : undefined
-                }
-              >
-                <DollarSign className="mr-2 h-4 w-4" />
-                Registrar cobro
-              </Button>
-            )}
-
+            {/* "Acciones" y no tres puntitos: al lado de dos botones con
+                nombre, un ícono solo obliga a abrirlo para saber qué hay. */}
             {hayAccionesDeOrden && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="Más acciones"
-                    disabled={cargando !== null}
-                  >
-                    {cargando !== null ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <MoreVertical className="h-4 w-4" />
-                    )}
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end" className="w-60">
-                {/* Facturar sin cobrar: la venta a crédito sigue existiendo. */}
-                {!facturaVigente && (
-                  <DropdownMenuItem
-                    onClick={facturarSinCobrar}
-                    disabled={faltaFacturacion}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Emitir factura sin cobrar
-                  </DropdownMenuItem>
-                )}
-
-                {/* Lo de la factura no está acá: vive en el menú de su propia
-                    card, que es de lo que habla. */}
-                {sePuedeAnular && (
-                  <DropdownMenuItem
-                    onClick={() => setAnulando(true)}
-                    className="text-destructive"
-                  >
-                    <XCircle className="mr-2 h-4 w-4" />
-                    Anular orden
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="outline" disabled={cargando !== null}>
+                      {cargando !== null ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      Acciones
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="w-60">
+                  {/* Lo de la factura no está acá: vive en el menú de su propia
+                      card, que es de lo que habla. */}
+                  {puedeEditar && (
+                    <DropdownMenuItem onClick={empezarAEditar}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Editar
+                    </DropdownMenuItem>
+                  )}
+                  {sePuedeAnular && (
+                    <DropdownMenuItem
+                      onClick={() => setAnulando(true)}
+                      className="text-destructive"
+                    >
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Anular orden
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         )}
@@ -552,26 +721,24 @@ export function OrdenDetail({
             <CardTitle className="text-base">Detalle</CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Arriba del detalle: es lo que va a frenar la emisión, y
+                enterarse recién adentro del armador —con la orden ya creada—
+                era enterarse tarde. Con la factura emitida sobra: lo que salió
+                impreso ya está decidido. */}
+            {!facturaVigente &&
+              orden.estado !== "ANULADA" &&
+              sinVincular.length > 0 && (
+                <div className="mb-4">
+                  <AvisoSinVincular productos={sinVincular} />
+                </div>
+              )}
             {editando ? (
               <OrdenLineasEditor
-                lineasIniciales={orden.lineas.map((l) => ({
-                  uid: l.id,
-                  descripcion: l.descripcion,
-                  cantidad: String(l.cantidad),
-                  precioUnitario: String(l.precioUnitario),
-                  ivaTasa: String(l.ivaTasa),
-                  productoId: l.productoId,
-                  visitaProductoId: l.visitaProductoId,
-                  suscripcionItemId: l.suscripcionItemId,
-                  periodoInicio: l.periodoInicio,
-                  periodoFin: l.periodoFin,
-                }))}
-                notasIniciales={orden.notas ?? ""}
+                lineas={lineasEdit}
+                onLineasChange={setLineasEdit}
                 productos={productos}
                 clienteNombre={nombreCliente(orden.cliente)}
-                guardando={cargando === "guardar"}
                 onGuardar={guardarEdicion}
-                onCancelar={() => setEditando(false)}
               />
             ) : (
             <>
@@ -599,6 +766,10 @@ export function OrdenDetail({
                         trabajo agendado o de un período: para una agregada a
                         mano no dice nada que no se vea. */}
                     <p className="text-xs text-muted-foreground">
+                      {/* La procedencia por su número, que es como la gente
+                          la nombra en voz alta, y no por su fecha. Igual con
+                          una que con cinco: la fecha ya está en la ficha a la
+                          que lleva el link. */}
                       {l.periodoInicio ? (
                         <>
                           {l.suscripcionId ? (
@@ -606,25 +777,32 @@ export function OrdenDetail({
                               href={`/dashboard/suscripciones/${l.suscripcionId}`}
                               className="text-primary hover:underline"
                             >
-                              Suscripción
+                              Suscripción{orden.suscripcion ? ` #${orden.suscripcion.numero}` : ""}
                             </Link>
                           ) : (
                             "Suscripción"
                           )}
-                          {` · ${fecha(l.periodoInicio)} → ${fecha(l.periodoFin!)} · `}
-                        </>
-                      ) : l.visita ? (
-                        <>
-                          <Link
-                            href={`/dashboard/visitas/${l.visita.id}?from=/dashboard/ordenes/${orden.id}`}
-                            className="text-primary hover:underline"
-                          >
-                            Visita del {fecha(l.visita.fecha)}
-                          </Link>
                           {" · "}
                         </>
-                      ) : l.visitaProductoId ? (
-                        "Trabajo de una visita · "
+                      ) : l.visitas.length > 0 ? (
+                        <>
+                          {/* Varias cuando el mismo producto se hizo en más de
+                              una visita: es una sola línea, y hay que poder ir
+                              a cada una. Sin contarlas al lado: los links ya
+                              son dos. */}
+                          {l.visitas.map((v, i) => (
+                            <span key={v.id}>
+                              {i > 0 && ", "}
+                              <Link
+                                href={`/dashboard/visitas/${v.id}?from=/dashboard/ordenes/${orden.id}`}
+                                className="text-primary hover:underline"
+                              >
+                                #{v.numero}
+                              </Link>
+                            </span>
+                          ))}
+                          {" · "}
+                        </>
                       ) : (
                         ""
                       )}
@@ -662,11 +840,31 @@ export function OrdenDetail({
         {/* De qué es la orden. Antes solo se veía línea por línea, y una
             orden con un producto suelto agregado a mano no decía en ningún
             lado que igual era la de esa visita o la de ese plan. */}
-        {(orden.suscripcion || orden.visita) && (
+        {/* Editando, esta card **es** el selector: marcar una visita carga su
+            trabajo. Es la única forma de sacar lo de una visita, porque una
+            visita se factura completa y sus productos no se quitan de a uno.
+            No hay una segunda lista arriba: sería la misma cosa dos veces. */}
+        {editando && !orden.suscripcion && (
+          <div className="mt-6">
+            <SelectorVisitas
+              visitas={visitasDePendientes(pendientes)}
+              marcadas={visitasEdit}
+              onCambiar={cambiarVisitas}
+              deshabilitado={lineasEdit.some((l) => l.suscripcionItemId)}
+              motivoDeshabilitado="Esta orden es de un período de suscripción. El trabajo de una visita va en otra orden."
+            />
+          </div>
+        )}
+
+        {!editando && (orden.suscripcion || orden.visitas.length > 0) && (
           <Card className="mt-6">
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">
-                {orden.suscripcion ? "Suscripción" : "Visita"}
+                {orden.suscripcion
+                  ? "Suscripción"
+                  : orden.visitas.length === 1
+                    ? "Visita"
+                    : "Visitas"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -682,6 +880,8 @@ export function OrdenDetail({
                     <span className="block truncate text-xs text-muted-foreground">
                       {PERIODICIDAD_LABEL[orden.suscripcion.periodicidad] ??
                         orden.suscripcion.periodicidad}
+                      {periodo &&
+                        ` · ${fecha(periodo.periodoInicio!)} → ${fecha(periodo.periodoFin!)}`}
                     </span>
                   </span>
                   <Badge
@@ -696,17 +896,23 @@ export function OrdenDetail({
                   </Badge>
                 </Link>
               ) : (
-                <Link
-                  href={`/dashboard/visitas/${orden.visita!.id}?from=/dashboard/ordenes/${orden.id}`}
-                  className="block rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
-                >
-                  <span className="block text-sm font-bold">
-                    Visita #{orden.visita!.numero}
-                  </span>
-                  <span className="block text-xs text-muted-foreground">
-                    {fecha(orden.visita!.fecha)}
-                  </span>
-                </Link>
+                // Varias: una orden puede cubrir el mes entero de un cliente.
+                <div className="space-y-1">
+                  {orden.visitas.map((v) => (
+                    <Link
+                      key={v.id}
+                      href={`/dashboard/visitas/${v.id}?from=/dashboard/ordenes/${orden.id}`}
+                      className="block rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                    >
+                      <span className="block text-sm font-bold">
+                        Visita #{v.numero}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {fecha(v.fecha)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>
@@ -759,7 +965,9 @@ export function OrdenDetail({
         {facturaVigente && (
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Factura</CardTitle>
+              <CardTitle className="text-base">
+                {sinFactura ? "Documento" : "Factura"}
+              </CardTitle>
               <CardAction>
                 <DropdownMenu>
                   <DropdownMenuTrigger
@@ -779,11 +987,10 @@ export function OrdenDetail({
                     }
                   />
                   <DropdownMenuContent align="end" className="w-60">
-                    {/* El RIDE **no existe hasta que Contífico firma**, aunque
-                        `url_ride` venga desde el momento de emitir: abrirla
-                        antes lleva a "No se puede consultar el RIDE de un
-                        documento que no esté firmado". Se muestra deshabilitada
-                        en vez de esconderse, así se entiende que va a llegar. */}
+                    {/* Un documento sin factura no tiene RIDE ni firma: la API
+                        de Contífico no expone ningún PDF para ellos. Mostrarlo
+                        deshabilitado prometería algo que no va a llegar. */}
+                    {!sinFactura && (
                     <DropdownMenuItem
                       disabled={
                         !facturaVigente.urlRide ||
@@ -818,11 +1025,13 @@ export function OrdenDetail({
                         )}
                       </span>
                     </DropdownMenuItem>
+                    )}
                     {/* Contífico firma y transmite los pendientes cada hora;
                         esto no espera. Enviada o autorizada no hay nada que
                         apurar. */}
-                    {(facturaVigente.estado === "PENDIENTE" ||
-                      facturaVigente.estado === "FIRMADO") && (
+                    {!sinFactura &&
+                      (facturaVigente.estado === "PENDIENTE" ||
+                        facturaVigente.estado === "FIRMADO") && (
                       <DropdownMenuItem
                         onClick={() => enviarAlSri(facturaVigente.id)}
                       >
@@ -881,14 +1090,57 @@ export function OrdenDetail({
                     ) && ` · ${hora(facturaVigente.createdAt)}`}
                   </span>
                 </div>
-                <div className="flex justify-between gap-3">
-                  <span className="text-muted-foreground">Estado</span>
-                  <span title={ESTADO_FACTURA_AYUDA[facturaVigente.estado]}>
-                    {ESTADO_FACTURA_LABEL[facturaVigente.estado] ??
-                      facturaVigente.estado}
-                  </span>
-                </div>
+                {sinFactura ? (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-muted-foreground">Tipo</span>
+                    <span title="No se envía al SRI y no lleva IVA. Se cobra y se anula igual que una factura.">
+                      Consumidor final
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-muted-foreground">Estado</span>
+                    <span title={ESTADO_FACTURA_AYUDA[facturaVigente.estado]}>
+                      {ESTADO_FACTURA_LABEL[facturaVigente.estado] ??
+                        facturaVigente.estado}
+                    </span>
+                  </div>
+                )}
               </div>
+
+              {facturaDifiere && (
+                <div className="space-y-2 border-t pt-3">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Lo que salió impreso
+                  </p>
+                  {facturaVigente.lineas.map((l) => (
+                    <div key={l.id} className="flex justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block truncate">{l.descripcion}</span>
+                        {/* El detalle sale al lado del nombre en el papel:
+                            "SERVICIO DE MANTENIMIENTO · Detalle: AREAS VERDES". */}
+                        {l.detalle && (
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {l.detalle}
+                          </span>
+                        )}
+                        {/* La tasa solo cuando hay más de una: agrupar deja
+                            una línea por tasa, y sin decirlo se ven iguales. */}
+                        {(l.cantidad !== 1 || variasTasas) && (
+                          <span className="block text-xs text-muted-foreground">
+                            {l.cantidad !== 1 && `${l.cantidad} × ${money(l.precioUnitario)}`}
+                            {l.cantidad !== 1 && variasTasas && " · "}
+                            {variasTasas && `IVA ${l.ivaTasa}%`}
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex-none tabular-nums">
+                        {money(l.total)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="space-y-1.5 border-t pt-3">
                 <div className="flex justify-between gap-3">
@@ -976,6 +1228,27 @@ export function OrdenDetail({
                 clienteId={orden.cliente.id}
                 value={datoFacturacion}
                 onChange={guardarDatoFacturacion}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Al final de la columna y no arriba: las notas describen la orden, no
+            lo que se vendió, así que van después de a quién se le factura y
+            nunca en el medio del armado de las líneas. */}
+        {editando && (
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">Notas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={notasEdit}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setNotasEdit(e.target.value)
+                }
+                placeholder="Opcional"
+                rows={3}
               />
             </CardContent>
           </Card>

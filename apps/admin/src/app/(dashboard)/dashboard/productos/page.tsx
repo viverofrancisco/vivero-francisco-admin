@@ -9,8 +9,10 @@ export default async function ServiciosPage() {
   // `select` y no la fila entera: `ivaTasa` es un `Decimal` de Prisma, que no
   // se puede serializar hacia un componente cliente —Next lo avisa por consola
   // en cada carga— y la tabla no lo usa. Igual que `_count`, que tampoco.
+  // Los archivados vienen también: el filtro de la tabla decide cuáles se ven,
+  // y sin traerlos no había forma de mirarlos desde el portal. El catálogo es
+  // chico, así que traerlo entero cuesta menos que una consulta por filtro.
   const servicios = await prisma.producto.findMany({
-    where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -18,6 +20,7 @@ export default async function ServiciosPage() {
       tipo: true,
       descripcion: true,
       contificoProductoId: true,
+      deletedAt: true,
     },
   });
 
@@ -36,7 +39,17 @@ export default async function ServiciosPage() {
         ]}
       />
 
-      <ServiciosTable productos={servicios} />
+      <ServiciosTable
+        productos={servicios.map((p) => ({
+          id: p.id,
+          nombre: p.nombre,
+          tipo: p.tipo,
+          descripcion: p.descripcion,
+          contificoProductoId: p.contificoProductoId,
+          // Texto y no `Date`: la tabla solo lo muestra.
+          archivadoEl: p.deletedAt?.toISOString() ?? null,
+        }))}
+      />
     </div>
   );
 }

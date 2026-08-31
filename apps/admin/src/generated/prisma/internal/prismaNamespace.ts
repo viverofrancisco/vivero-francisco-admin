@@ -419,9 +419,12 @@ export const ModelName = {
   EmpresaConfig: 'EmpresaConfig',
   Firmante: 'Firmante',
   Orden: 'Orden',
+  OrdenVisita: 'OrdenVisita',
   OrdenLinea: 'OrdenLinea',
+  OrdenLineaOrigen: 'OrdenLineaOrigen',
   DatoFacturacion: 'DatoFacturacion',
-  Factura: 'Factura'
+  Factura: 'Factura',
+  FacturaLinea: 'FacturaLinea'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -437,7 +440,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "visita" | "visitaProducto" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "firmante" | "orden" | "ordenLinea" | "datoFacturacion" | "factura"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "visita" | "visitaProducto" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "ordenLineaOrigen" | "datoFacturacion" | "factura" | "facturaLinea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3031,6 +3034,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OrdenVisita: {
+      payload: Prisma.$OrdenVisitaPayload<ExtArgs>
+      fields: Prisma.OrdenVisitaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrdenVisitaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrdenVisitaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>
+        }
+        findFirst: {
+          args: Prisma.OrdenVisitaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrdenVisitaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>
+        }
+        findMany: {
+          args: Prisma.OrdenVisitaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>[]
+        }
+        create: {
+          args: Prisma.OrdenVisitaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>
+        }
+        createMany: {
+          args: Prisma.OrdenVisitaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrdenVisitaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>[]
+        }
+        delete: {
+          args: Prisma.OrdenVisitaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>
+        }
+        update: {
+          args: Prisma.OrdenVisitaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrdenVisitaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrdenVisitaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrdenVisitaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrdenVisitaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenVisitaPayload>
+        }
+        aggregate: {
+          args: Prisma.OrdenVisitaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrdenVisita>
+        }
+        groupBy: {
+          args: Prisma.OrdenVisitaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrdenVisitaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrdenVisitaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrdenVisitaCountAggregateOutputType> | number
+        }
+      }
+    }
     OrdenLinea: {
       payload: Prisma.$OrdenLineaPayload<ExtArgs>
       fields: Prisma.OrdenLineaFieldRefs
@@ -3102,6 +3179,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OrdenLineaCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OrdenLineaCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrdenLineaOrigen: {
+      payload: Prisma.$OrdenLineaOrigenPayload<ExtArgs>
+      fields: Prisma.OrdenLineaOrigenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrdenLineaOrigenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrdenLineaOrigenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>
+        }
+        findFirst: {
+          args: Prisma.OrdenLineaOrigenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrdenLineaOrigenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>
+        }
+        findMany: {
+          args: Prisma.OrdenLineaOrigenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>[]
+        }
+        create: {
+          args: Prisma.OrdenLineaOrigenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>
+        }
+        createMany: {
+          args: Prisma.OrdenLineaOrigenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrdenLineaOrigenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>[]
+        }
+        delete: {
+          args: Prisma.OrdenLineaOrigenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>
+        }
+        update: {
+          args: Prisma.OrdenLineaOrigenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrdenLineaOrigenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrdenLineaOrigenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrdenLineaOrigenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrdenLineaOrigenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrdenLineaOrigenPayload>
+        }
+        aggregate: {
+          args: Prisma.OrdenLineaOrigenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrdenLineaOrigen>
+        }
+        groupBy: {
+          args: Prisma.OrdenLineaOrigenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrdenLineaOrigenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrdenLineaOrigenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrdenLineaOrigenCountAggregateOutputType> | number
         }
       }
     }
@@ -3250,6 +3401,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.FacturaCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.FacturaCountAggregateOutputType> | number
+        }
+      }
+    }
+    FacturaLinea: {
+      payload: Prisma.$FacturaLineaPayload<ExtArgs>
+      fields: Prisma.FacturaLineaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FacturaLineaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FacturaLineaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>
+        }
+        findFirst: {
+          args: Prisma.FacturaLineaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FacturaLineaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>
+        }
+        findMany: {
+          args: Prisma.FacturaLineaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>[]
+        }
+        create: {
+          args: Prisma.FacturaLineaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>
+        }
+        createMany: {
+          args: Prisma.FacturaLineaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FacturaLineaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>[]
+        }
+        delete: {
+          args: Prisma.FacturaLineaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>
+        }
+        update: {
+          args: Prisma.FacturaLineaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>
+        }
+        deleteMany: {
+          args: Prisma.FacturaLineaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FacturaLineaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FacturaLineaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>[]
+        }
+        upsert: {
+          args: Prisma.FacturaLineaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FacturaLineaPayload>
+        }
+        aggregate: {
+          args: Prisma.FacturaLineaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFacturaLinea>
+        }
+        groupBy: {
+          args: Prisma.FacturaLineaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FacturaLineaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FacturaLineaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FacturaLineaCountAggregateOutputType> | number
         }
       }
     }
@@ -3798,7 +4023,6 @@ export const OrdenScalarFieldEnum = {
   clienteId: 'clienteId',
   datoFacturacionId: 'datoFacturacionId',
   numero: 'numero',
-  visitaId: 'visitaId',
   suscripcionId: 'suscripcionId',
   fecha: 'fecha',
   estado: 'estado',
@@ -3815,6 +4039,14 @@ export const OrdenScalarFieldEnum = {
 export type OrdenScalarFieldEnum = (typeof OrdenScalarFieldEnum)[keyof typeof OrdenScalarFieldEnum]
 
 
+export const OrdenVisitaScalarFieldEnum = {
+  ordenId: 'ordenId',
+  visitaId: 'visitaId'
+} as const
+
+export type OrdenVisitaScalarFieldEnum = (typeof OrdenVisitaScalarFieldEnum)[keyof typeof OrdenVisitaScalarFieldEnum]
+
+
 export const OrdenLineaScalarFieldEnum = {
   id: 'id',
   ordenId: 'ordenId',
@@ -3829,11 +4061,18 @@ export const OrdenLineaScalarFieldEnum = {
   productoId: 'productoId',
   suscripcionItemId: 'suscripcionItemId',
   periodoInicio: 'periodoInicio',
-  periodoFin: 'periodoFin',
-  visitaProductoId: 'visitaProductoId'
+  periodoFin: 'periodoFin'
 } as const
 
 export type OrdenLineaScalarFieldEnum = (typeof OrdenLineaScalarFieldEnum)[keyof typeof OrdenLineaScalarFieldEnum]
+
+
+export const OrdenLineaOrigenScalarFieldEnum = {
+  ordenLineaId: 'ordenLineaId',
+  visitaProductoId: 'visitaProductoId'
+} as const
+
+export type OrdenLineaOrigenScalarFieldEnum = (typeof OrdenLineaOrigenScalarFieldEnum)[keyof typeof OrdenLineaOrigenScalarFieldEnum]
 
 
 export const DatoFacturacionScalarFieldEnum = {
@@ -3862,7 +4101,9 @@ export const FacturaScalarFieldEnum = {
   ordenId: 'ordenId',
   contificoDocumentoId: 'contificoDocumentoId',
   numero: 'numero',
+  tipo: 'tipo',
   fechaEmision: 'fechaEmision',
+  descripcion: 'descripcion',
   estado: 'estado',
   autorizacion: 'autorizacion',
   urlRide: 'urlRide',
@@ -3882,6 +4123,24 @@ export const FacturaScalarFieldEnum = {
 } as const
 
 export type FacturaScalarFieldEnum = (typeof FacturaScalarFieldEnum)[keyof typeof FacturaScalarFieldEnum]
+
+
+export const FacturaLineaScalarFieldEnum = {
+  id: 'id',
+  facturaId: 'facturaId',
+  posicion: 'posicion',
+  descripcion: 'descripcion',
+  detalle: 'detalle',
+  cantidad: 'cantidad',
+  precioUnitario: 'precioUnitario',
+  ivaTasa: 'ivaTasa',
+  subtotal: 'subtotal',
+  iva: 'iva',
+  total: 'total',
+  productoId: 'productoId'
+} as const
+
+export type FacturaLineaScalarFieldEnum = (typeof FacturaLineaScalarFieldEnum)[keyof typeof FacturaLineaScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -4190,6 +4449,20 @@ export type ListEnumTipoIdentificacionFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
+ * Reference to a field of type 'TipoDocumento'
+ */
+export type EnumTipoDocumentoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoDocumento'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoDocumento[]'
+ */
+export type ListEnumTipoDocumentoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoDocumento[]'>
+    
+
+
+/**
  * Reference to a field of type 'EstadoFactura'
  */
 export type EnumEstadoFacturaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EstadoFactura'>
@@ -4347,9 +4620,12 @@ export type GlobalOmitConfig = {
   empresaConfig?: Prisma.EmpresaConfigOmit
   firmante?: Prisma.FirmanteOmit
   orden?: Prisma.OrdenOmit
+  ordenVisita?: Prisma.OrdenVisitaOmit
   ordenLinea?: Prisma.OrdenLineaOmit
+  ordenLineaOrigen?: Prisma.OrdenLineaOrigenOmit
   datoFacturacion?: Prisma.DatoFacturacionOmit
   factura?: Prisma.FacturaOmit
+  facturaLinea?: Prisma.FacturaLineaOmit
 }
 
 /* Types for Logging */

@@ -356,7 +356,7 @@ export type VisitaWhereInput = {
   messages?: Prisma.VisitaMessageListRelationFilter
   chatReads?: Prisma.VisitaChatReadListRelationFilter
   informes?: Prisma.InformeVisitaListRelationFilter
-  ordenes?: Prisma.OrdenListRelationFilter
+  ordenes?: Prisma.OrdenVisitaListRelationFilter
   suscripcion?: Prisma.XOR<Prisma.SuscripcionNullableScalarRelationFilter, Prisma.SuscripcionWhereInput> | null
 }
 
@@ -394,7 +394,7 @@ export type VisitaOrderByWithRelationInput = {
   messages?: Prisma.VisitaMessageOrderByRelationAggregateInput
   chatReads?: Prisma.VisitaChatReadOrderByRelationAggregateInput
   informes?: Prisma.InformeVisitaOrderByRelationAggregateInput
-  ordenes?: Prisma.OrdenOrderByRelationAggregateInput
+  ordenes?: Prisma.OrdenVisitaOrderByRelationAggregateInput
   suscripcion?: Prisma.SuscripcionOrderByWithRelationInput
 }
 
@@ -435,7 +435,7 @@ export type VisitaWhereUniqueInput = Prisma.AtLeast<{
   messages?: Prisma.VisitaMessageListRelationFilter
   chatReads?: Prisma.VisitaChatReadListRelationFilter
   informes?: Prisma.InformeVisitaListRelationFilter
-  ordenes?: Prisma.OrdenListRelationFilter
+  ordenes?: Prisma.OrdenVisitaListRelationFilter
   suscripcion?: Prisma.XOR<Prisma.SuscripcionNullableScalarRelationFilter, Prisma.SuscripcionWhereInput> | null
 }, "id" | "numero">
 
@@ -523,7 +523,7 @@ export type VisitaCreateInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -556,7 +556,7 @@ export type VisitaUncheckedCreateInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaUpdateInput = {
@@ -586,7 +586,7 @@ export type VisitaUpdateInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -619,7 +619,7 @@ export type VisitaUncheckedUpdateInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateManyInput = {
@@ -1149,12 +1149,10 @@ export type VisitaCreateNestedOneWithoutOrdenesInput = {
   connect?: Prisma.VisitaWhereUniqueInput
 }
 
-export type VisitaUpdateOneWithoutOrdenesNestedInput = {
+export type VisitaUpdateOneRequiredWithoutOrdenesNestedInput = {
   create?: Prisma.XOR<Prisma.VisitaCreateWithoutOrdenesInput, Prisma.VisitaUncheckedCreateWithoutOrdenesInput>
   connectOrCreate?: Prisma.VisitaCreateOrConnectWithoutOrdenesInput
   upsert?: Prisma.VisitaUpsertWithoutOrdenesInput
-  disconnect?: Prisma.VisitaWhereInput | boolean
-  delete?: Prisma.VisitaWhereInput | boolean
   connect?: Prisma.VisitaWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaUpdateToOneWithWhereWithoutOrdenesInput, Prisma.VisitaUpdateWithoutOrdenesInput>, Prisma.VisitaUncheckedUpdateWithoutOrdenesInput>
 }
@@ -1186,7 +1184,7 @@ export type VisitaCreateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -1218,7 +1216,7 @@ export type VisitaUncheckedCreateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutCreatedByInput = {
@@ -1258,7 +1256,7 @@ export type VisitaCreateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -1290,7 +1288,7 @@ export type VisitaUncheckedCreateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutUpdatedByInput = {
@@ -1330,7 +1328,7 @@ export type VisitaCreateWithoutCompletadaPorInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -1362,7 +1360,7 @@ export type VisitaUncheckedCreateWithoutCompletadaPorInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutCompletadaPorInput = {
@@ -1477,7 +1475,7 @@ export type VisitaCreateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -1509,7 +1507,7 @@ export type VisitaUncheckedCreateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutClienteInput = {
@@ -1566,7 +1564,7 @@ export type VisitaCreateWithoutSuscripcionInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaUncheckedCreateWithoutSuscripcionInput = {
@@ -1597,7 +1595,7 @@ export type VisitaUncheckedCreateWithoutSuscripcionInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutSuscripcionInput = {
@@ -1653,7 +1651,7 @@ export type VisitaCreateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -1685,7 +1683,7 @@ export type VisitaUncheckedCreateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutGrupoInput = {
@@ -1741,7 +1739,7 @@ export type VisitaCreateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -1773,7 +1771,7 @@ export type VisitaUncheckedCreateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutProductosInput = {
@@ -1818,7 +1816,7 @@ export type VisitaUpdateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -1850,7 +1848,7 @@ export type VisitaUncheckedUpdateWithoutProductosInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutPersonalInput = {
@@ -1880,7 +1878,7 @@ export type VisitaCreateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -1912,7 +1910,7 @@ export type VisitaUncheckedCreateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutPersonalInput = {
@@ -1957,7 +1955,7 @@ export type VisitaUpdateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -1989,7 +1987,7 @@ export type VisitaUncheckedUpdateWithoutPersonalInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutMediaInput = {
@@ -2019,7 +2017,7 @@ export type VisitaCreateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -2051,7 +2049,7 @@ export type VisitaUncheckedCreateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutMediaInput = {
@@ -2096,7 +2094,7 @@ export type VisitaUpdateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -2128,7 +2126,7 @@ export type VisitaUncheckedUpdateWithoutMediaInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutMessagesInput = {
@@ -2158,7 +2156,7 @@ export type VisitaCreateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -2190,7 +2188,7 @@ export type VisitaUncheckedCreateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutMessagesInput = {
@@ -2235,7 +2233,7 @@ export type VisitaUpdateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -2267,7 +2265,7 @@ export type VisitaUncheckedUpdateWithoutMessagesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutChatReadsInput = {
@@ -2297,7 +2295,7 @@ export type VisitaCreateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -2329,7 +2327,7 @@ export type VisitaUncheckedCreateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutChatReadsInput = {
@@ -2374,7 +2372,7 @@ export type VisitaUpdateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -2406,7 +2404,7 @@ export type VisitaUncheckedUpdateWithoutChatReadsInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutNotificacionesInput = {
@@ -2436,7 +2434,7 @@ export type VisitaCreateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -2468,7 +2466,7 @@ export type VisitaUncheckedCreateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
   informes?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutNotificacionesInput = {
@@ -2513,7 +2511,7 @@ export type VisitaUpdateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -2545,7 +2543,7 @@ export type VisitaUncheckedUpdateWithoutNotificacionesInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutInformesInput = {
@@ -2575,7 +2573,7 @@ export type VisitaCreateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaCreateNestedManyWithoutVisitaInput
   suscripcion?: Prisma.SuscripcionCreateNestedOneWithoutVisitasInput
 }
 
@@ -2607,7 +2605,7 @@ export type VisitaUncheckedCreateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedCreateNestedManyWithoutVisitaInput
   messages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutVisitaInput
   chatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutVisitaInput
-  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutVisitaInput
+  ordenes?: Prisma.OrdenVisitaUncheckedCreateNestedManyWithoutVisitaInput
 }
 
 export type VisitaCreateOrConnectWithoutInformesInput = {
@@ -2652,7 +2650,7 @@ export type VisitaUpdateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -2684,7 +2682,7 @@ export type VisitaUncheckedUpdateWithoutInformesInput = {
   notificaciones?: Prisma.NotificacionLogUncheckedUpdateManyWithoutVisitaNestedInput
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaCreateWithoutOrdenesInput = {
@@ -2921,7 +2919,7 @@ export type VisitaUpdateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -2953,7 +2951,7 @@ export type VisitaUncheckedUpdateWithoutCreatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutCreatedByInput = {
@@ -3005,7 +3003,7 @@ export type VisitaUpdateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -3037,7 +3035,7 @@ export type VisitaUncheckedUpdateWithoutUpdatedByInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -3089,7 +3087,7 @@ export type VisitaUpdateWithoutCompletadaPorInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -3121,7 +3119,7 @@ export type VisitaUncheckedUpdateWithoutCompletadaPorInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutCompletadaPorInput = {
@@ -3196,7 +3194,7 @@ export type VisitaUpdateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -3228,7 +3226,7 @@ export type VisitaUncheckedUpdateWithoutClienteInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutClienteInput = {
@@ -3304,7 +3302,7 @@ export type VisitaUpdateWithoutSuscripcionInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateWithoutSuscripcionInput = {
@@ -3335,7 +3333,7 @@ export type VisitaUncheckedUpdateWithoutSuscripcionInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutSuscripcionInput = {
@@ -3410,7 +3408,7 @@ export type VisitaUpdateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUpdateManyWithoutVisitaNestedInput
   suscripcion?: Prisma.SuscripcionUpdateOneWithoutVisitasNestedInput
 }
 
@@ -3442,7 +3440,7 @@ export type VisitaUncheckedUpdateWithoutGrupoInput = {
   messages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutVisitaNestedInput
   chatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutVisitaNestedInput
   informes?: Prisma.InformeVisitaUncheckedUpdateManyWithoutVisitaNestedInput
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutVisitaNestedInput
+  ordenes?: Prisma.OrdenVisitaUncheckedUpdateManyWithoutVisitaNestedInput
 }
 
 export type VisitaUncheckedUpdateManyWithoutGrupoInput = {
@@ -3558,7 +3556,7 @@ export type VisitaCountOutputTypeCountInformesArgs<ExtArgs extends runtime.Types
  * VisitaCountOutputType without action
  */
 export type VisitaCountOutputTypeCountOrdenesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.OrdenWhereInput
+  where?: Prisma.OrdenVisitaWhereInput
 }
 
 
@@ -3735,7 +3733,7 @@ export type $VisitaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     messages: Prisma.$VisitaMessagePayload<ExtArgs>[]
     chatReads: Prisma.$VisitaChatReadPayload<ExtArgs>[]
     informes: Prisma.$InformeVisitaPayload<ExtArgs>[]
-    ordenes: Prisma.$OrdenPayload<ExtArgs>[]
+    ordenes: Prisma.$OrdenVisitaPayload<ExtArgs>[]
     suscripcion: Prisma.$SuscripcionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -4210,7 +4208,7 @@ export interface Prisma__VisitaClient<T, Null = never, ExtArgs extends runtime.T
   messages<T extends Prisma.Visita$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   chatReads<T extends Prisma.Visita$chatReadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$chatReadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaChatReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informes<T extends Prisma.Visita$informesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$informesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeVisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  ordenes<T extends Prisma.Visita$ordenesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$ordenesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ordenes<T extends Prisma.Visita$ordenesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$ordenesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenVisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   suscripcion<T extends Prisma.Visita$suscripcionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visita$suscripcionArgs<ExtArgs>>): Prisma.Prisma__SuscripcionClient<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4911,23 +4909,23 @@ export type Visita$informesArgs<ExtArgs extends runtime.Types.Extensions.Interna
  */
 export type Visita$ordenesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Orden
+   * Select specific fields to fetch from the OrdenVisita
    */
-  select?: Prisma.OrdenSelect<ExtArgs> | null
+  select?: Prisma.OrdenVisitaSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Orden
+   * Omit specific fields from the OrdenVisita
    */
-  omit?: Prisma.OrdenOmit<ExtArgs> | null
+  omit?: Prisma.OrdenVisitaOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.OrdenInclude<ExtArgs> | null
-  where?: Prisma.OrdenWhereInput
-  orderBy?: Prisma.OrdenOrderByWithRelationInput | Prisma.OrdenOrderByWithRelationInput[]
-  cursor?: Prisma.OrdenWhereUniqueInput
+  include?: Prisma.OrdenVisitaInclude<ExtArgs> | null
+  where?: Prisma.OrdenVisitaWhereInput
+  orderBy?: Prisma.OrdenVisitaOrderByWithRelationInput | Prisma.OrdenVisitaOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenVisitaWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.OrdenScalarFieldEnum | Prisma.OrdenScalarFieldEnum[]
+  distinct?: Prisma.OrdenVisitaScalarFieldEnum | Prisma.OrdenVisitaScalarFieldEnum[]
 }
 
 /**

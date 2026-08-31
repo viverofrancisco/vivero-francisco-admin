@@ -28,7 +28,26 @@ export interface LineaFactura {
   cantidad: number;
   precioUnitario: number;
   ivaTasa: number;
+  /**
+   * Texto que acompaña al nombre del producto en el papel.
+   *
+   * Sale en el RIDE, columna *Detalles Adicionales*, como `Detalle: <valor>`, y
+   * en el XML como `<detAdicional nombre="Detalle" …>`. **No reemplaza el
+   * nombre impreso**, que es siempre el del producto de Contífico: eso su API
+   * no lo permite. Sirve para decir "AREAS VERDES" al lado de
+   * "SERVICIO DE MANTENIMIENTO".
+   */
+  nombreManual?: string | null;
 }
+
+/**
+ * Qué documento se crea.
+ *
+ * `DNA` es el Documento No Autorizado: interno, sin SRI. **No admite IVA** —
+ * Contífico devuelve `400 · 1016` ante cualquier impuesto— y no valida su
+ * numeración, así que la unicidad la tiene que poner quien lo emite.
+ */
+export type TipoDocumentoContifico = "FAC" | "DNA";
 
 export interface DocumentoCreado {
   id: string;
@@ -142,7 +161,9 @@ export interface EmitirDocumentoInput {
   cliente: ClienteFacturacion;
   lineas: LineaFactura[];
   descripcion?: string | null;
-  /** Con `true` Contífico firma y transmite al SRI. */
+  /** `FAC` por defecto. Un `DNA` nunca es electrónico. */
+  tipo?: TipoDocumentoContifico;
+  /** Con `true` Contífico firma y transmite al SRI. Un `DNA` lo ignora. */
   electronico?: boolean;
 }
 
@@ -168,6 +189,11 @@ export function calcularTotales(lineas: LineaFactura[]) {
       base_cero: l.ivaTasa > 0 ? 0 : base,
       base_gravable: l.ivaTasa > 0 ? base : 0,
       base_no_gravable: 0,
+      // Solo si hay algo que decir: mandarlo vacío deja un "Detalle:" pelado
+      // impreso en la factura.
+      ...(l.nombreManual?.trim()
+        ? { nombre_manual: l.nombreManual.trim() }
+        : {}),
     };
   });
   subtotal0 = centavos(subtotal0);
@@ -186,7 +212,10 @@ export async function emitirDocumento(
   input: EmitirDocumentoInput
 ): Promise<DocumentoCreado> {
   const totales = calcularTotales(input.lineas);
-  const electronico = input.electronico ?? true;
+  const tipo = input.tipo ?? "FAC";
+  // Un DNA no va al SRI por definición, así que nunca es electrónico. Y no
+  // necesita `autorizacion` a pesar de eso: probado contra el sandbox.
+  const electronico = tipo === "DNA" ? false : (input.electronico ?? true);
 
   return contificoRequest<DocumentoCreado>("/documento/", {
     method: "POST",
@@ -194,7 +223,7 @@ export async function emitirDocumento(
     body: {
       pos: posToken(),
       fecha_emision: fechaContifico(input.fechaEmision),
-      tipo_documento: "FAC",
+      tipo_documento: tipo,
       tipo_registro: "CLI",
       documento: input.numero,
       estado: "P",
