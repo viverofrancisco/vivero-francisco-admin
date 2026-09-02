@@ -105,6 +105,14 @@ export const DestinatarioTipo = {
 export type DestinatarioTipo = (typeof DestinatarioTipo)[keyof typeof DestinatarioTipo]
 
 
+export const AmbienteSri = {
+  PRUEBAS: 'PRUEBAS',
+  PRODUCCION: 'PRODUCCION'
+} as const
+
+export type AmbienteSri = (typeof AmbienteSri)[keyof typeof AmbienteSri]
+
+
 export const EstadoOrden = {
   BORRADOR: 'BORRADOR',
   CONFIRMADA: 'CONFIRMADA',

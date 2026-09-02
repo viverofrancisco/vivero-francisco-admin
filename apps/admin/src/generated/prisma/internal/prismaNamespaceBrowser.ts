@@ -57,6 +57,7 @@ export const ModelName = {
   User: 'User',
   Cliente: 'Cliente',
   Producto: 'Producto',
+  Categoria: 'Categoria',
   Suscripcion: 'Suscripcion',
   SuscripcionItem: 'SuscripcionItem',
   Personal: 'Personal',
@@ -84,6 +85,8 @@ export const ModelName = {
   InformeSeccion: 'InformeSeccion',
   InformeSeccionFoto: 'InformeSeccionFoto',
   EmpresaConfig: 'EmpresaConfig',
+  Emisor: 'Emisor',
+  SecuencialSri: 'SecuencialSri',
   Firmante: 'Firmante',
   Orden: 'Orden',
   OrdenVisita: 'OrdenVisita',
@@ -203,6 +206,7 @@ export const ProductoScalarFieldEnum = {
   codigo: 'codigo',
   contificoProductoId: 'contificoProductoId',
   contificoCategoriaId: 'contificoCategoriaId',
+  categoriaId: 'categoriaId',
   ivaTasa: 'ivaTasa',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -212,6 +216,19 @@ export const ProductoScalarFieldEnum = {
 } as const
 
 export type ProductoScalarFieldEnum = (typeof ProductoScalarFieldEnum)[keyof typeof ProductoScalarFieldEnum]
+
+
+export const CategoriaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  orden: 'orden',
+  contificoCategoriaId: 'contificoCategoriaId',
+  contificoCategoriaNombre: 'contificoCategoriaNombre',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CategoriaScalarFieldEnum = (typeof CategoriaScalarFieldEnum)[keyof typeof CategoriaScalarFieldEnum]
 
 
 export const SuscripcionScalarFieldEnum = {
@@ -598,6 +615,44 @@ export const EmpresaConfigScalarFieldEnum = {
 export type EmpresaConfigScalarFieldEnum = (typeof EmpresaConfigScalarFieldEnum)[keyof typeof EmpresaConfigScalarFieldEnum]
 
 
+export const EmisorScalarFieldEnum = {
+  id: 'id',
+  ruc: 'ruc',
+  razonSocial: 'razonSocial',
+  nombreComercial: 'nombreComercial',
+  dirMatriz: 'dirMatriz',
+  direccionEstablecimiento: 'direccionEstablecimiento',
+  establecimiento: 'establecimiento',
+  puntoEmision: 'puntoEmision',
+  obligadoContabilidad: 'obligadoContabilidad',
+  contribuyenteEspecial: 'contribuyenteEspecial',
+  agenteRetencion: 'agenteRetencion',
+  ambiente: 'ambiente',
+  certificado: 'certificado',
+  certificadoPassword: 'certificadoPassword',
+  certificadoSujeto: 'certificadoSujeto',
+  certificadoVence: 'certificadoVence',
+  activo: 'activo',
+  predeterminado: 'predeterminado',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmisorScalarFieldEnum = (typeof EmisorScalarFieldEnum)[keyof typeof EmisorScalarFieldEnum]
+
+
+export const SecuencialSriScalarFieldEnum = {
+  id: 'id',
+  emisorId: 'emisorId',
+  establecimiento: 'establecimiento',
+  puntoEmision: 'puntoEmision',
+  tipoDocumento: 'tipoDocumento',
+  valor: 'valor'
+} as const
+
+export type SecuencialSriScalarFieldEnum = (typeof SecuencialSriScalarFieldEnum)[keyof typeof SecuencialSriScalarFieldEnum]
+
+
 export const FirmanteScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
@@ -692,6 +747,13 @@ export type DatoFacturacionScalarFieldEnum = (typeof DatoFacturacionScalarFieldE
 export const FacturaScalarFieldEnum = {
   id: 'id',
   ordenId: 'ordenId',
+  emisorId: 'emisorId',
+  claveAcceso: 'claveAcceso',
+  ambienteSri: 'ambienteSri',
+  estadoSri: 'estadoSri',
+  fechaAutorizacion: 'fechaAutorizacion',
+  xmlKey: 'xmlKey',
+  mensajesSri: 'mensajesSri',
   contificoDocumentoId: 'contificoDocumentoId',
   numero: 'numero',
   tipo: 'tipo',
@@ -749,6 +811,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {

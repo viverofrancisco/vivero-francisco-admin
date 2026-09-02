@@ -888,6 +888,91 @@ model EmpresaConfig {
   updatedAt DateTime @updatedAt
 }
 
+/// A nombre de quién se emite un comprobante electrónico ante el SRI.
+///
+/// Es una **tabla y no una fila de configuración** porque el vivero factura con
+/// más de un RUC y elige cuál al emitir. Cada uno es un contribuyente distinto
+/// para el SRI: su propio certificado, su propia numeración y su propio trámite
+/// de ambiente de pruebas.
+///
+/// Los campos son los que el XML exige en `infoTributaria`, ni más ni menos.
+model Emisor {
+  id     String @id @default(cuid())
+  /// 13 dígitos. Es la identidad del emisor ante el SRI.
+  ruc    String @unique
+  razonSocial     String
+  nombreComercial String?
+  /// Dirección de la matriz y del establecimiento que emite. El SRI las pide
+  /// por separado aunque casi siempre coincidan.
+  dirMatriz                String
+  direccionEstablecimiento String
+  /// Tres dígitos cada uno: "001". Con el secuencial forman "001-002-000000001".
+  establecimiento String @default("001")
+  puntoEmision    String @default("001")
+
+  obligadoContabilidad Boolean @default(true)
+  /// Número de resolución, cuando el SRI lo designó contribuyente especial.
+  contribuyenteEspecial String?
+  /// Número de resolución de agente de retención, si lo es.
+  agenteRetencion       String?
+
+  /// `PRUEBAS` (1) o `PRODUCCION` (2). Son dos mundos separados del SRI, con
+  /// distinta URL y distinta autorización: lo emitido en pruebas no vale nada.
+  ambiente AmbienteSri @default(PRUEBAS)
+
+  /// El `.p12` con el que se firma, **cifrado** (AES-256-GCM). Es una clave
+  /// privada que firma documentos tributarios en nombre de la empresa: no sale
+  /// nunca por una API, no se registra en logs y solo la lee el servidor al
+  /// momento de firmar.
+  certificado          Bytes?
+  /// Su contraseña, cifrada con la misma clave.
+  certificadoPassword  Bytes?
+  /// A nombre de quién está el certificado y hasta cuándo sirve. Se leen del
+  /// propio `.p12` al cargarlo, para poder avisar antes de que caduque: vencido,
+  /// ese RUC deja de poder facturar.
+  certificadoSujeto    String?
+  certificadoVence     DateTime?
+
+  activo         Boolean @default(true)
+  /// El que viene elegido al emitir. Solo uno.
+  predeterminado Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  secuenciales SecuencialSri[]
+  facturas     Factura[]
+
+  @@index([activo])
+}
+
+enum AmbienteSri {
+  PRUEBAS
+  PRODUCCION
+}
+
+/// La numeración de cada serie del SRI.
+///
+/// Va por emisor, establecimiento, punto de emisión **y tipo de comprobante**:
+/// una factura y una nota de crédito llevan series distintas. Se incrementa con
+/// un `UPDATE ... RETURNING` atómico, que es lo único que evita que dos
+/// emisiones simultáneas pidan el mismo número — y un número repetido lo
+/// rechaza el SRI.
+model SecuencialSri {
+  id              String @id @default(cuid())
+  emisorId        String
+  establecimiento String
+  puntoEmision    String
+  /// `FACTURA`, `NOTA_CREDITO`… tal como los nombra la librería.
+  tipoDocumento   String
+  /// El último entregado. El próximo es este + 1.
+  valor           Int    @default(0)
+
+  emisor Emisor @relation(fields: [emisorId], references: [id], onDelete: Cascade)
+
+  @@unique([emisorId, establecimiento, puntoEmision, tipoDocumento])
+}
+
 model Firmante {
   id        String   @id @default(cuid())
   nombre    String
@@ -1132,6 +1217,25 @@ enum TipoIdentificacion {
 model Factura {
   id      String @id @default(cuid())
   ordenId String
+
+  /// Con qué RUC se emitió. Null en lo emitido por Contífico, que no elegía.
+  emisorId String?
+  emisor   Emisor? @relation(fields: [emisorId], references: [id], onDelete: Restrict)
+
+  /// ─── Lo que devuelve el SRI cuando emite el portal ───────────────────
+  ///
+  /// En el esquema *offline* la clave de acceso **es** el número de
+  /// autorización: se calcula acá antes de mandar nada, y el SRI la confirma.
+  claveAcceso      String?      @unique
+  /// Contra qué mundo se emitió. Lo de `PRUEBAS` no vale como comprobante.
+  ambienteSri      AmbienteSri?
+  /// `AUTORIZADO`, `ENVIADO`, `DEVUELTO`… tal como lo reporta la emisión.
+  estadoSri        String?
+  fechaAutorizacion DateTime?
+  /// Dónde quedó el XML firmado y autorizado, en R2. Hay que conservarlo.
+  xmlKey           String?
+  /// Lo que el SRI respondió cuando rechazó, para poder mostrarlo entero.
+  mensajesSri      Json?
 
   contificoDocumentoId String?       @unique
   /// Único porque en un `NO_AUTORIZADO` **nadie más lo garantiza**: Contífico

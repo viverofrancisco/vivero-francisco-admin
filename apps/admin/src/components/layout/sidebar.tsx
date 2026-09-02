@@ -100,6 +100,7 @@ const mainItems: NavItem[] = [
       { label: "Empresa", href: "/dashboard/configuracion/empresa" },
       { label: "Usuarios", href: "/dashboard/configuracion/usuarios" },
       { label: "Notificaciones", href: "/dashboard/configuracion/notificaciones" },
+      { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion" },
     ],
   },
 ];

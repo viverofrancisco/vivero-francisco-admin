@@ -49,6 +49,21 @@ export type Cliente = Prisma.ClienteModel
  */
 export type Producto = Prisma.ProductoModel
 /**
+ * Model Categoria
+ * Cómo se agrupa el catálogo **en el portal**.
+ * 
+ * No es un espejo de la de Contífico. Allá una categoría es configuración
+ * contable —lleva la `cuenta_venta` que el producto hereda— y el árbol es de
+ * ellos: en la cuenta de pruebas hay 2.939, casi todas ajenas. Acá es lo que
+ * sirve para encontrar un producto en una lista.
+ * 
+ * Lo que sí las conecta es `contificoCategoriaId`: la categoría de allá con la
+ * que se crean los productos de esta. Sin eso Contífico les pone la suya por
+ * defecto (tipo PROD), y un servicio termina contabilizado como venta de
+ * bienes.
+ */
+export type Categoria = Prisma.CategoriaModel
+/**
  * Model Suscripcion
  * Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
  * el mismo ciclo: cada renovación genera una orden con una línea por ítem.
@@ -202,6 +217,29 @@ export type InformeSeccionFoto = Prisma.InformeSeccionFotoModel
  * 
  */
 export type EmpresaConfig = Prisma.EmpresaConfigModel
+/**
+ * Model Emisor
+ * A nombre de quién se emite un comprobante electrónico ante el SRI.
+ * 
+ * Es una **tabla y no una fila de configuración** porque el vivero factura con
+ * más de un RUC y elige cuál al emitir. Cada uno es un contribuyente distinto
+ * para el SRI: su propio certificado, su propia numeración y su propio trámite
+ * de ambiente de pruebas.
+ * 
+ * Los campos son los que el XML exige en `infoTributaria`, ni más ni menos.
+ */
+export type Emisor = Prisma.EmisorModel
+/**
+ * Model SecuencialSri
+ * La numeración de cada serie del SRI.
+ * 
+ * Va por emisor, establecimiento, punto de emisión **y tipo de comprobante**:
+ * una factura y una nota de crédito llevan series distintas. Se incrementa con
+ * un `UPDATE ... RETURNING` atómico, que es lo único que evita que dos
+ * emisiones simultáneas pidan el mismo número — y un número repetido lo
+ * rechaza el SRI.
+ */
+export type SecuencialSri = Prisma.SecuencialSriModel
 /**
  * Model Firmante
  * 

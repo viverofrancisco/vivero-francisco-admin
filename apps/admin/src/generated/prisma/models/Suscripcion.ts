@@ -683,14 +683,6 @@ export type EnumPeriodicidadFieldUpdateOperationsInput = {
   set?: $Enums.Periodicidad
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type SuscripcionCreateNestedOneWithoutItemsInput = {
   create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutItemsInput, Prisma.SuscripcionUncheckedCreateWithoutItemsInput>
   connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutItemsInput
