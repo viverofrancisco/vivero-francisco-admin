@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth-helpers";
+import { getCurrentUser, viewerFromUser } from "@/lib/auth-helpers";
+import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
+import { updateServicio } from "@/lib/services/servicio.service";
 import { servicioSchema } from "@/lib/validations/servicio";
 
 export async function GET(
@@ -44,19 +46,21 @@ export async function PUT(
 
   const data = result.data;
 
+  // Por el servicio y no con un `update` inline: acá vive la regla de que
+  // `tipo` no se cambia después de crear —suscripciones, visitas y líneas de
+  // orden quedarían con una semántica que ya no corresponde, y allá el producto
+  // ya está creado como SER o PRO—. El update inline la salteaba.
   try {
-    const servicio = await prisma.producto.update({
-      where: { id },
-      data: {
+    return NextResponse.json(
+      await updateServicio(id, viewerFromUser(user), {
         nombre: data.nombre,
-        descripcion: data.descripcion || null,
+        descripcion: data.descripcion ?? null,
         tipo: data.tipo,
-        updatedById: user.id,
-      },
-    });
-    return NextResponse.json(servicio);
-  } catch {
-    return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
+        categoriaId: data.categoriaId ?? null,
+      })
+    );
+  } catch (error) {
+    return serviceErrorResponse(error);
   }
 }
 

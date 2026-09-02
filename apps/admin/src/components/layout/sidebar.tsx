@@ -53,13 +53,12 @@ const mainItems: NavItem[] = [
     icon: Users,
     roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
   },
-  // Sin `children`: un desplegable de un solo ítem es un clic de más. "Nueva
-  // visita" ya está dentro de la propia página de visitas.
   {
     label: "Productos",
     href: "/dashboard/productos",
     icon: Wrench,
     roles: ["ADMIN", "STAFF"],
+    children: [{ label: "Categorías", href: "/dashboard/productos/categorias" }],
   },
   { label: "Visitas", href: "/dashboard/visitas", icon: CalendarDays },
   { label: "Mensajes", href: "/dashboard/mensajes", icon: MessageSquare },

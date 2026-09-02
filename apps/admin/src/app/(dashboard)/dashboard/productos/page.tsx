@@ -21,7 +21,13 @@ export default async function ServiciosPage() {
       descripcion: true,
       contificoProductoId: true,
       deletedAt: true,
+      categoria: { select: { id: true, nombre: true } },
     },
+  });
+
+  const categorias = await prisma.categoria.findMany({
+    orderBy: [{ orden: "asc" }, { nombre: "asc" }],
+    select: { id: true, nombre: true },
   });
 
   return (
@@ -48,7 +54,10 @@ export default async function ServiciosPage() {
           contificoProductoId: p.contificoProductoId,
           // Texto y no `Date`: la tabla solo lo muestra.
           archivadoEl: p.deletedAt?.toISOString() ?? null,
+          categoriaId: p.categoria?.id ?? null,
+          categoriaNombre: p.categoria?.nombre ?? null,
         }))}
+        categorias={categorias}
       />
     </div>
   );

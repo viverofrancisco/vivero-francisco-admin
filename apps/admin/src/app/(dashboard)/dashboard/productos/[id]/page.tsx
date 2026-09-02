@@ -23,6 +23,11 @@ export default async function EditarServicioPage({
     notFound();
   }
 
+  const categorias = await prisma.categoria.findMany({
+    orderBy: [{ orden: "asc" }, { nombre: "asc" }],
+    select: { id: true, nombre: true },
+  });
+
   // Quién tiene este producto contratado: sale de los ítems de suscripción.
   const asignaciones = await prisma.suscripcionItem.findMany({
     where: { productoId: id, suscripcion: { cliente: { deletedAt: null } } },
@@ -71,6 +76,7 @@ export default async function EditarServicioPage({
           // La ficha de un archivado se abre igual, pero tiene que decirlo.
           archivadoEl: servicio.deletedAt?.toISOString() ?? null,
         }}
+        categorias={categorias}
         clienteRows={rows}
       />
     </div>

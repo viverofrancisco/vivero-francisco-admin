@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CustomSelect } from "@/components/ui/custom-select";
 import {
   Card,
   CardAction,
@@ -50,15 +51,19 @@ interface ServicioData {
   contificoProductoId: string | null;
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
+  categoriaId: string | null;
 }
 
 export function ServicioDetail({
   servicio,
   clienteRows,
+  categorias = [],
   backHref = "/dashboard/productos",
 }: {
   servicio: ServicioData;
   clienteRows: ServicioClienteRow[];
+  /** Las del portal, para poder reagrupar el producto desde acá. */
+  categorias?: { id: string; nombre: string }[];
   /** La lista de la que se vino, con sus filtros. */
   backHref?: string;
 }) {
@@ -137,6 +142,7 @@ export function ServicioDetail({
     nombre: servicio.nombre,
     tipo: servicio.tipo,
     descripcion: servicio.descripcion ?? "",
+    categoriaId: servicio.categoriaId,
   });
   const [form, setForm] = useState(data);
 
@@ -161,6 +167,7 @@ export function ServicioDetail({
           // lo valide, no para cambiarlo.
           tipo: form.tipo,
           descripcion: form.descripcion,
+          categoriaId: form.categoriaId,
         }),
       });
       if (!res.ok) throw new Error();
@@ -234,6 +241,31 @@ export function ServicioDetail({
                       onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                     />
                   </div>
+                  {/* Reagrupa el producto en el portal. No toca la
+                      categoría que tiene en Contífico: allá lleva la cuenta
+                      contable, y moverlo cambiaría dónde se contabilizaron
+                      ventas que ya pasaron. */}
+                  {categorias.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Categoría</Label>
+                      <CustomSelect
+                        value={form.categoriaId ?? ""}
+                        onChange={(v) =>
+                          setForm({ ...form, categoriaId: v || null })
+                        }
+                        options={[
+                          { value: "", label: "Sin categoría" },
+                          ...categorias.map((c) => ({
+                            value: c.id,
+                            label: c.nombre,
+                          })),
+                        ]}
+                        placeholder="Sin categoría"
+                        searchable
+                        searchPlaceholder="Buscar categoría..."
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="descripcion">Descripción</Label>
                     <Textarea
@@ -266,6 +298,19 @@ export function ServicioDetail({
                         Tipo
                       </div>
                       <div>{TIPO_LABEL[data.tipo] ?? data.tipo}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-muted-foreground">
+                        Categoría
+                      </div>
+                      <div>
+                        {categorias.find((c) => c.id === data.categoriaId)
+                          ?.nombre ?? (
+                          <span className="text-muted-foreground">
+                            Sin categoría
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div>

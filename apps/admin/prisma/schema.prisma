@@ -251,7 +251,15 @@ model Producto {
   /// dos productos del portal apuntando al mismo de Contífico harían ambigua
   /// la factura y romperían la trazabilidad hacia atrás.
   contificoProductoId  String?  @unique
+  /// Categoría de Contífico con la que se creó allá. Sale de la categoría del
+  /// portal al crearlo, o de ellos cuando el producto se vinculó a uno suyo.
   contificoCategoriaId String?
+
+  /// Cómo se agrupa en el portal. Opcional: un producto sin categoría se
+  /// vende igual, y obligarla habría dejado el catálogo viejo sin poder
+  /// guardarse.
+  categoriaId String?
+  categoria   Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   /// Tasa de IVA por defecto (porcentaje). En Ecuador conviven 0% y 15%.
   ivaTasa              Decimal? @db.Decimal(5, 2)
 
@@ -270,6 +278,36 @@ model Producto {
   informeSecciones InformeSeccion[]
   ordenLineas      OrdenLinea[]
   facturaLineas    FacturaLinea[]
+
+  @@index([categoriaId])
+}
+
+/// Cómo se agrupa el catálogo **en el portal**.
+///
+/// No es un espejo de la de Contífico. Allá una categoría es configuración
+/// contable —lleva la `cuenta_venta` que el producto hereda— y el árbol es de
+/// ellos: en la cuenta de pruebas hay 2.939, casi todas ajenas. Acá es lo que
+/// sirve para encontrar un producto en una lista.
+///
+/// Lo que sí las conecta es `contificoCategoriaId`: la categoría de allá con la
+/// que se crean los productos de esta. Sin eso Contífico les pone la suya por
+/// defecto (tipo PROD), y un servicio termina contabilizado como venta de
+/// bienes.
+model Categoria {
+  id     String @id @default(cuid())
+  nombre String @unique
+  /// Para ordenar la lista a mano; a igual orden, alfabético.
+  orden  Int    @default(0)
+
+  contificoCategoriaId String?
+  /// Cómo se llama allá, congelado al elegirla: mostrarla no puede depender de
+  /// una llamada a su API, que tarda y a veces no está.
+  contificoCategoriaNombre String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productos Producto[]
 }
 
 /// Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en

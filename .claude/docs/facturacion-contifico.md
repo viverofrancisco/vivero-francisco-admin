@@ -280,6 +280,98 @@ Lo que no cambió: `emitirFactura` **no sincroniza nada**. Sincronizar al emitir
 escondía la decisión de escribir en el catálogo ajeno detrás del botón de
 facturar — el peor momento para descubrir un problema.
 
+### `GET /producto/` solo lista lo que está marcado "para POS"
+
+Y esto es un **bloqueante para producción**, medido el 31/08/2026 leyendo las
+dos cuentas.
+
+En producción, `GET /producto/` devuelve `[]` con **todos** los filtros:
+`filtro`, `codigo`, `categoria_id`, `fecha_inicial`/`fecha_final`, y con
+`result_size`/`result_page`. No es que no haya productos: `GET /producto/<id>/`
+devuelve el producto sin problema —`HELECHO ALAMBRE`, código `HE-000005`,
+`estado: "A"`— y sus facturas lo venden todos los meses.
+
+El sospechoso es **`para_pos`**, aunque **no está probado**. En el sandbox, los
+cientos de productos que sí aparecen en el listado —incluidos los ajenos— tienen
+`para_pos: true`; el de producción tiene `para_pos: false`. El token *es* el id
+de un POS (`GET /pos/` lo confirma), así que el listado atado a lo que ese punto
+de venta tiene habilitado explicaría todo. Nosotros nunca mandamos el campo:
+Contífico se lo pone en `true` a lo que se crea por API, y por eso los productos
+del portal sí aparecen.
+
+Lo que **sí** está comprobado (31/08/2026, creando `VF-S6UAYWW9CD` por el
+camino del portal): **un producto creado por la API nace con `para_pos: true`**
+y aparece en el listado en el acto. O sea que el problema es solo del catálogo
+viejo, cargado a mano en su interfaz; lo que cree el portal de acá en adelante
+se lista solo, sin ir a tildar nada.
+
+La prueba que faltó es la inversa: apagarlo en el sandbox y ver si desaparece de
+la búsqueda. **`PATCH /producto/<id>/ {para_pos: false}` no lo cambia**
+—responde 200 y el producto sigue en `true`, y el campo no figura entre los que
+el PATCH acepta—, así que la relación quedó como correlación fuerte y no como
+causa demostrada. Antes de rediseñar nada por esto, conviene
+preguntárselo a soporte de Contífico: *¿por qué `GET /producto/` devuelve vacío
+para esta cuenta si `GET /producto/<id>/` funciona?*
+
+Dos consecuencias, las dos importantes:
+
+- **El buscador de "vincular con Contífico" no va a encontrar nada en
+  producción** hasta que del lado de ellos se marquen los productos para ese
+  POS.
+- **El catálogo no se puede enumerar** por la lista. Lo que sí se puede es
+  recorrer las facturas: `GET /documento/` acepta `fecha_inicial`/`fecha_final`
+  en **DD/MM/YYYY** y pagina con `result_size` + `result_page`, y de sus
+  `detalles[]` salen `producto_id` y `producto_nombre`. Así se recogieron los
+  231 productos distintos que vendieron entre enero y agosto de 2026, en 521
+  documentos.
+
+### Una factura por API no mueve el inventario
+
+Probado el 31/08/2026 en el sandbox con `VF-S6UAYWW9CD`, un producto creado por
+el portal y con **"Para control STOCK" activado a mano** en su interfaz:
+
+- el portal emitió la factura `001-002-000900139` por **3 unidades**;
+- no falló, no pidió bodega — `POST /documento/` no tiene campo de bodega;
+- `cantidad_stock` quedó en **0**, el mismo valor de antes: ni bajó a −3, ni
+  nada.
+
+La explicación es que el inventario tiene su propia puerta: Contífico expone
+**`/movimiento-inventario/` (GET, POST)** y `/bodega/` (GET), aparte de los
+documentos. En el sandbox compartido `/movimiento-inventario/` hace timeout
+—como todo listado sin filtro en esa cuenta—, así que no se pudo mirar el
+detalle.
+
+Lo que **sí** quedó descartado: **la falta de stock no bloquea la emisión.** Se
+repitió la prueba con el producto ya marcado *Inventario* en Contabilidad y
+*Para control STOCK* en Configuraciones, con `cantidad_stock: 0`, y la factura
+salió igual (`001-002-000900140`).
+
+**Lo que no se pudo probar es si con stock disponible la factura lo descuenta**,
+y no por falta de intentos: cargar stock con `POST /movimiento-inventario/`
+(`ING`, 10 unidades a *Bodega Principal*) crea el movimiento —`ING
+202608000250`— pero queda en **`estado: "G"`** y `cantidad_stock` sigue en 0. El
+movimiento además se asoció al POS de **otro integrador**, porque en esa cuenta
+compartida hay 319 bodegas mezcladas y la "principal" no es nuestra.
+
+O sea: **el sandbox compartido no sirve para probar inventario.** La forma de
+contestarlo sin escribir nada es mirar producción: un producto con stock —el
+helecho tenía 584— antes y después de una factura que ellos emitan por su
+camino normal.
+
+Mientras tanto, el borde sigue siendo el mismo: **el inventario es de
+Contífico**. Lo que el portal puede hacer sin discutirle a nadie es *mostrarlo*
+—`cantidad_stock` viene en el producto— y nunca escribirlo.
+
+### Variantes: existen en la API, no las usan
+
+`tipo_producto` acepta `SIM` (simple), `VAR` (variante), `COM` (combo) y `COP`
+(compuesto), y hay `producto_base_id`, `variantes` y `detalle_variantes` para
+armarlas.
+
+**Los 231 productos que producción vendió en 2026 son todos `SIM`**, ninguno con
+`producto_base_id` ni `detalle_variantes`. No hay nada que espejar, y el portal
+no las implementa: sería construir para un caso que todavía no existe.
+
 ### El código es la llave, el nombre no
 
 ```

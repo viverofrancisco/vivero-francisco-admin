@@ -35,6 +35,9 @@ interface Servicio {
   contificoProductoId: string | null;
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
+  /** Cómo se agrupa en el portal. Nada que ver con la categoría de Contífico. */
+  categoriaId: string | null;
+  categoriaNombre: string | null;
 }
 
 const TIPO_LABEL: Record<string, string> = {
@@ -42,7 +45,13 @@ const TIPO_LABEL: Record<string, string> = {
   BIEN: "Bien",
 };
 
-export function ServiciosTable({ productos }: { productos: Servicio[] }) {
+export function ServiciosTable({
+  productos,
+  categorias = [],
+}: {
+  productos: Servicio[];
+  categorias?: { id: string; nombre: string }[];
+}) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
   const [tipo, setTipo] = useFiltroUrl("tipo", "");
@@ -53,6 +62,7 @@ export function ServiciosTable({ productos }: { productos: Servicio[] }) {
    * los activos, que es lo que se está armando el 99% del tiempo.
    */
   const [archivados, setArchivados] = useFiltroUrl("archivados", "");
+  const [categoria, setCategoria] = useFiltroUrl("categoria", "");
   const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
@@ -60,6 +70,11 @@ export function ServiciosTable({ productos }: { productos: Servicio[] }) {
       archivados === "SI" ? s.archivadoEl : !s.archivadoEl
     );
     if (tipo) result = result.filter((s) => s.tipo === tipo);
+    if (categoria) {
+      result = result.filter((s) =>
+        categoria === "SIN" ? !s.categoriaId : s.categoriaId === categoria
+      );
+    }
     if (contifico === "SIN") {
       result = result.filter((s) => !s.contificoProductoId);
     } else if (contifico === "CON") {
@@ -74,7 +89,7 @@ export function ServiciosTable({ productos }: { productos: Servicio[] }) {
       );
     }
     return result;
-  }, [productos, archivados, tipo, contifico, searchQuery]);
+  }, [productos, archivados, tipo, categoria, contifico, searchQuery]);
 
   // La página se acota al renderizar: filtrar puede dejar menos páginas que la
   // actual, y así no hace falta un efecto que la corrija después de pintar.
@@ -146,6 +161,22 @@ export function ServiciosTable({ productos }: { productos: Servicio[] }) {
             placeholder="Todo Contífico"
           />
         </div>
+        {categorias.length > 0 && (
+          <div className="w-48">
+            <CustomSelect
+              value={categoria}
+              onChange={(v) => cambiar(() => setCategoria(v))}
+              options={[
+                { value: "", label: "Toda categoría" },
+                ...categorias.map((c) => ({ value: c.id, label: c.nombre })),
+                { value: "SIN", label: "Sin categoría" },
+              ]}
+              placeholder="Toda categoría"
+              searchable
+              searchPlaceholder="Buscar categoría..."
+            />
+          </div>
+        )}
         <div className="w-40">
           <CustomSelect
             value={archivados}
@@ -169,6 +200,7 @@ export function ServiciosTable({ productos }: { productos: Servicio[] }) {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Tipo</TableHead>
+                  <TableHead>Categoría</TableHead>
                   <TableHead>Contífico</TableHead>
                   <TableHead className="w-12" />
                 </TableRow>
@@ -198,6 +230,9 @@ export function ServiciosTable({ productos }: { productos: Servicio[] }) {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {TIPO_LABEL[servicio.tipo] ?? servicio.tipo}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {servicio.categoriaNombre ?? "—"}
                     </TableCell>
                     <TableCell className="text-xs">
                       {servicio.contificoProductoId ? (

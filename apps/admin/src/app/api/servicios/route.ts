@@ -45,6 +45,7 @@ export async function POST(request: Request) {
       descripcion: data.descripcion || null,
       tipo: data.tipo,
       ivaTasa: data.ivaTasa ?? null,
+      categoriaId: data.categoriaId ?? null,
       contificoProductoId: data.contificoProductoId ?? null,
       codigo: data.codigo ?? null,
       actualizarNombre: data.actualizarNombre,

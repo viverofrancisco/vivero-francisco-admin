@@ -31,10 +31,13 @@ interface ServicioFormProps {
     nombre: string;
     descripcion: string | null;
     tipo: string;
+    categoriaId?: string | null;
   };
+  /** Para agruparlo en el portal. Vacío mientras no haya ninguna creada. */
+  categorias?: { id: string; nombre: string }[];
 }
 
-export function ServicioForm({ initialData }: ServicioFormProps) {
+export function ServicioForm({ initialData, categorias = [] }: ServicioFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
@@ -52,6 +55,7 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
       nombre: initialData?.nombre ?? "",
       descripcion: initialData?.descripcion ?? "",
       tipo: (initialData?.tipo as "SERVICIO" | "BIEN") ?? "SERVICIO",
+      categoriaId: initialData?.categoriaId ?? null,
     },
   });
 
@@ -151,6 +155,36 @@ export function ServicioForm({ initialData }: ServicioFormProps) {
                 <p className="text-sm text-destructive">{errors.tipo.message}</p>
               )}
             </div>
+
+            {/* Agrupa el catálogo acá, y de paso decide con qué categoría
+                nace en Contífico —que es lo que define en qué cuenta contable
+                cae la venta—. Sin categorías creadas no se muestra: sería un
+                campo con una sola opción vacía. */}
+            {categorias.length > 0 && (
+              <div className="space-y-2">
+                <Label>Categoría</Label>
+                <Controller
+                  name="categoriaId"
+                  control={control}
+                  render={({ field }) => (
+                    <CustomSelect
+                      value={field.value ?? ""}
+                      onChange={(v) => field.onChange(v || null)}
+                      options={[
+                        { value: "", label: "Sin categoría" },
+                        ...categorias.map((c) => ({
+                          value: c.id,
+                          label: c.nombre,
+                        })),
+                      ]}
+                      placeholder="Sin categoría"
+                      searchable
+                      searchPlaceholder="Buscar categoría..."
+                    />
+                  )}
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="descripcion">Descripción</Label>

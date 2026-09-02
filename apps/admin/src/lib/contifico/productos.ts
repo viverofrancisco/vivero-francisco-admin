@@ -171,6 +171,24 @@ export async function sincronizarProducto(
     return producto.contificoProductoId;
   }
 
+  // Con qué categoría de Contífico nace. La del producto si ya la tiene; si no,
+  // la que dice su categoría del portal.
+  //
+  // **No es cosmético.** Allá la categoría lleva la `cuenta_venta` y el
+  // producto la hereda, así que es lo que decide en qué cuenta cae la venta.
+  // Sin mandar ninguna, Contífico les pone su categoría por defecto —de tipo
+  // PROD—, y por eso los servicios que creaba el portal se contabilizaban como
+  // venta de bienes.
+  const categoriaId =
+    producto.contificoCategoriaId ??
+    (
+      await prisma.producto.findUnique({
+        where: { id: producto.id },
+        select: { categoria: { select: { contificoCategoriaId: true } } },
+      })
+    )?.categoria?.contificoCategoriaId ??
+    null;
+
   // Los mismos campos que la UI muestra en el resumen de confirmación.
   const cuerpo = camposParaCrear({
     id: producto.id,
@@ -178,7 +196,7 @@ export async function sincronizarProducto(
     descripcion: producto.descripcion,
     tipo: producto.tipo,
     ivaTasa: producto.ivaTasa != null ? Number(producto.ivaTasa) : null,
-    contificoCategoriaId: producto.contificoCategoriaId,
+    contificoCategoriaId: categoriaId,
   });
   const codigo = cuerpo.codigo;
   let contificoId: string;
@@ -200,7 +218,13 @@ export async function sincronizarProducto(
 
   await prisma.producto.update({
     where: { id: producto.id },
-    data: { contificoProductoId: contificoId, codigo },
+    data: {
+      contificoProductoId: contificoId,
+      codigo,
+      // Con cuál se creó, para saber después en qué cuenta cayó sin tener que
+      // preguntárselo a su API.
+      ...(categoriaId ? { contificoCategoriaId: categoriaId } : {}),
+    },
   });
   return contificoId;
 }

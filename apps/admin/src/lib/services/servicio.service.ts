@@ -83,9 +83,9 @@ export interface CreateServicioPayload {
   descripcion?: string | null;
   /** Qué es: un servicio que se ejecuta o un bien que se despacha. */
   tipo?: "SERVICIO" | "BIEN";
-  /** Cómo se vende. Contífico no lo conoce: vive solo en el portal. */
-  /** Cada cuánto se cobra. Solo aplica a suscripciones. */
   ivaTasa?: number | null;
+  /** Cómo se agrupa en el portal. Decide con qué categoría nace en Contífico. */
+  categoriaId?: string | null;
   /** Vínculo con un producto que ya existe en Contífico. Opcional. */
   contificoProductoId?: string | null;
   codigo?: string | null;
@@ -119,6 +119,7 @@ export async function createServicio(
       descripcion: payload.descripcion?.trim() || null,
       tipo: payload.tipo ?? "SERVICIO",
       ivaTasa: payload.ivaTasa ?? null,
+      categoriaId: payload.categoriaId ?? null,
       contificoProductoId: payload.contificoProductoId ?? null,
       codigo: payload.contificoProductoId ? (payload.codigo ?? null) : null,
       createdById: viewer.id,
@@ -161,6 +162,12 @@ export interface UpdateServicioPayload {
   /** Se acepta para poder validarlo, pero no se puede cambiar. */
   tipo?: "SERVICIO" | "BIEN";
   ivaTasa?: number | null;
+  /**
+   * Cambiarla reagrupa el producto **en el portal**. No toca la categoría que
+   * tiene en Contífico: allá la categoría lleva la cuenta contable y moverlo
+   * cambiaría dónde se contabilizaron ventas que ya pasaron.
+   */
+  categoriaId?: string | null;
 }
 
 export async function updateServicio(
@@ -194,6 +201,9 @@ export async function updateServicio(
         ? { descripcion: payload.descripcion?.trim() || null }
         : {}),
       ...(payload.ivaTasa !== undefined ? { ivaTasa: payload.ivaTasa } : {}),
+      ...(payload.categoriaId !== undefined
+        ? { categoriaId: payload.categoriaId }
+        : {}),
       updatedById: viewer.id,
     },
   });
