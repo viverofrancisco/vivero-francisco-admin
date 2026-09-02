@@ -42,6 +42,14 @@ export interface EmisorFila {
   facturas: number;
 }
 
+interface ResultadoPrueba {
+  estado: string;
+  numero: string;
+  claveAcceso: string;
+  numeroAutorizacion: string | null;
+  mensajes: { identificador?: string; mensaje?: string; informacionAdicional?: string }[];
+}
+
 const vacio = (): EmisorFila => ({
   id: "",
   ruc: "",
@@ -91,6 +99,34 @@ export function EmisoresPage({
   const router = useRouter();
   const [editando, setEditando] = useState<EmisorFila | null>(null);
   const [subiendoA, setSubiendoA] = useState<EmisorFila | null>(null);
+  const [probando, setProbando] = useState<string | null>(null);
+  /** Lo que devolvió la última prueba, por emisor. */
+  const [pruebas, setPruebas] = useState<Record<string, ResultadoPrueba>>({});
+
+  /**
+   * Emite una factura de prueba contra el SRI.
+   *
+   * Es la única forma de saber que la cadena entera funciona —datos, firma,
+   * numeración, conexión— antes de que dependa una orden de verdad.
+   */
+  const probar = async (e: EmisorFila) => {
+    setProbando(e.id);
+    try {
+      const res = await fetch(`/api/emisores/${e.id}/probar`, { method: "POST" });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      setPruebas((p) => ({ ...p, [e.id]: body }));
+      if (body.estado === "AUTORIZADO") {
+        toast.success(`El SRI autorizó la factura ${body.numero}`);
+      } else {
+        toast.warning(`El SRI respondió: ${body.estado}`);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No pudimos emitir");
+    } finally {
+      setProbando(null);
+    }
+  };
 
   const borrar = async (id: string) => {
     const res = await fetch(`/api/emisores/${id}`, { method: "DELETE" });
@@ -224,6 +260,55 @@ export function EmisoresPage({
                     </div>
                   )}
                 </div>
+
+                {/* Solo en pruebas: en producción esto emitiría una factura
+                    real a nombre del contribuyente. */}
+                {e.ambiente === "PRUEBAS" && e.certificadoSujeto && (
+                  <div className="space-y-2 rounded-md border p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-sm text-muted-foreground">
+                        Emitir una factura de prueba a consumidor final por
+                        $1.00, para ver si el SRI la autoriza.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => probar(e)}
+                        disabled={probando !== null}
+                      >
+                        {probando === e.id && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Emitir prueba
+                      </Button>
+                    </div>
+
+                    {pruebas[e.id] && (
+                      <div
+                        className={`space-y-1 rounded-md p-3 text-xs ${
+                          pruebas[e.id].estado === "AUTORIZADO"
+                            ? "bg-primary/5 text-primary"
+                            : "border border-amber-200 bg-amber-50 text-amber-900"
+                        }`}
+                      >
+                        <p className="font-medium">
+                          {pruebas[e.id].estado} · {pruebas[e.id].numero}
+                        </p>
+                        <p className="break-all font-mono">
+                          {pruebas[e.id].claveAcceso}
+                        </p>
+                        {/* Cuando rechaza, el motivo es lo único que importa. */}
+                        {pruebas[e.id].mensajes.map((m, i) => (
+                          <p key={i}>
+                            {m.identificador ? `${m.identificador}· ` : ""}
+                            {m.mensaje}
+                            {m.informacionAdicional ? ` — ${m.informacionAdicional}` : ""}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex justify-end gap-2 border-t pt-3">
                   <Button variant="outline" size="sm" onClick={() => setEditando(e)}>
