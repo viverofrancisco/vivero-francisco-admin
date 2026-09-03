@@ -7,6 +7,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { NotFoundError, ValidationError } from "@/lib/services/errors";
+import { FORMA_PAGO_POR_DEFECTO } from "./comprobante";
 import type { RideDatos } from "./ride";
 
 export async function datosDelRide(facturaId: string): Promise<RideDatos> {
@@ -48,6 +49,7 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
           descripcion: true,
           cantidad: true,
           precioUnitario: true,
+          subtotal: true,
           total: true,
           producto: { select: { codigo: true, id: true } },
         },
@@ -90,8 +92,17 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),
       descuento: 0,
-      total: Number(l.total),
+      // **Sin impuestos**: esa columna del RIDE es el precio total de la línea
+      // antes del IVA. `FacturaLinea.total` lo trae incluido, que es otra cosa.
+      totalSinImpuestos: Number(l.subtotal),
     })),
+    // Lo que se declaró al emitir. Sale del mismo lugar que el XML para que el
+    // papel no diga una forma de pago distinta a la que se mandó.
+    pagos: [
+      { formaPago: FORMA_PAGO_POR_DEFECTO, total: Number(factura.total) },
+    ],
+    totalDescuento: 0,
+    propina: 0,
     subtotal0: Number(factura.subtotal0),
     subtotalGravado: Number(factura.subtotalGravado),
     iva: Number(factura.iva),

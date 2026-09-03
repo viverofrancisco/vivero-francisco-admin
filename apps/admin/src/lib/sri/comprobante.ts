@@ -168,7 +168,19 @@ export function armarNotaCredito(
  * cuotas—. Se declara la más neutra y el cobro real vive en el portal, que es
  * donde se registra. Cambiarla después no altera el comprobante.
  */
-const FORMA_PAGO_POR_DEFECTO = "01";
+export const FORMA_PAGO_POR_DEFECTO = "01";
+
+/** Cómo se nombra en el RIDE, que imprime el código y su descripción. */
+export const FORMAS_PAGO_SRI: Record<string, string> = {
+  "01": "SIN UTILIZACIÓN DEL SISTEMA FINANCIERO",
+  "15": "COMPENSACIÓN DE DEUDAS",
+  "16": "TARJETA DE DÉBITO",
+  "17": "DINERO ELECTRÓNICO",
+  "18": "TARJETA PREPAGO",
+  "19": "TARJETA DE CRÉDITO",
+  "20": "OTROS CON UTILIZACIÓN DEL SISTEMA FINANCIERO",
+  "21": "ENDOSO DE TÍTULOS",
+};
 
 export function armarFactura(
   comprador: CompradorComprobante,

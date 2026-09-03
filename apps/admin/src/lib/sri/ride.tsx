@@ -22,6 +22,7 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import { toBuffer as codigoDeBarras } from "bwip-js/node";
+import { FORMAS_PAGO_SRI } from "./comprobante";
 
 const COLOR_TEXT = "#1a1a1a";
 const COLOR_MUTED = "#555555";
@@ -115,8 +116,13 @@ export interface RideDatos {
     cantidad: number;
     precioUnitario: number;
     descuento: number;
-    total: number;
+    /** **Sin impuestos**: es lo que imprime esa columna del RIDE. */
+    totalSinImpuestos: number;
   }[];
+  /** Cómo se declaró el pago al emitir. El RIDE lo imprime. */
+  pagos: { formaPago: string; total: number }[];
+  totalDescuento: number;
+  propina: number;
   subtotal0: number;
   subtotalGravado: number;
   iva: number;
@@ -316,21 +322,36 @@ function RideDocument({
                 {money(l.descuento)}
               </Text>
               <Text style={[styles.td, { width: 65, textAlign: "right" }]}>
-                {money(l.total)}
+                {money(l.totalSinImpuestos)}
               </Text>
             </View>
           ))}
         </View>
 
         <View style={[styles.fila, { marginTop: 10 }]}>
-          {/* Información adicional */}
-          <View style={[styles.caja, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.subtitulo}>Información adicional</Text>
-            {datos.descripcion ? (
-              <Text>{datos.descripcion}</Text>
-            ) : (
-              <Text style={styles.etiqueta}>—</Text>
-            )}
+          {/* Formas de pago e información adicional */}
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <View style={styles.caja}>
+              <Text style={styles.subtitulo}>Forma de pago</Text>
+              {datos.pagos.map((p, i) => (
+                <View key={i} style={[styles.fila, { justifyContent: "space-between" }]}>
+                  <Text style={{ flex: 1 }}>
+                    {p.formaPago} · {FORMAS_PAGO_SRI[p.formaPago] ?? "OTRA"}
+                  </Text>
+                  <Text style={{ width: 60, textAlign: "right" }}>
+                    {money(p.total)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <View style={[styles.caja, { marginTop: 8 }]}>
+              <Text style={styles.subtitulo}>Información adicional</Text>
+              {datos.descripcion ? (
+                <Text>{datos.descripcion}</Text>
+              ) : (
+                <Text style={styles.etiqueta}>—</Text>
+              )}
+            </View>
           </View>
 
           {/* Totales, con las bases separadas por tarifa */}
@@ -350,8 +371,16 @@ function RideDocument({
               </Text>
             </View>
             <View style={styles.totalFila}>
+              <Text style={styles.totalEtiqueta}>TOTAL DESCUENTO</Text>
+              <Text style={styles.totalValor}>{money(datos.totalDescuento)}</Text>
+            </View>
+            <View style={styles.totalFila}>
               <Text style={styles.totalEtiqueta}>IVA</Text>
               <Text style={styles.totalValor}>{money(datos.iva)}</Text>
+            </View>
+            <View style={styles.totalFila}>
+              <Text style={styles.totalEtiqueta}>PROPINA</Text>
+              <Text style={styles.totalValor}>{money(datos.propina)}</Text>
             </View>
             <View style={styles.totalFila}>
               <Text style={[styles.totalEtiqueta, { fontFamily: "Helvetica-Bold", color: COLOR_TEXT }]}>
