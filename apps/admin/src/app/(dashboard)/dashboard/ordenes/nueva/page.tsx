@@ -5,6 +5,7 @@ import {
   VISITAS_SIN_TOPE,
 } from "@/lib/services/orden.service";
 import { productosSuscritos } from "@/lib/services/suscripcion.service";
+import { productosVendibles } from "@/lib/services/variantes-vendibles";
 import { NuevaOrdenPage } from "@/components/ordenes/nueva-orden-page";
 
 export default async function NuevaOrdenRoute({
@@ -27,17 +28,7 @@ export default async function NuevaOrdenRoute({
       orderBy: { nombre: "asc" },
       select: { id: true, nombre: true, apellido: true, empresa: true },
     }),
-    prisma.producto.findMany({
-      where: { deletedAt: null },
-      orderBy: { nombre: "asc" },
-      select: {
-        id: true,
-        nombre: true,
-        descripcion: true,
-        tipo: true,
-        ivaTasa: true,
-      },
-    }),
+    productosVendibles(),
   ]);
 
   // Con cliente en la URL se resuelven acá: la pantalla llega completa.
@@ -84,10 +75,7 @@ export default async function NuevaOrdenRoute({
   return (
     <NuevaOrdenPage
       clientes={clientes}
-      productos={productos.map((p) => ({
-        ...p,
-        ivaTasa: p.ivaTasa === null ? null : Number(p.ivaTasa),
-      }))}
+      productos={productos}
       clienteInicial={visible ? clienteInicial : undefined}
       suscritosIniciales={suscritos}
       preseleccion={preseleccion}

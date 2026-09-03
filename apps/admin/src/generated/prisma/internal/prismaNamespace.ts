@@ -4524,6 +4524,7 @@ export const MovimientoInventarioScalarFieldEnum = {
   saldo: 'saldo',
   motivo: 'motivo',
   nota: 'nota',
+  facturaId: 'facturaId',
   createdAt: 'createdAt',
   createdById: 'createdById',
   createdByNombre: 'createdByNombre'
@@ -5008,6 +5009,7 @@ export const OrdenLineaScalarFieldEnum = {
   iva: 'iva',
   total: 'total',
   productoId: 'productoId',
+  varianteId: 'varianteId',
   suscripcionItemId: 'suscripcionItemId',
   periodoInicio: 'periodoInicio',
   periodoFin: 'periodoFin'
@@ -5107,7 +5109,8 @@ export const FacturaLineaScalarFieldEnum = {
   subtotal: 'subtotal',
   iva: 'iva',
   total: 'total',
-  productoId: 'productoId'
+  productoId: 'productoId',
+  varianteId: 'varianteId'
 } as const
 
 export type FacturaLineaScalarFieldEnum = (typeof FacturaLineaScalarFieldEnum)[keyof typeof FacturaLineaScalarFieldEnum]

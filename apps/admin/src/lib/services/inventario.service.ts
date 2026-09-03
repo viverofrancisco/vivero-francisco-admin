@@ -24,6 +24,17 @@ export interface MovimientoInput {
   cantidad: number;
   motivo: MotivoMovimiento;
   nota?: string | null;
+  /** Contra qué factura, en una venta o una devolución. */
+  facturaId?: string | null;
+  /**
+   * Anota aunque deje el stock en negativo.
+   *
+   * **Solo para lo que ya pasó.** Una venta se decide *antes* de emitir
+   * (`ensureStockParaVender`); una vez que el SRI autorizó, el comprobante no
+   * se puede deshacer, así que negarse a anotar la salida no evitaría nada —
+   * dejaría el stock mintiendo sobre mercadería que ya salió por la puerta.
+   */
+  forzar?: boolean;
 }
 
 /**
@@ -63,7 +74,7 @@ export async function moverStock(
     }
 
     const saldo = variante.stock + cantidad;
-    if (saldo < 0 && !variante.permiteNegativo) {
+    if (saldo < 0 && !variante.permiteNegativo && !entrada.forzar) {
       throw new ValidationError(
         `No alcanza el stock: hay ${variante.stock} y se quieren sacar ${-cantidad}.`
       );
@@ -76,6 +87,7 @@ export async function moverStock(
         saldo,
         motivo: entrada.motivo,
         nota: entrada.nota?.trim() || null,
+        facturaId: entrada.facturaId ?? null,
         createdById: viewer.id,
         createdByNombre: viewer.nombre ?? null,
       },
@@ -179,4 +191,124 @@ export async function sinStock(viewer: Viewer, limite = 50) {
       valores: { select: { valor: { select: { valor: true } } } },
     },
   });
+}
+
+/**
+ * ¿Se puede vender esto?
+ *
+ * Se pregunta **antes de emitir**, porque después no sirve de nada: un
+ * comprobante que el SRI autorizó no se deshace, así que descubrir ahí que
+ * falta stock dejaría la factura viva y la venta sin poder anotarse. Acá
+ * todavía se puede cortar sin haber roto nada.
+ *
+ * Solo mira las variantes que se cuentan y que no admiten negativo: vender
+ * contra pedido es una decisión ya tomada en la variante.
+ */
+export async function ensureStockParaVender(
+  lineas: { varianteId: string | null; cantidad: number; descripcion: string }[]
+): Promise<void> {
+  const necesita = new Map<string, number>();
+  for (const l of lineas) {
+    if (!l.varianteId) continue;
+    necesita.set(l.varianteId, (necesita.get(l.varianteId) ?? 0) + Math.ceil(l.cantidad));
+  }
+  if (necesita.size === 0) return;
+
+  const variantes = await prisma.variante.findMany({
+    where: { id: { in: [...necesita.keys()] } },
+    select: {
+      id: true,
+      stock: true,
+      manejaInventario: true,
+      permiteNegativo: true,
+      sku: true,
+      producto: { select: { nombre: true } },
+      valores: { select: { valor: { select: { valor: true } } } },
+    },
+  });
+
+  const faltantes = variantes
+    .filter((v) => v.manejaInventario && !v.permiteNegativo)
+    .filter((v) => v.stock < (necesita.get(v.id) ?? 0));
+
+  if (faltantes.length === 0) return;
+
+  const nombres = faltantes.map((v) => {
+    const combo = v.valores.map((x) => x.valor.valor).join(" · ");
+    const nombre = combo ? `${v.producto.nombre} · ${combo}` : v.producto.nombre;
+    return `"${nombre}" (hay ${v.stock}, se venden ${necesita.get(v.id)})`;
+  });
+  throw new ValidationError(
+    `No alcanza el stock: ${nombres.join(", ")}. Cargá inventario, o dejá que la variante se venda sin stock.`
+  );
+}
+
+/**
+ * Anota la salida de lo que se acaba de facturar.
+ *
+ * Va **después** de que el SRI autorizó y con `forzar`: la venta ya es un
+ * hecho, así que el libro la registra pase lo que pase. La decisión de si se
+ * podía vender ya se tomó en `ensureStockParaVender()`, antes de emitir.
+ */
+export async function descontarPorVenta(
+  viewer: Viewer,
+  facturaId: string,
+  numero: string,
+  lineas: { varianteId: string | null; cantidad: number }[],
+  tx: Prisma.TransactionClient
+): Promise<void> {
+  await moverPorFactura(viewer, facturaId, numero, lineas, tx, -1, "VENTA");
+}
+
+/** Lo devuelve al estante cuando una nota de crédito anula la factura. */
+export async function devolverPorNotaDeCredito(
+  viewer: Viewer,
+  facturaId: string,
+  numero: string,
+  lineas: { varianteId: string | null; cantidad: number }[],
+  tx: Prisma.TransactionClient
+): Promise<void> {
+  await moverPorFactura(viewer, facturaId, numero, lineas, tx, 1, "DEVOLUCION");
+}
+
+async function moverPorFactura(
+  viewer: Viewer,
+  facturaId: string,
+  numero: string,
+  lineas: { varianteId: string | null; cantidad: number }[],
+  tx: Prisma.TransactionClient,
+  signo: 1 | -1,
+  motivo: "VENTA" | "DEVOLUCION"
+): Promise<void> {
+  // Una variante puede aparecer en dos líneas de la misma factura; se mueve
+  // una sola vez, o el libro contaría dos salidas para una venta.
+  const porVariante = new Map<string, number>();
+  for (const l of lineas) {
+    if (!l.varianteId) continue;
+    porVariante.set(
+      l.varianteId,
+      (porVariante.get(l.varianteId) ?? 0) + Math.ceil(l.cantidad)
+    );
+  }
+  if (porVariante.size === 0) return;
+
+  const cuentan = await tx.variante.findMany({
+    where: { id: { in: [...porVariante.keys()] }, manejaInventario: true },
+    select: { id: true },
+  });
+
+  for (const { id } of cuentan) {
+    await moverStock(
+      viewer,
+      id,
+      {
+        cantidad: signo * porVariante.get(id)!,
+        motivo,
+        facturaId,
+        nota: `Factura ${numero}`,
+        forzar: true,
+      },
+      tx
+    );
+  }
 }

@@ -45,6 +45,7 @@ export async function PUT(
         precioUnitario: l.precioUnitario,
         ivaTasa: l.ivaTasa,
         productoId: l.productoId,
+        varianteId: l.varianteId ?? null,
         visitaProductoIds: l.visitaProductoIds ?? [],
         suscripcionItemId: l.suscripcionItemId ?? null,
         periodoInicio: l.periodoInicio ? new Date(l.periodoInicio) : null,

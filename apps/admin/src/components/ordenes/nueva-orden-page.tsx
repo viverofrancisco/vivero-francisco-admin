@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
+  SelectorVariante,
+  type VarianteVendible,
+} from "@/components/ordenes/selector-variante";
+import {
   SelectorVisitas,
   origenDeLinea,
   rearmarPorVisitas,
@@ -40,9 +44,9 @@ interface Cliente {
 interface Producto {
   id: string;
   nombre: string;
-  descripcion: string | null;
-  tipo: string;
   ivaTasa: number | null;
+  /** Vacío en un servicio; una sola en un bien sin opciones. */
+  variantes: VarianteVendible[];
 }
 
 /**
@@ -65,6 +69,7 @@ function lineaBase(): Omit<Linea, "descripcion" | "productoId"> {
     cantidad: "1",
     precioUnitario: "",
     ivaTasa: "0",
+    varianteId: null,
     visitaProductoIds: [],
     suscripcionItemId: null,
     periodoInicio: null,
@@ -225,6 +230,8 @@ export function NuevaOrdenPage({
         descripcion: p.nombre,
         ivaTasa: p.ivaTasa != null ? String(p.ivaTasa) : "0",
         productoId: p.id,
+        // Con una sola no hay nada que preguntar; con varias, el selector.
+        varianteId: p.variantes.length === 1 ? p.variantes[0].id : null,
       },
     ]);
     setProductoAAgregar("");
@@ -439,6 +446,7 @@ export function NuevaOrdenPage({
             precioUnitario: Number(l.precioUnitario),
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
+            varianteId: l.varianteId,
             visitaProductoIds: l.visitaProductoIds,
             suscripcionItemId: l.suscripcionItemId,
             periodoInicio: l.periodoInicio,
@@ -575,6 +583,16 @@ export function NuevaOrdenPage({
                           )}
                         </div>
                         <div className="flex flex-wrap items-end gap-3">
+                          <SelectorVariante
+                            variantes={
+                              productos.find((p) => p.id === l.productoId)
+                                ?.variantes ?? []
+                            }
+                            value={l.varianteId}
+                            onChange={(varianteId) =>
+                              actualizar(l.uid, { varianteId })
+                            }
+                          />
                           <div className="w-20 space-y-1">
                             <Label className="text-xs">Cant.</Label>
                             <Input

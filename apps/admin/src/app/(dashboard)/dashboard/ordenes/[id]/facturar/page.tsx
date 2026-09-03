@@ -4,6 +4,7 @@ import { requireStaff, viewerFromSession } from "@/lib/auth-helpers";
 import { getOrden } from "@/lib/services/orden.service";
 import { NotFoundError } from "@/lib/services/errors";
 import { emisoresDisponibles } from "@/lib/services/emisor.service";
+import { productosVendibles } from "@/lib/services/variantes-vendibles";
 import { EmitirFacturaPage } from "@/components/ordenes/emitir-factura-page";
 import { facturaVigenteDe } from "@/lib/services/factura-vigente";
 
@@ -44,15 +45,9 @@ export default async function EmitirRoute({
   }
 
   const [productos, datosFacturacion, emisores] = await Promise.all([
-    prisma.producto.findMany({
-      where: { deletedAt: null },
-      orderBy: { nombre: "asc" },
-      select: {
-        id: true,
-        nombre: true,
-        ivaTasa: true,
-      },
-    }),
+    // Con sus variantes: de la variante sale el SKU impreso y el stock que
+    // baja cuando el SRI autoriza.
+    productosVendibles(),
     prisma.datoFacturacion.findMany({
       where: { clienteId: orden.cliente.id, archivado: false },
       orderBy: [{ esPredeterminado: "desc" }, { razonSocial: "asc" }],
@@ -84,12 +79,10 @@ export default async function EmitirRoute({
           precioUnitario: Number(l.precioUnitario),
           ivaTasa: Number(l.ivaTasa),
           productoId: l.productoId,
+          varianteId: l.varianteId,
         })),
       }}
-      productos={productos.map((p) => ({
-        ...p,
-        ivaTasa: p.ivaTasa === null ? null : Number(p.ivaTasa),
-      }))}
+      productos={productos}
       emisores={emisores.map((e) => ({
         id: e.id,
         ruc: e.ruc,

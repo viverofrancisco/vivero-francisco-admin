@@ -28,6 +28,11 @@ import {
   type CobroPropioInput,
 } from "./cobro.service";
 import {
+  descontarPorVenta,
+  devolverPorNotaDeCredito,
+  ensureStockParaVender,
+} from "./inventario.service";
+import {
   emitirFacturaSri,
   emitirNotaCreditoSri,
   numeroComprobante,
@@ -58,6 +63,8 @@ function ensureCanWrite(viewer: Viewer): void {
 /** Una línea tal como la arma quien emite, que puede no ser la de la orden. */
 export interface LineaFacturaInput {
   productoId: string;
+  /** Qué variante sale, cuando el producto es un bien. Su SKU es el código. */
+  varianteId?: string | null;
   /** Lo que sale impreso, tal cual: va al `descripcion` del detalle del XML. */
   descripcion: string;
   cantidad: number;
@@ -94,6 +101,7 @@ function lineasParaGuardar(propuestas: LineaFacturaInput[]) {
       posicion: i,
       descripcion: l.descripcion,
       cantidad: l.cantidad,
+      varianteId: l.varianteId ?? null,
       precioUnitario: l.precioUnitario,
       ivaTasa: l.ivaTasa,
       subtotal,
@@ -272,6 +280,7 @@ export async function emitirFactura(
     opciones.lineas ??
     orden.lineas.map((l) => ({
       productoId: l.productoId,
+      varianteId: l.varianteId,
       descripcion: l.descripcion,
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),
@@ -285,6 +294,17 @@ export async function emitirFactura(
   // Las líneas de la orden ya cuadran con la orden por construcción; las
   // armadas a mano hay que mirarlas.
   if (!deLaOrden) ensureFacturaCuadra(orden.lineas, propuestas);
+
+  // ¿Hay stock? Se pregunta **antes de emitir**: después el comprobante ya
+  // está autorizado y no se deshace, así que cortar ahí dejaría la factura
+  // viva y la salida sin poder anotarse.
+  await ensureStockParaVender(
+    propuestas.map((l) => ({
+      varianteId: l.varianteId ?? null,
+      cantidad: l.cantidad,
+      descripcion: l.descripcion,
+    }))
+  );
 
   return emitirPorSri(viewer, {
     orden,
@@ -344,6 +364,21 @@ async function emitirPorSri(
   });
   const porId = new Map(productos.map((p) => [p.id, p]));
 
+  // El SKU de la variante manda sobre el código del producto: es lo que
+  // identifica exactamente lo que salió —"Rojo · Grande" y no "Maceta"— y es
+  // lo que está pegado en la etiqueta que el cliente tiene en la mano.
+  const varianteIds = [
+    ...new Set(propuestas.map((l) => l.varianteId).filter(Boolean) as string[]),
+  ];
+  const skus = new Map(
+    (
+      await prisma.variante.findMany({
+        where: { id: { in: varianteIds } },
+        select: { id: true, sku: true },
+      })
+    ).map((v) => [v.id, v.sku])
+  );
+
   // El código del producto es **nuestro**: el XML del SRI lleva
   // `codigoPrincipal` como texto libre. Por eso emitir por acá no necesita que
   // el producto esté vinculado a ningún catálogo ajeno.
@@ -355,7 +390,10 @@ async function emitirPorSri(
       );
     }
     return {
-      codigo: producto.codigo ?? producto.id.slice(-10).toUpperCase(),
+      codigo:
+        (l.varianteId ? skus.get(l.varianteId) : null) ??
+        producto.codigo ??
+        producto.id.slice(-10).toUpperCase(),
       // Lo que el armador decidió imprimir, tal cual.
       descripcion: l.descripcion,
       cantidad: l.cantidad,
@@ -460,6 +498,19 @@ async function emitirPorSri(
       },
     });
     if (r.estado === "AUTORIZADO") {
+      // La mercadería salió. Se anota **después** de la autorización y no
+      // antes: un comprobante rechazado no vendió nada, y descontar ahí dejaría
+      // el stock corto por una factura que no existe.
+      await descontarPorVenta(
+        viewer,
+        creada.id,
+        creada.numero,
+        propuestas.map((l) => ({
+          varianteId: l.varianteId ?? null,
+          cantidad: l.cantidad,
+        })),
+        tx
+      );
       await tx.orden.update({
         where: { id: orden.id },
         data: { estado: "CONFIRMADA", updatedById: viewer.id },
@@ -542,7 +593,9 @@ export async function emitirNotaCredito(
           precioUnitario: true,
           ivaTasa: true,
           productoId: true,
+          varianteId: true,
           producto: { select: { codigo: true, id: true } },
+          variante: { select: { sku: true } },
         },
       },
     },
@@ -587,7 +640,10 @@ export async function emitirNotaCredito(
       direccion: factura.datoFacturacion?.direccion,
     },
     factura.lineas.map((l) => ({
-      codigo: l.producto.codigo ?? l.producto.id.slice(-10).toUpperCase(),
+      codigo:
+        l.variante?.sku ??
+        l.producto.codigo ??
+        l.producto.id.slice(-10).toUpperCase(),
       descripcion: l.descripcion,
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),
@@ -676,6 +732,7 @@ export async function emitirNotaCredito(
             return {
               posicion: i,
               descripcion: l.descripcion,
+              varianteId: l.varianteId,
               cantidad: l.cantidad,
               precioUnitario: l.precioUnitario,
               ivaTasa: l.ivaTasa,
@@ -696,6 +753,19 @@ export async function emitirNotaCredito(
         where: { id: factura.id },
         data: { anulada: true },
       });
+      // La mercadería vuelve al estante. Contra la **nota**, no contra la
+      // factura: es el movimiento que la nota causó, y así el libro cuenta la
+      // salida y la vuelta como dos hechos con su propio comprobante.
+      await devolverPorNotaDeCredito(
+        viewer,
+        creada.id,
+        creada.numero,
+        factura.lineas.map((l) => ({
+          varianteId: l.varianteId,
+          cantidad: Number(l.cantidad),
+        })),
+        tx
+      );
       await tx.orden.updateMany({
         where: { id: factura.ordenId, estado: "CONFIRMADA" },
         data: { estado: "BORRADOR", updatedById: viewer.id },

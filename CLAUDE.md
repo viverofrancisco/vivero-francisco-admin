@@ -167,8 +167,21 @@ server-side because the content type is what gets *signed*.
 **A product is in several categories** (`ProductoCategoria`). It was one column,
 and a rosal is both "Plantas" and "Exterior".
 
-Selling a variant is **not wired yet**: `OrdenLinea`/`FacturaLinea` still point at
-a `Producto`, so nothing writes `VENTA` movements. See the doc.
+**A bien is sold by variant.** `OrdenLinea.varianteId` and
+`FacturaLinea.varianteId` say which one went out — nullable, because a servicio
+has none; `ensureVariantes()` is what requires it for a `BIEN`, since only the
+service knows the `tipo`. **With a single variant it fills itself in**: a bien
+with no options has exactly one, and the drafts the portal builds on its own
+have nobody to ask. The variant's `sku` becomes the line's `codigoPrincipal`,
+falling back to `Producto.codigo` and then to a code derived from the id.
+
+**Stock moves at invoicing, and the order isn't symmetric.** `ensureStockParaVender()`
+runs *before* emitting — the only moment where saying no is still possible, since
+an authorized comprobante can't be undone — and `descontarPorVenta()` writes the
+`VENTA` *after* the SRI authorized, with `forzar`, because by then the sale is a
+fact and refusing to record it would only make the stock lie. A rejected emission
+moves nothing. A nota de crédito writes the `DEVOLUCION`, tied to the nota rather
+than to the factura.
 
 **Nothing in the catalog says whether something is one-off or recurring.** That
 depends on the cliente, not the product: the same desmalezado is a one-off for

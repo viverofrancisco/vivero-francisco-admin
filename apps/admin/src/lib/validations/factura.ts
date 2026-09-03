@@ -9,8 +9,13 @@ import { z } from "zod/v4";
  * encarga el servicio: es una regla del negocio, no de la forma del cuerpo.
  */
 export const lineaFacturaSchema = z.object({
-  /** De dónde sale el `codigoPrincipal`, y con qué queda asociada la venta. */
+  /** Con qué queda asociada la venta. */
   productoId: z.string().min(1),
+  /**
+   * Qué variante sale. **Su SKU es el `codigoPrincipal`** impreso, y es de
+   * dónde se descuenta el stock al autorizar. Un servicio no tiene.
+   */
+  varianteId: z.string().min(1).nullable().optional(),
   /** Lo que sale impreso, tal cual: va al `descripcion` del detalle del XML. */
   descripcion: z.string().min(1, "La línea necesita una descripción"),
   cantidad: z.number().positive(),

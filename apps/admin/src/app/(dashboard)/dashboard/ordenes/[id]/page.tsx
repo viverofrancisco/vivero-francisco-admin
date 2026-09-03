@@ -8,6 +8,7 @@ import {
 } from "@/lib/services/orden.service";
 import { hoyEnEcuador } from "@/lib/fechas";
 import { NotFoundError } from "@/lib/services/errors";
+import { productosVendibles } from "@/lib/services/variantes-vendibles";
 import { OrdenDetail } from "@/components/ordenes/orden-detail";
 
 export default async function OrdenRoute({
@@ -73,19 +74,11 @@ export default async function OrdenRoute({
         )
       : [];
 
-  // El catálogo solo hace falta para editar el borrador.
+  // El catálogo solo hace falta para editar el borrador. Viene con sus
+  // variantes: un bien se vende por variante, y el editor tiene que poder
+  // ofrecerlas sin volver al servidor.
   const productos =
-    orden.estado === "BORRADOR"
-      ? await prisma.producto.findMany({
-          where: { deletedAt: null },
-          orderBy: { nombre: "asc" },
-          select: {
-            id: true,
-            nombre: true,
-            ivaTasa: true,
-          },
-        })
-      : [];
+    orden.estado === "BORRADOR" ? await productosVendibles() : [];
 
   return (
     <div className="p-4 md:p-6">
@@ -125,6 +118,7 @@ export default async function OrdenRoute({
             periodoInicio: l.periodoInicio?.toISOString() ?? null,
             periodoFin: l.periodoFin?.toISOString() ?? null,
             productoId: l.productoId,
+            varianteId: l.varianteId,
             visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
             suscripcionItemId: l.suscripcionItemId,
             suscripcionId: l.suscripcionItem?.suscripcionId ?? null,
@@ -169,10 +163,7 @@ export default async function OrdenRoute({
           })),
         }}
         clientes={clientes}
-        productos={productos.map((p) => ({
-          ...p,
-          ivaTasa: p.ivaTasa === null ? null : Number(p.ivaTasa),
-        }))}
+        productos={productos}
         pendientes={pendientes.map((p) =>
           p.tipo === "visita"
             ? {

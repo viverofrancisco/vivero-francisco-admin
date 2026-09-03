@@ -294,6 +294,12 @@ export interface LineaOrdenInput {
   /** Obligatorio: de acá sale el `codigoPrincipal` de la línea del XML. */
   productoId: string;
   /**
+   * Qué variante se vende. **Obligatoria si el producto es un bien**, que
+   * siempre tiene al menos una; un servicio no tiene ninguna. Es lo que decide
+   * qué SKU se imprime y de qué stock se descuenta al facturar.
+   */
+  varianteId?: string | null;
+  /**
    * Qué trabajos de visita paga esta línea. **Pueden ser varios**: el mismo
    * producto hecho en dos visitas es una sola línea, porque es el mismo
    * producto y tener dos no le dice nada a nadie.
@@ -407,6 +413,7 @@ function armarLineas(entrada: LineaOrdenInput[]) {
       l.ivaTasa
     ),
     productoId: l.productoId,
+    varianteId: l.varianteId ?? null,
     suscripcionItemId: l.suscripcionItemId ?? null,
     periodoInicio: l.periodoInicio ?? null,
     periodoFin: l.periodoFin ?? null,
@@ -479,9 +486,67 @@ async function validarLineas(
       );
     }
   }
+  await ensureVariantes(lineas);
   ensureNoMezclaOrigenes(lineas);
   await ensureProcedenciaDelCliente(clienteId, lineas);
   await ensureTrabajoCompleto(lineas, ordenId);
+}
+
+/**
+ * Un bien se vende por variante; un servicio no tiene ninguna.
+ *
+ * **Con una sola variante la completa sola.** Un bien sin opciones tiene
+ * exactamente una, así que preguntar cuál sería preguntar por una decisión que
+ * no existe — y los borradores que arma el portal solo (al completar una
+ * visita, al renovar un plan) no tienen a nadie a quien preguntarle.
+ *
+ * Con varias sí hace falta elegir: nadie puede adivinar cuál de las seis
+ * macetas se vendió, y sin eso no se sabe qué SKU imprimir ni de dónde
+ * descontar. Ahí corta, y quien arma la orden lo resuelve en pantalla.
+ */
+async function ensureVariantes(lineas: LineaOrdenInput[]): Promise<void> {
+  const productos = await prisma.producto.findMany({
+    where: { id: { in: [...new Set(lineas.map((l) => l.productoId))] } },
+    select: {
+      id: true,
+      nombre: true,
+      tipo: true,
+      variantes: { select: { id: true }, orderBy: { posicion: "asc" } },
+    },
+  });
+  const porId = new Map(productos.map((p) => [p.id, p]));
+
+  for (const l of lineas) {
+    const producto = porId.get(l.productoId);
+    if (!producto) {
+      throw new ValidationError(`"${l.descripcion}" apunta a un producto que no existe.`);
+    }
+    if (producto.tipo !== "BIEN") {
+      // Un servicio no tiene variantes: mandar una sería inventar un vínculo.
+      if (l.varianteId) {
+        throw new ValidationError(
+          `"${producto.nombre}" es un servicio y no tiene variantes.`
+        );
+      }
+      continue;
+    }
+    if (!l.varianteId) {
+      if (producto.variantes.length === 1) {
+        l.varianteId = producto.variantes[0].id;
+        continue;
+      }
+      throw new ValidationError(
+        producto.variantes.length === 0
+          ? `"${producto.nombre}" no tiene ninguna variante para vender.`
+          : `Falta elegir qué variante de "${producto.nombre}" se vende.`
+      );
+    }
+    if (!producto.variantes.some((v) => v.id === l.varianteId)) {
+      throw new ValidationError(
+        `Esa variante no es de "${producto.nombre}".`
+      );
+    }
+  }
 }
 
 /**

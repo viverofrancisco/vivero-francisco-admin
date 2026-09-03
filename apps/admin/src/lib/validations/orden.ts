@@ -16,6 +16,11 @@ export const ordenLineaSchema = z.object({
   precioUnitario: z.number().min(0, "El precio no puede ser negativo"),
   ivaTasa: z.number().min(0).max(100).default(0),
   productoId: z.string().min(1, "Cada ítem necesita un producto del catálogo"),
+  /**
+   * Qué variante se vende. La exige el servicio cuando el producto es un bien
+   * —con una sola, la completa solo—: acá no se sabe el `tipo`.
+   */
+  varianteId: z.string().min(1).nullable().optional(),
   visitaProductoIds: z.array(z.string().min(1)).optional(),
   suscripcionItemId: z.string().min(1).nullable().optional(),
   periodoInicio: z.string().min(1).nullable().optional(),

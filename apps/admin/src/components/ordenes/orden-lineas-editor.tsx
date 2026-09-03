@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
+import {
+  SelectorVariante,
+  type VarianteVendible,
+} from "@/components/ordenes/selector-variante";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { money } from "./formato";
@@ -19,6 +23,8 @@ export interface ProductoCatalogo {
   id: string;
   nombre: string;
   ivaTasa: number | null;
+  /** Vacío en un servicio; una sola en un bien sin opciones. */
+  variantes: VarianteVendible[];
 }
 
 /**
@@ -38,6 +44,7 @@ function lineaBase(): Omit<LineaEditable, "descripcion" | "productoId"> {
     cantidad: "1",
     precioUnitario: "",
     ivaTasa: "0",
+    varianteId: null,
     visitaProductoIds: [],
     suscripcionItemId: null,
     periodoInicio: null,
@@ -105,6 +112,8 @@ export function OrdenLineasEditor({
         descripcion: p.nombre,
         ivaTasa: p.ivaTasa != null ? String(p.ivaTasa) : "0",
         productoId: p.id,
+        // Con una sola no hay nada que preguntar; con varias, el selector.
+        varianteId: p.variantes.length === 1 ? p.variantes[0].id : null,
       },
     ]);
   };
@@ -185,6 +194,13 @@ export function OrdenLineasEditor({
                 )}
               </div>
               <div className="flex flex-wrap items-end gap-3">
+                <SelectorVariante
+                  variantes={
+                    productos.find((p) => p.id === l.productoId)?.variantes ?? []
+                  }
+                  value={l.varianteId}
+                  onChange={(varianteId) => actualizar(l.uid, { varianteId })}
+                />
                 <div className="w-20 space-y-1">
                   <Label className="text-xs">Cant.</Label>
                   <Input

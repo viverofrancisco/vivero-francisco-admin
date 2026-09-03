@@ -41,6 +41,12 @@ export interface LineaEditable {
   ivaTasa: string;
   productoId: string;
   /**
+   * Qué variante se vende. Solo en un bien: un servicio no tiene ninguna, y un
+   * bien con una sola la trae elegida — preguntar por una decisión que no
+   * existe es ruido.
+   */
+  varianteId: string | null;
+  /**
    * Qué trabajos de visita paga la línea. **Varios** cuando el mismo producto
    * se hizo en más de una visita: eso es una sola línea, porque es un solo
    * producto.
@@ -144,6 +150,9 @@ export function rearmarPorVisitas(
       precioUnitario: previa?.precioUnitario ?? String(Number(p.precio)),
       ivaTasa: previa?.ivaTasa ?? String(Number(p.ivaTasa)),
       productoId: p.productoId,
+      // La variante no viene del pendiente: la elige quien arma la orden, y
+      // con una sola la completa el servidor.
+      varianteId: previa?.varianteId ?? null,
       visitaProductoIds: [p.visitaProductoId!],
       suscripcionItemId: null,
       periodoInicio: null,

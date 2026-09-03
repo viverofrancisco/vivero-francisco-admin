@@ -16,12 +16,18 @@ import { ArrowLeft, Loader2, Trash2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { money, fecha } from "./formato";
 import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
+import {
+  SelectorVariante,
+  type VarianteVendible,
+} from "@/components/ordenes/selector-variante";
 import { nombreCliente } from "@vivero/shared";
 
 export interface ProductoFacturable {
   id: string;
   nombre: string;
   ivaTasa: number | null;
+  /** Vacío en un servicio; una sola en un bien sin opciones. */
+  variantes: VarianteVendible[];
 }
 
 interface LineaOrden {
@@ -30,6 +36,7 @@ interface LineaOrden {
   precioUnitario: number;
   ivaTasa: number;
   productoId: string;
+  varianteId: string | null;
 }
 
 export interface OrdenAEmitir {
@@ -52,6 +59,7 @@ export interface OrdenAEmitir {
 interface LineaDocumento {
   uid: string;
   productoId: string;
+  varianteId: string | null;
   descripcion: string;
   cantidad: string;
   precioUnitario: string;
@@ -132,6 +140,7 @@ export function EmitirFacturaPage({
     orden.lineas.map((l) => ({
       uid: `linea-${contador++}`,
       productoId: l.productoId,
+      varianteId: l.varianteId,
       descripcion: l.descripcion,
       cantidad: String(l.cantidad),
       precioUnitario: String(l.precioUnitario),
@@ -160,6 +169,8 @@ export function EmitirFacturaPage({
       {
         uid: `linea-${contador++}`,
         productoId: p.id,
+        // Con una sola no hay nada que preguntar; con varias, el selector.
+        varianteId: p.variantes.length === 1 ? p.variantes[0].id : null,
         descripcion: p.nombre,
         cantidad: "1",
         precioUnitario: "",
@@ -204,6 +215,10 @@ export function EmitirFacturaPage({
     (l) => l.precioUnitario.trim() === "" || Number(l.precioUnitario) < 0
   );
   const sinDescripcion = lineas.some((l) => l.descripcion.trim() === "");
+  /** Un bien con varias variantes necesita que alguien diga cuál salió. */
+  const sinVariante = lineas.some(
+    (l) => (porId.get(l.productoId)?.variantes.length ?? 0) > 1 && !l.varianteId
+  );
 
   const motivoBloqueo =
     emisores.length === 0
@@ -212,7 +227,9 @@ export function EmitirFacturaPage({
         ? "El documento no tiene líneas."
         : sinDescripcion
           ? "Hay una línea sin descripción."
-          : sinPrecio
+          : sinVariante
+            ? "Hay una línea sin variante elegida."
+            : sinPrecio
             ? "Hay una línea sin precio."
             : descuadres.length > 0
               ? "El documento no cuadra con la orden."
@@ -231,6 +248,7 @@ export function EmitirFacturaPage({
           emisorId,
           lineas: lineas.map((l) => ({
             productoId: l.productoId,
+            varianteId: l.varianteId,
             descripcion: l.descripcion.trim(),
             cantidad: Number(l.cantidad),
             precioUnitario: Number(l.precioUnitario),
@@ -358,6 +376,10 @@ export function EmitirFacturaPage({
                                 actualizar(l.uid, {
                                   productoId: id,
                                   descripcion: p?.nombre ?? l.descripcion,
+                                  varianteId:
+                                    p?.variantes.length === 1
+                                      ? p.variantes[0].id
+                                      : null,
                                 });
                               }}
                               options={productos.map((p) => ({
@@ -381,6 +403,15 @@ export function EmitirFacturaPage({
                       </div>
 
                       <div className="flex flex-wrap items-end gap-3">
+                        {/* De la variante sale el SKU que se imprime y el
+                            stock que baja al autorizar. */}
+                        <SelectorVariante
+                          variantes={porId.get(l.productoId)?.variantes ?? []}
+                          value={l.varianteId}
+                          onChange={(varianteId) =>
+                            actualizar(l.uid, { varianteId })
+                          }
+                        />
                         <div className="w-20 space-y-1">
                           <Label className="text-xs">Cant.</Label>
                           <Input

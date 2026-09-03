@@ -260,6 +260,8 @@ export type VarianteWhereInput = {
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
   valores?: Prisma.VarianteValorListRelationFilter
   movimientos?: Prisma.MovimientoInventarioListRelationFilter
+  ordenLineas?: Prisma.OrdenLineaListRelationFilter
+  facturaLineas?: Prisma.FacturaLineaListRelationFilter
 }
 
 export type VarianteOrderByWithRelationInput = {
@@ -276,6 +278,8 @@ export type VarianteOrderByWithRelationInput = {
   producto?: Prisma.ProductoOrderByWithRelationInput
   valores?: Prisma.VarianteValorOrderByRelationAggregateInput
   movimientos?: Prisma.MovimientoInventarioOrderByRelationAggregateInput
+  ordenLineas?: Prisma.OrdenLineaOrderByRelationAggregateInput
+  facturaLineas?: Prisma.FacturaLineaOrderByRelationAggregateInput
 }
 
 export type VarianteWhereUniqueInput = Prisma.AtLeast<{
@@ -296,6 +300,8 @@ export type VarianteWhereUniqueInput = Prisma.AtLeast<{
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
   valores?: Prisma.VarianteValorListRelationFilter
   movimientos?: Prisma.MovimientoInventarioListRelationFilter
+  ordenLineas?: Prisma.OrdenLineaListRelationFilter
+  facturaLineas?: Prisma.FacturaLineaListRelationFilter
 }, "id" | "sku" | "productoId_combinacion">
 
 export type VarianteOrderByWithAggregationInput = {
@@ -342,6 +348,8 @@ export type VarianteCreateInput = {
   producto: Prisma.ProductoCreateNestedOneWithoutVariantesInput
   valores?: Prisma.VarianteValorCreateNestedManyWithoutVarianteInput
   movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteUncheckedCreateInput = {
@@ -356,6 +364,8 @@ export type VarianteUncheckedCreateInput = {
   imagenId?: string | null
   valores?: Prisma.VarianteValorUncheckedCreateNestedManyWithoutVarianteInput
   movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteUpdateInput = {
@@ -370,6 +380,8 @@ export type VarianteUpdateInput = {
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVariantesNestedInput
   valores?: Prisma.VarianteValorUpdateManyWithoutVarianteNestedInput
   movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteUncheckedUpdateInput = {
@@ -384,6 +396,8 @@ export type VarianteUncheckedUpdateInput = {
   imagenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   valores?: Prisma.VarianteValorUncheckedUpdateManyWithoutVarianteNestedInput
   movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteCreateManyInput = {
@@ -484,6 +498,11 @@ export type VarianteSumOrderByAggregateInput = {
 export type VarianteScalarRelationFilter = {
   is?: Prisma.VarianteWhereInput
   isNot?: Prisma.VarianteWhereInput
+}
+
+export type VarianteNullableScalarRelationFilter = {
+  is?: Prisma.VarianteWhereInput | null
+  isNot?: Prisma.VarianteWhereInput | null
 }
 
 export type VarianteCreateNestedManyWithoutProductoInput = {
@@ -598,6 +617,38 @@ export type VarianteUpdateOneRequiredWithoutMovimientosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.VarianteUpdateToOneWithWhereWithoutMovimientosInput, Prisma.VarianteUpdateWithoutMovimientosInput>, Prisma.VarianteUncheckedUpdateWithoutMovimientosInput>
 }
 
+export type VarianteCreateNestedOneWithoutOrdenLineasInput = {
+  create?: Prisma.XOR<Prisma.VarianteCreateWithoutOrdenLineasInput, Prisma.VarianteUncheckedCreateWithoutOrdenLineasInput>
+  connectOrCreate?: Prisma.VarianteCreateOrConnectWithoutOrdenLineasInput
+  connect?: Prisma.VarianteWhereUniqueInput
+}
+
+export type VarianteUpdateOneWithoutOrdenLineasNestedInput = {
+  create?: Prisma.XOR<Prisma.VarianteCreateWithoutOrdenLineasInput, Prisma.VarianteUncheckedCreateWithoutOrdenLineasInput>
+  connectOrCreate?: Prisma.VarianteCreateOrConnectWithoutOrdenLineasInput
+  upsert?: Prisma.VarianteUpsertWithoutOrdenLineasInput
+  disconnect?: Prisma.VarianteWhereInput | boolean
+  delete?: Prisma.VarianteWhereInput | boolean
+  connect?: Prisma.VarianteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VarianteUpdateToOneWithWhereWithoutOrdenLineasInput, Prisma.VarianteUpdateWithoutOrdenLineasInput>, Prisma.VarianteUncheckedUpdateWithoutOrdenLineasInput>
+}
+
+export type VarianteCreateNestedOneWithoutFacturaLineasInput = {
+  create?: Prisma.XOR<Prisma.VarianteCreateWithoutFacturaLineasInput, Prisma.VarianteUncheckedCreateWithoutFacturaLineasInput>
+  connectOrCreate?: Prisma.VarianteCreateOrConnectWithoutFacturaLineasInput
+  connect?: Prisma.VarianteWhereUniqueInput
+}
+
+export type VarianteUpdateOneWithoutFacturaLineasNestedInput = {
+  create?: Prisma.XOR<Prisma.VarianteCreateWithoutFacturaLineasInput, Prisma.VarianteUncheckedCreateWithoutFacturaLineasInput>
+  connectOrCreate?: Prisma.VarianteCreateOrConnectWithoutFacturaLineasInput
+  upsert?: Prisma.VarianteUpsertWithoutFacturaLineasInput
+  disconnect?: Prisma.VarianteWhereInput | boolean
+  delete?: Prisma.VarianteWhereInput | boolean
+  connect?: Prisma.VarianteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VarianteUpdateToOneWithWhereWithoutFacturaLineasInput, Prisma.VarianteUpdateWithoutFacturaLineasInput>, Prisma.VarianteUncheckedUpdateWithoutFacturaLineasInput>
+}
+
 export type VarianteCreateWithoutProductoInput = {
   id?: string
   sku?: string | null
@@ -609,6 +660,8 @@ export type VarianteCreateWithoutProductoInput = {
   imagen?: Prisma.ProductoImagenCreateNestedOneWithoutVariantesInput
   valores?: Prisma.VarianteValorCreateNestedManyWithoutVarianteInput
   movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteUncheckedCreateWithoutProductoInput = {
@@ -622,6 +675,8 @@ export type VarianteUncheckedCreateWithoutProductoInput = {
   imagenId?: string | null
   valores?: Prisma.VarianteValorUncheckedCreateNestedManyWithoutVarianteInput
   movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteCreateOrConnectWithoutProductoInput = {
@@ -676,6 +731,8 @@ export type VarianteCreateWithoutValoresInput = {
   imagen?: Prisma.ProductoImagenCreateNestedOneWithoutVariantesInput
   producto: Prisma.ProductoCreateNestedOneWithoutVariantesInput
   movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteUncheckedCreateWithoutValoresInput = {
@@ -689,6 +746,8 @@ export type VarianteUncheckedCreateWithoutValoresInput = {
   permiteNegativo?: boolean
   imagenId?: string | null
   movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteCreateOrConnectWithoutValoresInput = {
@@ -718,6 +777,8 @@ export type VarianteUpdateWithoutValoresInput = {
   imagen?: Prisma.ProductoImagenUpdateOneWithoutVariantesNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVariantesNestedInput
   movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteUncheckedUpdateWithoutValoresInput = {
@@ -731,6 +792,8 @@ export type VarianteUncheckedUpdateWithoutValoresInput = {
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   imagenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteCreateWithoutImagenInput = {
@@ -744,6 +807,8 @@ export type VarianteCreateWithoutImagenInput = {
   producto: Prisma.ProductoCreateNestedOneWithoutVariantesInput
   valores?: Prisma.VarianteValorCreateNestedManyWithoutVarianteInput
   movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteUncheckedCreateWithoutImagenInput = {
@@ -757,6 +822,8 @@ export type VarianteUncheckedCreateWithoutImagenInput = {
   permiteNegativo?: boolean
   valores?: Prisma.VarianteValorUncheckedCreateNestedManyWithoutVarianteInput
   movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteCreateOrConnectWithoutImagenInput = {
@@ -796,6 +863,8 @@ export type VarianteCreateWithoutMovimientosInput = {
   imagen?: Prisma.ProductoImagenCreateNestedOneWithoutVariantesInput
   producto: Prisma.ProductoCreateNestedOneWithoutVariantesInput
   valores?: Prisma.VarianteValorCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteUncheckedCreateWithoutMovimientosInput = {
@@ -809,6 +878,8 @@ export type VarianteUncheckedCreateWithoutMovimientosInput = {
   permiteNegativo?: boolean
   imagenId?: string | null
   valores?: Prisma.VarianteValorUncheckedCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutVarianteInput
 }
 
 export type VarianteCreateOrConnectWithoutMovimientosInput = {
@@ -838,6 +909,8 @@ export type VarianteUpdateWithoutMovimientosInput = {
   imagen?: Prisma.ProductoImagenUpdateOneWithoutVariantesNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVariantesNestedInput
   valores?: Prisma.VarianteValorUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteUncheckedUpdateWithoutMovimientosInput = {
@@ -851,6 +924,160 @@ export type VarianteUncheckedUpdateWithoutMovimientosInput = {
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   imagenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   valores?: Prisma.VarianteValorUncheckedUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutVarianteNestedInput
+}
+
+export type VarianteCreateWithoutOrdenLineasInput = {
+  id?: string
+  sku?: string | null
+  posicion?: number
+  combinacion?: string
+  manejaInventario?: boolean
+  stock?: number
+  permiteNegativo?: boolean
+  imagen?: Prisma.ProductoImagenCreateNestedOneWithoutVariantesInput
+  producto: Prisma.ProductoCreateNestedOneWithoutVariantesInput
+  valores?: Prisma.VarianteValorCreateNestedManyWithoutVarianteInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaCreateNestedManyWithoutVarianteInput
+}
+
+export type VarianteUncheckedCreateWithoutOrdenLineasInput = {
+  id?: string
+  productoId: string
+  sku?: string | null
+  posicion?: number
+  combinacion?: string
+  manejaInventario?: boolean
+  stock?: number
+  permiteNegativo?: boolean
+  imagenId?: string | null
+  valores?: Prisma.VarianteValorUncheckedCreateNestedManyWithoutVarianteInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutVarianteInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutVarianteInput
+}
+
+export type VarianteCreateOrConnectWithoutOrdenLineasInput = {
+  where: Prisma.VarianteWhereUniqueInput
+  create: Prisma.XOR<Prisma.VarianteCreateWithoutOrdenLineasInput, Prisma.VarianteUncheckedCreateWithoutOrdenLineasInput>
+}
+
+export type VarianteUpsertWithoutOrdenLineasInput = {
+  update: Prisma.XOR<Prisma.VarianteUpdateWithoutOrdenLineasInput, Prisma.VarianteUncheckedUpdateWithoutOrdenLineasInput>
+  create: Prisma.XOR<Prisma.VarianteCreateWithoutOrdenLineasInput, Prisma.VarianteUncheckedCreateWithoutOrdenLineasInput>
+  where?: Prisma.VarianteWhereInput
+}
+
+export type VarianteUpdateToOneWithWhereWithoutOrdenLineasInput = {
+  where?: Prisma.VarianteWhereInput
+  data: Prisma.XOR<Prisma.VarianteUpdateWithoutOrdenLineasInput, Prisma.VarianteUncheckedUpdateWithoutOrdenLineasInput>
+}
+
+export type VarianteUpdateWithoutOrdenLineasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  imagen?: Prisma.ProductoImagenUpdateOneWithoutVariantesNestedInput
+  producto?: Prisma.ProductoUpdateOneRequiredWithoutVariantesNestedInput
+  valores?: Prisma.VarianteValorUpdateManyWithoutVarianteNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUpdateManyWithoutVarianteNestedInput
+}
+
+export type VarianteUncheckedUpdateWithoutOrdenLineasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  imagenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  valores?: Prisma.VarianteValorUncheckedUpdateManyWithoutVarianteNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutVarianteNestedInput
+}
+
+export type VarianteCreateWithoutFacturaLineasInput = {
+  id?: string
+  sku?: string | null
+  posicion?: number
+  combinacion?: string
+  manejaInventario?: boolean
+  stock?: number
+  permiteNegativo?: boolean
+  imagen?: Prisma.ProductoImagenCreateNestedOneWithoutVariantesInput
+  producto: Prisma.ProductoCreateNestedOneWithoutVariantesInput
+  valores?: Prisma.VarianteValorCreateNestedManyWithoutVarianteInput
+  movimientos?: Prisma.MovimientoInventarioCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutVarianteInput
+}
+
+export type VarianteUncheckedCreateWithoutFacturaLineasInput = {
+  id?: string
+  productoId: string
+  sku?: string | null
+  posicion?: number
+  combinacion?: string
+  manejaInventario?: boolean
+  stock?: number
+  permiteNegativo?: boolean
+  imagenId?: string | null
+  valores?: Prisma.VarianteValorUncheckedCreateNestedManyWithoutVarianteInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutVarianteInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutVarianteInput
+}
+
+export type VarianteCreateOrConnectWithoutFacturaLineasInput = {
+  where: Prisma.VarianteWhereUniqueInput
+  create: Prisma.XOR<Prisma.VarianteCreateWithoutFacturaLineasInput, Prisma.VarianteUncheckedCreateWithoutFacturaLineasInput>
+}
+
+export type VarianteUpsertWithoutFacturaLineasInput = {
+  update: Prisma.XOR<Prisma.VarianteUpdateWithoutFacturaLineasInput, Prisma.VarianteUncheckedUpdateWithoutFacturaLineasInput>
+  create: Prisma.XOR<Prisma.VarianteCreateWithoutFacturaLineasInput, Prisma.VarianteUncheckedCreateWithoutFacturaLineasInput>
+  where?: Prisma.VarianteWhereInput
+}
+
+export type VarianteUpdateToOneWithWhereWithoutFacturaLineasInput = {
+  where?: Prisma.VarianteWhereInput
+  data: Prisma.XOR<Prisma.VarianteUpdateWithoutFacturaLineasInput, Prisma.VarianteUncheckedUpdateWithoutFacturaLineasInput>
+}
+
+export type VarianteUpdateWithoutFacturaLineasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  imagen?: Prisma.ProductoImagenUpdateOneWithoutVariantesNestedInput
+  producto?: Prisma.ProductoUpdateOneRequiredWithoutVariantesNestedInput
+  valores?: Prisma.VarianteValorUpdateManyWithoutVarianteNestedInput
+  movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutVarianteNestedInput
+}
+
+export type VarianteUncheckedUpdateWithoutFacturaLineasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.StringFieldUpdateOperationsInput | string
+  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  posicion?: Prisma.IntFieldUpdateOperationsInput | number
+  combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  imagenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  valores?: Prisma.VarianteValorUncheckedUpdateManyWithoutVarianteNestedInput
+  movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteCreateManyProductoInput = {
@@ -875,6 +1102,8 @@ export type VarianteUpdateWithoutProductoInput = {
   imagen?: Prisma.ProductoImagenUpdateOneWithoutVariantesNestedInput
   valores?: Prisma.VarianteValorUpdateManyWithoutVarianteNestedInput
   movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteUncheckedUpdateWithoutProductoInput = {
@@ -888,6 +1117,8 @@ export type VarianteUncheckedUpdateWithoutProductoInput = {
   imagenId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   valores?: Prisma.VarianteValorUncheckedUpdateManyWithoutVarianteNestedInput
   movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteUncheckedUpdateManyWithoutProductoInput = {
@@ -923,6 +1154,8 @@ export type VarianteUpdateWithoutImagenInput = {
   producto?: Prisma.ProductoUpdateOneRequiredWithoutVariantesNestedInput
   valores?: Prisma.VarianteValorUpdateManyWithoutVarianteNestedInput
   movimientos?: Prisma.MovimientoInventarioUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteUncheckedUpdateWithoutImagenInput = {
@@ -936,6 +1169,8 @@ export type VarianteUncheckedUpdateWithoutImagenInput = {
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   valores?: Prisma.VarianteValorUncheckedUpdateManyWithoutVarianteNestedInput
   movimientos?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutVarianteNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutVarianteNestedInput
+  facturaLineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutVarianteNestedInput
 }
 
 export type VarianteUncheckedUpdateManyWithoutImagenInput = {
@@ -957,11 +1192,15 @@ export type VarianteUncheckedUpdateManyWithoutImagenInput = {
 export type VarianteCountOutputType = {
   valores: number
   movimientos: number
+  ordenLineas: number
+  facturaLineas: number
 }
 
 export type VarianteCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   valores?: boolean | VarianteCountOutputTypeCountValoresArgs
   movimientos?: boolean | VarianteCountOutputTypeCountMovimientosArgs
+  ordenLineas?: boolean | VarianteCountOutputTypeCountOrdenLineasArgs
+  facturaLineas?: boolean | VarianteCountOutputTypeCountFacturaLineasArgs
 }
 
 /**
@@ -988,6 +1227,20 @@ export type VarianteCountOutputTypeCountMovimientosArgs<ExtArgs extends runtime.
   where?: Prisma.MovimientoInventarioWhereInput
 }
 
+/**
+ * VarianteCountOutputType without action
+ */
+export type VarianteCountOutputTypeCountOrdenLineasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenLineaWhereInput
+}
+
+/**
+ * VarianteCountOutputType without action
+ */
+export type VarianteCountOutputTypeCountFacturaLineasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FacturaLineaWhereInput
+}
+
 
 export type VarianteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1003,6 +1256,8 @@ export type VarianteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
   valores?: boolean | Prisma.Variante$valoresArgs<ExtArgs>
   movimientos?: boolean | Prisma.Variante$movimientosArgs<ExtArgs>
+  ordenLineas?: boolean | Prisma.Variante$ordenLineasArgs<ExtArgs>
+  facturaLineas?: boolean | Prisma.Variante$facturaLineasArgs<ExtArgs>
   _count?: boolean | Prisma.VarianteCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["variante"]>
 
@@ -1052,6 +1307,8 @@ export type VarianteInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
   valores?: boolean | Prisma.Variante$valoresArgs<ExtArgs>
   movimientos?: boolean | Prisma.Variante$movimientosArgs<ExtArgs>
+  ordenLineas?: boolean | Prisma.Variante$ordenLineasArgs<ExtArgs>
+  facturaLineas?: boolean | Prisma.Variante$facturaLineasArgs<ExtArgs>
   _count?: boolean | Prisma.VarianteCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VarianteIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1070,6 +1327,8 @@ export type $VariantePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     producto: Prisma.$ProductoPayload<ExtArgs>
     valores: Prisma.$VarianteValorPayload<ExtArgs>[]
     movimientos: Prisma.$MovimientoInventarioPayload<ExtArgs>[]
+    ordenLineas: Prisma.$OrdenLineaPayload<ExtArgs>[]
+    facturaLineas: Prisma.$FacturaLineaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1507,6 +1766,8 @@ export interface Prisma__VarianteClient<T, Null = never, ExtArgs extends runtime
   producto<T extends Prisma.ProductoDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductoDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   valores<T extends Prisma.Variante$valoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Variante$valoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VarianteValorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   movimientos<T extends Prisma.Variante$movimientosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Variante$movimientosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MovimientoInventarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ordenLineas<T extends Prisma.Variante$ordenLineasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Variante$ordenLineasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenLineaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  facturaLineas<T extends Prisma.Variante$facturaLineasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Variante$facturaLineasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FacturaLineaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2010,6 +2271,54 @@ export type Variante$movimientosArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.MovimientoInventarioScalarFieldEnum | Prisma.MovimientoInventarioScalarFieldEnum[]
+}
+
+/**
+ * Variante.ordenLineas
+ */
+export type Variante$ordenLineasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrdenLinea
+   */
+  select?: Prisma.OrdenLineaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrdenLinea
+   */
+  omit?: Prisma.OrdenLineaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrdenLineaInclude<ExtArgs> | null
+  where?: Prisma.OrdenLineaWhereInput
+  orderBy?: Prisma.OrdenLineaOrderByWithRelationInput | Prisma.OrdenLineaOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenLineaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrdenLineaScalarFieldEnum | Prisma.OrdenLineaScalarFieldEnum[]
+}
+
+/**
+ * Variante.facturaLineas
+ */
+export type Variante$facturaLineasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FacturaLinea
+   */
+  select?: Prisma.FacturaLineaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FacturaLinea
+   */
+  omit?: Prisma.FacturaLineaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FacturaLineaInclude<ExtArgs> | null
+  where?: Prisma.FacturaLineaWhereInput
+  orderBy?: Prisma.FacturaLineaOrderByWithRelationInput | Prisma.FacturaLineaOrderByWithRelationInput[]
+  cursor?: Prisma.FacturaLineaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FacturaLineaScalarFieldEnum | Prisma.FacturaLineaScalarFieldEnum[]
 }
 
 /**

@@ -380,9 +380,11 @@ model Variante {
   imagenId String?
   imagen   ProductoImagen? @relation(fields: [imagenId], references: [id], onDelete: SetNull)
 
-  producto    Producto               @relation(fields: [productoId], references: [id], onDelete: Cascade)
-  valores     VarianteValor[]
-  movimientos MovimientoInventario[]
+  producto      Producto               @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  valores       VarianteValor[]
+  movimientos   MovimientoInventario[]
+  ordenLineas   OrdenLinea[]
+  facturaLineas FacturaLinea[]
 
   @@unique([productoId, combinacion])
   @@index([productoId])
@@ -455,6 +457,12 @@ model MovimientoInventario {
   motivo   MotivoMovimiento
   nota     String?
 
+  /// Qué factura lo movió, en un `VENTA` o una `DEVOLUCION`. Es lo que hace
+  /// que "¿por qué bajó?" se pueda contestar sin adivinar. `SetNull` y no
+  /// `Restrict`: el movimiento pasó y sigue siendo cierto aunque la factura se
+  /// vaya de la base.
+  facturaId String?
+
   createdAt       DateTime @default(now())
   createdById     String?
   /// El nombre al momento de moverlo: el id se vacía si borran la cuenta, y un
@@ -463,9 +471,11 @@ model MovimientoInventario {
   createdByNombre String?
 
   variante  Variante @relation(fields: [varianteId], references: [id], onDelete: Cascade)
+  factura   Factura? @relation(fields: [facturaId], references: [id], onDelete: SetNull)
   createdBy User?    @relation("MovimientoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([varianteId, createdAt])
+  @@index([facturaId])
 }
 
 /// Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
@@ -1256,6 +1266,10 @@ model OrdenLinea {
   /// no se puede cobrar. Es además lo que hace que un reporte por producto sea
   /// un `groupBy` y no una reconstrucción.
   productoId        String
+  /// **Qué variante**, cuando el producto es un bien. Un servicio no tiene:
+  /// por eso es opcional acá y lo exige el servicio, que es quien sabe el
+  /// `tipo`. Es de dónde sale el SKU impreso y qué stock se descuenta.
+  varianteId        String?
   suscripcionItemId String?
   periodoInicio     DateTime? @db.Date
   periodoFin        DateTime? @db.Date
@@ -1265,6 +1279,9 @@ model OrdenLinea {
   /// borrar. Perder el vínculo dejaría la línea fuera de todo reporte y la
   /// factura sin con qué reconciliarse.
   producto        Producto           @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  /// `Restrict` por lo mismo que el producto: una variante ya vendida no se
+  /// borra. Eso hace, de paso, que sacar un eje avise en vez de romper.
+  variante        Variante?          @relation(fields: [varianteId], references: [id], onDelete: Restrict)
   suscripcionItem SuscripcionItem?   @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
   /// De qué trabajos de visita sale esta línea. Pueden ser varios.
   origenes        OrdenLineaOrigen[]
@@ -1273,6 +1290,7 @@ model OrdenLinea {
   @@unique([suscripcionItemId, periodoInicio])
   @@index([ordenId, posicion])
   @@index([productoId])
+  @@index([varianteId])
 }
 
 /// Qué trabajo de qué visita paga una línea de orden.
@@ -1429,9 +1447,10 @@ model Factura {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Restrict)
-  datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
+  orden           Orden                  @relation(fields: [ordenId], references: [id], onDelete: Restrict)
+  datoFacturacion DatoFacturacion?       @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
   lineas          FacturaLinea[]
+  movimientos     MovimientoInventario[]
 
   cobros Cobro[]
 
@@ -1506,12 +1525,17 @@ model FacturaLinea {
 
   /// De dónde sale el `codigoPrincipal`, y con qué queda asociada la venta.
   productoId String
+  /// Qué variante salió, cuando el producto es un bien. Su SKU es lo que se
+  /// imprime como `codigoPrincipal`, y es de dónde se descontó el stock.
+  varianteId String?
 
-  factura  Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  factura  Factura   @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  variante Variante? @relation(fields: [varianteId], references: [id], onDelete: Restrict)
   /// `Restrict` como en `OrdenLinea`: un producto ya facturado no se borra, o
   /// la factura se queda sin con qué reconciliarse.
-  producto Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  producto Producto  @relation(fields: [productoId], references: [id], onDelete: Restrict)
 
   @@index([facturaId, posicion])
   @@index([productoId])
+  @@index([varianteId])
 }

@@ -133,6 +133,8 @@ interface OrdenData {
     periodoFin: string | null;
     /** Procedencia: se conserva al editar, es lo que evita cobrar dos veces. */
     productoId: string;
+    /** Qué variante se vende. Solo en un bien. */
+    varianteId: string | null;
     /** Qué trabajos paga la línea. Varios si el producto se hizo en más visitas. */
     visitaProductoIds: string[];
     /** De qué visitas salió, ya resueltas para poder linkearlas. */
@@ -368,6 +370,7 @@ export function OrdenDetail({
         precioUnitario: String(l.precioUnitario),
         ivaTasa: String(l.ivaTasa),
         productoId: l.productoId,
+        varianteId: l.varianteId,
         visitaProductoIds: l.visitaProductoIds,
         suscripcionItemId: l.suscripcionItemId,
         periodoInicio: l.periodoInicio,
@@ -400,6 +403,7 @@ export function OrdenDetail({
             precioUnitario: Number(l.precioUnitario),
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
+            varianteId: l.varianteId,
             visitaProductoIds: l.visitaProductoIds,
             suscripcionItemId: l.suscripcionItemId,
             periodoInicio: l.periodoInicio,

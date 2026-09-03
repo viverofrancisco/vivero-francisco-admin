@@ -97,8 +97,40 @@ diferencia a mano es pedirle la única cuenta que la máquina no puede errar.
 número al otro, así que el libro sigue cerrando. Un conteo que da lo mismo no
 anota nada: no pasó nada.
 
-`VENTA` y `DEVOLUCION` están en el enum pero **todavía nada los escribe** — ver
-*Lo que falta*.
+### Vender descuenta, y la nota de crédito devuelve
+
+`OrdenLinea.varianteId` y `FacturaLinea.varianteId` dicen qué variante salió.
+Son **nulables** porque un servicio no tiene ninguna; que un bien sí la lleve lo
+exige `ensureVariantes()` en `orden.service`, que es quien sabe el `tipo` — la
+base no puede expresar "obligatorio solo si el producto es un BIEN".
+
+**Con una sola variante la completa sola.** Un bien sin opciones tiene
+exactamente una, así que preguntar cuál sería preguntar por una decisión que no
+existe — y los borradores que arma el portal solo (al completar una visita, al
+renovar un plan) no tienen a quién preguntarle. Con varias corta y lo dice.
+
+El orden de la emisión importa y no es simétrico:
+
+1. **Antes de emitir**, `ensureStockParaVender()` mira si alcanza. Es el único
+   momento en que se puede decir que no: después el comprobante ya está
+   autorizado y no se deshace.
+2. **Después de que el SRI autorizó**, `descontarPorVenta()` anota la salida
+   con `forzar: true`. La venta ya es un hecho; negarse a registrarla no
+   evitaría nada, dejaría el stock mintiendo sobre mercadería que salió por la
+   puerta.
+3. Una emisión **rechazada no descuenta nada**: el movimiento va dentro del
+   `if (estado === "AUTORIZADO")`.
+
+`emitirNotaCredito()` escribe la `DEVOLUCION`, y la ata **a la nota**, no a la
+factura: son dos hechos con su propio comprobante. Una variante que aparece en
+dos líneas de la misma factura se mueve una sola vez, con las cantidades
+sumadas.
+
+Verificado de punta a punta contra el SRI de pruebas: stock 12 → orden de 3 →
+factura `001-001-000000010` autorizada → stock 9 con el movimiento
+`VENTA -3 → 9 · Factura 001-001-000000010` → nota de crédito → stock 12. Una
+orden de 99 sobre 12 se frenó **antes** de emitir y la orden quedó en
+`BORRADOR`.
 
 ### Dos interruptores por variante
 
@@ -145,27 +177,38 @@ de agrupar algo no es darlo de baja.
 
 ## El SKU y el código
 
-Hoy conviven dos:
+El `codigoPrincipal` de cada detalle del XML sale, en este orden:
 
-- **`Producto.codigo`** es lo que sale impreso como `codigoPrincipal` en cada
-  detalle del XML del SRI. Es lo que tiene un servicio, que no tiene variantes.
-- **`Variante.sku`** es el identificador de esa combinación: lo que va en la
-  etiqueta y lo que se busca. Único en todo el catálogo.
+1. **`Variante.sku`** — lo que identifica exactamente lo que salió, y lo que
+   está pegado en la etiqueta que el cliente tiene en la mano;
+2. **`Producto.codigo`** — para un servicio, que no tiene variantes;
+3. un código derivado del id, si no hay ninguno de los dos.
 
-Cuando vender pase a ser por variante (abajo), el `codigoPrincipal` va a salir
-del SKU y `Producto.codigo` deja de tener sentido. Todavía no: una línea de
-orden apunta a un producto, no a una variante.
+Verificado sobre el XML firmado de `001-001-000000010`:
+`<codigoPrincipal>MAC-ROJ-…</codigoPrincipal>` con
+`<descripcion>Maceta roja</descripcion>` — el SKU de la variante, no el código
+del producto.
+
+## Por qué al facturar y no al crear la orden
+
+Un borrador se edita, se descarta y se rearma; descontar ahí dejaría mercadería
+reservada por algo que puede no pasar, y habría que devolverla al editar la
+orden, al quitar la línea y al anularla — tres caminos donde olvidarse. Al
+facturar hay un solo momento y un solo comprobante que lo respalda.
+
+El costo es que dos personas pueden armar órdenes por la misma mercadería y la
+segunda se entera recién al emitir. Es el precio de no reservar, y es el
+correcto para un vivero: entre armar la orden y cobrarla pasan minutos, no
+semanas.
 
 ## Lo que falta
 
-- **Vender una variante.** `OrdenLinea` y `FacturaLinea` apuntan a `Producto`.
-  Para que una venta descuente stock hay que llevar la variante hasta ahí, que
-  el `codigoPrincipal` salga de su SKU, y escribir el movimiento `VENTA` **al
-  facturar** — no al crear la orden: un borrador se edita y se descarta, y
-  descontar ahí dejaría mercadería reservada por algo que puede no pasar.
-  Anular la factura escribe la `DEVOLUCION`.
-- **`MovimientoInventario` no tiene `facturaId`.** Se agrega con eso, no antes:
-  una columna que nada escribe ni lee es peso muerto.
 - **Precio por variante.** Hoy ningún producto tiene precio: cada peso vive en
   `OrdenLinea` o en `SuscripcionItem`. Si un bien de mostrador necesita precio
   de lista, ese es el momento de decidir dónde va.
+- **Una pantalla de inventario.** Hoy el stock se mira y se mueve desde la
+  ficha de cada producto. `sinStock()` ya existe en el servicio para "qué está
+  por agotarse", pero nada lo muestra todavía.
+- **Las órdenes viejas no tienen variante.** Se quedan así: son de servicios, o
+  se emitieron antes de que las variantes existieran, y rellenarlas sería
+  inventar que alguien la eligió.
