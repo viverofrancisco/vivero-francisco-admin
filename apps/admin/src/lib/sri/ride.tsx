@@ -230,6 +230,9 @@ function RideDocument({
             />
             <Dato etiqueta="Emisión" valor="NORMAL" />
             <Text style={styles.etiqueta}>Clave de acceso</Text>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- el `Image` de
+                @react-pdf no es el del navegador y no acepta `alt`; la regla lo
+                confunde con un `<img>`. La clave va escrita abajo igual. */}
             <Image style={styles.barras} src={{ data: barras, format: "png" }} />
             <Text style={styles.clave}>{datos.claveAcceso}</Text>
             {/* Un RIDE de pruebas es igual a uno real salvo por esto. */}
