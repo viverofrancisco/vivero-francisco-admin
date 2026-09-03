@@ -297,8 +297,9 @@ function RideDocument({
           {/* Quién emite. El logo manda, y debajo lo que el SRI exige. */}
           <View style={{ flex: 1, paddingRight: 16 }}>
             {datos.logo && (
-              // eslint-disable-next-line jsx-a11y/alt-text -- el `Image` de
-              // @react-pdf no es el del navegador y no acepta `alt`.
+              // El `Image` de @react-pdf no es el del navegador y no acepta
+              // `alt`; la regla lo confunde con un `<img>`.
+              // eslint-disable-next-line jsx-a11y/alt-text
               <Image
                 style={styles.logo}
                 src={{ data: Buffer.from(datos.logo.bytes), format: datos.logo.format }}
