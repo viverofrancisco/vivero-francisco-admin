@@ -133,14 +133,14 @@ enum DestinatarioTipo {
 // ──────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  apellido      String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          UserRole  @default(STAFF)
+  id               String    @id @default(cuid())
+  name             String?
+  apellido         String?
+  email            String    @unique
+  emailVerified    DateTime?
+  image            String?
+  password         String?
+  role             UserRole  @default(STAFF)
   /// Cuándo se le revocó el acceso, o null si lo tiene.
   ///
   /// Una fecha y no un booleano: cuando alguien pregunta "¿desde cuándo no
@@ -149,31 +149,32 @@ model User {
   /// puerta: los dos caminos de login la rechazan, sus enlaces pendientes se
   /// anulan y sus sesiones móviles dejan de renovarse.
   accesoRevocadoEl DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
+  accounts          Account[]
+  sessions          Session[]
   /// Enlaces de invitación / restablecimiento pendientes o ya usados.
   setPasswordTokens SetPasswordToken[]
 
   // Audit relations
-  clientesCreated         Cliente[]         @relation("ClienteCreatedBy")
-  clientesUpdated         Cliente[]         @relation("ClienteUpdatedBy")
-  productosCreated        Producto[]        @relation("ProductoCreatedBy")
-  productosUpdated        Producto[]        @relation("ProductoUpdatedBy")
-  cobrosRegistrados       Cobro[]           @relation("CobroCreatedBy")
-  personalCreated         Personal[]        @relation("JardineroCreatedBy")
-  personalUpdated         Personal[]        @relation("JardineroUpdatedBy")
-  gruposCreated           Grupo[]           @relation("GrupoCreatedBy")
-  gruposUpdated           Grupo[]           @relation("GrupoUpdatedBy")
-  suscripcionesCreated    Suscripcion[]     @relation("SuscripcionCreatedBy")
-  suscripcionesUpdated    Suscripcion[]     @relation("SuscripcionUpdatedBy")
-  visitasCreated          Visita[]          @relation("VisitaCreatedBy")
-  visitasUpdated          Visita[]          @relation("VisitaUpdatedBy")
-  visitasCompletadas      Visita[]          @relation("VisitaCompletadaPor")
-  visitaPersonalAdded     VisitaPersonal[]  @relation("VisitaPersonalAddedBy")
-  visitaPersonalRemoved   VisitaPersonal[]  @relation("VisitaPersonalRemovedBy")
+  clientesCreated         Cliente[]              @relation("ClienteCreatedBy")
+  clientesUpdated         Cliente[]              @relation("ClienteUpdatedBy")
+  productosCreated        Producto[]             @relation("ProductoCreatedBy")
+  productosUpdated        Producto[]             @relation("ProductoUpdatedBy")
+  movimientosInventario   MovimientoInventario[] @relation("MovimientoCreatedBy")
+  cobrosRegistrados       Cobro[]                @relation("CobroCreatedBy")
+  personalCreated         Personal[]             @relation("JardineroCreatedBy")
+  personalUpdated         Personal[]             @relation("JardineroUpdatedBy")
+  gruposCreated           Grupo[]                @relation("GrupoCreatedBy")
+  gruposUpdated           Grupo[]                @relation("GrupoUpdatedBy")
+  suscripcionesCreated    Suscripcion[]          @relation("SuscripcionCreatedBy")
+  suscripcionesUpdated    Suscripcion[]          @relation("SuscripcionUpdatedBy")
+  visitasCreated          Visita[]               @relation("VisitaCreatedBy")
+  visitasUpdated          Visita[]               @relation("VisitaUpdatedBy")
+  visitasCompletadas      Visita[]               @relation("VisitaCompletadaPor")
+  visitaPersonalAdded     VisitaPersonal[]       @relation("VisitaPersonalAddedBy")
+  visitaPersonalRemoved   VisitaPersonal[]       @relation("VisitaPersonalRemovedBy")
   personal                Personal?
   sectorAdmins            SectorAdmin[]
   cliente                 Cliente?
@@ -181,12 +182,12 @@ model User {
   refreshTokens           RefreshToken[]
   visitaMessages          VisitaMessage[]
   visitaChatReads         VisitaChatRead[]
-  informesGenerados       Informe[]         @relation("InformeGeneratedBy")
-  clienteImports          ClienteImport[]   @relation("ClienteImportCreatedBy")
-  ordenesCreated          Orden[]           @relation("OrdenCreatedBy")
-  ordenesUpdated          Orden[]           @relation("OrdenUpdatedBy")
-  datosFacturacionCreated DatoFacturacion[] @relation("DatoFacturacionCreatedBy")
-  datosFacturacionUpdated DatoFacturacion[] @relation("DatoFacturacionUpdatedBy")
+  informesGenerados       Informe[]              @relation("InformeGeneratedBy")
+  clienteImports          ClienteImport[]        @relation("ClienteImportCreatedBy")
+  ordenesCreated          Orden[]                @relation("OrdenCreatedBy")
+  ordenesUpdated          Orden[]                @relation("OrdenUpdatedBy")
+  datosFacturacionCreated DatoFacturacion[]      @relation("DatoFacturacionCreatedBy")
+  datosFacturacionUpdated DatoFacturacion[]      @relation("DatoFacturacionUpdatedBy")
 }
 
 model Cliente {
@@ -235,27 +236,22 @@ model Cliente {
 /// Catálogo único: servicios de jardinería y, más adelante, bienes de vivero.
 /// Lo que los distingue es `tipo`, que no cambia nada al facturar.
 model Producto {
-  id           String         @id @default(cuid())
-  nombre       String
-  descripcion  String?        @db.Text
+  id          String       @id @default(cuid())
+  nombre      String
+  descripcion String?      @db.Text
   /// Inmutable después de crear: cambiarlo dejaría líneas de orden con una
   /// semántica que ya no corresponde. No hay un eje "único vs recurrente" en el
   /// catálogo: lo recurrente lo define la suscripción que contiene al producto,
   /// no el producto.
-  tipo TipoProducto @default(SERVICIO)
+  tipo        TipoProducto @default(SERVICIO)
 
   /// Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
   /// del XML; sin él se emite con uno derivado del id. Único porque es lo que
   /// identifica al producto en el papel: repetirlo haría ambigua la factura.
   codigo String? @unique
 
-  /// Cómo se agrupa en el portal. Opcional: un producto sin categoría se
-  /// vende igual, y obligarla habría dejado el catálogo viejo sin poder
-  /// guardarse.
-  categoriaId String?
-  categoria   Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   /// Tasa de IVA por defecto (porcentaje). En Ecuador conviven 0% y 15%.
-  ivaTasa              Decimal? @db.Decimal(5, 2)
+  ivaTasa Decimal? @db.Decimal(5, 2)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -273,7 +269,11 @@ model Producto {
   ordenLineas      OrdenLinea[]
   facturaLineas    FacturaLinea[]
 
-  @@index([categoriaId])
+  /// Un producto puede estar en varias: "Plantas" y "Interior" a la vez.
+  categorias ProductoCategoria[]
+  opciones   OpcionProducto[]
+  variantes  Variante[]
+  imagenes   ProductoImagen[]
 }
 
 /// Cómo se agrupa el catálogo: lo que sirve para encontrar un producto en una
@@ -287,7 +287,185 @@ model Categoria {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  productos Producto[]
+  productos ProductoCategoria[]
+}
+
+/// En qué categorías está un producto.
+///
+/// Era una columna en `Producto`, o sea una sola categoría. Pero un rosal es
+/// "Plantas" y también "Exterior", y con un solo casillero había que elegir
+/// cuál de las dos verdades guardar. Borrar la categoría se lleva la fila, no
+/// el producto: dejar de agrupar algo no es darlo de baja.
+model ProductoCategoria {
+  productoId  String
+  categoriaId String
+
+  producto  Producto  @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+
+  @@id([productoId, categoriaId])
+  @@index([categoriaId])
+}
+
+/// ── Variantes e inventario ────────────────────────────────────────────────
+///
+/// Un eje por el que un bien se divide: Color, Tamaño, Material.
+///
+/// **Solo los bienes.** Lo que cambia de una poda a otra es el precio, y eso
+/// vive en la orden: un servicio no tiene nada que combinar ni que contar.
+model OpcionProducto {
+  id         String @id @default(cuid())
+  productoId String
+  /// "Color", "Tamaño".
+  nombre     String
+  /// Para ordenar los ejes. Es también el orden en que se lee una variante:
+  /// "Rojo · Grande" y no "Grande · Rojo".
+  posicion   Int    @default(0)
+
+  producto Producto      @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  valores  ValorOpcion[]
+
+  @@unique([productoId, nombre])
+  @@index([productoId])
+}
+
+/// Un valor de un eje: "Rojo", "Grande".
+model ValorOpcion {
+  id       String @id @default(cuid())
+  opcionId String
+  valor    String
+  posicion Int    @default(0)
+
+  opcion    OpcionProducto  @relation(fields: [opcionId], references: [id], onDelete: Cascade)
+  variantes VarianteValor[]
+
+  @@unique([opcionId, valor])
+  @@index([opcionId])
+}
+
+/// Una combinación concreta de valores: "Rojo · Grande".
+///
+/// Es lo que se cuenta. Un bien **sin ninguna opción tiene una variante
+/// igual**, sin valores: así todo lo que pregunta "cuánto hay" mira siempre al
+/// mismo lado, haya opciones o no, y no hay dos caminos que mantener.
+model Variante {
+  id         String @id @default(cuid())
+  productoId String
+
+  /// El identificador de esta variante: lo que va en la etiqueta y lo que se
+  /// busca. Único en todo el catálogo — dos variantes con el mismo SKU harían
+  /// ambiguo cualquier conteo.
+  sku      String? @unique
+  posicion Int     @default(0)
+
+  /// La combinación, congelada: los ids de sus valores ordenados y unidos por
+  /// "·". Es lo que le permite a la base garantizar que un producto no tenga
+  /// dos variantes iguales; con la tabla puente sola eso no se puede expresar.
+  /// Vacía en la variante única de un producto sin opciones.
+  combinacion String @default("")
+
+  /// Si lleva stock. Una planta se cuenta; la tierra a granel puede que no.
+  manejaInventario Boolean @default(true)
+  /// Cuánto hay. Lo mantiene `MovimientoInventario` y **nunca se escribe
+  /// suelto**: es el saldo del libro, no una segunda fuente de verdad.
+  stock            Int     @default(0)
+  /// Si se puede vender sin stock. Vender contra pedido es normal; que pase
+  /// sin querer no lo es, y por eso se decide por variante y no una vez global.
+  permiteNegativo  Boolean @default(false)
+
+  /// Cuál de las fotos del producto es la de esta variante. Sin elegir
+  /// ninguna muestra la primera: lo que la foto enseña suele ser un eje solo
+  /// —el color— y colgarla de la variante obligaría a subir la misma imagen
+  /// una vez por talle.
+  imagenId String?
+  imagen   ProductoImagen? @relation(fields: [imagenId], references: [id], onDelete: SetNull)
+
+  producto    Producto               @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  valores     VarianteValor[]
+  movimientos MovimientoInventario[]
+
+  @@unique([productoId, combinacion])
+  @@index([productoId])
+  @@index([imagenId])
+}
+
+/// Qué valor de cada opción tiene la variante.
+model VarianteValor {
+  varianteId String
+  valorId    String
+
+  variante Variante    @relation(fields: [varianteId], references: [id], onDelete: Cascade)
+  valor    ValorOpcion @relation(fields: [valorId], references: [id], onDelete: Cascade)
+
+  @@id([varianteId, valorId])
+  @@index([valorId])
+}
+
+/// Una foto del producto.
+///
+/// **Del producto y no de la variante.** Lo que una foto muestra suele ser un
+/// eje solo, así que colgarla de cada combinación obligaría a subir la misma
+/// imagen una vez por talle: con 3 colores × 4 tamaños, la foto del rojo iría
+/// cuatro veces. La variante elige cuál de estas es la suya.
+model ProductoImagen {
+  id         String  @id @default(cuid())
+  productoId String
+  /// Dónde vive en R2.
+  key        String
+  /// Para lectores de pantalla y para cuando la imagen no carga.
+  alt        String?
+  posicion   Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  producto  Producto   @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  variantes Variante[]
+
+  @@index([productoId, posicion])
+}
+
+/// Por qué se movió el stock.
+enum MotivoMovimiento {
+  /// Entró mercadería.
+  INGRESO
+  /// Corrección a mano, con su nota.
+  AJUSTE
+  /// Una toma de inventario: la cantidad pasa a ser la contada.
+  CONTEO
+  /// Salió por una venta.
+  VENTA
+  /// Volvió por una devolución.
+  DEVOLUCION
+}
+
+/// Cada vez que el stock de una variante cambió, y por qué.
+///
+/// **El stock se lleva en un libro**, igual que las ventas. Un número suelto
+/// contesta "cuánto hay" y ninguna otra pregunta: quién lo cambió, cuándo, y
+/// contra qué. Cuando alguien discute un conteo, lo que se mira es esto.
+model MovimientoInventario {
+  id         String @id @default(cuid())
+  varianteId String
+
+  /// Positivo entra, negativo sale.
+  cantidad Int
+  /// Cuánto quedó después de este movimiento, congelado. Sin esto, saber cómo
+  /// estaba el stock en una fecha obliga a sumar el libro entero desde cero.
+  saldo    Int
+  motivo   MotivoMovimiento
+  nota     String?
+
+  createdAt       DateTime @default(now())
+  createdById     String?
+  /// El nombre al momento de moverlo: el id se vacía si borran la cuenta, y un
+  /// movimiento sin autor no se puede explicar. El mismo par que usan
+  /// `Factura` y `OrdenLinea`.
+  createdByNombre String?
+
+  variante  Variante @relation(fields: [varianteId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation("MovimientoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([varianteId, createdAt])
 }
 
 /// Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
@@ -389,14 +567,14 @@ model Grupo {
 }
 
 model Visita {
-  id              String       @id @default(cuid())
+  id                  String       @id @default(cuid())
   /// Número corto para nombrarla: "Visita #34".
   ///
   /// Secuencia propia, como la de órdenes y suscripciones. En pantalla siempre
   /// va con su prefijo, así que que coexistan la orden #34 y la visita #34 no
   /// confunde a nadie.
-  numero          Int          @unique @default(autoincrement())
-  clienteId       String
+  numero              Int          @unique @default(autoincrement())
+  clienteId           String
   /// De qué plan es esta visita, si es de alguno.
   ///
   /// La decisión es **de la visita**, no de cada producto: "esta visita es del
@@ -406,27 +584,27 @@ model Visita {
   ///
   /// En null, todo lo que se haga se cobra aparte. Es lo que permite hacerle a
   /// alguien una visita extra de algo que igual tiene contratado.
-  suscripcionId   String?
-  fechaProgramada DateTime     @db.Date
-  fechaRealizada  DateTime?    @db.Date
-  horaEntrada     String?
-  horaSalida      String?
-  estado          EstadoVisita @default(PROGRAMADA)
-  grupoId         String?
-  notas           String?      @db.Text
-  notasIncompleto String?      @db.Text
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  deletedAt       DateTime?
-  createdById     String?
-  updatedById     String?
+  suscripcionId       String?
+  fechaProgramada     DateTime     @db.Date
+  fechaRealizada      DateTime?    @db.Date
+  horaEntrada         String?
+  horaSalida          String?
+  estado              EstadoVisita @default(PROGRAMADA)
+  grupoId             String?
+  notas               String?      @db.Text
+  notasIncompleto     String?      @db.Text
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  deletedAt           DateTime?
+  createdById         String?
+  updatedById         String?
   /// El nombre de quien la tocó al final, tal como se llamaba entonces.
   ///
   /// Junto al id y no en su lugar: el id sirve para filtrar por persona, pero
   /// se queda sin dueño si la cuenta se elimina, y si alguien se cambia el
   /// apellido no corresponde reescribir lo que ya pasó. El texto es lo que se
   /// muestra; el id, lo que se consulta.
-  updatedByNombre String?
+  updatedByNombre     String?
   /// Cuándo se cerró como completada, y quién apretó el botón.
   ///
   /// No es `fechaRealizada`: esa es el **día en que se hizo el trabajo**, la
@@ -474,7 +652,7 @@ model Visita {
 /// orden, igual que todo el resto del dinero del sistema. Acá solo vive el
 /// hecho: qué se hizo y si estaba cubierto por un plan.
 model VisitaProducto {
-  id                String  @id @default(cuid())
+  id                String    @id @default(cuid())
   visitaId          String
   /// Qué se hizo. Siempre presente, venga de una suscripción o sea trabajo suelto.
   productoId        String
@@ -485,7 +663,7 @@ model VisitaProducto {
   /// "a qué orden pertenece", que es justo lo que **no** es: eso vive en
   /// `OrdenLinea.visitaProductoId`. `OrdenLinea` ya usaba `posicion` para lo
   /// mismo.
-  posicion          Int     @default(0)
+  posicion          Int       @default(0)
   /// Cuándo se soltó de una orden anulada.
   ///
   /// Anular libera la procedencia, así que el trabajo vuelve a "pendiente" y no
@@ -495,9 +673,9 @@ model VisitaProducto {
   /// automatismos.
   liberadoAt        DateTime?
 
-  visita          Visita           @relation(fields: [visitaId], references: [id], onDelete: Cascade)
-  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
-  suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
+  visita           Visita            @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  producto         Producto          @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  suscripcionItem  SuscripcionItem?  @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
   /// Dónde se cobró, si ya se cobró. El id es único en `OrdenLineaOrigen`, así
   /// que esto es a lo sumo uno: un trabajo se factura una sola vez.
   ordenLineaOrigen OrdenLineaOrigen?
@@ -877,20 +1055,20 @@ model EmpresaConfig {
 ///
 /// Los campos son los que el XML exige en `infoTributaria`, ni más ni menos.
 model Emisor {
-  id     String @id @default(cuid())
+  id                       String  @id @default(cuid())
   /// 13 dígitos. Es la identidad del emisor ante el SRI.
-  ruc    String @unique
-  razonSocial     String
-  nombreComercial String?
+  ruc                      String  @unique
+  razonSocial              String
+  nombreComercial          String?
   /// Dirección de la matriz y del establecimiento que emite. El SRI las pide
   /// por separado aunque casi siempre coincidan.
   dirMatriz                String
   direccionEstablecimiento String
   /// Tres dígitos cada uno: "001". Con el secuencial forman "001-002-000000001".
-  establecimiento String @default("001")
-  puntoEmision    String @default("001")
+  establecimiento          String  @default("001")
+  puntoEmision             String  @default("001")
 
-  obligadoContabilidad Boolean @default(true)
+  obligadoContabilidad  Boolean @default(true)
   /// Número de resolución, cuando el SRI lo designó contribuyente especial.
   contribuyenteEspecial String?
   /// Número de resolución de agente de retención, si lo es.
@@ -904,14 +1082,14 @@ model Emisor {
   /// privada que firma documentos tributarios en nombre de la empresa: no sale
   /// nunca por una API, no se registra en logs y solo la lee el servidor al
   /// momento de firmar.
-  certificado          Bytes?
+  certificado         Bytes?
   /// Su contraseña, cifrada con la misma clave.
-  certificadoPassword  Bytes?
+  certificadoPassword Bytes?
   /// A nombre de quién está el certificado y hasta cuándo sirve. Se leen del
   /// propio `.p12` al cargarlo, para poder avisar antes de que caduque: vencido,
   /// ese RUC deja de poder facturar.
-  certificadoSujeto    String?
-  certificadoVence     DateTime?
+  certificadoSujeto   String?
+  certificadoVence    DateTime?
 
   activo         Boolean @default(true)
   /// El que viene elegido al emitir. Solo uno.
@@ -991,14 +1169,14 @@ enum EstadoOrden {
 }
 
 model Orden {
-  id                String      @id @default(cuid())
+  id                String  @id @default(cuid())
   clienteId         String
   /// Con qué datos se va a facturar. Se elige al armar la orden, cuando el
   /// vendedor tiene al cliente delante; al emitir ya es tarde para preguntar.
   /// Nullable porque una orden puede existir antes de saberlo.
   datoFacturacionId String?
   /// Correlativo interno legible. No es el número de factura del SRI.
-  numero            Int         @unique @default(autoincrement())
+  numero            Int     @unique @default(autoincrement())
 
   /// De qué plan es esta orden, cuando es de un plan.
   ///
@@ -1006,10 +1184,10 @@ model Orden {
   /// no: sus períodos se renuevan solos y cada orden cubre uno.
   ///
   /// Null y sin `OrdenVisita` = orden suelta, armada a mano.
-  suscripcionId     String?
-  fecha             DateTime    @db.Date
-  estado            EstadoOrden @default(BORRADOR)
-  notas             String?     @db.Text
+  suscripcionId String?
+  fecha         DateTime    @db.Date
+  estado        EstadoOrden @default(BORRADOR)
+  notas         String?     @db.Text
 
   /// Totales denormalizados, recalculados desde las líneas en cada escritura.
   subtotal Decimal @default(0) @db.Decimal(10, 2)
@@ -1082,12 +1260,12 @@ model OrdenLinea {
   periodoInicio     DateTime? @db.Date
   periodoFin        DateTime? @db.Date
 
-  orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  orden           Orden              @relation(fields: [ordenId], references: [id], onDelete: Cascade)
   /// `Restrict` y no `SetNull`: un producto que ya se vendió no se puede
   /// borrar. Perder el vínculo dejaría la línea fuera de todo reporte y la
   /// factura sin con qué reconciliarse.
-  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
-  suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
+  producto        Producto           @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  suscripcionItem SuscripcionItem?   @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
   /// De qué trabajos de visita sale esta línea. Pueden ser varios.
   origenes        OrdenLineaOrigen[]
 
@@ -1198,16 +1376,16 @@ model Factura {
   ///
   /// En el esquema *offline* la clave de acceso **es** el número de
   /// autorización: se calcula acá antes de mandar nada, y el SRI la confirma.
-  claveAcceso      String?      @unique
+  claveAcceso       String?      @unique
   /// Contra qué mundo se emitió. Lo de `PRUEBAS` no vale como comprobante.
-  ambienteSri      AmbienteSri?
+  ambienteSri       AmbienteSri?
   /// `AUTORIZADO`, `ENVIADO`, `DEVUELTO`… tal como lo reporta la emisión.
-  estadoSri        String?
+  estadoSri         String?
   fechaAutorizacion DateTime?
   /// Dónde quedó el XML firmado y autorizado, en R2. Hay que conservarlo.
-  xmlKey           String?
+  xmlKey            String?
   /// Lo que el SRI respondió cuando rechazó, para poder mostrarlo entero.
-  mensajesSri      Json?
+  mensajesSri       Json?
 
   /// Cuándo se le mandó al cliente y a qué correo. Sin esto no hay forma de
   /// saber si le llegó, y el reflejo es mandarla de nuevo "por si acaso".
@@ -1239,10 +1417,10 @@ model Factura {
   razonSocial       String?
   identificacion    String?
 
-  subtotal0       Decimal @default(0) @db.Decimal(10, 2)
-  subtotalGravado Decimal @default(0) @db.Decimal(10, 2)
-  iva             Decimal @default(0) @db.Decimal(10, 2)
-  total           Decimal @default(0) @db.Decimal(10, 2)
+  subtotal0       Decimal  @default(0) @db.Decimal(10, 2)
+  subtotalGravado Decimal  @default(0) @db.Decimal(10, 2)
+  iva             Decimal  @default(0) @db.Decimal(10, 2)
+  total           Decimal  @default(0) @db.Decimal(10, 2)
   /// Lo que falta cobrar: el total menos los cobros registrados. Se recalcula
   /// desde `Cobro` en cada movimiento, nunca restándole al valor guardado.
   saldo           Decimal? @db.Decimal(10, 2)
@@ -1255,7 +1433,7 @@ model Factura {
   datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
   lineas          FacturaLinea[]
 
-  cobros          Cobro[]
+  cobros Cobro[]
 
   @@unique([tipo, numero])
   @@index([ordenId])
@@ -1270,12 +1448,12 @@ model Factura {
 /// dato tributario. Por eso las formas de pago son las que usa la gente, no el
 /// catálogo del SRI.
 model Cobro {
-  id        String   @id @default(cuid())
-  facturaId String
+  id         String    @id @default(cuid())
+  facturaId  String
   /// El día que entró la plata, que puede no ser el día que se registra.
-  fecha     DateTime @db.Date
-  monto     Decimal  @db.Decimal(10, 2)
-  formaPago FormaPago
+  fecha      DateTime  @db.Date
+  monto      Decimal   @db.Decimal(10, 2)
+  formaPago  FormaPago
   /// N° de transferencia, de cheque, del voucher. Lo que permite encontrarlo.
   referencia String?
   nota       String?
@@ -1285,8 +1463,8 @@ model Cobro {
   /// El nombre congelado: el id se queda sin dueño si la cuenta se elimina.
   createdByNombre String?
 
-  factura Factura @relation(fields: [facturaId], references: [id], onDelete: Cascade)
-  createdBy User?  @relation("CobroCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  factura   Factura @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation("CobroCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([facturaId])
 }

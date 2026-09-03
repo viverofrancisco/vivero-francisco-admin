@@ -97,6 +97,17 @@ export const DestinatarioTipo = {
 export type DestinatarioTipo = (typeof DestinatarioTipo)[keyof typeof DestinatarioTipo]
 
 
+export const MotivoMovimiento = {
+  INGRESO: 'INGRESO',
+  AJUSTE: 'AJUSTE',
+  CONTEO: 'CONTEO',
+  VENTA: 'VENTA',
+  DEVOLUCION: 'DEVOLUCION'
+} as const
+
+export type MotivoMovimiento = (typeof MotivoMovimiento)[keyof typeof MotivoMovimiento]
+
+
 export const AmbienteSri = {
   PRUEBAS: 'PRUEBAS',
   PRODUCCION: 'PRODUCCION'

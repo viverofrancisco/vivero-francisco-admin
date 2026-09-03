@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { asegurarVarianteUnica } from "./variante.service";
 import {
   ConflictError,
   ForbiddenError,
@@ -102,8 +103,11 @@ export interface CreateServicioPayload {
   /** Qué es: un servicio que se ejecuta o un bien que se despacha. */
   tipo?: "SERVICIO" | "BIEN";
   ivaTasa?: number | null;
-  /** Cómo se agrupa en el portal. */
-  categoriaId?: string | null;
+  /**
+   * En qué categorías está. **Varias**: un rosal es "Plantas" y también
+   * "Exterior", y con un solo casillero había que elegir cuál guardar.
+   */
+  categoriaIds?: string[];
   /**
    * Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
    * del XML; si no hay, se emite con un código derivado del id.
@@ -125,7 +129,9 @@ export async function createServicio(
           descripcion: payload.descripcion?.trim() || null,
           tipo: payload.tipo ?? "SERVICIO",
           ivaTasa: payload.ivaTasa ?? null,
-          categoriaId: payload.categoriaId ?? null,
+          categorias: payload.categoriaIds?.length
+            ? { create: payload.categoriaIds.map((categoriaId) => ({ categoriaId })) }
+            : undefined,
           codigo: payload.codigo?.trim() || null,
           createdById: viewer.id,
           updatedById: viewer.id,
@@ -133,6 +139,13 @@ export async function createServicio(
       }),
     payload.codigo
   );
+
+  // Un bien nace con su variante única, sin opciones. Es lo que hace que tenga
+  // dónde contarse desde el primer día: agregar opciones después la reemplaza
+  // por las combinaciones, y el que nunca las usa no se entera de que existen.
+  if (producto.tipo === "BIEN") {
+    await asegurarVarianteUnica(producto.id, producto.codigo);
+  }
 
   return producto;
 }
@@ -143,8 +156,8 @@ export interface UpdateServicioPayload {
   /** Se acepta para poder validarlo, pero no se puede cambiar. */
   tipo?: "SERVICIO" | "BIEN";
   ivaTasa?: number | null;
-  /** Cómo se agrupa en el portal. */
-  categoriaId?: string | null;
+  /** En qué categorías está. Reemplaza el conjunto entero. */
+  categoriaIds?: string[];
   /** El que sale impreso como `codigoPrincipal`. */
   codigo?: string | null;
 }
@@ -182,8 +195,17 @@ export async function updateServicio(
             ? { descripcion: payload.descripcion?.trim() || null }
             : {}),
           ...(payload.ivaTasa !== undefined ? { ivaTasa: payload.ivaTasa } : {}),
-          ...(payload.categoriaId !== undefined
-            ? { categoriaId: payload.categoriaId }
+          ...(payload.categoriaIds !== undefined
+            ? {
+                // Reemplazo entero, no un parche: lo que llega es el estado
+                // final, igual que las líneas de una orden.
+                categorias: {
+                  deleteMany: {},
+                  create: payload.categoriaIds.map((categoriaId) => ({
+                    categoriaId,
+                  })),
+                },
+              }
             : {}),
           ...(payload.codigo !== undefined
             ? { codigo: payload.codigo?.trim() || null }

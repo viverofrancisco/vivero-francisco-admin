@@ -13,6 +13,9 @@ aquí para los detalles.
 - [base-de-datos-y-migraciones.md](./base-de-datos-y-migraciones.md) — branches de Neon
   (nunca apuntar el `.env` a producción), migraciones automáticas en cada deploy, cuándo
   hay que escribir el SQL a mano, y cómo verificar contra datos reales.
+- [catalogo-e-inventario.md](./catalogo-e-inventario.md) — el catálogo: opciones y
+  variantes al estilo Shopify, el inventario como libro de movimientos, las fotos del
+  producto (y cuál elige cada variante) y las categorías múltiples.
 - [facturacion-sri.md](./facturacion-sri.md) — facturación electrónica propia: el
   esquema *offline* del SRI y la clave de acceso, los emisores y su firma `.p12`
   cifrada, la numeración por serie, el RIDE, los cobros, las notas de crédito, y las

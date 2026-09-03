@@ -9,8 +9,11 @@ export const servicioSchema = z.object({
   descripcion: z.string().optional().or(z.literal("")),
   tipo: z.enum(["SERVICIO", "BIEN"]).default("SERVICIO"),
   ivaTasa: z.number().min(0).max(100).nullable().optional(),
-  /** Cómo se agrupa en el portal. Opcional: un producto sin categoría se vende igual. */
-  categoriaId: z.string().min(1).nullable().optional(),
+  /**
+   * En qué categorías está. Varias: un rosal es "Plantas" y "Exterior" a la
+   * vez. Opcional — un producto sin ninguna se vende igual.
+   */
+  categoriaIds: z.array(z.string().min(1)).optional(),
   /**
    * Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
    * del XML; sin él se emite con uno derivado del id.

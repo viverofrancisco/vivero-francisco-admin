@@ -1399,8 +1399,8 @@ export type $OrdenLineaPayload<ExtArgs extends runtime.Types.Extensions.Internal
     iva: runtime.Decimal
     total: runtime.Decimal
     /**
-     * Qué se vendió. Obligatorio: Contífico exige `producto_id` en cada línea y
-     * no acepta texto libre, así que una línea sin producto sería una venta que
+     * Qué se vendió. Obligatorio: de acá sale el `codigoPrincipal` que el SRI
+     * pide en cada detalle, así que una línea sin producto sería una venta que
      * no se puede cobrar. Es además lo que hace que un reporte por producto sea
      * un `groupBy` y no una reconstrucción.
      */

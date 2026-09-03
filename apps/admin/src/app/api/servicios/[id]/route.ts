@@ -56,7 +56,7 @@ export async function PUT(
         nombre: data.nombre,
         descripcion: data.descripcion ?? null,
         tipo: data.tipo,
-        categoriaId: data.categoriaId ?? null,
+        categoriaIds: data.categoriaIds ?? [],
         codigo: data.codigo ?? null,
       })
     );

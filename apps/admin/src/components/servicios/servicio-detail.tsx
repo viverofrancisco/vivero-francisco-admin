@@ -6,11 +6,17 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CustomSelect } from "@/components/ui/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, Undo2 } from "lucide-react";
 import { toast } from "sonner";
+import { SelectorCategorias } from "./selector-categorias";
+import { ProductoImagenes, type ImagenProducto } from "./producto-imagenes";
+import {
+  ProductoVariantes,
+  type OpcionEditable,
+  type VarianteFila,
+} from "./producto-variantes";
 import {
   ServicioClientesTable,
   type ServicioClienteRow,
@@ -31,16 +37,25 @@ interface ServicioData {
   codigo: string | null;
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
-  categoriaId: string | null;
+  /** Varias: un rosal es "Plantas" y también "Exterior". */
+  categoriaIds: string[];
 }
 
 export function ServicioDetail({
   servicio,
   clienteRows,
   categorias = [],
+  imagenes = [],
+  opciones = [],
+  variantes = [],
   backHref = "/dashboard/productos",
 }: {
   servicio: ServicioData;
+  /** La galería. Todo producto puede tener fotos, servicio o bien. */
+  imagenes?: ImagenProducto[];
+  /** Los ejes y sus combinaciones. Vacíos en un servicio: no tiene ninguno. */
+  opciones?: OpcionEditable[];
+  variantes?: VarianteFila[];
   clienteRows: ServicioClienteRow[];
   /** Las del portal, para poder reagrupar el producto desde acá. */
   categorias?: { id: string; nombre: string }[];
@@ -51,6 +66,12 @@ export function ServicioDetail({
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [restaurando, setRestaurando] = useState(false);
+  /**
+   * La galería vive acá y no adentro de su card: la tabla de variantes ofrece
+   * elegir una de estas fotos, así que subir una tiene que aparecer en el
+   * selector de al lado sin recargar.
+   */
+  const [galeria, setGaleria] = useState(imagenes);
 
   /** Lo devuelve al catálogo. */
   const restaurar = async () => {
@@ -73,7 +94,7 @@ export function ServicioDetail({
     nombre: servicio.nombre,
     tipo: servicio.tipo,
     descripcion: servicio.descripcion ?? "",
-    categoriaId: servicio.categoriaId,
+    categoriaIds: servicio.categoriaIds,
     codigo: servicio.codigo ?? "",
   });
   const [form, setForm] = useState(data);
@@ -99,7 +120,7 @@ export function ServicioDetail({
           // lo valide, no para cambiarlo.
           tipo: form.tipo,
           descripcion: form.descripcion,
-          categoriaId: form.categoriaId,
+          categoriaIds: form.categoriaIds,
           codigo: form.codigo.trim() || null,
         }),
       });
@@ -178,22 +199,11 @@ export function ServicioDetail({
                   </div>
                   {categorias.length > 0 && (
                     <div className="space-y-2">
-                      <Label>Categoría</Label>
-                      <CustomSelect
-                        value={form.categoriaId ?? ""}
-                        onChange={(v) =>
-                          setForm({ ...form, categoriaId: v || null })
-                        }
-                        options={[
-                          { value: "", label: "Sin categoría" },
-                          ...categorias.map((c) => ({
-                            value: c.id,
-                            label: c.nombre,
-                          })),
-                        ]}
-                        placeholder="Sin categoría"
-                        searchable
-                        searchPlaceholder="Buscar categoría..."
+                      <Label>Categorías</Label>
+                      <SelectorCategorias
+                        categorias={categorias}
+                        value={form.categoriaIds}
+                        onChange={(ids) => setForm({ ...form, categoriaIds: ids })}
                       />
                     </div>
                   )}
@@ -245,13 +255,23 @@ export function ServicioDetail({
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-muted-foreground">
-                        Categoría
+                        Categorías
                       </div>
                       <div>
-                        {categorias.find((c) => c.id === data.categoriaId)
-                          ?.nombre ?? (
+                        {data.categoriaIds.length === 0 ? (
                           <span className="text-muted-foreground">
                             Sin categoría
+                          </span>
+                        ) : (
+                          <span className="flex flex-wrap gap-1">
+                            {data.categoriaIds.map((id) => (
+                              <span
+                                key={id}
+                                className="rounded bg-muted px-1.5 py-0.5 text-xs"
+                              >
+                                {categorias.find((c) => c.id === id)?.nombre ?? id}
+                              </span>
+                            ))}
                           </span>
                         )}
                       </div>
@@ -283,6 +303,23 @@ export function ServicioDetail({
               )}
         </CardContent>
       </Card>
+
+      <ProductoImagenes
+        productoId={servicio.id}
+        imagenes={galeria}
+        onCambio={setGaleria}
+      />
+
+      {/* Solo un bien: un servicio no tiene nada que combinar ni que contar. */}
+      {servicio.tipo === "BIEN" && (
+        <ProductoVariantes
+          productoId={servicio.id}
+          productoNombre={data.nombre}
+          opciones={opciones}
+          variantes={variantes}
+          imagenes={galeria}
+        />
+      )}
 
       <ServicioClientesTable rows={clienteRows} />
     </div>

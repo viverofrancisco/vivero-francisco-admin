@@ -69,7 +69,7 @@ export type Cliente = Prisma.ClienteModel
 /**
  * Model Producto
  * Catálogo único: servicios de jardinería y, más adelante, bienes de vivero.
- * En Contífico ambos son `producto`; lo que los distingue acá es `tipo`.
+ * Lo que los distingue es `tipo`, que no cambia nada al facturar.
  */
 export type Producto = Prisma.ProductoModel
 /**
@@ -78,6 +78,64 @@ export type Producto = Prisma.ProductoModel
  * lista. No sale impresa en la factura ni cambia cómo se emite.
  */
 export type Categoria = Prisma.CategoriaModel
+/**
+ * Model ProductoCategoria
+ * En qué categorías está un producto.
+ * 
+ * Era una columna en `Producto`, o sea una sola categoría. Pero un rosal es
+ * "Plantas" y también "Exterior", y con un solo casillero había que elegir
+ * cuál de las dos verdades guardar. Borrar la categoría se lleva la fila, no
+ * el producto: dejar de agrupar algo no es darlo de baja.
+ */
+export type ProductoCategoria = Prisma.ProductoCategoriaModel
+/**
+ * Model OpcionProducto
+ * ── Variantes e inventario ────────────────────────────────────────────────
+ * 
+ * Un eje por el que un bien se divide: Color, Tamaño, Material.
+ * 
+ * **Solo los bienes.** Lo que cambia de una poda a otra es el precio, y eso
+ * vive en la orden: un servicio no tiene nada que combinar ni que contar.
+ */
+export type OpcionProducto = Prisma.OpcionProductoModel
+/**
+ * Model ValorOpcion
+ * Un valor de un eje: "Rojo", "Grande".
+ */
+export type ValorOpcion = Prisma.ValorOpcionModel
+/**
+ * Model Variante
+ * Una combinación concreta de valores: "Rojo · Grande".
+ * 
+ * Es lo que se cuenta. Un bien **sin ninguna opción tiene una variante
+ * igual**, sin valores: así todo lo que pregunta "cuánto hay" mira siempre al
+ * mismo lado, haya opciones o no, y no hay dos caminos que mantener.
+ */
+export type Variante = Prisma.VarianteModel
+/**
+ * Model VarianteValor
+ * Qué valor de cada opción tiene la variante.
+ */
+export type VarianteValor = Prisma.VarianteValorModel
+/**
+ * Model ProductoImagen
+ * Una foto del producto.
+ * 
+ * **Del producto y no de la variante.** Lo que una foto muestra suele ser un
+ * eje solo, así que colgarla de cada combinación obligaría a subir la misma
+ * imagen una vez por talle: con 3 colores × 4 tamaños, la foto del rojo iría
+ * cuatro veces. La variante elige cuál de estas es la suya.
+ */
+export type ProductoImagen = Prisma.ProductoImagenModel
+/**
+ * Model MovimientoInventario
+ * Cada vez que el stock de una variante cambió, y por qué.
+ * 
+ * **El stock se lleva en un libro**, igual que las ventas. Un número suelto
+ * contesta "cuánto hay" y ninguna otra pregunta: quién lo cambió, cuándo, y
+ * contra qué. Cuando alguien discute un conteo, lo que se mira es esto.
+ */
+export type MovimientoInventario = Prisma.MovimientoInventarioModel
 /**
  * Model Suscripcion
  * Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
@@ -319,11 +377,7 @@ export type DatoFacturacion = Prisma.DatoFacturacionModel
 export type Factura = Prisma.FacturaModel
 /**
  * Model Cobro
- * Un cobro contra una factura **propia**.
- * 
- * Existe desde que el portal emite sin Contífico: los cobros de una factura de
- * ellos siguen viviendo allá —el portal solo relee el saldo—, pero de una
- * nuestra no hay dónde anotarlos si no es acá.
+ * Un cobro contra una factura.
  * 
  * No viaja a ningún lado. Al SRI la forma de pago se le declara **al emitir**,
  * y el comprobante ya salió: esto es la cuenta corriente del vivero, no un

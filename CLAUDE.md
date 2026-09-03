@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Extended context lives in [`.claude/docs/`](./.claude/docs/) (see [`.claude/docs/README.md`](./.claude/docs/README.md)) to keep this file short. Read the relevant doc before touching that area:
 
 - [Database & migrations](./.claude/docs/base-de-datos-y-migraciones.md) — Neon branches (**never point the local `.env` at production**), migrations applied automatically on deploy, when to hand-write the SQL, and how to verify against real data.
+- [Catalog & inventory](./.claude/docs/catalogo-e-inventario.md) — Shopify-style options and variants (bienes only), stock as a movement ledger, product images with the variant picking one, and many-to-many categories.
 - [SRI e-invoicing](./.claude/docs/facturacion-sri.md) — the portal issues its own invoices: Ecuador's *offline* scheme and the clave de acceso, emisores and their encrypted `.p12`, per-series numbering, the RIDE, payments, credit notes, and the rules that take an orden to a factura.
 - [Passwords & invites](./.claude/docs/autenticacion-clientes.md) — nobody sets anyone else's password: every account starts without one and its owner sets it through a single-use link. Covers cliente login (phone/email + password), portal-user invites and resets, the three link lifetimes, and email via the Gmail API.
 - [WhatsApp notifications](./.claude/docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
@@ -131,11 +132,43 @@ Prisma schema: `apps/admin/prisma/schema.prisma` (PostgreSQL via `@prisma/adapte
 
 Core entities: **Cliente** (customer) → **Visita** (a scheduled visit) carried out by **Personal** (organized into **Grupo**s), scoped by **Sector** (geographic; admins are scoped via `SectorAdmin`). A visita covers one or more products via **VisitaProducto**, accumulates **VisitaMedia** (photos/videos, optionally tagged to one of the visita's products), has an in-visit chat (**VisitaMessage**), and rolls up into **Informe**s (PDF reports, rendered with `@react-pdf/renderer` in `src/lib/informes/`; `Informe.fecha` is the date **printed** on the PDF and `generatedAt` the instant it was built — a report for August can be assembled in September). **An informe is immutable**: there is no edit and no PUT, only create and delete. It is a signed document that already went out, so correcting it in place would leave the client holding a PDF that no longer matches ours; the fix is to delete the wrong one and make the right one, which gets its own `numero`. Deleting takes the row, its sections and the PDF in R2 with it. Soft-delete is used on several models. **NotificacionPlantilla/Log/Config** drive WhatsApp + push notifications.
 
-**Producto** is the single catalog — services and (later) retail goods. Its only
+**Producto** is the single catalog — services and retail goods. Its only
 classifying axis is `tipo`: `SERVICIO` | `BIEN` — what it *is*. **It changes
-nothing at invoicing time**: the SRI's `<detalle>` has no goods/services field.
-It groups and filters the catalog, and it's the axis that will decide what
-carries stock once inventory lives here.
+nothing at invoicing time** (the SRI's `<detalle>` has no goods/services field);
+what it does decide is **who gets variants and stock: only a `BIEN`**.
+
+**A bien splits into variants, Shopify-style.** `OpcionProducto` is an axis
+(Color, Tamaño), `ValorOpcion` its values, and a **`Variante`** is one
+combination — 3 colors × 2 sizes is 6 variants, each with its own SKU and its
+own stock. **A bien with no options still has one variant**, so everything that
+asks "how many are there" looks at the same place either way. `Variante.combinacion`
+(the value ids joined) is what lets a unique index guarantee no two variants of a
+product are the same. Saving options **replaces the whole set** and regenerates
+variants, preserving those whose combination didn't change — values travel *with
+their id*, or renaming "Rojo" would destroy every red variant and its stock.
+Dropping an axis that has stock behind it needs an explicit `descartarVariantes`,
+and the 409 names what disappears.
+
+**Stock is a ledger, not a number.** `MovimientoInventario` is the book and
+`Variante.stock` is its running balance — never written from anywhere else.
+`moverStock()` takes the row `FOR UPDATE` first, or two simultaneous adjustments
+both read 10 and both write 12. `INGRESO`/`AJUSTE` say *how much moved*;
+`CONTEO` says *how many there are* and the service derives the delta — whoever
+counts the shelf doesn't know what the system said. Two switches per variant:
+`manejaInventario` (counted at all; turning it off with stock on hand is
+refused) and `permiteNegativo` (sellable at zero).
+
+**Images belong to the producto; the variante points at one.** Photos usually
+show a single axis — the color — so hanging them off each combination would mean
+uploading the same picture once per size. A variant with no pick shows the first.
+Upload is two-step (presigned URLs, then confirm), `image/*` only, validated
+server-side because the content type is what gets *signed*.
+
+**A product is in several categories** (`ProductoCategoria`). It was one column,
+and a rosal is both "Plantas" and "Exterior".
+
+Selling a variant is **not wired yet**: `OrdenLinea`/`FacturaLinea` still point at
+a `Producto`, so nothing writes `VENTA` movements. See the doc.
 
 **Nothing in the catalog says whether something is one-off or recurring.** That
 depends on the cliente, not the product: the same desmalezado is a one-off for

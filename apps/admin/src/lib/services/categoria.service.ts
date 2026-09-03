@@ -26,7 +26,11 @@ export async function listarCategorias(viewer: Viewer) {
   return prisma.categoria.findMany({
     orderBy: [{ orden: "asc" }, { nombre: "asc" }],
     include: {
-      _count: { select: { productos: { where: { deletedAt: null } } } },
+      // A través de la puente, y contando solo los productos vivos: un
+      // archivado sigue teniendo su fila y sumaría de más.
+      _count: {
+        select: { productos: { where: { producto: { deletedAt: null } } } },
+      },
     },
   });
 }
@@ -90,9 +94,10 @@ export async function actualizarCategoria(
  *
  * No hay borrado suave: una categoría es una etiqueta para agrupar, no un hecho
  * que haya que conservar, y una archivada que sigue colgando de sus productos
- * sería una categoría que se ve en las fichas pero no en la lista. El `FK` es
- * `SET NULL`, así que sus productos quedan sin categoría — siguen enteros, con
- * su nombre, su precio y todo lo que los nombra en visitas y facturas.
+ * sería una categoría que se ve en las fichas pero no en la lista. Lo que se
+ * borra en cascada son las filas de `ProductoCategoria`: dejar de agrupar algo
+ * no es darlo de baja, así que los productos quedan enteros y con una etiqueta
+ * menos.
  */
 export async function borrarCategoria(viewer: Viewer, id: string) {
   ensureAdmin(viewer);

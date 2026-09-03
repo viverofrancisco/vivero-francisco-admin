@@ -34,8 +34,11 @@ interface Servicio {
   codigo: string | null;
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
-  categoriaId: string | null;
-  categoriaNombre: string | null;
+  /** Varias: un rosal es "Plantas" y también "Exterior". */
+  categorias: { id: string; nombre: string }[];
+  /** Total de las variantes que cuentan. `null` = no lleva inventario. */
+  stock: number | null;
+  variantes: number;
 }
 
 const TIPO_LABEL: Record<string, string> = {
@@ -69,7 +72,9 @@ export function ServiciosTable({
     if (tipo) result = result.filter((s) => s.tipo === tipo);
     if (categoria) {
       result = result.filter((s) =>
-        categoria === "SIN" ? !s.categoriaId : s.categoriaId === categoria
+        categoria === "SIN"
+          ? s.categorias.length === 0
+          : s.categorias.some((c) => c.id === categoria)
       );
     }
     if (searchQuery.trim()) {
@@ -180,8 +185,9 @@ export function ServiciosTable({
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Categoría</TableHead>
+                  <TableHead>Categorías</TableHead>
                   <TableHead>Código</TableHead>
+                  <TableHead className="w-24 text-right">Stock</TableHead>
                   <TableHead className="w-12" />
                 </TableRow>
               </TableHeader>
@@ -212,10 +218,43 @@ export function ServiciosTable({
                       {TIPO_LABEL[servicio.tipo] ?? servicio.tipo}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {servicio.categoriaNombre ?? "—"}
+                      {servicio.categorias.length === 0 ? (
+                        "—"
+                      ) : (
+                        <span className="flex flex-wrap gap-1">
+                          {servicio.categorias.map((c) => (
+                            <span
+                              key={c.id}
+                              className="rounded bg-muted px-1.5 py-0.5 text-xs"
+                            >
+                              {c.nombre}
+                            </span>
+                          ))}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {servicio.codigo ?? "—"}
+                    </TableCell>
+                    {/* Un servicio no lleva stock, y un bien puede no
+                        contarlo: en los dos casos un "0" mentiría. */}
+                    <TableCell className="text-right tabular-nums">
+                      {servicio.stock === null ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <span
+                          className={
+                            servicio.stock <= 0 ? "font-medium text-amber-700" : ""
+                          }
+                        >
+                          {servicio.stock}
+                          {servicio.variantes > 1 && (
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              ({servicio.variantes})
+                            </span>
+                          )}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {/* Archivado no se archiva de nuevo: lo que hace falta

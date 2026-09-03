@@ -3012,8 +3012,8 @@ export type $ClientePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     notas: string | null
     metrosCuadrados: number | null
     /**
-     * Identificación tributaria. Contífico exige `cedula` y `tipo` para emitir
-     * una factura; hoy están vacías y se backfillean desde su padrón.
+     * Identificación tributaria del contacto. Lo que sale impreso en una
+     * factura no es esto sino `DatoFacturacion`, que puede haber varios.
      */
     cedula: string | null
     ruc: string | null

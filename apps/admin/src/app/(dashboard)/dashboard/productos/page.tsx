@@ -21,7 +21,14 @@ export default async function ServiciosPage() {
       descripcion: true,
       codigo: true,
       deletedAt: true,
-      categoria: { select: { id: true, nombre: true } },
+      categorias: {
+        select: { categoria: { select: { id: true, nombre: true } } },
+      },
+      // Para la columna de stock: un bien puede tener varias variantes y lo
+      // que se muestra es el total de las que se cuentan.
+      variantes: {
+        select: { manejaInventario: true, stock: true },
+      },
     },
   });
 
@@ -54,8 +61,14 @@ export default async function ServiciosPage() {
           codigo: p.codigo,
           // Texto y no `Date`: la tabla solo lo muestra.
           archivadoEl: p.deletedAt?.toISOString() ?? null,
-          categoriaId: p.categoria?.id ?? null,
-          categoriaNombre: p.categoria?.nombre ?? null,
+          categorias: p.categorias.map((c) => c.categoria),
+          // `null` = no cuenta stock, que no es lo mismo que tener cero.
+          stock: p.variantes.some((v) => v.manejaInventario)
+            ? p.variantes
+                .filter((v) => v.manejaInventario)
+                .reduce((n, v) => n + v.stock, 0)
+            : null,
+          variantes: p.variantes.length,
         }))}
         categorias={categorias}
       />

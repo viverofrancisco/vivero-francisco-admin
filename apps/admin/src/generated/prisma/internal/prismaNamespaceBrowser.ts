@@ -58,6 +58,13 @@ export const ModelName = {
   Cliente: 'Cliente',
   Producto: 'Producto',
   Categoria: 'Categoria',
+  ProductoCategoria: 'ProductoCategoria',
+  OpcionProducto: 'OpcionProducto',
+  ValorOpcion: 'ValorOpcion',
+  Variante: 'Variante',
+  VarianteValor: 'VarianteValor',
+  ProductoImagen: 'ProductoImagen',
+  MovimientoInventario: 'MovimientoInventario',
   Suscripcion: 'Suscripcion',
   SuscripcionItem: 'SuscripcionItem',
   Personal: 'Personal',
@@ -204,7 +211,6 @@ export const ProductoScalarFieldEnum = {
   descripcion: 'descripcion',
   tipo: 'tipo',
   codigo: 'codigo',
-  categoriaId: 'categoriaId',
   ivaTasa: 'ivaTasa',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -225,6 +231,84 @@ export const CategoriaScalarFieldEnum = {
 } as const
 
 export type CategoriaScalarFieldEnum = (typeof CategoriaScalarFieldEnum)[keyof typeof CategoriaScalarFieldEnum]
+
+
+export const ProductoCategoriaScalarFieldEnum = {
+  productoId: 'productoId',
+  categoriaId: 'categoriaId'
+} as const
+
+export type ProductoCategoriaScalarFieldEnum = (typeof ProductoCategoriaScalarFieldEnum)[keyof typeof ProductoCategoriaScalarFieldEnum]
+
+
+export const OpcionProductoScalarFieldEnum = {
+  id: 'id',
+  productoId: 'productoId',
+  nombre: 'nombre',
+  posicion: 'posicion'
+} as const
+
+export type OpcionProductoScalarFieldEnum = (typeof OpcionProductoScalarFieldEnum)[keyof typeof OpcionProductoScalarFieldEnum]
+
+
+export const ValorOpcionScalarFieldEnum = {
+  id: 'id',
+  opcionId: 'opcionId',
+  valor: 'valor',
+  posicion: 'posicion'
+} as const
+
+export type ValorOpcionScalarFieldEnum = (typeof ValorOpcionScalarFieldEnum)[keyof typeof ValorOpcionScalarFieldEnum]
+
+
+export const VarianteScalarFieldEnum = {
+  id: 'id',
+  productoId: 'productoId',
+  sku: 'sku',
+  posicion: 'posicion',
+  combinacion: 'combinacion',
+  manejaInventario: 'manejaInventario',
+  stock: 'stock',
+  permiteNegativo: 'permiteNegativo',
+  imagenId: 'imagenId'
+} as const
+
+export type VarianteScalarFieldEnum = (typeof VarianteScalarFieldEnum)[keyof typeof VarianteScalarFieldEnum]
+
+
+export const VarianteValorScalarFieldEnum = {
+  varianteId: 'varianteId',
+  valorId: 'valorId'
+} as const
+
+export type VarianteValorScalarFieldEnum = (typeof VarianteValorScalarFieldEnum)[keyof typeof VarianteValorScalarFieldEnum]
+
+
+export const ProductoImagenScalarFieldEnum = {
+  id: 'id',
+  productoId: 'productoId',
+  key: 'key',
+  alt: 'alt',
+  posicion: 'posicion',
+  createdAt: 'createdAt'
+} as const
+
+export type ProductoImagenScalarFieldEnum = (typeof ProductoImagenScalarFieldEnum)[keyof typeof ProductoImagenScalarFieldEnum]
+
+
+export const MovimientoInventarioScalarFieldEnum = {
+  id: 'id',
+  varianteId: 'varianteId',
+  cantidad: 'cantidad',
+  saldo: 'saldo',
+  motivo: 'motivo',
+  nota: 'nota',
+  createdAt: 'createdAt',
+  createdById: 'createdById',
+  createdByNombre: 'createdByNombre'
+} as const
+
+export type MovimientoInventarioScalarFieldEnum = (typeof MovimientoInventarioScalarFieldEnum)[keyof typeof MovimientoInventarioScalarFieldEnum]
 
 
 export const SuscripcionScalarFieldEnum = {

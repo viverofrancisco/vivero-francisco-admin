@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Card, CardContent } from "@/components/ui/card";
 import { StickyFormActions } from "@/components/shared/sticky-form-actions";
+import { SelectorCategorias } from "@/components/servicios/selector-categorias";
 import { toast } from "sonner";
 
 interface ServicioFormProps {
@@ -19,7 +20,7 @@ interface ServicioFormProps {
     nombre: string;
     descripcion: string | null;
     tipo: string;
-    categoriaId?: string | null;
+    categoriaIds?: string[];
     codigo?: string | null;
   };
   /** Para agruparlo en el portal. Vacío mientras no haya ninguna creada. */
@@ -43,7 +44,7 @@ export function ServicioForm({ initialData, categorias = [] }: ServicioFormProps
       nombre: initialData?.nombre ?? "",
       descripcion: initialData?.descripcion ?? "",
       tipo: (initialData?.tipo as "SERVICIO" | "BIEN") ?? "SERVICIO",
-      categoriaId: initialData?.categoriaId ?? null,
+      categoriaIds: initialData?.categoriaIds ?? [],
       codigo: initialData?.codigo ?? null,
     },
   });
@@ -127,28 +128,18 @@ export function ServicioForm({ initialData, categorias = [] }: ServicioFormProps
               )}
             </div>
 
-            {/* Sin categorías creadas no se muestra: sería un campo con una
-                sola opción vacía. */}
+            {/* Sin categorías creadas no se muestra: sería un campo vacío. */}
             {categorias.length > 0 && (
               <div className="space-y-2">
-                <Label>Categoría</Label>
+                <Label>Categorías</Label>
                 <Controller
-                  name="categoriaId"
+                  name="categoriaIds"
                   control={control}
                   render={({ field }) => (
-                    <CustomSelect
-                      value={field.value ?? ""}
-                      onChange={(v) => field.onChange(v || null)}
-                      options={[
-                        { value: "", label: "Sin categoría" },
-                        ...categorias.map((c) => ({
-                          value: c.id,
-                          label: c.nombre,
-                        })),
-                      ]}
-                      placeholder="Sin categoría"
-                      searchable
-                      searchPlaceholder="Buscar categoría..."
+                    <SelectorCategorias
+                      categorias={categorias}
+                      value={field.value ?? []}
+                      onChange={field.onChange}
                     />
                   )}
                 />

@@ -14,11 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Cobro
- * Un cobro contra una factura **propia**.
- * 
- * Existe desde que el portal emite sin Contífico: los cobros de una factura de
- * ellos siguen viviendo allá —el portal solo relee el saldo—, pero de una
- * nuestra no hay dónde anotarlos si no es acá.
+ * Un cobro contra una factura.
  * 
  * No viaja a ningún lado. Al SRI la forma de pago se le declara **al emitir**,
  * y el comprobante ya salió: esto es la cuenta corriente del vivero, no un

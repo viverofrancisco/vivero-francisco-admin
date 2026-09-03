@@ -307,6 +307,23 @@ export type IntWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedIntFilter<$PrismaModel>
 }
 
+export type EnumMotivoMovimientoFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoMovimiento | Prisma.EnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoMovimientoFilter<$PrismaModel> | $Enums.MotivoMovimiento
+}
+
+export type EnumMotivoMovimientoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoMovimiento | Prisma.EnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoMovimientoWithAggregatesFilter<$PrismaModel> | $Enums.MotivoMovimiento
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMotivoMovimientoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMotivoMovimientoFilter<$PrismaModel>
+}
+
 export type EnumEstadoServicioFilter<$PrismaModel = never> = {
   equals?: $Enums.EstadoServicio | Prisma.EnumEstadoServicioFieldRefInput<$PrismaModel>
   in?: $Enums.EstadoServicio[] | Prisma.ListEnumEstadoServicioFieldRefInput<$PrismaModel>
@@ -984,6 +1001,23 @@ export type NestedFloatFilter<$PrismaModel = never> = {
   gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   not?: Prisma.NestedFloatFilter<$PrismaModel> | number
+}
+
+export type NestedEnumMotivoMovimientoFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoMovimiento | Prisma.EnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoMovimientoFilter<$PrismaModel> | $Enums.MotivoMovimiento
+}
+
+export type NestedEnumMotivoMovimientoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoMovimiento | Prisma.EnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoMovimiento[] | Prisma.ListEnumMotivoMovimientoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoMovimientoWithAggregatesFilter<$PrismaModel> | $Enums.MotivoMovimiento
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMotivoMovimientoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMotivoMovimientoFilter<$PrismaModel>
 }
 
 export type NestedEnumEstadoServicioFilter<$PrismaModel = never> = {

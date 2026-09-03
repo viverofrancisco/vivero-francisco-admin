@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       descripcion: data.descripcion || null,
       tipo: data.tipo,
       ivaTasa: data.ivaTasa ?? null,
-      categoriaId: data.categoriaId ?? null,
+      categoriaIds: data.categoriaIds ?? [],
       codigo: data.codigo ?? null,
     });
     return NextResponse.json(servicio, { status: 201 });
