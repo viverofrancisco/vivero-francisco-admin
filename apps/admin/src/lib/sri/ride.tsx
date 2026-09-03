@@ -62,7 +62,11 @@ const styles = StyleSheet.create({
 
   // El recuadro del documento: lo que el SRI exige, junto y a la derecha.
   documento: {
-    width: 258,
+    // 280 no es un número al azar: en Helvetica un dígito mide 0,556 em, así
+    // que los 49 de la clave a 8,5pt ocupan ~232pt y entran en los 260 útiles
+    // que deja este ancho. Más angosto y hay que achicar la letra, que es
+    // justo lo que no queremos en un número que alguien va a tipear.
+    width: 280,
     borderWidth: 1,
     borderColor: LINEA,
     borderRadius: 4,
@@ -84,8 +88,8 @@ const styles = StyleSheet.create({
   etiqueta: { color: GRIS },
   dato: { marginBottom: 1 },
   barras: { height: 30, marginTop: 5, objectFit: "contain" },
-  clave: { fontSize: 6.5, letterSpacing: 0.3, color: GRIS, marginTop: 2 },
-  numeroLargo: { fontSize: 6.5, letterSpacing: 0.2, marginBottom: 3 },
+  clave: { fontSize: 8.5, color: GRIS, marginTop: 3 },
+  numeroLargo: { fontSize: 8.5, marginBottom: 4 },
 
   aviso: {
     marginTop: 8,
@@ -343,9 +347,10 @@ function RideDocument({
               {esNota ? "NOTA DE CRÉDITO" : "FACTURA"}
             </Text>
             <Text style={styles.numeroDoc}>{datos.numero}</Text>
-            {/* En su propio renglón: son 49 dígitos sin espacios, así que
-                no hay dónde cortarlos y al lado de la etiqueta se salían de
-                la caja. */}
+            {/* En su propio renglón, no por tamaño sino por ancho: 49
+                dígitos sin espacios no tienen dónde cortarse —probado, ni
+                siquiera con un espacio de ancho cero— así que al lado de la
+                etiqueta no entraban. Solos sí, y al tamaño del resto. */}
             <Text style={styles.etiqueta}>Autorización</Text>
             <Text style={styles.numeroLargo}>
               {datos.numeroAutorizacion ?? datos.claveAcceso}
