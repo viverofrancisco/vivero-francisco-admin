@@ -54,14 +54,15 @@ const styles = StyleSheet.create({
   emisorNombre: {
     fontFamily: "Helvetica-Bold",
     fontSize: 15,
+    lineHeight: 1.2,
     color: VERDE,
-    marginBottom: 2,
+    marginBottom: 5,
   },
-  emisorRazon: { fontSize: 8.5, color: GRIS, marginBottom: 6 },
+  emisorRazon: { fontSize: 8.5, color: GRIS, marginBottom: 5, marginTop: -3 },
 
   // El recuadro del documento: lo que el SRI exige, junto y a la derecha.
   documento: {
-    width: 232,
+    width: 258,
     borderWidth: 1,
     borderColor: LINEA,
     borderRadius: 4,
@@ -84,6 +85,7 @@ const styles = StyleSheet.create({
   dato: { marginBottom: 1 },
   barras: { height: 30, marginTop: 5, objectFit: "contain" },
   clave: { fontSize: 6.5, letterSpacing: 0.3, color: GRIS, marginTop: 2 },
+  numeroLargo: { fontSize: 6.5, letterSpacing: 0.2, marginBottom: 3 },
 
   aviso: {
     marginTop: 8,
@@ -341,10 +343,13 @@ function RideDocument({
               {esNota ? "NOTA DE CRÉDITO" : "FACTURA"}
             </Text>
             <Text style={styles.numeroDoc}>{datos.numero}</Text>
-            <Dato
-              etiqueta="Autorización"
-              valor={datos.numeroAutorizacion ?? datos.claveAcceso}
-            />
+            {/* En su propio renglón: son 49 dígitos sin espacios, así que
+                no hay dónde cortarlos y al lado de la etiqueta se salían de
+                la caja. */}
+            <Text style={styles.etiqueta}>Autorización</Text>
+            <Text style={styles.numeroLargo}>
+              {datos.numeroAutorizacion ?? datos.claveAcceso}
+            </Text>
             <Dato
               etiqueta="Fecha y hora"
               valor={
@@ -422,7 +427,9 @@ function RideDocument({
 
         {/* El detalle */}
         <View>
-          <View style={styles.fila}>
+          {/* `fixed`: con muchos ítems la tabla sigue en la página siguiente
+              y sin esto las columnas quedaban sin encabezado. */}
+          <View style={styles.fila} fixed>
             <Text style={[styles.th, { width: 78 }]}>CÓDIGO</Text>
             <Text style={[styles.th, { flex: 1 }]}>DESCRIPCIÓN</Text>
             <Text style={[styles.th, { width: 42, textAlign: "right" }]}>CANT.</Text>
@@ -457,7 +464,9 @@ function RideDocument({
           ))}
         </View>
 
-        <View style={[styles.fila, { marginTop: 12 }]}>
+        {/* `wrap={false}`: los totales se leen juntos o no se leen. Partirlos
+            entre dos páginas deja media cuenta en cada una. */}
+        <View style={[styles.fila, { marginTop: 12 }]} wrap={false}>
           <View style={{ flex: 1, marginRight: 10 }}>
             <View style={styles.caja}>
               <Text style={styles.subtitulo}>FORMA DE PAGO</Text>
@@ -524,10 +533,19 @@ function RideDocument({
         </View>
 
         {/* El pie recuerda qué es esto, que es lo que más se malentiende. */}
-        <Text style={styles.pie} fixed>
-          Representación impresa del comprobante electrónico. El documento
-          autorizado es el archivo XML.
-        </Text>
+        <View style={styles.pie} fixed>
+          <Text>
+            Representación impresa del comprobante electrónico. El documento
+            autorizado es el archivo XML.
+          </Text>
+          {/* Solo cuando hay más de una: en la única hoja, "Página 1 de 1" es
+              ruido. */}
+          <Text
+            render={({ pageNumber, totalPages }) =>
+              totalPages > 1 ? `Página ${pageNumber} de ${totalPages}` : ""
+            }
+          />
+        </View>
       </Page>
     </Document>
   );
