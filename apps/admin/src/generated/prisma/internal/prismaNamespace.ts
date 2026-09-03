@@ -4383,6 +4383,8 @@ export const FacturaScalarFieldEnum = {
   fechaAutorizacion: 'fechaAutorizacion',
   xmlKey: 'xmlKey',
   mensajesSri: 'mensajesSri',
+  enviadoEl: 'enviadoEl',
+  enviadoA: 'enviadoA',
   contificoDocumentoId: 'contificoDocumentoId',
   numero: 'numero',
   tipo: 'tipo',

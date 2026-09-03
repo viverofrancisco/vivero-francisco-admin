@@ -170,6 +170,9 @@ interface OrdenData {
     contificoDocumentoId: string | null;
     /** Con clave de acceso, la emitió el portal contra el SRI. */
     claveAcceso: string | null;
+    /** Cuándo se le mandó al cliente, y a qué correo. */
+    enviadoEl: string | null;
+    enviadoA: string | null;
     ambienteSri: "PRUEBAS" | "PRODUCCION" | null;
     estadoSri: string | null;
     /** Lo que dijo el SRI al rechazarla. Es lo único que dice qué arreglar. */
@@ -561,6 +564,30 @@ export function OrdenDetail({
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
       toast.success("Enviada al SRI");
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error");
+    } finally {
+      setCargando(null);
+    }
+  };
+
+  /** Le manda al cliente el RIDE y el XML. */
+  const enviarAlCliente = async (facturaId: string) => {
+    setCargando(facturaId);
+    try {
+      const res = await fetch(`/api/facturas/${facturaId}/enviar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      toast.success(
+        body.conXml
+          ? `Enviada a ${body.a}`
+          : `Enviada a ${body.a}, pero sin el XML: no se pudo leer de R2`
+      );
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error");
@@ -1100,6 +1127,19 @@ export function OrdenDetail({
                       </span>
                     </DropdownMenuItem>
                     )}
+                    {/* Antes de la autorización no hay comprobante que
+                        entregar, así que solo aparece cuando la hay. */}
+                    {propia && facturaVigente.estado === "AUTORIZADO" && (
+                      <DropdownMenuItem
+                        onClick={() => enviarAlCliente(facturaVigente.id)}
+                      >
+                        <Send className="mr-2 h-4 w-4" />
+                        {facturaVigente.enviadoEl
+                          ? "Volver a enviar al cliente"
+                          : "Enviar al cliente"}
+                      </DropdownMenuItem>
+                    )}
+
                     {/* El SRI puede tardar: por norma tiene 24 horas, aunque
                         casi siempre contesta en segundos. El cron pregunta
                         solo, pero quien está esperando el comprobante no tiene
@@ -1174,6 +1214,21 @@ export function OrdenDetail({
               <div className="space-y-1.5">
                 {/* La clave de acceso es, en el esquema offline, el número de
                     autorización: con eso se consulta el comprobante en el SRI. */}
+                {facturaVigente.enviadoEl && (
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="flex-none text-muted-foreground">
+                      Enviada al cliente
+                    </span>
+                    <span className="text-right">
+                      {fecha(facturaVigente.enviadoEl)}
+                      {facturaVigente.enviadoA && (
+                        <span className="block text-xs text-muted-foreground">
+                          {facturaVigente.enviadoA}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
                 {facturaVigente.claveAcceso && (
                   <div className="flex items-start justify-between gap-3">
                     <span className="flex-none text-muted-foreground">

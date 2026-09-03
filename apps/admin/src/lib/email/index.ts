@@ -30,6 +30,12 @@ export interface SendEmailParams {
   subject: string;
   html: string;
   text?: string;
+  /**
+   * Archivos adjuntos. Los usa la factura electrónica, que se manda con su
+   * RIDE en PDF y su XML: el PDF es el que la gente lee y el XML es el
+   * documento legal, así que el cliente necesita los dos.
+   */
+  attachments?: { filename: string; content: Buffer; contentType: string }[];
 }
 
 export interface SendEmailResult {
@@ -46,6 +52,7 @@ async function buildRawMessage(params: SendEmailParams): Promise<string> {
     subject: params.subject,
     text: params.text,
     html: params.html,
+    attachments: params.attachments,
   })
     .compile()
     .build();

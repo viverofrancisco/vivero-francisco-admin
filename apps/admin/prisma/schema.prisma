@@ -1237,6 +1237,11 @@ model Factura {
   /// Lo que el SRI respondió cuando rechazó, para poder mostrarlo entero.
   mensajesSri      Json?
 
+  /// Cuándo se le mandó al cliente y a qué correo. Sin esto no hay forma de
+  /// saber si le llegó, y el reflejo es mandarla de nuevo "por si acaso".
+  enviadoEl DateTime?
+  enviadoA  String?
+
   contificoDocumentoId String?       @unique
   /// Único porque en un `NO_AUTORIZADO` **nadie más lo garantiza**: Contífico
   /// acepta un número repetido y crea un segundo documento, al revés que en

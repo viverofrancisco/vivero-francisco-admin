@@ -172,6 +172,8 @@ export default async function OrdenRoute({
             // Lo del comprobante propio: sin esto la ficha no puede distinguir
             // una factura nuestra de una de Contífico.
             claveAcceso: f.claveAcceso,
+            enviadoEl: f.enviadoEl?.toISOString() ?? null,
+            enviadoA: f.enviadoA,
             ambienteSri: f.ambienteSri,
             estadoSri: f.estadoSri,
             mensajesSri: f.mensajesSri as
