@@ -158,3 +158,99 @@ export const numeroComprobante = (
   puntoEmision: string,
   secuencial: string
 ) => `${establecimiento}-${puntoEmision}-${secuencial}`;
+
+/**
+ * Pone al día las facturas propias que el SRI todavía no resolvió.
+ *
+ * **Existe porque el SRI puede tardar.** Por norma tiene hasta 24 horas para
+ * autorizar; en la práctica contesta en segundos, pero cuando no lo hace la
+ * factura queda en `ENVIADO_SRI` y nadie vuelve a preguntar: sin esto, una
+ * emisión lenta se queda a mitad de camino para siempre, con su número
+ * consumido y sin comprobante que entregar.
+ *
+ * Es idempotente —solo copia lo que dice el SRI— así que correrlo de más no
+ * rompe nada. Y **la orden se confirma acá si la autorización llegó tarde**:
+ * emitir solo la confirma cuando el SRI contesta en el momento.
+ */
+export async function sincronizarPendientesSri(limite = 100) {
+  const { prisma } = await import("@/lib/prisma");
+
+  const pendientes = await prisma.factura.findMany({
+    where: {
+      anulada: false,
+      claveAcceso: { not: null },
+      emisorId: { not: null },
+      // Lo que todavía puede cambiar del lado del SRI. Autorizada no se vuelve
+      // a preguntar, y rechazada tampoco: eso no se arregla preguntando de
+      // nuevo, se arregla emitiendo otra.
+      estado: { in: ["PENDIENTE", "FIRMADO", "ENVIADO_SRI"] },
+    },
+    orderBy: { fechaEmision: "desc" },
+    take: limite,
+    select: {
+      id: true,
+      numero: true,
+      claveAcceso: true,
+      emisorId: true,
+      ordenId: true,
+    },
+  });
+
+  let actualizadas = 0;
+  const fallidas: { numero: string; motivo: string }[] = [];
+
+  // De a una y en serie: cada consulta abre el certificado del emisor y no hay
+  // apuro. Un cron lento es mejor que uno que le pega en ráfaga al SRI.
+  for (const f of pendientes) {
+    try {
+      const r = await consultarAutorizacion(f.emisorId!, f.claveAcceso!);
+      const estado = ESTADO_CONSULTA[r.estado] ?? null;
+      if (!estado) continue;
+
+      await prisma.$transaction(async (tx) => {
+        await tx.factura.update({
+          where: { id: f.id },
+          data: {
+            estado,
+            estadoSri: r.estado,
+            autorizacion: r.numeroAutorizacion ?? undefined,
+            fechaAutorizacion: r.fechaAutorizacion ?? undefined,
+            // A `Json` de Prisma va como objeto plano; el tipo de la
+            // librería no le encaja directo.
+            mensajesSri: r.mensajes?.length
+              ? (JSON.parse(JSON.stringify(r.mensajes)) as object[])
+              : undefined,
+          },
+        });
+        // La autorización que llegó tarde también confirma la orden.
+        if (estado === "AUTORIZADO") {
+          await tx.orden.updateMany({
+            where: { id: f.ordenId, estado: "BORRADOR" },
+            data: { estado: "CONFIRMADA" },
+          });
+        }
+      });
+      actualizadas++;
+    } catch (error) {
+      fallidas.push({
+        numero: f.numero,
+        motivo: error instanceof Error ? error.message : "Error",
+      });
+    }
+  }
+
+  return { revisadas: pendientes.length, actualizadas, fallidas };
+}
+
+/**
+ * Lo que contesta la consulta, en los estados de la factura.
+ *
+ * `EN PROCESO` no está: quiere decir "todavía no sé", y guardarlo como algo
+ * sería perder que sigue pendiente.
+ */
+const ESTADO_CONSULTA: Record<string, "AUTORIZADO" | "RECHAZADO"> = {
+  AUTORIZADO: "AUTORIZADO",
+  "NO AUTORIZADO": "RECHAZADO",
+  RECHAZADO: "RECHAZADO",
+  DEVUELTO: "RECHAZADO",
+};

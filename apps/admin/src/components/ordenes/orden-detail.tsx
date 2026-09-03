@@ -569,6 +569,29 @@ export function OrdenDetail({
     }
   };
 
+  /** Le pregunta al SRI por una factura propia que quedó sin resolver. */
+  const consultarAlSri = async (facturaId: string) => {
+    setCargando(facturaId);
+    try {
+      const res = await fetch(`/api/facturas/${facturaId}/consultar-sri`, {
+        method: "POST",
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      if (body.resuelta) {
+        toast.success(`El SRI respondió: ${body.estado}`);
+        router.refresh();
+      } else {
+        // Sin respuesta todavía no es un error: es lo normal mientras procesa.
+        toast.info("El SRI todavía no la resolvió. Se vuelve a consultar solo.");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error");
+    } finally {
+      setCargando(null);
+    }
+  };
+
   /**
    * Anula la orden y su factura de una. `liberarTrabajo` va siempre en true
    * porque el diálogo ya mostró qué se desenlaza: el chequeo del servidor está
@@ -1077,6 +1100,19 @@ export function OrdenDetail({
                       </span>
                     </DropdownMenuItem>
                     )}
+                    {/* El SRI puede tardar: por norma tiene 24 horas, aunque
+                        casi siempre contesta en segundos. El cron pregunta
+                        solo, pero quien está esperando el comprobante no tiene
+                        por qué esperar la próxima corrida. */}
+                    {propia && facturaVigente.estado !== "AUTORIZADO" && (
+                      <DropdownMenuItem
+                        onClick={() => consultarAlSri(facturaVigente.id)}
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Consultar al SRI
+                      </DropdownMenuItem>
+                    )}
+
                     {/* Contífico firma y transmite los pendientes cada hora;
                         esto no espera. Enviada o autorizada no hay nada que
                         apurar. */}
