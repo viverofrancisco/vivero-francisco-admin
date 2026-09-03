@@ -76,14 +76,7 @@ enum Periodicidad {
   ANUAL
 }
 
-/// Quién creó el ítem. Define hacia qué lado sincroniza y evita que el portal
-/// y Contífico se pisen: cada uno es dueño de lo que crea.
-enum OrigenProducto {
-  PORTAL
-  CONTIFICO
-}
-
-/// Tipo de persona para facturación. Espeja el campo `tipo` de Contífico.
+/// Tipo de persona para facturación.
 enum TipoPersona {
   NATURAL
   JURIDICA
@@ -239,22 +232,12 @@ model Producto {
   /// semántica que ya no corresponde. No hay un eje "único vs recurrente" en el
   /// catálogo: lo recurrente lo define la suscripción que contiene al producto,
   /// no el producto.
-  tipo   TipoProducto   @default(SERVICIO)
-  origen OrigenProducto @default(PORTAL)
+  tipo TipoProducto @default(SERVICIO)
 
-  /// Código de sincronización con Contífico. Es la llave: Contífico rechaza
-  /// códigos repetidos (409 con el id del existente) pero acepta nombres
-  /// repetidos, así que el código es lo único que evita duplicados.
+  /// Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
+  /// del XML; sin él se emite con uno derivado del id. Único porque es lo que
+  /// identifica al producto en el papel: repetirlo haría ambigua la factura.
   codigo String? @unique
-
-  /// Producto equivalente en Contífico. `detalles[].producto_id` es obligatorio
-  /// al facturar, así que cada ítem se vincula una vez con su producto. Único:
-  /// dos productos del portal apuntando al mismo de Contífico harían ambigua
-  /// la factura y romperían la trazabilidad hacia atrás.
-  contificoProductoId  String?  @unique
-  /// Categoría de Contífico con la que se creó allá. Sale de la categoría del
-  /// portal al crearlo, o de ellos cuando el producto se vinculó a uno suyo.
-  contificoCategoriaId String?
 
   /// Cómo se agrupa en el portal. Opcional: un producto sin categoría se
   /// vende igual, y obligarla habría dejado el catálogo viejo sin poder
@@ -283,27 +266,13 @@ model Producto {
   @@index([categoriaId])
 }
 
-/// Cómo se agrupa el catálogo **en el portal**.
-///
-/// No es un espejo de la de Contífico. Allá una categoría es configuración
-/// contable —lleva la `cuenta_venta` que el producto hereda— y el árbol es de
-/// ellos: en la cuenta de pruebas hay 2.939, casi todas ajenas. Acá es lo que
-/// sirve para encontrar un producto en una lista.
-///
-/// Lo que sí las conecta es `contificoCategoriaId`: la categoría de allá con la
-/// que se crean los productos de esta. Sin eso Contífico les pone la suya por
-/// defecto (tipo PROD), y un servicio termina contabilizado como venta de
-/// bienes.
+/// Cómo se agrupa el catálogo: lo que sirve para encontrar un producto en una
+/// lista. No sale impresa en la factura ni cambia cómo se emite.
 model Categoria {
   id     String @id @default(cuid())
   nombre String @unique
   /// Para ordenar la lista a mano; a igual orden, alfabético.
   orden  Int    @default(0)
-
-  contificoCategoriaId String?
-  /// Cómo se llama allá, congelado al elegirla: mostrarla no puede depender de
-  /// una llamada a su API, que tarda y a veces no está.
-  contificoCategoriaNombre String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1149,25 +1118,14 @@ enum EstadoFactura {
   RECHAZADO
 }
 
-/// Qué documento se emite en Contífico por una orden.
-///
-/// `NO_AUTORIZADO` es el `DNA` de Contífico: un documento interno, para el
-/// cliente que no pide comprobante. Se crea, se cobra y se anula igual que una
-/// factura, pero **nunca toca el SRI** —no tiene autorización, ni XML, ni
-/// RIDE— y **no admite IVA**: Contífico rechaza cualquier impuesto en un DNA
-/// (`400 · 1016`). Tampoco valida su numeración, así que la unicidad la pone
-/// el portal.
+/// Qué comprobante se emitió por una orden.
 enum TipoDocumento {
   FACTURA
-  NO_AUTORIZADO
   /// La forma de corregir una factura que el SRI ya autorizó. Vive en la misma
   /// tabla porque es otro comprobante: se firma, se manda y se consulta igual.
   NOTA_CREDITO
 }
 
-/// Espejo de la factura que vive en Contífico. El portal no la emite ni la
-/// numera: guarda la referencia y el estado. Contífico no permite editarlas ni
-/// anularlas por API, así que acá son de solo lectura una vez creadas.
 /// Los datos con los que se le emite una factura a un cliente.
 ///
 /// Van aparte del Cliente porque uno puede facturar de más de una forma: a
@@ -1181,12 +1139,12 @@ model DatoFacturacion {
   id        String @id @default(cuid())
   clienteId String
 
-  /// `CEDULA` o `RUC`. Contífico valida el módulo 10 de la cédula.
+  /// `CEDULA` o `RUC`. La cédula se valida por módulo 10 antes de emitir.
   tipoIdentificacion TipoIdentificacion
   identificacion     String
   /// Lo que se imprime en la factura, no el nombre del portal.
   razonSocial        String
-  /// Natural o jurídica: Contífico lo recibe como `N` / `J`.
+  /// Natural o jurídica.
   tipoPersona        TipoPersona
   direccion          String?
   telefono           String?
@@ -1222,11 +1180,11 @@ model Factura {
   id      String @id @default(cuid())
   ordenId String
 
-  /// Con qué RUC se emitió. Null en lo emitido por Contífico, que no elegía.
+  /// Con qué RUC se emitió.
   emisorId String?
   emisor   Emisor? @relation(fields: [emisorId], references: [id], onDelete: Restrict)
 
-  /// ─── Lo que devuelve el SRI cuando emite el portal ───────────────────
+  /// ─── Lo que devuelve el SRI ──────────────────────────────────────────
   ///
   /// En el esquema *offline* la clave de acceso **es** el número de
   /// autorización: se calcula acá antes de mandar nada, y el SRI la confirma.
@@ -1253,26 +1211,16 @@ model Factura {
   notasDeCredito      Factura[] @relation("NotasDeCredito")
   motivo              String?
 
-  contificoDocumentoId String?       @unique
-  /// Único porque en un `NO_AUTORIZADO` **nadie más lo garantiza**: Contífico
-  /// acepta un número repetido y crea un segundo documento, al revés que en
-  /// una factura. Las dos series no se pisan: `001-002-000000123` contra
-  /// `VF-000000001`.
-  /// Único **por tipo**: una factura y una nota de crédito tienen cada una su
-  /// propia serie, así que `001-001-000000001` existe una vez de cada.
-  numero               String
-  tipo                 TipoDocumento @default(FACTURA)
-  fechaEmision         DateTime      @db.Date
-  /// Lo que sale impreso en *Información Adicional*. Es el único texto libre
-  /// del documento: el nombre de cada línea lo decide el producto de Contífico.
-  descripcion          String?
-  estado               EstadoFactura @default(PENDIENTE)
-  /// Clave de acceso del SRI (49 dígitos), la genera Contífico.
-  autorizacion         String?
-  urlRide              String?
-  urlXml               String?
-  /// Persona de Contífico. La crea sola al facturar; se guarda por referencia.
-  contificoPersonaId   String?
+  /// `001-001-000000123`. Único **por tipo**: una factura y una nota de
+  /// crédito tienen cada una su propia serie, así que `001-001-000000001`
+  /// existe una vez de cada.
+  numero       String
+  tipo         TipoDocumento @default(FACTURA)
+  fechaEmision DateTime      @db.Date
+  estado       EstadoFactura @default(PENDIENTE)
+  /// El número de autorización que devolvió el SRI. En el esquema offline es
+  /// la misma clave de acceso, pero se guarda tal como vino.
+  autorizacion String?
 
   /// Con qué datos se emitió. El id es la referencia; los dos campos de abajo
   /// son el snapshot y son la verdad — el dato puede editarse o archivarse, y
@@ -1285,9 +1233,8 @@ model Factura {
   subtotalGravado Decimal @default(0) @db.Decimal(10, 2)
   iva             Decimal @default(0) @db.Decimal(10, 2)
   total           Decimal @default(0) @db.Decimal(10, 2)
-  /// Lo que falta cobrar, espejado de Contífico. Los cobros son suyos: acá solo
-  /// se guarda el número para no tener que pedirlo cada vez. `null` = sin
-  /// sincronizar todavía.
+  /// Lo que falta cobrar: el total menos los cobros registrados. Se recalcula
+  /// desde `Cobro` en cada movimiento, nunca restándole al valor guardado.
   saldo           Decimal? @db.Decimal(10, 2)
 
   anulada   Boolean  @default(false)
@@ -1363,11 +1310,9 @@ model FacturaLinea {
   facturaId String
   posicion  Int    @default(0)
 
-  /// Snapshot del nombre que Contífico imprimió, que es el de **su** producto.
+  /// Snapshot de lo que salió impreso: va tal cual al `descripcion` del
+  /// detalle del XML.
   descripcion    String
-  /// Acompaña al nombre en el papel: viaja como `nombre_manual` y sale en el
-  /// RIDE como "Detalle: …". **No lo reemplaza** — eso la API no lo permite.
-  detalle        String?
   cantidad       Decimal @default(1) @db.Decimal(10, 2)
   precioUnitario Decimal @db.Decimal(10, 2)
   ivaTasa        Decimal @default(0) @db.Decimal(5, 2)
@@ -1375,9 +1320,7 @@ model FacturaLinea {
   iva            Decimal @db.Decimal(10, 2)
   total          Decimal @db.Decimal(10, 2)
 
-  /// Obligatorio: `detalles[].producto_id` es lo único que Contífico acepta.
-  /// No hay líneas de texto libre ni líneas contables — verificado agotando
-  /// las variantes contra su API.
+  /// De dónde sale el `codigoPrincipal`, y con qué queda asociada la venta.
   productoId String
 
   factura  Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)

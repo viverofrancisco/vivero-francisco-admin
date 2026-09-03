@@ -19,7 +19,7 @@ export default async function ServiciosPage() {
       nombre: true,
       tipo: true,
       descripcion: true,
-      contificoProductoId: true,
+      codigo: true,
       deletedAt: true,
       categoria: { select: { id: true, nombre: true } },
     },
@@ -51,7 +51,7 @@ export default async function ServiciosPage() {
           nombre: p.nombre,
           tipo: p.tipo,
           descripcion: p.descripcion,
-          contificoProductoId: p.contificoProductoId,
+          codigo: p.codigo,
           // Texto y no `Date`: la tabla solo lo muestra.
           archivadoEl: p.deletedAt?.toISOString() ?? null,
           categoriaId: p.categoria?.id ?? null,

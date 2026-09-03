@@ -13,8 +13,6 @@ export default async function CategoriasRoute() {
           id: c.id,
           nombre: c.nombre,
           orden: c.orden,
-          contificoCategoriaId: c.contificoCategoriaId,
-          contificoCategoriaNombre: c.contificoCategoriaNombre,
           productos: c._count.productos,
         }))}
       />

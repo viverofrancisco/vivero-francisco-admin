@@ -458,15 +458,10 @@ async function validarLineas(
         `"${l.descripcion}" viene de una suscripción y necesita período.`
       );
     }
-    // Sin producto del catálogo la línea no se puede facturar: Contífico exige
-    // `producto_id` en cada `detalles[]` y no acepta texto libre. Se corta acá
-    // y no al emitir, para no dejar armada una orden que no se va a poder
-    // cobrar.
-    //
-    // Que ese producto esté **vinculado** a Contífico, en cambio, ya no se
-    // pide: la orden es el registro interno de lo que se vendió, y lo que tiene
-    // que estar vinculado es lo que sale impreso —que puede ser una sola línea
-    // por diez trabajos—. Eso lo valida `emitirFactura()`.
+    // Sin producto del catálogo la línea no se puede facturar: el SRI pide un
+    // `codigoPrincipal` por cada `detalle` del XML, y ese código sale del
+    // producto. Se corta acá y no al emitir, para no dejar armada una orden que
+    // no se va a poder cobrar.
     //
     // Tampoco se bloquea un producto por estar en un plan del cliente. Se
     // bloqueaba, con el argumento de que una línea a mano no choca contra
@@ -1178,7 +1173,6 @@ export async function generarBorradoresDeVisitas(
             select: {
               nombre: true,
               ivaTasa: true,
-              contificoProductoId: true,
             },
           },
         },
@@ -1187,11 +1181,6 @@ export async function generarBorradoresDeVisitas(
   });
 
   for (const v of visitas) {
-    // Un producto sin vincular ya no impide el borrador: el vínculo se exige
-    // sobre las líneas del documento, al emitir. Saltear la visita acá dejaba
-    // el trabajo fuera de "por facturar" por un motivo de configuración del
-    // catálogo, que es justamente lo que se resuelve más tarde.
-
     const { lineas, subtotal, iva } = armarLineas(
       v.productos.map((vp) => ({
         descripcion: vp.producto.nombre,
@@ -1415,7 +1404,6 @@ export async function generarRenovaciones(
               id: true,
               nombre: true,
               deletedAt: true,
-              contificoProductoId: true,
             },
           },
           ordenLineas: { select: { periodoInicio: true } },
@@ -1433,10 +1421,6 @@ export async function generarRenovaciones(
       });
       continue;
     }
-    // Un producto sin vincular ya no saltea la renovación: el vínculo se exige
-    // sobre las líneas del documento, al emitir, y ahí se puede facturar el
-    // período con otro producto. Saltearla acá dejaba al cliente sin su orden
-    // del mes por un detalle de configuración del catálogo.
 
     const facturadosPorItem = new Map(
       activos.map((i) => [

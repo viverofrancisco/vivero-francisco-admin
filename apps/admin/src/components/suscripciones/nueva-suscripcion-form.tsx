@@ -17,7 +17,6 @@ interface ProductoSuscribible {
   /** Periodicidad sugerida del catálogo. La que manda es la de la suscripción. */
   ivaTasa: number | null;
   /** Vinculado con Contífico. Sin eso no se puede facturar el período. */
-  sincronizado: boolean;
 }
 
 /** Un producto ya agregado a la suscripción que se está armando. */
@@ -273,15 +272,9 @@ export function NuevaSuscripcionForm({
           <CustomSelect
             value=""
             onChange={agregar}
-            // Sin vincular **entra igual**: el plan es el acuerdo con el
-            // cliente, y el vínculo hace falta recién sobre lo que sale
-            // impreso, que se decide al emitir.
             options={disponibles.map((p) => ({
               value: p.id,
               label: p.nombre,
-              hint: p.sincronizado
-                ? undefined
-                : "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto.",
             }))}
             placeholder="Agregar producto recurrente"
             searchable

@@ -243,13 +243,6 @@ export type EnumTipoProductoFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumTipoProductoFilter<$PrismaModel> | $Enums.TipoProducto
 }
 
-export type EnumOrigenProductoFilter<$PrismaModel = never> = {
-  equals?: $Enums.OrigenProducto | Prisma.EnumOrigenProductoFieldRefInput<$PrismaModel>
-  in?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  notIn?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumOrigenProductoFilter<$PrismaModel> | $Enums.OrigenProducto
-}
-
 export type DecimalNullableFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel> | null
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[] | Prisma.ListDecimalFieldRefInput<$PrismaModel> | null
@@ -269,16 +262,6 @@ export type EnumTipoProductoWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTipoProductoFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTipoProductoFilter<$PrismaModel>
-}
-
-export type EnumOrigenProductoWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.OrigenProducto | Prisma.EnumOrigenProductoFieldRefInput<$PrismaModel>
-  in?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  notIn?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumOrigenProductoWithAggregatesFilter<$PrismaModel> | $Enums.OrigenProducto
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumOrigenProductoFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumOrigenProductoFilter<$PrismaModel>
 }
 
 export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -939,13 +922,6 @@ export type NestedEnumTipoProductoFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumTipoProductoFilter<$PrismaModel> | $Enums.TipoProducto
 }
 
-export type NestedEnumOrigenProductoFilter<$PrismaModel = never> = {
-  equals?: $Enums.OrigenProducto | Prisma.EnumOrigenProductoFieldRefInput<$PrismaModel>
-  in?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  notIn?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumOrigenProductoFilter<$PrismaModel> | $Enums.OrigenProducto
-}
-
 export type NestedDecimalNullableFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel> | null
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[] | Prisma.ListDecimalFieldRefInput<$PrismaModel> | null
@@ -965,16 +941,6 @@ export type NestedEnumTipoProductoWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTipoProductoFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTipoProductoFilter<$PrismaModel>
-}
-
-export type NestedEnumOrigenProductoWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.OrigenProducto | Prisma.EnumOrigenProductoFieldRefInput<$PrismaModel>
-  in?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  notIn?: $Enums.OrigenProducto[] | Prisma.ListEnumOrigenProductoFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumOrigenProductoWithAggregatesFilter<$PrismaModel> | $Enums.OrigenProducto
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumOrigenProductoFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumOrigenProductoFilter<$PrismaModel>
 }
 
 export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {

@@ -48,8 +48,8 @@ export async function PUT(
 
   // Por el servicio y no con un `update` inline: acá vive la regla de que
   // `tipo` no se cambia después de crear —suscripciones, visitas y líneas de
-  // orden quedarían con una semántica que ya no corresponde, y allá el producto
-  // ya está creado como SER o PRO—. El update inline la salteaba.
+  // orden quedarían con una semántica que ya no corresponde—. El update inline
+  // la salteaba.
   try {
     return NextResponse.json(
       await updateServicio(id, viewerFromUser(user), {
@@ -57,6 +57,7 @@ export async function PUT(
         descripcion: data.descripcion ?? null,
         tipo: data.tipo,
         categoriaId: data.categoriaId ?? null,
+        codigo: data.codigo ?? null,
       })
     );
   } catch (error) {

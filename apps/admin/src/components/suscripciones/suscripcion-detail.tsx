@@ -58,7 +58,6 @@ interface ProductoSuscribible {
   id: string;
   nombre: string;
   ivaTasa: number | null;
-  sincronizado: boolean;
 }
 
 /** Un ítem mientras se edita: los importes van como texto para no pelear con el input. */
@@ -374,15 +373,9 @@ export function SuscripcionDetail({
                 <CustomSelect
                   value=""
                   onChange={agregar}
-                  // Sin vincular **entra igual**: el plan es el acuerdo
-                  // con el cliente, y el vínculo hace falta recién sobre lo que
-                  // sale impreso, que se decide al emitir.
                   options={sinAgregar.map((p) => ({
                     value: p.id,
                     label: p.nombre,
-                    hint: p.sincronizado
-                      ? undefined
-                      : "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto.",
                   }))}
                   placeholder="Agregar producto recurrente"
                   searchable

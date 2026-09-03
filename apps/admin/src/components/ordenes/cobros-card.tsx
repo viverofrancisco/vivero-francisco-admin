@@ -8,14 +8,29 @@ import { Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { money } from "./formato";
 
-/**
- * Contífico devuelve la fecha del cobro como `DD/MM/YYYY` y **sin hora**: no la
- * guarda. Acá solo se reformatea para que se lea igual que el resto del portal.
- */
-function fechaCobro(ddmmyyyy: string): string {
-  const [d, m, a] = ddmmyyyy.split("/");
-  if (!d || !m || !a) return ddmmyyyy;
-  return new Date(`${a}-${m}-${d}T00:00:00.000Z`).toLocaleDateString("es-EC", {
+const FORMA_LABEL: Record<string, string> = {
+  EFECTIVO: "Efectivo",
+  TRANSFERENCIA: "Transferencia",
+  TARJETA: "Tarjeta",
+  CHEQUE: "Cheque",
+  OTRO: "Otro",
+};
+
+interface Cobro {
+  id: string;
+  formaPago: string;
+  monto: number;
+  /** `YYYY-MM-DD`: el día que entró la plata, sin hora. */
+  fecha: string | null;
+  /** Con qué encontrarlo, y quién lo anotó. */
+  referencia: string | null;
+  nota: string | null;
+  registradoPor: string | null;
+}
+
+/** El día que entró la plata, leído como el resto del portal. */
+function fechaCobro(iso: string): string {
+  return new Date(`${iso}T00:00:00.000Z`).toLocaleDateString("es-EC", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -24,79 +39,10 @@ function fechaCobro(ddmmyyyy: string): string {
 }
 
 /**
- * Contífico no devuelve los mismos códigos que recibe: un cobro mandado como
- * `EF` vuelve como `CAJA`. Por eso el mapa tiene las dos formas.
- */
-const FORMA_LABEL: Record<string, string> = {
-  EF: "Efectivo",
-  CAJA: "Efectivo",
-  CQ: "Cheque",
-  TRA: "Transferencia",
-  TC: "Tarjeta de crédito",
-};
-
-/** Los datáfonos que reconoce Contífico. */
-const DATAFONO_LABEL: Record<string, string> = {
-  D: "Datafast",
-  M: "Medianet",
-  E: "Dataexpress",
-  P: "PlaceToPay",
-  A: "Alignet",
-};
-
-interface Cobro {
-  id: string;
-  formaCobro: string;
-  monto: number;
-  fecha: string | null;
-  /** De un cobro propio: con qué encontrarlo, y quién lo anotó. */
-  referencia?: string | null;
-  nota?: string | null;
-  registradoPor?: string | null;
-  /** Los propios se pueden borrar; los de Contífico no —su API no los borra—. */
-  borrable?: boolean;
-  comprobante: string | null;
-  numeroCheque: string | null;
-  fechaCheque: string | null;
-  cuentaBancaria: string | null;
-  tipoPing: string | null;
-  numeroTarjeta: string | null;
-  lote: string | null;
-}
-
-/**
- * Lo que hay para contar de un cobro, según cómo se pagó.
- *
- * En efectivo no hay nada: Contífico no guarda ninguna referencia y lo que
- * devuelve en `numero_comprobante` es su propia etiqueta, no un dato de nadie.
- */
-function detalles(c: Cobro): { etiqueta: string; valor: string }[] {
-  const filas: { etiqueta: string; valor: string }[] = [];
-  if (c.cuentaBancaria) filas.push({ etiqueta: "Cuenta", valor: c.cuentaBancaria });
-  if (c.comprobante) filas.push({ etiqueta: "Comprobante", valor: c.comprobante });
-  if (c.numeroCheque) {
-    filas.push({
-      etiqueta: "Cheque",
-      valor: c.fechaCheque ? `${c.numeroCheque} · ${c.fechaCheque}` : c.numeroCheque,
-    });
-  }
-  if (c.tipoPing) {
-    filas.push({
-      etiqueta: "Datáfono",
-      valor: DATAFONO_LABEL[c.tipoPing] ?? c.tipoPing,
-    });
-  }
-  if (c.numeroTarjeta) filas.push({ etiqueta: "Tarjeta", valor: c.numeroTarjeta });
-  if (c.lote) filas.push({ etiqueta: "Lote", valor: c.lote });
-  return filas;
-}
-
-/**
  * Los cobros de la factura de esta orden, debajo del detalle.
  *
- * Se piden a Contífico al montar y no se guardan acá: los cobros son suyos y
- * alguien pudo cargar uno desde su interfaz. Una copia local sería una copia
- * potencialmente vieja de un número que habla de plata.
+ * Se piden al montar: el saldo sale de sumarlos, así que la lista y el número
+ * de arriba no pueden discrepar.
  */
 export function CobrosCard({ facturaId }: { facturaId: string }) {
   const [datos, setDatos] = useState<{
@@ -110,7 +56,7 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
   const router = useRouter();
 
   /**
-   * Borra un cobro propio.
+   * Borra un cobro.
    *
    * Un cobro es un hecho —o entró esa plata o no— así que se borra en vez de
    * corregirse: cambiarle el monto sería inventar un estado entre "pasó" y "no
@@ -173,7 +119,7 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
                 <li key={c.id} className="py-3 text-sm first:pt-0">
                   <div className="flex items-baseline justify-between gap-4">
                     <p className="font-medium">
-                      {FORMA_LABEL[c.formaCobro] ?? c.formaCobro}
+                      {FORMA_LABEL[c.formaPago] ?? c.formaPago}
                       {c.fecha && (
                         <span className="ml-2 text-xs font-normal text-muted-foreground">
                           {fechaCobro(c.fecha)}
@@ -186,22 +132,20 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
                       </span>
                       {/* Un cobro es un hecho: o entró esa plata o no. Por eso
                           se borra en vez de corregirse. */}
-                      {c.borrable && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          aria-label={`Borrar el cobro de ${money(c.monto)}`}
-                          disabled={borrando !== null}
-                          onClick={() => borrar(c.id)}
-                        >
-                          {borrando === c.id ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          )}
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        aria-label={`Borrar el cobro de ${money(c.monto)}`}
+                        disabled={borrando !== null}
+                        onClick={() => borrar(c.id)}
+                      >
+                        {borrando === c.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </Button>
                     </span>
                   </div>
                   {(c.referencia || c.registradoPor) && (
@@ -211,17 +155,10 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
                       {c.registradoPor ? `anotó ${c.registradoPor}` : ""}
                     </p>
                   )}
-                  {detalles(c).length > 0 && (
-                    <dl className="mt-1 space-y-0.5">
-                      {detalles(c).map((d) => (
-                        <div key={d.etiqueta} className="flex gap-2 text-xs">
-                          <dt className="w-24 flex-none text-muted-foreground">
-                            {d.etiqueta}
-                          </dt>
-                          <dd className="min-w-0 break-words">{d.valor}</dd>
-                        </div>
-                      ))}
-                    </dl>
+                  {c.nota && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {c.nota}
+                    </p>
                   )}
                 </li>
               ))}

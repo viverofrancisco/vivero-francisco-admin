@@ -14,9 +14,6 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model DatoFacturacion
- * Espejo de la factura que vive en Contífico. El portal no la emite ni la
- * numera: guarda la referencia y el estado. Contífico no permite editarlas ni
- * anularlas por API, así que acá son de solo lectura una vez creadas.
  * Los datos con los que se le emite una factura a un cliente.
  * 
  * Van aparte del Cliente porque uno puede facturar de más de una forma: a
@@ -1513,7 +1510,7 @@ export type $DatoFacturacionPayload<ExtArgs extends runtime.Types.Extensions.Int
     id: string
     clienteId: string
     /**
-     * `CEDULA` o `RUC`. Contífico valida el módulo 10 de la cédula.
+     * `CEDULA` o `RUC`. La cédula se valida por módulo 10 antes de emitir.
      */
     tipoIdentificacion: $Enums.TipoIdentificacion
     identificacion: string
@@ -1522,7 +1519,7 @@ export type $DatoFacturacionPayload<ExtArgs extends runtime.Types.Extensions.Int
      */
     razonSocial: string
     /**
-     * Natural o jurídica: Contífico lo recibe como `N` / `J`.
+     * Natural o jurídica.
      */
     tipoPersona: $Enums.TipoPersona
     direccion: string | null

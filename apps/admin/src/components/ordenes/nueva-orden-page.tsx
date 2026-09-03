@@ -29,7 +29,6 @@ import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
 import { money, fecha } from "./formato";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
-import { AvisoSinVincular } from "./aviso-sin-vincular";
 
 interface Cliente {
   id: string;
@@ -44,8 +43,6 @@ interface Producto {
   descripcion: string | null;
   tipo: string;
   ivaTasa: number | null;
-  /** Sin esto no se puede facturar, así que tampoco se puede vender. */
-  contificoProductoId: string | null;
 }
 
 /**
@@ -465,31 +462,7 @@ export function NuevaOrdenPage({
     }
   };
 
-  /**
-   * Los productos de la orden que todavía no están en Contífico.
-   *
-   * Entran igual —la orden registra lo que se vendió, y lo que tiene que
-   * existir allá es lo que sale impreso— pero sin vínculo no hay `producto_id`
-   * que mandar, así que facturar no es una opción todavía. Se dice acá, con la
-   * orden todavía sin crear, en vez de rebotar adentro del armador.
-   */
-  const sinVincular = (() => {
-    const mapa = new Map<string, { id: string; nombre: string }>();
-    for (const l of lineas) {
-      const p = productos.find((x) => x.id === l.productoId);
-      if (p && !p.contificoProductoId) mapa.set(p.id, { id: p.id, nombre: p.nombre });
-    }
-    return [...mapa.values()];
-  })();
-
   const noSePuedeGuardar = guardando || !clienteId || lineas.length === 0;
-  /** El borrador se guarda igual: es justamente donde se arregla esto. */
-  const motivoSinFacturar =
-    sinVincular.length > 0
-      ? `${sinVincular.map((p) => `"${p.nombre}"`).join(", ")} ${
-          sinVincular.length === 1 ? "no está vinculado" : "no están vinculados"
-        } con Contífico.`
-      : null;
 
   return (
     <div className="space-y-6 pb-6">
@@ -546,8 +519,7 @@ export function NuevaOrdenPage({
           </Button>
           <Button
             onClick={() => crear({ cobrar: true })}
-            disabled={noSePuedeGuardar || motivoSinFacturar !== null}
-            title={motivoSinFacturar ?? undefined}
+            disabled={noSePuedeGuardar}
           >
             {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Crear y facturar
@@ -563,12 +535,6 @@ export function NuevaOrdenPage({
               <CardTitle className="text-base">Productos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {/* Arriba de las líneas: explica por qué "Crear y facturar" está
-                  apagado, y con quince productos abajo quedaba a un scroll del
-                  botón que apaga. Es también donde lo pone la ficha de la
-                  orden, que muestra lo mismo. */}
-              <AvisoSinVincular productos={sinVincular} bloquea />
-
               {lineas.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
                   Todavía no hay nada en la orden.
@@ -672,17 +638,13 @@ export function NuevaOrdenPage({
                     onChange={agregarProducto}
                     // Lo que está en un plan del cliente **sí** se puede
                     // agregar: es un extra sobre lo que el plan cubre, y quien
-                    // arma la orden es quien decide si se cobra. Y uno sin
-                    // vincular a Contífico también entra: la orden es interna,
-                    // y lo que necesita estar allá es lo que sale impreso.
+                    // arma la orden es quien decide si se cobra.
                     options={productos.map((p) => ({
                       value: p.id,
                       label: p.nombre,
-                      hint: !p.contificoProductoId
-                        ? "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto."
-                        : suscritos.includes(p.id)
-                          ? `${nombreDelCliente} tiene este producto en una suscripción.`
-                          : undefined,
+                      hint: suscritos.includes(p.id)
+                        ? `${nombreDelCliente} tiene este producto en una suscripción.`
+                        : undefined,
                     }))}
                     placeholder="Buscar producto..."
                     searchable

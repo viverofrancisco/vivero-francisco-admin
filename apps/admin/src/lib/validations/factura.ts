@@ -1,7 +1,7 @@
 import { z } from "zod/v4";
 
 /**
- * Lo que se manda al emitir el documento de una orden.
+ * Lo que se manda al emitir la factura de una orden.
  *
  * La factura **no tiene por qué tener la forma de la orden**: acá se cobra
  * varios trabajos de un período como una sola línea de "servicio de
@@ -9,31 +9,20 @@ import { z } from "zod/v4";
  * encarga el servicio: es una regla del negocio, no de la forma del cuerpo.
  */
 export const lineaFacturaSchema = z.object({
+  /** De dónde sale el `codigoPrincipal`, y con qué queda asociada la venta. */
   productoId: z.string().min(1),
+  /** Lo que sale impreso, tal cual: va al `descripcion` del detalle del XML. */
   descripcion: z.string().min(1, "La línea necesita una descripción"),
-  /**
-   * Acompaña al nombre impreso. Viaja como `nombre_manual` y sale en el papel
-   * como "Detalle: …" — **no reemplaza el nombre**, que lo pone el producto de
-   * Contífico.
-   */
-  detalle: z.string().nullable().optional(),
   cantidad: z.number().positive(),
   precioUnitario: z.number().nonnegative(),
   ivaTasa: z.number().min(0).max(100),
 });
 
 export const emitirFacturaSchema = z.object({
-  /** `NO_AUTORIZADO` es el documento sin factura: interno, sin SRI y sin IVA. */
-  tipo: z.enum(["FACTURA", "NO_AUTORIZADO"]).optional(),
   datoFacturacionId: z.string().min(1).nullable().optional(),
-  /** Lo que sale impreso en *Información Adicional*. */
-  descripcion: z.string().nullable().optional(),
-  /** Ausente = las líneas de la orden, una a una, como se emitía siempre. */
+  /** Ausente = las líneas de la orden, una a una. */
   lineas: z.array(lineaFacturaSchema).min(1).optional(),
-  /**
-   * Con qué emisor del SRI se emite. Ausente = por Contífico, que es como se
-   * emitió siempre.
-   */
+  /** Con qué emisor se emite. Ausente = el predeterminado. */
   emisorId: z.string().min(1).nullable().optional(),
 });
 

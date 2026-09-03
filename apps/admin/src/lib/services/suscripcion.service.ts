@@ -63,11 +63,6 @@ async function validarItems(items: ItemInput[]): Promise<void> {
   if (productos.length !== ids.length) {
     throw new ValidationError("Alguno de los productos no existe.");
   }
-  // **No se exige el vínculo con Contífico.** Se exigía, porque la suscripción
-  // genera órdenes y una orden no lo admitía; hoy la orden es un registro
-  // interno y lo que necesita estar vinculado es lo que sale impreso, que se
-  // decide al emitir y puede ser una sola línea por todo el plan. El vínculo es
-  // un asunto de la facturación, no del contrato.
   for (const item of items) {
     if (item.precio < 0) throw new ValidationError("El precio no puede ser negativo.");
     if ((item.visitasPorPeriodo ?? 0) < 1) {
@@ -494,9 +489,6 @@ export async function productosSuscribibles(
       id: true,
       nombre: true,
       ivaTasa: true,
-      // Para avisar en el selector: sin vincular se contrata igual, pero no
-      // va a poder salir impreso tal cual cuando se facture el período.
-      contificoProductoId: true,
     },
     orderBy: { nombre: "asc" },
   });

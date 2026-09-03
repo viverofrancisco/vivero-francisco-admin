@@ -19,7 +19,6 @@ export interface ProductoCatalogo {
   id: string;
   nombre: string;
   ivaTasa: number | null;
-  contificoProductoId: string | null;
 }
 
 /**
@@ -240,18 +239,12 @@ export function OrdenLineasEditor({
           <CustomSelect
             value=""
             onChange={agregarProducto}
-            // Un producto sin vincular **entra igual**: la orden es el
-            // registro de lo que se vendió, y lo que necesita estar en
-            // Contífico es lo que sale impreso, que se decide al emitir. El
-            // aviso queda para que no sorprenda después.
             options={productos.map((p) => ({
               value: p.id,
               label: p.nombre,
-              hint: !p.contificoProductoId
-                ? "No está vinculado con Contífico: al emitir vas a tener que facturarlo con otro producto."
-                : suscritos.includes(p.id)
-                  ? `${clienteNombre ?? "El cliente"} tiene este producto en una suscripción.`
-                  : undefined,
+              hint: suscritos.includes(p.id)
+                ? `${clienteNombre ?? "El cliente"} tiene este producto en una suscripción.`
+                : undefined,
             }))}
             placeholder="Buscar producto..."
             searchable

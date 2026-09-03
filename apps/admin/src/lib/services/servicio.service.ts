@@ -1,8 +1,5 @@
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import {
-  actualizarNombreEnContifico,
-  sincronizarProducto,
-} from "@/lib/contifico/productos";
 import {
   ConflictError,
   ForbiddenError,
@@ -25,6 +22,27 @@ export interface ListServiciosFilters {
   search?: string;
   cursor?: string;
   limit?: number;
+}
+
+/**
+ * El código repetido lo atrapa el índice único y no una consulta previa: entre
+ * el `findFirst` y el `update` hay lugar para que otra pestaña gane la carrera,
+ * y la base es la única que no se equivoca.
+ */
+async function conCodigoUnico<T>(fn: () => Promise<T>, codigo?: string | null) {
+  try {
+    return await fn();
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new ConflictError(
+        `Ya hay un producto con el código "${codigo?.trim()}".`
+      );
+    }
+    throw error;
+  }
 }
 
 function ensureAdmin(viewer: Viewer) {
@@ -84,15 +102,13 @@ export interface CreateServicioPayload {
   /** Qué es: un servicio que se ejecuta o un bien que se despacha. */
   tipo?: "SERVICIO" | "BIEN";
   ivaTasa?: number | null;
-  /** Cómo se agrupa en el portal. Decide con qué categoría nace en Contífico. */
+  /** Cómo se agrupa en el portal. */
   categoriaId?: string | null;
-  /** Vínculo con un producto que ya existe en Contífico. Opcional. */
-  contificoProductoId?: string | null;
+  /**
+   * Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
+   * del XML; si no hay, se emite con un código derivado del id.
+   */
   codigo?: string | null;
-  /** Renombrarlo en Contífico para que coincida con el nombre del portal. */
-  actualizarNombre?: boolean;
-  /** Crearlo en Contífico al guardar, en vez de vincularlo a uno existente. */
-  crearEnContifico?: boolean;
 }
 
 export async function createServicio(
@@ -101,57 +117,22 @@ export async function createServicio(
 ) {
   ensureAdmin(viewer);
 
-  if (payload.contificoProductoId) {
-    const tomado = await prisma.producto.findFirst({
-      where: { contificoProductoId: payload.contificoProductoId },
-      select: { nombre: true },
-    });
-    if (tomado) {
-      throw new ConflictError(
-        `Ese producto de Contífico ya está vinculado a "${tomado.nombre}".`
-      );
-    }
-  }
-
-  const producto = await prisma.producto.create({
-    data: {
-      nombre: payload.nombre,
-      descripcion: payload.descripcion?.trim() || null,
-      tipo: payload.tipo ?? "SERVICIO",
-      ivaTasa: payload.ivaTasa ?? null,
-      categoriaId: payload.categoriaId ?? null,
-      contificoProductoId: payload.contificoProductoId ?? null,
-      codigo: payload.contificoProductoId ? (payload.codigo ?? null) : null,
-      createdById: viewer.id,
-      updatedById: viewer.id,
-    },
-  });
-
-  // Renombrar allá es un efecto sobre su catálogo, pero el producto local ya
-  // está guardado: si falla, se avisa y el vínculo queda igual — el nombre se
-  // puede corregir después desde la ficha.
-  if (payload.actualizarNombre && producto.contificoProductoId) {
-    try {
-      await actualizarNombreEnContifico(
-        producto.contificoProductoId,
-        producto.nombre
-      );
-    } catch {
-      // El vínculo vale igual; solo no se renombró.
-    }
-  }
-
-  // Crear en Contífico necesita el id ya asignado, porque el código se deriva
-  // de él. Si falla, el producto queda creado y sin vincular: es recuperable
-  // desde su ficha, y perder el alta entera por un problema de red sería peor.
-  if (payload.crearEnContifico && !producto.contificoProductoId) {
-    try {
-      await sincronizarProducto(producto);
-      return prisma.producto.findUniqueOrThrow({ where: { id: producto.id } });
-    } catch {
-      return producto;
-    }
-  }
+  const producto = await conCodigoUnico(
+    () =>
+      prisma.producto.create({
+        data: {
+          nombre: payload.nombre,
+          descripcion: payload.descripcion?.trim() || null,
+          tipo: payload.tipo ?? "SERVICIO",
+          ivaTasa: payload.ivaTasa ?? null,
+          categoriaId: payload.categoriaId ?? null,
+          codigo: payload.codigo?.trim() || null,
+          createdById: viewer.id,
+          updatedById: viewer.id,
+        },
+      }),
+    payload.codigo
+  );
 
   return producto;
 }
@@ -162,12 +143,10 @@ export interface UpdateServicioPayload {
   /** Se acepta para poder validarlo, pero no se puede cambiar. */
   tipo?: "SERVICIO" | "BIEN";
   ivaTasa?: number | null;
-  /**
-   * Cambiarla reagrupa el producto **en el portal**. No toca la categoría que
-   * tiene en Contífico: allá la categoría lleva la cuenta contable y moverlo
-   * cambiaría dónde se contabilizaron ventas que ya pasaron.
-   */
+  /** Cómo se agrupa en el portal. */
   categoriaId?: string | null;
+  /** El que sale impreso como `codigoPrincipal`. */
+  codigo?: string | null;
 }
 
 export async function updateServicio(
@@ -186,27 +165,34 @@ export async function updateServicio(
   // `tipo` es inmutable: cambiarlo dejaría suscripciones, visitas y
   // líneas de orden con una semántica que ya no corresponde — un UNICO cobrado
   // por trabajo no puede volverse una suscripción mensual sin reinterpretar
-  // todo lo ya facturado. Además `tipo` ya está sincronizado con Contífico.
+  // todo lo ya facturado.
   if (payload.tipo !== undefined && payload.tipo !== actual.tipo) {
     throw new ValidationError(
       "El tipo no se puede cambiar después de crear el producto."
     );
   }
 
-  return prisma.producto.update({
-    where: { id: productoId },
-    data: {
-      ...(payload.nombre !== undefined ? { nombre: payload.nombre } : {}),
-      ...(payload.descripcion !== undefined
-        ? { descripcion: payload.descripcion?.trim() || null }
-        : {}),
-      ...(payload.ivaTasa !== undefined ? { ivaTasa: payload.ivaTasa } : {}),
-      ...(payload.categoriaId !== undefined
-        ? { categoriaId: payload.categoriaId }
-        : {}),
-      updatedById: viewer.id,
-    },
-  });
+  return conCodigoUnico(
+    () =>
+      prisma.producto.update({
+        where: { id: productoId },
+        data: {
+          ...(payload.nombre !== undefined ? { nombre: payload.nombre } : {}),
+          ...(payload.descripcion !== undefined
+            ? { descripcion: payload.descripcion?.trim() || null }
+            : {}),
+          ...(payload.ivaTasa !== undefined ? { ivaTasa: payload.ivaTasa } : {}),
+          ...(payload.categoriaId !== undefined
+            ? { categoriaId: payload.categoriaId }
+            : {}),
+          ...(payload.codigo !== undefined
+            ? { codigo: payload.codigo?.trim() || null }
+            : {}),
+          updatedById: viewer.id,
+        },
+      }),
+    payload.codigo
+  );
 }
 
 export async function getServicio(productoId: string, viewer: Viewer) {

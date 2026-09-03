@@ -51,15 +51,14 @@ export default async function EmitirRoute({
         id: true,
         nombre: true,
         ivaTasa: true,
-        contificoProductoId: true,
       },
     }),
     prisma.datoFacturacion.findMany({
       where: { clienteId: orden.cliente.id, archivado: false },
       orderBy: [{ esPredeterminado: "desc" }, { razonSocial: "asc" }],
     }),
-    // Con qué RUC se puede emitir sin pasar por Contífico. Vacío mientras no
-    // haya ninguno configurado con su firma, y entonces la pantalla no cambia.
+    // Con qué RUC se puede emitir. Vacío mientras no haya ninguno configurado
+    // con su firma, y entonces la pantalla lo dice y no deja emitir.
     emisoresDisponibles(viewer),
   ]);
 

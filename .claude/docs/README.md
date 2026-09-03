@@ -13,7 +13,7 @@ aquí para los detalles.
 - [base-de-datos-y-migraciones.md](./base-de-datos-y-migraciones.md) — branches de Neon
   (nunca apuntar el `.env` a producción), migraciones automáticas en cada deploy, cuándo
   hay que escribir el SQL a mano, y cómo verificar contra datos reales.
-- [facturacion-contifico.md](./facturacion-contifico.md) — integración con Contífico:
-  frontera de responsabilidades, las trampas de su API (el listado de productos que se
-  cuelga, el código como llave anti-duplicados, el IVA 15% en un campo llamado
-  `subtotal_12`), y el manejo de la numeración del SRI.
+- [facturacion-sri.md](./facturacion-sri.md) — facturación electrónica propia: el
+  esquema *offline* del SRI y la clave de acceso, los emisores y su firma `.p12`
+  cifrada, la numeración por serie, el RIDE, los cobros, las notas de crédito, y las
+  reglas que van de la orden a la factura.

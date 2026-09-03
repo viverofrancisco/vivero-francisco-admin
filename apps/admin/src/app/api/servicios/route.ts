@@ -36,8 +36,8 @@ export async function POST(request: Request) {
     );
   }
 
-  // Por el servicio y no inline: ahí viven el IVA, el vínculo con Contífico y el
-  // vínculo con Contífico, que este create se estaba salteando.
+  // Por el servicio y no inline: ahí viven el permiso y el saneo de los campos
+  // opcionales, que este create se estaba salteando.
   const data = result.data;
   try {
     const servicio = await createServicio(viewerFromUser(user), {
@@ -46,10 +46,7 @@ export async function POST(request: Request) {
       tipo: data.tipo,
       ivaTasa: data.ivaTasa ?? null,
       categoriaId: data.categoriaId ?? null,
-      contificoProductoId: data.contificoProductoId ?? null,
       codigo: data.codigo ?? null,
-      actualizarNombre: data.actualizarNombre,
-      crearEnContifico: data.crearEnContifico,
     });
     return NextResponse.json(servicio, { status: 201 });
   } catch (error) {

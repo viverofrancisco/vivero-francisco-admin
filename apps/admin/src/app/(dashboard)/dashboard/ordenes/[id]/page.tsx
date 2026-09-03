@@ -55,13 +55,6 @@ export default async function OrdenRoute({
     where: { clienteId: orden.cliente.id, archivado: false },
   });
 
-  // ¿Se puede emitir sin pasar por Contífico? Con un emisor propio configurado,
-  // el vínculo de los productos deja de ser un requisito: la línea del XML del
-  // SRI lleva un código y una descripción nuestros.
-  const emisoresPropios = await prisma.emisor.count({
-    where: { activo: true, certificado: { not: null } },
-  });
-
   // El trabajo que el editor puede marcar y desmarcar: lo pendiente del cliente
   // **más lo que esta orden ya cubre**, que si no desaparecería de la lista.
   // Las visitas no se cortan por fecha; los períodos de plan sí (fin de mes).
@@ -90,7 +83,6 @@ export default async function OrdenRoute({
             id: true,
             nombre: true,
             ivaTasa: true,
-            contificoProductoId: true,
           },
         })
       : [];
@@ -133,10 +125,6 @@ export default async function OrdenRoute({
             periodoInicio: l.periodoInicio?.toISOString() ?? null,
             periodoFin: l.periodoFin?.toISOString() ?? null,
             productoId: l.productoId,
-            // Si el producto puede salir impreso tal cual. Sale de la línea y
-            // no del catálogo de al lado: ese solo se carga para editar un
-            // borrador, y uno dado de baja tampoco estaría ahí.
-            productoVinculado: l.producto.contificoProductoId !== null,
             visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
             suscripcionItemId: l.suscripcionItemId,
             suscripcionId: l.suscripcionItem?.suscripcionId ?? null,
@@ -155,22 +143,17 @@ export default async function OrdenRoute({
             lineas: f.lineas.map((l) => ({
               id: l.id,
               descripcion: l.descripcion,
-              detalle: l.detalle,
               cantidad: Number(l.cantidad),
               precioUnitario: Number(l.precioUnitario),
               ivaTasa: Number(l.ivaTasa),
               total: Number(l.total),
             })),
             fechaEmision: f.fechaEmision.toISOString(),
-            urlRide: f.urlRide,
             total: Number(f.total),
             anulada: f.anulada,
             saldo: f.saldo === null ? null : Number(f.saldo),
             razonSocial: f.razonSocial,
             identificacion: f.identificacion,
-            contificoDocumentoId: f.contificoDocumentoId,
-            // Lo del comprobante propio: sin esto la ficha no puede distinguir
-            // una factura nuestra de una de Contífico.
             claveAcceso: f.claveAcceso,
             motivo: f.motivo,
             facturaModificadaId: f.facturaModificadaId,
@@ -185,7 +168,6 @@ export default async function OrdenRoute({
             datoFacturacion: f.datoFacturacion,
           })),
         }}
-        hayEmisorPropio={emisoresPropios > 0}
         clientes={clientes}
         productos={productos.map((p) => ({
           ...p,

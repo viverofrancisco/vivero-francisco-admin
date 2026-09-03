@@ -25,7 +25,6 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
       fechaEmision: true,
       razonSocial: true,
       identificacion: true,
-      descripcion: true,
       subtotal0: true,
       subtotalGravado: true,
       iva: true,
@@ -110,6 +109,5 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
     subtotalGravado: Number(factura.subtotalGravado),
     iva: Number(factura.iva),
     total: Number(factura.total),
-    descripcion: factura.descripcion,
   };
 }

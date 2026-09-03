@@ -19,7 +19,7 @@ import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
-import { AlertTriangle, Search, Undo2 } from "lucide-react";
+import { Search, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { aca, useFiltroUrl } from "@/lib/filtros-url";
 import { fecha } from "@/components/ordenes/formato";
@@ -27,15 +27,13 @@ import { fecha } from "@/components/ordenes/formato";
 interface Servicio {
   id: string;
   nombre: string;
-  /** Qué es: se mapea al `tipo` de Contífico (SER / PRO). */
+  /** Qué es: servicio o bien. */
   tipo: string;
-  /** Cómo se vende. Solo existe en el portal. */
   descripcion?: string | null;
-  /** Sin esto el producto no se puede vender. Se vincula desde su ficha. */
-  contificoProductoId: string | null;
+  /** El que sale impreso en la factura como `codigoPrincipal`. */
+  codigo: string | null;
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
-  /** Cómo se agrupa en el portal. Nada que ver con la categoría de Contífico. */
   categoriaId: string | null;
   categoriaNombre: string | null;
 }
@@ -55,7 +53,6 @@ export function ServiciosTable({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
   const [tipo, setTipo] = useFiltroUrl("tipo", "");
-  const [contifico, setContifico] = useFiltroUrl("contifico", "");
   /**
    * Archivar es un borrado suave, así que el producto sigue existiendo — y
    * hasta ahora no había forma de verlo desde el portal. Por defecto se listan
@@ -75,11 +72,6 @@ export function ServiciosTable({
         categoria === "SIN" ? !s.categoriaId : s.categoriaId === categoria
       );
     }
-    if (contifico === "SIN") {
-      result = result.filter((s) => !s.contificoProductoId);
-    } else if (contifico === "CON") {
-      result = result.filter((s) => s.contificoProductoId);
-    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -89,7 +81,7 @@ export function ServiciosTable({
       );
     }
     return result;
-  }, [productos, archivados, tipo, categoria, contifico, searchQuery]);
+  }, [productos, archivados, tipo, categoria, searchQuery]);
 
   // La página se acota al renderizar: filtrar puede dejar menos páginas que la
   // actual, y así no hace falta un efecto que la corrija después de pintar.
@@ -149,18 +141,6 @@ export function ServiciosTable({
             placeholder="Todo tipo"
           />
         </div>
-        <div className="w-44">
-          <CustomSelect
-            value={contifico}
-            onChange={(v) => cambiar(() => setContifico(v))}
-            options={[
-              { value: "", label: "Todo Contífico" },
-              { value: "SIN", label: "Sin vincular" },
-              { value: "CON", label: "Vinculados" },
-            ]}
-            placeholder="Todo Contífico"
-          />
-        </div>
         {categorias.length > 0 && (
           <div className="w-48">
             <CustomSelect
@@ -201,7 +181,7 @@ export function ServiciosTable({
                   <TableHead>Nombre</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Categoría</TableHead>
-                  <TableHead>Contífico</TableHead>
+                  <TableHead>Código</TableHead>
                   <TableHead className="w-12" />
                 </TableRow>
               </TableHeader>
@@ -234,15 +214,8 @@ export function ServiciosTable({
                     <TableCell className="text-muted-foreground">
                       {servicio.categoriaNombre ?? "—"}
                     </TableCell>
-                    <TableCell className="text-xs">
-                      {servicio.contificoProductoId ? (
-                        <span className="text-muted-foreground">Vinculado</span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-amber-700">
-                          <AlertTriangle className="h-3 w-3 flex-none" />
-                          Sin vincular
-                        </span>
-                      )}
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {servicio.codigo ?? "—"}
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {/* Archivado no se archiva de nuevo: lo que hace falta

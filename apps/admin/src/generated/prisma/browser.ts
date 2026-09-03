@@ -50,17 +50,8 @@ export type Cliente = Prisma.ClienteModel
 export type Producto = Prisma.ProductoModel
 /**
  * Model Categoria
- * Cómo se agrupa el catálogo **en el portal**.
- * 
- * No es un espejo de la de Contífico. Allá una categoría es configuración
- * contable —lleva la `cuenta_venta` que el producto hereda— y el árbol es de
- * ellos: en la cuenta de pruebas hay 2.939, casi todas ajenas. Acá es lo que
- * sirve para encontrar un producto en una lista.
- * 
- * Lo que sí las conecta es `contificoCategoriaId`: la categoría de allá con la
- * que se crean los productos de esta. Sin eso Contífico les pone la suya por
- * defecto (tipo PROD), y un servicio termina contabilizado como venta de
- * bienes.
+ * Cómo se agrupa el catálogo: lo que sirve para encontrar un producto en una
+ * lista. No sale impresa en la factura ni cambia cómo se emite.
  */
 export type Categoria = Prisma.CategoriaModel
 /**
@@ -286,9 +277,6 @@ export type OrdenLinea = Prisma.OrdenLineaModel
 export type OrdenLineaOrigen = Prisma.OrdenLineaOrigenModel
 /**
  * Model DatoFacturacion
- * Espejo de la factura que vive en Contífico. El portal no la emite ni la
- * numera: guarda la referencia y el estado. Contífico no permite editarlas ni
- * anularlas por API, así que acá son de solo lectura una vez creadas.
  * Los datos con los que se le emite una factura a un cliente.
  * 
  * Van aparte del Cliente porque uno puede facturar de más de una forma: a

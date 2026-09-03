@@ -76,7 +76,6 @@ import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 import { CobrosCard } from "./cobros-card";
 import { CopyField } from "@/components/shared/copy-field";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
-import { AvisoSinVincular } from "./aviso-sin-vincular";
 import { facturaVigenteDe } from "@/lib/services/factura-vigente";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -135,7 +134,6 @@ interface OrdenData {
     /** Procedencia: se conserva al editar, es lo que evita cobrar dos veces. */
     productoId: string;
     /** Si su producto está en Contífico. Sin eso no puede salir impreso. */
-    productoVinculado: boolean;
     /** Qué trabajos paga la línea. Varios si el producto se hizo en más visitas. */
     visitaProductoIds: string[];
     /** De qué visitas salió, ya resueltas para poder linkearlas. */
@@ -147,32 +145,27 @@ interface OrdenData {
   facturas: {
     id: string;
     numero: string;
-    /** `NO_AUTORIZADO` = documento sin factura: no va al SRI y no lleva IVA. */
     /** `NOTA_CREDITO` es la que corrige a otra: no es la factura de la orden. */
-    tipo: "FACTURA" | "NO_AUTORIZADO" | "NOTA_CREDITO";
+    tipo: "FACTURA" | "NOTA_CREDITO";
     estado: string;
     /** Lo que salió impreso. Puede no tener la forma de las líneas de la orden. */
     lineas: {
       id: string;
       descripcion: string;
-      detalle: string | null;
       cantidad: number;
       precioUnitario: number;
       ivaTasa: number;
       total: number;
     }[];
     fechaEmision: string;
-    urlRide: string | null;
     total: number;
     anulada: boolean;
-    /** Lo que falta cobrar, espejado de Contífico. */
+    /** Lo que falta cobrar: el total menos los cobros registrados. */
     saldo: number | null;
     /** A nombre de quién salió, congelado al emitir. */
     razonSocial: string | null;
     identificacion: string | null;
-    /** El id del documento en Contífico, para buscarlo allá. */
-    contificoDocumentoId: string | null;
-    /** Con clave de acceso, la emitió el portal contra el SRI. */
+    /** El número de autorización del SRI: en el esquema offline, la clave. */
     claveAcceso: string | null;
     /** El motivo de la nota de crédito, y a qué factura corrige. */
     motivo: string | null;
@@ -208,16 +201,9 @@ export function OrdenDetail({
   productos,
   clientes,
   pendientes = [],
-  hayEmisorPropio = false,
   backHref = "/dashboard/ordenes",
 }: {
   orden: OrdenData;
-  /**
-   * Si hay un emisor propio del SRI configurado. Con uno, el vínculo de los
-   * productos con Contífico deja de frenar la emisión: solo hace falta si se
-   * emite por ellos.
-   */
-  hayEmisorPropio?: boolean;
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref?: string;
   productos: ProductoCatalogo[];
@@ -251,13 +237,6 @@ export function OrdenDetail({
    */
   const facturaVigente = facturaVigenteDe(orden.facturas);
   /**
-   * Un documento sin factura no va al SRI: no tiene RIDE, ni firma que esperar,
-   * ni estado que mostrar. Lo que sí tiene —y es lo que importa— es saldo.
-   */
-  const sinFactura = facturaVigente?.tipo === "NO_AUTORIZADO";
-  /** La emitió el portal contra el SRI: el RIDE y el XML son nuestros. */
-  const propia = Boolean(facturaVigente?.claveAcceso);
-  /**
    * Las notas de crédito de la orden.
    *
    * Van aparte porque no son la factura: al acreditarla, la factura queda
@@ -283,7 +262,6 @@ export function OrdenDetail({
         const o = orden.lineas[i];
         return (
           f.descripcion !== o.descripcion ||
-          f.detalle !== null ||
           f.cantidad !== o.cantidad ||
           f.precioUnitario !== o.precioUnitario ||
           f.ivaTasa !== o.ivaTasa
@@ -307,15 +285,12 @@ export function OrdenDetail({
   /**
    * Cuándo todavía se puede anular.
    *
-   * Dos cortes distintos. **Firmada ya no**: anular es un `PUT` y Contífico no
-   * acepta cambios sobre un documento firmado, cosa que hace sola dentro de la
-   * hora. **Cobrada del todo tampoco**: sería dejar la plata cobrada sin nada
-   * que la respalde. Sin factura todavía, la orden se anula sin más.
+   * **Con una factura viva, no**: un comprobante que el SRI ya tiene no se
+   * borra desde acá, se corrige con una nota de crédito —y anular la orden
+   * dejando la factura viva sería mentirle a nuestra propia base—. Sin factura,
+   * la orden se anula sin más.
    */
-  const sePuedeAnular =
-    facturaVigente === null ||
-    (facturaVigente.estado === "PENDIENTE" &&
-      (facturaVigente.saldo === null || facturaVigente.saldo > 0.001));
+  const sePuedeAnular = facturaVigente === null;
 
   /**
    * Con la factura emitida y cobrada no queda nada que hacerle a la orden desde
@@ -364,8 +339,8 @@ export function OrdenDetail({
   );
 
   /**
-   * Cobrar con la factura emitida va derecho contra ella, que es lo que espera
-   * Contífico. **Sin factura pasa antes por el armador**: qué sale impreso es
+   * Cobrar con la factura emitida va derecho contra ella.
+   * **Sin factura pasa antes por el armador**: qué sale impreso es
    * una decisión —varios trabajos pueden ir como una sola línea de "servicio de
    * mantenimiento"— y tomarla por omisión desde un diálogo de cobro es tomarla
    * a ciegas. El cobro sigue estando a un paso: la pantalla termina en
@@ -381,9 +356,6 @@ export function OrdenDetail({
       numero: `Factura ${facturaVigente.numero}`,
       total: facturaVigente.total,
       saldo: facturaVigente.saldo,
-      // Cambia qué se pregunta: la propia no tiene cuenta de Contífico ni
-      // datáfono que declarar.
-      propia: Boolean(facturaVigente.claveAcceso),
     });
   };
 
@@ -451,60 +423,9 @@ export function OrdenDetail({
   // apretar, para que no haya que descubrirlo dentro del diálogo.
   const faltaFacturacion = orden.cliente.datosFacturacion === 0;
 
-  /**
-   * Los productos de la orden que todavía no están en Contífico.
-   *
-   * La orden los acepta a propósito —registra lo que se vendió, y lo que tiene
-   * que existir allá es lo que sale impreso— pero el armador no deja emitir una
-   * línea sin vínculo, y eso se descubría recién adentro. Editando manda lo que
-   * hay en pantalla, que puede tener productos recién agregados; mirando, lo
-   * que resolvió el servidor con cada línea.
-   */
-  const sinVincular = (() => {
-    const catalogo = new Map(productos.map((p) => [p.id, p]));
-    const delServidor = new Map(
-      orden.lineas.map((l) => [l.productoId, l.productoVinculado])
-    );
-    const mapa = new Map<string, { id: string; nombre: string }>();
-    const actuales = editando
-      ? lineasEdit.map((l) => ({ productoId: l.productoId, nombre: l.descripcion }))
-      : orden.lineas.map((l) => ({ productoId: l.productoId, nombre: l.descripcion }));
-    for (const l of actuales) {
-      const p = catalogo.get(l.productoId);
-      // El catálogo es lo que está al día; para una orden que ya no es borrador
-      // no viene cargado, y ahí manda lo que trajo la línea.
-      const vinculado = p
-        ? p.contificoProductoId !== null
-        : (delServidor.get(l.productoId) ?? true);
-      if (!vinculado) {
-        mapa.set(l.productoId, { id: l.productoId, nombre: p?.nombre ?? l.nombre });
-      }
-    }
-    return [...mapa.values()];
-  })();
-
-  /**
-   * Por qué no se puede emitir todavía, o `null` si se puede.
-   *
-   * Las dos razones apagan el mismo botón, así que se dicen en el mismo lugar:
-   * con dos condiciones sueltas el botón quedaba apagado sin decir cuál de las
-   * dos faltaba.
-   */
-  /** Sin emisor propio, lo único que emite es Contífico y exige el vínculo. */
-  const frenaSinVincular = !hayEmisorPropio && sinVincular.length > 0;
-
-  const motivoNoEmitir =
-    faltaFacturacion && frenaSinVincular
-      ? "El cliente no tiene datos de facturación cargados, y hay productos sin vincular con Contífico."
-      : faltaFacturacion
-        ? "El cliente no tiene datos de facturación cargados."
-        : frenaSinVincular
-          ? `${sinVincular.map((p) => `"${p.nombre}"`).join(", ")} ${
-              sinVincular.length === 1
-                ? "no está vinculado"
-                : "no están vinculados"
-            } con Contífico.`
-          : null;
+  const motivoNoEmitir = faltaFacturacion
+    ? "El cliente no tiene datos de facturación cargados."
+    : null;
 
   // La confirmación vive en el diálogo: además de avisar que es irreversible,
   // hay que elegir con qué datos se emite.
@@ -549,45 +470,6 @@ export function OrdenDetail({
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos guardar");
-    }
-  };
-
-  const sincronizarFactura = async (facturaId: string) => {
-    setCargando(facturaId);
-    try {
-      const res = await fetch(`/api/facturas/${facturaId}/sincronizar`, {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Error");
-      toast.success("Estado actualizado");
-      router.refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error");
-    } finally {
-      setCargando(null);
-    }
-  };
-
-  /**
-   * Empuja la factura al SRI sin esperar el proceso horario de Contífico.
-   *
-   * No firma nada de nuestro lado: la firma la pone Contífico con el
-   * certificado del vivero, y este endpoint solo apura la tanda. Sirve cuando
-   * el cliente está esperando el comprobante y no dan ganas de esperar la hora.
-   */
-  const enviarAlSri = async (facturaId: string) => {
-    setCargando(facturaId);
-    try {
-      const res = await fetch(`/api/facturas/${facturaId}/reenviar-sri`, {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Error");
-      toast.success("Enviada al SRI");
-      router.refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Error");
-    } finally {
-      setCargando(null);
     }
   };
 
@@ -841,18 +723,6 @@ export function OrdenDetail({
             <CardTitle className="text-base">Detalle</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Arriba del detalle: es lo que va a frenar la emisión, y
-                enterarse recién adentro del armador —con la orden ya creada—
-                era enterarse tarde. Con la factura emitida sobra: lo que salió
-                impreso ya está decidido. */}
-            {!facturaVigente &&
-              orden.estado !== "ANULADA" &&
-              !hayEmisorPropio &&
-              sinVincular.length > 0 && (
-                <div className="mb-4">
-                  <AvisoSinVincular productos={sinVincular} />
-                </div>
-              )}
             {editando ? (
               <OrdenLineasEditor
                 lineas={lineasEdit}
@@ -1080,15 +950,13 @@ export function OrdenDetail({
             </CardContent>
           </Card>
 
-        {/* Todo lo de la factura junto: el número que se busca en Contífico,
-            en qué anda, y a nombre de quién salió. Los datos son el snapshot y
-            no la ficha del cliente, que pudo editarse después. */}
+        {/* Todo lo de la factura junto: su número, en qué anda, y a nombre de
+            quién salió. Los datos son el snapshot y no la ficha del cliente,
+            que pudo editarse después. */}
         {facturaVigente && (
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">
-                {sinFactura ? "Documento" : "Factura"}
-              </CardTitle>
+              <CardTitle className="text-base">Factura</CardTitle>
               <CardAction>
                 <DropdownMenu>
                   <DropdownMenuTrigger
@@ -1108,50 +976,15 @@ export function OrdenDetail({
                     }
                   />
                   <DropdownMenuContent align="end" className="w-60">
-                    {/* Un documento sin factura no tiene RIDE ni firma: la API
-                        de Contífico no expone ningún PDF para ellos. Mostrarlo
-                        deshabilitado prometería algo que no va a llegar. */}
-                    {/* La emitida por el portal tiene su RIDE acá mismo:
-                        se arma en el momento desde lo guardado, así que está
-                        disponible apenas el SRI la autoriza. */}
-                    {propia && (
-                      <DropdownMenuItem
-                        disabled={facturaVigente.estado !== "AUTORIZADO"}
-                        {...(facturaVigente.estado === "AUTORIZADO"
-                          ? {
-                              render: (
-                                <a
-                                  href={`/api/facturas/${facturaVigente.id}/ride`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                />
-                              ),
-                            }
-                          : {})}
-                      >
-                        <FileText className="mr-2 h-4 w-4" />
-                        <span className="flex flex-1 items-center justify-between gap-2">
-                          Ver factura (RIDE)
-                          {facturaVigente.estado !== "AUTORIZADO" && (
-                            <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                              Sin autorizar
-                            </span>
-                          )}
-                        </span>
-                      </DropdownMenuItem>
-                    )}
-                    {!sinFactura && !propia && (
+                    {/* El RIDE se arma en el momento desde lo guardado, así
+                        que está disponible apenas el SRI la autoriza. */}
                     <DropdownMenuItem
-                      disabled={
-                        !facturaVigente.urlRide ||
-                        facturaVigente.estado === "PENDIENTE"
-                      }
-                      {...(facturaVigente.urlRide &&
-                      facturaVigente.estado !== "PENDIENTE"
+                      disabled={facturaVigente.estado !== "AUTORIZADO"}
+                      {...(facturaVigente.estado === "AUTORIZADO"
                         ? {
                             render: (
                               <a
-                                href={facturaVigente.urlRide}
+                                href={`/api/facturas/${facturaVigente.id}/ride`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               />
@@ -1160,27 +993,20 @@ export function OrdenDetail({
                         : {})}
                     >
                       <FileText className="mr-2 h-4 w-4" />
-                      {/* El aviso es nuestro y no un `title`: el nativo tarda
-                          uno o dos segundos que fija el navegador y no se
-                          pueden bajar. Va dentro de la fila —no flotando— para
-                          que el `overflow` del menú no lo corte.
-                          `pointer-events-auto` porque el ítem deshabilitado los
-                          tiene apagados, y un hijo sí puede recuperarlos. */}
-                      <span className="group/ride pointer-events-auto flex flex-1 cursor-default items-center justify-between gap-2">
-                        Ver factura
-                        {facturaVigente.estado === "PENDIENTE" && (
-                          <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground opacity-0 transition-opacity group-hover/ride:opacity-100">
-                            Falta firma
+                      <span className="flex flex-1 items-center justify-between gap-2">
+                        Ver factura (RIDE)
+                        {facturaVigente.estado !== "AUTORIZADO" && (
+                          <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                            Sin autorizar
                           </span>
                         )}
                       </span>
                     </DropdownMenuItem>
-                    )}
                     {/* Corregir una factura ya autorizada. Anularla en el
                         SRI es otra cosa: un trámite manual del portal de ellos,
                         con plazo hasta el día 7 del mes siguiente y con la
                         aceptación del cliente. */}
-                    {propia && facturaVigente.estado === "AUTORIZADO" && (
+                    {facturaVigente.estado === "AUTORIZADO" && (
                       <DropdownMenuItem
                         onClick={() => setAcreditando(true)}
                         className="text-destructive"
@@ -1192,7 +1018,7 @@ export function OrdenDetail({
 
                     {/* Antes de la autorización no hay comprobante que
                         entregar, así que solo aparece cuando la hay. */}
-                    {propia && facturaVigente.estado === "AUTORIZADO" && (
+                    {facturaVigente.estado === "AUTORIZADO" && (
                       <DropdownMenuItem
                         onClick={() => enviarAlCliente(facturaVigente.id)}
                       >
@@ -1207,7 +1033,7 @@ export function OrdenDetail({
                         casi siempre contesta en segundos. El cron pregunta
                         solo, pero quien está esperando el comprobante no tiene
                         por qué esperar la próxima corrida. */}
-                    {propia && facturaVigente.estado !== "AUTORIZADO" && (
+                    {facturaVigente.estado !== "AUTORIZADO" && (
                       <DropdownMenuItem
                         onClick={() => consultarAlSri(facturaVigente.id)}
                       >
@@ -1216,26 +1042,6 @@ export function OrdenDetail({
                       </DropdownMenuItem>
                     )}
 
-                    {/* Contífico firma y transmite los pendientes cada hora;
-                        esto no espera. Enviada o autorizada no hay nada que
-                        apurar. */}
-                    {!sinFactura &&
-                      !propia &&
-                      (facturaVigente.estado === "PENDIENTE" ||
-                        facturaVigente.estado === "FIRMADO") && (
-                      <DropdownMenuItem
-                        onClick={() => enviarAlSri(facturaVigente.id)}
-                      >
-                        <Send className="mr-2 h-4 w-4" />
-                        Enviar al SRI ahora
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem
-                      onClick={() => sincronizarFactura(facturaVigente.id)}
-                    >
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Actualizar desde Contífico
-                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </CardAction>
@@ -1304,20 +1110,6 @@ export function OrdenDetail({
                     />
                   </div>
                 )}
-                {/* El id de Contífico: es con lo que se la busca por API y en
-                    los enlaces de su sistema, y no aparece en ningún otro lado
-                    del portal. */}
-                {facturaVigente.contificoDocumentoId && (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="flex-none text-muted-foreground">
-                      ID Contífico
-                    </span>
-                    <ValorCopiable
-                      valor={facturaVigente.contificoDocumentoId}
-                      etiqueta="el ID de Contífico"
-                    />
-                  </div>
-                )}
                 <div className="flex items-center justify-between gap-3">
                   <span className="flex-none text-muted-foreground">
                     Número
@@ -1343,22 +1135,13 @@ export function OrdenDetail({
                     ) && ` · ${hora(facturaVigente.createdAt)}`}
                   </span>
                 </div>
-                {sinFactura ? (
-                  <div className="flex justify-between gap-3">
-                    <span className="text-muted-foreground">Tipo</span>
-                    <span title="No se envía al SRI y no lleva IVA. Se cobra y se anula igual que una factura.">
-                      Consumidor final
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex justify-between gap-3">
-                    <span className="text-muted-foreground">Estado</span>
-                    <span title={ESTADO_FACTURA_AYUDA[facturaVigente.estado]}>
-                      {ESTADO_FACTURA_LABEL[facturaVigente.estado] ??
-                        facturaVigente.estado}
-                    </span>
-                  </div>
-                )}
+                <div className="flex justify-between gap-3">
+                  <span className="text-muted-foreground">Estado</span>
+                  <span title={ESTADO_FACTURA_AYUDA[facturaVigente.estado]}>
+                    {ESTADO_FACTURA_LABEL[facturaVigente.estado] ??
+                      facturaVigente.estado}
+                  </span>
+                </div>
               </div>
 
               {facturaDifiere && (
@@ -1370,13 +1153,6 @@ export function OrdenDetail({
                     <div key={l.id} className="flex justify-between gap-3">
                       <span className="min-w-0">
                         <span className="block truncate">{l.descripcion}</span>
-                        {/* El detalle sale al lado del nombre en el papel:
-                            "SERVICIO DE MANTENIMIENTO · Detalle: AREAS VERDES". */}
-                        {l.detalle && (
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {l.detalle}
-                          </span>
-                        )}
                         {/* La tasa solo cuando hay más de una: agrupar deja
                             una línea por tasa, y sin decirlo se ven iguales. */}
                         {(l.cantidad !== 1 || variasTasas) && (
@@ -1404,7 +1180,7 @@ export function OrdenDetail({
                 </div>
                 {/* Lo cobrado, no lo que falta: "Cobrada $0.00" se leía como
                     que no había entrado nada, justo cuando estaba todo pago.
-                    Contífico da el saldo, así que lo cobrado se deriva. */}
+                    El saldo es lo guardado, así que lo cobrado se deriva. */}
                 {facturaVigente.saldo !== null && (
                   <>
                     <div className="flex justify-between gap-3">

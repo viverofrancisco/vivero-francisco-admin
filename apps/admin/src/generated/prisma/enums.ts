@@ -38,14 +38,6 @@ export const Periodicidad = {
 export type Periodicidad = (typeof Periodicidad)[keyof typeof Periodicidad]
 
 
-export const OrigenProducto = {
-  PORTAL: 'PORTAL',
-  CONTIFICO: 'CONTIFICO'
-} as const
-
-export type OrigenProducto = (typeof OrigenProducto)[keyof typeof OrigenProducto]
-
-
 export const TipoPersona = {
   NATURAL: 'NATURAL',
   JURIDICA: 'JURIDICA'
@@ -135,7 +127,6 @@ export type EstadoFactura = (typeof EstadoFactura)[keyof typeof EstadoFactura]
 
 export const TipoDocumento = {
   FACTURA: 'FACTURA',
-  NO_AUTORIZADO: 'NO_AUTORIZADO',
   NOTA_CREDITO: 'NOTA_CREDITO'
 } as const
 

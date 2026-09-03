@@ -18,22 +18,12 @@ import { toast } from "sonner";
 import { money } from "./formato";
 import { hoyISOEcuador } from "@/lib/fechas";
 
-/** Los códigos que espera Contífico. */
-const FORMAS = [
-  { value: "EF", label: "Efectivo" },
-  { value: "TRA", label: "Transferencia" },
-  { value: "TC", label: "Tarjeta de crédito" },
-  { value: "CQ", label: "Cheque" },
-];
-
 /**
- * Las de una factura propia.
- *
- * Son las que usa la gente y no el catálogo del SRI: el pago no viaja a ningún
- * lado —la forma de pago se le declara al SRI **al emitir**— así que esto es la
+ * Las que usa la gente, no el catálogo del SRI: el pago no viaja a ningún lado
+ * —la forma de pago se le declara al SRI **al emitir**— así que esto es la
  * cuenta corriente del vivero.
  */
-const FORMAS_PROPIAS = [
+const FORMAS = [
   { value: "EFECTIVO", label: "Efectivo" },
   { value: "TRANSFERENCIA", label: "Transferencia" },
   { value: "TARJETA", label: "Tarjeta" },
@@ -41,52 +31,28 @@ const FORMAS_PROPIAS = [
   { value: "OTRO", label: "Otro" },
 ];
 
-/** Los datáfonos que reconoce Contífico. */
-const DATAFONOS = [
-  { value: "D", label: "Datafast" },
-  { value: "M", label: "Medianet" },
-  { value: "E", label: "Dataexpress" },
-  { value: "P", label: "PlaceToPay" },
-  { value: "A", label: "Alignet" },
-];
-
-interface CuentaOption {
-  id: string;
-  nombre: string;
-  numero: string;
-  tipo: string;
-}
-
 export interface FacturaCobrable {
   id: string;
-  /** Lo que se muestra arriba: "001-002-000900007" o "Orden #91". */
+  /** Lo que se muestra arriba: "001-001-000000007" o "Orden #91". */
   numero: string;
   total: number;
   saldo: number | null;
   /**
    * A dónde se postea. Por defecto, el cobro de una factura ya emitida.
    *
-   * Una orden sin facturar apunta a `/api/ordenes/<id>/cobro`, que confirma,
-   * emite y cobra de una: el cobro necesita un documento de Contífico contra el
-   * cual registrarse, y quien cobra no tiene por qué crearlo primero.
+   * Una orden sin facturar apunta a `/api/ordenes/<id>/cobro`, que emite y
+   * cobra de una: el cobro se registra contra un comprobante, y quien cobra no
+   * tiene por qué crearlo primero.
    */
   url?: string;
-  /**
-   * La emitió el portal contra el SRI.
-   *
-   * Cambia qué se pregunta: el cobro de una factura propia no viaja a ningún
-   * lado, así que no hay cuenta bancaria de Contífico que elegir ni datáfono
-   * que declarar — alcanza con cómo pagaron y con qué referencia encontrarlo.
-   */
-  propia?: boolean;
 }
 
 /**
  * Registrar un cobro contra una factura.
  *
- * No hay "marcar como pagada": el estado sale de los cobros. Se puede cobrar en
- * partes, y la factura queda saldada cuando el saldo llega a cero. Los cobros
- * viven en Contífico; acá solo se mandan y se relee el saldo.
+ * No hay "marcar como pagada": el estado sale de la suma de los cobros. Se
+ * puede cobrar en partes, y la factura queda saldada cuando el saldo llega a
+ * cero.
  */
 export function CobroDialog({
   factura,
@@ -97,34 +63,10 @@ export function CobroDialog({
 }) {
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
-  const propia = factura?.propia ?? false;
-  const [forma, setForma] = useState(propia ? "EFECTIVO" : "EF");
+  const [forma, setForma] = useState("EFECTIVO");
   const [referencia, setReferencia] = useState("");
   const [monto, setMonto] = useState("");
   const [fecha, setFecha] = useState(() => hoyISOEcuador());
-  const [numeroCheque, setNumeroCheque] = useState("");
-  const [cuentaBancariaId, setCuentaBancariaId] = useState("");
-  const [tipoPing, setTipoPing] = useState("D");
-  const [numeroComprobante, setNumeroComprobante] = useState("");
-  /** Cuentas del vivero, traídas de Contífico recién cuando hacen falta. */
-  const [cuentas, setCuentas] = useState<CuentaOption[] | null>(null);
-  const [pidiendoCuentas, setPidiendoCuentas] = useState(false);
-
-  // Se piden al elegir transferencia y no al abrir: la mayoría de los cobros no
-  // son transferencias, y es una llamada a Contífico.
-  if (!propia && forma === "TRA" && cuentas === null && !pidiendoCuentas) {
-    setPidiendoCuentas(true);
-    fetch("/api/contifico/cuentas-bancarias")
-      .then(async (r) => {
-        if (!r.ok) throw new Error((await r.json()).error ?? "Error");
-        return r.json();
-      })
-      .then((d: { cuentas: CuentaOption[] }) => setCuentas(d.cuentas))
-      .catch(() => {
-        setCuentas([]);
-        toast.error("No pudimos traer las cuentas bancarias de Contífico");
-      });
-  }
 
   const saldo = factura?.saldo ?? factura?.total ?? 0;
 
@@ -140,26 +82,12 @@ export function CobroDialog({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(
-            propia
-              ? {
-                  formaPago: forma,
-                  monto: valor,
-                  fecha: fecha || null,
-                  referencia: referencia || null,
-                }
-              : {
-                  formaCobro: forma,
-                  monto: valor,
-                  fecha: fecha || null,
-                  numeroCheque: forma === "CQ" ? numeroCheque || null : null,
-                  cuentaBancariaId:
-                    forma === "TRA" ? cuentaBancariaId || null : null,
-                  tipoPing: forma === "TC" ? tipoPing : null,
-                  numeroComprobante:
-                    forma === "TRA" ? numeroComprobante || null : null,
-                }
-          ),
+          body: JSON.stringify({
+            formaPago: forma,
+            monto: valor,
+            fecha: fecha || null,
+            referencia: referencia || null,
+          }),
         }
       );
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
@@ -214,24 +142,13 @@ export function CobroDialog({
 
           <div className="space-y-1.5">
             <Label className="text-xs">Forma de cobro *</Label>
-            <CustomSelect
-              value={forma}
-              onChange={setForma}
-              options={propia ? FORMAS_PROPIAS : FORMAS}
-            />
-            {!propia && forma === "EF" && (
-              <p className="text-xs text-muted-foreground">
-                Un cobro en efectivo solo lleva monto y fecha: Contífico no
-                guarda ninguna referencia ni nota para esta forma.
-              </p>
-            )}
+            <CustomSelect value={forma} onChange={setForma} options={FORMAS} />
           </div>
 
           {/* Una sola referencia en vez de un campo por forma de pago: el
               número de la transferencia, el del cheque o el del voucher son la
-              misma cosa —con qué se encuentra ese pago— y separarlos era
-              copiar la forma de Contífico sin necesidad. */}
-          {propia && forma !== "EFECTIVO" && (
+              misma cosa — con qué se encuentra ese pago. */}
+          {forma !== "EFECTIVO" && (
             <div className="space-y-1.5">
               <Label className="text-xs">Referencia</Label>
               <Input
@@ -239,69 +156,6 @@ export function CobroDialog({
                 onChange={(e) => setReferencia(e.target.value)}
                 placeholder="N° de transferencia, cheque o voucher"
               />
-            </div>
-          )}
-
-          {!propia && forma === "CQ" && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Número de cheque</Label>
-              <Input
-                value={numeroCheque}
-                onChange={(e) => setNumeroCheque(e.target.value)}
-              />
-            </div>
-          )}
-
-          {!propia && forma === "TRA" && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Cuenta que recibió el dinero *</Label>
-              <CustomSelect
-                value={cuentaBancariaId}
-                onChange={setCuentaBancariaId}
-                options={(cuentas ?? []).map((c) => ({
-                  value: c.id,
-                  label: `${c.nombre} · ${c.numero}`,
-                }))}
-                placeholder={
-                  cuentas === null ? "Cargando cuentas…" : "Elegí una cuenta"
-                }
-                disabled={cuentas === null}
-                searchable
-                searchPlaceholder="Buscar cuenta..."
-              />
-              <p className="text-xs text-muted-foreground">
-                Son las cuentas <strong>del vivero</strong>, no del cliente:
-                dónde cayó la transferencia.
-              </p>
-            </div>
-          )}
-
-          {!propia && forma === "TC" && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Datáfono *</Label>
-              <CustomSelect
-                value={tipoPing}
-                onChange={setTipoPing}
-                options={DATAFONOS}
-              />
-            </div>
-          )}
-
-          {/* Solo en transferencia: es el único caso donde Contífico lo
-              documenta y lo respeta. En efectivo lo pisa con su propia
-              etiqueta, así que ofrecerlo era prometer algo que no se guarda. */}
-          {!propia && forma === "TRA" && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Comprobante</Label>
-              <Input
-                value={numeroComprobante}
-                onChange={(e) => setNumeroComprobante(e.target.value)}
-                placeholder="Opcional"
-              />
-              <p className="text-xs text-muted-foreground">
-                El número con el que el banco identifica la transferencia, para
-                cruzarla después con el estado de cuenta.
-              </p>
             </div>
           )}
 

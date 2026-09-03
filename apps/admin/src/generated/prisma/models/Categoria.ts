@@ -14,17 +14,8 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Categoria
- * Cómo se agrupa el catálogo **en el portal**.
- * 
- * No es un espejo de la de Contífico. Allá una categoría es configuración
- * contable —lleva la `cuenta_venta` que el producto hereda— y el árbol es de
- * ellos: en la cuenta de pruebas hay 2.939, casi todas ajenas. Acá es lo que
- * sirve para encontrar un producto en una lista.
- * 
- * Lo que sí las conecta es `contificoCategoriaId`: la categoría de allá con la
- * que se crean los productos de esta. Sin eso Contífico les pone la suya por
- * defecto (tipo PROD), y un servicio termina contabilizado como venta de
- * bienes.
+ * Cómo se agrupa el catálogo: lo que sirve para encontrar un producto en una
+ * lista. No sale impresa en la factura ni cambia cómo se emite.
  */
 export type CategoriaModel = runtime.Types.Result.DefaultSelection<Prisma.$CategoriaPayload>
 
@@ -48,8 +39,6 @@ export type CategoriaMinAggregateOutputType = {
   id: string | null
   nombre: string | null
   orden: number | null
-  contificoCategoriaId: string | null
-  contificoCategoriaNombre: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -58,8 +47,6 @@ export type CategoriaMaxAggregateOutputType = {
   id: string | null
   nombre: string | null
   orden: number | null
-  contificoCategoriaId: string | null
-  contificoCategoriaNombre: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -68,8 +55,6 @@ export type CategoriaCountAggregateOutputType = {
   id: number
   nombre: number
   orden: number
-  contificoCategoriaId: number
-  contificoCategoriaNombre: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -88,8 +73,6 @@ export type CategoriaMinAggregateInputType = {
   id?: true
   nombre?: true
   orden?: true
-  contificoCategoriaId?: true
-  contificoCategoriaNombre?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -98,8 +81,6 @@ export type CategoriaMaxAggregateInputType = {
   id?: true
   nombre?: true
   orden?: true
-  contificoCategoriaId?: true
-  contificoCategoriaNombre?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -108,8 +89,6 @@ export type CategoriaCountAggregateInputType = {
   id?: true
   nombre?: true
   orden?: true
-  contificoCategoriaId?: true
-  contificoCategoriaNombre?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -205,8 +184,6 @@ export type CategoriaGroupByOutputType = {
   id: string
   nombre: string
   orden: number
-  contificoCategoriaId: string | null
-  contificoCategoriaNombre: string | null
   createdAt: Date
   updatedAt: Date
   _count: CategoriaCountAggregateOutputType | null
@@ -238,8 +215,6 @@ export type CategoriaWhereInput = {
   id?: Prisma.StringFilter<"Categoria"> | string
   nombre?: Prisma.StringFilter<"Categoria"> | string
   orden?: Prisma.IntFilter<"Categoria"> | number
-  contificoCategoriaId?: Prisma.StringNullableFilter<"Categoria"> | string | null
-  contificoCategoriaNombre?: Prisma.StringNullableFilter<"Categoria"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
   productos?: Prisma.ProductoListRelationFilter
@@ -249,8 +224,6 @@ export type CategoriaOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrderInput | Prisma.SortOrder
-  contificoCategoriaNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   productos?: Prisma.ProductoOrderByRelationAggregateInput
@@ -263,8 +236,6 @@ export type CategoriaWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.CategoriaWhereInput[]
   NOT?: Prisma.CategoriaWhereInput | Prisma.CategoriaWhereInput[]
   orden?: Prisma.IntFilter<"Categoria"> | number
-  contificoCategoriaId?: Prisma.StringNullableFilter<"Categoria"> | string | null
-  contificoCategoriaNombre?: Prisma.StringNullableFilter<"Categoria"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
   productos?: Prisma.ProductoListRelationFilter
@@ -274,8 +245,6 @@ export type CategoriaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrderInput | Prisma.SortOrder
-  contificoCategoriaNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CategoriaCountOrderByAggregateInput
@@ -292,8 +261,6 @@ export type CategoriaScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Categoria"> | string
   nombre?: Prisma.StringWithAggregatesFilter<"Categoria"> | string
   orden?: Prisma.IntWithAggregatesFilter<"Categoria"> | number
-  contificoCategoriaId?: Prisma.StringNullableWithAggregatesFilter<"Categoria"> | string | null
-  contificoCategoriaNombre?: Prisma.StringNullableWithAggregatesFilter<"Categoria"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Categoria"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Categoria"> | Date | string
 }
@@ -302,8 +269,6 @@ export type CategoriaCreateInput = {
   id?: string
   nombre: string
   orden?: number
-  contificoCategoriaId?: string | null
-  contificoCategoriaNombre?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   productos?: Prisma.ProductoCreateNestedManyWithoutCategoriaInput
@@ -313,8 +278,6 @@ export type CategoriaUncheckedCreateInput = {
   id?: string
   nombre: string
   orden?: number
-  contificoCategoriaId?: string | null
-  contificoCategoriaNombre?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   productos?: Prisma.ProductoUncheckedCreateNestedManyWithoutCategoriaInput
@@ -324,8 +287,6 @@ export type CategoriaUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   productos?: Prisma.ProductoUpdateManyWithoutCategoriaNestedInput
@@ -335,8 +296,6 @@ export type CategoriaUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   productos?: Prisma.ProductoUncheckedUpdateManyWithoutCategoriaNestedInput
@@ -346,8 +305,6 @@ export type CategoriaCreateManyInput = {
   id?: string
   nombre: string
   orden?: number
-  contificoCategoriaId?: string | null
-  contificoCategoriaNombre?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -356,8 +313,6 @@ export type CategoriaUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -366,8 +321,6 @@ export type CategoriaUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -381,8 +334,6 @@ export type CategoriaCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrder
-  contificoCategoriaNombre?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -395,8 +346,6 @@ export type CategoriaMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrder
-  contificoCategoriaNombre?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -405,8 +354,6 @@ export type CategoriaMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrder
-  contificoCategoriaNombre?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -443,8 +390,6 @@ export type CategoriaCreateWithoutProductosInput = {
   id?: string
   nombre: string
   orden?: number
-  contificoCategoriaId?: string | null
-  contificoCategoriaNombre?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -453,8 +398,6 @@ export type CategoriaUncheckedCreateWithoutProductosInput = {
   id?: string
   nombre: string
   orden?: number
-  contificoCategoriaId?: string | null
-  contificoCategoriaNombre?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -479,8 +422,6 @@ export type CategoriaUpdateWithoutProductosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -489,8 +430,6 @@ export type CategoriaUncheckedUpdateWithoutProductosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -530,8 +469,6 @@ export type CategoriaSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   id?: boolean
   nombre?: boolean
   orden?: boolean
-  contificoCategoriaId?: boolean
-  contificoCategoriaNombre?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   productos?: boolean | Prisma.Categoria$productosArgs<ExtArgs>
@@ -542,8 +479,6 @@ export type CategoriaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   nombre?: boolean
   orden?: boolean
-  contificoCategoriaId?: boolean
-  contificoCategoriaNombre?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["categoria"]>
@@ -552,8 +487,6 @@ export type CategoriaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   nombre?: boolean
   orden?: boolean
-  contificoCategoriaId?: boolean
-  contificoCategoriaNombre?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["categoria"]>
@@ -562,13 +495,11 @@ export type CategoriaSelectScalar = {
   id?: boolean
   nombre?: boolean
   orden?: boolean
-  contificoCategoriaId?: boolean
-  contificoCategoriaNombre?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CategoriaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "orden" | "contificoCategoriaId" | "contificoCategoriaNombre" | "createdAt" | "updatedAt", ExtArgs["result"]["categoria"]>
+export type CategoriaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "orden" | "createdAt" | "updatedAt", ExtArgs["result"]["categoria"]>
 export type CategoriaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   productos?: boolean | Prisma.Categoria$productosArgs<ExtArgs>
   _count?: boolean | Prisma.CategoriaCountOutputTypeDefaultArgs<ExtArgs>
@@ -588,12 +519,6 @@ export type $CategoriaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
      * Para ordenar la lista a mano; a igual orden, alfabético.
      */
     orden: number
-    contificoCategoriaId: string | null
-    /**
-     * Cómo se llama allá, congelado al elegirla: mostrarla no puede depender de
-     * una llamada a su API, que tarda y a veces no está.
-     */
-    contificoCategoriaNombre: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["categoria"]>
@@ -1023,8 +948,6 @@ export interface CategoriaFieldRefs {
   readonly id: Prisma.FieldRef<"Categoria", 'String'>
   readonly nombre: Prisma.FieldRef<"Categoria", 'String'>
   readonly orden: Prisma.FieldRef<"Categoria", 'Int'>
-  readonly contificoCategoriaId: Prisma.FieldRef<"Categoria", 'String'>
-  readonly contificoCategoriaNombre: Prisma.FieldRef<"Categoria", 'String'>
   readonly createdAt: Prisma.FieldRef<"Categoria", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Categoria", 'DateTime'>
 }

@@ -3906,10 +3906,7 @@ export const ProductoScalarFieldEnum = {
   nombre: 'nombre',
   descripcion: 'descripcion',
   tipo: 'tipo',
-  origen: 'origen',
   codigo: 'codigo',
-  contificoProductoId: 'contificoProductoId',
-  contificoCategoriaId: 'contificoCategoriaId',
   categoriaId: 'categoriaId',
   ivaTasa: 'ivaTasa',
   createdAt: 'createdAt',
@@ -3926,8 +3923,6 @@ export const CategoriaScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
   orden: 'orden',
-  contificoCategoriaId: 'contificoCategoriaId',
-  contificoCategoriaNombre: 'contificoCategoriaNombre',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -4462,16 +4457,11 @@ export const FacturaScalarFieldEnum = {
   enviadoA: 'enviadoA',
   facturaModificadaId: 'facturaModificadaId',
   motivo: 'motivo',
-  contificoDocumentoId: 'contificoDocumentoId',
   numero: 'numero',
   tipo: 'tipo',
   fechaEmision: 'fechaEmision',
-  descripcion: 'descripcion',
   estado: 'estado',
   autorizacion: 'autorizacion',
-  urlRide: 'urlRide',
-  urlXml: 'urlXml',
-  contificoPersonaId: 'contificoPersonaId',
   datoFacturacionId: 'datoFacturacionId',
   razonSocial: 'razonSocial',
   identificacion: 'identificacion',
@@ -4509,7 +4499,6 @@ export const FacturaLineaScalarFieldEnum = {
   facturaId: 'facturaId',
   posicion: 'posicion',
   descripcion: 'descripcion',
-  detalle: 'detalle',
   cantidad: 'cantidad',
   precioUnitario: 'precioUnitario',
   ivaTasa: 'ivaTasa',
@@ -4678,20 +4667,6 @@ export type EnumTipoProductoFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'TipoProducto[]'
  */
 export type ListEnumTipoProductoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoProducto[]'>
-    
-
-
-/**
- * Reference to a field of type 'OrigenProducto'
- */
-export type EnumOrigenProductoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrigenProducto'>
-    
-
-
-/**
- * Reference to a field of type 'OrigenProducto[]'
- */
-export type ListEnumOrigenProductoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrigenProducto[]'>
     
 
 

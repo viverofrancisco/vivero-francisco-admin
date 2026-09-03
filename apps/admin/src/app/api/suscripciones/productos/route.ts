@@ -23,7 +23,6 @@ export async function GET(request: Request) {
         id: p.id,
         nombre: p.nombre,
         ivaTasa: p.ivaTasa != null ? Number(p.ivaTasa) : null,
-        sincronizado: p.contificoProductoId !== null,
       })),
     });
   } catch (error) {

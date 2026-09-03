@@ -22,7 +22,6 @@ export interface ProductoFacturable {
   id: string;
   nombre: string;
   ivaTasa: number | null;
-  contificoProductoId: string | null;
 }
 
 interface LineaOrden {
@@ -54,7 +53,6 @@ interface LineaDocumento {
   uid: string;
   productoId: string;
   descripcion: string;
-  detalle: string;
   cantidad: string;
   precioUnitario: string;
   ivaTasa: string;
@@ -81,8 +79,16 @@ function basesPorTasa(
   return m;
 }
 
+export interface EmisorOpcion {
+  id: string;
+  ruc: string;
+  razonSocial: string;
+  ambiente: "PRUEBAS" | "PRODUCCION";
+  predeterminado: boolean;
+}
+
 /**
- * Emite el documento de una orden.
+ * Emite la factura de una orden.
  *
  * **La factura no tiene por qué tener la forma de la orden.** Acá se cobran
  * varios trabajos de un período como una sola línea de "servicio de
@@ -95,14 +101,6 @@ function basesPorTasa(
  * 15% cierra el total y miente el IVA. El servidor lo vuelve a validar; acá
  * está para que nadie llegue al botón con un documento que no puede salir.
  */
-export interface EmisorOpcion {
-  id: string;
-  ruc: string;
-  razonSocial: string;
-  ambiente: "PRUEBAS" | "PRODUCCION";
-  predeterminado: boolean;
-}
-
 export function EmitirFacturaPage({
   orden,
   productos,
@@ -110,7 +108,7 @@ export function EmitirFacturaPage({
   emisores = [],
   backHref,
 }: {
-  /** Con qué RUC propio se puede emitir. Vacío = solo por Contífico. */
+  /** Con qué RUC se puede emitir. Sin ninguno no hay factura posible. */
   emisores?: EmisorOpcion[];
   orden: OrdenAEmitir;
   productos: ProductoFacturable[];
@@ -118,17 +116,10 @@ export function EmitirFacturaPage({
   backHref: string;
 }) {
   const router = useRouter();
-  const [tipo, setTipo] = useState<"FACTURA" | "NO_AUTORIZADO">("FACTURA");
-  /**
-   * Con qué se emite: `""` es Contífico, que es como se emitió siempre, y
-   * cualquier otro valor es un emisor propio contra el SRI. Viene elegido el
-   * predeterminado si hay alguno, porque el camino propio es el que queremos.
-   */
   const [emisorId, setEmisorId] = useState(
     emisores.find((e) => e.predeterminado)?.id ?? emisores[0]?.id ?? ""
   );
   const emisor = emisores.find((e) => e.id === emisorId) ?? null;
-  const [descripcion, setDescripcion] = useState(`Orden #${orden.numero}`);
   const [datoFacturacionId, setDatoFacturacionId] = useState<string | null>(
     datosFacturacion.find((d) => d.esPredeterminado)?.id ??
       datosFacturacion[0]?.id ??
@@ -142,7 +133,6 @@ export function EmitirFacturaPage({
       uid: `linea-${contador++}`,
       productoId: l.productoId,
       descripcion: l.descripcion,
-      detalle: "",
       cantidad: String(l.cantidad),
       precioUnitario: String(l.precioUnitario),
       ivaTasa: String(l.ivaTasa),
@@ -171,7 +161,6 @@ export function EmitirFacturaPage({
         uid: `linea-${contador++}`,
         productoId: p.id,
         descripcion: p.nombre,
-        detalle: "",
         cantidad: "1",
         precioUnitario: "",
         ivaTasa: p.ivaTasa != null ? String(p.ivaTasa) : "0",
@@ -211,33 +200,25 @@ export function EmitirFacturaPage({
     return filas.sort((a, b) => b.tasa - a.tasa);
   }, [lineas, orden.lineas]);
 
-  const ordenTieneIva = orden.lineas.some((l) => l.ivaTasa > 0);
-  const sinVincular = lineas.filter(
-    (l) => !porId.get(l.productoId)?.contificoProductoId
-  );
   const sinPrecio = lineas.some(
     (l) => l.precioUnitario.trim() === "" || Number(l.precioUnitario) < 0
   );
-
-  /**
-   * Emitiendo por el SRI el vínculo con Contífico no hace falta: la línea del
-   * XML lleva un código y una descripción nuestros. Ese requisito es de ellos,
-   * no del comprobante.
-   */
-  const exigeVinculo = emisorId === "";
+  const sinDescripcion = lineas.some((l) => l.descripcion.trim() === "");
 
   const motivoBloqueo =
-    lineas.length === 0
-      ? "El documento no tiene líneas."
-      : sinPrecio
-        ? "Hay una línea sin precio."
-        : exigeVinculo && sinVincular.length > 0
-          ? `"${porId.get(sinVincular[0].productoId)?.nombre ?? sinVincular[0].descripcion}" no está vinculado con Contífico. Cambiá esa línea por un producto vinculado.`
-          : descuadres.length > 0
-            ? "El documento no cuadra con la orden."
-            : !datoFacturacionId
-              ? "Falta elegir a nombre de quién se emite."
-              : null;
+    emisores.length === 0
+      ? "No hay ningún emisor configurado."
+      : lineas.length === 0
+        ? "El documento no tiene líneas."
+        : sinDescripcion
+          ? "Hay una línea sin descripción."
+          : sinPrecio
+            ? "Hay una línea sin precio."
+            : descuadres.length > 0
+              ? "El documento no cuadra con la orden."
+              : !datoFacturacionId
+                ? "Falta elegir a nombre de quién se emite."
+                : null;
 
   const emitir = async (yCobrar: boolean) => {
     setEmitiendo(yCobrar ? "cobrar" : "solo");
@@ -246,15 +227,11 @@ export function EmitirFacturaPage({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tipo,
           datoFacturacionId,
-          descripcion,
-          // Vacío = por Contífico. El servidor decide con esto.
-          emisorId: emisorId || null,
+          emisorId,
           lineas: lineas.map((l) => ({
             productoId: l.productoId,
             descripcion: l.descripcion.trim(),
-            detalle: l.detalle.trim() || null,
             cantidad: Number(l.cantidad),
             precioUnitario: Number(l.precioUnitario),
             ivaTasa: Number(l.ivaTasa),
@@ -343,9 +320,6 @@ export function EmitirFacturaPage({
               <CardTitle className="text-base">Qué se imprime</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* El nombre de cada línea lo pone el producto de Contífico y no
-                  se puede pisar: lo verificamos contra el XML firmado. Lo que
-                  sí viaja es el detalle, que sale al lado como "Detalle: …". */}
               <p className="text-sm text-muted-foreground">
                 Las líneas vienen de la orden. Podés juntarlas en una sola —
                 &quot;servicio de mantenimiento&quot;— mientras el documento siga
@@ -355,16 +329,28 @@ export function EmitirFacturaPage({
               <div className="space-y-3">
                 {lineas.map((l) => {
                   const i = importes(l);
-                  const producto = porId.get(l.productoId);
-                  const vinculado = Boolean(producto?.contificoProductoId);
                   return (
                     <div key={l.uid} className="space-y-2 rounded-md border p-3">
                       <div className="flex items-start gap-2">
                         <div className="flex-1 space-y-2">
                           <div className="space-y-1">
-                            <Label className="text-xs">Producto de Contífico *</Label>
-                            {/* El producto decide el nombre impreso, así que
-                                es lo primero que se elige, no un detalle. */}
+                            <Label className="text-xs">
+                              Descripción (sale impresa) *
+                            </Label>
+                            {/* Es lo que va al XML tal cual: el nombre lo
+                                decidimos nosotros, no un catálogo ajeno. */}
+                            <Input
+                              value={l.descripcion}
+                              onChange={(e) =>
+                                actualizar(l.uid, { descripcion: e.target.value })
+                              }
+                              placeholder="Ej: SERVICIO DE MANTENIMIENTO"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Producto *</Label>
+                            {/* Es de dónde sale el `codigoPrincipal` de la
+                                línea, y con qué queda asociada la venta. */}
                             <CustomSelect
                               value={l.productoId}
                               onChange={(id) => {
@@ -377,26 +363,10 @@ export function EmitirFacturaPage({
                               options={productos.map((p) => ({
                                 value: p.id,
                                 label: p.nombre,
-                                disabled: exigeVinculo && !p.contificoProductoId,
-                                hint: !p.contificoProductoId
-                                  ? "No está vinculado con Contífico: solo importa si emitís por ellos."
-                                  : undefined,
                               }))}
                               placeholder="Elegir producto..."
                               searchable
                               searchPlaceholder="Buscar producto..."
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">
-                              Detalle (sale al lado del nombre)
-                            </Label>
-                            <Input
-                              value={l.detalle}
-                              onChange={(e) =>
-                                actualizar(l.uid, { detalle: e.target.value })
-                              }
-                              placeholder="Ej: ÁREAS VERDES"
                             />
                           </div>
                         </div>
@@ -409,14 +379,6 @@ export function EmitirFacturaPage({
                           <Trash2 className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       </div>
-
-                      {exigeVinculo && !vinculado && (
-                        <p className="flex items-center gap-1.5 text-xs text-amber-700">
-                          <TriangleAlert className="h-3.5 w-3.5 flex-none" />
-                          Este producto no está vinculado con Contífico. Elegí
-                          otro para esta línea, o vinculalo desde su ficha.
-                        </p>
-                      )}
 
                       <div className="flex flex-wrap items-end gap-3">
                         <div className="w-20 space-y-1">
@@ -479,10 +441,6 @@ export function EmitirFacturaPage({
                   options={productos.map((p) => ({
                     value: p.id,
                     label: p.nombre,
-                    disabled: exigeVinculo && !p.contificoProductoId,
-                    hint: !p.contificoProductoId
-                      ? "No está vinculado con Contífico: solo importa si emitís por ellos."
-                      : undefined,
                   }))}
                   placeholder="Buscar producto..."
                   searchable
@@ -499,30 +457,36 @@ export function EmitirFacturaPage({
               <CardTitle className="text-base">Documento</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Con qué se emite. Aparece solo si hay un emisor propio
-                  configurado: mientras no lo haya, la pantalla es la de
-                  siempre y todo sale por Contífico. */}
-              {emisores.length > 0 && (
+              {emisores.length === 0 ? (
+                <div className="flex items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-snug text-amber-900">
+                  <TriangleAlert className="mt-0.5 h-3.5 w-3.5 flex-none" />
+                  <span>
+                    No hay ningún emisor configurado.{" "}
+                    <Link
+                      href="/dashboard/configuracion/emisores"
+                      className="font-medium underline underline-offset-2"
+                    >
+                      Configurá uno
+                    </Link>{" "}
+                    con su RUC y su firma electrónica para poder facturar.
+                  </span>
+                </div>
+              ) : (
                 <div className="space-y-1.5">
                   <Label className="text-xs">Emitir con *</Label>
+                  {/* Se puede facturar con más de un RUC, y cuál se usa se
+                      decide acá y no en una configuración global. */}
                   <CustomSelect
                     value={emisorId}
                     onChange={setEmisorId}
-                    options={[
-                      ...emisores.map((e) => ({
-                        value: e.id,
-                        label: `${e.razonSocial} · ${e.ruc}`,
-                        hint:
-                          e.ambiente === "PRUEBAS"
-                            ? "Ambiente de pruebas: no es un comprobante válido."
-                            : "Directo al SRI, sin pasar por Contífico.",
-                      })),
-                      {
-                        value: "",
-                        label: "Contífico",
-                        hint: "Como se emitió siempre.",
-                      },
-                    ]}
+                    options={emisores.map((e) => ({
+                      value: e.id,
+                      label: `${e.razonSocial} · ${e.ruc}`,
+                      hint:
+                        e.ambiente === "PRUEBAS"
+                          ? "Ambiente de pruebas: no es un comprobante válido."
+                          : undefined,
+                    }))}
                   />
                   {/* Lo emitido en pruebas se ve igual que lo real en el
                       portal, así que hay que decirlo fuerte y acá.
@@ -542,60 +506,6 @@ export function EmitirFacturaPage({
                   )}
                 </div>
               )}
-
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tipo *</Label>
-                <CustomSelect
-                  value={tipo}
-                  onChange={(v) => setTipo(v as typeof tipo)}
-                  options={[
-                    { value: "FACTURA", label: "Factura electrónica" },
-                    {
-                      value: "NO_AUTORIZADO",
-                      // "Consumidor final" es como se lo nombra en el vivero:
-                      // el cliente que no pide comprobante. Por debajo es un
-                      // `DNA` de Contífico, que **no** es la factura a
-                      // consumidor final del SRI —esa es una FAC con trece
-                      // nueves—, y por eso la aclaración de abajo dice que no
-                      // va al SRI: es lo que evita confundir las dos.
-                      label: "Consumidor final",
-                      // Contífico rechaza cualquier impuesto en este documento,
-                      // así que la orden tiene que ser toda al 0%. Y emitiendo
-                      // por el SRI no existe: allá solo hay comprobantes
-                      // autorizados.
-                      disabled: ordenTieneIva || emisorId !== "",
-                      hint: emisorId
-                        ? "Solo por Contífico: el SRI no conoce este documento."
-                        : ordenTieneIva
-                          ? "La orden tiene IVA y este documento no puede llevarlo."
-                          : "Documento interno: no va al SRI y no lleva IVA.",
-                    },
-                  ]}
-                />
-                {tipo === "NO_AUTORIZADO" && (
-                  <p className="text-xs text-muted-foreground">
-                    No se envía al SRI ni genera factura para el cliente. Se
-                    cobra y se anula igual que una.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs" htmlFor="descripcion-documento">
-                  Descripción
-                </Label>
-                <Input
-                  id="descripcion-documento"
-                  value={descripcion}
-                  onChange={(e) => setDescripcion(e.target.value)}
-                  placeholder="Ej: MANTENIMIENTO AGOSTO 2026"
-                />
-                {/* Es el único texto libre que sale impreso además del detalle
-                    de cada línea. */}
-                <p className="text-xs text-muted-foreground">
-                  Sale en el papel, bajo «Información Adicional».
-                </p>
-              </div>
             </CardContent>
           </Card>
 

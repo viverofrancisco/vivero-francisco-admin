@@ -8,18 +8,14 @@
  * historial de notificaciones. Todo lo que se puede volver a generar.
  *
  * **Qué se queda:** clientes, personal, grupos, sectores, productos, datos de
- * facturación y usuarios. Es la base sobre la que siembra el seed, y dos cosas
- * de ahí **no se pueden rehacer**: los `contificoProductoId` se vincularon a
- * mano y Contífico no tiene DELETE, así que un producto borrado acá obliga a
- * re-vincularlo (o peor, a crear un duplicado permanente allá).
+ * facturación, emisores y usuarios. Es la base sobre la que siembra el seed.
  *
  * Sin `--ejecutar` no toca nada: imprime lo que borraría y lo que dejaría.
  *
- * Ojo con la numeración. Las facturas se van de nuestra base pero **siguen
- * existiendo en Contífico**, y `siguienteSecuencial()` sale del máximo local.
- * Por eso al final imprime el piso que hay que dejar en
- * `CONTIFICO_SECUENCIAL_INICIAL`: sin eso la próxima emisión arranca de un
- * número ya usado y se pelea contra la serie a fuerza de reintentos.
+ * La numeración **no se toca**: vive en `SecuencialSri`, que es un contador
+ * propio y no se deriva del máximo local. Borrar facturas no la retrocede, y
+ * así tiene que ser — el SRI ya vio esos números y no los va a aceptar dos
+ * veces.
  */
 import "dotenv/config";
 import { PrismaClient } from "@/generated/prisma/client";
@@ -36,12 +32,6 @@ async function main() {
   try {
     console.log(`Base: ${host}\n`);
 
-    // El máximo emitido, antes de borrarlo. Es el dato que hace falta después.
-    const ultima = await prisma.factura.findFirst({
-      orderBy: { numero: "desc" },
-      select: { numero: true },
-    });
-
     const quedan = {
       Cliente: await prisma.cliente.count(),
       Personal: await prisma.personal.count(),
@@ -49,12 +39,16 @@ async function main() {
       Sector: await prisma.sector.count(),
       Producto: await prisma.producto.count(),
       DatoFacturacion: await prisma.datoFacturacion.count(),
+      Emisor: await prisma.emisor.count(),
+      SecuencialSri: await prisma.secuencialSri.count(),
       User: await prisma.user.count(),
     };
 
     /** En orden de dependencia: los hijos antes que los padres. */
     const pasos: [string, () => Promise<{ count: number }>][] = [
       ["OrdenLinea", () => prisma.ordenLinea.deleteMany()],
+      ["Cobro", () => prisma.cobro.deleteMany()],
+      ["FacturaLinea", () => prisma.facturaLinea.deleteMany()],
       ["Factura", () => prisma.factura.deleteMany()],
       ["Orden", () => prisma.orden.deleteMany()],
       ["InformeSeccionFoto", () => prisma.informeSeccionFoto.deleteMany()],
@@ -110,14 +104,6 @@ async function main() {
       console.log(`  ${k.padEnd(20)} ${v}`);
     }
 
-    if (ultima) {
-      const n = Number(ultima.numero.slice(ultima.numero.lastIndexOf("-") + 1));
-      console.log(
-        `\n⚠️  La última factura emitida fue ${ultima.numero}, y en Contífico sigue\n` +
-          `    existiendo. Antes de volver a facturar, dejá en el .env:\n\n` +
-          `      CONTIFICO_SECUENCIAL_INICIAL="${n}"\n`
-      );
-    }
 
     if (!EJECUTAR) console.log("Nada se borró. Corré de nuevo con --ejecutar.");
   } finally {

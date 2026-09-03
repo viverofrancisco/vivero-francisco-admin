@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Extended context lives in [`.claude/docs/`](./.claude/docs/) (see [`.claude/docs/README.md`](./.claude/docs/README.md)) to keep this file short. Read the relevant doc before touching that area:
 
 - [Database & migrations](./.claude/docs/base-de-datos-y-migraciones.md) — Neon branches (**never point the local `.env` at production**), migrations applied automatically on deploy, when to hand-write the SQL, and how to verify against real data.
-- [Contífico invoicing](./.claude/docs/facturacion-contifico.md) — the accounting system integration: ownership boundary, the API's traps (product list that hangs, `codigo` as the anti-duplicate key, 15% IVA in a field named `subtotal_12`), and SRI numbering.
+- [SRI e-invoicing](./.claude/docs/facturacion-sri.md) — the portal issues its own invoices: Ecuador's *offline* scheme and the clave de acceso, emisores and their encrypted `.p12`, per-series numbering, the RIDE, payments, credit notes, and the rules that take an orden to a factura.
 - [Passwords & invites](./.claude/docs/autenticacion-clientes.md) — nobody sets anyone else's password: every account starts without one and its owner sets it through a single-use link. Covers cliente login (phone/email + password), portal-user invites and resets, the three link lifetimes, and email via the Gmail API.
 - [WhatsApp notifications](./.claude/docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
 
@@ -80,9 +80,10 @@ npm run prisma ...     # seed is configured as: npx tsx prisma/seed.ts
 # Datos de prueba para ver el portal con actividad (no inventa clientes ni
 # personal: usa los que ya están y les genera movimiento). Todo lo que crea
 # queda anotado en scripts/.datos-prueba.json, y --limpiar borra exactamente
-# eso. Sin --sin-contifico crea los productos faltantes en Contífico y
-# **emite facturas de verdad**, para que "Por cobrar" tenga qué mostrar.
+# eso. Sin --sin-emitir **emite facturas de verdad contra el SRI**, para que
+# "Por cobrar" tenga qué mostrar: usar solo con un emisor en ambiente PRUEBAS.
 npx tsx --env-file=.env scripts/seed-datos-prueba.ts
+npx tsx --env-file=.env scripts/seed-datos-prueba.ts --sin-emitir
 npx tsx --env-file=.env scripts/seed-datos-prueba.ts --limpiar
 
 # Borra TODO el movimiento (órdenes, facturas, visitas, suscripciones,
@@ -92,11 +93,9 @@ npx tsx --env-file=.env scripts/reset-datos.ts
 npx tsx --env-file=.env scripts/reset-datos.ts --ejecutar
 ```
 
-> Después de borrar facturas hay que **subir `CONTIFICO_SECUENCIAL_INICIAL`**
-> por encima del último número emitido: los documentos siguen existiendo allá
-> (Contífico no tiene DELETE) y el secuencial sale del máximo local, así que sin
-> eso la próxima emisión arranca en un número ya usado. `reset-datos.ts` imprime
-> el valor exacto.
+> Borrar facturas **no retrocede la numeración**: vive en `SecuencialSri`, un
+> contador propio y no el máximo local. Así tiene que ser — el SRI ya vio esos
+> números y no los acepta dos veces.
 
 Mobile-specific (run inside `apps/mobile`): `npm run ios`, `npm run android`, `npm run web`, `npm run lint`.
 
@@ -235,7 +234,7 @@ cap**. Scheduling is never blocked by it, and every visit of a subscribed
 product links to its `SuscripcionItem`. Deciding whether extra work gets charged
 belongs to whoever builds the order, not to whoever schedules. A subscribed
 product **can** be put on an order by hand as an extra; the UI warns, it doesn't
-block. See [the invoicing doc](./.claude/docs/facturacion-contifico.md).
+block. See [the invoicing doc](./.claude/docs/facturacion-sri.md).
 
 **Órdenes, visitas and suscripciones each have a short `numero`** — a per-table
 `autoincrement()`, so #12 can be an orden, a visita and a suscripción at once
@@ -326,13 +325,14 @@ indexes only stop *double* billing, not *partial* billing — two products of th
 same visit could land in two different orders and nothing complained. Adding
 loose catalog products on top is still fine: the rule is about what's missing,
 not what's extra. That keeps a sales report to one query instead of a union per revenue
-type, and keeps the history in our own database. **Factura** mirrors the invoice
-that lives in Contífico — see [the invoicing doc](./.claude/docs/facturacion-contifico.md).
+type, and keeps the history in our own database. **Factura** is the comprobante
+the portal itself issued against the SRI — clave de acceso, signed XML, its own
+lines — see [the invoicing doc](./.claude/docs/facturacion-sri.md).
 
 **One order, one invoice.** The order's main action is *Registrar cobro*, and
 `cobrarOrden()` does whatever steps are missing underneath — emit the invoice,
 register the payment. That order can't be inverted: a payment is recorded
-against a Contífico document, so the invoice has to exist first. Selling on
+against a comprobante, so the invoice has to exist first. Selling on
 credit is *Emitir factura sin cobrar* (`facturarOrden()`). Annulling goes the
 other way: `anularOrdenCompleta()` annuls the invoice and then the order, and
 the order never reopens — to bill that work again you build a new order.
@@ -355,15 +355,13 @@ visitas and periods forever. `anularOrden` therefore refuses while work is
 linked unless `liberarTrabajo` says otherwise, and the dialog lists exactly what
 goes back to pending before you can proceed.
 
-A product can only be sold once it is **linked to Contífico**
-(`Producto.contificoProductoId`, unique). Linking is manual and explicit — you
-search their catalog and pick an existing product, because Contífico has no
-DELETE and a mistaken creation is permanent. Until it's linked, the product
-can't go on an order or a subscription; both services enforce it, and the
-pickers grey it out. **Scheduling a visita is not one of those places** — a
-visita carries no money, so requiring the link there only blocked planning work
-that hasn't been priced yet; the check belongs where the peso appears. That's
-why invoicing never syncs anything.
+**Any catalog product can be sold.** There is no external catalog to link it to
+any more: the invoice line carries a `codigoPrincipal` and a description that are
+both ours, so `Producto.codigo` (unique, optional) is all a product needs — and
+without one the emission derives a code from its id. What the line does need is
+a **product from our own catalog**: `OrdenLinea.productoId` and
+`FacturaLinea.productoId` are NOT NULL with `RESTRICT`, so a sold product can't
+be hard-deleted.
 
 Orders are written **only** through `crearOrden()` in
 `src/lib/services/orden.service.ts`. A line's `descripcion` and
@@ -378,8 +376,8 @@ twice — they are never the source of the price.
 - **Push notifications** (Expo) — `src/lib/push/`. `triggers.ts` is invoked from services on visit state changes. Env: `EXPO_ACCESS_TOKEN`.
 - **Object storage** (Cloudflare R2, S3-compatible) — `src/lib/s3.ts`. Uploads use presigned URLs; region is always `auto`. Env: `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_PUBLIC_URL_BASE`.
 - **Rate limiting** (Upstash Redis) — `src/lib/mobile/rate-limit.ts`. Env: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`.
-- **Contífico** (accounting / SRI e-invoicing) — `src/lib/contifico/`. The portal pushes orders as invoices; Contífico signs and transmits to the SRI. Env: `CONTIFICO_API_KEY`, `CONTIFICO_TOKEN`, `CONTIFICO_ESTABLECIMIENTO`, `CONTIFICO_PUNTO_EMISION`, `CONTIFICO_SECUENCIAL_INICIAL`. **Read [the doc](./.claude/docs/facturacion-contifico.md) before touching it** — its API has several traps that cost hours to rediscover.
-- **Cron** — `/api/cron/notificaciones` (scheduled notifications), `/api/cron/renovaciones` (creates BORRADOR orders for due subscription periods; idempotent) and `/api/cron/facturas` (re-reads from Contífico every invoice that can still change). All gated by `CRON_SECRET` and registered in `apps/admin/vercel.json`. **Contífico never calls us back** — it signs, transmits and collects on its own, and `url_ride`/`url_xml` only exist once it signs, so without that sweep an invoice sits at "Sin firmar" with no PDF until someone happens to press *Actualizar* by hand. **All three run daily, and that's a plan limit, not a preference**: Vercel's Hobby tier rejects at deploy time any cron that would fire more than once a day — `0 * * * *` doesn't fail at runtime, it makes the whole deployment fail. `facturas` wants to be hourly; on Pro it can be, or an external scheduler can hit the endpoint with the `CRON_SECRET`. Those drafts surface as a counted notice on **Por cobrar** (`borradoresSinConfirmar`) rather than as rows, so the cron's output never goes unnoticed without pretending a draft is money owed.
+- **SRI e-invoicing** — `src/lib/sri/`. The portal builds the XML, signs it with the emisor's `.p12` (XAdES-BES, via `facturacion-electronica-ec`) and talks to the SRI's SOAP services itself; there is no intermediary. Who issues (RUC, establecimiento, punto de emisión, ambiente, certificate) lives in the DB as **Emisor** rows — several are allowed and one is picked at emission time. The only env var is `FIRMA_ENCRYPTION_KEY`, which encrypts the stored `.p12` (AES-256-GCM); **changing it makes every stored certificate unreadable**. **Read [the doc](./.claude/docs/facturacion-sri.md) before touching it.**
+- **Cron** — `/api/cron/notificaciones` (scheduled notifications), `/api/cron/renovaciones` (creates BORRADOR orders for due subscription periods; idempotent) and `/api/cron/facturas` (asks the SRI about every invoice that can still change). All gated by `CRON_SECRET` and registered in `apps/admin/vercel.json`. **The SRI never calls us back** — it has 24 h by law to authorize, so without that sweep an invoice that wasn't resolved on the spot sits at `ENVIADO` until someone presses *Consultar al SRI* by hand. **All three run daily, and that's a plan limit, not a preference**: Vercel's Hobby tier rejects at deploy time any cron that would fire more than once a day — `0 * * * *` doesn't fail at runtime, it makes the whole deployment fail. `facturas` wants to be hourly; on Pro it can be, or an external scheduler can hit the endpoint with the `CRON_SECRET`. Those drafts surface as a counted notice on **Por cobrar** (`borradoresSinConfirmar`) rather than as rows, so the cron's output never goes unnoticed without pretending a draft is money owed.
 
 Other env: `DATABASE_URL`, plus `NEXTAUTH_SECRET` / `NEXTAUTH_URL` — **required in production**: without the secret next-auth doesn't sign sessions and nobody can log into the dashboard, and dev auto-generates one so the problem only shows up on deploy. `apps/admin/.env.example` lists every variable with what breaks without it.
 

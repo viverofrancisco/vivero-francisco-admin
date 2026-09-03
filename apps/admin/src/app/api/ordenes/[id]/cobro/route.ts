@@ -5,18 +5,15 @@ import { cobrarOrden } from "@/lib/services/factura.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 const cobroSchema = z.object({
-  formaCobro: z.enum(["EF", "CQ", "TRA", "TC"]),
-  monto: z.number().positive(),
+  monto: z.number().positive("El cobro tiene que ser mayor que cero"),
+  formaPago: z.enum(["EFECTIVO", "TRANSFERENCIA", "TARJETA", "CHEQUE", "OTRO"]),
   fecha: z.string().min(1).nullable().optional(),
-  numeroCheque: z.string().min(1).nullable().optional(),
-  cuentaBancariaId: z.string().min(1).nullable().optional(),
-  /// D datafast, M medianet, E dataexpress, P placetopay, A alignet.
-  tipoPing: z.enum(["D", "M", "E", "P", "A"]).nullable().optional(),
-  numeroComprobante: z.string().min(1).nullable().optional(),
+  referencia: z.string().nullable().optional(),
+  nota: z.string().nullable().optional(),
 });
 
 /**
- * Cobrar la orden: confirma, emite la factura y registra el cobro.
+ * Cobrar la orden: emite la factura si hace falta y registra el cobro.
  *
  * Es el mismo cobro que `/api/facturas/[id]/cobro`, pero entrando por la orden
  * cuando su factura todavía no existe.
@@ -30,12 +27,20 @@ export async function POST(
   const parsed = cobroSchema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Datos inválidos", details: parsed.error.issues },
+      { error: parsed.error.issues[0]?.message ?? "Datos inválidos" },
       { status: 400 }
     );
   }
   try {
-    return NextResponse.json(await cobrarOrden(viewer, id, parsed.data));
+    return NextResponse.json(
+      await cobrarOrden(viewer, id, {
+        monto: parsed.data.monto,
+        formaPago: parsed.data.formaPago,
+        fecha: parsed.data.fecha ? new Date(parsed.data.fecha) : null,
+        referencia: parsed.data.referencia,
+        nota: parsed.data.nota,
+      })
+    );
   } catch (error) {
     return serviceErrorResponse(error);
   }

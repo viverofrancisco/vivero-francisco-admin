@@ -11,7 +11,7 @@
  * `direccion`, `telefonos`, `email`.
  */
 import { prisma } from "@/lib/prisma";
-import { esCedulaValida, esRucValido } from "@/lib/contifico/cedula";
+import { esCedulaValida, esRucValido } from "@/lib/identificacion";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";

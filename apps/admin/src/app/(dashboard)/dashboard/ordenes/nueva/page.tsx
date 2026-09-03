@@ -36,7 +36,6 @@ export default async function NuevaOrdenRoute({
         descripcion: true,
         tipo: true,
         ivaTasa: true,
-        contificoProductoId: true,
       },
     }),
   ]);

@@ -226,7 +226,6 @@ export interface RideDatos {
   iva: number;
   total: number;
   /** Lo que va en *Información adicional*. */
-  descripcion: string | null;
   logo?: LogoEmpresa | null;
 }
 
@@ -489,12 +488,6 @@ function RideDocument({
                 </View>
               ))}
             </View>
-            {datos.descripcion && (
-              <View style={[styles.caja, { marginTop: 8 }]}>
-                <Text style={styles.subtitulo}>INFORMACIÓN ADICIONAL</Text>
-                <Text>{datos.descripcion}</Text>
-              </View>
-            )}
           </View>
 
           {/* Totales, con las bases separadas por tarifa: sumarlas juntas

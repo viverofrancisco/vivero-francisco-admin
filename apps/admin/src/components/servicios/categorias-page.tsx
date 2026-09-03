@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,34 +22,20 @@ import {
 import { EmptyState } from "@/components/shared/empty-state";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { PageHeader } from "@/components/shared/page-header";
-import { Loader2, Pencil, Search } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 export interface CategoriaFila {
   id: string;
   nombre: string;
   orden: number;
-  contificoCategoriaId: string | null;
-  contificoCategoriaNombre: string | null;
   /** Cuántos productos vivos la usan. */
   productos: number;
 }
 
-/** Una categoría de Contífico, con su ruta ("Ventas › Servicios"). */
-interface CategoriaContifico {
-  id: string;
-  nombre: string;
-  ruta: string;
-}
-
 /**
- * Las categorías del catálogo del portal.
- *
- * Cada una puede apuntar a una de Contífico: **es la que decide en qué cuenta
- * contable cae la venta**, porque allá el producto hereda la `cuenta_venta` de
- * su categoría. Sin apuntar a ninguna, lo que el portal crea allá termina en la
- * categoría por defecto de ellos, que es de bienes — y un servicio se
- * contabiliza como venta de bienes.
+ * Las categorías del catálogo. Sirven para encontrar un producto en una lista:
+ * no salen impresas en la factura ni cambian cómo se emite.
  */
 export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) {
   const router = useRouter();
@@ -74,7 +60,7 @@ export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) 
     <>
       <PageHeader
         title="Categorías"
-        description="Cómo se agrupa el catálogo, y con qué categoría de Contífico se crean sus productos"
+        description="Cómo se agrupa el catálogo de productos"
         actions={[
           {
             label: "Nueva categoría",
@@ -93,7 +79,6 @@ export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) 
             <TableHeader sticky>
               <TableRow>
                 <TableHead>Nombre</TableHead>
-                <TableHead>Categoría de Contífico</TableHead>
                 <TableHead className="w-28">Productos</TableHead>
                 <TableHead className="w-24" />
               </TableRow>
@@ -102,14 +87,6 @@ export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) 
               {categorias.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.nombre}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {c.contificoCategoriaNombre ?? (
-                      <span className="text-amber-700">
-                        Sin asignar · sus productos caen en la categoría por
-                        defecto de Contífico
-                      </span>
-                    )}
-                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {c.productos}
                   </TableCell>
@@ -166,15 +143,6 @@ function CategoriaDialog({
   onGuardado: () => void;
 }) {
   const [nombre, setNombre] = useState(categoria?.nombre ?? "");
-  const [contifico, setContifico] = useState<CategoriaContifico | null>(
-    categoria?.contificoCategoriaId
-      ? {
-          id: categoria.contificoCategoriaId,
-          nombre: categoria.contificoCategoriaNombre ?? "",
-          ruta: categoria.contificoCategoriaNombre ?? "",
-        }
-      : null
-  );
   const [guardando, setGuardando] = useState(false);
 
   const guardar = async () => {
@@ -189,8 +157,6 @@ function CategoriaDialog({
           body: JSON.stringify({
             nombre: nombre.trim(),
             orden: categoria?.orden ?? 0,
-            contificoCategoriaId: contifico?.id ?? null,
-            contificoCategoriaNombre: contifico?.ruta || contifico?.nombre || null,
           }),
         }
       );
@@ -226,8 +192,6 @@ function CategoriaDialog({
             />
           </div>
 
-          <SelectorCategoriaContifico value={contifico} onChange={setContifico} />
-
           <div className="flex justify-end gap-2 border-t pt-4">
             <Button variant="outline" onClick={onClose} disabled={guardando}>
               Cancelar
@@ -240,124 +204,5 @@ function CategoriaDialog({
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-/**
- * Elige la categoría de Contífico con la que se crearán los productos.
- *
- * Busca contra su API en vez de traer la lista entera: son 2.939 en la cuenta
- * de pruebas. Se muestran con la ruta completa porque los nombres se repiten
- * —ahí mismo hay cinco "General"— y por el nombre solo no se sabe cuál es.
- */
-function SelectorCategoriaContifico({
-  value,
-  onChange,
-}: {
-  value: CategoriaContifico | null;
-  onChange: (c: CategoriaContifico | null) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [items, setItems] = useState<CategoriaContifico[]>([]);
-  const [buscando, setBuscando] = useState(false);
-  const [abierto, setAbierto] = useState(false);
-
-  useEffect(() => {
-    if (!abierto) return;
-    const cancelado = { current: false };
-    const t = setTimeout(async () => {
-      setBuscando(true);
-      try {
-        const res = await fetch(
-          `/api/servicios/contifico/categorias?q=${encodeURIComponent(query.trim())}`,
-          { cache: "no-store" }
-        );
-        const body = await res.json();
-        if (cancelado.current) return;
-        if (!res.ok) throw new Error(body.error ?? "Error");
-        setItems(body.items ?? []);
-      } catch (e) {
-        if (!cancelado.current) {
-          toast.error(e instanceof Error ? e.message : "Error al buscar");
-        }
-      } finally {
-        if (!cancelado.current) setBuscando(false);
-      }
-    }, 400);
-    return () => {
-      cancelado.current = true;
-      clearTimeout(t);
-    };
-  }, [query, abierto]);
-
-  return (
-    <div className="space-y-1.5">
-      <Label>Categoría de Contífico</Label>
-      <p className="text-xs text-muted-foreground">
-        Con esta se crean allá los productos de esta categoría, y es lo que
-        decide en qué cuenta contable cae la venta. Sin elegir ninguna, Contífico
-        les pone la suya por defecto, que es de bienes.
-      </p>
-
-      {value ? (
-        <div className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
-          <span className="min-w-0 truncate text-sm">{value.ruta || value.nombre}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex-none"
-            onClick={() => {
-              onChange(null);
-              setAbierto(true);
-            }}
-          >
-            Cambiar
-          </Button>
-        </div>
-      ) : abierto ? (
-        <div className="space-y-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar en Contífico..."
-              className="pl-9"
-              autoFocus
-            />
-          </div>
-          <div className="max-h-56 divide-y overflow-y-auto rounded-md border">
-            {buscando ? (
-              <p className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Buscando…
-              </p>
-            ) : items.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                Sin resultados.
-              </p>
-            ) : (
-              items.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => {
-                    onChange(c);
-                    setAbierto(false);
-                  }}
-                  className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                >
-                  {c.ruta}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      ) : (
-        <Button variant="outline" size="sm" onClick={() => setAbierto(true)}>
-          Elegir categoría de Contífico
-        </Button>
-      )}
-    </div>
   );
 }

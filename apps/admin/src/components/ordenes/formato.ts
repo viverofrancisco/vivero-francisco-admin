@@ -64,9 +64,8 @@ export const estadoVariant: Record<
  * Cuánto se cobró de una orden, que **no** es su estado.
  *
  * El estado dice si la orden está viva; esto dice si entró la plata. Se deriva
- * del saldo de la factura en vez de guardarse: los cobros son de Contífico y
- * pueden cargarse desde su interfaz, así que una copia local sería una copia
- * potencialmente vieja de un número que habla de dinero.
+ * del saldo y no se guarda aparte: cruzar los dos ejes en un solo enum pediría
+ * un estado por combinación.
  */
 export type EstadoCobro =
   | "SIN_COBRAR"
@@ -78,7 +77,9 @@ export function estadoCobro(
   total: number,
   saldo: number | null | undefined
 ): EstadoCobro {
-  // Nunca sincronizada: no sabemos, y suponer "cobrada" sería el error caro.
+  // Sin saldo calculado no sabemos, y suponer "cobrada" sería el error caro.
+  // Lo emitido por el portal nace con el total como saldo, así que esto solo
+  // aparece en filas viejas.
   if (saldo === null || saldo === undefined) return "SIN_SINCRONIZAR";
   if (saldo <= 0.001) return "COBRADO";
   if (saldo >= total - 0.001) return "SIN_COBRAR";

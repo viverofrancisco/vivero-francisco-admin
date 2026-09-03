@@ -7,33 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  CheckCircle2,
-  Link2,
-  Pencil,
-  Undo2,
-} from "lucide-react";
-import { CopyField } from "@/components/shared/copy-field";
+import { ArrowLeft, Pencil, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   ServicioClientesTable,
   type ServicioClienteRow,
 } from "@/components/servicios/servicio-clientes-table";
-import {
-  ContificoSyncDialog,
-  type ContificoProducto,
-  type VinculoContifico,
-} from "@/components/servicios/contifico-sync-dialog";
 
 const TIPO_LABEL: Record<string, string> = {
   SERVICIO: "Servicio",
@@ -46,9 +27,8 @@ interface ServicioData {
   tipo: string;
   descripcion: string | null;
   ivaTasa: string | number | null;
-  /** Llave anti-duplicados en Contífico. Se genera al sincronizar. */
+  /** El que sale impreso como `codigoPrincipal` en la factura. */
   codigo: string | null;
-  contificoProductoId: string | null;
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
   categoriaId: string | null;
@@ -70,11 +50,9 @@ export function ServicioDetail({
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [syncOpen, setSyncOpen] = useState(false);
-  const [guardandoVinculo, setGuardandoVinculo] = useState(false);
   const [restaurando, setRestaurando] = useState(false);
 
-  /** Lo devuelve al catálogo. No toca el vínculo con Contífico. */
+  /** Lo devuelve al catálogo. */
   const restaurar = async () => {
     setRestaurando(true);
     try {
@@ -91,58 +69,12 @@ export function ServicioDetail({
       setRestaurando(false);
     }
   };
-  const [contifico, setContifico] = useState<VinculoContifico>({
-    codigo: servicio.codigo,
-    contificoProductoId: servicio.contificoProductoId,
-  });
-
-  /** Vincular y cambiar son la misma llamada: el POST pisa el vínculo previo. */
-  const guardarVinculo = async (init: RequestInit, exito: string) => {
-    setGuardandoVinculo(true);
-    try {
-      const res = await fetch(`/api/servicios/${servicio.id}/contifico`, init);
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Error");
-      setContifico(body);
-      setSyncOpen(false);
-      toast.success(exito);
-      router.refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
-    } finally {
-      setGuardandoVinculo(false);
-    }
-  };
-
-  const elegir = (
-    p: ContificoProducto,
-    opciones: { actualizarNombre: boolean }
-  ) =>
-    guardarVinculo(
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contificoProductoId: p.id,
-          codigo: p.codigo,
-          actualizarNombre: opciones.actualizarNombre,
-        }),
-      },
-      opciones.actualizarNombre
-        ? `Vinculado y renombrado en Contífico`
-        : `Vinculado con "${p.nombre}"`
-    );
-
-  const crearNuevo = () =>
-    guardarVinculo({ method: "POST" }, "Producto creado en Contífico");
-
-  const desvincular = () =>
-    guardarVinculo({ method: "DELETE" }, "Vínculo deshecho");
   const [data, setData] = useState({
     nombre: servicio.nombre,
     tipo: servicio.tipo,
     descripcion: servicio.descripcion ?? "",
     categoriaId: servicio.categoriaId,
+    codigo: servicio.codigo ?? "",
   });
   const [form, setForm] = useState(data);
 
@@ -168,15 +100,21 @@ export function ServicioDetail({
           tipo: form.tipo,
           descripcion: form.descripcion,
           categoriaId: form.categoriaId,
+          codigo: form.codigo.trim() || null,
         }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Error al guardar el producto");
+      }
       toast.success("Producto actualizado");
       setData(form);
       setEditing(false);
       router.refresh();
-    } catch {
-      toast.error("Error al guardar el producto");
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Error al guardar el producto"
+      );
     } finally {
       setSaving(false);
     }
@@ -226,10 +164,7 @@ export function ServicioDetail({
         </div>
       )}
 
-      {/* El detalle manda; Contífico es estado de apoyo, va al costado. */}
-      <div className="grid items-start gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <Card>
+      <Card>
             <CardContent className="space-y-4">
               {editing ? (
                 <>
@@ -241,10 +176,6 @@ export function ServicioDetail({
                       onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                     />
                   </div>
-                  {/* Reagrupa el producto en el portal. No toca la
-                      categoría que tiene en Contífico: allá lleva la cuenta
-                      contable, y moverlo cambiaría dónde se contabilizaron
-                      ventas que ya pasaron. */}
                   {categorias.length > 0 && (
                     <div className="space-y-2">
                       <Label>Categoría</Label>
@@ -266,6 +197,19 @@ export function ServicioDetail({
                       />
                     </div>
                   )}
+                  <div className="space-y-2">
+                    <Label htmlFor="codigo">Código</Label>
+                    <Input
+                      id="codigo"
+                      value={form.codigo}
+                      onChange={(e) => setForm({ ...form, codigo: e.target.value })}
+                      placeholder="Ej: MANT-01"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Sale impreso en la factura. Vacío, se usa uno derivado del
+                      producto.
+                    </p>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="descripcion">Descripción</Label>
                     <Textarea
@@ -312,6 +256,18 @@ export function ServicioDetail({
                         )}
                       </div>
                     </div>
+                    <div>
+                      <div className="text-sm font-semibold text-muted-foreground">
+                        Código
+                      </div>
+                      <div className="font-mono text-sm">
+                        {data.codigo || (
+                          <span className="font-sans text-muted-foreground">
+                            Sin código
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-muted-foreground">
@@ -325,111 +281,8 @@ export function ServicioDetail({
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div>
-          {/* Facturar exige el `producto_id` de Contífico. Sin vínculo, el
-              producto no se puede agregar a una orden ni contratar en una
-              suscripción. */}
-          <Card>
-            <CardHeader className="border-b">
-              <CardTitle className="text-sm font-semibold">Contífico</CardTitle>
-              <CardAction>
-                {contifico.contificoProductoId ? (
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Vinculado
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
-                    <AlertTriangle className="h-3.5 w-3.5" />
-                    Sin vincular
-                  </span>
-                )}
-              </CardAction>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {contifico.contificoProductoId ? (
-                <div className="divide-y rounded-lg border bg-muted/30">
-                  {contifico.codigo && (
-                    <CopyField
-                      label="Código"
-                      value={contifico.codigo}
-                      className="px-2.5 py-2"
-                    />
-                  )}
-                  <CopyField
-                    label="ID"
-                    value={contifico.contificoProductoId}
-                    className="px-2.5 py-2"
-                  />
-                </div>
-              ) : (
-                <p className="rounded-lg bg-amber-50 p-3 text-xs leading-snug text-amber-800">
-                  Hasta que esté vinculado, este producto no se puede agregar a
-                  una orden ni contratar en una suscripción.
-                </p>
-              )}
-
-              <div className="flex gap-2">
-                {contifico.contificoProductoId ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setSyncOpen(true)}
-                      disabled={guardandoVinculo}
-                    >
-                      Cambiar
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex-1 text-muted-foreground"
-                      onClick={desvincular}
-                      disabled={guardandoVinculo}
-                    >
-                      Desvincular
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    className="w-full"
-                    onClick={() => setSyncOpen(true)}
-                    disabled={guardandoVinculo}
-                  >
-                    <Link2 className="mr-2 h-4 w-4" />
-                    Vincular
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Montado solo cuando está abierto: así el asistente arranca siempre
-          en el primer paso, sin tener que resetearlo a mano. */}
-      {syncOpen && (
-        <ContificoSyncDialog
-          producto={{
-            id: servicio.id,
-            nombre: data.nombre,
-            descripcion: data.descripcion || null,
-            tipo: data.tipo,
-            ivaTasa: servicio.ivaTasa != null ? Number(servicio.ivaTasa) : null,
-          }}
-          open={syncOpen}
-          onOpenChange={setSyncOpen}
-          actualId={contifico.contificoProductoId}
-          guardando={guardandoVinculo}
-          onElegir={elegir}
-          onCrearNuevo={crearNuevo}
-        />
-      )}
+        </CardContent>
+      </Card>
 
       <ServicioClientesTable rows={clienteRows} />
     </div>

@@ -40,10 +40,7 @@ export type ProductoMinAggregateOutputType = {
   nombre: string | null
   descripcion: string | null
   tipo: $Enums.TipoProducto | null
-  origen: $Enums.OrigenProducto | null
   codigo: string | null
-  contificoProductoId: string | null
-  contificoCategoriaId: string | null
   categoriaId: string | null
   ivaTasa: runtime.Decimal | null
   createdAt: Date | null
@@ -58,10 +55,7 @@ export type ProductoMaxAggregateOutputType = {
   nombre: string | null
   descripcion: string | null
   tipo: $Enums.TipoProducto | null
-  origen: $Enums.OrigenProducto | null
   codigo: string | null
-  contificoProductoId: string | null
-  contificoCategoriaId: string | null
   categoriaId: string | null
   ivaTasa: runtime.Decimal | null
   createdAt: Date | null
@@ -76,10 +70,7 @@ export type ProductoCountAggregateOutputType = {
   nombre: number
   descripcion: number
   tipo: number
-  origen: number
   codigo: number
-  contificoProductoId: number
-  contificoCategoriaId: number
   categoriaId: number
   ivaTasa: number
   createdAt: number
@@ -104,10 +95,7 @@ export type ProductoMinAggregateInputType = {
   nombre?: true
   descripcion?: true
   tipo?: true
-  origen?: true
   codigo?: true
-  contificoProductoId?: true
-  contificoCategoriaId?: true
   categoriaId?: true
   ivaTasa?: true
   createdAt?: true
@@ -122,10 +110,7 @@ export type ProductoMaxAggregateInputType = {
   nombre?: true
   descripcion?: true
   tipo?: true
-  origen?: true
   codigo?: true
-  contificoProductoId?: true
-  contificoCategoriaId?: true
   categoriaId?: true
   ivaTasa?: true
   createdAt?: true
@@ -140,10 +125,7 @@ export type ProductoCountAggregateInputType = {
   nombre?: true
   descripcion?: true
   tipo?: true
-  origen?: true
   codigo?: true
-  contificoProductoId?: true
-  contificoCategoriaId?: true
   categoriaId?: true
   ivaTasa?: true
   createdAt?: true
@@ -245,10 +227,7 @@ export type ProductoGroupByOutputType = {
   nombre: string
   descripcion: string | null
   tipo: $Enums.TipoProducto
-  origen: $Enums.OrigenProducto
   codigo: string | null
-  contificoProductoId: string | null
-  contificoCategoriaId: string | null
   categoriaId: string | null
   ivaTasa: runtime.Decimal | null
   createdAt: Date
@@ -286,10 +265,7 @@ export type ProductoWhereInput = {
   nombre?: Prisma.StringFilter<"Producto"> | string
   descripcion?: Prisma.StringNullableFilter<"Producto"> | string | null
   tipo?: Prisma.EnumTipoProductoFilter<"Producto"> | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFilter<"Producto"> | $Enums.OrigenProducto
   codigo?: Prisma.StringNullableFilter<"Producto"> | string | null
-  contificoProductoId?: Prisma.StringNullableFilter<"Producto"> | string | null
-  contificoCategoriaId?: Prisma.StringNullableFilter<"Producto"> | string | null
   categoriaId?: Prisma.StringNullableFilter<"Producto"> | string | null
   ivaTasa?: Prisma.DecimalNullableFilter<"Producto"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Producto"> | Date | string
@@ -313,10 +289,7 @@ export type ProductoOrderByWithRelationInput = {
   nombre?: Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   tipo?: Prisma.SortOrder
-  origen?: Prisma.SortOrder
   codigo?: Prisma.SortOrderInput | Prisma.SortOrder
-  contificoProductoId?: Prisma.SortOrderInput | Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrderInput | Prisma.SortOrder
   categoriaId?: Prisma.SortOrderInput | Prisma.SortOrder
   ivaTasa?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -338,15 +311,12 @@ export type ProductoOrderByWithRelationInput = {
 export type ProductoWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   codigo?: string
-  contificoProductoId?: string
   AND?: Prisma.ProductoWhereInput | Prisma.ProductoWhereInput[]
   OR?: Prisma.ProductoWhereInput[]
   NOT?: Prisma.ProductoWhereInput | Prisma.ProductoWhereInput[]
   nombre?: Prisma.StringFilter<"Producto"> | string
   descripcion?: Prisma.StringNullableFilter<"Producto"> | string | null
   tipo?: Prisma.EnumTipoProductoFilter<"Producto"> | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFilter<"Producto"> | $Enums.OrigenProducto
-  contificoCategoriaId?: Prisma.StringNullableFilter<"Producto"> | string | null
   categoriaId?: Prisma.StringNullableFilter<"Producto"> | string | null
   ivaTasa?: Prisma.DecimalNullableFilter<"Producto"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Producto"> | Date | string
@@ -363,17 +333,14 @@ export type ProductoWhereUniqueInput = Prisma.AtLeast<{
   informeSecciones?: Prisma.InformeSeccionListRelationFilter
   ordenLineas?: Prisma.OrdenLineaListRelationFilter
   facturaLineas?: Prisma.FacturaLineaListRelationFilter
-}, "id" | "codigo" | "contificoProductoId">
+}, "id" | "codigo">
 
 export type ProductoOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   tipo?: Prisma.SortOrder
-  origen?: Prisma.SortOrder
   codigo?: Prisma.SortOrderInput | Prisma.SortOrder
-  contificoProductoId?: Prisma.SortOrderInput | Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrderInput | Prisma.SortOrder
   categoriaId?: Prisma.SortOrderInput | Prisma.SortOrder
   ivaTasa?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -396,10 +363,7 @@ export type ProductoScalarWhereWithAggregatesInput = {
   nombre?: Prisma.StringWithAggregatesFilter<"Producto"> | string
   descripcion?: Prisma.StringNullableWithAggregatesFilter<"Producto"> | string | null
   tipo?: Prisma.EnumTipoProductoWithAggregatesFilter<"Producto"> | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoWithAggregatesFilter<"Producto"> | $Enums.OrigenProducto
   codigo?: Prisma.StringNullableWithAggregatesFilter<"Producto"> | string | null
-  contificoProductoId?: Prisma.StringNullableWithAggregatesFilter<"Producto"> | string | null
-  contificoCategoriaId?: Prisma.StringNullableWithAggregatesFilter<"Producto"> | string | null
   categoriaId?: Prisma.StringNullableWithAggregatesFilter<"Producto"> | string | null
   ivaTasa?: Prisma.DecimalNullableWithAggregatesFilter<"Producto"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Producto"> | Date | string
@@ -414,10 +378,7 @@ export type ProductoCreateInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -438,10 +399,7 @@ export type ProductoUncheckedCreateInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -462,10 +420,7 @@ export type ProductoUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -486,10 +441,7 @@ export type ProductoUncheckedUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -510,10 +462,7 @@ export type ProductoCreateManyInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -528,10 +477,7 @@ export type ProductoUpdateManyMutationInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -543,10 +489,7 @@ export type ProductoUncheckedUpdateManyInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -571,10 +514,7 @@ export type ProductoCountOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
-  origen?: Prisma.SortOrder
   codigo?: Prisma.SortOrder
-  contificoProductoId?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrder
   categoriaId?: Prisma.SortOrder
   ivaTasa?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -593,10 +533,7 @@ export type ProductoMaxOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
-  origen?: Prisma.SortOrder
   codigo?: Prisma.SortOrder
-  contificoProductoId?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrder
   categoriaId?: Prisma.SortOrder
   ivaTasa?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -611,10 +548,7 @@ export type ProductoMinOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
-  origen?: Prisma.SortOrder
   codigo?: Prisma.SortOrder
-  contificoProductoId?: Prisma.SortOrder
-  contificoCategoriaId?: Prisma.SortOrder
   categoriaId?: Prisma.SortOrder
   ivaTasa?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -724,10 +658,6 @@ export type ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput = {
 
 export type EnumTipoProductoFieldUpdateOperationsInput = {
   set?: $Enums.TipoProducto
-}
-
-export type EnumOrigenProductoFieldUpdateOperationsInput = {
-  set?: $Enums.OrigenProducto
 }
 
 export type NullableDecimalFieldUpdateOperationsInput = {
@@ -873,10 +803,7 @@ export type ProductoCreateWithoutCreatedByInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -896,10 +823,7 @@ export type ProductoUncheckedCreateWithoutCreatedByInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -929,10 +853,7 @@ export type ProductoCreateWithoutUpdatedByInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -952,10 +873,7 @@ export type ProductoUncheckedCreateWithoutUpdatedByInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1004,10 +922,7 @@ export type ProductoScalarWhereInput = {
   nombre?: Prisma.StringFilter<"Producto"> | string
   descripcion?: Prisma.StringNullableFilter<"Producto"> | string | null
   tipo?: Prisma.EnumTipoProductoFilter<"Producto"> | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFilter<"Producto"> | $Enums.OrigenProducto
   codigo?: Prisma.StringNullableFilter<"Producto"> | string | null
-  contificoProductoId?: Prisma.StringNullableFilter<"Producto"> | string | null
-  contificoCategoriaId?: Prisma.StringNullableFilter<"Producto"> | string | null
   categoriaId?: Prisma.StringNullableFilter<"Producto"> | string | null
   ivaTasa?: Prisma.DecimalNullableFilter<"Producto"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Producto"> | Date | string
@@ -1038,10 +953,7 @@ export type ProductoCreateWithoutCategoriaInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1061,10 +973,7 @@ export type ProductoUncheckedCreateWithoutCategoriaInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1110,10 +1019,7 @@ export type ProductoCreateWithoutSuscripcionItemsInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1133,10 +1039,7 @@ export type ProductoUncheckedCreateWithoutSuscripcionItemsInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1172,10 +1075,7 @@ export type ProductoUpdateWithoutSuscripcionItemsInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1195,10 +1095,7 @@ export type ProductoUncheckedUpdateWithoutSuscripcionItemsInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1218,10 +1115,7 @@ export type ProductoCreateWithoutVisitaProductosInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1241,10 +1135,7 @@ export type ProductoUncheckedCreateWithoutVisitaProductosInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1280,10 +1171,7 @@ export type ProductoUpdateWithoutVisitaProductosInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1303,10 +1191,7 @@ export type ProductoUncheckedUpdateWithoutVisitaProductosInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1326,10 +1211,7 @@ export type ProductoCreateWithoutVisitaMediaInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1349,10 +1231,7 @@ export type ProductoUncheckedCreateWithoutVisitaMediaInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1388,10 +1267,7 @@ export type ProductoUpdateWithoutVisitaMediaInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1411,10 +1287,7 @@ export type ProductoUncheckedUpdateWithoutVisitaMediaInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1434,10 +1307,7 @@ export type ProductoCreateWithoutInformeSeccionesInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1457,10 +1327,7 @@ export type ProductoUncheckedCreateWithoutInformeSeccionesInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1496,10 +1363,7 @@ export type ProductoUpdateWithoutInformeSeccionesInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1519,10 +1383,7 @@ export type ProductoUncheckedUpdateWithoutInformeSeccionesInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1542,10 +1403,7 @@ export type ProductoCreateWithoutOrdenLineasInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1565,10 +1423,7 @@ export type ProductoUncheckedCreateWithoutOrdenLineasInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1604,10 +1459,7 @@ export type ProductoUpdateWithoutOrdenLineasInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1627,10 +1479,7 @@ export type ProductoUncheckedUpdateWithoutOrdenLineasInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1650,10 +1499,7 @@ export type ProductoCreateWithoutFacturaLineasInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1673,10 +1519,7 @@ export type ProductoUncheckedCreateWithoutFacturaLineasInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1712,10 +1555,7 @@ export type ProductoUpdateWithoutFacturaLineasInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1735,10 +1575,7 @@ export type ProductoUncheckedUpdateWithoutFacturaLineasInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1758,10 +1595,7 @@ export type ProductoCreateManyCreatedByInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1775,10 +1609,7 @@ export type ProductoCreateManyUpdatedByInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   categoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
@@ -1792,10 +1623,7 @@ export type ProductoUpdateWithoutCreatedByInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1815,10 +1643,7 @@ export type ProductoUncheckedUpdateWithoutCreatedByInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1838,10 +1663,7 @@ export type ProductoUncheckedUpdateManyWithoutCreatedByInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1855,10 +1677,7 @@ export type ProductoUpdateWithoutUpdatedByInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1878,10 +1697,7 @@ export type ProductoUncheckedUpdateWithoutUpdatedByInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1901,10 +1717,7 @@ export type ProductoUncheckedUpdateManyWithoutUpdatedByInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1918,10 +1731,7 @@ export type ProductoCreateManyCategoriaInput = {
   nombre: string
   descripcion?: string | null
   tipo?: $Enums.TipoProducto
-  origen?: $Enums.OrigenProducto
   codigo?: string | null
-  contificoProductoId?: string | null
-  contificoCategoriaId?: string | null
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1935,10 +1745,7 @@ export type ProductoUpdateWithoutCategoriaInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1958,10 +1765,7 @@ export type ProductoUncheckedUpdateWithoutCategoriaInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1981,10 +1785,7 @@ export type ProductoUncheckedUpdateManyWithoutCategoriaInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.EnumTipoProductoFieldUpdateOperationsInput | $Enums.TipoProducto
-  origen?: Prisma.EnumOrigenProductoFieldUpdateOperationsInput | $Enums.OrigenProducto
   codigo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoProductoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  contificoCategoriaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ivaTasa?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2074,10 +1875,7 @@ export type ProductoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   nombre?: boolean
   descripcion?: boolean
   tipo?: boolean
-  origen?: boolean
   codigo?: boolean
-  contificoProductoId?: boolean
-  contificoCategoriaId?: boolean
   categoriaId?: boolean
   ivaTasa?: boolean
   createdAt?: boolean
@@ -2102,10 +1900,7 @@ export type ProductoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   nombre?: boolean
   descripcion?: boolean
   tipo?: boolean
-  origen?: boolean
   codigo?: boolean
-  contificoProductoId?: boolean
-  contificoCategoriaId?: boolean
   categoriaId?: boolean
   ivaTasa?: boolean
   createdAt?: boolean
@@ -2123,10 +1918,7 @@ export type ProductoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   nombre?: boolean
   descripcion?: boolean
   tipo?: boolean
-  origen?: boolean
   codigo?: boolean
-  contificoProductoId?: boolean
-  contificoCategoriaId?: boolean
   categoriaId?: boolean
   ivaTasa?: boolean
   createdAt?: boolean
@@ -2144,10 +1936,7 @@ export type ProductoSelectScalar = {
   nombre?: boolean
   descripcion?: boolean
   tipo?: boolean
-  origen?: boolean
   codigo?: boolean
-  contificoProductoId?: boolean
-  contificoCategoriaId?: boolean
   categoriaId?: boolean
   ivaTasa?: boolean
   createdAt?: boolean
@@ -2157,7 +1946,7 @@ export type ProductoSelectScalar = {
   updatedById?: boolean
 }
 
-export type ProductoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "descripcion" | "tipo" | "origen" | "codigo" | "contificoProductoId" | "contificoCategoriaId" | "categoriaId" | "ivaTasa" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById", ExtArgs["result"]["producto"]>
+export type ProductoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "descripcion" | "tipo" | "codigo" | "categoriaId" | "ivaTasa" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById", ExtArgs["result"]["producto"]>
 export type ProductoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   categoria?: boolean | Prisma.Producto$categoriaArgs<ExtArgs>
   createdBy?: boolean | Prisma.Producto$createdByArgs<ExtArgs>
@@ -2205,25 +1994,12 @@ export type $ProductoPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
      * no el producto.
      */
     tipo: $Enums.TipoProducto
-    origen: $Enums.OrigenProducto
     /**
-     * Código de sincronización con Contífico. Es la llave: Contífico rechaza
-     * códigos repetidos (409 con el id del existente) pero acepta nombres
-     * repetidos, así que el código es lo único que evita duplicados.
+     * Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
+     * del XML; sin él se emite con uno derivado del id. Único porque es lo que
+     * identifica al producto en el papel: repetirlo haría ambigua la factura.
      */
     codigo: string | null
-    /**
-     * Producto equivalente en Contífico. `detalles[].producto_id` es obligatorio
-     * al facturar, así que cada ítem se vincula una vez con su producto. Único:
-     * dos productos del portal apuntando al mismo de Contífico harían ambigua
-     * la factura y romperían la trazabilidad hacia atrás.
-     */
-    contificoProductoId: string | null
-    /**
-     * Categoría de Contífico con la que se creó allá. Sale de la categoría del
-     * portal al crearlo, o de ellos cuando el producto se vinculó a uno suyo.
-     */
-    contificoCategoriaId: string | null
     /**
      * Cómo se agrupa en el portal. Opcional: un producto sin categoría se
      * vende igual, y obligarla habría dejado el catálogo viejo sin poder
@@ -2675,10 +2451,7 @@ export interface ProductoFieldRefs {
   readonly nombre: Prisma.FieldRef<"Producto", 'String'>
   readonly descripcion: Prisma.FieldRef<"Producto", 'String'>
   readonly tipo: Prisma.FieldRef<"Producto", 'TipoProducto'>
-  readonly origen: Prisma.FieldRef<"Producto", 'OrigenProducto'>
   readonly codigo: Prisma.FieldRef<"Producto", 'String'>
-  readonly contificoProductoId: Prisma.FieldRef<"Producto", 'String'>
-  readonly contificoCategoriaId: Prisma.FieldRef<"Producto", 'String'>
   readonly categoriaId: Prisma.FieldRef<"Producto", 'String'>
   readonly ivaTasa: Prisma.FieldRef<"Producto", 'Decimal'>
   readonly createdAt: Prisma.FieldRef<"Producto", 'DateTime'>

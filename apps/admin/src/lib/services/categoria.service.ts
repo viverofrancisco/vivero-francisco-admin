@@ -1,15 +1,8 @@
 /**
- * Categorías del catálogo, del portal.
+ * Categorías del catálogo.
  *
- * **No son un espejo de las de Contífico.** Allá una categoría es configuración
- * contable —lleva la `cuenta_venta` que el producto hereda— y el árbol es de
- * ellos: en la cuenta de pruebas hay 2.939, casi todas de otros integradores.
- * Acá una categoría es lo que sirve para encontrar un producto en una lista.
- *
- * Lo que une las dos caras es `contificoCategoriaId`: con qué categoría de
- * ellos se crean los productos de esta. Sin eso Contífico les pone la suya por
- * defecto, que es de tipo PROD, y un servicio termina contabilizado como venta
- * de bienes.
+ * Es lo que sirve para encontrar un producto en una lista, nada más: no sale
+ * impresa en la factura ni cambia cómo se emite.
  */
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -25,9 +18,6 @@ function ensureAdmin(viewer: Viewer): void {
 export interface CategoriaInput {
   nombre: string;
   orden?: number;
-  /** Con qué categoría de Contífico se crean sus productos. */
-  contificoCategoriaId?: string | null;
-  contificoCategoriaNombre?: string | null;
 }
 
 /** Todas, con cuántos productos vivos tiene cada una. */
@@ -47,8 +37,6 @@ function limpiar(payload: CategoriaInput) {
   return {
     nombre,
     orden: payload.orden ?? 0,
-    contificoCategoriaId: payload.contificoCategoriaId?.trim() || null,
-    contificoCategoriaNombre: payload.contificoCategoriaNombre?.trim() || null,
   };
 }
 
