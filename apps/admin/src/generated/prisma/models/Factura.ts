@@ -53,6 +53,8 @@ export type FacturaMinAggregateOutputType = {
   xmlKey: string | null
   enviadoEl: Date | null
   enviadoA: string | null
+  facturaModificadaId: string | null
+  motivo: string | null
   contificoDocumentoId: string | null
   numero: string | null
   tipo: $Enums.TipoDocumento | null
@@ -87,6 +89,8 @@ export type FacturaMaxAggregateOutputType = {
   xmlKey: string | null
   enviadoEl: Date | null
   enviadoA: string | null
+  facturaModificadaId: string | null
+  motivo: string | null
   contificoDocumentoId: string | null
   numero: string | null
   tipo: $Enums.TipoDocumento | null
@@ -122,6 +126,8 @@ export type FacturaCountAggregateOutputType = {
   mensajesSri: number
   enviadoEl: number
   enviadoA: number
+  facturaModificadaId: number
+  motivo: number
   contificoDocumentoId: number
   numero: number
   tipo: number
@@ -174,6 +180,8 @@ export type FacturaMinAggregateInputType = {
   xmlKey?: true
   enviadoEl?: true
   enviadoA?: true
+  facturaModificadaId?: true
+  motivo?: true
   contificoDocumentoId?: true
   numero?: true
   tipo?: true
@@ -208,6 +216,8 @@ export type FacturaMaxAggregateInputType = {
   xmlKey?: true
   enviadoEl?: true
   enviadoA?: true
+  facturaModificadaId?: true
+  motivo?: true
   contificoDocumentoId?: true
   numero?: true
   tipo?: true
@@ -243,6 +253,8 @@ export type FacturaCountAggregateInputType = {
   mensajesSri?: true
   enviadoEl?: true
   enviadoA?: true
+  facturaModificadaId?: true
+  motivo?: true
   contificoDocumentoId?: true
   numero?: true
   tipo?: true
@@ -365,6 +377,8 @@ export type FacturaGroupByOutputType = {
   mensajesSri: runtime.JsonValue | null
   enviadoEl: Date | null
   enviadoA: string | null
+  facturaModificadaId: string | null
+  motivo: string | null
   contificoDocumentoId: string | null
   numero: string
   tipo: $Enums.TipoDocumento
@@ -423,6 +437,8 @@ export type FacturaWhereInput = {
   mensajesSri?: Prisma.JsonNullableFilter<"Factura">
   enviadoEl?: Prisma.DateTimeNullableFilter<"Factura"> | Date | string | null
   enviadoA?: Prisma.StringNullableFilter<"Factura"> | string | null
+  facturaModificadaId?: Prisma.StringNullableFilter<"Factura"> | string | null
+  motivo?: Prisma.StringNullableFilter<"Factura"> | string | null
   contificoDocumentoId?: Prisma.StringNullableFilter<"Factura"> | string | null
   numero?: Prisma.StringFilter<"Factura"> | string
   tipo?: Prisma.EnumTipoDocumentoFilter<"Factura"> | $Enums.TipoDocumento
@@ -445,6 +461,8 @@ export type FacturaWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Factura"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Factura"> | Date | string
   emisor?: Prisma.XOR<Prisma.EmisorNullableScalarRelationFilter, Prisma.EmisorWhereInput> | null
+  facturaModificada?: Prisma.XOR<Prisma.FacturaNullableScalarRelationFilter, Prisma.FacturaWhereInput> | null
+  notasDeCredito?: Prisma.FacturaListRelationFilter
   orden?: Prisma.XOR<Prisma.OrdenScalarRelationFilter, Prisma.OrdenWhereInput>
   datoFacturacion?: Prisma.XOR<Prisma.DatoFacturacionNullableScalarRelationFilter, Prisma.DatoFacturacionWhereInput> | null
   lineas?: Prisma.FacturaLineaListRelationFilter
@@ -462,6 +480,8 @@ export type FacturaOrderByWithRelationInput = {
   mensajesSri?: Prisma.SortOrderInput | Prisma.SortOrder
   enviadoEl?: Prisma.SortOrderInput | Prisma.SortOrder
   enviadoA?: Prisma.SortOrderInput | Prisma.SortOrder
+  facturaModificadaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivo?: Prisma.SortOrderInput | Prisma.SortOrder
   contificoDocumentoId?: Prisma.SortOrderInput | Prisma.SortOrder
   numero?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
@@ -484,6 +504,8 @@ export type FacturaOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   emisor?: Prisma.EmisorOrderByWithRelationInput
+  facturaModificada?: Prisma.FacturaOrderByWithRelationInput
+  notasDeCredito?: Prisma.FacturaOrderByRelationAggregateInput
   orden?: Prisma.OrdenOrderByWithRelationInput
   datoFacturacion?: Prisma.DatoFacturacionOrderByWithRelationInput
   lineas?: Prisma.FacturaLineaOrderByRelationAggregateInput
@@ -493,7 +515,7 @@ export type FacturaWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   claveAcceso?: string
   contificoDocumentoId?: string
-  numero?: string
+  tipo_numero?: Prisma.FacturaTipoNumeroCompoundUniqueInput
   AND?: Prisma.FacturaWhereInput | Prisma.FacturaWhereInput[]
   OR?: Prisma.FacturaWhereInput[]
   NOT?: Prisma.FacturaWhereInput | Prisma.FacturaWhereInput[]
@@ -506,6 +528,9 @@ export type FacturaWhereUniqueInput = Prisma.AtLeast<{
   mensajesSri?: Prisma.JsonNullableFilter<"Factura">
   enviadoEl?: Prisma.DateTimeNullableFilter<"Factura"> | Date | string | null
   enviadoA?: Prisma.StringNullableFilter<"Factura"> | string | null
+  facturaModificadaId?: Prisma.StringNullableFilter<"Factura"> | string | null
+  motivo?: Prisma.StringNullableFilter<"Factura"> | string | null
+  numero?: Prisma.StringFilter<"Factura"> | string
   tipo?: Prisma.EnumTipoDocumentoFilter<"Factura"> | $Enums.TipoDocumento
   fechaEmision?: Prisma.DateTimeFilter<"Factura"> | Date | string
   descripcion?: Prisma.StringNullableFilter<"Factura"> | string | null
@@ -526,10 +551,12 @@ export type FacturaWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Factura"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Factura"> | Date | string
   emisor?: Prisma.XOR<Prisma.EmisorNullableScalarRelationFilter, Prisma.EmisorWhereInput> | null
+  facturaModificada?: Prisma.XOR<Prisma.FacturaNullableScalarRelationFilter, Prisma.FacturaWhereInput> | null
+  notasDeCredito?: Prisma.FacturaListRelationFilter
   orden?: Prisma.XOR<Prisma.OrdenScalarRelationFilter, Prisma.OrdenWhereInput>
   datoFacturacion?: Prisma.XOR<Prisma.DatoFacturacionNullableScalarRelationFilter, Prisma.DatoFacturacionWhereInput> | null
   lineas?: Prisma.FacturaLineaListRelationFilter
-}, "id" | "claveAcceso" | "contificoDocumentoId" | "numero">
+}, "id" | "claveAcceso" | "contificoDocumentoId" | "tipo_numero">
 
 export type FacturaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -543,6 +570,8 @@ export type FacturaOrderByWithAggregationInput = {
   mensajesSri?: Prisma.SortOrderInput | Prisma.SortOrder
   enviadoEl?: Prisma.SortOrderInput | Prisma.SortOrder
   enviadoA?: Prisma.SortOrderInput | Prisma.SortOrder
+  facturaModificadaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivo?: Prisma.SortOrderInput | Prisma.SortOrder
   contificoDocumentoId?: Prisma.SortOrderInput | Prisma.SortOrder
   numero?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
@@ -586,6 +615,8 @@ export type FacturaScalarWhereWithAggregatesInput = {
   mensajesSri?: Prisma.JsonNullableWithAggregatesFilter<"Factura">
   enviadoEl?: Prisma.DateTimeNullableWithAggregatesFilter<"Factura"> | Date | string | null
   enviadoA?: Prisma.StringNullableWithAggregatesFilter<"Factura"> | string | null
+  facturaModificadaId?: Prisma.StringNullableWithAggregatesFilter<"Factura"> | string | null
+  motivo?: Prisma.StringNullableWithAggregatesFilter<"Factura"> | string | null
   contificoDocumentoId?: Prisma.StringNullableWithAggregatesFilter<"Factura"> | string | null
   numero?: Prisma.StringWithAggregatesFilter<"Factura"> | string
   tipo?: Prisma.EnumTipoDocumentoWithAggregatesFilter<"Factura"> | $Enums.TipoDocumento
@@ -619,6 +650,7 @@ export type FacturaCreateInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -640,6 +672,8 @@ export type FacturaCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   emisor?: Prisma.EmisorCreateNestedOneWithoutFacturasInput
+  facturaModificada?: Prisma.FacturaCreateNestedOneWithoutNotasDeCreditoInput
+  notasDeCredito?: Prisma.FacturaCreateNestedManyWithoutFacturaModificadaInput
   orden: Prisma.OrdenCreateNestedOneWithoutFacturasInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutFacturasInput
   lineas?: Prisma.FacturaLineaCreateNestedManyWithoutFacturaInput
@@ -657,6 +691,8 @@ export type FacturaUncheckedCreateInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -678,6 +714,7 @@ export type FacturaUncheckedCreateInput = {
   anulada?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedCreateNestedManyWithoutFacturaModificadaInput
   lineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutFacturaInput
 }
 
@@ -691,6 +728,7 @@ export type FacturaUpdateInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -712,6 +750,8 @@ export type FacturaUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   emisor?: Prisma.EmisorUpdateOneWithoutFacturasNestedInput
+  facturaModificada?: Prisma.FacturaUpdateOneWithoutNotasDeCreditoNestedInput
+  notasDeCredito?: Prisma.FacturaUpdateManyWithoutFacturaModificadaNestedInput
   orden?: Prisma.OrdenUpdateOneRequiredWithoutFacturasNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutFacturasNestedInput
   lineas?: Prisma.FacturaLineaUpdateManyWithoutFacturaNestedInput
@@ -729,6 +769,8 @@ export type FacturaUncheckedUpdateInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -750,6 +792,7 @@ export type FacturaUncheckedUpdateInput = {
   anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedUpdateManyWithoutFacturaModificadaNestedInput
   lineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutFacturaNestedInput
 }
 
@@ -765,6 +808,8 @@ export type FacturaCreateManyInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -798,6 +843,7 @@ export type FacturaUpdateManyMutationInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -832,6 +878,8 @@ export type FacturaUncheckedUpdateManyInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -865,6 +913,16 @@ export type FacturaOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type FacturaNullableScalarRelationFilter = {
+  is?: Prisma.FacturaWhereInput | null
+  isNot?: Prisma.FacturaWhereInput | null
+}
+
+export type FacturaTipoNumeroCompoundUniqueInput = {
+  tipo: $Enums.TipoDocumento
+  numero: string
+}
+
 export type FacturaCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ordenId?: Prisma.SortOrder
@@ -877,6 +935,8 @@ export type FacturaCountOrderByAggregateInput = {
   mensajesSri?: Prisma.SortOrder
   enviadoEl?: Prisma.SortOrder
   enviadoA?: Prisma.SortOrder
+  facturaModificadaId?: Prisma.SortOrder
+  motivo?: Prisma.SortOrder
   contificoDocumentoId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
@@ -919,6 +979,8 @@ export type FacturaMaxOrderByAggregateInput = {
   xmlKey?: Prisma.SortOrder
   enviadoEl?: Prisma.SortOrder
   enviadoA?: Prisma.SortOrder
+  facturaModificadaId?: Prisma.SortOrder
+  motivo?: Prisma.SortOrder
   contificoDocumentoId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
@@ -953,6 +1015,8 @@ export type FacturaMinOrderByAggregateInput = {
   xmlKey?: Prisma.SortOrder
   enviadoEl?: Prisma.SortOrder
   enviadoA?: Prisma.SortOrder
+  facturaModificadaId?: Prisma.SortOrder
+  motivo?: Prisma.SortOrder
   contificoDocumentoId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
@@ -1115,6 +1179,26 @@ export type FacturaUncheckedUpdateManyWithoutDatoFacturacionNestedInput = {
   deleteMany?: Prisma.FacturaScalarWhereInput | Prisma.FacturaScalarWhereInput[]
 }
 
+export type FacturaCreateNestedOneWithoutNotasDeCreditoInput = {
+  create?: Prisma.XOR<Prisma.FacturaCreateWithoutNotasDeCreditoInput, Prisma.FacturaUncheckedCreateWithoutNotasDeCreditoInput>
+  connectOrCreate?: Prisma.FacturaCreateOrConnectWithoutNotasDeCreditoInput
+  connect?: Prisma.FacturaWhereUniqueInput
+}
+
+export type FacturaCreateNestedManyWithoutFacturaModificadaInput = {
+  create?: Prisma.XOR<Prisma.FacturaCreateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput> | Prisma.FacturaCreateWithoutFacturaModificadaInput[] | Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput[]
+  connectOrCreate?: Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput | Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput[]
+  createMany?: Prisma.FacturaCreateManyFacturaModificadaInputEnvelope
+  connect?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+}
+
+export type FacturaUncheckedCreateNestedManyWithoutFacturaModificadaInput = {
+  create?: Prisma.XOR<Prisma.FacturaCreateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput> | Prisma.FacturaCreateWithoutFacturaModificadaInput[] | Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput[]
+  connectOrCreate?: Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput | Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput[]
+  createMany?: Prisma.FacturaCreateManyFacturaModificadaInputEnvelope
+  connect?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+}
+
 export type NullableEnumAmbienteSriFieldUpdateOperationsInput = {
   set?: $Enums.AmbienteSri | null
 }
@@ -1125,6 +1209,44 @@ export type EnumTipoDocumentoFieldUpdateOperationsInput = {
 
 export type EnumEstadoFacturaFieldUpdateOperationsInput = {
   set?: $Enums.EstadoFactura
+}
+
+export type FacturaUpdateOneWithoutNotasDeCreditoNestedInput = {
+  create?: Prisma.XOR<Prisma.FacturaCreateWithoutNotasDeCreditoInput, Prisma.FacturaUncheckedCreateWithoutNotasDeCreditoInput>
+  connectOrCreate?: Prisma.FacturaCreateOrConnectWithoutNotasDeCreditoInput
+  upsert?: Prisma.FacturaUpsertWithoutNotasDeCreditoInput
+  disconnect?: Prisma.FacturaWhereInput | boolean
+  delete?: Prisma.FacturaWhereInput | boolean
+  connect?: Prisma.FacturaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FacturaUpdateToOneWithWhereWithoutNotasDeCreditoInput, Prisma.FacturaUpdateWithoutNotasDeCreditoInput>, Prisma.FacturaUncheckedUpdateWithoutNotasDeCreditoInput>
+}
+
+export type FacturaUpdateManyWithoutFacturaModificadaNestedInput = {
+  create?: Prisma.XOR<Prisma.FacturaCreateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput> | Prisma.FacturaCreateWithoutFacturaModificadaInput[] | Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput[]
+  connectOrCreate?: Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput | Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput[]
+  upsert?: Prisma.FacturaUpsertWithWhereUniqueWithoutFacturaModificadaInput | Prisma.FacturaUpsertWithWhereUniqueWithoutFacturaModificadaInput[]
+  createMany?: Prisma.FacturaCreateManyFacturaModificadaInputEnvelope
+  set?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  disconnect?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  delete?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  connect?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  update?: Prisma.FacturaUpdateWithWhereUniqueWithoutFacturaModificadaInput | Prisma.FacturaUpdateWithWhereUniqueWithoutFacturaModificadaInput[]
+  updateMany?: Prisma.FacturaUpdateManyWithWhereWithoutFacturaModificadaInput | Prisma.FacturaUpdateManyWithWhereWithoutFacturaModificadaInput[]
+  deleteMany?: Prisma.FacturaScalarWhereInput | Prisma.FacturaScalarWhereInput[]
+}
+
+export type FacturaUncheckedUpdateManyWithoutFacturaModificadaNestedInput = {
+  create?: Prisma.XOR<Prisma.FacturaCreateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput> | Prisma.FacturaCreateWithoutFacturaModificadaInput[] | Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput[]
+  connectOrCreate?: Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput | Prisma.FacturaCreateOrConnectWithoutFacturaModificadaInput[]
+  upsert?: Prisma.FacturaUpsertWithWhereUniqueWithoutFacturaModificadaInput | Prisma.FacturaUpsertWithWhereUniqueWithoutFacturaModificadaInput[]
+  createMany?: Prisma.FacturaCreateManyFacturaModificadaInputEnvelope
+  set?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  disconnect?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  delete?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  connect?: Prisma.FacturaWhereUniqueInput | Prisma.FacturaWhereUniqueInput[]
+  update?: Prisma.FacturaUpdateWithWhereUniqueWithoutFacturaModificadaInput | Prisma.FacturaUpdateWithWhereUniqueWithoutFacturaModificadaInput[]
+  updateMany?: Prisma.FacturaUpdateManyWithWhereWithoutFacturaModificadaInput | Prisma.FacturaUpdateManyWithWhereWithoutFacturaModificadaInput[]
+  deleteMany?: Prisma.FacturaScalarWhereInput | Prisma.FacturaScalarWhereInput[]
 }
 
 export type FacturaCreateNestedOneWithoutLineasInput = {
@@ -1151,6 +1273,7 @@ export type FacturaCreateWithoutEmisorInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1171,6 +1294,8 @@ export type FacturaCreateWithoutEmisorInput = {
   anulada?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  facturaModificada?: Prisma.FacturaCreateNestedOneWithoutNotasDeCreditoInput
+  notasDeCredito?: Prisma.FacturaCreateNestedManyWithoutFacturaModificadaInput
   orden: Prisma.OrdenCreateNestedOneWithoutFacturasInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutFacturasInput
   lineas?: Prisma.FacturaLineaCreateNestedManyWithoutFacturaInput
@@ -1187,6 +1312,8 @@ export type FacturaUncheckedCreateWithoutEmisorInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1208,6 +1335,7 @@ export type FacturaUncheckedCreateWithoutEmisorInput = {
   anulada?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedCreateNestedManyWithoutFacturaModificadaInput
   lineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutFacturaInput
 }
 
@@ -1252,6 +1380,8 @@ export type FacturaScalarWhereInput = {
   mensajesSri?: Prisma.JsonNullableFilter<"Factura">
   enviadoEl?: Prisma.DateTimeNullableFilter<"Factura"> | Date | string | null
   enviadoA?: Prisma.StringNullableFilter<"Factura"> | string | null
+  facturaModificadaId?: Prisma.StringNullableFilter<"Factura"> | string | null
+  motivo?: Prisma.StringNullableFilter<"Factura"> | string | null
   contificoDocumentoId?: Prisma.StringNullableFilter<"Factura"> | string | null
   numero?: Prisma.StringFilter<"Factura"> | string
   tipo?: Prisma.EnumTipoDocumentoFilter<"Factura"> | $Enums.TipoDocumento
@@ -1285,6 +1415,7 @@ export type FacturaCreateWithoutOrdenInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1306,6 +1437,8 @@ export type FacturaCreateWithoutOrdenInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   emisor?: Prisma.EmisorCreateNestedOneWithoutFacturasInput
+  facturaModificada?: Prisma.FacturaCreateNestedOneWithoutNotasDeCreditoInput
+  notasDeCredito?: Prisma.FacturaCreateNestedManyWithoutFacturaModificadaInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutFacturasInput
   lineas?: Prisma.FacturaLineaCreateNestedManyWithoutFacturaInput
 }
@@ -1321,6 +1454,8 @@ export type FacturaUncheckedCreateWithoutOrdenInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1342,6 +1477,7 @@ export type FacturaUncheckedCreateWithoutOrdenInput = {
   anulada?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedCreateNestedManyWithoutFacturaModificadaInput
   lineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutFacturaInput
 }
 
@@ -1381,6 +1517,7 @@ export type FacturaCreateWithoutDatoFacturacionInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1402,6 +1539,8 @@ export type FacturaCreateWithoutDatoFacturacionInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   emisor?: Prisma.EmisorCreateNestedOneWithoutFacturasInput
+  facturaModificada?: Prisma.FacturaCreateNestedOneWithoutNotasDeCreditoInput
+  notasDeCredito?: Prisma.FacturaCreateNestedManyWithoutFacturaModificadaInput
   orden: Prisma.OrdenCreateNestedOneWithoutFacturasInput
   lineas?: Prisma.FacturaLineaCreateNestedManyWithoutFacturaInput
 }
@@ -1418,6 +1557,8 @@ export type FacturaUncheckedCreateWithoutDatoFacturacionInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1438,6 +1579,7 @@ export type FacturaUncheckedCreateWithoutDatoFacturacionInput = {
   anulada?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedCreateNestedManyWithoutFacturaModificadaInput
   lineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutFacturaInput
 }
 
@@ -1467,7 +1609,7 @@ export type FacturaUpdateManyWithWhereWithoutDatoFacturacionInput = {
   data: Prisma.XOR<Prisma.FacturaUpdateManyMutationInput, Prisma.FacturaUncheckedUpdateManyWithoutDatoFacturacionInput>
 }
 
-export type FacturaCreateWithoutLineasInput = {
+export type FacturaCreateWithoutNotasDeCreditoInput = {
   id?: string
   claveAcceso?: string | null
   ambienteSri?: $Enums.AmbienteSri | null
@@ -1477,6 +1619,7 @@ export type FacturaCreateWithoutLineasInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1498,11 +1641,13 @@ export type FacturaCreateWithoutLineasInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   emisor?: Prisma.EmisorCreateNestedOneWithoutFacturasInput
+  facturaModificada?: Prisma.FacturaCreateNestedOneWithoutNotasDeCreditoInput
   orden: Prisma.OrdenCreateNestedOneWithoutFacturasInput
   datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutFacturasInput
+  lineas?: Prisma.FacturaLineaCreateNestedManyWithoutFacturaInput
 }
 
-export type FacturaUncheckedCreateWithoutLineasInput = {
+export type FacturaUncheckedCreateWithoutNotasDeCreditoInput = {
   id?: string
   ordenId: string
   emisorId?: string | null
@@ -1514,6 +1659,8 @@ export type FacturaUncheckedCreateWithoutLineasInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1535,6 +1682,277 @@ export type FacturaUncheckedCreateWithoutLineasInput = {
   anulada?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  lineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutFacturaInput
+}
+
+export type FacturaCreateOrConnectWithoutNotasDeCreditoInput = {
+  where: Prisma.FacturaWhereUniqueInput
+  create: Prisma.XOR<Prisma.FacturaCreateWithoutNotasDeCreditoInput, Prisma.FacturaUncheckedCreateWithoutNotasDeCreditoInput>
+}
+
+export type FacturaCreateWithoutFacturaModificadaInput = {
+  id?: string
+  claveAcceso?: string | null
+  ambienteSri?: $Enums.AmbienteSri | null
+  estadoSri?: string | null
+  fechaAutorizacion?: Date | string | null
+  xmlKey?: string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Date | string | null
+  enviadoA?: string | null
+  motivo?: string | null
+  contificoDocumentoId?: string | null
+  numero: string
+  tipo?: $Enums.TipoDocumento
+  fechaEmision: Date | string
+  descripcion?: string | null
+  estado?: $Enums.EstadoFactura
+  autorizacion?: string | null
+  urlRide?: string | null
+  urlXml?: string | null
+  contificoPersonaId?: string | null
+  razonSocial?: string | null
+  identificacion?: string | null
+  subtotal0?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  emisor?: Prisma.EmisorCreateNestedOneWithoutFacturasInput
+  notasDeCredito?: Prisma.FacturaCreateNestedManyWithoutFacturaModificadaInput
+  orden: Prisma.OrdenCreateNestedOneWithoutFacturasInput
+  datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutFacturasInput
+  lineas?: Prisma.FacturaLineaCreateNestedManyWithoutFacturaInput
+}
+
+export type FacturaUncheckedCreateWithoutFacturaModificadaInput = {
+  id?: string
+  ordenId: string
+  emisorId?: string | null
+  claveAcceso?: string | null
+  ambienteSri?: $Enums.AmbienteSri | null
+  estadoSri?: string | null
+  fechaAutorizacion?: Date | string | null
+  xmlKey?: string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Date | string | null
+  enviadoA?: string | null
+  motivo?: string | null
+  contificoDocumentoId?: string | null
+  numero: string
+  tipo?: $Enums.TipoDocumento
+  fechaEmision: Date | string
+  descripcion?: string | null
+  estado?: $Enums.EstadoFactura
+  autorizacion?: string | null
+  urlRide?: string | null
+  urlXml?: string | null
+  contificoPersonaId?: string | null
+  datoFacturacionId?: string | null
+  razonSocial?: string | null
+  identificacion?: string | null
+  subtotal0?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedCreateNestedManyWithoutFacturaModificadaInput
+  lineas?: Prisma.FacturaLineaUncheckedCreateNestedManyWithoutFacturaInput
+}
+
+export type FacturaCreateOrConnectWithoutFacturaModificadaInput = {
+  where: Prisma.FacturaWhereUniqueInput
+  create: Prisma.XOR<Prisma.FacturaCreateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput>
+}
+
+export type FacturaCreateManyFacturaModificadaInputEnvelope = {
+  data: Prisma.FacturaCreateManyFacturaModificadaInput | Prisma.FacturaCreateManyFacturaModificadaInput[]
+  skipDuplicates?: boolean
+}
+
+export type FacturaUpsertWithoutNotasDeCreditoInput = {
+  update: Prisma.XOR<Prisma.FacturaUpdateWithoutNotasDeCreditoInput, Prisma.FacturaUncheckedUpdateWithoutNotasDeCreditoInput>
+  create: Prisma.XOR<Prisma.FacturaCreateWithoutNotasDeCreditoInput, Prisma.FacturaUncheckedCreateWithoutNotasDeCreditoInput>
+  where?: Prisma.FacturaWhereInput
+}
+
+export type FacturaUpdateToOneWithWhereWithoutNotasDeCreditoInput = {
+  where?: Prisma.FacturaWhereInput
+  data: Prisma.XOR<Prisma.FacturaUpdateWithoutNotasDeCreditoInput, Prisma.FacturaUncheckedUpdateWithoutNotasDeCreditoInput>
+}
+
+export type FacturaUpdateWithoutNotasDeCreditoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  claveAcceso?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ambienteSri?: Prisma.NullableEnumAmbienteSriFieldUpdateOperationsInput | $Enums.AmbienteSri | null
+  estadoSri?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaAutorizacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  xmlKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
+  fechaEmision?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoFacturaFieldUpdateOperationsInput | $Enums.EstadoFactura
+  autorizacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlRide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlXml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoPersonaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  identificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotal0?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  emisor?: Prisma.EmisorUpdateOneWithoutFacturasNestedInput
+  facturaModificada?: Prisma.FacturaUpdateOneWithoutNotasDeCreditoNestedInput
+  orden?: Prisma.OrdenUpdateOneRequiredWithoutFacturasNestedInput
+  datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutFacturasNestedInput
+  lineas?: Prisma.FacturaLineaUpdateManyWithoutFacturaNestedInput
+}
+
+export type FacturaUncheckedUpdateWithoutNotasDeCreditoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ordenId?: Prisma.StringFieldUpdateOperationsInput | string
+  emisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  claveAcceso?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ambienteSri?: Prisma.NullableEnumAmbienteSriFieldUpdateOperationsInput | $Enums.AmbienteSri | null
+  estadoSri?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaAutorizacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  xmlKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
+  fechaEmision?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoFacturaFieldUpdateOperationsInput | $Enums.EstadoFactura
+  autorizacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlRide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlXml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoPersonaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  identificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotal0?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutFacturaNestedInput
+}
+
+export type FacturaUpsertWithWhereUniqueWithoutFacturaModificadaInput = {
+  where: Prisma.FacturaWhereUniqueInput
+  update: Prisma.XOR<Prisma.FacturaUpdateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedUpdateWithoutFacturaModificadaInput>
+  create: Prisma.XOR<Prisma.FacturaCreateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedCreateWithoutFacturaModificadaInput>
+}
+
+export type FacturaUpdateWithWhereUniqueWithoutFacturaModificadaInput = {
+  where: Prisma.FacturaWhereUniqueInput
+  data: Prisma.XOR<Prisma.FacturaUpdateWithoutFacturaModificadaInput, Prisma.FacturaUncheckedUpdateWithoutFacturaModificadaInput>
+}
+
+export type FacturaUpdateManyWithWhereWithoutFacturaModificadaInput = {
+  where: Prisma.FacturaScalarWhereInput
+  data: Prisma.XOR<Prisma.FacturaUpdateManyMutationInput, Prisma.FacturaUncheckedUpdateManyWithoutFacturaModificadaInput>
+}
+
+export type FacturaCreateWithoutLineasInput = {
+  id?: string
+  claveAcceso?: string | null
+  ambienteSri?: $Enums.AmbienteSri | null
+  estadoSri?: string | null
+  fechaAutorizacion?: Date | string | null
+  xmlKey?: string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Date | string | null
+  enviadoA?: string | null
+  motivo?: string | null
+  contificoDocumentoId?: string | null
+  numero: string
+  tipo?: $Enums.TipoDocumento
+  fechaEmision: Date | string
+  descripcion?: string | null
+  estado?: $Enums.EstadoFactura
+  autorizacion?: string | null
+  urlRide?: string | null
+  urlXml?: string | null
+  contificoPersonaId?: string | null
+  razonSocial?: string | null
+  identificacion?: string | null
+  subtotal0?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  emisor?: Prisma.EmisorCreateNestedOneWithoutFacturasInput
+  facturaModificada?: Prisma.FacturaCreateNestedOneWithoutNotasDeCreditoInput
+  notasDeCredito?: Prisma.FacturaCreateNestedManyWithoutFacturaModificadaInput
+  orden: Prisma.OrdenCreateNestedOneWithoutFacturasInput
+  datoFacturacion?: Prisma.DatoFacturacionCreateNestedOneWithoutFacturasInput
+}
+
+export type FacturaUncheckedCreateWithoutLineasInput = {
+  id?: string
+  ordenId: string
+  emisorId?: string | null
+  claveAcceso?: string | null
+  ambienteSri?: $Enums.AmbienteSri | null
+  estadoSri?: string | null
+  fechaAutorizacion?: Date | string | null
+  xmlKey?: string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Date | string | null
+  enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
+  contificoDocumentoId?: string | null
+  numero: string
+  tipo?: $Enums.TipoDocumento
+  fechaEmision: Date | string
+  descripcion?: string | null
+  estado?: $Enums.EstadoFactura
+  autorizacion?: string | null
+  urlRide?: string | null
+  urlXml?: string | null
+  contificoPersonaId?: string | null
+  datoFacturacionId?: string | null
+  razonSocial?: string | null
+  identificacion?: string | null
+  subtotal0?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedCreateNestedManyWithoutFacturaModificadaInput
 }
 
 export type FacturaCreateOrConnectWithoutLineasInput = {
@@ -1563,6 +1981,7 @@ export type FacturaUpdateWithoutLineasInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1584,6 +2003,8 @@ export type FacturaUpdateWithoutLineasInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   emisor?: Prisma.EmisorUpdateOneWithoutFacturasNestedInput
+  facturaModificada?: Prisma.FacturaUpdateOneWithoutNotasDeCreditoNestedInput
+  notasDeCredito?: Prisma.FacturaUpdateManyWithoutFacturaModificadaNestedInput
   orden?: Prisma.OrdenUpdateOneRequiredWithoutFacturasNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutFacturasNestedInput
 }
@@ -1600,6 +2021,8 @@ export type FacturaUncheckedUpdateWithoutLineasInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1621,6 +2044,7 @@ export type FacturaUncheckedUpdateWithoutLineasInput = {
   anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedUpdateManyWithoutFacturaModificadaNestedInput
 }
 
 export type FacturaCreateManyEmisorInput = {
@@ -1634,6 +2058,8 @@ export type FacturaCreateManyEmisorInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1667,6 +2093,7 @@ export type FacturaUpdateWithoutEmisorInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1687,6 +2114,8 @@ export type FacturaUpdateWithoutEmisorInput = {
   anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  facturaModificada?: Prisma.FacturaUpdateOneWithoutNotasDeCreditoNestedInput
+  notasDeCredito?: Prisma.FacturaUpdateManyWithoutFacturaModificadaNestedInput
   orden?: Prisma.OrdenUpdateOneRequiredWithoutFacturasNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutFacturasNestedInput
   lineas?: Prisma.FacturaLineaUpdateManyWithoutFacturaNestedInput
@@ -1703,6 +2132,8 @@ export type FacturaUncheckedUpdateWithoutEmisorInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1724,6 +2155,7 @@ export type FacturaUncheckedUpdateWithoutEmisorInput = {
   anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedUpdateManyWithoutFacturaModificadaNestedInput
   lineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutFacturaNestedInput
 }
 
@@ -1738,6 +2170,8 @@ export type FacturaUncheckedUpdateManyWithoutEmisorInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1772,6 +2206,8 @@ export type FacturaCreateManyOrdenInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1805,6 +2241,7 @@ export type FacturaUpdateWithoutOrdenInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1826,6 +2263,8 @@ export type FacturaUpdateWithoutOrdenInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   emisor?: Prisma.EmisorUpdateOneWithoutFacturasNestedInput
+  facturaModificada?: Prisma.FacturaUpdateOneWithoutNotasDeCreditoNestedInput
+  notasDeCredito?: Prisma.FacturaUpdateManyWithoutFacturaModificadaNestedInput
   datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutFacturasNestedInput
   lineas?: Prisma.FacturaLineaUpdateManyWithoutFacturaNestedInput
 }
@@ -1841,6 +2280,8 @@ export type FacturaUncheckedUpdateWithoutOrdenInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1862,6 +2303,7 @@ export type FacturaUncheckedUpdateWithoutOrdenInput = {
   anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedUpdateManyWithoutFacturaModificadaNestedInput
   lineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutFacturaNestedInput
 }
 
@@ -1876,6 +2318,8 @@ export type FacturaUncheckedUpdateManyWithoutOrdenInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1911,6 +2355,8 @@ export type FacturaCreateManyDatoFacturacionInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Date | string | null
   enviadoA?: string | null
+  facturaModificadaId?: string | null
+  motivo?: string | null
   contificoDocumentoId?: string | null
   numero: string
   tipo?: $Enums.TipoDocumento
@@ -1943,6 +2389,7 @@ export type FacturaUpdateWithoutDatoFacturacionInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -1964,6 +2411,8 @@ export type FacturaUpdateWithoutDatoFacturacionInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   emisor?: Prisma.EmisorUpdateOneWithoutFacturasNestedInput
+  facturaModificada?: Prisma.FacturaUpdateOneWithoutNotasDeCreditoNestedInput
+  notasDeCredito?: Prisma.FacturaUpdateManyWithoutFacturaModificadaNestedInput
   orden?: Prisma.OrdenUpdateOneRequiredWithoutFacturasNestedInput
   lineas?: Prisma.FacturaLineaUpdateManyWithoutFacturaNestedInput
 }
@@ -1980,6 +2429,8 @@ export type FacturaUncheckedUpdateWithoutDatoFacturacionInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -2000,6 +2451,7 @@ export type FacturaUncheckedUpdateWithoutDatoFacturacionInput = {
   anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedUpdateManyWithoutFacturaModificadaNestedInput
   lineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutFacturaNestedInput
 }
 
@@ -2015,6 +2467,8 @@ export type FacturaUncheckedUpdateManyWithoutDatoFacturacionInput = {
   mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facturaModificadaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   numero?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
@@ -2025,6 +2479,154 @@ export type FacturaUncheckedUpdateManyWithoutDatoFacturacionInput = {
   urlRide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   urlXml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contificoPersonaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  identificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotal0?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FacturaCreateManyFacturaModificadaInput = {
+  id?: string
+  ordenId: string
+  emisorId?: string | null
+  claveAcceso?: string | null
+  ambienteSri?: $Enums.AmbienteSri | null
+  estadoSri?: string | null
+  fechaAutorizacion?: Date | string | null
+  xmlKey?: string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Date | string | null
+  enviadoA?: string | null
+  motivo?: string | null
+  contificoDocumentoId?: string | null
+  numero: string
+  tipo?: $Enums.TipoDocumento
+  fechaEmision: Date | string
+  descripcion?: string | null
+  estado?: $Enums.EstadoFactura
+  autorizacion?: string | null
+  urlRide?: string | null
+  urlXml?: string | null
+  contificoPersonaId?: string | null
+  datoFacturacionId?: string | null
+  razonSocial?: string | null
+  identificacion?: string | null
+  subtotal0?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FacturaUpdateWithoutFacturaModificadaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  claveAcceso?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ambienteSri?: Prisma.NullableEnumAmbienteSriFieldUpdateOperationsInput | $Enums.AmbienteSri | null
+  estadoSri?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaAutorizacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  xmlKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
+  fechaEmision?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoFacturaFieldUpdateOperationsInput | $Enums.EstadoFactura
+  autorizacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlRide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlXml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoPersonaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  identificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotal0?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  emisor?: Prisma.EmisorUpdateOneWithoutFacturasNestedInput
+  notasDeCredito?: Prisma.FacturaUpdateManyWithoutFacturaModificadaNestedInput
+  orden?: Prisma.OrdenUpdateOneRequiredWithoutFacturasNestedInput
+  datoFacturacion?: Prisma.DatoFacturacionUpdateOneWithoutFacturasNestedInput
+  lineas?: Prisma.FacturaLineaUpdateManyWithoutFacturaNestedInput
+}
+
+export type FacturaUncheckedUpdateWithoutFacturaModificadaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ordenId?: Prisma.StringFieldUpdateOperationsInput | string
+  emisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  claveAcceso?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ambienteSri?: Prisma.NullableEnumAmbienteSriFieldUpdateOperationsInput | $Enums.AmbienteSri | null
+  estadoSri?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaAutorizacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  xmlKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
+  fechaEmision?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoFacturaFieldUpdateOperationsInput | $Enums.EstadoFactura
+  autorizacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlRide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlXml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoPersonaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  identificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotal0?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  subtotalGravado?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  saldo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  anulada?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notasDeCredito?: Prisma.FacturaUncheckedUpdateManyWithoutFacturaModificadaNestedInput
+  lineas?: Prisma.FacturaLineaUncheckedUpdateManyWithoutFacturaNestedInput
+}
+
+export type FacturaUncheckedUpdateManyWithoutFacturaModificadaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ordenId?: Prisma.StringFieldUpdateOperationsInput | string
+  emisorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  claveAcceso?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ambienteSri?: Prisma.NullableEnumAmbienteSriFieldUpdateOperationsInput | $Enums.AmbienteSri | null
+  estadoSri?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaAutorizacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  xmlKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mensajesSri?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  enviadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  enviadoA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoDocumentoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  numero?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoDocumentoFieldUpdateOperationsInput | $Enums.TipoDocumento
+  fechaEmision?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.EnumEstadoFacturaFieldUpdateOperationsInput | $Enums.EstadoFactura
+  autorizacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlRide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlXml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contificoPersonaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  datoFacturacionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   razonSocial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   identificacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal0?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -2043,10 +2645,12 @@ export type FacturaUncheckedUpdateManyWithoutDatoFacturacionInput = {
  */
 
 export type FacturaCountOutputType = {
+  notasDeCredito: number
   lineas: number
 }
 
 export type FacturaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  notasDeCredito?: boolean | FacturaCountOutputTypeCountNotasDeCreditoArgs
   lineas?: boolean | FacturaCountOutputTypeCountLineasArgs
 }
 
@@ -2058,6 +2662,13 @@ export type FacturaCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
    * Select specific fields to fetch from the FacturaCountOutputType
    */
   select?: Prisma.FacturaCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * FacturaCountOutputType without action
+ */
+export type FacturaCountOutputTypeCountNotasDeCreditoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FacturaWhereInput
 }
 
 /**
@@ -2080,6 +2691,8 @@ export type FacturaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   mensajesSri?: boolean
   enviadoEl?: boolean
   enviadoA?: boolean
+  facturaModificadaId?: boolean
+  motivo?: boolean
   contificoDocumentoId?: boolean
   numero?: boolean
   tipo?: boolean
@@ -2102,6 +2715,8 @@ export type FacturaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   createdAt?: boolean
   updatedAt?: boolean
   emisor?: boolean | Prisma.Factura$emisorArgs<ExtArgs>
+  facturaModificada?: boolean | Prisma.Factura$facturaModificadaArgs<ExtArgs>
+  notasDeCredito?: boolean | Prisma.Factura$notasDeCreditoArgs<ExtArgs>
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Factura$datoFacturacionArgs<ExtArgs>
   lineas?: boolean | Prisma.Factura$lineasArgs<ExtArgs>
@@ -2120,6 +2735,8 @@ export type FacturaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   mensajesSri?: boolean
   enviadoEl?: boolean
   enviadoA?: boolean
+  facturaModificadaId?: boolean
+  motivo?: boolean
   contificoDocumentoId?: boolean
   numero?: boolean
   tipo?: boolean
@@ -2142,6 +2759,7 @@ export type FacturaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   createdAt?: boolean
   updatedAt?: boolean
   emisor?: boolean | Prisma.Factura$emisorArgs<ExtArgs>
+  facturaModificada?: boolean | Prisma.Factura$facturaModificadaArgs<ExtArgs>
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Factura$datoFacturacionArgs<ExtArgs>
 }, ExtArgs["result"]["factura"]>
@@ -2158,6 +2776,8 @@ export type FacturaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   mensajesSri?: boolean
   enviadoEl?: boolean
   enviadoA?: boolean
+  facturaModificadaId?: boolean
+  motivo?: boolean
   contificoDocumentoId?: boolean
   numero?: boolean
   tipo?: boolean
@@ -2180,6 +2800,7 @@ export type FacturaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   createdAt?: boolean
   updatedAt?: boolean
   emisor?: boolean | Prisma.Factura$emisorArgs<ExtArgs>
+  facturaModificada?: boolean | Prisma.Factura$facturaModificadaArgs<ExtArgs>
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Factura$datoFacturacionArgs<ExtArgs>
 }, ExtArgs["result"]["factura"]>
@@ -2196,6 +2817,8 @@ export type FacturaSelectScalar = {
   mensajesSri?: boolean
   enviadoEl?: boolean
   enviadoA?: boolean
+  facturaModificadaId?: boolean
+  motivo?: boolean
   contificoDocumentoId?: boolean
   numero?: boolean
   tipo?: boolean
@@ -2219,9 +2842,11 @@ export type FacturaSelectScalar = {
   updatedAt?: boolean
 }
 
-export type FacturaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ordenId" | "emisorId" | "claveAcceso" | "ambienteSri" | "estadoSri" | "fechaAutorizacion" | "xmlKey" | "mensajesSri" | "enviadoEl" | "enviadoA" | "contificoDocumentoId" | "numero" | "tipo" | "fechaEmision" | "descripcion" | "estado" | "autorizacion" | "urlRide" | "urlXml" | "contificoPersonaId" | "datoFacturacionId" | "razonSocial" | "identificacion" | "subtotal0" | "subtotalGravado" | "iva" | "total" | "saldo" | "anulada" | "createdAt" | "updatedAt", ExtArgs["result"]["factura"]>
+export type FacturaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ordenId" | "emisorId" | "claveAcceso" | "ambienteSri" | "estadoSri" | "fechaAutorizacion" | "xmlKey" | "mensajesSri" | "enviadoEl" | "enviadoA" | "facturaModificadaId" | "motivo" | "contificoDocumentoId" | "numero" | "tipo" | "fechaEmision" | "descripcion" | "estado" | "autorizacion" | "urlRide" | "urlXml" | "contificoPersonaId" | "datoFacturacionId" | "razonSocial" | "identificacion" | "subtotal0" | "subtotalGravado" | "iva" | "total" | "saldo" | "anulada" | "createdAt" | "updatedAt", ExtArgs["result"]["factura"]>
 export type FacturaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   emisor?: boolean | Prisma.Factura$emisorArgs<ExtArgs>
+  facturaModificada?: boolean | Prisma.Factura$facturaModificadaArgs<ExtArgs>
+  notasDeCredito?: boolean | Prisma.Factura$notasDeCreditoArgs<ExtArgs>
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Factura$datoFacturacionArgs<ExtArgs>
   lineas?: boolean | Prisma.Factura$lineasArgs<ExtArgs>
@@ -2229,11 +2854,13 @@ export type FacturaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
 }
 export type FacturaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   emisor?: boolean | Prisma.Factura$emisorArgs<ExtArgs>
+  facturaModificada?: boolean | Prisma.Factura$facturaModificadaArgs<ExtArgs>
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Factura$datoFacturacionArgs<ExtArgs>
 }
 export type FacturaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   emisor?: boolean | Prisma.Factura$emisorArgs<ExtArgs>
+  facturaModificada?: boolean | Prisma.Factura$facturaModificadaArgs<ExtArgs>
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   datoFacturacion?: boolean | Prisma.Factura$datoFacturacionArgs<ExtArgs>
 }
@@ -2242,6 +2869,8 @@ export type $FacturaPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Factura"
   objects: {
     emisor: Prisma.$EmisorPayload<ExtArgs> | null
+    facturaModificada: Prisma.$FacturaPayload<ExtArgs> | null
+    notasDeCredito: Prisma.$FacturaPayload<ExtArgs>[]
     orden: Prisma.$OrdenPayload<ExtArgs>
     datoFacturacion: Prisma.$DatoFacturacionPayload<ExtArgs> | null
     lineas: Prisma.$FacturaLineaPayload<ExtArgs>[]
@@ -2283,12 +2912,20 @@ export type $FacturaPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
      */
     enviadoEl: Date | null
     enviadoA: string | null
+    /**
+     * Qué factura corrige esta nota de crédito, y por qué. El SRI exige las dos
+     * cosas en el XML: sin el documento modificado la nota no se refiere a nada.
+     */
+    facturaModificadaId: string | null
+    motivo: string | null
     contificoDocumentoId: string | null
     /**
      * Único porque en un `NO_AUTORIZADO` **nadie más lo garantiza**: Contífico
      * acepta un número repetido y crea un segundo documento, al revés que en
      * una factura. Las dos series no se pisan: `001-002-000000123` contra
      * `VF-000000001`.
+     * Único **por tipo**: una factura y una nota de crédito tienen cada una su
+     * propia serie, así que `001-001-000000001` existe una vez de cada.
      */
     numero: string
     tipo: $Enums.TipoDocumento
@@ -2725,6 +3362,8 @@ readonly fields: FacturaFieldRefs;
 export interface Prisma__FacturaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   emisor<T extends Prisma.Factura$emisorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Factura$emisorArgs<ExtArgs>>): Prisma.Prisma__EmisorClient<runtime.Types.Result.GetResult<Prisma.$EmisorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  facturaModificada<T extends Prisma.Factura$facturaModificadaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Factura$facturaModificadaArgs<ExtArgs>>): Prisma.Prisma__FacturaClient<runtime.Types.Result.GetResult<Prisma.$FacturaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  notasDeCredito<T extends Prisma.Factura$notasDeCreditoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Factura$notasDeCreditoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FacturaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orden<T extends Prisma.OrdenDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrdenDefaultArgs<ExtArgs>>): Prisma.Prisma__OrdenClient<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   datoFacturacion<T extends Prisma.Factura$datoFacturacionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Factura$datoFacturacionArgs<ExtArgs>>): Prisma.Prisma__DatoFacturacionClient<runtime.Types.Result.GetResult<Prisma.$DatoFacturacionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   lineas<T extends Prisma.Factura$lineasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Factura$lineasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FacturaLineaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2768,6 +3407,8 @@ export interface FacturaFieldRefs {
   readonly mensajesSri: Prisma.FieldRef<"Factura", 'Json'>
   readonly enviadoEl: Prisma.FieldRef<"Factura", 'DateTime'>
   readonly enviadoA: Prisma.FieldRef<"Factura", 'String'>
+  readonly facturaModificadaId: Prisma.FieldRef<"Factura", 'String'>
+  readonly motivo: Prisma.FieldRef<"Factura", 'String'>
   readonly contificoDocumentoId: Prisma.FieldRef<"Factura", 'String'>
   readonly numero: Prisma.FieldRef<"Factura", 'String'>
   readonly tipo: Prisma.FieldRef<"Factura", 'TipoDocumento'>
@@ -3206,6 +3847,49 @@ export type Factura$emisorArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   include?: Prisma.EmisorInclude<ExtArgs> | null
   where?: Prisma.EmisorWhereInput
+}
+
+/**
+ * Factura.facturaModificada
+ */
+export type Factura$facturaModificadaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Factura
+   */
+  select?: Prisma.FacturaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Factura
+   */
+  omit?: Prisma.FacturaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FacturaInclude<ExtArgs> | null
+  where?: Prisma.FacturaWhereInput
+}
+
+/**
+ * Factura.notasDeCredito
+ */
+export type Factura$notasDeCreditoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Factura
+   */
+  select?: Prisma.FacturaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Factura
+   */
+  omit?: Prisma.FacturaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FacturaInclude<ExtArgs> | null
+  where?: Prisma.FacturaWhereInput
+  orderBy?: Prisma.FacturaOrderByWithRelationInput | Prisma.FacturaOrderByWithRelationInput[]
+  cursor?: Prisma.FacturaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FacturaScalarFieldEnum | Prisma.FacturaScalarFieldEnum[]
 }
 
 /**

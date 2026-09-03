@@ -5,6 +5,7 @@ import { getOrden } from "@/lib/services/orden.service";
 import { NotFoundError } from "@/lib/services/errors";
 import { emisoresDisponibles } from "@/lib/services/emisor.service";
 import { EmitirFacturaPage } from "@/components/ordenes/emitir-factura-page";
+import { facturaVigenteDe } from "@/lib/services/factura-vigente";
 
 /**
  * Armar y emitir el documento de una orden.
@@ -37,7 +38,7 @@ export default async function EmitirRoute({
 
   // Una orden con factura viva no se vuelve a emitir, y una anulada no se
   // emite: se vuelve a la orden, que es donde se ve por qué.
-  const vigente = orden.facturas.find((f) => !f.anulada);
+  const vigente = facturaVigenteDe(orden.facturas);
   if (vigente || orden.estado === "ANULADA") {
     redirect(`/dashboard/ordenes/${id}`);
   }

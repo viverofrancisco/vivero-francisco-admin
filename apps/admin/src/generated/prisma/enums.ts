@@ -135,7 +135,8 @@ export type EstadoFactura = (typeof EstadoFactura)[keyof typeof EstadoFactura]
 
 export const TipoDocumento = {
   FACTURA: 'FACTURA',
-  NO_AUTORIZADO: 'NO_AUTORIZADO'
+  NO_AUTORIZADO: 'NO_AUTORIZADO',
+  NOTA_CREDITO: 'NOTA_CREDITO'
 } as const
 
 export type TipoDocumento = (typeof TipoDocumento)[keyof typeof TipoDocumento]

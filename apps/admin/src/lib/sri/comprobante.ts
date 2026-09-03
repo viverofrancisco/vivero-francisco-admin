@@ -105,6 +105,61 @@ export interface DatosFactura {
   }[];
 }
 
+export interface DatosNotaCredito {
+  fechaEmision: string;
+  tipoIdentificacionComprador: string;
+  razonSocialComprador: string;
+  identificacionComprador: string;
+  /** `01` = factura. Qué clase de documento corrige. */
+  codDocModificado: string;
+  /** El número impreso del documento que corrige: `001-001-000000002`. */
+  numDocModificado: string;
+  fechaEmisionDocSustento: string;
+  totalSinImpuestos: number;
+  /** Lo que se le devuelve al cliente, con IVA incluido. */
+  valorModificacion: number;
+  totalConImpuestos: DatosFactura["totalConImpuestos"];
+  motivo: string;
+  detalles: DatosFactura["detalles"];
+}
+
+/**
+ * La nota de crédito que corrige una factura.
+ *
+ * Se arma con las **mismas líneas** que se van a devolver, así que reusa el
+ * armado de la factura y le agrega a qué documento se refiere: sin eso la nota
+ * no corrige nada, y el SRI la rechaza.
+ */
+export function armarNotaCredito(
+  comprador: CompradorComprobante,
+  lineas: LineaComprobante[],
+  opciones: {
+    fecha: Date;
+    motivo: string;
+    numeroModificado: string;
+    fechaModificado: Date;
+    /** `01` = factura, que es lo único que emite el portal por ahora. */
+    codDocModificado?: string;
+  }
+): DatosNotaCredito {
+  const base = armarFactura(comprador, lineas, { fecha: opciones.fecha });
+  return {
+    fechaEmision: base.fechaEmision,
+    tipoIdentificacionComprador: base.tipoIdentificacionComprador,
+    razonSocialComprador: base.razonSocialComprador,
+    identificacionComprador: base.identificacionComprador,
+    codDocModificado: opciones.codDocModificado ?? "01",
+    numDocModificado: opciones.numeroModificado,
+    fechaEmisionDocSustento: fechaSri(opciones.fechaModificado),
+    totalSinImpuestos: base.totalSinImpuestos,
+    // El importe con IVA: es lo que efectivamente se le devuelve al cliente.
+    valorModificacion: base.importeTotal,
+    totalConImpuestos: base.totalConImpuestos,
+    motivo: opciones.motivo,
+    detalles: base.detalles,
+  };
+}
+
 /**
  * `01` = sin utilización del sistema financiero.
  *

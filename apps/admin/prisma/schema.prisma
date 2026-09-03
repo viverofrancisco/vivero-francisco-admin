@@ -1159,6 +1159,9 @@ enum EstadoFactura {
 enum TipoDocumento {
   FACTURA
   NO_AUTORIZADO
+  /// La forma de corregir una factura que el SRI ya autorizó. Vive en la misma
+  /// tabla porque es otro comprobante: se firma, se manda y se consulta igual.
+  NOTA_CREDITO
 }
 
 /// Espejo de la factura que vive en Contífico. El portal no la emite ni la
@@ -1242,12 +1245,21 @@ model Factura {
   enviadoEl DateTime?
   enviadoA  String?
 
+  /// Qué factura corrige esta nota de crédito, y por qué. El SRI exige las dos
+  /// cosas en el XML: sin el documento modificado la nota no se refiere a nada.
+  facturaModificadaId String?
+  facturaModificada   Factura?  @relation("NotasDeCredito", fields: [facturaModificadaId], references: [id], onDelete: Restrict)
+  notasDeCredito      Factura[] @relation("NotasDeCredito")
+  motivo              String?
+
   contificoDocumentoId String?       @unique
   /// Único porque en un `NO_AUTORIZADO` **nadie más lo garantiza**: Contífico
   /// acepta un número repetido y crea un segundo documento, al revés que en
   /// una factura. Las dos series no se pisan: `001-002-000000123` contra
   /// `VF-000000001`.
-  numero               String        @unique
+  /// Único **por tipo**: una factura y una nota de crédito tienen cada una su
+  /// propia serie, así que `001-001-000000001` existe una vez de cada.
+  numero               String
   tipo                 TipoDocumento @default(FACTURA)
   fechaEmision         DateTime      @db.Date
   /// Lo que sale impreso en *Información Adicional*. Es el único texto libre
@@ -1285,8 +1297,10 @@ model Factura {
   datoFacturacion DatoFacturacion? @relation(fields: [datoFacturacionId], references: [id], onDelete: SetNull)
   lineas          FacturaLinea[]
 
+  @@unique([tipo, numero])
   @@index([ordenId])
   @@index([estado])
+  @@index([facturaModificadaId])
 }
 
 /// Lo que salió impreso en el documento, línea por línea.

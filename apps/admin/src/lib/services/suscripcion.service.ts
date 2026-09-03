@@ -21,6 +21,7 @@ import {
 } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
+import { FACTURA_VIGENTE } from "./factura-vigente";
 
 function ensureCanWrite(viewer: Viewer): void {
   if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
@@ -326,7 +327,7 @@ export async function ordenesDeSuscripcion(viewer: Viewer, suscripcionId: string
         orderBy: { periodoInicio: "asc" },
       },
       facturas: {
-        where: { anulada: false },
+        where: FACTURA_VIGENTE,
         select: { numero: true, estado: true, saldo: true },
         take: 1,
       },

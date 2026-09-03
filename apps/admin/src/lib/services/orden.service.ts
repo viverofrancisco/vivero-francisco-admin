@@ -17,6 +17,7 @@ import { hoyEnEcuador } from "@/lib/fechas";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
+import { FACTURA_VIGENTE } from "./factura-vigente";
 
 /**
  * Plata: solo ADMIN y STAFF.
@@ -1074,7 +1075,7 @@ export async function listarOrdenesPorCobrar(
   const where: Prisma.OrdenWhereInput = {
     estado: "CONFIRMADA",
     facturas: {
-      some: { anulada: false, OR: [{ saldo: null }, { saldo: { gt: 0 } }] },
+      some: { ...FACTURA_VIGENTE, OR: [{ saldo: null }, { saldo: { gt: 0 } }] },
     },
     cliente: { deletedAt: null },
   };
@@ -1098,7 +1099,7 @@ export async function listarOrdenesPorCobrar(
       total: true,
       _count: { select: { lineas: true } },
       facturas: {
-        where: { anulada: false },
+        where: FACTURA_VIGENTE,
         select: { numero: true, estado: true, saldo: true, fechaEmision: true },
         take: 1,
       },
@@ -1549,7 +1550,7 @@ export async function listarOrdenes(
         // La factura viva, para poder decir si está cobrada. El estado de la
         // orden no lo sabe: cobrar es otro eje.
         facturas: {
-          where: { anulada: false },
+          where: FACTURA_VIGENTE,
           select: { saldo: true },
           take: 1,
         },

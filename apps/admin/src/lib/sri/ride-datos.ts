@@ -14,6 +14,9 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
     where: { id: facturaId },
     select: {
       numero: true,
+      tipo: true,
+      motivo: true,
+      facturaModificada: { select: { numero: true, fechaEmision: true } },
       claveAcceso: true,
       autorizacion: true,
       fechaAutorizacion: true,
@@ -63,6 +66,14 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
 
   return {
     emisor: factura.emisor,
+    tipo: factura.tipo === "NOTA_CREDITO" ? "NOTA_CREDITO" : "FACTURA",
+    modifica: factura.facturaModificada
+      ? {
+          numero: factura.facturaModificada.numero,
+          fecha: factura.facturaModificada.fechaEmision,
+          motivo: factura.motivo ?? "—",
+        }
+      : null,
     numero: factura.numero,
     claveAcceso: factura.claveAcceso,
     numeroAutorizacion: factura.autorizacion,

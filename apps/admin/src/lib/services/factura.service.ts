@@ -43,9 +43,14 @@ import type { TipoDocumento } from "@/generated/prisma/client";
 import { hoyEnEcuador } from "@/lib/fechas";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3, BUCKET_NAME } from "@/lib/s3";
-import { armarFactura } from "@/lib/sri/comprobante";
-import { emitirFacturaSri, numeroComprobante } from "@/lib/sri/emision";
+import { armarFactura, armarNotaCredito } from "@/lib/sri/comprobante";
+import {
+  emitirFacturaSri,
+  emitirNotaCreditoSri,
+  numeroComprobante,
+} from "@/lib/sri/emision";
 import type { EstadoFactura } from "@/generated/prisma/client";
+import { FACTURA_VIGENTE, facturaVigenteDe } from "./factura-vigente";
 
 /**
  * Corre algo contra Contífico y convierte su error en uno del servicio.
@@ -360,7 +365,7 @@ export async function emitirFactura(
   }
   // Un borrador **sí** se factura: emitir es lo que lo confirma. El paso previo
   // dejó de existir cuando confirmar y facturar pasaron a ser el mismo momento.
-  const yaEmitida = orden.facturas.find((f) => !f.anulada);
+  const yaEmitida = facturaVigenteDe(orden.facturas);
   if (yaEmitida) {
     throw new ConflictError(
       `Esta orden ya tiene la factura ${yaEmitida.numero}.`
@@ -732,7 +737,7 @@ async function marcarLocal(
     // falta, porque si la anularon fue porque algo estaba mal.
     if (datos.anulada) {
       const vigentes = await tx.factura.count({
-        where: { ordenId, anulada: false },
+        where: { ordenId, ...FACTURA_VIGENTE },
       });
       if (vigentes === 0) {
         await tx.orden.updateMany({
@@ -1000,7 +1005,7 @@ export async function cobrarOrden(
   if (orden.estado === "ANULADA") {
     throw new ConflictError("Esta orden está anulada.");
   }
-  const vigente = orden.facturas.find((f) => !f.anulada);
+  const vigente = facturaVigenteDe(orden.facturas);
   const factura = vigente
     ? { facturaId: vigente.id, numero: vigente.numero }
     : await emitirFactura(viewer, ordenId);
@@ -1037,7 +1042,7 @@ export async function anularOrdenCompleta(
     );
   }
 
-  const vigente = orden.facturas.find((f) => !f.anulada);
+  const vigente = facturaVigenteDe(orden.facturas);
   if (vigente) await anularFactura(viewer, vigente.id);
 
   // `anularFactura` devolvió la orden a BORRADOR al no quedarle facturas vivas,
@@ -1381,3 +1386,237 @@ const ESTADO_SRI: Record<string, EstadoFactura> = {
   DEVUELTO: "RECHAZADO",
   RECHAZADO: "RECHAZADO",
 };
+
+/**
+ * Emite una nota de crédito que corrige una factura propia.
+ *
+ * **Es lo que el portal puede hacer solo.** Anular el comprobante en el SRI
+ * también existe, pero es un trámite manual de su portal: tiene plazo hasta el
+ * día 7 del mes siguiente, necesita que el cliente acepte —y si no responde en
+ * cinco días hábiles la solicitud queda sin efecto— y desde 2026 está prohibido
+ * para consumidor final. La nota de crédito no depende de nada de eso.
+ *
+ * Por ahora acredita la factura **entera**: es el caso que hay —me equivoqué,
+ * lo devuelvo— y una parcial obliga a decidir qué líneas y en qué cantidad, que
+ * es otra pantalla. Las líneas salen de la factura, no de la orden: lo que se
+ * acredita es lo que se le cobró.
+ *
+ * La orden vuelve a `BORRADOR`, igual que cuando se anula una factura:
+ * `CONFIRMADA` quiere decir "tiene factura viva", y acreditada no la tiene.
+ */
+export async function emitirNotaCredito(
+  viewer: Viewer,
+  facturaId: string,
+  opciones: { motivo: string }
+) {
+  ensureCanWrite(viewer);
+
+  const motivo = opciones.motivo?.trim();
+  if (!motivo) {
+    throw new ValidationError(
+      "La nota de crédito necesita un motivo: sale impreso y es lo que explica la devolución."
+    );
+  }
+
+  const factura = await prisma.factura.findUnique({
+    where: { id: facturaId },
+    select: {
+      id: true,
+      numero: true,
+      tipo: true,
+      estado: true,
+      anulada: true,
+      claveAcceso: true,
+      emisorId: true,
+      ordenId: true,
+      fechaEmision: true,
+      razonSocial: true,
+      identificacion: true,
+      datoFacturacionId: true,
+      datoFacturacion: {
+        select: { id: true, tipoIdentificacion: true, direccion: true },
+      },
+      notasDeCredito: { select: { id: true, numero: true, anulada: true } },
+      lineas: {
+        orderBy: { posicion: "asc" },
+        select: {
+          descripcion: true,
+          detalle: true,
+          cantidad: true,
+          precioUnitario: true,
+          ivaTasa: true,
+          productoId: true,
+          producto: { select: { codigo: true, id: true } },
+        },
+      },
+    },
+  });
+  if (!factura) throw new NotFoundError("Factura no encontrada");
+  await getOrden(viewer, factura.ordenId);
+
+  if (!factura.claveAcceso || !factura.emisorId) {
+    throw new ValidationError(
+      "Esta factura la emitió Contífico: la nota de crédito se hace desde ellos."
+    );
+  }
+  if (factura.tipo === "NOTA_CREDITO") {
+    throw new ValidationError("Una nota de crédito no se corrige con otra.");
+  }
+  // Sin autorización no hay nada que corregir: lo que hay es un envío que el
+  // SRI no aceptó, y eso se arregla emitiendo de nuevo.
+  if (factura.estado !== "AUTORIZADO") {
+    throw new ValidationError(
+      "El SRI no autorizó esta factura, así que no hay nada que acreditar."
+    );
+  }
+  const yaTiene = factura.notasDeCredito.find((n) => !n.anulada);
+  if (yaTiene) {
+    throw new ValidationError(
+      `Esta factura ya tiene la nota de crédito ${yaTiene.numero}.`
+    );
+  }
+
+  const emisor = await prisma.emisor.findUniqueOrThrow({
+    where: { id: factura.emisorId },
+    select: { establecimiento: true, puntoEmision: true },
+  });
+
+  const emitidaEl = hoyEnEcuador();
+  const datos = armarNotaCredito(
+    {
+      tipoIdentificacion:
+        factura.datoFacturacion?.tipoIdentificacion === "RUC" ? "RUC" : "CEDULA",
+      identificacion: factura.identificacion ?? "9999999999999",
+      razonSocial: factura.razonSocial ?? "CONSUMIDOR FINAL",
+      direccion: factura.datoFacturacion?.direccion,
+    },
+    factura.lineas.map((l) => ({
+      codigo: l.producto.codigo ?? l.producto.id.slice(-10).toUpperCase(),
+      descripcion: l.detalle?.trim()
+        ? `${l.descripcion} · ${l.detalle.trim()}`
+        : l.descripcion,
+      cantidad: Number(l.cantidad),
+      precioUnitario: Number(l.precioUnitario),
+      ivaTasa: Number(l.ivaTasa),
+    })),
+    {
+      fecha: emitidaEl,
+      motivo,
+      numeroModificado: factura.numero,
+      fechaModificado: factura.fechaEmision,
+    }
+  );
+
+  const r = await emitirNotaCreditoSri(factura.emisorId, datos);
+  const numero = numeroComprobante(
+    emisor.establecimiento,
+    emisor.puntoEmision,
+    r.secuencial
+  );
+
+  // El XML de la nota también se conserva: es un comprobante como cualquier otro.
+  const xmlKey = `facturas/${r.claveAcceso}.xml`;
+  let guardadoElXml = false;
+  try {
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: xmlKey,
+        Body: r.xmlFirmado,
+        ContentType: "application/xml",
+      })
+    );
+    guardadoElXml = true;
+  } catch {
+    // Recuperable: el comprobante se puede volver a pedir por la clave.
+  }
+
+  const totales = {
+    subtotal0: centavos(
+      datos.totalConImpuestos
+        .filter((t) => t.valor === 0)
+        .reduce((a, t) => a + t.baseImponible, 0)
+    ),
+    subtotalGravado: centavos(
+      datos.totalConImpuestos
+        .filter((t) => t.valor > 0)
+        .reduce((a, t) => a + t.baseImponible, 0)
+    ),
+    iva: centavos(datos.totalConImpuestos.reduce((a, t) => a + t.valor, 0)),
+    total: datos.valorModificacion,
+  };
+
+  const nota = await prisma.$transaction(async (tx) => {
+    const creada = await tx.factura.create({
+      data: {
+        ordenId: factura.ordenId,
+        emisorId: factura.emisorId,
+        facturaModificadaId: factura.id,
+        motivo,
+        numero,
+        tipo: "NOTA_CREDITO",
+        descripcion: `Nota de crédito de la factura ${factura.numero}`,
+        fechaEmision: emitidaEl,
+        estado: ESTADO_SRI[r.estado] ?? "PENDIENTE",
+        claveAcceso: r.claveAcceso,
+        ambienteSri: r.ambiente,
+        estadoSri: r.estado,
+        fechaAutorizacion: r.fechaAutorizacion,
+        autorizacion: r.numeroAutorizacion,
+        mensajesSri: r.mensajes.length > 0 ? r.mensajes : undefined,
+        xmlKey: guardadoElXml ? xmlKey : null,
+        datoFacturacionId: factura.datoFacturacionId,
+        razonSocial: factura.razonSocial,
+        identificacion: factura.identificacion,
+        subtotal0: totales.subtotal0,
+        subtotalGravado: totales.subtotalGravado,
+        iva: totales.iva,
+        total: totales.total,
+        // Una nota de crédito no se cobra: devuelve.
+        saldo: 0,
+        lineas: {
+          create: factura.lineas.map((l, i) => {
+            const subtotal = centavos(
+              Number(l.cantidad) * Number(l.precioUnitario)
+            );
+            const iva = centavos((subtotal * Number(l.ivaTasa)) / 100);
+            return {
+              posicion: i,
+              descripcion: l.descripcion,
+              detalle: l.detalle,
+              cantidad: l.cantidad,
+              precioUnitario: l.precioUnitario,
+              ivaTasa: l.ivaTasa,
+              subtotal,
+              iva,
+              total: centavos(subtotal + iva),
+              productoId: l.productoId,
+            };
+          }),
+        },
+      },
+    });
+
+    // La factura queda acreditada solo si el SRI aceptó la nota: si la rechazó,
+    // la factura sigue viva y hay que emitir otra nota.
+    if (r.estado === "AUTORIZADO") {
+      await tx.factura.update({
+        where: { id: factura.id },
+        data: { anulada: true },
+      });
+      await tx.orden.updateMany({
+        where: { id: factura.ordenId, estado: "CONFIRMADA" },
+        data: { estado: "BORRADOR", updatedById: viewer.id },
+      });
+    }
+    return creada;
+  });
+
+  return {
+    notaId: nota.id,
+    numero: nota.numero,
+    estado: nota.estado,
+    claveAcceso: nota.claveAcceso,
+    mensajes: r.mensajes,
+  };
+}

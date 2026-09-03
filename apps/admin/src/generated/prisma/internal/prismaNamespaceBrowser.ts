@@ -756,6 +756,8 @@ export const FacturaScalarFieldEnum = {
   mensajesSri: 'mensajesSri',
   enviadoEl: 'enviadoEl',
   enviadoA: 'enviadoA',
+  facturaModificadaId: 'facturaModificadaId',
+  motivo: 'motivo',
   contificoDocumentoId: 'contificoDocumentoId',
   numero: 'numero',
   tipo: 'tipo',

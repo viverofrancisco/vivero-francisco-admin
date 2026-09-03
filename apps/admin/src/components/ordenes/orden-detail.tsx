@@ -77,6 +77,9 @@ import { CobrosCard } from "./cobros-card";
 import { CopyField } from "@/components/shared/copy-field";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
 import { AvisoSinVincular } from "./aviso-sin-vincular";
+import { facturaVigenteDe } from "@/lib/services/factura-vigente";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export interface ClienteOpcion {
   id: string;
@@ -145,7 +148,8 @@ interface OrdenData {
     id: string;
     numero: string;
     /** `NO_AUTORIZADO` = documento sin factura: no va al SRI y no lleva IVA. */
-    tipo: "FACTURA" | "NO_AUTORIZADO";
+    /** `NOTA_CREDITO` es la que corrige a otra: no es la factura de la orden. */
+    tipo: "FACTURA" | "NO_AUTORIZADO" | "NOTA_CREDITO";
     estado: string;
     /** Lo que salió impreso. Puede no tener la forma de las líneas de la orden. */
     lineas: {
@@ -170,6 +174,9 @@ interface OrdenData {
     contificoDocumentoId: string | null;
     /** Con clave de acceso, la emitió el portal contra el SRI. */
     claveAcceso: string | null;
+    /** El motivo de la nota de crédito, y a qué factura corrige. */
+    motivo: string | null;
+    facturaModificadaId: string | null;
     /** Cuándo se le mandó al cliente, y a qué correo. */
     enviadoEl: string | null;
     enviadoA: string | null;
@@ -242,7 +249,7 @@ export function OrdenDetail({
    * Una orden tiene una factura. Las anuladas quedan en el historial pero no
    * mandan sobre nada: todas las acciones apuntan a la que está viva.
    */
-  const facturaVigente = orden.facturas.find((f) => !f.anulada) ?? null;
+  const facturaVigente = facturaVigenteDe(orden.facturas);
   /**
    * Un documento sin factura no va al SRI: no tiene RIDE, ni firma que esperar,
    * ni estado que mostrar. Lo que sí tiene —y es lo que importa— es saldo.
@@ -250,6 +257,15 @@ export function OrdenDetail({
   const sinFactura = facturaVigente?.tipo === "NO_AUTORIZADO";
   /** La emitió el portal contra el SRI: el RIDE y el XML son nuestros. */
   const propia = Boolean(facturaVigente?.claveAcceso);
+  /**
+   * Las notas de crédito de la orden.
+   *
+   * Van aparte porque no son la factura: al acreditarla, la factura queda
+   * anulada y la orden vuelve a borrador, así que sin esta lista la nota
+   * desaparecería de la pantalla y nadie sabría que existió.
+   */
+  const notasDeCredito = orden.facturas.filter((f) => f.tipo === "NOTA_CREDITO");
+  const [acreditando, setAcreditando] = useState(false);
 
   /**
    * ¿El papel tiene otra forma que la orden?
@@ -564,6 +580,36 @@ export function OrdenDetail({
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
       toast.success("Enviada al SRI");
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error");
+    } finally {
+      setCargando(null);
+    }
+  };
+
+  /**
+   * Emite la nota de crédito que corrige la factura.
+   *
+   * Es lo que el portal puede hacer solo: anular el comprobante en el SRI es un
+   * trámite manual de su portal, con plazo y con la aceptación del cliente.
+   */
+  const emitirNota = async (facturaId: string, motivo: string) => {
+    setCargando(facturaId);
+    try {
+      const res = await fetch(`/api/facturas/${facturaId}/nota-credito`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ motivo }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      if (body.estado === "AUTORIZADO") {
+        toast.success(`El SRI autorizó la nota de crédito ${body.numero}`);
+      } else {
+        toast.warning(`La nota quedó en ${body.estado}: la factura sigue viva.`);
+      }
+      setAcreditando(false);
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error");
@@ -1127,6 +1173,20 @@ export function OrdenDetail({
                       </span>
                     </DropdownMenuItem>
                     )}
+                    {/* Corregir una factura ya autorizada. Anularla en el
+                        SRI es otra cosa: un trámite manual del portal de ellos,
+                        con plazo hasta el día 7 del mes siguiente y con la
+                        aceptación del cliente. */}
+                    {propia && facturaVigente.estado === "AUTORIZADO" && (
+                      <DropdownMenuItem
+                        onClick={() => setAcreditando(true)}
+                        className="text-destructive"
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Emitir nota de crédito
+                      </DropdownMenuItem>
+                    )}
+
                     {/* Antes de la autorización no hay comprobante que
                         entregar, así que solo aparece cuando la hay. */}
                     {propia && facturaVigente.estado === "AUTORIZADO" && (
@@ -1406,6 +1466,60 @@ export function OrdenDetail({
           </Card>
         )}
 
+        {/* Las notas de crédito, que no son la factura de la orden.
+            Al acreditar, la factura queda anulada y la orden vuelve a
+            borrador: sin esta card la nota desaparecería de la pantalla y
+            nadie sabría que existió. */}
+        {notasDeCredito.length > 0 && (
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">
+                {notasDeCredito.length === 1
+                  ? "Nota de crédito"
+                  : "Notas de crédito"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {notasDeCredito.map((n) => (
+                <div key={n.id} className="space-y-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="font-medium">{n.numero}</span>
+                    <span className="text-right tabular-nums">
+                      −{money(n.total)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {fecha(n.fechaEmision)} ·{" "}
+                    {ESTADO_FACTURA_LABEL[n.estado] ?? n.estado}
+                    {n.motivo ? ` · ${n.motivo}` : ""}
+                  </p>
+                  {n.estado === "AUTORIZADO" && (
+                    <a
+                      href={`/api/facturas/${n.id}/ride`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Ver el documento
+                    </a>
+                  )}
+                  {/* Rechazada, la factura sigue viva: hay que emitir otra. */}
+                  {n.mensajesSri && n.mensajesSri.length > 0 && (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
+                      {n.mensajesSri.map((m, i) => (
+                        <p key={i}>
+                          {m.identificador ? `${m.identificador} · ` : ""}
+                          {m.mensaje}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         {/* A nombre de quién sale la factura. Editable mientras sea borrador: una
             vez confirmada la orden, cambiarlo es cambiar lo que se va a cobrar. */}
         {orden.estado === "BORRADOR" && (
@@ -1443,6 +1557,73 @@ export function OrdenDetail({
             </CardContent>
           </Card>
         )}
+
+          {/* El motivo sale impreso en la nota y es lo que explica la
+              devolución, así que se pide: una nota sin motivo obliga a
+              adivinar por qué se devolvió meses después. */}
+          <Dialog
+            open={acreditando}
+            onOpenChange={(v) => !v && setAcreditando(false)}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  Nota de crédito de la factura {facturaVigente?.numero}
+                </DialogTitle>
+              </DialogHeader>
+              <form
+                className="space-y-4 text-sm"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const motivo = String(
+                    new FormData(e.currentTarget).get("motivo") ?? ""
+                  );
+                  if (facturaVigente) emitirNota(facturaVigente.id, motivo);
+                }}
+              >
+                <p>
+                  Se emite al SRI una nota de crédito por{" "}
+                  <strong>{money(facturaVigente?.total ?? 0)}</strong>, el total
+                  de la factura. Queda acreditada y la orden vuelve a borrador.
+                </p>
+                <div className="space-y-1.5">
+                  <Label htmlFor="motivo" className="text-xs">
+                    Motivo *
+                  </Label>
+                  <Input
+                    id="motivo"
+                    name="motivo"
+                    required
+                    placeholder="Ej: devolución del trabajo no realizado"
+                    autoFocus
+                  />
+                </div>
+                <p className="rounded-md bg-muted/60 p-3 text-xs leading-snug">
+                  <b>Anular el comprobante en el SRI es otra cosa</b> y no la
+                  hace el portal: es un trámite de su portal, con plazo hasta el
+                  día 7 del mes siguiente, que necesita que el cliente acepte y
+                  que no aplica a consumidor final. La nota de crédito no
+                  depende de nada de eso.
+                </p>
+                <div className="flex justify-end gap-2 border-t pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setAcreditando(false)}
+                    disabled={cargando !== null}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={cargando !== null}>
+                    {cargando !== null && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Emitir nota de crédito
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
           <Dialog
             open={anulando}

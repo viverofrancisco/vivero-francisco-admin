@@ -95,6 +95,10 @@ export interface RideEmisor {
 
 export interface RideDatos {
   emisor: RideEmisor;
+  /** Qué comprobante es. Cambia el título y, en la nota, qué documento corrige. */
+  tipo: "FACTURA" | "NOTA_CREDITO";
+  /** Solo en la nota de crédito: a qué factura se refiere y por qué. */
+  modifica?: { numero: string; fecha: Date; motivo: string } | null;
   numero: string;
   claveAcceso: string;
   numeroAutorizacion: string | null;
@@ -210,7 +214,9 @@ function RideDocument({
           {/* Qué documento es */}
           <View style={[styles.caja, { flex: 1 }]}>
             <Dato etiqueta="R.U.C." valor={emisor.ruc} />
-            <Text style={styles.titulo}>FACTURA</Text>
+            <Text style={styles.titulo}>
+              {datos.tipo === "NOTA_CREDITO" ? "NOTA DE CRÉDITO" : "FACTURA"}
+            </Text>
             <Dato etiqueta="No." valor={datos.numero} />
             <Dato
               etiqueta="Número de autorización"
@@ -244,6 +250,22 @@ function RideDocument({
             )}
           </View>
         </View>
+
+        {/* Qué corrige la nota. Sin esto el papel no dice a qué se refiere. */}
+        {datos.modifica && (
+          <View style={[styles.caja, { marginTop: 8 }]}>
+            <Text style={styles.subtitulo}>Documento que modifica</Text>
+            <View style={styles.fila}>
+              <View style={{ flex: 1 }}>
+                <Dato etiqueta="Comprobante" valor={`Factura ${datos.modifica.numero}`} />
+                <Dato etiqueta="Fecha de emisión" valor={fechaLarga(datos.modifica.fecha)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Dato etiqueta="Motivo" valor={datos.modifica.motivo} />
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* A quién se le factura */}
         <View style={[styles.caja, { marginTop: 8 }]}>

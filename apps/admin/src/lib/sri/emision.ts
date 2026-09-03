@@ -17,7 +17,7 @@ import {
 } from "facturacion-electronica-ec";
 import { certificadoParaFirmar } from "@/lib/services/emisor.service";
 import { siguienteSecuencial } from "./secuenciales";
-import type { DatosFactura } from "./comprobante";
+import type { DatosFactura, DatosNotaCredito } from "./comprobante";
 
 /** El emisor tal como lo necesita la librería, ya con su certificado. */
 async function clienteDelEmisor(emisorId: string) {
@@ -89,6 +89,31 @@ export async function emitirFacturaSri(
 ): Promise<ResultadoEmision> {
   const { fe, emisor } = await clienteDelEmisor(emisorId);
   const r = await fe.emitirFactura(datos as never);
+  return {
+    estado: r.estado,
+    claveAcceso: r.claveAcceso,
+    secuencial: r.secuencial,
+    numeroAutorizacion: r.numeroAutorizacion,
+    fechaAutorizacion: r.fechaAutorizacion,
+    xmlFirmado: r.xmlFirmado,
+    mensajes: r.mensajes ?? [],
+    ambiente: emisor.ambiente,
+  };
+}
+
+/**
+ * Emite una nota de crédito contra el SRI.
+ *
+ * Tiene su propia serie: la nota `001-001-000000001` y la factura
+ * `001-001-000000001` son dos documentos distintos, y el secuencial de cada
+ * tipo corre por separado.
+ */
+export async function emitirNotaCreditoSri(
+  emisorId: string,
+  datos: DatosNotaCredito
+): Promise<ResultadoEmision> {
+  const { fe, emisor } = await clienteDelEmisor(emisorId);
+  const r = await fe.emitirNotaCredito(datos as never);
   return {
     estado: r.estado,
     claveAcceso: r.claveAcceso,
