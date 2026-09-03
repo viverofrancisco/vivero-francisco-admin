@@ -55,9 +55,9 @@ type Linea = LineaEditable;
 /**
  * Toda línea sale de un producto del catálogo.
  *
- * Contífico exige `producto_id` en cada `detalles[]` y no acepta texto libre,
- * así que una línea suelta sería una orden imposible de cobrar. Si algo no está
- * en el catálogo, hay que crearlo como producto primero.
+ * El SRI pide un `codigoPrincipal` en cada detalle y ese código sale del
+ * producto, así que una línea suelta sería una orden imposible de cobrar. Si
+ * algo no está en el catálogo, hay que crearlo como producto primero.
  */
 function lineaBase(): Omit<Linea, "descripcion" | "productoId"> {
   return {

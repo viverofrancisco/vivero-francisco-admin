@@ -8,7 +8,7 @@ import { toast } from "sonner";
 /**
  * Un identificador con botón de copiar.
  *
- * Los códigos e ids de Contífico se pegan en su interfaz para buscar un
+ * Los códigos y claves de acceso se pegan en el portal del SRI para buscar un
  * producto, y son largos y fáciles de transcribir mal.
  */
 export function CopyField({

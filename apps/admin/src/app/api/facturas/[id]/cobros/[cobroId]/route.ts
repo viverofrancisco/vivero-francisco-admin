@@ -6,7 +6,8 @@ import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 /**
  * Borra un cobro propio y devuelve el saldo.
  *
- * Solo los propios: los de Contífico viven allá y su API no los borra.
+ * Un cobro es un hecho —o entró esa plata o no— así que se borra en vez de
+ * corregirse. El saldo lo recalcula el servidor desde lo que queda.
  */
 export async function DELETE(
   _request: Request,

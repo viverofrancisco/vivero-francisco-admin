@@ -470,7 +470,7 @@ export async function cancelVisita(
  * que ahí el precio ya se conoce.
  *
  * **No puede hacer fallar el completar.** Si el producto no está vinculado con
- * Contífico, `crearOrden` lo rechaza; la visita se completa igual y el trabajo
+ * del catálogo, `crearOrden` lo rechaza; la visita se completa igual y el trabajo
  * queda en pendientes, como antes. Terminar una visita en el campo no puede
  * depender de cómo esté el catálogo.
  */

@@ -1,10 +1,9 @@
 /**
- * Los cobros de una factura propia.
+ * Los cobros de una factura.
  *
- * El portal lleva su propia cuenta corriente desde que emite sin Contífico. De
- * una factura de ellos los cobros siguen viviendo allá —el portal los manda y
- * relee el saldo—, así que acá solo entran las nuestras: dos sistemas anotando
- * el mismo pago sería la forma más rápida de que ninguno tenga razón.
+ * Son del portal: al SRI la forma de pago se le declara **al emitir**, en
+ * `<pagos>`, y eso ya quedó firmado. Lo de acá es la cuenta corriente del
+ * vivero — con qué y cuándo pagaron, y quién lo anotó.
  *
  * **El saldo se recalcula desde los cobros, siempre.** Restarle el monto al
  * saldo guardado parece más simple hasta que un cobro se borra, se corrige o se
@@ -69,9 +68,11 @@ async function facturaPropia(viewer: Viewer, facturaId: string) {
   if (!factura) throw new NotFoundError("Factura no encontrada");
   await getOrden(viewer, factura.ordenId);
 
+  // Sin clave de acceso no es un comprobante que haya emitido el portal, así
+  // que no hay contra qué registrar el cobro. Solo puede pasar en filas viejas.
   if (!factura.claveAcceso) {
     throw new ValidationError(
-      "Esta factura la emitió Contífico: sus cobros se registran allá."
+      `La factura ${factura.numero} no la emitió el portal: no se le pueden registrar cobros.`
     );
   }
   if (factura.tipo === "NOTA_CREDITO") {

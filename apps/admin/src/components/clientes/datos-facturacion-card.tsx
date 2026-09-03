@@ -66,7 +66,7 @@ const vacio: Borrador = {
  * sociales distintas. Al emitir se elige cuál, y el predeterminado es el que se
  * propone.
  *
- * Los campos son los que Contífico guarda de una persona; no hay ninguno de
+ * Los campos son los que el SRI imprime del comprador; no hay ninguno de
  * adorno.
  */
 export function DatosFacturacionCard({

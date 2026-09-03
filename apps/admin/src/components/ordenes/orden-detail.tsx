@@ -133,7 +133,6 @@ interface OrdenData {
     periodoFin: string | null;
     /** Procedencia: se conserva al editar, es lo que evita cobrar dos veces. */
     productoId: string;
-    /** Si su producto está en Contífico. Sin eso no puede salir impreso. */
     /** Qué trabajos paga la línea. Varios si el producto se hizo en más visitas. */
     visitaProductoIds: string[];
     /** De qué visitas salió, ya resueltas para poder linkearlas. */
@@ -649,7 +648,7 @@ export function OrdenDetail({
           <div className="flex flex-none items-center gap-2">
             {/* La acción principal, y dice lo que hace en cada momento.
                 Sin documento emitido lo que toca es emitirlo —el cobro se
-                registra **contra** un documento de Contífico, así que antes no
+                registra **contra** un comprobante, así que antes no
                 hay nada que cobrar— y con uno emitido, cobrarlo. Ofrecer
                 "Registrar cobro" sobre un borrador prometía un paso que en
                 realidad empezaba por otro lado. Saldada no queda nada y
@@ -911,7 +910,7 @@ export function OrdenDetail({
 
         {/* Los cobros van debajo del detalle y no en un popup: son parte de la
             historia de la orden, no una consulta aparte. Solo con factura
-            emitida, porque los cobros viven colgados de ella en Contífico. */}
+            emitida, porque los cobros cuelgan de ella. */}
         {facturaVigente && (
           <div className="mt-6">
             <CobrosCard facturaId={facturaVigente.id} />
@@ -1413,22 +1412,11 @@ export function OrdenDetail({
                 <DialogTitle>Anular la orden #{orden.numero}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 text-sm">
-                {facturaVigente ? (
-                  <p>
-                    Se anula también su factura {facturaVigente.numero} en
-                    Contífico, por {money(facturaVigente.total)}.
-                  </p>
-                ) : (
-                  <p>La orden queda anulada y no se puede reabrir.</p>
-                )}
-                {/* La ventana se cierra sola: Contífico firma en su tanda
-                    horaria y desde ahí no acepta más cambios. */}
-                {facturaVigente && (
-                  <p className="text-xs text-muted-foreground">
-                    Se puede porque Contífico todavía no la firmó. Una vez
-                    firmada, darla de baja es una nota de crédito.
-                  </p>
-                )}
+                {/* Con factura viva no se llega acá: el menú apaga *Anular*
+                    y el servicio la rechaza. Un comprobante que el SRI ya
+                    autorizó se corrige con una nota de crédito, no borrándolo
+                    de nuestra base. */}
+                <p>La orden queda anulada y no se puede reabrir.</p>
 
                 {/* Lo que no puede irse en silencio: si estas líneas se van con
                     la orden, su trabajo queda reservado por una orden muerta y
@@ -1511,7 +1499,7 @@ function FilaDato({
  * cambia a mano, que es lo que ya hace pensar «esto se puede tocar». El ícono
  * pedía apuntarle a un blanco de catorce píxeles al lado de lo que uno quería.
  *
- * Son datos que se pegan en Contífico para buscar el documento —quince dígitos
+ * Son datos que se copian para buscar el comprobante —cuarenta y nueve dígitos
  * con guiones, o un hash— y transcribirlos a mano es garantía de errata.
  */
 function ValorCopiable({

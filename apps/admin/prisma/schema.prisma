@@ -59,14 +59,24 @@ enum UserRole {
   CLIENTE
 }
 
-/// Qué es el ítem. Se mapea al `tipo` de Contífico (SER / PRO).
+/// Qué es el ítem: algo que se ejecuta o algo que se despacha.
+///
+/// **No cambia nada al facturar.** El `<detalle>` del SRI no distingue bienes
+/// de servicios: lleva código, descripción, cantidad, precio e impuestos, y
+/// nada sobre la naturaleza de lo vendido. Era una distinción contable de
+/// Contífico (`SER` / `PRO`), que decidía qué lleva inventario y en qué cuenta
+/// caía la venta.
+///
+/// Se queda porque es la clasificación del catálogo —agrupa y filtra la
+/// lista— y porque es exactamente el eje que va a decidir qué tiene stock el
+/// día que el inventario se lleve acá.
 enum TipoProducto {
   SERVICIO
   BIEN
 }
 
-/// Cómo se vende. Vive solo en el portal: Contífico no conoce suscripciones,
-/// solo recibe una factura por período.
+/// Cómo se vende. Vive solo en el portal: al SRI le llega una factura por
+/// período, no el contrato que la generó.
 /// Cada cuánto se cobra una suscripción. El precio del contrato es por período,
 /// no por mes: una anual de $1200 se cobra $1200 una vez al año.
 enum Periodicidad {
@@ -194,8 +204,8 @@ model Cliente {
   notas           String? @db.Text
   metrosCuadrados Float?
 
-  /// Identificación tributaria. Contífico exige `cedula` y `tipo` para emitir
-  /// una factura; hoy están vacías y se backfillean desde su padrón.
+  /// Identificación tributaria del contacto. Lo que sale impreso en una
+  /// factura no es esto sino `DatoFacturacion`, que puede haber varios.
   cedula      String?
   ruc         String?
   tipoPersona TipoPersona?
@@ -223,7 +233,7 @@ model Cliente {
 }
 
 /// Catálogo único: servicios de jardinería y, más adelante, bienes de vivero.
-/// En Contífico ambos son `producto`; lo que los distingue acá es `tipo`.
+/// Lo que los distingue es `tipo`, que no cambia nada al facturar.
 model Producto {
   id           String         @id @default(cuid())
   nombre       String
@@ -962,7 +972,7 @@ model Firmante {
 // de que exista factura. Toda la plata vive en `OrdenLinea`, venga de una
 // suscripción, de una visita única o (más adelante) de un bien. Así un reporte
 // de ventas es una sola consulta en vez de un union por cada tipo de ingreso,
-// y si algún día se deja de usar Contífico el historial completo queda acá.
+// y el historial completo de ventas queda en nuestra base.
 // ──────────────────────────────────────────────
 
 /// Tres estados y una sola idea: si la orden está viva y si se puede tocar.
@@ -1063,8 +1073,8 @@ model OrdenLinea {
   iva            Decimal @db.Decimal(10, 2)
   total          Decimal @db.Decimal(10, 2)
 
-  /// Qué se vendió. Obligatorio: Contífico exige `producto_id` en cada línea y
-  /// no acepta texto libre, así que una línea sin producto sería una venta que
+  /// Qué se vendió. Obligatorio: de acá sale el `codigoPrincipal` que el SRI
+  /// pide en cada detalle, así que una línea sin producto sería una venta que
   /// no se puede cobrar. Es además lo que hace que un reporte por producto sea
   /// un `groupBy` y no una reconstrucción.
   productoId        String
@@ -1253,11 +1263,7 @@ model Factura {
   @@index([facturaModificadaId])
 }
 
-/// Un cobro contra una factura **propia**.
-///
-/// Existe desde que el portal emite sin Contífico: los cobros de una factura de
-/// ellos siguen viviendo allá —el portal solo relee el saldo—, pero de una
-/// nuestra no hay dónde anotarlos si no es acá.
+/// Un cobro contra una factura.
 ///
 /// No viaja a ningún lado. Al SRI la forma de pago se le declara **al emitir**,
 /// y el comprobante ya salió: esto es la cuenta corriente del vivero, no un

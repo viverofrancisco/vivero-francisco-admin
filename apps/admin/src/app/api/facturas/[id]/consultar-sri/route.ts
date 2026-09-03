@@ -36,7 +36,7 @@ export async function POST(
 
     if (!factura.claveAcceso || !factura.emisorId) {
       throw new ValidationError(
-        "Esta factura la emitió Contífico: se actualiza desde ellos."
+        "Esta factura no la emitió el portal: no hay clave de acceso que consultarle al SRI."
       );
     }
 

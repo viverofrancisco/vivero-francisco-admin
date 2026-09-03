@@ -3,7 +3,7 @@
  *
  * Una suscripción agrupa uno o más productos que se cobran juntos en el mismo
  * ciclo. Cada renovación genera una orden con **una línea por ítem**, y esa
- * orden se emite en Contífico como un documento con N `detalles` — por eso la
+ * orden se emite como una factura con N detalles — por eso la
  * tasa de IVA vive en el ítem y no en la cabecera: una misma factura puede
  * mezclar líneas al 0% y al 15%.
  *

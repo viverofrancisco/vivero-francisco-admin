@@ -6,7 +6,7 @@
  * Cliente y no campos sueltos: el nombre con el que se lo conoce en el portal
  * no tiene por qué ser la razón social del SRI.
  *
- * Los campos son exactamente los que Contífico guarda de una persona —
+ * Los campos son exactamente los que el SRI imprime del comprador —
  * verificado contra su API: `cedula`/`ruc`, `razon_social`, `tipo` (N/J),
  * `direccion`, `telefonos`, `email`.
  */
@@ -38,7 +38,7 @@ export interface DatoFacturacionInput {
 /**
  * Se valida acá y no al facturar.
  *
- * Contífico rechaza una cédula inválida con "Cedula Incorrecta" recién al
+ * El SRI rechaza una cédula inválida recién al
  * emitir el documento, que es el peor momento para descubrirlo: la orden ya
  * está confirmada y alguien está esperando la factura.
  */

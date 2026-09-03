@@ -52,7 +52,7 @@ export async function enviarFacturaAlCliente(
 
   if (!factura.claveAcceso) {
     throw new ValidationError(
-      "Esta factura la emitió Contífico: el comprobante se lo manda su sistema."
+      "Esta factura no la emitió el portal: no hay comprobante que mandar."
     );
   }
   // Antes de la autorización no hay comprobante que entregar: lo que hay es un

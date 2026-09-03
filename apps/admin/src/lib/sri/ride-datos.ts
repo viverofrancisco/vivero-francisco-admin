@@ -58,11 +58,11 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
   });
   if (!factura) throw new NotFoundError("Factura no encontrada");
 
-  // El RIDE es la representación del comprobante **electrónico**: sin emisor
-  // propio la factura la emitió Contífico, y el papel lo hacen ellos.
+  // El RIDE es la representación de un comprobante **electrónico**: sin emisor
+  // ni clave de acceso no hay comprobante que representar.
   if (!factura.emisor || !factura.claveAcceso) {
     throw new ValidationError(
-      "Esta factura no la emitió el portal: su RIDE lo genera Contífico."
+      "Esta factura no la emitió el portal: no tiene RIDE."
     );
   }
 

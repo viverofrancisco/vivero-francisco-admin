@@ -5,7 +5,7 @@
  * entra son las líneas ya resueltas —las mismas que hoy arma el emisor de
  * documentos— y lo que sale es el objeto que la librería convierte en XML.
  *
- * **Acá se ve lo que cambia al dejar Contífico**: la línea del SRI lleva un
+ * **Acá se ve la diferencia con un catálogo ajeno**: la línea del SRI lleva un
  * código y una descripción *nuestros*. No hay `producto_id` de nadie, así que
  * no hay que vincular nada con ningún catálogo ajeno para poder facturar.
  */

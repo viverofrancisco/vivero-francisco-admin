@@ -4,8 +4,8 @@
  * Una orden es *lo que se vendió*, y existe desde que se hizo el trabajo —
  * antes de que exista factura. Toda la plata vive en `OrdenLinea`, venga de la
  * renovación de una suscripción o de una visita única. Eso hace que un reporte
- * de ventas sea una sola consulta, y que el historial siga siendo del portal
- * aunque algún día se deje de usar Contífico.
+ * de ventas sea una sola consulta, y que el historial completo viva en nuestra
+ * propia base.
  *
  * Las órdenes se generan **a pedido**, no por cron: menos maquinaria, y no hay
  * un proceso que se caiga sin que nadie mire.
@@ -291,7 +291,7 @@ export interface LineaOrdenInput {
   cantidad: number;
   precioUnitario: number;
   ivaTasa: number;
-  /** Obligatorio: Contífico no acepta líneas sin producto. */
+  /** Obligatorio: de acá sale el `codigoPrincipal` de la línea del XML. */
   productoId: string;
   /**
    * Qué trabajos de visita paga esta línea. **Pueden ser varios**: el mismo
@@ -640,8 +640,8 @@ export interface ActualizarOrdenPayload {
  * Edita una orden que todavía está en BORRADOR.
  *
  * Solo el borrador se toca: una vez confirmada, la orden es lo que se le va a
- * facturar al cliente, y una vez facturada Contífico no deja editarla ni
- * anularla por API. Mover el número hacia atrás sería mentirle al historial.
+ * facturar al cliente, y una vez facturada el comprobante ya está firmado y en
+ * el SRI. Mover el número hacia atrás sería mentirle al historial.
  */
 export async function actualizarOrden(
   viewer: Viewer,
@@ -1263,8 +1263,8 @@ export async function borradoresSinConfirmar(viewer: Viewer): Promise<number> {
  * Períodos de suscripción vencidos que **no** tienen orden.
  *
  * En condiciones normales esto es cero: el cron los crea todos los días. Si no
- * lo es, algo falló — el cron no corrió, o la suscripción tiene un producto sin
- * vincular a Contífico y se omitió a propósito.
+ * lo es, algo falló — el cron no corrió, o la suscripción se omitió por no
+ * tener ningún producto activo.
  *
  * Es la red de seguridad de que el cobro no dependa de que un proceso invisible
  * haya funcionado. Sin esto, un cron caído se descubre cuando el cliente

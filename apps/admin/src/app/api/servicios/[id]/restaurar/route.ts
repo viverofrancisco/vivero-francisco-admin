@@ -9,9 +9,8 @@ import { getCurrentUser } from "@/lib/auth-helpers";
  * en visitas, órdenes y facturas viejas; sin esta puerta, la única forma de
  * deshacerlo era tocar la base a mano.
  *
- * No toca el vínculo con Contífico: si mientras estaba archivado alguien tomó
- * ese producto de allá para otro del portal, vuelve sin vincular, que es la
- * verdad. Vincularlo de nuevo es un paso aparte y explícito.
+ * Vuelve tal cual estaba, con su código incluido: archivar no lo liberó, así
+ * que nadie más pudo haberlo tomado mientras tanto.
  */
 export async function POST(
   _request: Request,

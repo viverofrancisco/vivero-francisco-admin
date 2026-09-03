@@ -55,7 +55,7 @@ interface Manifiesto {
   visitas: string[];
   mensajes: string[];
   ordenes: string[];
-  /** Solo local: el documento en Contífico no se puede borrar. */
+  /** Solo local: el comprobante que el SRI autorizó sigue existiendo allá. */
   facturas: string[];
 }
 
@@ -128,7 +128,7 @@ const masMeses = (base: Date, n: number) => {
 };
 
 // ──────────────────────────────────────────────
-// Identificaciones que Contífico acepta
+// Identificaciones válidas para el SRI
 // ──────────────────────────────────────────────
 
 /** Cédula con dígito verificador correcto (módulo 10). */

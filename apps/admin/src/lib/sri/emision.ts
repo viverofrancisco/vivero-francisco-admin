@@ -7,7 +7,7 @@
  * nos avisa nada después: hay que preguntar.
  *
  * Esto es solo la puerta hacia el SRI. Qué se factura y qué queda guardado lo
- * decide `factura.service.ts`, igual que hoy con Contífico.
+ * decide `factura.service.ts`.
  */
 import {
   FacturacionElectronicaEC,
@@ -162,7 +162,7 @@ export async function previsualizarFactura(
  *
  * Hace falta porque el SRI puede recibir y autorizar en dos momentos: por norma
  * tiene hasta 24 horas. Lo que quedó `ENVIADO` se resuelve preguntando, igual
- * que hoy hace el cron con Contífico.
+ * que hace el cron diario.
  */
 export async function consultarAutorizacion(
   emisorId: string,

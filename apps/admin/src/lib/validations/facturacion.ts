@@ -1,7 +1,7 @@
 import { z } from "zod/v4";
 
 /**
- * Los campos que Contífico guarda de una persona, verificado contra su API:
+ * Los campos que el SRI imprime del comprador en la factura:
  * `cedula`/`ruc`, `razon_social`, `tipo` (N/J), `direccion`, `telefonos`,
  * `email`. Lo demás que devuelve son banderas internas suyas.
  */

@@ -229,7 +229,7 @@ export interface ClienteStaffDetail extends ClienteListItem {
 export interface ServicioListItem {
   id: string;
   nombre: string;
-  /** Qué es. Se mapea al `tipo` de Contífico (SER / PRO). */
+  /** Qué es: algo que se ejecuta o algo que se despacha. */
   tipo: "SERVICIO" | "BIEN";
   /** Cómo se vende. Solo existe en el portal. */
   /** Porcentaje por defecto. En Ecuador conviven 0% y 15%. */

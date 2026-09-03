@@ -3,7 +3,7 @@
  *
  * El servidor corre en UTC y `new Date()` truncado a día da **mañana** entre
  * las 19:00 y la medianoche de Ecuador (UTC-5). No es cosmético: `Orden.fecha`
- * y `Factura.fechaEmision` son columnas `DATE`, viajan a Contífico como
+ * y `Factura.fechaEmision` son columnas `DATE`, viajan al SRI como
  * `fecha_emision` y de ahí al SRI. Una factura emitida a las 22:00 salía con la
  * fecha del día siguiente.
  *

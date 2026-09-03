@@ -132,8 +132,10 @@ Prisma schema: `apps/admin/prisma/schema.prisma` (PostgreSQL via `@prisma/adapte
 Core entities: **Cliente** (customer) → **Visita** (a scheduled visit) carried out by **Personal** (organized into **Grupo**s), scoped by **Sector** (geographic; admins are scoped via `SectorAdmin`). A visita covers one or more products via **VisitaProducto**, accumulates **VisitaMedia** (photos/videos, optionally tagged to one of the visita's products), has an in-visit chat (**VisitaMessage**), and rolls up into **Informe**s (PDF reports, rendered with `@react-pdf/renderer` in `src/lib/informes/`; `Informe.fecha` is the date **printed** on the PDF and `generatedAt` the instant it was built — a report for August can be assembled in September). **An informe is immutable**: there is no edit and no PUT, only create and delete. It is a signed document that already went out, so correcting it in place would leave the client holding a PDF that no longer matches ours; the fix is to delete the wrong one and make the right one, which gets its own `numero`. Deleting takes the row, its sections and the PDF in R2 with it. Soft-delete is used on several models. **NotificacionPlantilla/Log/Config** drive WhatsApp + push notifications.
 
 **Producto** is the single catalog — services and (later) retail goods. Its only
-classifying axis is `tipo`: `SERVICIO` | `BIEN` — what it *is*, mapped to
-Contífico's `SER` / `PRO`.
+classifying axis is `tipo`: `SERVICIO` | `BIEN` — what it *is*. **It changes
+nothing at invoicing time**: the SRI's `<detalle>` has no goods/services field.
+It groups and filters the catalog, and it's the axis that will decide what
+carries stock once inventory lives here.
 
 **Nothing in the catalog says whether something is one-off or recurring.** That
 depends on the cliente, not the product: the same desmalezado is a one-off for
@@ -190,7 +192,7 @@ the real transition to `COMPLETADA` (not on re-edits) and opens a `BORRADOR`
 with the loose work at **$0** — the visita carries no money, so the draft exists
 for someone to price. Not at scheduling time: a scheduled visita still moves,
 gets edited or cancelled, and an order would freeze its products too early. If
-the order can't be created (a product not linked to Contífico), **the visita
+the order can't be created (a product no longer in the catalog), **the visita
 still completes** and the work stays in pendientes: finishing a visit in the
 field can't depend on catalog config.
 
@@ -341,8 +343,8 @@ the order never reopens — to bill that work again you build a new order.
 "has a live invoice".** There is no FACTURADA, because confirming and invoicing
 became the same moment. **Whether it's been paid is a different axis** and is
 derived from the invoice's `saldo` (`estadoCobro()` in
-`components/ordenes/formato.ts`), never stored — the payments belong to
-Contífico and can be entered from their interface. A failed emission leaves the
+`components/ordenes/formato.ts`), never stored — the balance is recomputed by
+summing the payments, never by subtracting from what's saved. A failed emission leaves the
 order in `BORRADOR`, the only editable state, which is exactly where you fix the
 cause. `/dashboard/ordenes` lists confirmed (and annulled) orders with their
 payment status; drafts have their own page at `/dashboard/ordenes/borradores`.

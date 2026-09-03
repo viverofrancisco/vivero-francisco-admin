@@ -154,7 +154,7 @@ export function PorCobrarPage({
                     {!o.factura.sincronizada && (
                       <span
                         className="ml-1 text-xs font-normal text-muted-foreground"
-                        title="La factura nunca se sincronizó con Contífico: puede tener cobros que el portal no vio."
+                        title="Esta factura no tiene saldo calculado, así que no sabemos cuánto falta cobrar."
                       >
                         ?
                       </span>

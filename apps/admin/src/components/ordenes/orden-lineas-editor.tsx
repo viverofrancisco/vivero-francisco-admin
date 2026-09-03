@@ -28,9 +28,9 @@ export interface ProductoCatalogo {
 export const ORDEN_LINEAS_FORM_ID = "orden-lineas-form";
 
 /**
- * Toda línea sale de un producto del catálogo: Contífico exige `producto_id` en
- * cada `detalles[]` y no acepta texto libre, así que una línea suelta sería una
- * orden imposible de cobrar.
+ * Toda línea sale de un producto del catálogo: de ahí sale el
+ * `codigoPrincipal` que el SRI pide en cada detalle, así que una línea suelta
+ * sería una orden imposible de cobrar.
  */
 function lineaBase(): Omit<LineaEditable, "descripcion" | "productoId"> {
   return {

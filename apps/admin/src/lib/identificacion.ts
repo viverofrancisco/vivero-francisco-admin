@@ -1,9 +1,9 @@
 /**
  * Validación de cédula y RUC ecuatorianos.
  *
- * Contífico rechaza las cédulas inválidas al emitir (`Cedula Incorrecta`,
- * cod_error 1508). Validar acá evita que el error aparezca recién al facturar,
- * que es el peor momento para descubrirlo.
+ * El SRI rechaza el comprobante si la identificación del comprador no es
+ * válida. Validar acá evita que el error aparezca recién al emitir, que es el
+ * peor momento para descubrirlo.
  */
 
 /** Dígito verificador de cédula (módulo 10). */
@@ -31,7 +31,7 @@ export function esCedulaValida(cedula: string): boolean {
 /**
  * RUC: 13 dígitos terminados en 001. Los de persona natural son la cédula más
  * el sufijo; los de sociedad usan otro dígito verificador que no validamos acá
- * porque Contífico ya lo hace del lado suyo.
+ * porque el SRI ya lo valida del lado suyo.
  */
 export function esRucValido(ruc: string): boolean {
   if (!/^\d{13}$/.test(ruc)) return false;

@@ -16,7 +16,6 @@ interface ProductoSuscribible {
   nombre: string;
   /** Periodicidad sugerida del catálogo. La que manda es la de la suscripción. */
   ivaTasa: number | null;
-  /** Vinculado con Contífico. Sin eso no se puede facturar el período. */
 }
 
 /** Un producto ya agregado a la suscripción que se está armando. */

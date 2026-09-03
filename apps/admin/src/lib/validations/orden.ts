@@ -7,7 +7,7 @@ import { z } from "zod/v4";
  * Son **varios** trabajos cuando el mismo producto se hizo en más de una
  * visita: eso es una sola línea, porque es un solo producto.
  *
- * `productoId` es obligatorio: Contífico exige `producto_id` en cada línea y no
+ * `productoId` es obligatorio: de ahí sale el `codigoPrincipal` del detalle y no
  * acepta texto libre, así que una línea suelta sería una venta incobrable.
  */
 export const ordenLineaSchema = z.object({

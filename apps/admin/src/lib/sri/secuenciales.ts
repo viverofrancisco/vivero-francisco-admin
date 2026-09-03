@@ -62,7 +62,7 @@ export async function devolverSecuencial(
 /**
  * Desde qué número arranca una serie.
  *
- * Hace falta cuando el RUC ya emitió por fuera —hoy, por Contífico— y el portal
+ * Hace falta cuando el RUC ya emitió por fuera —a mano, o con otro sistema— y el portal
  * tiene que continuar la numeración en vez de volver a empezar en 1, que sería
  * pedirle al SRI números ya usados.
  */
