@@ -94,6 +94,7 @@ export const ModelName = {
   OrdenLineaOrigen: 'OrdenLineaOrigen',
   DatoFacturacion: 'DatoFacturacion',
   Factura: 'Factura',
+  Cobro: 'Cobro',
   FacturaLinea: 'FacturaLinea'
 } as const
 
@@ -782,6 +783,22 @@ export const FacturaScalarFieldEnum = {
 } as const
 
 export type FacturaScalarFieldEnum = (typeof FacturaScalarFieldEnum)[keyof typeof FacturaScalarFieldEnum]
+
+
+export const CobroScalarFieldEnum = {
+  id: 'id',
+  facturaId: 'facturaId',
+  fecha: 'fecha',
+  monto: 'monto',
+  formaPago: 'formaPago',
+  referencia: 'referencia',
+  nota: 'nota',
+  createdAt: 'createdAt',
+  createdById: 'createdById',
+  createdByNombre: 'createdByNombre'
+} as const
+
+export type CobroScalarFieldEnum = (typeof CobroScalarFieldEnum)[keyof typeof CobroScalarFieldEnum]
 
 
 export const FacturaLineaScalarFieldEnum = {

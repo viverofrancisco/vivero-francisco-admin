@@ -691,6 +691,23 @@ export type EnumEstadoFacturaWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEstadoFacturaFilter<$PrismaModel>
 }
 
+export type EnumFormaPagoFilter<$PrismaModel = never> = {
+  equals?: $Enums.FormaPago | Prisma.EnumFormaPagoFieldRefInput<$PrismaModel>
+  in?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel> | $Enums.FormaPago
+}
+
+export type EnumFormaPagoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FormaPago | Prisma.EnumFormaPagoFieldRefInput<$PrismaModel>
+  in?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFormaPagoWithAggregatesFilter<$PrismaModel> | $Enums.FormaPago
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1314,6 +1331,23 @@ export type NestedEnumEstadoFacturaWithAggregatesFilter<$PrismaModel = never> = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEstadoFacturaFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEstadoFacturaFilter<$PrismaModel>
+}
+
+export type NestedEnumFormaPagoFilter<$PrismaModel = never> = {
+  equals?: $Enums.FormaPago | Prisma.EnumFormaPagoFieldRefInput<$PrismaModel>
+  in?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel> | $Enums.FormaPago
+}
+
+export type NestedEnumFormaPagoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FormaPago | Prisma.EnumFormaPagoFieldRefInput<$PrismaModel>
+  in?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FormaPago[] | Prisma.ListEnumFormaPagoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFormaPagoWithAggregatesFilter<$PrismaModel> | $Enums.FormaPago
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel>
 }
 
 

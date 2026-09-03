@@ -330,6 +330,20 @@ export type DatoFacturacion = Prisma.DatoFacturacionModel
  */
 export type Factura = Prisma.FacturaModel
 /**
+ * Model Cobro
+ * Un cobro contra una factura **propia**.
+ * 
+ * Existe desde que el portal emite sin Contífico: los cobros de una factura de
+ * ellos siguen viviendo allá —el portal solo relee el saldo—, pero de una
+ * nuestra no hay dónde anotarlos si no es acá.
+ * 
+ * No viaja a ningún lado. Al SRI la forma de pago se le declara **al emitir**,
+ * y el comprobante ya salió: esto es la cuenta corriente del vivero, no un
+ * dato tributario. Por eso las formas de pago son las que usa la gente, no el
+ * catálogo del SRI.
+ */
+export type Cobro = Prisma.CobroModel
+/**
  * Model FacturaLinea
  * Lo que salió impreso en el documento, línea por línea.
  * 

@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { money } from "./formato";
 
 /**
@@ -46,6 +49,12 @@ interface Cobro {
   formaCobro: string;
   monto: number;
   fecha: string | null;
+  /** De un cobro propio: con qué encontrarlo, y quién lo anotó. */
+  referencia?: string | null;
+  nota?: string | null;
+  registradoPor?: string | null;
+  /** Los propios se pueden borrar; los de Contífico no —su API no los borra—. */
+  borrable?: boolean;
   comprobante: string | null;
   numeroCheque: string | null;
   fechaCheque: string | null;
@@ -97,6 +106,33 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pedido, setPedido] = useState<string | null>(null);
+  const [borrando, setBorrando] = useState<string | null>(null);
+  const router = useRouter();
+
+  /**
+   * Borra un cobro propio.
+   *
+   * Un cobro es un hecho —o entró esa plata o no— así que se borra en vez de
+   * corregirse: cambiarle el monto sería inventar un estado entre "pasó" y "no
+   * pasó". El saldo lo recalcula el servidor desde lo que queda.
+   */
+  const borrar = async (cobroId: string) => {
+    setBorrando(cobroId);
+    try {
+      const res = await fetch(`/api/facturas/${facturaId}/cobros/${cobroId}`, {
+        method: "DELETE",
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      toast.success("Cobro borrado");
+      setPedido(null);
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos borrarlo");
+    } finally {
+      setBorrando(null);
+    }
+  };
 
   // Se dispara al renderizar con una factura nueva en vez de con un efecto: no
   // hay dependencias que sincronizar ni un `setState` después de pintar.
@@ -124,7 +160,7 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
         ) : !datos ? (
           <p className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Consultando a Contífico…
+            Cargando los cobros…
           </p>
         ) : datos.cobros.length === 0 ? (
           <p className="py-2 text-sm text-muted-foreground">
@@ -144,10 +180,37 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
                         </span>
                       )}
                     </p>
-                    <span className="flex-none font-semibold tabular-nums">
-                      {money(c.monto)}
+                    <span className="flex items-center gap-1">
+                      <span className="flex-none font-semibold tabular-nums">
+                        {money(c.monto)}
+                      </span>
+                      {/* Un cobro es un hecho: o entró esa plata o no. Por eso
+                          se borra en vez de corregirse. */}
+                      {c.borrable && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          aria-label={`Borrar el cobro de ${money(c.monto)}`}
+                          disabled={borrando !== null}
+                          onClick={() => borrar(c.id)}
+                        >
+                          {borrando === c.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </Button>
+                      )}
                     </span>
                   </div>
+                  {(c.referencia || c.registradoPor) && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {c.referencia}
+                      {c.referencia && c.registradoPor ? " · " : ""}
+                      {c.registradoPor ? `anotó ${c.registradoPor}` : ""}
+                    </p>
+                  )}
                   {detalles(c).length > 0 && (
                     <dl className="mt-1 space-y-0.5">
                       {detalles(c).map((d) => (

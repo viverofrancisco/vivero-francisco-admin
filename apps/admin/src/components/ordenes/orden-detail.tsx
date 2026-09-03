@@ -381,6 +381,9 @@ export function OrdenDetail({
       numero: `Factura ${facturaVigente.numero}`,
       total: facturaVigente.total,
       saldo: facturaVigente.saldo,
+      // Cambia qué se pregunta: la propia no tiene cuenta de Contífico ni
+      // datáfono que declarar.
+      propia: Boolean(facturaVigente.claveAcceso),
     });
   };
 

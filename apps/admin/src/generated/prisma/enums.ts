@@ -148,3 +148,14 @@ export const TipoIdentificacion = {
 } as const
 
 export type TipoIdentificacion = (typeof TipoIdentificacion)[keyof typeof TipoIdentificacion]
+
+
+export const FormaPago = {
+  EFECTIVO: 'EFECTIVO',
+  TRANSFERENCIA: 'TRANSFERENCIA',
+  TARJETA: 'TARJETA',
+  CHEQUE: 'CHEQUE',
+  OTRO: 'OTRO'
+} as const
+
+export type FormaPago = (typeof FormaPago)[keyof typeof FormaPago]
