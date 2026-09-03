@@ -525,14 +525,20 @@ export function EmitirFacturaPage({
                     ]}
                   />
                   {/* Lo emitido en pruebas se ve igual que lo real en el
-                      portal, así que hay que decirlo fuerte y acá. */}
+                      portal, así que hay que decirlo fuerte y acá.
+
+                      El texto va dentro de un `span`: en un contenedor flex
+                      cada hijo es un ítem, así que un `<b>` suelto se plantaba
+                      en su propio renglón en vez de seguir la frase. */}
                   {emisor?.ambiente === "PRUEBAS" && (
-                    <p className="flex items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-snug text-amber-900">
+                    <div className="flex items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-snug text-amber-900">
                       <TriangleAlert className="mt-0.5 h-3.5 w-3.5 flex-none" />
-                      Este emisor está en el ambiente de <b>pruebas</b> del SRI:
-                      la factura se va a autorizar, pero no vale como
-                      comprobante ni le sirve al cliente.
-                    </p>
+                      <span>
+                        Este emisor está en el ambiente de <b>pruebas</b> del
+                        SRI: la factura se va a autorizar, pero no vale como
+                        comprobante ni le sirve al cliente.
+                      </span>
+                    </div>
                   )}
                 </div>
               )}
