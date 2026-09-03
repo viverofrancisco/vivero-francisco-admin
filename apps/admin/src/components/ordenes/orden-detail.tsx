@@ -74,6 +74,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 import { CobrosCard } from "./cobros-card";
+import { CopyField } from "@/components/shared/copy-field";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
 import { AvisoSinVincular } from "./aviso-sin-vincular";
 
@@ -167,6 +168,14 @@ interface OrdenData {
     identificacion: string | null;
     /** El id del documento en Contífico, para buscarlo allá. */
     contificoDocumentoId: string | null;
+    /** Con clave de acceso, la emitió el portal contra el SRI. */
+    claveAcceso: string | null;
+    ambienteSri: "PRUEBAS" | "PRODUCCION" | null;
+    estadoSri: string | null;
+    /** Lo que dijo el SRI al rechazarla. Es lo único que dice qué arreglar. */
+    mensajesSri:
+      | { identificador?: string; mensaje?: string; informacionAdicional?: string; tipo?: string }[]
+      | null;
     /** Cuándo la emitió el portal. Con hora, a diferencia de `fechaEmision`. */
     createdAt: string;
     /**
@@ -236,6 +245,8 @@ export function OrdenDetail({
    * ni estado que mostrar. Lo que sí tiene —y es lo que importa— es saldo.
    */
   const sinFactura = facturaVigente?.tipo === "NO_AUTORIZADO";
+  /** La emitió el portal contra el SRI: el RIDE y el XML son nuestros. */
+  const propia = Boolean(facturaVigente?.claveAcceso);
 
   /**
    * ¿El papel tiene otra forma que la orden?
@@ -1001,7 +1012,36 @@ export function OrdenDetail({
                     {/* Un documento sin factura no tiene RIDE ni firma: la API
                         de Contífico no expone ningún PDF para ellos. Mostrarlo
                         deshabilitado prometería algo que no va a llegar. */}
-                    {!sinFactura && (
+                    {/* La emitida por el portal tiene su RIDE acá mismo:
+                        se arma en el momento desde lo guardado, así que está
+                        disponible apenas el SRI la autoriza. */}
+                    {propia && (
+                      <DropdownMenuItem
+                        disabled={facturaVigente.estado !== "AUTORIZADO"}
+                        {...(facturaVigente.estado === "AUTORIZADO"
+                          ? {
+                              render: (
+                                <a
+                                  href={`/api/facturas/${facturaVigente.id}/ride`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                />
+                              ),
+                            }
+                          : {})}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        <span className="flex flex-1 items-center justify-between gap-2">
+                          Ver factura (RIDE)
+                          {facturaVigente.estado !== "AUTORIZADO" && (
+                            <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                              Sin autorizar
+                            </span>
+                          )}
+                        </span>
+                      </DropdownMenuItem>
+                    )}
+                    {!sinFactura && !propia && (
                     <DropdownMenuItem
                       disabled={
                         !facturaVigente.urlRide ||
@@ -1041,6 +1081,7 @@ export function OrdenDetail({
                         esto no espera. Enviada o autorizada no hay nada que
                         apurar. */}
                     {!sinFactura &&
+                      !propia &&
                       (facturaVigente.estado === "PENDIENTE" ||
                         facturaVigente.estado === "FIRMADO") && (
                       <DropdownMenuItem
@@ -1061,7 +1102,54 @@ export function OrdenDetail({
               </CardAction>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
+              {/* Lo que dijo el SRI cuando no la autorizó.
+                  Va arriba de todo y en ámbar porque es lo único accionable:
+                  sin esto, una factura rechazada se ve igual que una que
+                  todavía no contestaron. */}
+              {facturaVigente.mensajesSri &&
+                facturaVigente.mensajesSri.length > 0 && (
+                  <div className="space-y-1 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs leading-snug text-amber-900">
+                    <p className="font-medium">
+                      El SRI no la autorizó
+                      {facturaVigente.estadoSri
+                        ? ` · ${facturaVigente.estadoSri}`
+                        : ""}
+                    </p>
+                    {facturaVigente.mensajesSri.map((m, i) => (
+                      <p key={i}>
+                        {m.identificador ? `${m.identificador} · ` : ""}
+                        {m.mensaje}
+                        {m.informacionAdicional
+                          ? ` — ${m.informacionAdicional}`
+                          : ""}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+              {/* Emitida en pruebas: se ve igual que una real y no lo es. */}
+              {facturaVigente.ambienteSri === "PRUEBAS" && (
+                <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
+                  Emitida en el ambiente de <b>pruebas</b> del SRI: no vale como
+                  comprobante.
+                </p>
+              )}
+
               <div className="space-y-1.5">
+                {/* La clave de acceso es, en el esquema offline, el número de
+                    autorización: con eso se consulta el comprobante en el SRI. */}
+                {facturaVigente.claveAcceso && (
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="flex-none text-muted-foreground">
+                      Clave de acceso
+                    </span>
+                    <CopyField
+                      value={facturaVigente.claveAcceso}
+                      label="la clave de acceso"
+                      className="min-w-0 break-all text-right font-mono text-xs"
+                    />
+                  </div>
+                )}
                 {/* El id de Contífico: es con lo que se la busca por API y en
                     los enlaces de su sistema, y no aparece en ningún otro lado
                     del portal. */}

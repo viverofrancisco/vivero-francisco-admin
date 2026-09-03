@@ -169,6 +169,14 @@ export default async function OrdenRoute({
             razonSocial: f.razonSocial,
             identificacion: f.identificacion,
             contificoDocumentoId: f.contificoDocumentoId,
+            // Lo del comprobante propio: sin esto la ficha no puede distinguir
+            // una factura nuestra de una de Contífico.
+            claveAcceso: f.claveAcceso,
+            ambienteSri: f.ambienteSri,
+            estadoSri: f.estadoSri,
+            mensajesSri: f.mensajesSri as
+              | { identificador?: string; mensaje?: string; informacionAdicional?: string; tipo?: string }[]
+              | null,
             createdAt: f.createdAt.toISOString(),
             datoFacturacion: f.datoFacturacion,
           })),

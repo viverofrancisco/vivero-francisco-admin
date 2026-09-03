@@ -41,6 +41,8 @@ import {
 } from "@/lib/contifico/documentos";
 import type { TipoDocumento } from "@/generated/prisma/client";
 import { hoyEnEcuador } from "@/lib/fechas";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { s3, BUCKET_NAME } from "@/lib/s3";
 import { armarFactura } from "@/lib/sri/comprobante";
 import { emitirFacturaSri, numeroComprobante } from "@/lib/sri/emision";
 import type { EstadoFactura } from "@/generated/prisma/client";
@@ -1299,11 +1301,37 @@ async function emitirPorSri(
     total: datosSri.importeTotal,
   };
 
+  /**
+   * El XML firmado se guarda en R2.
+   *
+   * **Ese es el documento legal**, no el PDF: el RIDE es solo su
+   * representación impresa, y la ley obliga a conservar el comprobante
+   * electrónico. Se guarda aunque el SRI lo haya rechazado —es la prueba de
+   * qué se mandó— y si la subida falla, la emisión no se cae: el comprobante
+   * ya existe en el SRI y perderlo sería peor que quedarse sin la copia.
+   */
+  const xmlKey = `facturas/${r.claveAcceso}.xml`;
+  let guardadoElXml = false;
+  try {
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: xmlKey,
+        Body: r.xmlFirmado,
+        ContentType: "application/xml",
+      })
+    );
+    guardadoElXml = true;
+  } catch {
+    // Queda sin `xmlKey`: se puede volver a pedir al SRI por la clave de acceso.
+  }
+
   const factura = await prisma.$transaction(async (tx) => {
     const creada = await tx.factura.create({
       data: {
         ordenId: orden.id,
         emisorId,
+        xmlKey: guardadoElXml ? xmlKey : null,
         numero,
         tipo: "FACTURA",
         descripcion,
