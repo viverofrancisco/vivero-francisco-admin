@@ -95,12 +95,23 @@ function basesPorTasa(
  * 15% cierra el total y miente el IVA. El servidor lo vuelve a validar; acá
  * está para que nadie llegue al botón con un documento que no puede salir.
  */
+export interface EmisorOpcion {
+  id: string;
+  ruc: string;
+  razonSocial: string;
+  ambiente: "PRUEBAS" | "PRODUCCION";
+  predeterminado: boolean;
+}
+
 export function EmitirFacturaPage({
   orden,
   productos,
   datosFacturacion,
+  emisores = [],
   backHref,
 }: {
+  /** Con qué RUC propio se puede emitir. Vacío = solo por Contífico. */
+  emisores?: EmisorOpcion[];
   orden: OrdenAEmitir;
   productos: ProductoFacturable[];
   datosFacturacion: DatoFacturacionResumen[];
@@ -108,6 +119,15 @@ export function EmitirFacturaPage({
 }) {
   const router = useRouter();
   const [tipo, setTipo] = useState<"FACTURA" | "NO_AUTORIZADO">("FACTURA");
+  /**
+   * Con qué se emite: `""` es Contífico, que es como se emitió siempre, y
+   * cualquier otro valor es un emisor propio contra el SRI. Viene elegido el
+   * predeterminado si hay alguno, porque el camino propio es el que queremos.
+   */
+  const [emisorId, setEmisorId] = useState(
+    emisores.find((e) => e.predeterminado)?.id ?? emisores[0]?.id ?? ""
+  );
+  const emisor = emisores.find((e) => e.id === emisorId) ?? null;
   const [descripcion, setDescripcion] = useState(`Orden #${orden.numero}`);
   const [datoFacturacionId, setDatoFacturacionId] = useState<string | null>(
     datosFacturacion.find((d) => d.esPredeterminado)?.id ??
@@ -199,12 +219,19 @@ export function EmitirFacturaPage({
     (l) => l.precioUnitario.trim() === "" || Number(l.precioUnitario) < 0
   );
 
+  /**
+   * Emitiendo por el SRI el vínculo con Contífico no hace falta: la línea del
+   * XML lleva un código y una descripción nuestros. Ese requisito es de ellos,
+   * no del comprobante.
+   */
+  const exigeVinculo = emisorId === "";
+
   const motivoBloqueo =
     lineas.length === 0
       ? "El documento no tiene líneas."
       : sinPrecio
         ? "Hay una línea sin precio."
-        : sinVincular.length > 0
+        : exigeVinculo && sinVincular.length > 0
           ? `"${porId.get(sinVincular[0].productoId)?.nombre ?? sinVincular[0].descripcion}" no está vinculado con Contífico. Cambiá esa línea por un producto vinculado.`
           : descuadres.length > 0
             ? "El documento no cuadra con la orden."
@@ -222,6 +249,8 @@ export function EmitirFacturaPage({
           tipo,
           datoFacturacionId,
           descripcion,
+          // Vacío = por Contífico. El servidor decide con esto.
+          emisorId: emisorId || null,
           lineas: lineas.map((l) => ({
             productoId: l.productoId,
             descripcion: l.descripcion.trim(),
@@ -348,9 +377,9 @@ export function EmitirFacturaPage({
                               options={productos.map((p) => ({
                                 value: p.id,
                                 label: p.nombre,
-                                disabled: !p.contificoProductoId,
+                                disabled: exigeVinculo && !p.contificoProductoId,
                                 hint: !p.contificoProductoId
-                                  ? "No está vinculado con Contífico: no puede salir impreso."
+                                  ? "No está vinculado con Contífico: solo importa si emitís por ellos."
                                   : undefined,
                               }))}
                               placeholder="Elegir producto..."
@@ -381,7 +410,7 @@ export function EmitirFacturaPage({
                         </Button>
                       </div>
 
-                      {!vinculado && (
+                      {exigeVinculo && !vinculado && (
                         <p className="flex items-center gap-1.5 text-xs text-amber-700">
                           <TriangleAlert className="h-3.5 w-3.5 flex-none" />
                           Este producto no está vinculado con Contífico. Elegí
@@ -450,9 +479,9 @@ export function EmitirFacturaPage({
                   options={productos.map((p) => ({
                     value: p.id,
                     label: p.nombre,
-                    disabled: !p.contificoProductoId,
+                    disabled: exigeVinculo && !p.contificoProductoId,
                     hint: !p.contificoProductoId
-                      ? "No está vinculado con Contífico: no puede salir impreso."
+                      ? "No está vinculado con Contífico: solo importa si emitís por ellos."
                       : undefined,
                   }))}
                   placeholder="Buscar producto..."
@@ -470,6 +499,44 @@ export function EmitirFacturaPage({
               <CardTitle className="text-base">Documento</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Con qué se emite. Aparece solo si hay un emisor propio
+                  configurado: mientras no lo haya, la pantalla es la de
+                  siempre y todo sale por Contífico. */}
+              {emisores.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Emitir con *</Label>
+                  <CustomSelect
+                    value={emisorId}
+                    onChange={setEmisorId}
+                    options={[
+                      ...emisores.map((e) => ({
+                        value: e.id,
+                        label: `${e.razonSocial} · ${e.ruc}`,
+                        hint:
+                          e.ambiente === "PRUEBAS"
+                            ? "Ambiente de pruebas: no es un comprobante válido."
+                            : "Directo al SRI, sin pasar por Contífico.",
+                      })),
+                      {
+                        value: "",
+                        label: "Contífico",
+                        hint: "Como se emitió siempre.",
+                      },
+                    ]}
+                  />
+                  {/* Lo emitido en pruebas se ve igual que lo real en el
+                      portal, así que hay que decirlo fuerte y acá. */}
+                  {emisor?.ambiente === "PRUEBAS" && (
+                    <p className="flex items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-snug text-amber-900">
+                      <TriangleAlert className="mt-0.5 h-3.5 w-3.5 flex-none" />
+                      Este emisor está en el ambiente de <b>pruebas</b> del SRI:
+                      la factura se va a autorizar, pero no vale como
+                      comprobante ni le sirve al cliente.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <Label className="text-xs">Tipo *</Label>
                 <CustomSelect
@@ -487,11 +554,15 @@ export function EmitirFacturaPage({
                       // va al SRI: es lo que evita confundir las dos.
                       label: "Consumidor final",
                       // Contífico rechaza cualquier impuesto en este documento,
-                      // así que la orden tiene que ser toda al 0%.
-                      disabled: ordenTieneIva,
-                      hint: ordenTieneIva
-                        ? "La orden tiene IVA y este documento no puede llevarlo."
-                        : "Documento interno: no va al SRI y no lleva IVA.",
+                      // así que la orden tiene que ser toda al 0%. Y emitiendo
+                      // por el SRI no existe: allá solo hay comprobantes
+                      // autorizados.
+                      disabled: ordenTieneIva || emisorId !== "",
+                      hint: emisorId
+                        ? "Solo por Contífico: el SRI no conoce este documento."
+                        : ordenTieneIva
+                          ? "La orden tiene IVA y este documento no puede llevarlo."
+                          : "Documento interno: no va al SRI y no lleva IVA.",
                     },
                   ]}
                 />

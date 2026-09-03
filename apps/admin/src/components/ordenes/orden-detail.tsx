@@ -189,9 +189,16 @@ export function OrdenDetail({
   productos,
   clientes,
   pendientes = [],
+  hayEmisorPropio = false,
   backHref = "/dashboard/ordenes",
 }: {
   orden: OrdenData;
+  /**
+   * Si hay un emisor propio del SRI configurado. Con uno, el vínculo de los
+   * productos con Contífico deja de frenar la emisión: solo hace falta si se
+   * emite por ellos.
+   */
+  hayEmisorPropio?: boolean;
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref?: string;
   productos: ProductoCatalogo[];
@@ -450,12 +457,15 @@ export function OrdenDetail({
    * con dos condiciones sueltas el botón quedaba apagado sin decir cuál de las
    * dos faltaba.
    */
+  /** Sin emisor propio, lo único que emite es Contífico y exige el vínculo. */
+  const frenaSinVincular = !hayEmisorPropio && sinVincular.length > 0;
+
   const motivoNoEmitir =
-    faltaFacturacion && sinVincular.length > 0
+    faltaFacturacion && frenaSinVincular
       ? "El cliente no tiene datos de facturación cargados, y hay productos sin vincular con Contífico."
       : faltaFacturacion
         ? "El cliente no tiene datos de facturación cargados."
-        : sinVincular.length > 0
+        : frenaSinVincular
           ? `${sinVincular.map((p) => `"${p.nombre}"`).join(", ")} ${
               sinVincular.length === 1
                 ? "no está vinculado"
@@ -727,6 +737,7 @@ export function OrdenDetail({
                 impreso ya está decidido. */}
             {!facturaVigente &&
               orden.estado !== "ANULADA" &&
+              !hayEmisorPropio &&
               sinVincular.length > 0 && (
                 <div className="mb-4">
                   <AvisoSinVincular productos={sinVincular} />

@@ -41,6 +41,9 @@ import {
 } from "@/lib/contifico/documentos";
 import type { TipoDocumento } from "@/generated/prisma/client";
 import { hoyEnEcuador } from "@/lib/fechas";
+import { armarFactura } from "@/lib/sri/comprobante";
+import { emitirFacturaSri, numeroComprobante } from "@/lib/sri/emision";
+import type { EstadoFactura } from "@/generated/prisma/client";
 
 /**
  * Corre algo contra Contífico y convierte su error en uno del servicio.
@@ -170,9 +173,41 @@ export interface EmitirFacturaOpciones {
    * común: agrupar es una decisión, no el default.
    */
   lineas?: LineaFacturaInput[];
+  /**
+   * Con qué emisor del SRI se emite. **Ausente = por Contífico**, que es como
+   * se emitió siempre y sigue siendo el camino por defecto hasta que el propio
+   * esté probado en producción.
+   */
+  emisorId?: string | null;
 }
 
 const centavos = (n: number) => Math.round(n * 100) / 100;
+
+/**
+ * Lo que salió impreso, congelado.
+ *
+ * Es igual venga de Contífico o del SRI: la factura guarda sus propias líneas
+ * porque desde que pueden diferir de las de la orden, reconstruirlas sería una
+ * mentira sobre un documento ya entregado.
+ */
+function lineasParaGuardar(propuestas: LineaFacturaInput[]) {
+  return propuestas.map((l, i) => {
+    const subtotal = centavos(l.cantidad * l.precioUnitario);
+    const iva = centavos((subtotal * l.ivaTasa) / 100);
+    return {
+      posicion: i,
+      descripcion: l.descripcion,
+      detalle: l.detalle?.trim() || null,
+      cantidad: l.cantidad,
+      precioUnitario: l.precioUnitario,
+      ivaTasa: l.ivaTasa,
+      subtotal,
+      iva,
+      total: centavos(subtotal + iva),
+      productoId: l.productoId,
+    };
+  });
+}
 const dinero = (n: number) => `$${centavos(n).toFixed(2)}`;
 
 /**
@@ -382,6 +417,30 @@ export async function emitirFactura(
     }
   }
 
+  // ── Con emisor propio: se emite contra el SRI y Contífico no participa ──
+  //
+  // Va antes de todo lo de Contífico porque no comparte casi nada: no hay
+  // `producto_id` que buscar —la línea del SRI lleva código y descripción
+  // nuestros—, la numeración es del portal y el documento lo firma el
+  // certificado del emisor.
+  if (opciones.emisorId) {
+    if (sinFactura) {
+      throw new ValidationError(
+        "Un documento a consumidor final es de Contífico: el SRI solo conoce comprobantes autorizados."
+      );
+    }
+    return emitirPorSri(viewer, {
+      orden,
+      emisorId: opciones.emisorId,
+      dato,
+      propuestas,
+      // La fecha del documento es hoy, igual que en el otro camino: el SRI solo
+      // autoriza comprobantes del día de su emisión.
+      emitidaEl: hoyEnEcuador(),
+      descripcion: opciones.descripcion?.trim() || `Orden #${orden.numero}`,
+    });
+  }
+
   // Cada producto necesita su par en Contífico: `producto_id` es obligatorio y
   // no existen líneas de texto libre —ni contables: verificado agotando las
   // variantes contra su API—.
@@ -539,24 +598,7 @@ export async function emitirFactura(
         saldo: totales.total,
         // Lo que salió impreso, congelado. La orden puede editarse si algún día
         // vuelve a borrador; el papel que recibió el cliente no.
-        lineas: {
-          create: propuestas.map((l, i) => {
-            const subtotal = centavos(l.cantidad * l.precioUnitario);
-            const iva = centavos((subtotal * l.ivaTasa) / 100);
-            return {
-              posicion: i,
-              descripcion: l.descripcion,
-              detalle: l.detalle?.trim() || null,
-              cantidad: l.cantidad,
-              precioUnitario: l.precioUnitario,
-              ivaTasa: l.ivaTasa,
-              subtotal,
-              iva,
-              total: centavos(subtotal + iva),
-              productoId: l.productoId,
-            };
-          }),
-        },
+        lineas: { create: lineasParaGuardar(propuestas) },
       },
     });
     await tx.orden.update({
@@ -1161,3 +1203,153 @@ export async function reenviarAlSri(viewer: Viewer, facturaId: string) {
   );
   return sincronizarFactura(viewer, facturaId);
 }
+
+/**
+ * Emite la factura contra el SRI, con el certificado del emisor.
+ *
+ * Es el mismo resultado que por Contífico —una `Factura` con sus líneas y la
+ * orden confirmada— por un camino que no depende de nadie más: el portal arma
+ * el XML, lo firma y habla con el SRI.
+ *
+ * **Guarda incluso cuando el SRI no autoriza.** La clave de acceso y el número
+ * ya se consumieron, así que perderlos sería dejar un hueco en la serie y no
+ * poder consultar después qué pasó. La orden pasa a `CONFIRMADA` solo si quedó
+ * autorizada: mientras el SRI no la acepte, no hay comprobante que entregar.
+ */
+async function emitirPorSri(
+  viewer: Viewer,
+  args: {
+    orden: Awaited<ReturnType<typeof getOrden>>;
+    emisorId: string;
+    dato: Awaited<ReturnType<typeof resolverDatoParaFacturar>>;
+    propuestas: LineaFacturaInput[];
+    emitidaEl: Date;
+    descripcion: string;
+  }
+): Promise<EmitirFacturaResultado> {
+  const { orden, emisorId, dato, propuestas, emitidaEl, descripcion } = args;
+
+  const productos = await prisma.producto.findMany({
+    where: { id: { in: [...new Set(propuestas.map((l) => l.productoId))] } },
+    select: { id: true, nombre: true, codigo: true },
+  });
+  const porId = new Map(productos.map((p) => [p.id, p]));
+
+  // El código del producto es **nuestro**: el XML del SRI lleva
+  // `codigoPrincipal` como texto libre. Por eso emitir por acá no necesita que
+  // el producto esté vinculado a ningún catálogo ajeno.
+  const lineas = propuestas.map((l) => {
+    const producto = porId.get(l.productoId);
+    if (!producto) {
+      throw new ValidationError(
+        `"${l.descripcion}" no apunta a ningún producto del catálogo.`
+      );
+    }
+    return {
+      codigo: producto.codigo ?? producto.id.slice(-10).toUpperCase(),
+      // Lo que el armador decidió imprimir, con su detalle pegado: el XML del
+      // SRI no tiene un campo aparte para eso.
+      descripcion: l.detalle?.trim()
+        ? `${l.descripcion} · ${l.detalle.trim()}`
+        : l.descripcion,
+      cantidad: l.cantidad,
+      precioUnitario: l.precioUnitario,
+      ivaTasa: l.ivaTasa,
+    };
+  });
+
+  const datosSri = armarFactura(
+    {
+      // El portal solo distingue cédula y RUC, que es lo que factura acá.
+      tipoIdentificacion: dato.tipoIdentificacion === "RUC" ? "RUC" : "CEDULA",
+      identificacion: dato.identificacion,
+      razonSocial: dato.razonSocial,
+      direccion: dato.direccion,
+    },
+    lineas,
+    { fecha: emitidaEl }
+  );
+
+  const emisor = await prisma.emisor.findUniqueOrThrow({
+    where: { id: emisorId },
+    select: { establecimiento: true, puntoEmision: true },
+  });
+
+  const r = await emitirFacturaSri(emisorId, datosSri);
+  const numero = numeroComprobante(
+    emisor.establecimiento,
+    emisor.puntoEmision,
+    r.secuencial
+  );
+
+  const totales = {
+    subtotal0: centavos(
+      datosSri.totalConImpuestos
+        .filter((t) => t.valor === 0)
+        .reduce((a, t) => a + t.baseImponible, 0)
+    ),
+    subtotalGravado: centavos(
+      datosSri.totalConImpuestos
+        .filter((t) => t.valor > 0)
+        .reduce((a, t) => a + t.baseImponible, 0)
+    ),
+    iva: centavos(
+      datosSri.totalConImpuestos.reduce((a, t) => a + t.valor, 0)
+    ),
+    total: datosSri.importeTotal,
+  };
+
+  const factura = await prisma.$transaction(async (tx) => {
+    const creada = await tx.factura.create({
+      data: {
+        ordenId: orden.id,
+        emisorId,
+        numero,
+        tipo: "FACTURA",
+        descripcion,
+        fechaEmision: emitidaEl,
+        estado: ESTADO_SRI[r.estado] ?? "PENDIENTE",
+        claveAcceso: r.claveAcceso,
+        ambienteSri: r.ambiente,
+        estadoSri: r.estado,
+        fechaAutorizacion: r.fechaAutorizacion,
+        // En el esquema offline la clave de acceso **es** la autorización.
+        autorizacion: r.numeroAutorizacion,
+        mensajesSri: r.mensajes.length > 0 ? r.mensajes : undefined,
+        datoFacturacionId: dato.id,
+        razonSocial: dato.razonSocial,
+        identificacion: dato.identificacion,
+        subtotal0: totales.subtotal0,
+        subtotalGravado: totales.subtotalGravado,
+        iva: totales.iva,
+        total: totales.total,
+        // Los cobros los lleva el portal: recién emitida debe todo.
+        saldo: totales.total,
+        lineas: { create: lineasParaGuardar(propuestas) },
+      },
+    });
+    if (r.estado === "AUTORIZADO") {
+      await tx.orden.update({
+        where: { id: orden.id },
+        data: { estado: "CONFIRMADA", updatedById: viewer.id },
+      });
+    }
+    return creada;
+  });
+
+  return {
+    facturaId: factura.id,
+    numero: factura.numero,
+    estado: factura.estado,
+    urlRide: null,
+  };
+}
+
+/** Lo que dice la emisión, en los estados que ya usaba la factura. */
+const ESTADO_SRI: Record<string, EstadoFactura> = {
+  AUTORIZADO: "AUTORIZADO",
+  ENVIADO: "ENVIADO_SRI",
+  FIRMADO: "FIRMADO",
+  DEVUELTO: "RECHAZADO",
+  RECHAZADO: "RECHAZADO",
+};

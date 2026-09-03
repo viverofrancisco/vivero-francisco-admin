@@ -55,6 +55,13 @@ export default async function OrdenRoute({
     where: { clienteId: orden.cliente.id, archivado: false },
   });
 
+  // ¿Se puede emitir sin pasar por Contífico? Con un emisor propio configurado,
+  // el vínculo de los productos deja de ser un requisito: la línea del XML del
+  // SRI lleva un código y una descripción nuestros.
+  const emisoresPropios = await prisma.emisor.count({
+    where: { activo: true, certificado: { not: null } },
+  });
+
   // El trabajo que el editor puede marcar y desmarcar: lo pendiente del cliente
   // **más lo que esta orden ya cubre**, que si no desaparecería de la lista.
   // Las visitas no se cortan por fecha; los períodos de plan sí (fin de mes).
@@ -166,6 +173,7 @@ export default async function OrdenRoute({
             datoFacturacion: f.datoFacturacion,
           })),
         }}
+        hayEmisorPropio={emisoresPropios > 0}
         clientes={clientes}
         productos={productos.map((p) => ({
           ...p,

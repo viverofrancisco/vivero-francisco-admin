@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireStaff, viewerFromSession } from "@/lib/auth-helpers";
 import { getOrden } from "@/lib/services/orden.service";
 import { NotFoundError } from "@/lib/services/errors";
+import { emisoresDisponibles } from "@/lib/services/emisor.service";
 import { EmitirFacturaPage } from "@/components/ordenes/emitir-factura-page";
 
 /**
@@ -41,7 +42,7 @@ export default async function EmitirRoute({
     redirect(`/dashboard/ordenes/${id}`);
   }
 
-  const [productos, datosFacturacion] = await Promise.all([
+  const [productos, datosFacturacion, emisores] = await Promise.all([
     prisma.producto.findMany({
       where: { deletedAt: null },
       orderBy: { nombre: "asc" },
@@ -56,6 +57,9 @@ export default async function EmitirRoute({
       where: { clienteId: orden.cliente.id, archivado: false },
       orderBy: [{ esPredeterminado: "desc" }, { razonSocial: "asc" }],
     }),
+    // Con qué RUC se puede emitir sin pasar por Contífico. Vacío mientras no
+    // haya ninguno configurado con su firma, y entonces la pantalla no cambia.
+    emisoresDisponibles(viewer),
   ]);
 
   return (
@@ -85,6 +89,13 @@ export default async function EmitirRoute({
       productos={productos.map((p) => ({
         ...p,
         ivaTasa: p.ivaTasa === null ? null : Number(p.ivaTasa),
+      }))}
+      emisores={emisores.map((e) => ({
+        id: e.id,
+        ruc: e.ruc,
+        razonSocial: e.razonSocial,
+        ambiente: e.ambiente,
+        predeterminado: e.predeterminado,
       }))}
       datosFacturacion={datosFacturacion.map((d) => ({
         id: d.id,

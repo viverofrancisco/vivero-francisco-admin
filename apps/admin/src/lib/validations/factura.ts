@@ -30,6 +30,11 @@ export const emitirFacturaSchema = z.object({
   descripcion: z.string().nullable().optional(),
   /** Ausente = las líneas de la orden, una a una, como se emitía siempre. */
   lineas: z.array(lineaFacturaSchema).min(1).optional(),
+  /**
+   * Con qué emisor del SRI se emite. Ausente = por Contífico, que es como se
+   * emitió siempre.
+   */
+  emisorId: z.string().min(1).nullable().optional(),
 });
 
 export type EmitirFacturaData = z.infer<typeof emitirFacturaSchema>;
