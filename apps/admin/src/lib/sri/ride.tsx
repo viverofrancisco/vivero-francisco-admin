@@ -2,15 +2,20 @@
  * El RIDE: la representación impresa del comprobante electrónico.
  *
  * El documento legal es el XML autorizado; esto es el papel que se le entrega
- * al cliente y tiene que decir lo mismo. La ficha técnica del SRI fija qué
- * datos van sí o sí —la clave de acceso y su código de barras, el número de
- * autorización con su fecha, el ambiente, los datos del emisor y del
- * comprador, el detalle y los totales por tarifa—, así que la plantilla no es
- * una decisión de diseño: es una lista de requisitos.
+ * al cliente. La ficha técnica del SRI fija **qué datos** van sí o sí —la clave
+ * de acceso y su código de barras, el número de autorización con su fecha, el
+ * ambiente, los datos del emisor y del comprador, el detalle, las formas de
+ * pago y los totales por tarifa— pero **no fija el diseño**, que es del emisor.
+ * Por eso el RIDE de cada sistema se ve distinto y todos son válidos.
  *
- * **El ambiente se imprime bien grande cuando es de pruebas.** Un RIDE de
- * pruebas es idéntico a uno real salvo por ese dato, y confundirlos es
- * entregarle al cliente un papel que no vale.
+ * La jerarquía acá busca lo que la gente busca cuando abre una factura: quién
+ * la emite, a quién, cuánto, y por qué concepto. El bloque tributario —clave de
+ * acceso, autorización, ambiente— es obligatorio pero no es lo que se lee
+ * primero, así que va con el peso visual que le corresponde.
+ *
+ * **El ambiente de pruebas se grita.** Un RIDE de pruebas es idéntico a uno
+ * real salvo por ese dato, y confundirlos es entregarle al cliente un papel que
+ * no vale.
  */
 import {
   Document,
@@ -23,63 +28,150 @@ import {
 } from "@react-pdf/renderer";
 import { toBuffer as codigoDeBarras } from "bwip-js/node";
 import { FORMAS_PAGO_SRI } from "./comprobante";
+import type { LogoEmpresa } from "./logo";
 
-const COLOR_TEXT = "#1a1a1a";
-const COLOR_MUTED = "#555555";
-const COLOR_LINEA = "#cccccc";
+const VERDE = "#226633";
+const TINTA = "#1a1a1a";
+const GRIS = "#666666";
+const LINEA = "#e2e2e2";
+const FONDO = "#f7f7f5";
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 28,
-    paddingBottom: 28,
-    paddingHorizontal: 32,
+    paddingTop: 32,
+    paddingBottom: 36,
+    paddingHorizontal: 34,
     fontFamily: "Helvetica",
-    fontSize: 8,
-    color: COLOR_TEXT,
+    fontSize: 8.5,
+    color: TINTA,
+    lineHeight: 1.4,
   },
   fila: { flexDirection: "row" },
-  caja: {
-    borderWidth: 1,
-    borderColor: COLOR_LINEA,
-    borderRadius: 3,
-    padding: 8,
-  },
-  titulo: { fontFamily: "Helvetica-Bold", fontSize: 11, marginBottom: 4 },
-  subtitulo: {
+
+  // ── Encabezado ────────────────────────────────────────────────────────
+  encabezado: { flexDirection: "row", marginBottom: 14 },
+  logo: { height: 42, width: 120, objectFit: "contain", marginBottom: 8 },
+  emisorNombre: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 8,
-    marginBottom: 3,
+    fontSize: 15,
+    color: VERDE,
+    marginBottom: 2,
   },
-  etiqueta: { color: COLOR_MUTED },
-  dato: { marginBottom: 1.5 },
-  barras: { height: 34, marginTop: 4, objectFit: "contain" },
-  clave: { fontSize: 7, marginTop: 2, letterSpacing: 0.4 },
-  aviso: {
-    marginTop: 6,
-    padding: 4,
+  emisorRazon: { fontSize: 8.5, color: GRIS, marginBottom: 6 },
+
+  // El recuadro del documento: lo que el SRI exige, junto y a la derecha.
+  documento: {
+    width: 232,
     borderWidth: 1,
+    borderColor: LINEA,
+    borderRadius: 4,
+    padding: 10,
+  },
+  tipoDoc: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 13,
+    letterSpacing: 0.5,
+    marginBottom: 1,
+  },
+  numeroDoc: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 11,
+    color: VERDE,
+    marginBottom: 6,
+  },
+
+  etiqueta: { color: GRIS },
+  dato: { marginBottom: 1 },
+  barras: { height: 30, marginTop: 5, objectFit: "contain" },
+  clave: { fontSize: 6.5, letterSpacing: 0.3, color: GRIS, marginTop: 2 },
+
+  aviso: {
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    borderWidth: 1.5,
     borderColor: "#b45309",
+    borderRadius: 3,
     color: "#b45309",
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
-    fontSize: 9,
+    fontSize: 8,
   },
+
+  // ── Cliente ───────────────────────────────────────────────────────────
+  cliente: {
+    backgroundColor: FONDO,
+    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 12,
+  },
+  clienteNombre: { fontFamily: "Helvetica-Bold", fontSize: 10 },
+
+  // ── Detalle ───────────────────────────────────────────────────────────
   th: {
     fontFamily: "Helvetica-Bold",
     fontSize: 7.5,
-    paddingVertical: 3,
+    color: GRIS,
+    letterSpacing: 0.3,
+    paddingBottom: 5,
     borderBottomWidth: 1,
-    borderBottomColor: COLOR_TEXT,
+    borderBottomColor: TINTA,
   },
   td: {
-    fontSize: 7.5,
-    paddingVertical: 3,
+    fontSize: 8.5,
+    paddingVertical: 5,
     borderBottomWidth: 0.5,
-    borderBottomColor: COLOR_LINEA,
+    borderBottomColor: LINEA,
   },
-  totalFila: { flexDirection: "row", justifyContent: "flex-end", marginTop: 2 },
-  totalEtiqueta: { width: 130, textAlign: "right", color: COLOR_MUTED },
-  totalValor: { width: 70, textAlign: "right" },
+
+  // ── Pie ───────────────────────────────────────────────────────────────
+  caja: {
+    borderWidth: 1,
+    borderColor: LINEA,
+    borderRadius: 4,
+    padding: 9,
+  },
+  subtitulo: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 7.5,
+    color: GRIS,
+    letterSpacing: 0.3,
+    marginBottom: 3,
+  },
+  totalFila: { flexDirection: "row", justifyContent: "flex-end", paddingVertical: 1.5 },
+  totalEtiqueta: { width: 140, textAlign: "right", color: GRIS, fontSize: 8 },
+  totalValor: { width: 70, textAlign: "right", fontSize: 8.5 },
+  granTotal: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 4,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: TINTA,
+  },
+  granTotalEtiqueta: {
+    width: 140,
+    textAlign: "right",
+    fontFamily: "Helvetica-Bold",
+    fontSize: 10,
+  },
+  granTotalValor: {
+    width: 70,
+    textAlign: "right",
+    fontFamily: "Helvetica-Bold",
+    fontSize: 11,
+    color: VERDE,
+  },
+  pie: {
+    position: "absolute",
+    bottom: 18,
+    left: 34,
+    right: 34,
+    textAlign: "center",
+    fontSize: 6.5,
+    color: GRIS,
+  },
 });
 
 export interface RideEmisor {
@@ -129,6 +221,7 @@ export interface RideDatos {
   total: number;
   /** Lo que va en *Información adicional*. */
   descripcion: string | null;
+  logo?: LogoEmpresa | null;
 }
 
 const money = (n: number) => `$${n.toFixed(2)}`;
@@ -151,7 +244,7 @@ export async function renderRide(datos: RideDatos): Promise<Buffer> {
     bcid: "code128",
     text: datos.claveAcceso,
     scale: 3,
-    height: 10,
+    height: 9,
     includetext: false,
   });
 
@@ -165,11 +258,21 @@ export async function renderRide(datos: RideDatos): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+function Dato({
+  etiqueta,
+  valor,
+  fuerte,
+}: {
+  etiqueta: string;
+  valor: string;
+  fuerte?: boolean;
+}) {
   return (
     <Text style={styles.dato}>
       <Text style={styles.etiqueta}>{etiqueta}: </Text>
-      {valor}
+      <Text style={fuerte ? { fontFamily: "Helvetica-Bold" } : undefined}>
+        {valor}
+      </Text>
     </Text>
   );
 }
@@ -182,23 +285,38 @@ function RideDocument({
   barras: Buffer;
 }) {
   const { emisor } = datos;
+  const esNota = datos.tipo === "NOTA_CREDITO";
+
   return (
-    <Document>
+    <Document
+      title={`${esNota ? "Nota de crédito" : "Factura"} ${datos.numero}`}
+      author={emisor.razonSocial}
+    >
       <Page size="A4" style={styles.page}>
-        <View style={styles.fila}>
-          {/* Quién emite */}
-          <View style={[styles.caja, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.titulo}>
+        <View style={styles.encabezado}>
+          {/* Quién emite. El logo manda, y debajo lo que el SRI exige. */}
+          <View style={{ flex: 1, paddingRight: 16 }}>
+            {datos.logo && (
+              <Image
+                style={styles.logo}
+                src={{ data: Buffer.from(datos.logo.bytes), format: datos.logo.format }}
+              />
+            )}
+            <Text style={styles.emisorNombre}>
               {emisor.nombreComercial || emisor.razonSocial}
             </Text>
-            {emisor.nombreComercial && (
-              <Dato etiqueta="Razón social" valor={emisor.razonSocial} />
-            )}
+            {emisor.nombreComercial &&
+              emisor.nombreComercial !== emisor.razonSocial && (
+                <Text style={styles.emisorRazon}>{emisor.razonSocial}</Text>
+              )}
+            <Dato etiqueta="RUC" valor={emisor.ruc} fuerte />
             <Dato etiqueta="Dirección matriz" valor={emisor.dirMatriz} />
-            <Dato
-              etiqueta="Dirección sucursal"
-              valor={emisor.direccionEstablecimiento}
-            />
+            {emisor.direccionEstablecimiento !== emisor.dirMatriz && (
+              <Dato
+                etiqueta="Dirección sucursal"
+                valor={emisor.direccionEstablecimiento}
+              />
+            )}
             <Dato
               etiqueta="Obligado a llevar contabilidad"
               valor={emisor.obligadoContabilidad ? "SÍ" : "NO"}
@@ -210,30 +328,26 @@ function RideDocument({
               />
             )}
             {emisor.agenteRetencion && (
-              <Dato
-                etiqueta="Agente de retención"
-                valor={emisor.agenteRetencion}
-              />
+              <Dato etiqueta="Agente de retención" valor={emisor.agenteRetencion} />
             )}
           </View>
 
-          {/* Qué documento es */}
-          <View style={[styles.caja, { flex: 1 }]}>
-            <Dato etiqueta="R.U.C." valor={emisor.ruc} />
-            <Text style={styles.titulo}>
-              {datos.tipo === "NOTA_CREDITO" ? "NOTA DE CRÉDITO" : "FACTURA"}
+          {/* Qué documento es: el bloque tributario, obligatorio y agrupado. */}
+          <View style={styles.documento}>
+            <Text style={styles.tipoDoc}>
+              {esNota ? "NOTA DE CRÉDITO" : "FACTURA"}
             </Text>
-            <Dato etiqueta="No." valor={datos.numero} />
+            <Text style={styles.numeroDoc}>{datos.numero}</Text>
             <Dato
-              etiqueta="Número de autorización"
+              etiqueta="Autorización"
               valor={datos.numeroAutorizacion ?? datos.claveAcceso}
             />
             <Dato
-              etiqueta="Fecha y hora de autorización"
+              etiqueta="Fecha y hora"
               valor={
                 datos.fechaAutorizacion
                   ? fechaHora(datos.fechaAutorizacion)
-                  : "Pendiente"
+                  : "Pendiente de autorización"
               }
             />
             <Dato
@@ -241,17 +355,16 @@ function RideDocument({
               valor={emisor.ambiente === "PRODUCCION" ? "PRODUCCIÓN" : "PRUEBAS"}
             />
             <Dato etiqueta="Emisión" valor="NORMAL" />
-            <Text style={styles.etiqueta}>Clave de acceso</Text>
+            <Text style={[styles.etiqueta, { marginTop: 4 }]}>
+              Clave de acceso
+            </Text>
             {/* eslint-disable-next-line jsx-a11y/alt-text -- el `Image` de
-                @react-pdf no es el del navegador y no acepta `alt`; la regla lo
-                confunde con un `<img>`. La clave va escrita abajo igual. */}
+                @react-pdf no es el del navegador y no acepta `alt`. */}
             <Image style={styles.barras} src={{ data: barras, format: "png" }} />
             <Text style={styles.clave}>{datos.claveAcceso}</Text>
-            {/* Un RIDE de pruebas es igual a uno real salvo por esto. */}
             {emisor.ambiente === "PRUEBAS" && (
               <Text style={styles.aviso}>
-                DOCUMENTO EMITIDO EN AMBIENTE DE PRUEBAS · SIN VALIDEZ
-                TRIBUTARIA
+                AMBIENTE DE PRUEBAS{"\n"}SIN VALIDEZ TRIBUTARIA
               </Text>
             )}
           </View>
@@ -259,12 +372,19 @@ function RideDocument({
 
         {/* Qué corrige la nota. Sin esto el papel no dice a qué se refiere. */}
         {datos.modifica && (
-          <View style={[styles.caja, { marginTop: 8 }]}>
-            <Text style={styles.subtitulo}>Documento que modifica</Text>
+          <View style={[styles.caja, { marginBottom: 12 }]}>
+            <Text style={styles.subtitulo}>DOCUMENTO QUE MODIFICA</Text>
             <View style={styles.fila}>
               <View style={{ flex: 1 }}>
-                <Dato etiqueta="Comprobante" valor={`Factura ${datos.modifica.numero}`} />
-                <Dato etiqueta="Fecha de emisión" valor={fechaLarga(datos.modifica.fecha)} />
+                <Dato
+                  etiqueta="Comprobante"
+                  valor={`Factura ${datos.modifica.numero}`}
+                  fuerte
+                />
+                <Dato
+                  etiqueta="Fecha de emisión"
+                  valor={fechaLarga(datos.modifica.fecha)}
+                />
               </View>
               <View style={{ flex: 1 }}>
                 <Dato etiqueta="Motivo" valor={datos.modifica.motivo} />
@@ -274,96 +394,107 @@ function RideDocument({
         )}
 
         {/* A quién se le factura */}
-        <View style={[styles.caja, { marginTop: 8 }]}>
+        <View style={styles.cliente}>
           <View style={styles.fila}>
-            <View style={{ flex: 2 }}>
-              <Dato
-                etiqueta="Razón social / Nombres y apellidos"
-                valor={datos.comprador.razonSocial}
-              />
+            <View style={{ flex: 2, paddingRight: 12 }}>
+              <Text style={styles.clienteNombre}>
+                {datos.comprador.razonSocial}
+              </Text>
               <Dato
                 etiqueta="Identificación"
                 valor={datos.comprador.identificacion}
               />
+              {datos.comprador.direccion && (
+                <Dato etiqueta="Dirección" valor={datos.comprador.direccion} />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <Dato
                 etiqueta="Fecha de emisión"
                 valor={fechaLarga(datos.fechaEmision)}
               />
-              {datos.comprador.direccion && (
-                <Dato etiqueta="Dirección" valor={datos.comprador.direccion} />
-              )}
             </View>
           </View>
         </View>
 
         {/* El detalle */}
-        <View style={{ marginTop: 8 }}>
+        <View>
           <View style={styles.fila}>
-            <Text style={[styles.th, { width: 70 }]}>Cód.</Text>
-            <Text style={[styles.th, { flex: 1 }]}>Descripción</Text>
-            <Text style={[styles.th, { width: 40, textAlign: "right" }]}>Cant.</Text>
-            <Text style={[styles.th, { width: 60, textAlign: "right" }]}>P. unit.</Text>
-            <Text style={[styles.th, { width: 55, textAlign: "right" }]}>Desc.</Text>
-            <Text style={[styles.th, { width: 65, textAlign: "right" }]}>Total</Text>
+            <Text style={[styles.th, { width: 78 }]}>CÓDIGO</Text>
+            <Text style={[styles.th, { flex: 1 }]}>DESCRIPCIÓN</Text>
+            <Text style={[styles.th, { width: 42, textAlign: "right" }]}>CANT.</Text>
+            <Text style={[styles.th, { width: 62, textAlign: "right" }]}>P. UNIT.</Text>
+            <Text style={[styles.th, { width: 55, textAlign: "right" }]}>DESC.</Text>
+            <Text style={[styles.th, { width: 68, textAlign: "right" }]}>TOTAL</Text>
           </View>
           {datos.lineas.map((l, i) => (
-            <View style={styles.fila} key={i}>
-              <Text style={[styles.td, { width: 70 }]}>{l.codigo}</Text>
+            <View style={styles.fila} key={i} wrap={false}>
+              <Text style={[styles.td, { width: 78, color: GRIS, fontSize: 7.5 }]}>
+                {l.codigo}
+              </Text>
               <Text style={[styles.td, { flex: 1 }]}>{l.descripcion}</Text>
-              <Text style={[styles.td, { width: 40, textAlign: "right" }]}>
+              <Text style={[styles.td, { width: 42, textAlign: "right" }]}>
                 {l.cantidad}
               </Text>
-              <Text style={[styles.td, { width: 60, textAlign: "right" }]}>
+              <Text style={[styles.td, { width: 62, textAlign: "right" }]}>
                 {money(l.precioUnitario)}
               </Text>
               <Text style={[styles.td, { width: 55, textAlign: "right" }]}>
                 {money(l.descuento)}
               </Text>
-              <Text style={[styles.td, { width: 65, textAlign: "right" }]}>
+              <Text
+                style={[
+                  styles.td,
+                  { width: 68, textAlign: "right", fontFamily: "Helvetica-Bold" },
+                ]}
+              >
                 {money(l.totalSinImpuestos)}
               </Text>
             </View>
           ))}
         </View>
 
-        <View style={[styles.fila, { marginTop: 10 }]}>
-          {/* Formas de pago e información adicional */}
-          <View style={{ flex: 1, marginRight: 8 }}>
+        <View style={[styles.fila, { marginTop: 12 }]}>
+          <View style={{ flex: 1, marginRight: 10 }}>
             <View style={styles.caja}>
-              <Text style={styles.subtitulo}>Forma de pago</Text>
+              <Text style={styles.subtitulo}>FORMA DE PAGO</Text>
               {datos.pagos.map((p, i) => (
-                <View key={i} style={[styles.fila, { justifyContent: "space-between" }]}>
+                <View
+                  key={i}
+                  style={[styles.fila, { justifyContent: "space-between" }]}
+                >
                   <Text style={{ flex: 1 }}>
-                    {p.formaPago} · {FORMAS_PAGO_SRI[p.formaPago] ?? "OTRA"}
+                    {FORMAS_PAGO_SRI[p.formaPago] ?? `Forma ${p.formaPago}`}
                   </Text>
-                  <Text style={{ width: 60, textAlign: "right" }}>
+                  <Text style={{ width: 62, textAlign: "right" }}>
                     {money(p.total)}
                   </Text>
                 </View>
               ))}
             </View>
-            <View style={[styles.caja, { marginTop: 8 }]}>
-              <Text style={styles.subtitulo}>Información adicional</Text>
-              {datos.descripcion ? (
+            {datos.descripcion && (
+              <View style={[styles.caja, { marginTop: 8 }]}>
+                <Text style={styles.subtitulo}>INFORMACIÓN ADICIONAL</Text>
                 <Text>{datos.descripcion}</Text>
-              ) : (
-                <Text style={styles.etiqueta}>—</Text>
-              )}
-            </View>
+              </View>
+            )}
           </View>
 
-          {/* Totales, con las bases separadas por tarifa */}
-          <View style={{ width: 210 }}>
-            <View style={styles.totalFila}>
-              <Text style={styles.totalEtiqueta}>SUBTOTAL 15%</Text>
-              <Text style={styles.totalValor}>{money(datos.subtotalGravado)}</Text>
-            </View>
-            <View style={styles.totalFila}>
-              <Text style={styles.totalEtiqueta}>SUBTOTAL 0%</Text>
-              <Text style={styles.totalValor}>{money(datos.subtotal0)}</Text>
-            </View>
+          {/* Totales, con las bases separadas por tarifa: sumarlas juntas
+              cerraría el total y mentiría el desglose del IVA. */}
+          <View style={{ width: 220 }}>
+            {datos.subtotalGravado > 0 && (
+              <View style={styles.totalFila}>
+                <Text style={styles.totalEtiqueta}>SUBTOTAL 15%</Text>
+                <Text style={styles.totalValor}>{money(datos.subtotalGravado)}</Text>
+              </View>
+            )}
+            {datos.subtotal0 > 0 && (
+              <View style={styles.totalFila}>
+                <Text style={styles.totalEtiqueta}>SUBTOTAL 0%</Text>
+                <Text style={styles.totalValor}>{money(datos.subtotal0)}</Text>
+              </View>
+            )}
             <View style={styles.totalFila}>
               <Text style={styles.totalEtiqueta}>SUBTOTAL SIN IMPUESTOS</Text>
               <Text style={styles.totalValor}>
@@ -382,16 +513,18 @@ function RideDocument({
               <Text style={styles.totalEtiqueta}>PROPINA</Text>
               <Text style={styles.totalValor}>{money(datos.propina)}</Text>
             </View>
-            <View style={styles.totalFila}>
-              <Text style={[styles.totalEtiqueta, { fontFamily: "Helvetica-Bold", color: COLOR_TEXT }]}>
-                VALOR TOTAL
-              </Text>
-              <Text style={[styles.totalValor, { fontFamily: "Helvetica-Bold" }]}>
-                {money(datos.total)}
-              </Text>
+            <View style={styles.granTotal}>
+              <Text style={styles.granTotalEtiqueta}>VALOR TOTAL</Text>
+              <Text style={styles.granTotalValor}>{money(datos.total)}</Text>
             </View>
           </View>
         </View>
+
+        {/* El pie recuerda qué es esto, que es lo que más se malentiende. */}
+        <Text style={styles.pie} fixed>
+          Representación impresa del comprobante electrónico. El documento
+          autorizado es el archivo XML.
+        </Text>
       </Page>
     </Document>
   );

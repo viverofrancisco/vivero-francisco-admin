@@ -8,6 +8,7 @@
 import { prisma } from "@/lib/prisma";
 import { NotFoundError, ValidationError } from "@/lib/services/errors";
 import { FORMA_PAGO_POR_DEFECTO } from "./comprobante";
+import { logoDeLaEmpresa } from "./logo";
 import type { RideDatos } from "./ride";
 
 export async function datosDelRide(facturaId: string): Promise<RideDatos> {
@@ -103,6 +104,8 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
     ],
     totalDescuento: 0,
     propina: 0,
+    // Que falte no invalida nada: el comprobante sale sin logo.
+    logo: await logoDeLaEmpresa(),
     subtotal0: Number(factura.subtotal0),
     subtotalGravado: Number(factura.subtotalGravado),
     iva: Number(factura.iva),
