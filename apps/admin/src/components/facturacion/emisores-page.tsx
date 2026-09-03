@@ -467,12 +467,14 @@ function EmisorDialog({
               <Input
                 value={form.dirMatriz}
                 onChange={(e) => set({ dirMatriz: e.target.value })}
+                placeholder="Como está en el RUC"
               />
             </Campo>
-            <Campo etiqueta="Dirección del establecimiento *">
+            <Campo etiqueta="Dirección del establecimiento">
               <Input
                 value={form.direccionEstablecimiento}
                 onChange={(e) => set({ direccionEstablecimiento: e.target.value })}
+                placeholder="La misma que la matriz"
               />
             </Campo>
             <Campo etiqueta="Establecimiento *">

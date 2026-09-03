@@ -12,9 +12,8 @@ export const emisorSchema = z.object({
   razonSocial: z.string().min(1, "La razón social es obligatoria"),
   nombreComercial: z.string().nullable().optional(),
   dirMatriz: z.string().min(1, "La dirección de la matriz es obligatoria"),
-  direccionEstablecimiento: z
-    .string()
-    .min(1, "La dirección del establecimiento es obligatoria"),
+  /** Opcional para el SRI: vacía se usa la de la matriz. */
+  direccionEstablecimiento: z.string().nullable().optional(),
   establecimiento: z.string().regex(/^\d{3}$/, "Tres dígitos, como 001"),
   puntoEmision: z.string().regex(/^\d{3}$/, "Tres dígitos, como 001"),
   obligadoContabilidad: z.boolean(),

@@ -49,7 +49,8 @@ export interface EmisorInput {
   razonSocial: string;
   nombreComercial?: string | null;
   dirMatriz: string;
-  direccionEstablecimiento: string;
+  /** Vacía = la misma que la matriz. */
+  direccionEstablecimiento?: string | null;
   establecimiento: string;
   puntoEmision: string;
   obligadoContabilidad: boolean;
@@ -81,12 +82,21 @@ function limpiar(payload: EmisorInput) {
   if (!payload.razonSocial.trim()) {
     throw new ValidationError("La razón social es obligatoria.");
   }
+  const dirMatriz = payload.dirMatriz.trim();
+  if (!dirMatriz) {
+    throw new ValidationError("La dirección de la matriz es obligatoria.");
+  }
   return {
     ruc,
     razonSocial: payload.razonSocial.trim(),
     nombreComercial: payload.nombreComercial?.trim() || null,
-    dirMatriz: payload.dirMatriz.trim(),
-    direccionEstablecimiento: payload.direccionEstablecimiento.trim(),
+    dirMatriz,
+    // Vacía cae en la de la matriz. En el XSD del SRI `dirEstablecimiento` es
+    // opcional (`minOccurs="0"`) y solo distingue de qué sucursal salió la
+    // factura: con un solo local son la misma dirección, y pedirla aparte era
+    // hacer escribir dos veces lo mismo.
+    direccionEstablecimiento:
+      payload.direccionEstablecimiento?.trim() || dirMatriz,
     establecimiento: tres(payload.establecimiento, "El establecimiento"),
     puntoEmision: tres(payload.puntoEmision, "El punto de emisión"),
     obligadoContabilidad: payload.obligadoContabilidad,
