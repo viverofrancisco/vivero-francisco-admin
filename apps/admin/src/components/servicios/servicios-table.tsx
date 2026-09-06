@@ -34,7 +34,11 @@ interface Servicio {
   codigo: string | null;
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
-  /** Varias: un rosal es "Plantas" y también "Exterior". */
+  /**
+   * Varias: un rosal es "Plantas" y también "Exterior". No se muestran en la
+   * tabla —con dos o tres por fila el listado se vuelve una nube de etiquetas
+   * y el nombre deja de saltar a la vista—, pero el filtro de arriba las usa.
+   */
   categorias: { id: string; nombre: string }[];
   /** Total de las variantes que cuentan. `null` = no lleva inventario. */
   stock: number | null;
@@ -185,7 +189,6 @@ export function ServiciosTable({
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Categorías</TableHead>
                   <TableHead>Código</TableHead>
                   <TableHead className="w-24 text-right">Stock</TableHead>
                   <TableHead className="w-12" />
@@ -216,22 +219,6 @@ export function ServiciosTable({
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {TIPO_LABEL[servicio.tipo] ?? servicio.tipo}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {servicio.categorias.length === 0 ? (
-                        "—"
-                      ) : (
-                        <span className="flex flex-wrap gap-1">
-                          {servicio.categorias.map((c) => (
-                            <span
-                              key={c.id}
-                              className="rounded bg-muted px-1.5 py-0.5 text-xs"
-                            >
-                              {c.nombre}
-                            </span>
-                          ))}
-                        </span>
-                      )}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {servicio.codigo ?? "—"}
