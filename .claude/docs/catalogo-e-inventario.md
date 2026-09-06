@@ -141,6 +141,37 @@ orden de 99 sobre 12 se frenó **antes** de emitir y la orden quedó en
   normal; que pase sin querer no lo es, y por eso se decide por variante y no
   una vez para todo el catálogo.
 
+## La ficha del producto tiene dos formas
+
+Copiadas de Shopify, porque resuelven bien el caso común:
+
+**Sin opciones** —un bien con su variante única— el stock se muestra en una
+card **Inventario** en la ficha misma: el número grande, *Ajustar*, el SKU y
+los dos interruptores. A los ojos de quien mira, ese stock es del producto; por
+debajo sigue siendo el de la variante única, así que agregar opciones después no
+cambia nada del modelo. La card de **Variantes** ahí solo ofrece *Agregar
+opciones como color o tamaño*: una tabla de una fila para decir "hay 12" es una
+tabla de más.
+
+**Con opciones** la card de Inventario desaparece —el stock es por combinación—
+y la de Variantes muestra los ejes con sus valores y la lista: nombre, SKU y
+cuánto hay. El nombre abre los ajustes de esa variante y el número abre el
+movimiento: son las dos cosas que se hacen sobre una fila, y cada una tiene su
+blanco en vez de un menú que las esconda a las dos.
+
+**Con dos o más ejes** aparece *Agrupar por*, y las filas se pliegan por el
+valor de uno de ellos. Con ejes de 3 y 6 valores son dieciocho filas y ninguna
+se encuentra; agrupadas son tres, y se abre la que interesa.
+
+El **historial de movimientos** va dentro del diálogo de ajuste, no en otra
+pantalla: cuando alguien está por corregir un número, lo que le dice si confiar
+en él es ver qué pasó antes.
+
+La ficha es de **dos columnas**: a la izquierda lo que el producto *es* —qué es,
+cómo se ve, cuánto hay—, a la derecha cómo se lo agrupa. Las categorías se
+guardan al elegirlas, sin pasar por *Editar*: reagrupar un producto no es
+editarlo, es una etiqueta que se pone y se saca mientras se ordena el catálogo.
+
 ## Las fotos son del producto, la variante elige la suya
 
 `ProductoImagen` cuelga del **producto**. `Variante.imagenId` apunta a una de
