@@ -68,6 +68,7 @@ export async function getCatalogoDelProducto(viewer: Viewer, productoId: string)
         select: {
           id: true,
           sku: true,
+          precio: true,
           combinacion: true,
           manejaInventario: true,
           stock: true,
@@ -95,6 +96,8 @@ export async function getCatalogoDelProducto(viewer: Viewer, productoId: string)
     variantes: producto.variantes.map((v) => ({
       id: v.id,
       sku: v.sku,
+      // Decimal no cruza a un componente cliente.
+      precio: v.precio === null ? null : Number(v.precio),
       manejaInventario: v.manejaInventario,
       stock: v.stock,
       permiteNegativo: v.permiteNegativo,
@@ -382,6 +385,8 @@ async function regenerarVariantes(
 
 export interface VarianteInput {
   sku?: string | null;
+  /** Precio de lista. Lo que se cobró vive en la orden, no acá. */
+  precio?: number | null;
   manejaInventario?: boolean;
   permiteNegativo?: boolean;
   /** Cuál de las fotos del producto la representa. */
@@ -428,6 +433,7 @@ export async function actualizarVariante(
       where: { id: varianteId },
       data: {
         ...(payload.sku !== undefined ? { sku: payload.sku?.trim() || null } : {}),
+        ...(payload.precio !== undefined ? { precio: payload.precio } : {}),
         ...(payload.manejaInventario !== undefined
           ? { manejaInventario: payload.manejaInventario }
           : {}),

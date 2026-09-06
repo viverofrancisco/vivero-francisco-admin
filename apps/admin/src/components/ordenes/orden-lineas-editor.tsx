@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
   SelectorVariante,
+  precioAlCambiarVariante,
+  precioDeLista,
   type VarianteVendible,
 } from "@/components/ordenes/selector-variante";
 import { Trash2 } from "lucide-react";
@@ -114,6 +116,10 @@ export function OrdenLineasEditor({
         productoId: p.id,
         // Con una sola no hay nada que preguntar; con varias, el selector.
         varianteId: p.variantes.length === 1 ? p.variantes[0].id : null,
+        // El precio de lista viene propuesto y se puede cambiar: lo que se
+        // cobra es lo que quede en la línea.
+        precioUnitario:
+          p.variantes.length === 1 ? precioDeLista(p.variantes[0]) : "",
       },
     ]);
   };
@@ -199,7 +205,18 @@ export function OrdenLineasEditor({
                     productos.find((p) => p.id === l.productoId)?.variantes ?? []
                   }
                   value={l.varianteId}
-                  onChange={(varianteId) => actualizar(l.uid, { varianteId })}
+                  onChange={(varianteId) => {
+                    const vs =
+                      productos.find((p) => p.id === l.productoId)?.variantes ?? [];
+                    actualizar(l.uid, {
+                      varianteId,
+                      precioUnitario: precioAlCambiarVariante(
+                        l.precioUnitario,
+                        vs.find((v) => v.id === l.varianteId),
+                        vs.find((v) => v.id === varianteId)
+                      ),
+                    });
+                  }}
                 />
                 <div className="w-20 space-y-1">
                   <Label className="text-xs">Cant.</Label>

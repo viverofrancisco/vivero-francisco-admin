@@ -2,14 +2,40 @@
 
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Label } from "@/components/ui/label";
+import { money } from "./formato";
 
 export interface VarianteVendible {
   id: string;
   /** "Rojo · Grande", o vacío en la variante única de un bien sin opciones. */
   nombre: string;
   sku: string | null;
+  /** Precio de lista: lo que se propone acá. Lo cobrado queda en la línea. */
+  precio: number | null;
   manejaInventario: boolean;
   stock: number;
+}
+
+/** El precio de lista como texto para el campo, o vacío si no tiene. */
+export function precioDeLista(v: VarianteVendible | undefined): string {
+  return v?.precio != null ? String(v.precio) : "";
+}
+
+/**
+ * Qué precio corresponde al cambiar de variante.
+ *
+ * Sigue a la lista **mientras nadie lo haya tocado**: si el campo está vacío o
+ * todavía dice el precio de la variante anterior, pasa al de la nueva. Si
+ * alguien escribió otro número, ese manda — pisarlo sería tirar lo que la
+ * persona acaba de decidir, que es justamente lo que el precio de lista no
+ * puede hacer.
+ */
+export function precioAlCambiarVariante(
+  actual: string,
+  anterior: VarianteVendible | undefined,
+  nueva: VarianteVendible | undefined
+): string {
+  const sinTocar = actual.trim() === "" || actual === precioDeLista(anterior);
+  return sinTocar ? precioDeLista(nueva) : actual;
 }
 
 /**
@@ -44,11 +70,16 @@ export function SelectorVariante({
         options={variantes.map((v) => ({
           value: v.id,
           label: v.sku ? `${v.nombre} · ${v.sku}` : v.nombre,
-          hint: v.manejaInventario
-            ? v.stock > 0
-              ? `Hay ${v.stock}`
-              : "Sin stock"
-            : undefined,
+          hint: [
+            v.precio != null ? money(v.precio) : null,
+            v.manejaInventario
+              ? v.stock > 0
+                ? `hay ${v.stock}`
+                : "sin stock"
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ") || undefined,
         }))}
         placeholder="Elegir variante..."
         searchable

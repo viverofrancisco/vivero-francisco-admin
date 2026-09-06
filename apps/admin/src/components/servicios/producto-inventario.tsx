@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { MovimientoDialog } from "./movimiento-dialog";
+import { PrecioDeLista } from "./precio-de-lista";
 import type { VarianteFila } from "./producto-variantes";
 
 /**
@@ -114,6 +115,13 @@ export function ProductoInventario({
               Este producto no lleva conteo de stock: se puede vender siempre.
             </p>
           )}
+
+          <div className="border-t pt-3">
+            <PrecioDeLista
+              precio={variante.precio}
+              onGuardar={(precio) => guardar({ precio })}
+            />
+          </div>
 
           <div className="space-y-1.5 border-t pt-3">
             <Label className="text-xs" htmlFor="sku">

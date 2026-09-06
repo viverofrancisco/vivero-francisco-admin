@@ -173,6 +173,10 @@ export function EmitirFacturaPage({
         varianteId: p.variantes.length === 1 ? p.variantes[0].id : null,
         descripcion: p.nombre,
         cantidad: "1",
+        // **Sin precio de lista acá, a diferencia de la orden.** Una línea del
+        // documento existe para repartir lo que la orden ya dice; proponerle
+        // un precio de catálogo la haría nacer descuadrada, y el cuadre es lo
+        // único que esta pantalla no negocia.
         precioUnitario: "",
         ivaTasa: p.ivaTasa != null ? String(p.ivaTasa) : "0",
       },

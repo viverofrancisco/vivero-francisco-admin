@@ -352,6 +352,16 @@ model Variante {
   id         String @id @default(cuid())
   productoId String
 
+  /// **Precio de lista**, opcional. Es lo que se propone al armar una orden,
+  /// no lo que se cobró: eso vive en `OrdenLinea.precioUnitario`, que es un
+  /// snapshot y sigue siendo la verdad. Cambiar este precio no reescribe nada
+  /// de lo ya vendido — que es justamente el punto de tenerlos separados.
+  ///
+  /// Nulo se ofrece: un bien puede cotizarse por trabajo, igual que un
+  /// servicio, y forzar un cero haría que una orden nazca diciendo que algo
+  /// vale nada.
+  precio Decimal? @db.Decimal(10, 2)
+
   /// El identificador de esta variante: lo que va en la etiqueta y lo que se
   /// busca. Único en todo el catálogo — dos variantes con el mismo SKU harían
   /// ambiguo cualquier conteo.

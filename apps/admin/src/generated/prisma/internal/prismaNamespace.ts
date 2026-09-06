@@ -4485,6 +4485,7 @@ export type ValorOpcionScalarFieldEnum = (typeof ValorOpcionScalarFieldEnum)[key
 export const VarianteScalarFieldEnum = {
   id: 'id',
   productoId: 'productoId',
+  precio: 'precio',
   sku: 'sku',
   posicion: 'posicion',
   combinacion: 'combinacion',

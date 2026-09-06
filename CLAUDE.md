@@ -167,6 +167,15 @@ server-side because the content type is what gets *signed*.
 **A product is in several categories** (`ProductoCategoria`). It was one column,
 and a rosal is both "Plantas" and "Exterior".
 
+**`Variante.precio` is a list price, not what was charged.** It's what gets
+*proposed* when building an order; the truth stays in `OrdenLinea.precioUnitario`,
+a snapshot — so raising the list never rewrites what was already sold. Null is a
+distinct answer from zero (a bien can be quoted per job). The typed price follows
+the list only while untouched (`precioAlCambiarVariante()`); once someone types a
+number, that wins. The invoice builder proposes nothing: its lines exist to
+redistribute what the order already says, and a catalog price would make them
+start out of square.
+
 **A bien is sold by variant.** `OrdenLinea.varianteId` and
 `FacturaLinea.varianteId` say which one went out — nullable, because a servicio
 has none; `ensureVariantes()` is what requires it for a `BIEN`, since only the

@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { ChevronDown, ChevronRight, Loader2, Plus, X } from "lucide-react";
 import { MovimientoDialog } from "./movimiento-dialog";
+import { PrecioDeLista } from "./precio-de-lista";
+import { money } from "@/components/ordenes/formato";
 import type { ImagenProducto } from "./producto-imagenes";
 
 export interface OpcionEditable {
@@ -35,11 +37,29 @@ export interface OpcionEditable {
 export interface VarianteFila {
   id: string;
   sku: string | null;
+  /** Precio de lista. Lo que se cobró vive en la orden. */
+  precio: number | null;
   manejaInventario: boolean;
   stock: number;
   permiteNegativo: boolean;
   imagenId: string | null;
   valores: { opcion: string; valor: string }[];
+}
+
+/**
+ * El precio de un grupo: uno solo, o el rango que va del más barato al más caro.
+ *
+ * Es lo que Shopify muestra en la fila del grupo, y es la única respuesta
+ * honesta cuando las 19 variantes de abajo no valen lo mismo.
+ */
+function rangoDePrecios(filas: VarianteFila[]): string {
+  const precios = filas
+    .map((v) => v.precio)
+    .filter((p): p is number => p !== null);
+  if (precios.length === 0) return "—";
+  const min = Math.min(...precios);
+  const max = Math.max(...precios);
+  return min === max ? money(min) : `${money(min)} – ${money(max)}`;
 }
 
 /** Cómo se lee una variante: "Rojo · Grande", o el producto si no tiene ejes. */
@@ -267,6 +287,13 @@ export function ProductoVariantes({
               )}
 
               <div className="divide-y rounded-md border">
+                {/* Un encabezado y no una `<table>`: las filas se pliegan en
+                    grupos y sangran, que es lo que una tabla no sabe hacer. */}
+                <div className="flex items-center gap-3 bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                  <span className="min-w-0 flex-1">Variante</span>
+                  <span className="w-20 flex-none text-right">Precio</span>
+                  <span className="w-12 flex-none text-right">Stock</span>
+                </div>
                 {grupos
                   ? grupos.map((g) => {
                       const abierto = abiertos.has(g.valor);
@@ -292,7 +319,10 @@ export function ProductoVariantes({
                                 {g.filas.length === 1 ? "variante" : "variantes"}
                               </span>
                             </span>
-                            <span className="flex-none text-sm tabular-nums text-muted-foreground">
+                            <span className="w-20 flex-none text-right text-sm tabular-nums text-muted-foreground">
+                              {rangoDePrecios(g.filas)}
+                            </span>
+                            <span className="w-12 flex-none text-right text-sm tabular-nums text-muted-foreground">
                               {cuentan.length === 0
                                 ? "—"
                                 : cuentan.reduce((n, v) => n + v.stock, 0)}
@@ -432,11 +462,17 @@ function FilaVariante({
           {variante.sku ?? "Sin SKU"}
         </span>
       </button>
+      {/* El precio de lista, que es lo que se va a proponer al facturarla.
+          Sin precio va un guión y no un cero: no es lo mismo "no cuesta nada"
+          que "se cotiza cada vez". */}
+      <span className="w-20 flex-none text-right text-sm tabular-nums text-muted-foreground">
+        {variante.precio === null ? "—" : money(variante.precio)}
+      </span>
       {variante.manejaInventario ? (
         <button
           type="button"
           onClick={onAjustar}
-          className={`flex-none tabular-nums underline-offset-2 hover:underline ${
+          className={`w-12 flex-none text-right tabular-nums underline-offset-2 hover:underline ${
             variante.stock <= 0 ? "font-medium text-amber-700" : ""
           }`}
         >
@@ -444,7 +480,7 @@ function FilaVariante({
         </button>
       ) : (
         <span
-          className="flex-none text-sm text-muted-foreground"
+          className="w-12 flex-none text-right text-sm text-muted-foreground"
           title="No lleva conteo de stock"
         >
           —
@@ -475,6 +511,11 @@ function VarianteDialog({
           <DialogTitle>{nombre}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <PrecioDeLista
+            precio={variante.precio}
+            onGuardar={(precio) => onGuardar({ precio })}
+          />
+
           <div className="space-y-1.5">
             <Label className="text-xs">SKU</Label>
             <Input

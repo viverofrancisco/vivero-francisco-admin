@@ -15,6 +15,8 @@ export interface ProductoConVariantes {
     id: string;
     nombre: string;
     sku: string | null;
+    /** Precio de lista: lo que se propone al agregarla a una orden. */
+    precio: number | null;
     manejaInventario: boolean;
     stock: number;
   }[];
@@ -33,6 +35,7 @@ export async function productosVendibles(): Promise<ProductoConVariantes[]> {
         select: {
           id: true,
           sku: true,
+          precio: true,
           manejaInventario: true,
           stock: true,
           valores: {
@@ -64,6 +67,7 @@ export async function productosVendibles(): Promise<ProductoConVariantes[]> {
           .map((x) => x.valor)
           .join(" · ") || p.nombre,
       sku: v.sku,
+      precio: v.precio === null ? null : Number(v.precio),
       manejaInventario: v.manejaInventario,
       stock: v.stock,
     })),

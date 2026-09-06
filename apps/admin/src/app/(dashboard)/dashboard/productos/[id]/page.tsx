@@ -64,6 +64,7 @@ export default async function EditarServicioPage({
           catalogo?.variantes.map((v) => ({
             id: v.id,
             sku: v.sku,
+            precio: v.precio,
             manejaInventario: v.manejaInventario,
             stock: v.stock,
             permiteNegativo: v.permiteNegativo,
