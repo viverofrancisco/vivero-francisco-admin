@@ -37,13 +37,22 @@ export interface OpcionEditable {
 export interface VarianteFila {
   id: string;
   sku: string | null;
-  /** Precio de lista. Lo que se cobró vive en la orden. */
-  precio: number | null;
+  /** Precio de lista. Cero es gratis; lo cobrado vive en la orden. */
+  precio: number;
   manejaInventario: boolean;
   stock: number;
   permiteNegativo: boolean;
   imagenId: string | null;
   valores: { opcion: string; valor: string }[];
+}
+
+/**
+ * Cómo se lee un precio. **Cero es gratis**, y decirlo con la palabra en vez de
+ * "$0.00" es lo que hace que salte a la vista: casi siempre significa que
+ * todavía nadie le puso precio.
+ */
+function precioTexto(precio: number): string {
+  return precio === 0 ? "Gratis" : money(precio);
 }
 
 /**
@@ -53,13 +62,10 @@ export interface VarianteFila {
  * honesta cuando las 19 variantes de abajo no valen lo mismo.
  */
 function rangoDePrecios(filas: VarianteFila[]): string {
-  const precios = filas
-    .map((v) => v.precio)
-    .filter((p): p is number => p !== null);
-  if (precios.length === 0) return "—";
-  const min = Math.min(...precios);
-  const max = Math.max(...precios);
-  return min === max ? money(min) : `${money(min)} – ${money(max)}`;
+  if (filas.length === 0) return "—";
+  const min = Math.min(...filas.map((v) => v.precio));
+  const max = Math.max(...filas.map((v) => v.precio));
+  return min === max ? precioTexto(min) : `${money(min)} – ${money(max)}`;
 }
 
 /** Cómo se lee una variante: "Rojo · Grande", o el producto si no tiene ejes. */
@@ -462,11 +468,13 @@ function FilaVariante({
           {variante.sku ?? "Sin SKU"}
         </span>
       </button>
-      {/* El precio de lista, que es lo que se va a proponer al facturarla.
-          Sin precio va un guión y no un cero: no es lo mismo "no cuesta nada"
-          que "se cotiza cada vez". */}
-      <span className="w-20 flex-none text-right text-sm tabular-nums text-muted-foreground">
-        {variante.precio === null ? "—" : money(variante.precio)}
+      {/* El precio de lista, que es lo que se va a proponer al venderla. */}
+      <span
+        className={`w-20 flex-none text-right text-sm tabular-nums ${
+          variante.precio === 0 ? "text-amber-700" : "text-muted-foreground"
+        }`}
+      >
+        {precioTexto(variante.precio)}
       </span>
       {variante.manejaInventario ? (
         <button

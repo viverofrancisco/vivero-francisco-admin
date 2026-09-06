@@ -169,10 +169,12 @@ and a rosal is both "Plantas" and "Exterior".
 
 **`Variante.precio` is a list price, not what was charged.** It's what gets
 *proposed* when building an order; the truth stays in `OrdenLinea.precioUnitario`,
-a snapshot — so raising the list never rewrites what was already sold. Null is a
-distinct answer from zero (a bien can be quoted per job). The typed price follows
-the list only while untouched (`precioAlCambiarVariante()`); once someone types a
-number, that wins. The invoice builder proposes nothing: its lines exist to
+a snapshot — so raising the list never rewrites what was already sold. It is
+**mandatory, and zero means free**; a freshly created variant starts at zero, so
+the lists render that as an amber "Gratis" rather than `$0.00` — it almost always
+means nobody has priced it yet. Clearing the field doesn't save zero, it restores
+what was there. The typed price follows the list only while untouched
+(`precioAlCambiarVariante()`); once someone types a number, that wins. The invoice builder proposes nothing: its lines exist to
 redistribute what the order already says, and a catalog price would make them
 start out of square.
 

@@ -34,8 +34,8 @@ export const opcionesSchema = z.object({
 
 export const varianteSchema = z.object({
   sku: z.string().nullable().optional(),
-  /** Precio de lista. Nulo se acepta: un bien puede cotizarse por trabajo. */
-  precio: z.number().nonnegative().nullable().optional(),
+  /** Precio de lista. Cero es gratis, así que no hay nulo que aceptar. */
+  precio: z.number().nonnegative().optional(),
   manejaInventario: z.boolean().optional(),
   permiteNegativo: z.boolean().optional(),
   imagenId: z.string().min(1).nullable().optional(),

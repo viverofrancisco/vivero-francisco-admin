@@ -97,7 +97,7 @@ export async function getCatalogoDelProducto(viewer: Viewer, productoId: string)
       id: v.id,
       sku: v.sku,
       // Decimal no cruza a un componente cliente.
-      precio: v.precio === null ? null : Number(v.precio),
+      precio: Number(v.precio),
       manejaInventario: v.manejaInventario,
       stock: v.stock,
       permiteNegativo: v.permiteNegativo,
@@ -385,8 +385,8 @@ async function regenerarVariantes(
 
 export interface VarianteInput {
   sku?: string | null;
-  /** Precio de lista. Lo que se cobró vive en la orden, no acá. */
-  precio?: number | null;
+  /** Precio de lista. Cero es gratis. Lo cobrado vive en la orden, no acá. */
+  precio?: number;
   manejaInventario?: boolean;
   permiteNegativo?: boolean;
   /** Cuál de las fotos del producto la representa. */

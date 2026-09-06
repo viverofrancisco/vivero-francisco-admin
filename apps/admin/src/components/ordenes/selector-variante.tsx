@@ -10,14 +10,14 @@ export interface VarianteVendible {
   nombre: string;
   sku: string | null;
   /** Precio de lista: lo que se propone acá. Lo cobrado queda en la línea. */
-  precio: number | null;
+  precio: number;
   manejaInventario: boolean;
   stock: number;
 }
 
-/** El precio de lista como texto para el campo, o vacío si no tiene. */
+/** El precio de lista como texto para el campo. */
 export function precioDeLista(v: VarianteVendible | undefined): string {
-  return v?.precio != null ? String(v.precio) : "";
+  return v ? String(v.precio) : "";
 }
 
 /**
@@ -71,7 +71,7 @@ export function SelectorVariante({
           value: v.id,
           label: v.sku ? `${v.nombre} · ${v.sku}` : v.nombre,
           hint: [
-            v.precio != null ? money(v.precio) : null,
+            v.precio === 0 ? "Gratis" : money(v.precio),
             v.manejaInventario
               ? v.stock > 0
                 ? `hay ${v.stock}`
@@ -79,7 +79,7 @@ export function SelectorVariante({
               : null,
           ]
             .filter(Boolean)
-            .join(" · ") || undefined,
+            .join(" · "),
         }))}
         placeholder="Elegir variante..."
         searchable

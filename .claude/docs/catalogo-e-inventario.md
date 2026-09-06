@@ -208,20 +208,31 @@ de agrupar algo no es darlo de baja.
 
 ## El precio de lista es una propuesta, no lo cobrado
 
-`Variante.precio` es opcional y es **lo que se propone** al armar una orden.
-Lo que se cobró vive donde siempre: `OrdenLinea.precioUnitario`, un snapshot
-que es la verdad. Tenerlos separados es lo que permite subir la lista sin
-reescribir lo ya vendido — verificado: una línea cobrada a $18 se quedó en $18
-después de llevar la lista a $30.
+`Variante.precio` es **lo que se propone** al armar una orden. Lo que se cobró
+vive donde siempre: `OrdenLinea.precioUnitario`, un snapshot que es la verdad.
+Tenerlos separados es lo que permite subir la lista sin reescribir lo ya vendido
+— verificado: una línea cobrada a $18 se quedó en $18 después de llevar la lista
+a $30.
 
-**Nulo es una respuesta distinta de cero.** Un bien puede cotizarse por trabajo,
-igual que un servicio, y un cero haría que la orden nazca diciendo que algo vale
-nada. En la lista de variantes eso se ve como un guión.
+**Es obligatorio, y cero quiere decir gratis.** Toda variante tiene precio,
+aunque sea ninguno; quien quiera cobrar otra cosa lo cambia en la orden. Nació
+nulable —para distinguir "se cotiza al vender" de "no cuesta nada"— y esa
+distinción se descartó a propósito: no se usaba, y obligaba a que todo el código
+tratara dos formas de "sin precio".
+
+El costo de esa decisión es que **una variante recién creada nace en cero**, o
+sea gratis, sin que nadie lo haya decidido. Por eso el cero no se muestra como
+`$0.00` sino como **"Gratis" en ámbar**: casi siempre significa que todavía
+falta ponerle precio, y así salta a la vista en la lista en vez de esconderse
+entre los otros números. Y por eso vaciar el campo no guarda cero — repone lo
+que decía: marcar algo como gratis es una decisión, y borrar un número mientras
+se lo reescribe no lo es.
 
 **El precio sigue a la lista mientras nadie lo haya tocado**
 (`precioAlCambiarVariante()`): si el campo está vacío o todavía dice el precio
 de la variante anterior, pasa al de la nueva; si alguien escribió otro número,
-ese manda. Pisarlo sería tirar lo que la persona acaba de decidir, que es
+ese manda. Cambiar a una variante gratis **propone 0 de verdad**, que es lo que
+la versión nulable no podía hacer: dejaba el número anterior. Pisarlo sería tirar lo que la persona acaba de decidir, que es
 justamente lo que un precio de lista no puede hacer. Es la misma regla que ya
 usa la cantidad al marcar visitas.
 
@@ -230,8 +241,8 @@ línea del documento existe para repartir lo que la orden ya dice; proponerle un
 precio de catálogo la haría nacer descuadrada, y el cuadre es lo único que esa
 pantalla no negocia.
 
-Un **servicio no tiene precio de lista** porque no tiene variantes, y es fiel al
-dominio: una poda se cotiza cada vez. Si algún día hace falta, el lugar es una
+Un **servicio no tiene precio de lista** porque no tiene variantes: una poda se
+cotiza cada vez. Si algún día hace falta, el lugar es una
 variante única de servicio — no una columna nueva en `Producto`.
 
 ## El SKU y el código
