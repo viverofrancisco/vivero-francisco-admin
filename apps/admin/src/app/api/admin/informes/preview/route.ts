@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { informeGenerateSchema } from "@/lib/validations/informe";
+import { informePreviewSchema } from "@/lib/validations/informe";
 import { viewerFromSession } from "@/lib/auth-helpers";
 import { previsualizarInforme } from "@/lib/services/informe.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
@@ -14,7 +14,7 @@ import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
  */
 export async function POST(request: Request) {
   const viewer = await viewerFromSession();
-  const parsed = informeGenerateSchema.safeParse(
+  const parsed = informePreviewSchema.safeParse(
     await request.json().catch(() => ({}))
   );
   if (!parsed.success) {
@@ -24,7 +24,8 @@ export async function POST(request: Request) {
     );
   }
   try {
-    const pdf = await previsualizarInforme(viewer, parsed.data);
+    const { borrador, ...payload } = parsed.data;
+    const pdf = await previsualizarInforme(viewer, payload, { borrador });
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",

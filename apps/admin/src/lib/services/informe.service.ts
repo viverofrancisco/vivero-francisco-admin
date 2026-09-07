@@ -20,6 +20,7 @@ import { isAdminRole } from "./viewer";
 import { getVisitaForViewer } from "./visita.service";
 import { resumenProductos } from "@/lib/visita-productos";
 import { renderInformePDF } from "@/lib/informes/render";
+import { bajarFotos, bajarLogo } from "@/lib/informes/fotos";
 import type {
   FotosPorFila,
   InformeRenderData,
@@ -379,7 +380,14 @@ interface FotoResuelta {
  */
 async function armarDatosDelInforme(
   viewer: Viewer,
-  payload: InformeGeneratePayload
+  payload: InformeGeneratePayload,
+  /**
+   * Borrador = las fotos van achicadas al tamaño impreso y cacheadas. El corte
+   * de páginas es idéntico —depende del alto en puntos, no de los píxeles del
+   * archivo— así que lo que se ve es lo que va a salir; lo único que cambia es
+   * la resolución, que en pantalla no se nota y en tiempo es todo.
+   */
+  { borrador }: { borrador: boolean }
 ) {
   ensureInformes(viewer);
 
@@ -395,9 +403,6 @@ async function armarDatosDelInforme(
     }))
     .filter((f) => f.nombre.length > 0)
     .slice(0, 3);
-  if (firmantesNormalizados.length === 0) {
-    throw new ValidationError("Agrega al menos un firmante.");
-  }
 
   // Authorization check on each visita.
   const visitas = await Promise.all(
@@ -515,22 +520,18 @@ async function armarDatosDelInforme(
   const fechaDesde = fechas[0];
   const fechaHasta = fechas[fechas.length - 1];
 
-  // Descarga los bytes de cada foto una sola vez, cacheando por key.
-  const fotosCache = new Map<string, { bytes: Uint8Array; mimeType: string }>();
-  for (const sec of seccionesResueltas) {
-    for (const foto of sec.fotos) {
-      if (fotosCache.has(foto.key)) continue;
-      const res = await fetch(foto.url);
-      if (!res.ok) {
-        throw new ValidationError(`No pudimos descargar la foto ${foto.key}.`);
-      }
-      const mimeType = res.headers.get("content-type") ?? "image/jpeg";
-      const arrayBuffer = await res.arrayBuffer();
-      fotosCache.set(foto.key, {
-        bytes: new Uint8Array(arrayBuffer),
-        mimeType,
-      });
-    }
+  // Los bytes de cada foto, una sola vez. En borrador salen achicadas y quedan
+  // cacheadas, que es lo que hace posible mirar la previa mientras se edita.
+  let fotosCache: Map<string, { bytes: Uint8Array; mimeType: string }>;
+  try {
+    fotosCache = await bajarFotos(
+      seccionesResueltas.flatMap((sec) => sec.fotos),
+      { borrador }
+    );
+  } catch (e) {
+    throw new ValidationError(
+      e instanceof Error ? e.message : "No pudimos descargar las fotos."
+    );
   }
 
   // Build render data.
@@ -570,23 +571,7 @@ async function armarDatosDelInforme(
   let logo: { bytes: Uint8Array; format: "png" | "jpg" } | null = null;
   if (empresaCfg?.logoUrl) {
     try {
-      const res = await fetch(empresaCfg.logoUrl);
-      if (res.ok) {
-        const ct = (res.headers.get("content-type") ?? "").toLowerCase();
-        const buf = new Uint8Array(await res.arrayBuffer());
-        // @react-pdf/renderer supports png and jpg via the data buffer API.
-        const format: "png" | "jpg" = ct.includes("png") ? "png" : "jpg";
-        logo = { bytes: buf, format };
-      } else {
-        // Sin esto el informe sale sin logo ni marca de agua y nadie se
-        // entera: la falta de logo no rompe nada, y el PDF se ve "bien" hasta
-        // que alguien lo compara con uno viejo. Pasó cuando el logo quedó
-        // apuntando a un bucket que ya no existía.
-        console.warn(
-          `Logo de la empresa: ${res.status} al bajar ${empresaCfg.logoUrl}. ` +
-            `El informe sale sin logo; volvé a subirlo en Configuración → Empresa.`
-        );
-      }
+      logo = await bajarLogo(empresaCfg.logoUrl);
     } catch (err) {
       console.warn("Failed to fetch empresa logo for PDF", err);
     }
@@ -627,9 +612,12 @@ async function armarDatosDelInforme(
  */
 export async function previsualizarInforme(
   viewer: Viewer,
-  payload: InformeGeneratePayload
+  payload: InformeGeneratePayload,
+  opciones: { borrador?: boolean } = {}
 ): Promise<Buffer> {
-  const { renderData } = await armarDatosDelInforme(viewer, payload);
+  const { renderData } = await armarDatosDelInforme(viewer, payload, {
+    borrador: opciones.borrador ?? false,
+  });
   return renderInformePDF(renderData);
 }
 
@@ -644,7 +632,14 @@ export async function generateInforme(
     fechaImpresa,
     fechaDesde,
     fechaHasta,
-  } = await armarDatosDelInforme(viewer, payload);
+  } = await armarDatosDelInforme(viewer, payload, { borrador: false });
+
+  // Acá y no al armar los datos: es un requisito del documento que se emite, no
+  // de dibujarlo. La vista previa se mira antes de llegar al paso de la firma, y
+  // exigirlo ahí la dejaría en blanco justo cuando sirve.
+  if (firmantesNormalizados.length === 0) {
+    throw new ValidationError("Agrega al menos un firmante.");
+  }
 
   const pdfBuffer = await renderInformePDF(renderData);
 

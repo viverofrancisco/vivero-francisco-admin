@@ -332,12 +332,21 @@ Two related details: a section is **not** wrapped in its own `View` — inside a
 wrapper the title is the first child, and react-pdf refuses to break an element
 with no preceding siblings — and photos go out one **row** at a time with
 `wrap={false}`, so a break can't split a row. Each section carries its own
-`saltoDePagina` and `fotosPorFila` (2/3/4, the density lever). **The wizard has
-a preview step before generating**: `POST /api/admin/informes/preview` renders
-the real PDF without saving anything, off the same `armarDatosDelInforme()` as
-the real thing — two assemblies would mean previewing a document that isn't the
-one being filed. It rebuilds on every entry to the step, because a cached
-preview showing the pre-correction version is worse than none.
+`saltoDePagina` and `fotosPorFila` (2/3/4, the density lever). **The wizard previews the real PDF**: `POST
+/api/admin/informes/preview` renders it without saving anything, off the same
+`armarDatosDelInforme()` as the real thing — two assemblies would mean
+previewing a document that isn't the one being filed. There's a preview step
+before generating (rebuilt on every entry, since a cached one showing the
+pre-correction version is worse than none) and a **live panel beside the section
+editor** that refreshes ~700 ms after you stop typing. What makes that viable is
+`borrador` mode in `src/lib/informes/fotos.ts`: photos are downloaded in
+parallel, shrunk to print size and cached in-process, which takes a refresh from
+~3 s / 13 MB to ~0.5 s / 0.15 MB. **The page breaks are identical** because
+layout reads the height in points the style declares, not the file's pixels; a
+draft photo is re-encoded to JPEG and flattened onto white, or a transparent PNG
+would show black where the real PDF doesn't. The definitive PDF always uses the
+originals. The preview also accepts **zero firmantes** — it's looked at before
+the signature step — while generating still demands one.
 
 **Files belong to the visita, not to any form.** `ArchivosVisita` lives on the
 visita's own page and every change — upload, re-tag, delete — goes out on its

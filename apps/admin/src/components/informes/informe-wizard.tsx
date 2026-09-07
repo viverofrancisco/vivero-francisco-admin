@@ -17,6 +17,7 @@ import {
   ExternalLink,
   FileText,
   GripVertical,
+  Loader2,
   Pencil,
   Plus,
   Search,
@@ -152,6 +153,78 @@ interface FirmanteDraft {
   cedula: string;
 }
 
+/**
+ * La vista previa que se rehace sola mientras se editan las secciones.
+ *
+ * Se arma en el servidor —el mismo camino que el informe definitivo— y no en el
+ * navegador con una maqueta HTML: una maqueta que no coincide con el PDF es
+ * peor que no tener nada, que es justo el problema que se estaba resolviendo.
+ *
+ * Lo que la hace viable es el modo borrador: las fotos van achicadas al tamaño
+ * impreso y quedan cacheadas en el servidor, así que después de la primera cada
+ * refresco son unos 500 ms en vez de 3 segundos. El corte de páginas es el
+ * mismo, porque depende del alto en puntos y no de los píxeles del archivo.
+ *
+ * Espera a que la mano pare: rearmar por cada tecla tirada sería una cola de
+ * pedidos que llegan tarde y desordenados. El pedido en curso se cancela cuando
+ * llega un cambio nuevo.
+ */
+function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [armando, setArmando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // La clave del efecto es el contenido, no la identidad: `cuerpo` se rearma en
+  // cada render y con él en las dependencias esto no pararía nunca.
+  const clave = cuerpo ? JSON.stringify(cuerpo) : null;
+  const ultimaUrl = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!activo || !clave) return;
+    const control = new AbortController();
+    const temporizador = setTimeout(() => {
+      setArmando(true);
+      fetch("/api/admin/informes/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...JSON.parse(clave), borrador: true }),
+        signal: control.signal,
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error ?? "No pudimos armar la vista previa");
+          }
+          const nueva = URL.createObjectURL(await res.blob());
+          // La anterior se suelta recién ahora: soltarla antes deja el visor en
+          // blanco mientras se arma la nueva.
+          if (ultimaUrl.current) URL.revokeObjectURL(ultimaUrl.current);
+          ultimaUrl.current = nueva;
+          setUrl(nueva);
+          setError(null);
+        })
+        .catch((e: unknown) => {
+          if (e instanceof DOMException && e.name === "AbortError") return;
+          setError(e instanceof Error ? e.message : "No pudimos armarla");
+        })
+        .finally(() => setArmando(false));
+    }, 700);
+
+    return () => {
+      clearTimeout(temporizador);
+      control.abort();
+    };
+  }, [clave, activo]);
+
+  useEffect(() => {
+    return () => {
+      if (ultimaUrl.current) URL.revokeObjectURL(ultimaUrl.current);
+    };
+  }, []);
+
+  return { url, armando, error };
+}
+
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface SavedFirmante {
@@ -218,6 +291,8 @@ export function InformeWizard({
   const [previsualizando, setPrevisualizando] = useState(false);
   /** El PDF del paso 5, como blob local. Nunca se guardó en ningún lado. */
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  /** El panel de al lado, mientras se arman las secciones. */
+  const [panelEnVivo, setPanelEnVivo] = useState(true);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [savedInformeId, setSavedInformeId] = useState<string | null>(null);
 
@@ -475,20 +550,33 @@ export function InformeWizard({
    * algo.
    */
   function cuerpoDelInforme() {
-    if (!clienteId) {
+    const cuerpo = cuerpoBase();
+    if (!cuerpo) {
       toast.error("Selecciona un cliente");
       return null;
     }
+    if (cuerpo.firmantes.length === 0) {
+      toast.error("Agrega al menos un firmante con nombre");
+      return null;
+    }
+    return cuerpo;
+  }
+
+  /**
+   * El cuerpo tal cual está, sin exigir nada.
+   *
+   * Lo usa la vista en vivo, que corre mientras se arman las secciones — o sea
+   * antes de que haya firmante. Exigirlo ahí dejaría el panel vacío justo en el
+   * momento en que sirve.
+   */
+  function cuerpoBase() {
+    if (!clienteId) return null;
     const validFirmantes = firmantes
       .map((f) => ({
         nombre: f.nombre.trim(),
         cedula: f.cedula.trim() || null,
       }))
       .filter((f) => f.nombre.length > 0);
-    if (validFirmantes.length === 0) {
-      toast.error("Agrega al menos un firmante con nombre");
-      return null;
-    }
     return {
       clienteId,
       titulo: titulo.trim(),
@@ -509,6 +597,14 @@ export function InformeWizard({
       })),
     };
   }
+
+  // Solo en el paso de las secciones, y solo si hay algo que dibujar: sin
+  // secciones el servidor rechaza, y pedirlo para que falle es ruido.
+  const cuerpoVivo = cuerpoBase();
+  const enVivo = useVistaPreviaEnVivo(
+    cuerpoVivo && cuerpoVivo.secciones.length > 0 ? cuerpoVivo : null,
+    step === 3 && panelEnVivo
+  );
 
   /**
    * El PDF como va a salir, en otra pestaña y sin guardar nada.
@@ -625,7 +721,7 @@ export function InformeWizard({
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Paso {step} de 5
+              Paso {step} de 6
             </p>
             <h2 className="text-lg font-semibold truncate">{heading.title}</h2>
             <p className="text-sm text-muted-foreground truncate">
@@ -650,7 +746,8 @@ export function InformeWizard({
 
         {/* Content + nav (right column) */}
         <main className="flex flex-1 min-w-0 flex-col">
-          <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
+          <div className="flex min-h-0 flex-1">
+            <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
             {step === 1 ? (
               <Step1Cliente
                 clientes={clientes}
@@ -733,6 +830,21 @@ export function InformeWizard({
                 informeId={savedInformeId}
               />
             ) : null}
+            </div>
+
+            {/* Al lado y no debajo: el punto es ver el efecto de lo que se
+                toca sin dejar de mirar lo que se toca. Desde `xl` porque abajo
+                de eso las dos columnas dejan a las dos sin ancho. */}
+            {step === 3 && panelEnVivo ? (
+              <aside className="hidden w-[420px] flex-none flex-col border-l bg-muted/20 xl:flex">
+                <PanelEnVivo
+                  url={enVivo.url}
+                  armando={enVivo.armando}
+                  error={enVivo.error}
+                  onCerrar={() => setPanelEnVivo(false)}
+                />
+              </aside>
+            ) : null}
           </div>
 
           {/* Nav footer — only spans the right column. */}
@@ -768,12 +880,20 @@ export function InformeWizard({
               ) : null}
               {step === 3 ? (
                 <div className="flex items-center gap-2">
-                  {/* Acá es donde se decide el layout, así que acá también está
-                      el botón de mirarlo: el paso 5 ya lo muestra, pero ajustar
-                      las fotos por fila con dos pasos de ida y dos de vuelta
-                      por cada prueba no es ajustar nada. */}
+                  {/* Con pantalla ancha el panel de al lado ya la muestra y el
+                      botón solo lo prende y apaga. Sin ancho para el panel,
+                      abrirla en otra pestaña es la única forma de verla. */}
                   <Button
                     variant="outline"
+                    className="hidden xl:inline-flex"
+                    onClick={() => setPanelEnVivo((v) => !v)}
+                  >
+                    <FileText className="mr-1 h-4 w-4" />
+                    {panelEnVivo ? "Ocultar vista previa" : "Ver vista previa"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="xl:hidden"
                     onClick={vistaPrevia}
                     disabled={previsualizando}
                   >
@@ -2580,6 +2700,64 @@ function DescripcionSeccion({
       className="block max-h-72 w-full resize-none overflow-y-auto rounded-md border-0 bg-transparent px-0 py-1 text-sm leading-relaxed text-muted-foreground focus:text-foreground focus:outline-none"
       placeholder="Descripción de la sección (opcional)"
     />
+  );
+}
+
+/**
+ * El panel de al lado en el paso de las secciones.
+ *
+ * Muestra el PDF de verdad —achicado, no una maqueta— y se rehace solo cuando
+ * la mano para. Mientras se rehace se sigue viendo el anterior: parpadear a
+ * vacío en cada cambio hace imposible comparar, que es para lo que está.
+ */
+function PanelEnVivo({
+  url,
+  armando,
+  error,
+  onCerrar,
+}: {
+  url: string | null;
+  armando: boolean;
+  error: string | null;
+  onCerrar: () => void;
+}) {
+  return (
+    <>
+      <div className="flex flex-none items-center justify-between gap-2 border-b px-3 py-2">
+        <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          Vista previa
+          {armando ? (
+            <Loader2 className="h-3 w-3 animate-spin" aria-label="Actualizando" />
+          ) : null}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={onCerrar}
+          title="Ocultar la vista previa"
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      <div className="min-h-0 flex-1 p-2">
+        {url ? (
+          <iframe
+            src={url}
+            title="Vista previa del informe"
+            className="h-full w-full rounded-md border bg-white"
+          />
+        ) : (
+          <p className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
+            {error
+              ? error
+              : armando
+                ? "Armando la vista previa…"
+                : "Agregá una sección para ver cómo queda."}
+          </p>
+        )}
+      </div>
+    </>
   );
 }
 

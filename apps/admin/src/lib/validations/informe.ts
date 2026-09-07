@@ -60,6 +60,20 @@ export const informeGenerateSchema = z.object({
 
 export type InformeGenerateBody = z.infer<typeof informeGenerateSchema>;
 
+/**
+ * Lo mismo, pero **sin exigir firmante**.
+ *
+ * La vista previa se mira mientras se arman las secciones, o sea antes de pasar
+ * por el paso de la firma. Exigirlo ahí dejaría la previa en blanco justo en el
+ * momento en que sirve. Sin firmantes el PDF sale sin el bloque de firmas, que
+ * es exactamente lo que se vería, y generar sí lo sigue exigiendo.
+ */
+export const informePreviewSchema = informeGenerateSchema.extend({
+  firmantes: z.array(informeFirmanteSchema).max(3).default([]),
+  /** Fotos achicadas y cacheadas: para la previa que se refresca sola. */
+  borrador: z.boolean().default(false),
+});
+
 /** Cuerpo de POST /informes/uploads — pide URLs prefirmadas para las imágenes. */
 export const informeUploadUrlsSchema = z.object({
   clienteId: z.string().min(1),
