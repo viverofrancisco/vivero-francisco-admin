@@ -214,7 +214,6 @@ export function VisitasPageClient({
     <>
       <PageHeader
         title="Visitas"
-        description="Gestiona las visitas programadas"
         actions={
           userRole !== "PERSONAL"
             ? [

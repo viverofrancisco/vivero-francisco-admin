@@ -104,7 +104,6 @@ export default async function InformesPage({
     <div className="flex h-full flex-col gap-6 p-4 md:p-6">
       <PageHeader
         title="Informes"
-        description="Informes mensuales generados por cliente."
         actions={[
           {
             label: "Generar nuevo informe",

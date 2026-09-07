@@ -29,7 +29,6 @@ export function SectoresPageClient({ sectores }: SectoresPageClientProps) {
     <>
       <PageHeader
         title="Sectores"
-        description="Gestiona los sectores geográficos"
         actions={[
           {
             label: "Nuevo Sector",

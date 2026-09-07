@@ -141,7 +141,6 @@ export function EmisoresPage({
     <>
       <PageHeader
         title="Facturación electrónica"
-        description="Con qué RUC se emiten los comprobantes ante el SRI"
         actions={[
           {
             label: "Nuevo emisor",

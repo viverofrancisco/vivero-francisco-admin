@@ -16,7 +16,6 @@ export function ClientesPageHeader({ canCreate }: { canCreate: boolean }) {
     <>
       <PageHeader
         title="Clientes"
-        description="Gestiona los clientes del vivero"
         actions={
           canCreate
             ? [

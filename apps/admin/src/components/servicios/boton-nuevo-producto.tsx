@@ -33,7 +33,6 @@ export function ProductosHeader() {
     <>
       <PageHeader
         title="Productos"
-        description="Servicios y bienes que se le pueden vender a un cliente"
         actions={[
           {
             label: "Nuevo producto",

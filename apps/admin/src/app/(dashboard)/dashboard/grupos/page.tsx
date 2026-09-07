@@ -23,7 +23,6 @@ export default async function GruposPage() {
     <div className="p-4 md:p-6 space-y-6">
       <PageHeader
         title="Grupos de Personal"
-        description="Gestiona los grupos de trabajo"
         actions={[
           {
             label: "Nuevo Grupo",

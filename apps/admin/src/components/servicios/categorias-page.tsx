@@ -43,7 +43,6 @@ export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) 
     <>
       <PageHeader
         title="Categorías"
-        description="Cómo se agrupa el catálogo de productos"
         actions={[
           {
             label: "Nueva categoría",
