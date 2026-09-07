@@ -1,12 +1,20 @@
 // Plain data the PDF renderer needs. Keep this file dependency-free so it
 // can be imported from both the service (server) and any preview UI.
 
+/** Cuántas fotos entran en una fila. Es la palanca de densidad de la sección. */
+export type FotosPorFila = 2 | 3 | 4;
+
 export interface InformeRenderSeccion {
   titulo: string;
   descripcion: string | null;
   // Fotos resueltas a buffers de imagen ANTES de pasar al renderer.
   // (react-pdf no descarga remote URLs de manera confiable en serverless.)
   fotos: { id: string; bytes: Uint8Array; mimeType: string }[];
+  /** Empieza en una hoja nueva. */
+  saltoDePagina: boolean;
+  /** No se parte entre dos hojas: si no entra donde está, baja entera. */
+  mantenerJunta: boolean;
+  fotosPorFila: FotosPorFila;
 }
 
 export interface InformeRenderFirmante {

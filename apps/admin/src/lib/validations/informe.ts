@@ -29,6 +29,10 @@ export const informeSeccionSchema = z.object({
   titulo: z.string().min(1).max(200),
   descripcion: z.string().max(4000).nullable().optional(),
   fotos: z.array(informeSeccionFotoSchema).default([]),
+  /** Cómo se imprime. Los defaults son lo que se venía imprimiendo. */
+  saltoDePagina: z.boolean().default(false),
+  mantenerJunta: z.boolean().default(false),
+  fotosPorFila: z.union([z.literal(2), z.literal(3), z.literal(4)]).default(3),
 });
 
 export const informeFirmanteSchema = z.object({

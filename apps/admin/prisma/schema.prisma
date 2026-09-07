@@ -1112,6 +1112,15 @@ model InformeSeccion {
   descripcion String? @db.Text
   orden       Int
 
+  /// Empieza en una hoja nueva. Para separar bloques que no se leen juntos.
+  saltoDePagina Boolean @default(false)
+  /// No se parte entre dos hojas. Si no entra donde está, baja entera.
+  mantenerJunta Boolean @default(false)
+  /// Cuántas fotos por fila: 2 (grandes), 3 (por defecto) o 4 (chicas). Es la
+  /// palanca de densidad — pocas fotos grandes llenan la hoja, muchas chicas la
+  /// dejan corta.
+  fotosPorFila Int @default(3)
+
   informe  Informe              @relation(fields: [informeId], references: [id], onDelete: Cascade)
   producto Producto?            @relation(fields: [productoId], references: [id], onDelete: SetNull)
   fotos    InformeSeccionFoto[]

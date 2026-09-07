@@ -4981,7 +4981,10 @@ export const InformeSeccionScalarFieldEnum = {
   productoId: 'productoId',
   titulo: 'titulo',
   descripcion: 'descripcion',
-  orden: 'orden'
+  orden: 'orden',
+  saltoDePagina: 'saltoDePagina',
+  mantenerJunta: 'mantenerJunta',
+  fotosPorFila: 'fotosPorFila'
 } as const
 
 export type InformeSeccionScalarFieldEnum = (typeof InformeSeccionScalarFieldEnum)[keyof typeof InformeSeccionScalarFieldEnum]

@@ -21,6 +21,7 @@ import { getVisitaForViewer } from "./visita.service";
 import { resumenProductos } from "@/lib/visita-productos";
 import { renderInformePDF } from "@/lib/informes/render";
 import type {
+  FotosPorFila,
   InformeRenderData,
   InformeRenderSeccion,
 } from "@/lib/informes/template-data";
@@ -352,6 +353,10 @@ export interface InformeGeneratePayload {
     titulo: string;
     descripcion?: string | null;
     fotos: InformeSeccionFotoInput[];
+    /// Cómo se imprime. Ausentes = lo que se venía imprimiendo.
+    saltoDePagina?: boolean;
+    mantenerJunta?: boolean;
+    fotosPorFila?: FotosPorFila;
   }>;
 }
 
@@ -364,7 +369,16 @@ interface FotoResuelta {
   mediaId: string | null;
 }
 
-export async function generateInforme(
+/**
+ * Todo lo que hace falta para dibujar el PDF: validado, resuelto y con las
+ * fotos ya bajadas.
+ *
+ * Está separado de `generateInforme` porque la vista previa necesita
+ * exactamente esto y nada de lo que viene después —subir a R2, escribir las
+ * filas—. Si fueran dos armados distintos, la vista previa mostraría un
+ * documento que no es el que se va a guardar, que es peor que no tenerla.
+ */
+async function armarDatosDelInforme(
   viewer: Viewer,
   payload: InformeGeneratePayload
 ) {
@@ -533,6 +547,9 @@ export async function generateInforme(
     (sec) => ({
       titulo: sec.titulo,
       descripcion: sec.descripcion?.trim() || null,
+      saltoDePagina: sec.saltoDePagina ?? false,
+      mantenerJunta: sec.mantenerJunta ?? false,
+      fotosPorFila: sec.fotosPorFila ?? 3,
       fotos: sec.fotos
         .map((foto) => {
           const cached = fotosCache.get(foto.key);
@@ -592,6 +609,45 @@ export async function generateInforme(
     logo,
   };
 
+  return {
+    renderData,
+    seccionesResueltas,
+    firmantesNormalizados,
+    fechaImpresa,
+    fechaDesde,
+    fechaHasta,
+  };
+}
+
+/**
+ * El PDF tal como saldría, sin guardar nada.
+ *
+ * Es el mismo camino que `generateInforme` hasta el render, así que lo que se
+ * ve es lo que se va a archivar. Sirve para decidir el layout —cuántas fotos
+ * por fila, qué sección arranca en hoja nueva— que es una decisión que no se
+ * puede tomar a ciegas.
+ */
+export async function previsualizarInforme(
+  viewer: Viewer,
+  payload: InformeGeneratePayload
+): Promise<Buffer> {
+  const { renderData } = await armarDatosDelInforme(viewer, payload);
+  return renderInformePDF(renderData);
+}
+
+export async function generateInforme(
+  viewer: Viewer,
+  payload: InformeGeneratePayload
+) {
+  const {
+    renderData,
+    seccionesResueltas,
+    firmantesNormalizados,
+    fechaImpresa,
+    fechaDesde,
+    fechaHasta,
+  } = await armarDatosDelInforme(viewer, payload);
+
   const pdfBuffer = await renderInformePDF(renderData);
 
   // Upload to R2.
@@ -627,6 +683,11 @@ export async function generateInforme(
             titulo: sec.titulo,
             descripcion: sec.descripcion?.trim() || null,
             orden: idx * 10,
+            // Se guarda aunque el PDF ya esté hecho: es lo que explica por qué
+            // salió así, y lo que un "duplicar informe" necesitaría leer.
+            saltoDePagina: sec.saltoDePagina ?? false,
+            mantenerJunta: sec.mantenerJunta ?? false,
+            fotosPorFila: sec.fotosPorFila ?? 3,
             fotos: {
               create: sec.fotos.map((foto, fIdx) => ({
                 orden: fIdx,

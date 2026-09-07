@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Check,
@@ -108,7 +109,21 @@ interface SeccionDraft {
   titulo: string;
   descripcion: string;
   fotos: SeccionFotoDraft[];
+  /**
+   * Cómo se imprime. Los valores por defecto son exactamente lo que se venía
+   * imprimiendo, así que un informe donde nadie toca nada sale igual que antes.
+   */
+  saltoDePagina: boolean;
+  mantenerJunta: boolean;
+  fotosPorFila: 2 | 3 | 4;
 }
+
+/** Lo que trae una sección recién creada. */
+const LAYOUT_POR_DEFECTO = {
+  saltoDePagina: false,
+  mantenerJunta: false,
+  fotosPorFila: 3 as const,
+};
 
 function fotoDeVisita(m: MediaPoolItem): SeccionFotoDraft {
   return {
@@ -202,6 +217,7 @@ export function InformeWizard({
   });
 
   const [generating, setGenerating] = useState(false);
+  const [previsualizando, setPrevisualizando] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [savedInformeId, setSavedInformeId] = useState<string | null>(null);
 
@@ -361,6 +377,7 @@ export function InformeWizard({
                 titulo: sv.nombre,
                 descripcion: sv.descripcion ?? "",
                 fotos: fotos.map(fotoDeVisita),
+                ...LAYOUT_POR_DEFECTO,
               };
             });
           });
@@ -402,8 +419,18 @@ export function InformeWizard({
     setStep(4);
   }
 
-  async function generate() {
-    if (!clienteId) return;
+  /**
+   * El cuerpo del informe, uno solo para generar y para la vista previa.
+   *
+   * Si fueran dos, la vista previa terminaría mostrando algo distinto de lo que
+   * se guarda, que es peor que no tenerla. Devuelve `null` y avisa cuando falta
+   * algo.
+   */
+  function cuerpoDelInforme() {
+    if (!clienteId) {
+      toast.error("Selecciona un cliente");
+      return null;
+    }
     const validFirmantes = firmantes
       .map((f) => ({
         nombre: f.nombre.trim(),
@@ -411,31 +438,83 @@ export function InformeWizard({
       }))
       .filter((f) => f.nombre.length > 0);
     if (validFirmantes.length === 0) {
-      return toast.error("Agrega al menos un firmante con nombre");
+      toast.error("Agrega al menos un firmante con nombre");
+      return null;
     }
+    return {
+      clienteId,
+      titulo: titulo.trim(),
+      visitaIds: Array.from(selectedVisitaIds),
+      fecha,
+      firmantes: validFirmantes,
+      secciones: secciones.map((s) => ({
+        productoId: s.productoId,
+        titulo: s.titulo,
+        descripcion: s.descripcion || null,
+        saltoDePagina: s.saltoDePagina,
+        mantenerJunta: s.mantenerJunta,
+        fotosPorFila: s.fotosPorFila,
+        fotos: s.fotos.map((f) =>
+          f.visitaMediaId
+            ? { visitaMediaId: f.visitaMediaId }
+            : { mediaId: f.mediaId },
+        ),
+      })),
+    };
+  }
+
+  /**
+   * El PDF como va a salir, en otra pestaña y sin guardar nada.
+   *
+   * Es la única forma de decidir el layout —cuántas fotos por fila, qué sección
+   * arranca en hoja nueva— sin generar un informe para mirarlo y después
+   * borrarlo.
+   */
+  async function vistaPrevia() {
+    const cuerpo = cuerpoDelInforme();
+    if (!cuerpo) return;
+    if (cuerpo.secciones.length === 0) {
+      return toast.error("Agrega al menos una sección");
+    }
+    // La pestaña se abre **antes** del await: abrirla después de una respuesta
+    // asíncrona ya no cuenta como "la abrió una persona" y el navegador la
+    // bloquea.
+    const pestana = window.open("", "_blank");
+    setPrevisualizando(true);
+    try {
+      const res = await fetch("/api/admin/informes/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cuerpo),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? "No pudimos armar la vista previa");
+      }
+      const url = URL.createObjectURL(await res.blob());
+      if (pestana) pestana.location.href = url;
+      else window.open(url, "_blank");
+      // El objeto vive mientras la pestaña lo esté mostrando; soltarlo enseguida
+      // deja la pestaña en blanco.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      pestana?.close();
+      toast.error(e instanceof Error ? e.message : "No pudimos armar la vista previa");
+    } finally {
+      setPrevisualizando(false);
+    }
+  }
+
+  async function generate() {
+    const cuerpo = cuerpoDelInforme();
+    if (!cuerpo) return;
     setGenerating(true);
     setPdfUrl(null);
     try {
       const res = await fetch("/api/admin/informes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clienteId,
-          titulo: titulo.trim(),
-          visitaIds: Array.from(selectedVisitaIds),
-          fecha,
-          firmantes: validFirmantes,
-          secciones: secciones.map((s) => ({
-            productoId: s.productoId,
-            titulo: s.titulo,
-            descripcion: s.descripcion || null,
-            fotos: s.fotos.map((f) =>
-              f.visitaMediaId
-                ? { visitaMediaId: f.visitaMediaId }
-                : { mediaId: f.mediaId },
-            ),
-          })),
-        }),
+        body: JSON.stringify(cuerpo),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -627,16 +706,30 @@ export function InformeWizard({
                   Continuar <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               ) : null}
-              {step === 3 ? (
-                <Button onClick={nextFromStep3}>
-                  Continuar <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              ) : null}
-              {step === 4 ? (
-                <Button onClick={generate} disabled={generating}>
-                  {generating ? "Generando…" : "Generar PDF"}{" "}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
+              {step === 3 || step === 4 ? (
+                <div className="flex items-center gap-2">
+                  {/* Acá es donde se decide el layout, así que acá tiene que
+                      estar el botón de verlo. Sin esto había que generar el
+                      informe para mirarlo y borrarlo si no gustaba. */}
+                  <Button
+                    variant="outline"
+                    onClick={vistaPrevia}
+                    disabled={previsualizando || generating}
+                  >
+                    <FileText className="mr-1 h-4 w-4" />
+                    {previsualizando ? "Armando…" : "Vista previa"}
+                  </Button>
+                  {step === 3 ? (
+                    <Button onClick={nextFromStep3}>
+                      Continuar <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  ) : (
+                    <Button onClick={generate} disabled={generating}>
+                      {generating ? "Generando…" : "Generar PDF"}{" "}
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  )}
+                </div>
               ) : null}
               {step === 5 ? (
                 <Button onClick={() => router.push("/dashboard/informes")}>
@@ -1433,6 +1526,7 @@ function Step3Secciones({
       titulo: servicio?.nombre ?? "",
       descripcion: servicio?.descripcion ?? "",
       fotos: fotosDelServicio,
+      ...LAYOUT_POR_DEFECTO,
     };
     onSeccionesChange([...secciones, draft]);
   }
@@ -1863,6 +1957,11 @@ function Step3Secciones({
                       }
                     />
                   </div>
+
+                  <LayoutSeccion
+                    seccion={s}
+                    onCambiar={(patch) => updateSeccion(s.tempId, patch)}
+                  />
 
                   {/* Photos area */}
                   <div className="px-4 pb-4 pt-2">
@@ -2329,6 +2428,63 @@ function PhotoPickerModal({
 }
 
 // ───────────── Step 3 ─────────────
+
+/**
+ * Cómo se imprime una sección.
+ *
+ * El corte de páginas se arregla solo —un título nunca queda al pie sin lo que
+ * sigue— pero eso decide *dónde* cortar, no *cómo* se ve. Estas tres cosas sí:
+ * cuántas fotos entran por fila (que es la densidad, y por lo tanto cuánto
+ * espacio en blanco queda), si la sección arranca en hoja nueva y si puede
+ * partirse. Van acá abajo y en letra chica porque el 90% de las secciones no
+ * las toca.
+ */
+function LayoutSeccion({
+  seccion,
+  onCambiar,
+}: {
+  seccion: SeccionDraft;
+  onCambiar: (patch: Partial<SeccionDraft>) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 pt-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5">
+        <span>Fotos por fila</span>
+        <div className="flex overflow-hidden rounded-md border">
+          {([2, 3, 4] as const).map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => onCambiar({ fotosPorFila: n })}
+              disabled={seccion.fotos.length === 0}
+              className={`h-6 w-7 tabular-nums transition-colors disabled:opacity-40 ${
+                seccion.fotosPorFila === n
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className="flex cursor-pointer items-center gap-1.5">
+        <Checkbox
+          checked={seccion.saltoDePagina}
+          onCheckedChange={(v) => onCambiar({ saltoDePagina: v === true })}
+        />
+        Empezar en hoja nueva
+      </label>
+      <label className="flex cursor-pointer items-center gap-1.5">
+        <Checkbox
+          checked={seccion.mantenerJunta}
+          onCheckedChange={(v) => onCambiar({ mantenerJunta: v === true })}
+        />
+        No partirla entre dos hojas
+      </label>
+    </div>
+  );
+}
 
 /**
  * La descripción de una sección, en un campo que crece con lo que se escribe.

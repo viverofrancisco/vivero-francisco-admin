@@ -318,6 +318,24 @@ block. See [the invoicing doc](./.claude/docs/facturacion-sri.md).
 and that's fine: nothing ever shows a bare number without saying what it is.
 The cuid stays the identity and the URL; the number is what people say out loud.
 
+**The PDF's page breaks are fixed by looking, not by predicting.** A section
+title landing at the foot of a page with its photos on the next one is the
+classic failure, and react-pdf's `minPresenceAhead` doesn't solve it: how much
+room to demand depends on how many lines of the description will fit, which is
+only known *after* laying out — ask for too little and orphans slip through, ask
+for too much and titles get pushed down, leaving exactly the blank space you
+were avoiding. So `renderInformePDF` lays out, reads the resulting tree
+(`onRender`'s `_INTERNAL__LAYOUT__DATA_`, guarded: no tree means no correction
+and the old behaviour), and re-renders with a forced break on any section whose
+title ended its page. It converges in one extra pass and is capped at three.
+Two related details: a section is **not** wrapped in its own `View` unless
+`mantenerJunta` asks for it — inside a wrapper the title is the first child, and
+react-pdf refuses to break an element with no preceding siblings — and photos go
+out one **row** at a time with `wrap={false}`, so a break can't split a row.
+Each section carries its own `saltoDePagina`, `mantenerJunta` and `fotosPorFila`
+(2/3/4, the density lever), and **`POST /api/admin/informes/preview` renders the
+real PDF without saving anything** so those choices aren't made blind.
+
 **Files belong to the visita, not to any form.** `ArchivosVisita` lives on the
 visita's own page and every change — upload, re-tag, delete — goes out on its
 own, in any state. Photos get taken *while* the job happens: whoever is in the
