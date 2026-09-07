@@ -392,8 +392,6 @@ export function InformeWizard({
   const [previsualizando, setPrevisualizando] = useState(false);
   /** El PDF del paso 5, como blob local. Nunca se guardó en ningún lado. */
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  /** El panel de al lado, mientras se arman las secciones. */
-  const [panelEnVivo, setPanelEnVivo] = useState(true);
   /** El PDF que se está mirando a pantalla completa, si hay alguno. */
   const [aPantallaCompleta, setAPantallaCompleta] = useState<string | null>(
     null,
@@ -711,7 +709,7 @@ export function InformeWizard({
   const cuerpoVivo = cuerpoBase();
   const enVivo = useVistaPreviaEnVivo(
     cuerpoVivo && cuerpoVivo.secciones.length > 0 ? cuerpoVivo : null,
-    step === 2 && panelEnVivo,
+    step === 2,
   );
 
   /**
@@ -1002,7 +1000,7 @@ export function InformeWizard({
           {/* Al lado y no debajo: el punto es ver el efecto de lo que se toca
               sin dejar de mirar lo que se toca. Desde `xl` porque abajo de eso
               las dos columnas dejan a las dos sin ancho. */}
-          {step === 2 && panelEnVivo ? (
+          {step === 2 ? (
             <aside className="hidden w-[420px] flex-none flex-col border-l bg-muted/20 xl:flex">
               <PanelEnVivo
                 url={enVivo.url}
@@ -1076,17 +1074,10 @@ export function InformeWizard({
               ) : null}
               {step === 2 ? (
                 <>
-                  {/* Con pantalla ancha el panel de al lado ya la muestra y el
-                      botón solo lo prende y apaga. Sin ancho para el panel,
-                      abrirla a pantalla completa es la única forma de verla. */}
-                  <Button
-                    variant="outline"
-                    className="hidden xl:inline-flex"
-                    onClick={() => setPanelEnVivo((v) => !v)}
-                  >
-                    <FileText className="mr-1 h-4 w-4" />
-                    {panelEnVivo ? "Ocultar vista previa" : "Ver vista previa"}
-                  </Button>
+                  {/* Solo donde el panel no entra: con pantalla ancha ya está
+                      a la vista, y un botón para taparla es una opción que
+                      nadie viene a buscar. Angosto, abrirla a pantalla completa
+                      es la única forma de verla. */}
                   <Button
                     variant="outline"
                     className="xl:hidden"
@@ -2991,6 +2982,19 @@ function DescripcionSeccion({
 }
 
 /**
+ * Cómo se pide un PDF incrustado, sin la barra del visor del navegador.
+ *
+ * Son parámetros del visor de Chrome/Edge: ahí la barra desaparece, y en
+ * Firefox y Safari se ignoran y sigue estando. No hay forma de sacarla en todos
+ * —el visor es del navegador, no de la página— así que esto es lo mejor que se
+ * puede hacer sin dibujar un visor propio.
+ *
+ * En un recuadro chico la barra se come una franja que ya escasea; a pantalla
+ * completa se deja, porque ahí el zoom sirve.
+ */
+const SIN_BARRA = "#toolbar=0&navpanes=0&scrollbar=0&view=FitH";
+
+/**
  * El PDF ocupando la pantalla.
  *
  * Un popup y no otra pestaña: el asistente sigue montado atrás, así que cerrar
@@ -3076,7 +3080,7 @@ function PanelEnVivo({
       <div className="min-h-0 flex-1 p-2">
         {url ? (
           <iframe
-            src={url}
+            src={`${url}${SIN_BARRA}`}
             title="Vista previa del informe"
             className="h-full w-full rounded-md border bg-white"
           />
@@ -3132,7 +3136,7 @@ function PasoVistaPrevia({
       <div className="relative h-[70vh] w-full overflow-hidden rounded-md border bg-muted">
         {url ? (
           <iframe
-            src={url}
+            src={`${url}${SIN_BARRA}`}
             title="Vista previa del informe"
             className="h-full w-full"
           />
@@ -3159,8 +3163,7 @@ function PasoListo({
   /** El informe recién creado, para poder abrir su ficha. */
   informeId: string | null;
 }) {
-  // Hide the browser's native PDF toolbar — Chrome/Edge respect these params.
-  const cleanUrl = `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
+  const cleanUrl = `${pdfUrl}${SIN_BARRA}`;
 
   return (
     <div className="flex h-full flex-col gap-3">
