@@ -5,7 +5,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Crop, Loader2, Star, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { MediaLibrary, subirALaBiblioteca, type MediaItem } from "./media-library";
 import { EditorImagen } from "./editor-imagen";
 
@@ -30,26 +30,43 @@ export interface ImagenProducto {
  * Y el archivo es de la **biblioteca**: subir y elegir son dos caminos al mismo
  * lugar, así que la misma foto en dos productos es un archivo y no dos.
  *
- * La primera es la que se usa cuando ninguna variante eligió otra, y por eso se
- * puede mover: es la decisión que importa de todo el orden.
+ * **La primera es la principal**, y se cambia arrastrando. Antes había una
+ * estrella para elegirla, que es un botón para hacer lo que el orden ya dice:
+ * si la primera es la que se usa, moverla al frente *es* elegirla.
+ *
+ * **Sin `productoId` trabaja en el aire**: en el alta el producto todavía no
+ * existe, así que agregar, sacar, reordenar y recortar solo tocan el estado y
+ * se guardan con el resto. La biblioteca es independiente del producto, así
+ * que subir y elegir funcionan igual en los dos casos.
  */
 export function ProductoImagenes({
   productoId,
   imagenes: iniciales,
   onCambio,
 }: {
-  productoId: string;
+  /** Nulo mientras el producto no existe: los cambios quedan en el estado. */
+  productoId: string | null;
   imagenes: ImagenProducto[];
   /** Para que la variante sepa qué fotos hay para elegir. */
   onCambio?: (imagenes: ImagenProducto[]) => void;
 }) {
   const [imagenes, setImagenes] = useState(iniciales);
+  // Con el producto sin crear, la lista la manda el formulario: si él la
+  // cambia (descartar, por ejemplo), acá se refleja.
+  const [ultimas, setUltimas] = useState(iniciales);
+  if (!productoId && ultimas !== iniciales) {
+    setUltimas(iniciales);
+    setImagenes(iniciales);
+  }
   const [subiendo, setSubiendo] = useState(false);
   const [quitando, setQuitando] = useState<string | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
   const [eligiendo, setEligiendo] = useState(false);
   /** Qué foto se está recortando: la fila de la galería y su archivo. */
   const [recortando, setRecortando] = useState<ImagenProducto | null>(null);
+  /** Cuál se está arrastrando y sobre cuál está: el orden decide la principal. */
+  const [moviendo, setMoviendo] = useState<number | null>(null);
+  const [sobre, setSobre] = useState<number | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
   const aplicar = (nuevas: ImagenProducto[]) => {
@@ -58,8 +75,27 @@ export function ProductoImagenes({
   };
 
   /** Suma al producto imágenes que ya están en la biblioteca. */
-  const agregar = async (mediaIds: string[]) => {
+  const agregar = async (mediaIds: string[], items?: MediaItem[]) => {
     if (mediaIds.length === 0) return;
+    if (!productoId) {
+      // Sin producto, la fila de galería es la media misma: `agregarImagenes`
+      // se llama al guardar con estos mismos ids.
+      const ya = new Set(imagenes.map((i) => i.mediaId));
+      aplicar([
+        ...imagenes,
+        ...(items ?? [])
+          .filter((m) => !ya.has(m.id))
+          .map((m, i) => ({
+            id: m.id,
+            mediaId: m.id,
+            url: m.url,
+            alt: m.alt,
+            nombre: m.nombre,
+            posicion: imagenes.length + i,
+          })),
+      ]);
+      return;
+    }
     try {
       const res = await fetch(`/api/servicios/${productoId}/imagenes`, {
         method: "POST",
@@ -80,7 +116,7 @@ export function ProductoImagenes({
     setSubiendo(true);
     try {
       const nuevas = await subirALaBiblioteca(files);
-      await agregar(nuevas.map((m) => m.id));
+      await agregar(nuevas.map((m) => m.id), nuevas);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos subir");
     } finally {
@@ -91,6 +127,10 @@ export function ProductoImagenes({
 
   /** La saca del producto. Sigue en la biblioteca, para otro. */
   const quitar = async (id: string) => {
+    if (!productoId) {
+      aplicar(imagenes.filter((i) => i.id !== id));
+      return;
+    }
     setQuitando(id);
     try {
       const res = await fetch(`/api/servicios/${productoId}/imagenes/${id}`, {
@@ -114,6 +154,16 @@ export function ProductoImagenes({
    * sigue apuntando a ella.
    */
   const usarRecorte = async (imagenId: string, nueva: MediaItem) => {
+    if (!productoId) {
+      aplicar(
+        imagenes.map((i) =>
+          i.id === imagenId
+            ? { ...i, id: nueva.id, mediaId: nueva.id, url: nueva.url, nombre: nueva.nombre }
+            : i
+        )
+      );
+      return;
+    }
     try {
       const res = await fetch(
         `/api/servicios/${productoId}/imagenes/${imagenId}`,
@@ -131,13 +181,22 @@ export function ProductoImagenes({
     }
   };
 
-  /** La manda al frente: es la que se muestra cuando nadie eligió otra. */
-  const hacerPrincipal = async (id: string) => {
-    const orden = [id, ...imagenes.filter((i) => i.id !== id).map((i) => i.id)];
+  /**
+   * Mueve una foto a otra posición. La del frente es la principal.
+   *
+   * Se aplica en pantalla enseguida y se manda después: arrastrar y esperar a
+   * que el servidor conteste para ver el resultado hace que se arrastre dos
+   * veces. Si falla, vuelve a como estaba y lo dice.
+   */
+  const reordenar = async (desde: number, hasta: number) => {
+    if (desde === hasta) return;
+    const lista = [...imagenes];
+    const [movida] = lista.splice(desde, 1);
+    lista.splice(hasta, 0, movida);
     const previas = imagenes;
-    aplicar(
-      orden.map((x, posicion) => ({ ...imagenes.find((i) => i.id === x)!, posicion }))
-    );
+    aplicar(lista.map((x, posicion) => ({ ...x, posicion })));
+    if (!productoId) return;
+    const orden = lista.map((x) => x.id);
     try {
       const res = await fetch(`/api/servicios/${productoId}/imagenes`, {
         method: "PATCH",
@@ -161,69 +220,88 @@ export function ProductoImagenes({
         </CardHeader>
         <CardContent className="space-y-3">
           {imagenes.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            /* La principal grande y el resto chicas, como en Shopify: el orden
+               ya dice cuál manda, y hacerlo visible ahorra tener que decirlo.
+               La primera ocupa 2×2 de la grilla. */
+            <div className="grid grid-cols-4 gap-2">
               {imagenes.map((img, i) => (
                 <div
                   key={img.id}
-                  className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                  draggable
+                  onDragStart={(e) => {
+                    setMoviendo(i);
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragEnd={() => {
+                    setMoviendo(null);
+                    setSobre(null);
+                  }}
+                  onDragOver={(e) => {
+                    // Sin esto el navegador no acepta el soltar.
+                    if (moviendo === null) return;
+                    e.preventDefault();
+                    setSobre(i);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (moviendo !== null) void reordenar(moviendo, i);
+                    setMoviendo(null);
+                    setSobre(null);
+                  }}
+                  className={`group relative aspect-square cursor-grab overflow-hidden rounded-md border bg-muted active:cursor-grabbing ${
+                    i === 0 ? "col-span-2 row-span-2" : ""
+                  } ${moviendo === i ? "opacity-30" : ""} ${
+                    sobre === i && moviendo !== i ? "ring-2 ring-primary" : ""
+                  }`}
                 >
-                  <Image
-                    src={img.url}
-                    alt={img.alt ?? ""}
-                    fill
-                    sizes="200px"
-                    className="object-cover"
-                    unoptimized
-                  />
+                  {/* Tocar la foto la abre para editarla: es lo que se quiere
+                      hacer con una foto que se está mirando, y un botón de
+                      recortar entre otros dos era un blanco chico para la
+                      acción más frecuente. */}
+                  <button
+                    type="button"
+                    onClick={() => setRecortando(img)}
+                    className="block h-full w-full"
+                    aria-label={`Editar ${img.nombre}`}
+                  >
+                    <Image
+                      src={img.url}
+                      alt={img.alt ?? ""}
+                      fill
+                      sizes={i === 0 ? "400px" : "200px"}
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </button>
                   {i === 0 && (
-                    <span className="absolute left-1 top-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium">
+                    <span className="pointer-events-none absolute left-1 top-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium">
                       Principal
                     </span>
                   )}
-                  {/* Las acciones aparecen al pasar por encima: con seis fotos,
-                      doce botones siempre visibles tapan las fotos. */}
-                  <div className="absolute inset-x-0 bottom-0 flex justify-end gap-0.5 bg-gradient-to-t from-black/60 to-transparent p-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    {i !== 0 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
-                        aria-label="Hacer principal"
-                        onClick={() => hacerPrincipal(img.id)}
-                      >
-                        <Star className="h-3.5 w-3.5" />
-                      </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1 h-6 w-6 bg-black/50 text-white opacity-0 transition-opacity hover:bg-black/70 hover:text-white group-hover:opacity-100"
+                    aria-label="Sacar del producto"
+                    disabled={quitando !== null}
+                    onClick={() => quitar(img.id)}
+                  >
+                    {quitando === img.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-3.5 w-3.5" />
                     )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
-                      aria-label="Recortar"
-                      onClick={() => setRecortando(img)}
-                    >
-                      <Crop className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
-                      aria-label="Sacar del producto"
-                      disabled={quitando !== null}
-                      onClick={() => quitar(img.id)}
-                    >
-                      {quitando === img.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  </div>
+                  </Button>
                 </div>
               ))}
             </div>
+          )}
+
+          {imagenes.length > 1 && (
+            <p className="text-xs text-muted-foreground">
+              Arrastra para reordenar. La primera es la principal.
+            </p>
           )}
 
           {/* Soltar el archivo encima es el gesto más corto que hay, y hasta

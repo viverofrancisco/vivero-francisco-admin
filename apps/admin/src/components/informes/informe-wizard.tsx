@@ -12,7 +12,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Crop,
   Download,
   ExternalLink,
   FileText,
@@ -29,10 +28,6 @@ import {
   X,
 } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
-import {
-  MediaViewer,
-  type MediaViewerSource,
-} from "@/components/ui/media-viewer";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { hoyISOEcuador } from "@/lib/fechas";
@@ -438,9 +433,6 @@ export function InformeWizard({
   const terminado = step === 5 && savedInformeId != null;
 
   const [addPhotosFor, setAddPhotosFor] = useState<string | null>(null);
-  const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
-    null,
-  );
 
   // Load clientes + tipos + firmantes catalog up front.
   useEffect(() => {
@@ -976,7 +968,6 @@ export function InformeWizard({
                 allPool={pool}
                 addPhotosFor={addPhotosFor}
                 setAddPhotosFor={setAddPhotosFor}
-                onViewMedia={(url) => setActiveMedia({ url, tipo: "imagen" })}
               />
             ) : null}
 
@@ -1154,8 +1145,6 @@ export function InformeWizard({
           </div>
         </div>
       </main>
-
-      <MediaViewer media={activeMedia} onClose={() => setActiveMedia(null)} />
 
       <Dialog open={saliendo} onOpenChange={(v) => !v && setSaliendo(false)}>
         <DialogContent>
@@ -1990,7 +1979,6 @@ function Step3Secciones({
   allPool,
   addPhotosFor,
   setAddPhotosFor,
-  onViewMedia,
 }: {
   titulo: string;
   onTituloChange: (v: string) => void;
@@ -2003,7 +1991,6 @@ function Step3Secciones({
   allPool: MediaPoolItem[];
   addPhotosFor: string | null;
   setAddPhotosFor: (id: string | null) => void;
-  onViewMedia: (url: string) => void;
 }) {
   // Fotos de visita ya usadas en alguna sección: no se vuelven a autoasignar.
   const assignedIds = useMemo(() => {
@@ -2584,13 +2571,19 @@ function Step3Secciones({
                                   }`}
                                 />
                               ) : null}
+                              {/* Tocar la foto la abre para editarla, como en
+                                  el resto del portal: es lo que se quiere hacer
+                                  con una foto que se está mirando, y el editor
+                                  ya la muestra en grande. */}
                               <button
                                 type="button"
-                                onClick={() => onViewMedia(f.url)}
-                                // `overflow-hidden` acá y no en el recuadro:
+                                onClick={() =>
+                                  setRecortando({ tempId: s.tempId, foto: f })
+                                }
+                                // `overflow-hidden` aquí y no en el recuadro:
                                 // ahí recortaría la barra que asoma al lado.
                                 className="block h-full w-full overflow-hidden rounded-md"
-                                title="Ver en grande"
+                                title="Editar la foto"
                               >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
@@ -2600,8 +2593,8 @@ function Step3Secciones({
                                 />
                               </button>
                               {/* Abajo a la izquierda: arriba a la derecha
-                                  están recortar y quitar, y en una miniatura
-                                  chica el cartel se les montaba encima.
+                                  está el botón de quitar, y en una miniatura
+                                  chica el cartel se le montaba encima.
 
                                   "Agregada" y no "Subida" porque también puede
                                   venir de la biblioteca. Lo que marca es la
@@ -2615,16 +2608,6 @@ function Step3Secciones({
                                 </span>
                               ) : null}
                               <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setRecortando({ tempId: s.tempId, foto: f })
-                                  }
-                                  className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
-                                  title="Recortar"
-                                >
-                                  <Crop className="h-3.5 w-3.5" />
-                                </button>
                                 <button
                                   type="button"
                                   onClick={() =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -26,155 +26,14 @@ import {
   type VariantePendiente,
 } from "./producto-variantes";
 import {
-  MediaLibrary,
-  subirALaBiblioteca,
-  type MediaItem,
-} from "./media-library";
-import { ArrowLeft, Loader2, X } from "lucide-react";
+  ProductoImagenes,
+  type ImagenProducto,
+} from "./producto-imagenes";
+import { ArrowLeft } from "lucide-react";
 
 interface Categoria {
   id: string;
   nombre: string;
-}
-
-/**
- * Las fotos, antes de que el producto exista.
- *
- * Es una versión corta de la galería de la ficha: agregar y sacar, sin
- * reordenar ni elegir la principal. Esas dos se hacen contra el producto ya
- * creado, y acá lo que importa es no tener que volver a subir lo que uno ya
- * tenía a mano.
- */
-function FotosNuevas({
-  imagenes,
-  onCambio,
-}: {
-  imagenes: MediaItem[];
-  onCambio: (m: MediaItem[]) => void;
-}) {
-  const [eligiendo, setEligiendo] = useState(false);
-  const [subiendo, setSubiendo] = useState(false);
-  const [arrastrando, setArrastrando] = useState(false);
-  const input = useRef<HTMLInputElement>(null);
-
-  const sumar = (nuevas: MediaItem[]) => {
-    const ya = new Set(imagenes.map((m) => m.id));
-    onCambio([...imagenes, ...nuevas.filter((m) => !ya.has(m.id))]);
-  };
-
-  const subir = async (files: File[]) => {
-    const fotos = files.filter((f) => f.type.startsWith("image/"));
-    if (fotos.length === 0) return;
-    setSubiendo(true);
-    try {
-      sumar(await subirALaBiblioteca(fotos));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos subirlas");
-    } finally {
-      setSubiendo(false);
-      // Elegir el mismo archivo dos veces no dispara `change` si no se limpia.
-      if (input.current) input.current.value = "";
-    }
-  };
-
-  return (
-    <>
-      <Card>
-        <CardHeader className="border-b py-3">
-          <CardTitle className="text-base">Fotos</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {imagenes.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {imagenes.map((m) => (
-                <div
-                  key={m.id}
-                  className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={m.url}
-                    alt={m.alt ?? ""}
-                    className="h-full w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onCambio(imagenes.filter((x) => x.id !== m.id))
-                    }
-                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    title="Sacar"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setArrastrando(true);
-            }}
-            onDragLeave={() => setArrastrando(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setArrastrando(false);
-              void subir([...e.dataTransfer.files]);
-            }}
-            className={`flex flex-col items-center gap-2 rounded-md border-2 border-dashed p-6 text-center transition-colors ${
-              arrastrando ? "border-primary bg-primary/5" : "border-muted"
-            }`}
-          >
-            <input
-              ref={input}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => e.target.files && subir([...e.target.files])}
-            />
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={subiendo}
-                onClick={() => input.current?.click()}
-              >
-                {subiendo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Subir
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-primary hover:bg-transparent hover:underline"
-                onClick={() => setEligiendo(true)}
-              >
-                Elegir existente
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              O arrastra las imágenes aquí.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {eligiendo && (
-        <MediaLibrary
-          yaUsadas={imagenes.map((m) => m.id)}
-          onCerrar={() => setEligiendo(false)}
-          onElegirItems={(items) => {
-            setEligiendo(false);
-            sumar(items);
-          }}
-        />
-      )}
-    </>
-  );
 }
 
 /** Una de las dos opciones del primer paso. */
@@ -259,7 +118,7 @@ export function ServicioForm({
      * producto. Así que acá se juntan y se vinculan apenas el POST devuelve el
      * id — el mismo camino en dos pasos que usa la categoría con sus productos.
      */
-    imagenes: [] as MediaItem[],
+    imagenes: [] as ImagenProducto[],
     /**
      * Lo de la variante única, solo para un bien.
      *
@@ -420,7 +279,9 @@ export function ServicioForm({
         const r2 = await fetch(`/api/servicios/${data.id}/imagenes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mediaIds: form.imagenes.map((m) => m.id) }),
+          body: JSON.stringify({
+            mediaIds: form.imagenes.map((m) => m.mediaId),
+          }),
         });
         if (!r2.ok) {
           throw new Error(
@@ -531,7 +392,11 @@ export function ServicioForm({
             </CardContent>
           </Card>
 
-          <FotosNuevas
+          {/* La misma galería que la ficha, en modo sin producto: agregar,
+              reordenar, recortar y sacar quedan en el formulario y se guardan
+              con el resto. */}
+          <ProductoImagenes
+            productoId={null}
             imagenes={form.imagenes}
             onCambio={(imagenes) => setForm({ ...form, imagenes })}
           />

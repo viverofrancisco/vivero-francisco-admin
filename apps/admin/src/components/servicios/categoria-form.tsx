@@ -23,7 +23,6 @@ import {
   ArrowDownToLine,
   ArrowLeft,
   ArrowUpToLine,
-  Crop,
   GripVertical,
   ImageOff,
   Loader2,
@@ -632,14 +631,24 @@ export function CategoriaForm({
               }`}
             >
               {form.imagen ? (
-                <Image
-                  src={form.imagen.url}
-                  alt={form.imagen.alt ?? ""}
-                  fill
-                  sizes="300px"
-                  className="object-cover"
-                  unoptimized
-                />
+                /* Tocarla la abre para editarla: es lo que se quiere hacer con
+                   una foto que se está mirando, y un botón aparte era un blanco
+                   más chico para la acción más frecuente. */
+                <button
+                  type="button"
+                  onClick={() => setRecortando(true)}
+                  className="block h-full w-full"
+                  aria-label="Editar la foto"
+                >
+                  <Image
+                    src={form.imagen.url}
+                    alt={form.imagen.alt ?? ""}
+                    fill
+                    sizes="300px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                </button>
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-1 text-muted-foreground">
                   {subiendo ? (
@@ -684,16 +693,6 @@ export function CategoriaForm({
             </div>
             {form.imagen && (
               <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => setRecortando(true)}
-                >
-                  <Crop className="mr-1.5 h-3.5 w-3.5" />
-                  Recortar
-                </Button>
                 <Button
                   type="button"
                   variant="ghost"
