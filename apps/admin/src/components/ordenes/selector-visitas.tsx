@@ -296,7 +296,8 @@ export function SelectorVisitas({
             <div className="max-h-72 divide-y overflow-y-auto">
               {visibles.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
-                  Ninguna visita coincide con «{busqueda.trim()}».
+                  Ninguna visita coincide con{" "}
+                  <span className="font-medium">{busqueda.trim()}</span>.
                 </p>
               ) : (
                 visibles.map((v) => {

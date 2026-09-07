@@ -88,7 +88,8 @@ export function SelectorProductos({
 
           {visibles.length === 0 ? (
             <p className="rounded-md border border-dashed py-8 text-center text-sm text-muted-foreground">
-              Ningún producto coincide con «{busqueda.trim()}».
+              Ningún producto coincide con{" "}
+              <span className="font-medium">{busqueda.trim()}</span>.
             </p>
           ) : (
             <div className="divide-y rounded-md border">

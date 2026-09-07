@@ -55,14 +55,14 @@ export function ProductosHeader() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Opcion
               titulo="Servicio"
-              detalle="Algo que se hace."
-              nota="No lleva inventario."
+              detalle="Un trabajo o una mano de obra."
+              nota="No se cuenta ni se guarda: no lleva inventario."
               onClick={() => elegir("SERVICIO")}
             />
             <Opcion
               titulo="Bien"
-              detalle="Algo que se entrega."
-              nota="Lleva inventario y puede tener variantes."
+              detalle="Un producto físico que se entrega."
+              nota="Se cuenta, y puede venir en variantes: color, tamaño."
               onClick={() => elegir("BIEN")}
             />
           </div>
@@ -87,10 +87,12 @@ function Opcion({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-lg border bg-card p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
+      className="flex h-full flex-col rounded-lg border bg-card p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
     >
       <p className="font-medium">{titulo}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{detalle}</p>
+      {/* El detalle crece y la nota queda abajo: así las dos tarjetas alinean
+          sus títulos y sus notas aunque el texto del medio ocupe distinto. */}
+      <p className="mt-1 flex-1 text-sm text-muted-foreground">{detalle}</p>
       <p className="mt-2 text-xs text-muted-foreground">{nota}</p>
     </button>
   );

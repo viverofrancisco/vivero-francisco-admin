@@ -305,7 +305,7 @@ export function InformeDetail({
                     ) : null}
                     {v.titulo !== informe.titulo ? (
                       <p className="text-xs text-muted-foreground">
-                        Se llamaba «{v.titulo}»
+                        Se llamaba <span className="font-medium">{v.titulo}</span>
                       </p>
                     ) : null}
                   </div>

@@ -12,11 +12,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Falta clienteId" }, { status: 400 });
   }
   try {
-    const items = await productosSuscribibles(
+    const { items, hayMas } = await productosSuscribibles(
       viewer,
       clienteId,
       // Al editar, los productos de esa misma suscripción siguen disponibles.
-      params.get("exceptoSuscripcionId") ?? undefined
+      params.get("exceptoSuscripcionId") ?? undefined,
+      {
+        search: params.get("q") ?? undefined,
+        offset: Number(params.get("offset")) || 0,
+        limit: Number(params.get("limit")) || 20,
+      }
     );
     return NextResponse.json({
       items: items.map((p) => ({
@@ -24,6 +29,7 @@ export async function GET(request: Request) {
         nombre: p.nombre,
         ivaTasa: p.ivaTasa != null ? Number(p.ivaTasa) : null,
       })),
+      hayMas,
     });
   } catch (error) {
     return serviceErrorResponse(error);

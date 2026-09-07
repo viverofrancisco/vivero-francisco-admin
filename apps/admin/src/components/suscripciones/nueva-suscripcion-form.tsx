@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { hoyISOEcuador } from "@/lib/fechas";
+import {
+  useListaPaginada,
+  POR_TANDA,
+} from "@/components/shared/use-lista-paginada";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,32 +62,43 @@ export function NuevaSuscripcionForm({
   onCancelar?: () => void;
 }) {
   const router = useRouter();
-  const [productos, setProductos] = useState<ProductoSuscribible[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [fechaInicio, setFechaInicio] = useState(
     hoyISOEcuador()
   );
 
-  // `cargando` ya arranca en true y el componente se monta de nuevo por cliente
-  // (key en la página, montaje condicional en el diálogo), así que no hace falta
-  // resetearlo acá.
-  useEffect(() => {
-    fetch(`/api/suscripciones/productos?clienteId=${clienteId}`, {
-      cache: "no-store",
-    })
-      .then((r) => r.json())
-      .then((d) => setProductos(d.items ?? []))
-      .catch(() => setProductos([]))
-      .finally(() => setCargando(false));
-  }, [clienteId]);
+  /**
+   * Los productos suscribibles, de a tandas.
+   *
+   * El componente se monta de nuevo por cliente (key en la página, montaje
+   * condicional en el diálogo), así que la lista arranca limpia sola.
+   */
+  const catalogo = useListaPaginada<ProductoSuscribible>({
+    iniciales: [],
+    hayMasInicial: false,
+    pedir: async (q, offset) => {
+      const r = await fetch(
+        `/api/suscripciones/productos?clienteId=${clienteId}` +
+          `&q=${encodeURIComponent(q)}&offset=${offset}&limit=${POR_TANDA}`,
+        { cache: "no-store" }
+      );
+      const d = (await r.json()) as {
+        items?: ProductoSuscribible[];
+        hayMas?: boolean;
+      };
+      return { items: d.items ?? [], hayMas: Boolean(d.hayMas) };
+    },
+  });
+  const cargando = catalogo.cargando;
 
-  const disponibles = productos.filter(
+  // Los ya agregados no se vuelven a ofrecer. El filtro es de la página que se
+  // está mostrando: el servidor no sabe qué lleva este formulario sin guardar.
+  const disponibles = catalogo.pagina.filter(
     (p) => !items.some((i) => i.productoId === p.id)
   );
 
   const agregar = (productoId: string) => {
-    const p = productos.find((x) => x.id === productoId);
+    const p = catalogo.conocidos.find((x) => x.id === productoId);
     if (!p) return;
     onItemsChange([
       ...items,
@@ -152,7 +167,9 @@ export function NuevaSuscripcionForm({
     );
   }
 
-  if (productos.length === 0) {
+  // Sin resultados **y sin búsqueda**: con una búsqueda puesta, que no haya
+  // nada significa que no coincide, no que no queden productos.
+  if (catalogo.pagina.length === 0 && !catalogo.busqueda) {
     return (
       <p className="py-6 text-sm text-muted-foreground">
         Este cliente ya tiene activos todos los productos recurrentes del
@@ -267,7 +284,7 @@ export function NuevaSuscripcionForm({
           </div>
         )}
 
-        {disponibles.length > 0 ? (
+        {disponibles.length > 0 || catalogo.busqueda ? (
           <CustomSelect
             value=""
             onChange={agregar}
@@ -278,6 +295,12 @@ export function NuevaSuscripcionForm({
             placeholder="Agregar producto recurrente"
             searchable
             searchPlaceholder="Buscar producto..."
+            // El catálogo se busca y se pagina en el servidor: puede crecer, y
+            // esta lista se abre para elegir uno o dos productos.
+            onBuscar={catalogo.onBuscar}
+            onMas={catalogo.onMas}
+            hayMas={catalogo.hayMas}
+            cargando={catalogo.cargando}
           />
         ) : (
           <p className="text-xs text-muted-foreground">

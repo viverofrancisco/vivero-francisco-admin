@@ -462,17 +462,26 @@ export async function productosSuscritos(
 export async function productosSuscribibles(
   viewer: Viewer,
   clienteId: string,
-  exceptoSuscripcionId?: string
+  exceptoSuscripcionId?: string,
+  opciones: { search?: string; offset?: number; limit?: number } = {}
 ) {
   if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
     throw new ForbiddenError();
   }
+  const limit = Math.min(Math.max(opciones.limit ?? 20, 1), 100);
+  const offset = Math.max(0, opciones.offset ?? 0);
+  const search = opciones.search?.trim();
+
   // Todo el catálogo es suscribible: lo recurrente lo define el contrato. Solo
   // se saca lo que este cliente ya tiene en una suscripción activa, para no
   // cobrarle el mismo período dos veces.
-  return prisma.producto.findMany({
+  //
+  // De a tandas, como el resto de los selectores: el catálogo puede crecer y
+  // esta lista se abre para elegir uno o dos productos.
+  const productos = await prisma.producto.findMany({
     where: {
       deletedAt: null,
+      ...(search ? { nombre: { contains: search, mode: "insensitive" } } : {}),
       NOT: {
         suscripcionItems: {
           some: {
@@ -491,5 +500,10 @@ export async function productosSuscribibles(
       ivaTasa: true,
     },
     orderBy: { nombre: "asc" },
+    skip: offset,
+    take: limit + 1,
   });
+
+  const hayMas = productos.length > limit;
+  return { items: hayMas ? productos.slice(0, limit) : productos, hayMas };
 }

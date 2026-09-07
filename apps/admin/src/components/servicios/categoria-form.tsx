@@ -756,7 +756,11 @@ export function CategoriaForm({
       <Dialog open={borrando} onOpenChange={(v) => !v && setBorrando(false)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Eliminar «{guardado.nombre}»</DialogTitle>
+            {/* El nombre en negrita y sin comillas: es lo que identifica lo
+                que se está por borrar, y las comillas solo agregan ruido. */}
+            <DialogTitle className="font-normal">
+              Eliminar <span className="font-semibold">{guardado.nombre}</span>
+            </DialogTitle>
             <DialogDescription>
               {guardado.productos.length > 0 ? (
                 <>
