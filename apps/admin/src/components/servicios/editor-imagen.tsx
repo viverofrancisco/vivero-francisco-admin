@@ -22,15 +22,32 @@ interface Recorte {
   alto: number;
 }
 
-const FORMAS: { clave: string; label: string; nota: string; ratio: number | null }[] =
-  [
-    { clave: "libre", label: "Libre", nota: "Como quieras", ratio: null },
-    { clave: "1:1", label: "1:1", nota: "Cuadrada", ratio: 1 },
-    { clave: "4:3", label: "4:3", nota: "Horizontal", ratio: 4 / 3 },
-    { clave: "3:4", label: "3:4", nota: "Vertical", ratio: 3 / 4 },
-    { clave: "16:9", label: "16:9", nota: "Panorámica", ratio: 16 / 9 },
-    { clave: "2:3", label: "2:3", nota: "Vertical", ratio: 2 / 3 },
-  ];
+/**
+ * El círculo es una forma más y no un interruptor aparte: obliga a un recuadro
+ * cuadrado —el redondo se inscribe en él— así que tenerlo separado del selector
+ * de proporción dejaba elegir "16:9 y redondo", que no quiere decir nada.
+ */
+const FORMAS: {
+  clave: string;
+  label: string;
+  nota: string;
+  ratio: number | null;
+  circulo?: boolean;
+}[] = [
+  { clave: "libre", label: "Libre", nota: "Como quieras", ratio: null },
+  { clave: "1:1", label: "1:1", nota: "Cuadrada", ratio: 1 },
+  {
+    clave: "circulo",
+    label: "Círculo",
+    nota: "Redonda, sale PNG",
+    ratio: 1,
+    circulo: true,
+  },
+  { clave: "4:3", label: "4:3", nota: "Horizontal", ratio: 4 / 3 },
+  { clave: "3:4", label: "3:4", nota: "Vertical", ratio: 3 / 4 },
+  { clave: "16:9", label: "16:9", nota: "Panorámica", ratio: 16 / 9 },
+  { clave: "2:3", label: "2:3", nota: "Vertical", ratio: 2 / 3 },
+];
 
 type Asa = "mover" | "nw" | "ne" | "sw" | "se";
 
@@ -83,6 +100,9 @@ export function EditorImagen({
     y0: number;
     inicial: Recorte;
   } | null>(null);
+
+  /** Si lo elegido recorta en círculo. El redondo se inscribe en el recuadro. */
+  const enCirculo = FORMAS.find((f) => f.clave === forma)?.circulo === true;
 
   /** Cuántos píxeles del original abarca el recorte actual. */
   const enPixeles = natural
@@ -184,6 +204,7 @@ export function EditorImagen({
         recorte.ancho < 0.999 ||
         recorte.alto < 0.999;
       if (recortaAlgo) cuerpo.recorte = enPixeles;
+      if (enCirculo) cuerpo.circulo = true;
 
       const ancho = Number(salida.ancho);
       const alto = Number(salida.alto);
@@ -226,7 +247,11 @@ export function EditorImagen({
             onPointerMove={alMover}
             onPointerUp={soltar}
             onPointerCancel={soltar}
-            className="relative mx-auto w-fit touch-none select-none overflow-hidden rounded-md bg-muted"
+            // Sin `overflow-hidden`: las asas sobresalen media asa del
+            // recuadro, y con el recuadro pegado al borde —que es como arranca—
+            // el marco les cortaba la mitad de afuera. Lo redondeado se
+            // resuelve en la imagen y en las sombras, que sí quedan adentro.
+            className="relative mx-auto w-fit touch-none select-none rounded-md bg-muted"
           >
             {/* Sin `next/image`: acá hace falta el tamaño natural del archivo
                 para traducir el recuadro a píxeles, y el optimizador sirve otra
@@ -239,7 +264,7 @@ export function EditorImagen({
               // dibuja centrada dentro de un elemento más grande, y el marco
               // —que es contra el que se mide el recuadro— dejaría de coincidir
               // con lo que se ve. Así el marco mide exactamente la imagen.
-              className="block max-h-[65vh] w-auto max-w-full select-none"
+              className="block max-h-[65vh] w-auto max-w-full select-none rounded-md"
               draggable={false}
               onLoad={(e) => {
                 const el = e.currentTarget;
@@ -259,7 +284,7 @@ export function EditorImagen({
                 seleccionado no coincidía con lo que se veía. Con sombras
                 alrededor, lo que se ve dentro del recuadro **es** la imagen de
                 abajo: no hay dos copias que puedan desalinearse. */}
-            <div className="pointer-events-none absolute inset-0">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-md">
               <div
                 className="absolute inset-x-0 top-0 bg-black/60"
                 style={{ height: pct(recorte.y) }}
@@ -293,8 +318,32 @@ export function EditorImagen({
                 width: pct(recorte.ancho),
                 height: pct(recorte.alto),
               }}
-              className="absolute cursor-move outline outline-2 -outline-offset-1 outline-white"
+              className={`absolute cursor-move ${
+                // Con el círculo, el borde cuadrado sobra: lo que se lleva es
+                // lo de adentro del redondo, y dos contornos a la vez no dicen
+                // cuál manda. Las asas siguen en las esquinas de la caja, que
+                // es lo que se arrastra.
+                enCirculo
+                  ? ""
+                  : "outline outline-2 -outline-offset-1 outline-white"
+              }`}
             >
+              {enCirculo ? (
+                <>
+                  {/* Las esquinas apagadas: el corte real es el círculo
+                      inscripto, el mismo que hace `sharp` con el radio en la
+                      mitad del lado más corto. `closest-side` es justamente
+                      ese radio. */}
+                  <span
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(circle closest-side, transparent 99.5%, rgba(0,0,0,0.6) 100%)",
+                    }}
+                  />
+                  <span className="pointer-events-none absolute inset-0 rounded-full outline outline-2 -outline-offset-1 outline-white" />
+                </>
+              ) : null}
               {(["nw", "ne", "sw", "se"] as const).map((asa) => (
                 <span
                   key={asa}
