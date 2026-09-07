@@ -339,14 +339,14 @@ export function ServicioForm({
           <div className="grid gap-3 sm:grid-cols-2">
             <ElegirTipo
               titulo="Servicio"
-              detalle="Un trabajo o una mano de obra."
-              nota="No se cuenta ni se guarda: no lleva inventario."
+              detalle="Un trabajo o mano de obra."
+              nota="No maneja inventario."
               onClick={() => setTipo("SERVICIO")}
             />
             <ElegirTipo
               titulo="Bien"
-              detalle="Un producto físico que se entrega."
-              nota="Se cuenta, y puede venir en variantes: color, tamaño."
+              detalle="Un producto físico."
+              nota="Maneja inventario."
               onClick={() => setTipo("BIEN")}
             />
           </div>
