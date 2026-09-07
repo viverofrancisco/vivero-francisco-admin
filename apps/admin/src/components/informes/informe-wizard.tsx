@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -178,9 +172,11 @@ export function InformeWizard({
     to: string | null;
   }>(() => quickRange("este-mes"));
 
-  const [availableVisitas, setAvailableVisitas] = useState<VisitaParaInforme[]>([]);
+  const [availableVisitas, setAvailableVisitas] = useState<VisitaParaInforme[]>(
+    [],
+  );
   const [selectedVisitaIds, setSelectedVisitaIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [loadingVisitas, setLoadingVisitas] = useState(false);
 
@@ -217,7 +213,7 @@ export function InformeWizard({
 
   const [addPhotosFor, setAddPhotosFor] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
-    null
+    null,
   );
 
   // Load clientes + tipos + firmantes catalog up front.
@@ -269,7 +265,7 @@ export function InformeWizard({
         timeZone: "UTC",
       });
       setTitulo(
-        `Informe de Áreas Verdes — ${capitalize(mes)} — ${nombreCliente(cliente)}`.trim()
+        `Informe de Áreas Verdes — ${capitalize(mes)} — ${nombreCliente(cliente)}`.trim(),
       );
     }
   }, [clientes, clienteId, dateRange, titulo]);
@@ -328,46 +324,48 @@ export function InformeWizard({
         body: JSON.stringify({ visitaIds: ids }),
       }).then((r) => r.json()),
     ])
-      .then(([servicios, media]: [
-        { items: ServicioParaSeccion[] },
-        { items: MediaPoolItem[] },
-      ]) => {
-        const items = servicios.items ?? [];
-        const fotosDelPool = media.items ?? [];
-        setPool(fotosDelPool);
-        setServiciosDisponibles(items);
+      .then(
+        ([servicios, media]: [
+          { items: ServicioParaSeccion[] },
+          { items: MediaPoolItem[] },
+        ]) => {
+          const items = servicios.items ?? [];
+          const fotosDelPool = media.items ?? [];
+          setPool(fotosDelPool);
+          setServiciosDisponibles(items);
 
-        /**
-         * Una sección por producto de las visitas elegidas, tengan fotos o no.
-         *
-         * Es lo que se hacía a mano, uno por uno, en el 100% de los informes:
-         * el producto da el título y la descripción, y sus fotos etiquetadas
-         * ya saben a qué sección van. Las que quedan vacías se llenan o se
-         * borran de a una, que es menos trabajo que agregarlas de a una.
-         *
-         * Solo la primera vez: si ya hay secciones, son de alguien que las
-         * tocó (o de un informe que se está editando) y no se pisan.
-         */
-        if (autogeneradas.current) return;
-        autogeneradas.current = true;
-        setSecciones((prev) => {
-          if (prev.length > 0) return prev;
-          const usadas = new Set<string>();
-          return items.map((sv) => {
+          /**
+           * Una sección por producto de las visitas elegidas, tengan fotos o no.
+           *
+           * Es lo que se hacía a mano, uno por uno, en el 100% de los informes:
+           * el producto da el título y la descripción, y sus fotos etiquetadas
+           * ya saben a qué sección van. Las que quedan vacías se llenan o se
+           * borran de a una, que es menos trabajo que agregarlas de a una.
+           *
+           * Solo la primera vez: si ya hay secciones, son de alguien que las
+           * tocó (o de un informe que se está editando) y no se pisan.
+           */
+          if (autogeneradas.current) return;
+          autogeneradas.current = true;
+          setSecciones((prev) => {
+            if (prev.length > 0) return prev;
+            const usadas = new Set<string>();
+            return items.map((sv) => {
               const fotos = fotosDelPool.filter(
-                (m) => m.productoId === sv.productoId && !usadas.has(m.id)
+                (m) => m.productoId === sv.productoId && !usadas.has(m.id),
               );
               fotos.forEach((m) => usadas.add(m.id));
-            return {
-              tempId: `auto-${sv.productoId}`,
-              productoId: sv.productoId,
-              titulo: sv.nombre,
-              descripcion: sv.descripcion ?? "",
-              fotos: fotos.map(fotoDeVisita),
-            };
+              return {
+                tempId: `auto-${sv.productoId}`,
+                productoId: sv.productoId,
+                titulo: sv.nombre,
+                descripcion: sv.descripcion ?? "",
+                fotos: fotos.map(fotoDeVisita),
+              };
+            });
           });
-        });
-      })
+        },
+      )
       .catch(() => {});
   }, [step, selectedVisitaIds]);
 
@@ -383,7 +381,7 @@ export function InformeWizard({
 
   const unassignedPool = useMemo(
     () => pool.filter((m) => !assignedIds.has(m.id)),
-    [pool, assignedIds]
+    [pool, assignedIds],
   );
 
   function nextFromStep1() {
@@ -407,7 +405,10 @@ export function InformeWizard({
   async function generate() {
     if (!clienteId) return;
     const validFirmantes = firmantes
-      .map((f) => ({ nombre: f.nombre.trim(), cedula: f.cedula.trim() || null }))
+      .map((f) => ({
+        nombre: f.nombre.trim(),
+        cedula: f.cedula.trim() || null,
+      }))
       .filter((f) => f.nombre.length > 0);
     if (validFirmantes.length === 0) {
       return toast.error("Agrega al menos un firmante con nombre");
@@ -423,7 +424,7 @@ export function InformeWizard({
           titulo: titulo.trim(),
           visitaIds: Array.from(selectedVisitaIds),
           fecha,
-      firmantes: validFirmantes,
+          firmantes: validFirmantes,
           secciones: secciones.map((s) => ({
             productoId: s.productoId,
             titulo: s.titulo,
@@ -431,7 +432,7 @@ export function InformeWizard({
             fotos: s.fotos.map((f) =>
               f.visitaMediaId
                 ? { visitaMediaId: f.visitaMediaId }
-                : { mediaId: f.mediaId }
+                : { mediaId: f.mediaId },
             ),
           })),
         }),
@@ -453,7 +454,10 @@ export function InformeWizard({
 
   // ──────────────── Render ────────────────
 
-  const stepHeadings: Record<WizardStep, { title: string; description: string }> = {
+  const stepHeadings: Record<
+    WizardStep,
+    { title: string; description: string }
+  > = {
     1: {
       title: "Cliente",
       description: "Escoge el cliente para el cual generar el informe.",
@@ -546,7 +550,7 @@ export function InformeWizard({
                 onSelectAll={(all) => {
                   if (all) {
                     setSelectedVisitaIds(
-                      new Set(availableVisitas.map((v) => v.id))
+                      new Set(availableVisitas.map((v) => v.id)),
                     );
                   } else {
                     setSelectedVisitaIds(new Set());
@@ -569,9 +573,7 @@ export function InformeWizard({
                 allPool={pool}
                 addPhotosFor={addPhotosFor}
                 setAddPhotosFor={setAddPhotosFor}
-                onViewMedia={(url) =>
-                  setActiveMedia({ url, tipo: "imagen" })
-                }
+                onViewMedia={(url) => setActiveMedia({ url, tipo: "imagen" })}
               />
             ) : null}
 
@@ -646,10 +648,7 @@ export function InformeWizard({
         </main>
       </div>
 
-      <MediaViewer
-        media={activeMedia}
-        onClose={() => setActiveMedia(null)}
-      />
+      <MediaViewer media={activeMedia} onClose={() => setActiveMedia(null)} />
     </div>
   );
 }
@@ -669,7 +668,7 @@ function Step4Firmantes({
 }) {
   function update(tempId: string, patch: Partial<FirmanteDraft>) {
     onChange(
-      firmantes.map((f) => (f.tempId === tempId ? { ...f, ...patch } : f))
+      firmantes.map((f) => (f.tempId === tempId ? { ...f, ...patch } : f)),
     );
   }
   function remove(tempId: string) {
@@ -723,7 +722,10 @@ function Step4Firmantes({
           Es la que sale impresa. Regenerar el informe no la cambia.
         </p>
         <div className="w-56 pt-1">
-          <DatePicker value={fecha} onChange={(v) => onFechaChange(v || fecha)} />
+          <DatePicker
+            value={fecha}
+            onChange={(v) => onFechaChange(v || fecha)}
+          />
         </div>
       </div>
 
@@ -764,7 +766,7 @@ function Step4Firmantes({
               }}
               onDrop={(e) => {
                 const sourceId = e.dataTransfer.getData(
-                  "application/x-firmante"
+                  "application/x-firmante",
                 );
                 if (!sourceId) return;
                 e.preventDefault();
@@ -848,9 +850,7 @@ function Step4Firmantes({
           {/* Ancho fijo: los nombres y la cédula debajo entran justos en el
               ancho del botón, y una lista de personas se lee mejor holgada. */}
           <DropdownMenuContent className="w-72">
-            <DropdownMenuItem onClick={add}>
-              Firmante nuevo
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={add}>Firmante nuevo</DropdownMenuItem>
             {catalog.length > 0 ? (
               <>
                 <div className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -858,7 +858,7 @@ function Step4Firmantes({
                 </div>
                 {catalog.map((s) => {
                   const alreadyAdded = firmantes.some(
-                    (f) => f.nombre === s.nombre
+                    (f) => f.nombre === s.nombre,
                   );
                   return (
                     <DropdownMenuItem
@@ -899,8 +899,16 @@ function VerticalStepper({
   const items: Array<{ n: WizardStep; label: string; description: string }> = [
     { n: 1, label: "Cliente", description: "Selecciona el cliente" },
     { n: 2, label: "Visitas", description: "Visitas a incluir" },
-    { n: 3, label: "Componer secciones", description: "Asigna fotos a cada sección" },
-    { n: 4, label: "Firma y fecha", description: "Fecha del informe y quién firma" },
+    {
+      n: 3,
+      label: "Componer secciones",
+      description: "Asigna fotos a cada sección",
+    },
+    {
+      n: 4,
+      label: "Firma y fecha",
+      description: "Fecha del informe y quién firma",
+    },
     { n: 5, label: "Vista previa", description: "Descarga y comparte" },
   ];
   return (
@@ -1104,9 +1112,7 @@ function Step2Visitas({
       {cliente ? (
         <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-sm">
           <span className="text-muted-foreground">Cliente:</span>
-          <span className="font-medium">
-            {nombreCliente(cliente)}
-          </span>
+          <span className="font-medium">{nombreCliente(cliente)}</span>
         </div>
       ) : null}
 
@@ -1378,10 +1384,10 @@ function Step3Secciones({
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const [photoDragOverId, setPhotoDragOverId] = useState<string | null>(null);
   const [draggingSectionId, setDraggingSectionId] = useState<string | null>(
-    null
+    null,
   );
   const [sectionDragOverId, setSectionDragOverId] = useState<string | null>(
-    null
+    null,
   );
   const [dragArmedId, setDragArmedId] = useState<string | null>(null);
   /** Reordenar fotos dentro de una sección. */
@@ -1417,8 +1423,7 @@ function Step3Secciones({
       ? allPool
           .filter(
             (m) =>
-              m.productoId === servicio.productoId &&
-              !assignedIds.has(m.id)
+              m.productoId === servicio.productoId && !assignedIds.has(m.id),
           )
           .map(fotoDeVisita)
       : [];
@@ -1495,7 +1500,7 @@ function Step3Secciones({
 
   function updateSeccion(tempId: string, patch: Partial<SeccionDraft>) {
     onSeccionesChange(
-      secciones.map((s) => (s.tempId === tempId ? { ...s, ...patch } : s))
+      secciones.map((s) => (s.tempId === tempId ? { ...s, ...patch } : s)),
     );
   }
 
@@ -1524,7 +1529,7 @@ function Step3Secciones({
     tempId: string,
     fromUid: string,
     toUid: string,
-    antes: boolean
+    antes: boolean,
   ) {
     if (fromUid === toUid) return;
     const seccion = secciones.find((x) => x.tempId === tempId);
@@ -1555,7 +1560,11 @@ function Step3Secciones({
    * estaba en la sección, la vieja simplemente se va — dos veces la misma foto
    * no es lo que quiso nadie.
    */
-  function reemplazarFoto(tempId: string, uid: string, nueva: SeccionFotoDraft) {
+  function reemplazarFoto(
+    tempId: string,
+    uid: string,
+    nueva: SeccionFotoDraft,
+  ) {
     const seccion = secciones.find((s) => s.tempId === tempId);
     if (!seccion) return;
     updateSeccion(tempId, {
@@ -1604,14 +1613,14 @@ function Step3Secciones({
       // reusar, ni recortar, ni encontrar.
       const nuevas = await subirALaBiblioteca(imagenes);
       const subidas: SeccionFotoDraft[] = nuevas.map((m) =>
-        fotoDeBiblioteca(m)
+        fotoDeBiblioteca(m),
       );
 
       addFotosToSeccion(tempId, subidas);
       toast.success(
         subidas.length === 1
           ? "Imagen agregada"
-          : `${subidas.length} imágenes agregadas`
+          : `${subidas.length} imágenes agregadas`,
       );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al subir imágenes");
@@ -1733,294 +1742,293 @@ function Step3Secciones({
       {/* Lo único que scrollea. Ancho completo: el pool vivía al costado y ya
           no existe; las fotos se eligen desde la sección. */}
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-          {secciones.length === 0 ? (
-            <Card>
-              <CardContent className="py-16">
-                <div className="text-center space-y-3">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                    <Plus className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Aún no hay secciones</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Empieza agregando una desde el catálogo o crea una custom.
-                    </p>
-                  </div>
+        {secciones.length === 0 ? (
+          <Card>
+            <CardContent className="py-16">
+              <div className="text-center space-y-3">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Plus className="h-6 w-6 text-primary" />
                 </div>
-              </CardContent>
-            </Card>
-          ) : null}
+                <div>
+                  <p className="text-sm font-medium">Aún no hay secciones</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Empieza agregando una desde el catálogo o crea una custom.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
 
-          {secciones.map((s, idx) => {
-            const isPhotoDragOver = photoDragOverId === s.tempId;
-            const isSectionDragOver =
-              sectionDragOverId === s.tempId &&
-              draggingSectionId !== s.tempId;
-            const isDragging = draggingSectionId === s.tempId;
-            const isCollapsed = collapsed.has(s.tempId);
-            const hasPhotos = s.fotos.length > 0;
-            const isUploading = uploadingFor === s.tempId;
-            return (
-              <div
-                key={s.tempId}
-                draggable={dragArmedId === s.tempId}
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("application/x-section", s.tempId);
-                  e.dataTransfer.effectAllowed = "move";
-                  setDraggingSectionId(s.tempId);
-                }}
-                onDragEnd={() => {
-                  setDraggingSectionId(null);
-                  setDragArmedId(null);
-                  setSectionDragOverId(null);
-                  setPhotoDragOverId(null);
-                }}
-                onDragOver={(e) => handleDragOver(e, s.tempId)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, s.tempId)}
-                className={`relative rounded-xl border-2 bg-card transition-colors ${
-                  isPhotoDragOver
-                    ? "border-primary bg-primary/5"
-                    : hasPhotos || isCollapsed
-                      ? "border-border"
-                      : "border-dashed border-muted-foreground/30"
-                } ${isDragging ? "opacity-40" : ""}`}
-              >
-                {isSectionDragOver ? (
-                  <div className="pointer-events-none absolute inset-x-2 -top-1 h-1 rounded-full bg-primary" />
-                ) : null}
+        {secciones.map((s, idx) => {
+          const isPhotoDragOver = photoDragOverId === s.tempId;
+          const isSectionDragOver =
+            sectionDragOverId === s.tempId && draggingSectionId !== s.tempId;
+          const isDragging = draggingSectionId === s.tempId;
+          const isCollapsed = collapsed.has(s.tempId);
+          const hasPhotos = s.fotos.length > 0;
+          const isUploading = uploadingFor === s.tempId;
+          return (
+            <div
+              key={s.tempId}
+              draggable={dragArmedId === s.tempId}
+              onDragStart={(e) => {
+                e.dataTransfer.setData("application/x-section", s.tempId);
+                e.dataTransfer.effectAllowed = "move";
+                setDraggingSectionId(s.tempId);
+              }}
+              onDragEnd={() => {
+                setDraggingSectionId(null);
+                setDragArmedId(null);
+                setSectionDragOverId(null);
+                setPhotoDragOverId(null);
+              }}
+              onDragOver={(e) => handleDragOver(e, s.tempId)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, s.tempId)}
+              className={`relative rounded-xl border-2 bg-card transition-colors ${
+                isPhotoDragOver
+                  ? "border-primary bg-primary/5"
+                  : hasPhotos || isCollapsed
+                    ? "border-border"
+                    : "border-dashed border-muted-foreground/30"
+              } ${isDragging ? "opacity-40" : ""}`}
+            >
+              {isSectionDragOver ? (
+                <div className="pointer-events-none absolute inset-x-2 -top-1 h-1 rounded-full bg-primary" />
+              ) : null}
 
-                {/* Section header */}
-                <div className="flex items-center gap-2 px-3 py-2.5">
-                  <button
-                    type="button"
-                    onMouseDown={() => setDragArmedId(s.tempId)}
-                    onMouseUp={() => setDragArmedId(null)}
-                    onMouseLeave={() => setDragArmedId(null)}
-                    className="flex h-8 w-5 flex-none cursor-grab items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
-                    title="Arrastra para reordenar"
-                  >
-                    <GripVertical className="h-4 w-4" />
-                  </button>
-                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                    {idx + 1}
+              {/* Section header */}
+              <div className="flex items-center gap-2 px-3 py-2.5">
+                <button
+                  type="button"
+                  onMouseDown={() => setDragArmedId(s.tempId)}
+                  onMouseUp={() => setDragArmedId(null)}
+                  onMouseLeave={() => setDragArmedId(null)}
+                  className="flex h-8 w-5 flex-none cursor-grab items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
+                  title="Arrastra para reordenar"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </button>
+                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  {idx + 1}
+                </span>
+                <Input
+                  value={s.titulo}
+                  onChange={(e) =>
+                    updateSeccion(s.tempId, { titulo: e.target.value })
+                  }
+                  placeholder="Título de la sección"
+                  className="flex-1 border-0 bg-transparent px-0 text-base font-semibold shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                {isCollapsed && hasPhotos ? (
+                  <span className="flex-none text-xs text-muted-foreground">
+                    {s.fotos.length} foto
+                    {s.fotos.length === 1 ? "" : "s"}
                   </span>
-                  <Input
-                    value={s.titulo}
-                    onChange={(e) =>
-                      updateSeccion(s.tempId, { titulo: e.target.value })
-                    }
-                    placeholder="Título de la sección"
-                    className="flex-1 border-0 bg-transparent px-0 text-base font-semibold shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                ) : null}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => toggleCollapsed(s.tempId)}
+                  title={isCollapsed ? "Expandir" : "Colapsar"}
+                  className="flex-none"
+                >
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${
+                      isCollapsed ? "-rotate-90" : ""
+                    }`}
                   />
-                  {isCollapsed && hasPhotos ? (
-                    <span className="flex-none text-xs text-muted-foreground">
-                      {s.fotos.length} foto
-                      {s.fotos.length === 1 ? "" : "s"}
-                    </span>
-                  ) : null}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggleCollapsed(s.tempId)}
-                    title={isCollapsed ? "Expandir" : "Colapsar"}
-                    className="flex-none"
-                  >
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${
-                        isCollapsed ? "-rotate-90" : ""
-                      }`}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeSeccion(s.tempId)}
+                  title="Eliminar sección"
+                  className="flex-none text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {!isCollapsed ? (
+                <>
+                  <div className="border-t" />
+                  {/* Description */}
+                  <div className="px-4 pt-3">
+                    <DescripcionSeccion
+                      value={s.descripcion}
+                      onChange={(descripcion) =>
+                        updateSeccion(s.tempId, { descripcion })
+                      }
                     />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeSeccion(s.tempId)}
-                    title="Eliminar sección"
-                    className="flex-none text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                  </div>
 
-                {!isCollapsed ? (
-                  <>
-                    <div className="border-t" />
-                    {/* Description */}
-                    <div className="px-4 pt-3">
-                      <DescripcionSeccion
-                        value={s.descripcion}
-                        onChange={(descripcion) =>
-                          updateSeccion(s.tempId, { descripcion })
-                        }
-                      />
-                    </div>
-
-                    {/* Photos area */}
-                    <div className="px-4 pb-4 pt-2">
-                      {hasPhotos ? (
-                        <>
-                          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-                            {s.fotos.map((f) => (
-                              /* Arrastrable para reordenar: en el PDF salen en
+                  {/* Photos area */}
+                  <div className="px-4 pb-4 pt-2">
+                    {hasPhotos ? (
+                      <>
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                          {s.fotos.map((f) => (
+                            /* Arrastrable para reordenar: en el PDF salen en
                                  este orden, y "la del antes primero" es una
                                  decisión que se toma acá. */
-                              <div
-                                key={f.uid}
-                                draggable
-                                onDragStart={(e) => {
-                                  e.stopPropagation();
-                                  e.dataTransfer.setData(TIPO_FOTO, f.uid);
-                                  e.dataTransfer.effectAllowed = "move";
-                                  // La miniatura pegada al cursor, centrada:
-                                  // por omisión el navegador arrastra una
-                                  // copia del recuadro entero, botones y todo.
-                                  const caja =
-                                    e.currentTarget.getBoundingClientRect();
-                                  e.dataTransfer.setDragImage(
-                                    e.currentTarget,
-                                    caja.width / 2,
-                                    caja.height / 2
-                                  );
-                                  setFotoArrastrada(f.uid);
-                                }}
-                                onDragEnd={() => {
-                                  setFotoArrastrada(null);
-                                  setFotoSobre(null);
-                                }}
-                                onDragOver={(e) => {
-                                  if (!e.dataTransfer.types.includes(TIPO_FOTO))
-                                    return;
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  // De qué mitad: es lo que decide si cae
-                                  // antes o después, y lo que dibuja la barra.
-                                  const caja =
-                                    e.currentTarget.getBoundingClientRect();
-                                  setFotoSobre({
-                                    uid: f.uid,
-                                    antes: e.clientX < caja.left + caja.width / 2,
-                                  });
-                                }}
-                                onDrop={(e) => {
-                                  const uid = e.dataTransfer.getData(TIPO_FOTO);
-                                  if (!uid) return;
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  const caja =
-                                    e.currentTarget.getBoundingClientRect();
-                                  const antes =
-                                    e.clientX < caja.left + caja.width / 2;
-                                  setFotoSobre(null);
-                                  setFotoArrastrada(null);
-                                  reordenarFotos(s.tempId, uid, f.uid, antes);
-                                }}
-                                className={`group relative aspect-square cursor-grab rounded-md border bg-muted active:cursor-grabbing ${
-                                  fotoArrastrada === f.uid ? "opacity-30" : ""
-                                }`}
-                              >
-                                {/* La barra dice dónde va a caer. Un anillo
+                            <div
+                              key={f.uid}
+                              draggable
+                              onDragStart={(e) => {
+                                e.stopPropagation();
+                                e.dataTransfer.setData(TIPO_FOTO, f.uid);
+                                e.dataTransfer.effectAllowed = "move";
+                                // La miniatura pegada al cursor, centrada:
+                                // por omisión el navegador arrastra una
+                                // copia del recuadro entero, botones y todo.
+                                const caja =
+                                  e.currentTarget.getBoundingClientRect();
+                                e.dataTransfer.setDragImage(
+                                  e.currentTarget,
+                                  caja.width / 2,
+                                  caja.height / 2,
+                                );
+                                setFotoArrastrada(f.uid);
+                              }}
+                              onDragEnd={() => {
+                                setFotoArrastrada(null);
+                                setFotoSobre(null);
+                              }}
+                              onDragOver={(e) => {
+                                if (!e.dataTransfer.types.includes(TIPO_FOTO))
+                                  return;
+                                e.preventDefault();
+                                e.stopPropagation();
+                                // De qué mitad: es lo que decide si cae
+                                // antes o después, y lo que dibuja la barra.
+                                const caja =
+                                  e.currentTarget.getBoundingClientRect();
+                                setFotoSobre({
+                                  uid: f.uid,
+                                  antes: e.clientX < caja.left + caja.width / 2,
+                                });
+                              }}
+                              onDrop={(e) => {
+                                const uid = e.dataTransfer.getData(TIPO_FOTO);
+                                if (!uid) return;
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const caja =
+                                  e.currentTarget.getBoundingClientRect();
+                                const antes =
+                                  e.clientX < caja.left + caja.width / 2;
+                                setFotoSobre(null);
+                                setFotoArrastrada(null);
+                                reordenarFotos(s.tempId, uid, f.uid, antes);
+                              }}
+                              className={`group relative aspect-square cursor-grab rounded-md border bg-muted active:cursor-grabbing ${
+                                fotoArrastrada === f.uid ? "opacity-30" : ""
+                              }`}
+                            >
+                              {/* La barra dice dónde va a caer. Un anillo
                                     sobre la de destino decía "cambiala por
                                     esta", que es otra cosa. */}
-                                {fotoSobre?.uid === f.uid &&
-                                fotoArrastrada !== f.uid ? (
-                                  <span
-                                    className={`pointer-events-none absolute inset-y-0 z-10 w-1 rounded-full bg-primary ${
-                                      fotoSobre.antes ? "-left-1.5" : "-right-1.5"
-                                    }`}
-                                  />
-                                ) : null}
+                              {fotoSobre?.uid === f.uid &&
+                              fotoArrastrada !== f.uid ? (
+                                <span
+                                  className={`pointer-events-none absolute inset-y-0 z-10 w-1 rounded-full bg-primary ${
+                                    fotoSobre.antes ? "-left-1.5" : "-right-1.5"
+                                  }`}
+                                />
+                              ) : null}
+                              <button
+                                type="button"
+                                onClick={() => onViewMedia(f.url)}
+                                // `overflow-hidden` acá y no en el recuadro:
+                                // ahí recortaría la barra que asoma al lado.
+                                className="block h-full w-full overflow-hidden rounded-md"
+                                title="Ver en grande"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={f.url}
+                                  alt=""
+                                  className="h-full w-full object-cover transition-transform hover:scale-105"
+                                />
+                              </button>
+                              {!f.visitaMediaId ? (
+                                <span
+                                  className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
+                                  title="Imagen subida al informe, no viene de una visita"
+                                >
+                                  Subida
+                                </span>
+                              ) : null}
+                              <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                 <button
                                   type="button"
-                                  onClick={() => onViewMedia(f.url)}
-                                  // `overflow-hidden` acá y no en el recuadro:
-                                  // ahí recortaría la barra que asoma al lado.
-                                  className="block h-full w-full overflow-hidden rounded-md"
-                                  title="Ver en grande"
+                                  onClick={() =>
+                                    setRecortando({ tempId: s.tempId, foto: f })
+                                  }
+                                  className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
+                                  title="Recortar"
                                 >
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={f.url}
-                                    alt=""
-                                    className="h-full w-full object-cover transition-transform hover:scale-105"
-                                  />
+                                  <Crop className="h-3.5 w-3.5" />
                                 </button>
-                                {!f.visitaMediaId ? (
-                                  <span
-                                    className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
-                                    title="Imagen subida al informe, no viene de una visita"
-                                  >
-                                    Subida
-                                  </span>
-                                ) : null}
-                                <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setRecortando({ tempId: s.tempId, foto: f })
-                                    }
-                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
-                                    title="Recortar"
-                                  >
-                                    <Crop className="h-3.5 w-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      removeFotoFromSeccion(s.tempId, f.uid)
-                                    }
-                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
-                                    title="Quitar de esta sección"
-                                  >
-                                    <X className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeFotoFromSeccion(s.tempId, f.uid)
+                                  }
+                                  className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
+                                  title="Quitar de esta sección"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
                               </div>
-                            ))}
-                          </div>
-                          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-xs text-muted-foreground">
-                              {s.fotos.length} foto
-                              {s.fotos.length === 1 ? "" : "s"}
-                            </p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setAddPhotosFor(s.tempId)}
-                              disabled={isUploading}
-                            >
-                              <Plus className="mr-1 h-4 w-4" />
-                              {isUploading ? "Subiendo…" : "Agregar fotos"}
-                            </Button>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="rounded-md border-2 border-dashed border-muted-foreground/20 px-4 py-8 text-center">
-                          <p className="text-sm text-muted-foreground">
-                            {isUploading
-                              ? "Subiendo imágenes…"
-                              : "Arrastrá imágenes acá, o elegilas de las visitas."}
-                          </p>
-                          <div className="mt-2 flex justify-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setAddPhotosFor(s.tempId)}
-                              disabled={isUploading}
-                            >
-                              <Plus className="mr-1 h-4 w-4" /> Agregar fotos
-                            </Button>
-                          </div>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            );
-          })}
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs text-muted-foreground">
+                            {s.fotos.length} foto
+                            {s.fotos.length === 1 ? "" : "s"}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setAddPhotosFor(s.tempId)}
+                            disabled={isUploading}
+                          >
+                            <Plus className="mr-1 h-4 w-4" />
+                            {isUploading ? "Subiendo…" : "Agregar fotos"}
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="rounded-md border-2 border-dashed border-muted-foreground/20 px-4 py-8 text-center">
+                        <p className="text-sm text-muted-foreground">
+                          {isUploading
+                            ? "Subiendo imágenes…"
+                            : "Arrastrá imágenes acá, o elegilas de las visitas."}
+                        </p>
+                        <div className="mt-2 flex justify-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAddPhotosFor(s.tempId)}
+                            disabled={isUploading}
+                          >
+                            <Plus className="mr-1 h-4 w-4" /> Agregar fotos
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : null}
+            </div>
+          );
+        })}
 
-          {/* Buscable y con todo el catálogo: una sección puede ser de algo
+        {/* Buscable y con todo el catálogo: una sección puede ser de algo
               que estas visitas no cubrieron. Lo de las visitas va primero
               porque es lo que se elige el 90% de las veces. */}
       </div>
@@ -2053,7 +2061,11 @@ function Step3Secciones({
           onGuardado={(nueva) => {
             const donde = recortando;
             setRecortando(null);
-            reemplazarFoto(donde.tempId, donde.foto.uid, fotoDeBiblioteca(nueva));
+            reemplazarFoto(
+              donde.tempId,
+              donde.foto.uid,
+              fotoDeBiblioteca(nueva),
+            );
           }}
         />
       ) : null}
@@ -2094,7 +2106,7 @@ function PhotoPickerModal({
       toast.error(
         imagenes.length === 0
           ? "Solo se pueden agregar imágenes"
-          : "Se descartaron los archivos que no son imágenes"
+          : "Se descartaron los archivos que no son imágenes",
       );
     }
     if (imagenes.length === 0) return;
@@ -2119,177 +2131,186 @@ function PhotoPickerModal({
   const total = selected.size + subidas.length;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={onClose}
-    >
+    <>
       <div
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-lg bg-card p-4 shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-        // El drop se escucha en todo el modal: apuntarle a un recuadro chico
-        // mientras se arrastra es más trabajo del que vale.
-        onDragEnter={(e) => {
-          e.preventDefault();
-          setArrastrando((n) => n + 1);
-        }}
-        onDragOver={(e) => e.preventDefault()}
-        onDragLeave={() => setArrastrando((n) => Math.max(0, n - 1))}
-        onDrop={(e) => {
-          e.preventDefault();
-          setArrastrando(0);
-          const files = Array.from(e.dataTransfer.files ?? []);
-          if (files.length > 0) void subir(files);
-        }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        onClick={onClose}
       >
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
-            Agregar fotos {total > 0 ? `(${total})` : ""}
-          </h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
         <div
-          className={`mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border-2 border-dashed px-3 py-2.5 transition-colors ${
-            arrastrando > 0
-              ? "border-primary bg-primary/5"
-              : "border-muted-foreground/25"
-          }`}
+          className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-lg bg-card p-4 shadow-lg"
+          onClick={(e) => e.stopPropagation()}
+          // El drop se escucha en todo el modal: apuntarle a un recuadro chico
+          // mientras se arrastra es más trabajo del que vale.
+          onDragEnter={(e) => {
+            e.preventDefault();
+            setArrastrando((n) => n + 1);
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDragLeave={() => setArrastrando((n) => Math.max(0, n - 1))}
+          onDrop={(e) => {
+            e.preventDefault();
+            setArrastrando(0);
+            const files = Array.from(e.dataTransfer.files ?? []);
+            if (files.length > 0) void subir(files);
+          }}
         >
-          <p className="text-sm text-muted-foreground">
-            {subiendo
-              ? "Subiendo imágenes…"
-              : arrastrando > 0
-                ? "Soltá las imágenes acá"
-                : "Arrastrá imágenes de tu computadora, o"}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => inputRef.current?.click()}
-              disabled={subiendo}
-            >
-              <Upload className="mr-1 h-4 w-4" /> Buscar en mi computadora
-            </Button>
-            {/* Las fotos del portal viven todas en la misma biblioteca, así que
-                una que ya se subió para un producto sirve acá sin volver a
-                buscarla en el disco. */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-primary hover:bg-transparent hover:underline"
-              onClick={() => setEligiendoBiblioteca(true)}
-              disabled={subiendo}
-            >
-              Elegir de la biblioteca
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">
+              Agregar fotos {total > 0 ? `(${total})` : ""}
+            </h2>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-4 w-4" />
             </Button>
           </div>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={(e) => {
-              const files = Array.from(e.target.files ?? []);
-              e.target.value = "";
-              if (files.length > 0) void subir(files);
-            }}
-          />
-        </div>
 
-        {/* `p-1`: el anillo de "seleccionada" se dibuja *afuera* de la
+          <div
+            className={`mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border-2 border-dashed px-3 py-2.5 transition-colors ${
+              arrastrando > 0
+                ? "border-primary bg-primary/5"
+                : "border-muted-foreground/25"
+            }`}
+          >
+            <p className="text-sm text-muted-foreground">
+              {subiendo
+                ? "Subiendo imágenes…"
+                : arrastrando > 0
+                  ? "Soltá las imágenes acá"
+                  : "Arrastrá imágenes de tu computadora, o"}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => inputRef.current?.click()}
+                disabled={subiendo}
+              >
+                <Upload className="mr-1 h-4 w-4" /> Buscar en mi computadora
+              </Button>
+              {/* Las fotos del portal viven todas en la misma biblioteca, así que
+                una que ya se subió para un producto sirve acá sin volver a
+                buscarla en el disco. */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:bg-transparent hover:underline"
+                onClick={() => setEligiendoBiblioteca(true)}
+                disabled={subiendo}
+              >
+                Elegir de la biblioteca
+              </Button>
+            </div>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                e.target.value = "";
+                if (files.length > 0) void subir(files);
+              }}
+            />
+          </div>
+
+          {/* `p-1`: el anillo de "seleccionada" se dibuja *afuera* de la
             miniatura, y pegado al borde del área con scroll quedaba cortado. */}
-        <div className="flex-1 overflow-y-auto p-1">
-          {pool.length === 0 && subidas.length === 0 ? (
-            <EmptyState text="No quedan fotos de las visitas sin asignar. Podés subir las tuyas." />
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {subidas.map((f) => (
-                <div
-                  key={f.uid}
-                  className="relative aspect-square overflow-hidden rounded border ring-2 ring-primary"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={f.url}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                    Subida
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSubidas((prev) => prev.filter((x) => x.uid !== f.uid))
-                    }
-                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
-                    title="Quitar"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-              {pool.map((m) => {
-                const isSel = selected.has(m.id);
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => {
-                      setSelected((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(m.id)) next.delete(m.id);
-                        else next.add(m.id);
-                        return next;
-                      });
-                    }}
-                    className={`relative aspect-square overflow-hidden rounded border ${
-                      isSel ? "ring-2 ring-primary" : ""
-                    }`}
+          <div className="flex-1 overflow-y-auto p-1">
+            {pool.length === 0 && subidas.length === 0 ? (
+              <EmptyState text="No quedan fotos de las visitas sin asignar. Podés subir las tuyas." />
+            ) : (
+              <div className="grid grid-cols-4 gap-2">
+                {subidas.map((f) => (
+                  <div
+                    key={f.uid}
+                    className="relative aspect-square overflow-hidden rounded border ring-2 ring-primary"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={m.url}
+                      src={f.url}
                       alt=""
                       className="h-full w-full object-cover"
                     />
-                    {isSel ? (
-                      <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                        ✓
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                    <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                      Subida
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSubidas((prev) =>
+                          prev.filter((x) => x.uid !== f.uid),
+                        )
+                      }
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
+                      title="Quitar"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {pool.map((m) => {
+                  const isSel = selected.has(m.id);
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        setSelected((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(m.id)) next.delete(m.id);
+                          else next.add(m.id);
+                          return next;
+                        });
+                      }}
+                      className={`relative aspect-square overflow-hidden rounded border ${
+                        isSel ? "ring-2 ring-primary" : ""
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={m.url}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                      {isSel ? (
+                        <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                          ✓
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-        <div className="mt-3 flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button
-            disabled={total === 0 || subiendo}
-            onClick={() =>
-              onConfirm([
-                ...Array.from(selected)
-                  .map((id) => pool.find((m) => m.id === id))
-                  .filter((m): m is MediaPoolItem => Boolean(m))
-                  .map(fotoDeVisita),
-                ...subidas,
-              ])
-            }
-          >
-            Agregar {total > 0 ? `(${total})` : ""}
-          </Button>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="ghost" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button
+              disabled={total === 0 || subiendo}
+              onClick={() =>
+                onConfirm([
+                  ...Array.from(selected)
+                    .map((id) => pool.find((m) => m.id === id))
+                    .filter((m): m is MediaPoolItem => Boolean(m))
+                    .map(fotoDeVisita),
+                  ...subidas,
+                ])
+              }
+            >
+              Agregar {total > 0 ? `(${total})` : ""}
+            </Button>
+          </div>
         </div>
       </div>
 
+      {/* Fuera del fondo que cierra al clic, **a propósito**. El fondo de este
+          modal está hecho a mano y cierra con `onClick`, y el diálogo de la
+          biblioteca se dibuja en un portal: el DOM lo saca de acá, pero React
+          propaga los eventos por su propio árbol igual. Adentro, elegir una
+          foto llegaba al fondo y cerraba los dos modales sin agregar nada. */}
       {eligiendoBiblioteca && (
         <MediaLibrary
           // Las que ya se eligieron acá no se vuelven a ofrecer.
@@ -2303,7 +2324,7 @@ function PhotoPickerModal({
           }}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -2431,9 +2452,11 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-function quickRange(
-  key: "este-mes" | "mes-pasado" | "ultimos-30"
-): { label: string; from: string; to: string } {
+function quickRange(key: "este-mes" | "mes-pasado" | "ultimos-30"): {
+  label: string;
+  from: string;
+  to: string;
+} {
   const now = new Date();
   if (key === "este-mes") {
     const from = new Date(now.getFullYear(), now.getMonth(), 1);
