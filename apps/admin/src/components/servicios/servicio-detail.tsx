@@ -91,6 +91,12 @@ export function ServicioDetail({
     estado: servicio.estado,
     categoriaIds: servicio.categoriaIds,
     opciones,
+    /**
+     * El precio y el stock con los que nacen las combinaciones **nuevas**, por
+     * su nombre ("Rojo · Chica"). Viven acá y no en la tabla porque se aplican
+     * al guardar, cuando el servidor ya las creó y les dio un id.
+     */
+    nuevas: {} as Record<string, { precio: number; stock: number }>,
   };
   const [form, setForm] = useState(guardado);
 
@@ -121,7 +127,8 @@ export function ServicioDetail({
     form.categoriaIds.join() !== guardado.categoriaIds.join() ||
     // Por su forma y no por identidad: el editor rearma el arreglo en cada
     // tecla, así que comparar referencias diría "cambió" siempre.
-    JSON.stringify(form.opciones) !== JSON.stringify(guardado.opciones);
+    JSON.stringify(form.opciones) !== JSON.stringify(guardado.opciones) ||
+    Object.keys(form.nuevas).length > 0;
 
   /** Lo devuelve al catálogo. */
   const restaurar = async () => {
@@ -153,7 +160,10 @@ export function ServicioDetail({
       body: JSON.stringify({ opciones: form.opciones, descartarVariantes }),
     });
     const body = await res.json();
-    if (res.ok) return;
+    if (res.ok) {
+      await estrenarVariantes(body.variantes ?? []);
+      return;
+    }
     // 409 = el cambio borra variantes con inventario. El servidor dice cuáles
     // y con cuánto; acá solo hace falta el sí.
     if (res.status === 409 && !descartarVariantes) {
@@ -163,6 +173,50 @@ export function ServicioDetail({
       return guardarOpciones(true);
     }
     throw new Error(body.error ?? "Error al guardar las opciones");
+  };
+
+  /**
+   * Les pone el precio y el stock a las combinaciones que acaban de nacer.
+   *
+   * Se las reconoce por su nombre —"Rojo · Chica"— porque es lo único que la
+   * pantalla tenía antes de guardar: los ids recién existen ahora. Dentro de un
+   * producto los valores de un eje son únicos, así que el nombre alcanza.
+   *
+   * El stock entra como un movimiento y no como un número escrito encima: es la
+   * primera vez que hay algo, y el libro tiene que empezar diciéndolo.
+   */
+  const estrenarVariantes = async (
+    variantes: { id: string; valores: string[] }[]
+  ) => {
+    const pendientes = Object.entries(form.nuevas);
+    if (pendientes.length === 0) return;
+
+    const porNombre = new Map(
+      variantes.map((v) => [v.valores.join(" · "), v.id])
+    );
+    for (const [nombre, valores] of pendientes) {
+      const id = porNombre.get(nombre);
+      if (!id) continue;
+      if (valores.precio > 0) {
+        await fetch(`/api/variantes/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ precio: valores.precio }),
+        });
+      }
+      if (valores.stock > 0) {
+        await fetch(`/api/variantes/${id}/movimientos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            motivo: "INGRESO",
+            cantidad: valores.stock,
+            nota: "Stock inicial",
+          }),
+        });
+      }
+    }
+    setForm((f) => ({ ...f, nuevas: {} }));
   };
 
   const guardar = async () => {
@@ -190,7 +244,10 @@ export function ServicioDetail({
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "Error al guardar el producto");
       }
-      if (JSON.stringify(form.opciones) !== JSON.stringify(opciones)) {
+      if (
+        JSON.stringify(form.opciones) !== JSON.stringify(opciones) ||
+        Object.keys(form.nuevas).length > 0
+      ) {
         await guardarOpciones();
       }
       toast.success("Producto actualizado");
@@ -332,6 +389,8 @@ export function ServicioDetail({
               productoNombre={form.nombre}
               opciones={form.opciones}
               onOpcionesChange={(o) => setForm({ ...form, opciones: o })}
+              nuevas={form.nuevas}
+              onNuevasChange={(n) => setForm({ ...form, nuevas: n })}
               variantes={filas}
               imagenes={galeria}
               onVariantesChange={setFilas}

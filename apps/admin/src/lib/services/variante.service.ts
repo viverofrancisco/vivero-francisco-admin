@@ -382,7 +382,34 @@ async function regenerarVariantes(
     });
   }
 
-  return tx.variante.count({ where: { productoId } });
+  /**
+   * Las variantes que quedaron, con sus valores.
+   *
+   * No alcanza con cuántas son: quien acaba de agregar un eje puso precios y
+   * stock a las combinaciones nuevas, y necesita saber **qué id** le tocó a
+   * cada una para poder mandárselos. Devolverlo acá evita una segunda consulta
+   * inmediatamente después.
+   */
+  const filas = await tx.variante.findMany({
+    where: { productoId },
+    orderBy: { posicion: "asc" },
+    select: {
+      id: true,
+      valores: {
+        select: {
+          valor: {
+            select: { valor: true, opcion: { select: { posicion: true } } },
+          },
+        },
+      },
+    },
+  });
+  return filas.map((v) => ({
+    id: v.id,
+    valores: [...v.valores]
+      .sort((a, b) => a.valor.opcion.posicion - b.valor.opcion.posicion)
+      .map((x) => x.valor.valor),
+  }));
 }
 
 /**

@@ -25,10 +25,13 @@ export async function PUT(
     );
   }
   try {
+    // Devuelve las variantes que quedaron, con sus valores: quien acaba de
+    // agregar un eje les puso precio y stock, y necesita saber qué id le tocó
+    // a cada combinación para poder mandárselos.
     const variantes = await guardarOpciones(viewer, id, parsed.data.opciones, {
       descartarVariantes: parsed.data.descartarVariantes,
     });
-    return NextResponse.json({ variantes });
+    return NextResponse.json({ variantes, total: variantes.length });
   } catch (error) {
     return serviceErrorResponse(error);
   }

@@ -76,8 +76,24 @@ marcarla como nueva. Un valor recién tipeado no tiene id, así que su combinaci
 es nueva por definición. Un eje a medio escribir —sin nombre o sin valores— se
 ignora hasta que tenga los dos.
 
-Una fila que todavía no existe se muestra sin precio ni stock: no hay a qué
-variante mandárselos hasta que el servidor la cree.
+A una fila que todavía no existe **se le puede escribir el precio y el stock
+igual**: quedan pendientes y se aplican en cuanto el servidor la crea. Lo
+contrario obligaba a guardar, buscar la variante y volver a entrar para ponerle
+un número que ya se sabía.
+
+Se las reconoce después por su **nombre** —"Rojo · Chica"— porque es lo único
+que la pantalla tenía antes de guardar: los ids recién existen ahora. Dentro de
+un producto los valores de un eje son únicos, así que el nombre alcanza; por eso
+`PUT …/opciones` devuelve las variantes con sus valores y no solo cuántas son.
+
+El stock inicial entra como un **movimiento** `INGRESO` con la nota "Stock
+inicial", no como un número escrito encima del saldo: es la primera vez que hay
+algo, y el libro tiene que empezar diciéndolo.
+
+Nótese la asimetría con las filas que ya existen, donde el precio y el stock se
+guardan al toque. Es a propósito: cambiar el stock de algo que existe **es un
+movimiento** y necesita decir qué pasó —de ahí el popover—, mientras que el
+primer número de una variante recién nacida es simplemente dónde empieza.
 
 ### Guardar los ejes es un reemplazo, no un parche
 

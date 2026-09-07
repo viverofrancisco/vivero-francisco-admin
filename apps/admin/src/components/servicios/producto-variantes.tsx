@@ -142,6 +142,17 @@ function combinar(
   });
 }
 
+/**
+ * La clave de una combinación: sus valores unidos, en el orden de los ejes.
+ *
+ * Es lo único que la pantalla tiene antes de guardar —los ids recién existen
+ * después— y alcanza porque dentro de un producto los valores de un eje son
+ * únicos.
+ */
+function nombreDeFila(f: FilaPreview): string {
+  return f.valores.map((v) => v.valor).join(" · ");
+}
+
 /** Cómo se lee una variante: "Rojo · Grande", o el producto si no tiene ejes. */
 export function nombreVariante(
   v: { valores: { valor: string }[] },
@@ -169,6 +180,8 @@ export function ProductoVariantes({
   productoNombre,
   opciones,
   onOpcionesChange,
+  nuevas,
+  onNuevasChange,
   variantes: variantesIniciales,
   imagenes,
   onVariantesChange,
@@ -181,6 +194,12 @@ export function ProductoVariantes({
    */
   opciones: OpcionEditable[];
   onOpcionesChange: (o: OpcionEditable[]) => void;
+  /**
+   * El precio y el stock con los que van a nacer las combinaciones nuevas, por
+   * su nombre. Se aplican al guardar, cuando el servidor ya les dio un id.
+   */
+  nuevas: Record<string, { precio: number; stock: number }>;
+  onNuevasChange: (n: Record<string, { precio: number; stock: number }>) => void;
   variantes: VarianteFila[];
   imagenes: ImagenProducto[];
   /** Para que la card de Inventario siga en acuerdo con la variante única. */
@@ -266,7 +285,7 @@ export function ProductoVariantes({
   );
 
   /** Cuántas van a nacer al guardar. */
-  const nuevas = filas.filter((f) => f.variante === null).length;
+  const porNacer = filas.filter((f) => f.variante === null).length;
 
   /** El total, contando solo lo que se cuenta. `null` = nada lleva inventario. */
   const total = useMemo(() => {
@@ -456,6 +475,13 @@ export function ProductoVariantes({
                                   productoNombre={productoNombre}
                                   imagenes={imagenes}
                                   sangrada
+                                  pendiente={nuevas[nombreDeFila(f)]}
+                                  onPendiente={(v) =>
+                                    onNuevasChange({
+                                      ...nuevas,
+                                      [nombreDeFila(f)]: v,
+                                    })
+                                  }
                                   onPrecio={(precio) =>
                                     f.variante && guardarPrecio(f.variante.id, precio)
                                   }
@@ -478,6 +504,10 @@ export function ProductoVariantes({
                         productoId={productoId}
                         productoNombre={productoNombre}
                         imagenes={imagenes}
+                        pendiente={nuevas[nombreDeFila(f)]}
+                        onPendiente={(v) =>
+                          onNuevasChange({ ...nuevas, [nombreDeFila(f)]: v })
+                        }
                         onPrecio={(precio) =>
                           f.variante && guardarPrecio(f.variante.id, precio)
                         }
@@ -494,8 +524,8 @@ export function ProductoVariantes({
                 {total === null
                   ? "Ninguna de estas variantes lleva inventario."
                   : `Inventario total: ${total} disponible${total === 1 ? "" : "s"}.`}
-                {nuevas > 0 &&
-                  ` ${nuevas} ${nuevas === 1 ? "variante nueva se crea" : "variantes nuevas se crean"} al guardar.`}
+                {porNacer > 0 &&
+                  ` ${porNacer} ${porNacer === 1 ? "variante nueva se crea" : "variantes nuevas se crean"} al guardar.`}
               </p>
             </>
           )}
@@ -519,6 +549,8 @@ function FilaVariante({
   productoNombre,
   imagenes,
   sangrada,
+  pendiente,
+  onPendiente,
   onPrecio,
   onMover,
 }: {
@@ -527,6 +559,9 @@ function FilaVariante({
   productoNombre: string;
   imagenes: ImagenProducto[];
   sangrada?: boolean;
+  /** Con qué precio y stock nace, si todavía no existe. */
+  pendiente?: { precio: number; stock: number };
+  onPendiente: (v: { precio: number; stock: number }) => void;
   onPrecio: (precio: number) => void;
   onMover: (m: {
     motivo: "CONTEO" | "AJUSTE" | "INGRESO";
@@ -646,13 +681,44 @@ function FilaVariante({
           )}
         </>
       ) : (
+        /* Todavía no existe, pero su precio y su stock se pueden dejar
+           escritos: se aplican en cuanto el servidor la crea. Lo contrario
+           obligaba a guardar, buscarla y volver a entrar para ponerle un
+           número que ya se sabía. */
         <>
-          <span className="w-24 flex-none text-right text-sm text-muted-foreground">
-            —
-          </span>
-          <span className="w-20 flex-none text-right text-sm text-muted-foreground">
-            —
-          </span>
+          <div className="relative w-24 flex-none">
+            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+              $
+            </span>
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={pendiente?.precio ?? 0}
+              aria-label={`Precio de ${nombre}`}
+              className="h-8 pl-5 text-right text-sm tabular-nums"
+              onChange={(e) =>
+                onPendiente({
+                  precio: Math.max(0, Number(e.target.value) || 0),
+                  stock: pendiente?.stock ?? 0,
+                })
+              }
+            />
+          </div>
+          <Input
+            type="number"
+            min="0"
+            step="1"
+            value={pendiente?.stock ?? 0}
+            aria-label={`Stock inicial de ${nombre}`}
+            className="h-8 w-20 flex-none text-right text-sm tabular-nums"
+            onChange={(e) =>
+              onPendiente({
+                precio: pendiente?.precio ?? 0,
+                stock: Math.max(0, Math.trunc(Number(e.target.value) || 0)),
+              })
+            }
+          />
         </>
       )}
     </div>
