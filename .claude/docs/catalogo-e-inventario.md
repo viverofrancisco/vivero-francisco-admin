@@ -293,6 +293,14 @@ Un rectángulo que se pasa de los bordes **se acota** en vez de tirar: es lo que
 quiso decir quien lo mandó, y `sharp` responde con un error que no le explica
 nada a nadie.
 
+**El círculo es una forma más del selector**, no un interruptor aparte: obliga a
+un recuadro cuadrado —el redondo se inscribe en él— así que separarlo de la
+proporción dejaba elegir "16:9 y redondo", que no quiere decir nada. Sale **PNG**
+aunque el original sea JPEG, porque necesita transparencia: un JPEG "redondo"
+traería las esquinas en negro. El radio es la mitad del lado más corto, y en
+pantalla eso es un `radial-gradient(circle closest-side, …)` que apaga las
+esquinas — el mismo círculo que compone `sharp`.
+
 El recorte se llama "foto (recorte).jpg", y "(recorte 2)" si ese nombre ya está.
 Sin el número, dos encuadres del mismo archivo quedaban con el mismo nombre —
 justo en la pantalla donde hay que elegir entre ellos. Recortar un recorte no
