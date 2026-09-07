@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { viewerFromSession } from "@/lib/auth-helpers";
 import {
   agregarImagenes,
+  fijarImagenes,
   listarImagenes,
   reordenarImagenes,
 } from "@/lib/services/producto-imagen.service";
 import {
   agregarImagenesSchema,
+  fijarImagenesSchema,
   reordenarImagenesSchema,
 } from "@/lib/validations/producto";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
@@ -31,6 +33,32 @@ export async function GET(
  * Subir un archivo es otra cosa y vive en `/api/media`: acá solo se dice cuál
  * de las que ya existen usa este producto.
  */
+/**
+ * La galería entera, tal como quedó en pantalla.
+ *
+ * Un solo pedido con la lista completa en vez de uno por cada agregar, sacar o
+ * reordenar: así los cambios se guardan con la barra del header, junto con el
+ * resto de la ficha, y se puede descartar todo de una.
+ */
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const viewer = await viewerFromSession();
+  const { id } = await params;
+  const parsed = fijarImagenesSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
+  }
+  try {
+    return NextResponse.json({
+      imagenes: await fijarImagenes(viewer, id, parsed.data.imagenes),
+    });
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

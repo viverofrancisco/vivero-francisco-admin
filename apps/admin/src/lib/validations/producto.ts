@@ -106,3 +106,21 @@ export const agregarImagenesSchema = z.object({
 export const reordenarImagenesSchema = z.object({
   ids: z.array(z.string().min(1)).min(1),
 });
+
+/**
+ * La galería entera: qué fotos y en qué orden.
+ *
+ * Cada una lleva su `id` de fila cuando ya existe, para que el servidor pueda
+ * conservarla —y con ella el vínculo de la variante que la eligió— en vez de
+ * borrar y recrear.
+ */
+export const fijarImagenesSchema = z.object({
+  imagenes: z
+    .array(
+      z.object({
+        id: z.string().min(1).nullable().optional(),
+        mediaId: z.string().min(1),
+      })
+    )
+    .max(50),
+});

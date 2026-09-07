@@ -75,7 +75,7 @@ export function ServicioDetail({
    * de estas fotos, así que subir una tiene que aparecer en el selector de al
    * lado sin recargar.
    */
-  const [galeria, setGaleria] = useState(imagenes);
+
   const [filas, setFilas] = useState(variantes);
 
   /**
@@ -87,6 +87,11 @@ export function ServicioDetail({
    */
   const guardado = {
     nombre: servicio.nombre,
+    /**
+     * Las fotos, en orden. Van en el formulario como todo lo demás: agregar,
+     * sacar, reordenar y recortar quedan pendientes hasta que alguien guarda.
+     */
+    imagenes,
     descripcion: servicio.descripcion ?? "",
     estado: servicio.estado,
     categoriaIds: servicio.categoriaIds,
@@ -136,6 +141,10 @@ export function ServicioDetail({
     form.descripcion !== guardado.descripcion ||
     form.estado !== guardado.estado ||
     form.categoriaIds.join() !== guardado.categoriaIds.join() ||
+    // Por id de fila **y** por archivo: mover una es un cambio, y recortarla
+    // deja la fila donde está pero apuntando a otra imagen.
+    form.imagenes.map((i) => `${i.id}:${i.mediaId}`).join() !==
+      guardado.imagenes.map((i) => `${i.id}:${i.mediaId}`).join() ||
     // Por su forma y no por identidad: el editor rearma el arreglo en cada
     // tecla, así que comparar referencias diría "cambió" siempre.
     JSON.stringify(form.opciones) !== JSON.stringify(guardado.opciones) ||
@@ -243,6 +252,35 @@ export function ServicioDetail({
    * al libro con su motivo. Por eso se guardan por caminos distintos aunque en
    * la pantalla se hayan tocado en la misma fila.
    */
+  /**
+   * La galería entera, en un solo pedido.
+   *
+   * Se manda la lista con el id de cada fila para que el servidor conserve las
+   * que siguen —y con ellas la foto que cada variante había elegido— en vez de
+   * borrar y recrear.
+   */
+  const guardarGaleria = async () => {
+    const igual =
+      form.imagenes.map((i) => `${i.id}:${i.mediaId}`).join() ===
+      imagenes.map((i) => `${i.id}:${i.mediaId}`).join();
+    if (igual) return;
+    const res = await fetch(`/api/servicios/${servicio.id}/imagenes`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        // Las agregadas todavía no tienen fila: van sin id y el servidor la
+        // crea. Se reconocen porque su id es el de la media.
+        imagenes: form.imagenes.map((i) => ({
+          id: i.id === i.mediaId ? null : i.id,
+          mediaId: i.mediaId,
+        })),
+      }),
+    });
+    if (!res.ok) {
+      throw new Error((await res.json()).error ?? "Error con las fotos");
+    }
+  };
+
   const guardarCambiosDeVariantes = async () => {
     for (const [id, sku] of Object.entries(form.skus)) {
       const r = await fetch(`/api/variantes/${id}`, {
@@ -311,6 +349,7 @@ export function ServicioDetail({
       ) {
         await guardarOpciones();
       }
+      await guardarGaleria();
       await guardarCambiosDeVariantes();
       toast.success("Producto actualizado");
       // El servidor es el que dice qué quedó guardado: `router.refresh()` trae
@@ -408,10 +447,11 @@ export function ServicioDetail({
             </CardContent>
           </Card>
 
+          {/* Los cambios de la galería viajan al formulario y se guardan con
+              la barra de arriba, como todo lo demás de la ficha. */}
           <ProductoImagenes
-            productoId={servicio.id}
-            imagenes={galeria}
-            onCambio={setGaleria}
+            imagenes={form.imagenes}
+            onCambio={(imagenes) => setForm({ ...form, imagenes })}
           />
 
           {/* Debajo de las fotos, como en Shopify: primero qué es y cómo se
@@ -444,7 +484,7 @@ export function ServicioDetail({
               movimientos={form.movimientos}
               onMovimientosChange={(m) => setForm({ ...form, movimientos: m })}
               variantes={filas}
-              imagenes={galeria}
+              imagenes={form.imagenes}
             />
           )}
         </div>

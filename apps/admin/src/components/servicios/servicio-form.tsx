@@ -396,7 +396,6 @@ export function ServicioForm({
               reordenar, recortar y sacar quedan en el formulario y se guardan
               con el resto. */}
           <ProductoImagenes
-            productoId={null}
             imagenes={form.imagenes}
             onCambio={(imagenes) => setForm({ ...form, imagenes })}
           />
