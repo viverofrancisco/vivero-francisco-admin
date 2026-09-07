@@ -97,6 +97,16 @@ export function ServicioDetail({
      * al guardar, cuando el servidor ya las creó y les dio un id.
      */
     nuevas: {} as Record<string, { precio: number; stock: number }>,
+    /** Precios cambiados en la tabla, por variante. */
+    precios: {} as Record<string, number>,
+    /**
+     * Movimientos de stock sin guardar, uno por variante. Uno solo: dos sobre
+     * la misma variante antes de guardar no se acumulan.
+     */
+    movimientos: {} as Record<
+      string,
+      { motivo: "CONTEO" | "AJUSTE" | "INGRESO"; valor: number; nota: string | null }
+    >,
   };
   const [form, setForm] = useState(guardado);
 
@@ -128,7 +138,9 @@ export function ServicioDetail({
     // Por su forma y no por identidad: el editor rearma el arreglo en cada
     // tecla, así que comparar referencias diría "cambió" siempre.
     JSON.stringify(form.opciones) !== JSON.stringify(guardado.opciones) ||
-    Object.keys(form.nuevas).length > 0;
+    Object.keys(form.nuevas).length > 0 ||
+    Object.keys(form.precios).length > 0 ||
+    Object.keys(form.movimientos).length > 0;
 
   /** Lo devuelve al catálogo. */
   const restaurar = async () => {
@@ -219,6 +231,41 @@ export function ServicioDetail({
     setForm((f) => ({ ...f, nuevas: {} }));
   };
 
+  /**
+   * Aplica lo que se escribió sobre variantes que **ya existen**.
+   *
+   * El precio es un valor y va por `PATCH`; el stock es un **movimiento** y va
+   * al libro con su motivo. Por eso se guardan por caminos distintos aunque en
+   * la pantalla se hayan tocado en la misma fila.
+   */
+  const guardarCambiosDeVariantes = async () => {
+    for (const [id, precio] of Object.entries(form.precios)) {
+      const r = await fetch(`/api/variantes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ precio }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error ?? "Error con un precio");
+    }
+    for (const [id, m] of Object.entries(form.movimientos)) {
+      const r = await fetch(`/api/variantes/${id}/movimientos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          m.motivo === "CONTEO"
+            ? { motivo: m.motivo, contado: m.valor, nota: m.nota }
+            : {
+                motivo: m.motivo,
+                cantidad: m.motivo === "INGRESO" ? Math.abs(m.valor) : m.valor,
+                nota: m.nota,
+              }
+        ),
+      });
+      if (!r.ok) throw new Error((await r.json()).error ?? "Error con el stock");
+    }
+    setForm((f) => ({ ...f, precios: {}, movimientos: {} }));
+  };
+
   const guardar = async () => {
     if (!form.nombre.trim()) {
       toast.error("El nombre es obligatorio");
@@ -250,6 +297,7 @@ export function ServicioDetail({
       ) {
         await guardarOpciones();
       }
+      await guardarCambiosDeVariantes();
       toast.success("Producto actualizado");
       // El servidor es el que dice qué quedó guardado: `router.refresh()` trae
       // la ficha de nuevo y `guardado` vuelve a coincidir con el formulario.
@@ -391,9 +439,12 @@ export function ServicioDetail({
               onOpcionesChange={(o) => setForm({ ...form, opciones: o })}
               nuevas={form.nuevas}
               onNuevasChange={(n) => setForm({ ...form, nuevas: n })}
+              precios={form.precios}
+              onPreciosChange={(p) => setForm({ ...form, precios: p })}
+              movimientos={form.movimientos}
+              onMovimientosChange={(m) => setForm({ ...form, movimientos: m })}
               variantes={filas}
               imagenes={galeria}
-              onVariantesChange={setFilas}
             />
           )}
         </div>

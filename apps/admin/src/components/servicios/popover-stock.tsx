@@ -13,9 +13,16 @@ import { Check, Loader2, StickyNote } from "lucide-react";
 
 type Motivo = "CONTEO" | "AJUSTE" | "INGRESO";
 
+/** Cómo se lee un movimiento que todavía no se guardó. */
+function textoPendiente(p: { motivo: Motivo; valor: number }): string {
+  if (p.motivo === "CONTEO") return `poner en ${p.valor}`;
+  if (p.motivo === "INGRESO") return `entran ${Math.abs(p.valor)}`;
+  return `${p.valor > 0 ? "+" : ""}${p.valor}`;
+}
+
 const MOTIVOS: { valor: Motivo; etiqueta: string }[] = [
   { valor: "CONTEO", etiqueta: "Poner en" },
-  { valor: "AJUSTE", etiqueta: "Sumar" },
+  { valor: "AJUSTE", etiqueta: "Sumar o restar" },
   { valor: "INGRESO", etiqueta: "Entró" },
 ];
 
@@ -33,11 +40,22 @@ const MOTIVOS: { valor: Motivo; etiqueta: string }[] = [
 export function PopoverStock({
   stock,
   permiteNegativo,
+  pendiente,
   onMover,
   children,
 }: {
+  /** Lo que hay **guardado**, no lo proyectado. */
   stock: number;
   permiteNegativo: boolean;
+  /**
+   * El movimiento que ya estaba sin guardar, si lo hay.
+   *
+   * Se muestra y **se reemplaza**: dos movimientos sobre la misma variante
+   * antes de guardar no se acumulan. Apilarlos obligaría a explicar de qué
+   * número parte cada uno, y la respuesta útil —"va a quedar en 12"— ya está a
+   * la vista en la fila.
+   */
+  pendiente?: { motivo: Motivo; valor: number; nota: string | null };
   /** Devuelve el saldo nuevo. El popover se cierra si no tira. */
   onMover: (m: { motivo: Motivo; valor: number; nota: string | null }) => Promise<void>;
   /** El número, o lo que se toque para abrirlo. */
@@ -89,8 +107,20 @@ export function PopoverStock({
   return (
     <Popover open={abierto} onOpenChange={(v) => (v ? setAbierto(true) : cerrar())}>
       <PopoverTrigger render={children as React.ReactElement} />
-      <PopoverContent align="end" className="w-auto p-2">
+      {/* Ancho fijo y no `w-auto`: con el ancho del contenido, los tres
+          rótulos de arriba se repartían lo que sobraba de la fila de abajo y
+          terminaban partidos en dos renglones. */}
+      <PopoverContent align="end" className="w-80 p-2">
         <div className="space-y-2">
+          <p className="px-1 text-xs text-muted-foreground">
+            Ahora hay <span className="font-medium text-foreground">{stock}</span>
+            {pendiente && (
+              <span className="text-amber-700">
+                {" "}
+                · sin guardar: {textoPendiente(pendiente)}
+              </span>
+            )}
+          </p>
           {/* Tres botones y no un desplegable. Con tres opciones el
               desplegable cuesta dos clics para mostrar lo mismo — y el nuestro
               se dibuja en un portal, así que el popover lo tomaba por un clic
@@ -107,7 +137,7 @@ export function PopoverStock({
                 role="radio"
                 aria-checked={motivo === m.valor}
                 onClick={() => setMotivo(m.valor)}
-                className={`flex-1 rounded px-2 py-1 text-xs transition-colors ${
+                className={`flex-1 whitespace-nowrap rounded px-2 py-1 text-xs transition-colors ${
                   motivo === m.valor
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:bg-muted"
@@ -131,7 +161,7 @@ export function PopoverStock({
                 }
               }}
               placeholder={motivo === "AJUSTE" ? "-2" : String(stock)}
-              className="w-24 text-right tabular-nums"
+              className="flex-1 text-right tabular-nums"
               autoFocus
             />
             {/* La nota se pide solo si alguien la quiere: la mayoría de los

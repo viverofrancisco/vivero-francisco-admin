@@ -2,8 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -33,6 +31,28 @@ export interface OpcionEditable {
   id: string | null;
   nombre: string;
   valores: { id: string | null; valor: string }[];
+}
+
+export interface MovimientoPendiente {
+  motivo: "CONTEO" | "AJUSTE" | "INGRESO";
+  valor: number;
+  nota: string | null;
+}
+
+/**
+ * En cuánto queda el stock si se guarda el movimiento pendiente.
+ *
+ * Es lo que muestra la fila: la pregunta que alguien se hace después de escribir
+ * "sumar −3" es "¿en cuánto queda?", no "¿cuánto resté?".
+ */
+export function stockProyectado(
+  stock: number,
+  m: MovimientoPendiente | undefined
+): number {
+  if (!m) return stock;
+  if (m.motivo === "CONTEO") return m.valor;
+  if (m.motivo === "INGRESO") return stock + Math.abs(m.valor);
+  return stock + m.valor;
 }
 
 export interface VarianteFila {
@@ -182,9 +202,12 @@ export function ProductoVariantes({
   onOpcionesChange,
   nuevas,
   onNuevasChange,
+  precios,
+  onPreciosChange,
+  movimientos,
+  onMovimientosChange,
   variantes: variantesIniciales,
   imagenes,
-  onVariantesChange,
 }: {
   productoId: string;
   productoNombre: string;
@@ -200,75 +223,23 @@ export function ProductoVariantes({
    */
   nuevas: Record<string, { precio: number; stock: number }>;
   onNuevasChange: (n: Record<string, { precio: number; stock: number }>) => void;
+  /** Precios cambiados y todavía sin guardar, por variante. */
+  precios: Record<string, number>;
+  onPreciosChange: (p: Record<string, number>) => void;
+  /** Movimientos de stock sin guardar, uno por variante. */
+  movimientos: Record<string, MovimientoPendiente>;
+  onMovimientosChange: (m: Record<string, MovimientoPendiente>) => void;
   variantes: VarianteFila[];
   imagenes: ImagenProducto[];
-  /** Para que la card de Inventario siga en acuerdo con la variante única. */
-  onVariantesChange?: (v: VarianteFila[]) => void;
 }) {
-  const router = useRouter();
   /** Qué opción está desplegada. `null` = todas plegadas. */
   const [abierta, setAbierta] = useState<number | null>(null);
-  const [variantes, setVariantes] = useState(variantesIniciales);
   /** Por qué eje se agrupa. Solo con dos o más: con uno no hay nada que juntar. */
   const [agruparPor, setAgruparPor] = useState(0);
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set());
-
-  const aplicar = (v: VarianteFila[]) => {
-    setVariantes(v);
-    onVariantesChange?.(v);
-  };
-
-  /** El precio de lista de una variante, desde la tabla. */
-  const guardarPrecio = async (id: string, precio: number) => {
-    const previas = variantes;
-    aplicar(variantes.map((x) => (x.id === id ? { ...x, precio } : x)));
-    try {
-      const res = await fetch(`/api/variantes/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ precio }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Error");
-    } catch (e) {
-      aplicar(previas);
-      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
-    }
-  };
-
-  /**
-   * Un movimiento de stock desde la tabla.
-   *
-   * `CONTEO` manda **cuánto hay** y el servidor saca la diferencia; los otros
-   * mandan cuánto se movió. Son dos preguntas distintas y por eso el popover
-   * las separa: quien cuenta el estante no sabe qué decía el sistema.
-   */
-  const mover = async (
-    id: string,
-    m: { motivo: "CONTEO" | "AJUSTE" | "INGRESO"; valor: number; nota: string | null }
-  ) => {
-    const res = await fetch(`/api/variantes/${id}/movimientos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(
-        m.motivo === "CONTEO"
-          ? { motivo: m.motivo, contado: m.valor, nota: m.nota }
-          : {
-              motivo: m.motivo,
-              cantidad: m.motivo === "INGRESO" ? Math.abs(m.valor) : m.valor,
-              nota: m.nota,
-            }
-      ),
-    });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.error ?? "Error");
-    // Un conteo que da lo mismo no mueve nada y el servidor devuelve `null`.
-    const saldo = body.movimiento?.saldo;
-    if (saldo !== undefined) {
-      aplicar(variantes.map((x) => (x.id === id ? { ...x, stock: saldo } : x)));
-    }
-    router.refresh();
-  };
+  // Las variantes vienen del servidor y ya no se tocan desde acá: lo que se
+  // escribe queda pendiente en el formulario hasta que alguien guarda.
+  const variantes = variantesIniciales;
 
   const hayEjes = opciones.length > 0;
 
@@ -482,13 +453,27 @@ export function ProductoVariantes({
                                       [nombreDeFila(f)]: v,
                                     })
                                   }
+                                  precioPendiente={
+                                    f.variante ? precios[f.variante.id] : undefined
+                                  }
+                                  movimientoPendiente={
+                                    f.variante
+                                      ? movimientos[f.variante.id]
+                                      : undefined
+                                  }
                                   onPrecio={(precio) =>
-                                    f.variante && guardarPrecio(f.variante.id, precio)
+                                    f.variante &&
+                                    onPreciosChange({
+                                      ...precios,
+                                      [f.variante.id]: precio,
+                                    })
                                   }
                                   onMover={(m) =>
-                                    f.variante
-                                      ? mover(f.variante.id, m)
-                                      : Promise.resolve()
+                                    f.variante &&
+                                    onMovimientosChange({
+                                      ...movimientos,
+                                      [f.variante.id]: m,
+                                    })
                                   }
                                 />
                               ))}
@@ -508,11 +493,22 @@ export function ProductoVariantes({
                         onPendiente={(v) =>
                           onNuevasChange({ ...nuevas, [nombreDeFila(f)]: v })
                         }
+                        precioPendiente={
+                          f.variante ? precios[f.variante.id] : undefined
+                        }
+                        movimientoPendiente={
+                          f.variante ? movimientos[f.variante.id] : undefined
+                        }
                         onPrecio={(precio) =>
-                          f.variante && guardarPrecio(f.variante.id, precio)
+                          f.variante &&
+                          onPreciosChange({ ...precios, [f.variante.id]: precio })
                         }
                         onMover={(m) =>
-                          f.variante ? mover(f.variante.id, m) : Promise.resolve()
+                          f.variante &&
+                          onMovimientosChange({
+                            ...movimientos,
+                            [f.variante.id]: m,
+                          })
                         }
                       />
                     ))}
@@ -551,6 +547,8 @@ function FilaVariante({
   sangrada,
   pendiente,
   onPendiente,
+  precioPendiente,
+  movimientoPendiente,
   onPrecio,
   onMover,
 }: {
@@ -562,12 +560,11 @@ function FilaVariante({
   /** Con qué precio y stock nace, si todavía no existe. */
   pendiente?: { precio: number; stock: number };
   onPendiente: (v: { precio: number; stock: number }) => void;
+  /** Lo escrito sobre una variante que sí existe, todavía sin guardar. */
+  precioPendiente?: number;
+  movimientoPendiente?: MovimientoPendiente;
   onPrecio: (precio: number) => void;
-  onMover: (m: {
-    motivo: "CONTEO" | "AJUSTE" | "INGRESO";
-    valor: number;
-    nota: string | null;
-  }) => Promise<void>;
+  onMover: (m: MovimientoPendiente) => void;
 }) {
   const from = useAca();
   const variante = fila.variante;
@@ -632,26 +629,26 @@ function FilaVariante({
             <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
               $
             </span>
+            {/* Lo escrito no se guarda solo: va a la barra del header con el
+                resto de la ficha. */}
             <Input
               type="number"
               min="0"
               step="0.01"
-              defaultValue={variante.precio}
+              value={precioPendiente ?? variante.precio}
               aria-label={`Precio de ${nombre}`}
               className={`h-8 pl-5 text-right text-sm tabular-nums ${
-                variante.precio === 0 ? "text-amber-700" : ""
+                precioPendiente !== undefined
+                  ? "border-amber-400"
+                  : variante.precio === 0
+                    ? "text-amber-700"
+                    : ""
               }`}
-              onBlur={(e) => {
+              onChange={(e) => {
                 const texto = e.target.value.trim();
                 const nuevo = Number(texto);
-                // Vaciar no es "gratis": repone lo que decía. Marcar algo como
-                // gratis es una decisión; borrar un número mientras se
-                // reescribe, no.
-                if (texto === "" || !Number.isFinite(nuevo) || nuevo < 0) {
-                  e.target.value = String(variante.precio);
-                  return;
-                }
-                if (nuevo !== variante.precio) onPrecio(nuevo);
+                if (texto === "" || !Number.isFinite(nuevo) || nuevo < 0) return;
+                onPrecio(nuevo);
               }}
             />
           </div>
@@ -659,16 +656,24 @@ function FilaVariante({
             <PopoverStock
               stock={variante.stock}
               permiteNegativo={variante.permiteNegativo}
-              onMover={onMover}
+              pendiente={movimientoPendiente}
+              onMover={async (m) => onMover(m)}
             >
+              {/* El número que se ve es **el que va a quedar**: la pregunta
+                  después de escribir "sumar −3" es en cuánto queda, no cuánto
+                  se restó. En ámbar mientras no esté guardado. */}
               <button
                 type="button"
                 aria-label={`Stock de ${nombre}`}
                 className={`w-20 flex-none rounded-md border px-2 py-1 text-right text-sm tabular-nums hover:bg-muted ${
-                  variante.stock <= 0 ? "font-medium text-amber-700" : ""
+                  movimientoPendiente
+                    ? "border-amber-400 font-medium text-amber-700"
+                    : variante.stock <= 0
+                      ? "font-medium text-amber-700"
+                      : ""
                 }`}
               >
-                {variante.stock}
+                {stockProyectado(variante.stock, movimientoPendiente)}
               </button>
             </PopoverStock>
           ) : (

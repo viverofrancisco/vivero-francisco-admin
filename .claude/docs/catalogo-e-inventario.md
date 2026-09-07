@@ -90,10 +90,19 @@ El stock inicial entra como un **movimiento** `INGRESO` con la nota "Stock
 inicial", no como un número escrito encima del saldo: es la primera vez que hay
 algo, y el libro tiene que empezar diciéndolo.
 
-Nótese la asimetría con las filas que ya existen, donde el precio y el stock se
-guardan al toque. Es a propósito: cambiar el stock de algo que existe **es un
-movimiento** y necesita decir qué pasó —de ahí el popover—, mientras que el
-primer número de una variante recién nacida es simplemente dónde empieza.
+**Nada de esto se guarda solo.** Precio y stock —de las variantes que existen y
+de las que van a nacer— esperan la barra del header, como el resto de la ficha.
+El stock sigue pasando por el popover porque lo que queda pendiente no es un
+número sino un **movimiento**: qué pasó, cuánto y por qué. La fila muestra
+mientras tanto **en cuánto va a quedar**, en ámbar: la pregunta después de
+escribir "sumar −3" es en cuánto queda, no cuánto se restó.
+
+Hay **un movimiento pendiente por variante**, y volver a abrir el popover lo
+reemplaza en vez de acumularlo. Apilarlos obligaría a explicar de qué número
+parte cada uno, y la respuesta útil ya está a la vista en la fila.
+
+Al guardar, cada cosa va por su camino: el precio es un valor y va por `PATCH`;
+el stock es un movimiento y va al libro con su motivo.
 
 ### Guardar los ejes es un reemplazo, no un parche
 
