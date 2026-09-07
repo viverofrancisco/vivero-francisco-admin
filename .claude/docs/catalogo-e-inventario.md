@@ -40,6 +40,19 @@ unidos por `·`, y hay un único `[productoId, combinacion]`. Sin esa columna,
 "un producto no puede tener dos variantes con los mismos valores" no se puede
 expresar en SQL: la tabla puente sola no alcanza. Vacía en la variante única.
 
+### Los ejes se editan en el lugar
+
+Cada uno se muestra plegado a su resumen —nombre y valores— y se abre el que se
+toca, ahí mismo, como en Shopify. Un diálogo para cambiar una palabra tapaba la
+lista de variantes, que es justo lo que hay que mirar para saber si el cambio es
+el que se quería.
+
+*Listo* **guarda**, a diferencia del resto de la ficha, que espera la barra del
+header: agregar un valor cambia *cuántas variantes hay*, y eso es una operación
+del servidor, no un campo de texto que se pueda previsualizar en pantalla.
+También es lo que le da un momento explícito a la confirmación cuando el cambio
+borra variantes con stock.
+
 ### Guardar los ejes es un reemplazo, no un parche
 
 `guardarOpciones()` recibe el **estado final** —igual que `actualizarOrden()`

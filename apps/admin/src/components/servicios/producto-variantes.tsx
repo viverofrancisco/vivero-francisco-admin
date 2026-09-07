@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Card,
-  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -16,24 +15,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   ArrowLeftRight,
   ChevronDown,
   ChevronRight,
   Loader2,
   Plus,
-  X,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useAca } from "@/lib/filtros-url";
 import { MovimientoDialog } from "./movimiento-dialog";
 import { money } from "@/components/ordenes/formato";
 import type { ImagenProducto } from "./producto-imagenes";
+
+/** Cuántos ejes admite un producto. El servicio aplica el mismo tope. */
+const MAX_OPCIONES = 3;
 
 export interface OpcionEditable {
   id: string | null;
@@ -113,9 +109,10 @@ export function ProductoVariantes({
   onVariantesChange?: (v: VarianteFila[]) => void;
 }) {
   const router = useRouter();
-  const [editandoOpciones, setEditandoOpciones] = useState(false);
+  /** Qué opción está abierta, y cómo va quedando. `null` = ninguna. */
+  const [abierta, setAbierta] = useState<number | null>(null);
   const [opciones, setOpciones] = useState(opcionesIniciales);
-  const [borrador, setBorrador] = useState<OpcionEditable[]>(opcionesIniciales);
+  const [borrador, setBorrador] = useState<OpcionEditable | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [variantes, setVariantes] = useState(variantesIniciales);
   const [ajustando, setAjustando] = useState<VarianteFila | null>(null);
@@ -128,13 +125,23 @@ export function ProductoVariantes({
     onVariantesChange?.(v);
   };
 
-  const guardarOpciones = async (descartarVariantes = false) => {
+  /**
+   * Guarda los ejes y deja que el servidor regenere las variantes.
+   *
+   * Se guarda al cerrar la opción y no con el resto del producto: agregar un
+   * valor cambia **cuántas variantes hay**, y eso es una operación del servidor
+   * —no un campo de texto que se pueda previsualizar en pantalla—.
+   */
+  const guardarOpciones = async (
+    lista: OpcionEditable[],
+    descartarVariantes = false
+  ) => {
     setGuardando(true);
     try {
       const res = await fetch(`/api/servicios/${productoId}/opciones`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ opciones: borrador, descartarVariantes }),
+        body: JSON.stringify({ opciones: lista, descartarVariantes }),
       });
       const body = await res.json();
       if (!res.ok) {
@@ -143,15 +150,16 @@ export function ProductoVariantes({
         if (res.status === 409 && !descartarVariantes) {
           if (confirm(`${body.error}\n\n¿Seguir igual?`)) {
             setGuardando(false);
-            return guardarOpciones(true);
+            return guardarOpciones(lista, true);
           }
           setGuardando(false);
           return;
         }
         throw new Error(body.error ?? "Error");
       }
-      setOpciones(borrador);
-      setEditandoOpciones(false);
+      setOpciones(lista);
+      setAbierta(null);
+      setBorrador(null);
       toast.success(
         body.variantes === 1
           ? "Guardado: una variante"
@@ -250,60 +258,89 @@ export function ProductoVariantes({
       <Card>
         <CardHeader className="border-b py-3">
           <CardTitle className="text-base">Variantes</CardTitle>
-          {hayEjes && (
-            <CardAction>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setBorrador(opciones);
-                  setEditandoOpciones(true);
-                }}
-              >
-                Editar opciones
-              </Button>
-            </CardAction>
-          )}
         </CardHeader>
 
-        <CardContent className={hayEjes ? "space-y-4" : ""}>
-          {!hayEjes ? (
-            // Sin opciones no hay nada que listar: el stock de la variante
-            // única se muestra arriba, en Inventario.
-            <Button
-              type="button"
-              variant="ghost"
-              className="px-0 text-primary hover:bg-transparent hover:underline"
-              onClick={() => {
-                setBorrador([]);
-                setEditandoOpciones(true);
-              }}
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              Agregar opciones como color o tamaño
-            </Button>
-          ) : (
-            <>
-              {/* Los ejes con sus valores, como los muestra Shopify: el resumen
-                  de qué divide a este producto, sin tener que abrir nada. */}
-              <div className="divide-y rounded-md border">
-                {opciones.map((o) => (
-                  <div key={o.id ?? o.nombre} className="space-y-1.5 p-3">
-                    <p className="text-sm font-medium">{o.nombre}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {o.valores.map((v) => (
-                        <span
-                          key={v.id ?? v.valor}
-                          className="rounded bg-muted px-2 py-0.5 text-xs"
-                        >
-                          {v.valor}
-                        </span>
-                      ))}
-                    </div>
+        <CardContent className="space-y-4">
+          {/* Los ejes, cada uno plegado a su resumen. Se abre el que se toca y
+              se edita **ahí mismo**: un diálogo para cambiar una palabra tapaba
+              la lista de variantes, que es justo lo que hay que mirar para
+              saber si el cambio es el que se quería. */}
+          <div className="divide-y rounded-md border">
+            {opciones.map((o, i) =>
+              abierta === i && borrador ? (
+                <EditorOpcion
+                  key={o.id ?? `nueva-${i}`}
+                  opcion={borrador}
+                  onChange={setBorrador}
+                  guardando={guardando}
+                  onListo={() =>
+                    guardarOpciones(
+                      opciones.map((x, j) => (j === i ? borrador : x))
+                    )
+                  }
+                  onBorrar={() =>
+                    guardarOpciones(opciones.filter((_, j) => j !== i))
+                  }
+                  onCancelar={() => {
+                    // Una opción recién agregada que se cancela no queda a
+                    // medias: se va con el gesto que la creó.
+                    if (o.id === null && o.nombre === "") {
+                      setOpciones(opciones.filter((_, j) => j !== i));
+                    }
+                    setAbierta(null);
+                    setBorrador(null);
+                  }}
+                />
+              ) : (
+                <button
+                  key={o.id ?? `op-${i}`}
+                  type="button"
+                  onClick={() => {
+                    setAbierta(i);
+                    setBorrador(o);
+                  }}
+                  className="block w-full space-y-1.5 p-3 text-left hover:bg-muted/40"
+                >
+                  <p className="text-sm font-medium">{o.nombre || "Sin nombre"}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {o.valores.map((v) => (
+                      <span
+                        key={v.id ?? v.valor}
+                        className="rounded bg-muted px-2 py-0.5 text-xs"
+                      >
+                        {v.valor}
+                      </span>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </button>
+              )
+            )}
+
+            {opciones.length < MAX_OPCIONES && abierta === null && (
+              <button
+                type="button"
+                onClick={() => {
+                  const nueva: OpcionEditable = {
+                    id: null,
+                    nombre: "",
+                    valores: [],
+                  };
+                  setOpciones([...opciones, nueva]);
+                  setAbierta(opciones.length);
+                  setBorrador(nueva);
+                }}
+                className="flex w-full items-center gap-1.5 p-3 text-left text-sm text-primary hover:bg-muted/40"
+              >
+                <Plus className="h-4 w-4" />
+                {hayEjes
+                  ? "Agregar otra opción"
+                  : "Agregar opciones como color o tamaño"}
+              </button>
+            )}
+          </div>
+
+          {hayEjes && (
+            <>
 
               {grupos && (
                 <div className="flex items-center gap-2">
@@ -415,16 +452,6 @@ export function ProductoVariantes({
           )}
         </CardContent>
       </Card>
-
-      {editandoOpciones && (
-        <EditorOpciones
-          opciones={borrador}
-          onChange={setBorrador}
-          onGuardar={() => guardarOpciones()}
-          onCerrar={() => setEditandoOpciones(false)}
-          guardando={guardando}
-        />
-      )}
 
       {ajustando && (
         <MovimientoDialog
@@ -577,145 +604,139 @@ function FilaVariante({
 }
 
 /**
- * Los ejes y sus valores.
+ * Un eje abierto: su nombre y sus valores.
  *
- * Se edita entero y se guarda de una: agregar un valor cambia cuántas variantes
- * hay, así que guardar valor por valor haría que la lista de abajo se rearme
- * cinco veces mientras alguien escribe.
+ * Se edita **en el lugar**, como en Shopify: un diálogo para cambiar una
+ * palabra tapaba la lista de variantes, que es justo lo que hay que mirar para
+ * saber si el cambio es el que se quería.
+ *
+ * *Listo* guarda y el servidor regenera las variantes: agregar un valor cambia
+ * cuántas hay, y eso no es un campo de texto que se pueda previsualizar.
  */
-function EditorOpciones({
-  opciones,
+function EditorOpcion({
+  opcion,
   onChange,
-  onGuardar,
-  onCerrar,
+  onListo,
+  onBorrar,
+  onCancelar,
   guardando,
 }: {
-  opciones: OpcionEditable[];
-  onChange: (o: OpcionEditable[]) => void;
-  onGuardar: () => void;
-  onCerrar: () => void;
+  opcion: OpcionEditable;
+  onChange: (o: OpcionEditable) => void;
+  onListo: () => void;
+  onBorrar: () => void;
+  onCancelar: () => void;
   guardando: boolean;
 }) {
-  const [nuevoValor, setNuevoValor] = useState<Record<number, string>>({});
+  const [nuevo, setNuevo] = useState("");
 
-  const cambiar = (i: number, patch: Partial<OpcionEditable>) =>
-    onChange(opciones.map((o, j) => (j === i ? { ...o, ...patch } : o)));
+  const agregarValor = (valor: string) => {
+    const limpio = valor.trim();
+    if (!limpio) return;
+    onChange({
+      ...opcion,
+      valores: [...opcion.valores, { id: null, valor: limpio }],
+    });
+    setNuevo("");
+  };
 
-  const combinaciones = opciones.reduce(
-    (n, o) => n * Math.max(o.valores.length, 1),
-    1
-  );
+  const listo = opcion.nombre.trim() !== "" && opcion.valores.length > 0;
 
   return (
-    <Dialog open onOpenChange={(v) => !v && onCerrar()}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Opciones</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Cada opción es un eje —Color, Tamaño— y de sus valores sale una
-            variante por combinación.
-          </p>
+    <div className="space-y-3 bg-muted/20 p-3">
+      <div className="space-y-1.5">
+        <Label className="text-xs">Nombre de la opción</Label>
+        <Input
+          value={opcion.nombre}
+          onChange={(e) => onChange({ ...opcion, nombre: e.target.value })}
+          placeholder="Color"
+          autoFocus
+        />
+      </div>
 
-          {opciones.map((o, i) => (
-            <div key={i} className="space-y-2 rounded-md border p-3">
-              <div className="flex items-center gap-2">
-                <Input
-                  value={o.nombre}
-                  onChange={(e) => cambiar(i, { nombre: e.target.value })}
-                  placeholder="Color"
-                  className="h-8"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-none"
-                  aria-label="Sacar opción"
-                  onClick={() => onChange(opciones.filter((_, j) => j !== i))}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-1.5">
-                {o.valores.map((v, k) => (
-                  <span
-                    key={k}
-                    className="flex items-center gap-1 rounded-md border bg-muted/50 py-0.5 pl-2 pr-0.5 text-sm"
-                  >
-                    {v.valor}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5"
-                      aria-label={`Sacar ${v.valor}`}
-                      onClick={() =>
-                        cambiar(i, {
-                          valores: o.valores.filter((_, j) => j !== k),
-                        })
-                      }
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </span>
-                ))}
-              </div>
-
-              {/* Enter agrega, que es como se cargan cinco talles seguidos sin
-                  levantar las manos del teclado. */}
-              <Input
-                value={nuevoValor[i] ?? ""}
-                onChange={(e) =>
-                  setNuevoValor({ ...nuevoValor, [i]: e.target.value })
-                }
-                onKeyDown={(e) => {
-                  if (e.key !== "Enter") return;
-                  e.preventDefault();
-                  const valor = (nuevoValor[i] ?? "").trim();
-                  if (!valor) return;
-                  cambiar(i, { valores: [...o.valores, { id: null, valor }] });
-                  setNuevoValor({ ...nuevoValor, [i]: "" });
-                }}
-                placeholder="Agregar valor y Enter"
-                className="h-8"
-              />
-            </div>
-          ))}
-
-          {opciones.length < 3 && (
+      <div className="space-y-1.5">
+        <Label className="text-xs">Valores</Label>
+        {opcion.valores.map((v, k) => (
+          <div key={k} className="flex items-center gap-1.5">
+            <Input
+              value={v.valor}
+              onChange={(e) =>
+                onChange({
+                  ...opcion,
+                  valores: opcion.valores.map((x, j) =>
+                    j === k ? { ...x, valor: e.target.value } : x
+                  ),
+                })
+              }
+            />
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
+              className="flex-none"
+              aria-label={`Sacar ${v.valor}`}
               onClick={() =>
-                onChange([...opciones, { id: null, nombre: "", valores: [] }])
+                onChange({
+                  ...opcion,
+                  valores: opcion.valores.filter((_, j) => j !== k),
+                })
               }
             >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              {opciones.length === 0 ? "Agregar opción" : "Agregar otra opción"}
-            </Button>
-          )}
-
-          <p className="text-xs text-muted-foreground">
-            {opciones.length === 0
-              ? "Sin opciones, el producto es uno solo y su stock se lleva en Inventario."
-              : `${combinaciones} ${combinaciones === 1 ? "variante" : "variantes"}.`}
-          </p>
-
-          <div className="flex justify-end gap-2 border-t pt-4">
-            <Button variant="outline" onClick={onCerrar} disabled={guardando}>
-              Cancelar
-            </Button>
-            <Button onClick={onGuardar} disabled={guardando}>
-              {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Guardar
+              <Trash2 className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>
+        ))}
+        {/* Enter agrega y deja el campo listo para el siguiente: así se cargan
+            cinco talles seguidos sin levantar las manos del teclado. */}
+        <Input
+          value={nuevo}
+          onChange={(e) => setNuevo(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            agregarValor(nuevo);
+          }}
+          onBlur={() => agregarValor(nuevo)}
+          placeholder="Agregar otro valor"
+          className="mr-10"
+        />
+      </div>
+
+      <div className="flex items-center justify-between gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:bg-destructive/10"
+          disabled={guardando}
+          onClick={onBorrar}
+        >
+          Borrar
+        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={guardando}
+            onClick={onCancelar}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={guardando || !listo}
+            title={
+              listo ? undefined : "La opción necesita un nombre y algún valor."
+            }
+            onClick={onListo}
+          >
+            {guardando && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+            Listo
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
