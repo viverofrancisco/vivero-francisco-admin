@@ -30,10 +30,12 @@ export default async function EditarServicioPage({
   }
 
   const viewer = await viewerFromSession();
-  // Las fotos son de todo producto; los ejes y las variantes, solo de un bien.
+  // Todo producto tiene variantes —un servicio, exactamente una—, así que el
+  // catálogo se pide siempre: es de donde sale el SKU. Los ejes son lo único
+  // propio de un bien, y un servicio simplemente no tiene ninguno.
   const [imagenes, catalogo] = await Promise.all([
     listarImagenes(viewer, id),
-    servicio.tipo === "BIEN" ? getCatalogoDelProducto(viewer, id) : null,
+    getCatalogoDelProducto(viewer, id),
   ]);
 
   const categorias = await prisma.categoria.findMany({
@@ -56,32 +58,28 @@ export default async function EditarServicioPage({
         }}
         categorias={categorias}
         imagenes={imagenes}
-        opciones={
-          catalogo?.opciones.map((o) => ({
-            id: o.id,
-            nombre: o.nombre,
-            valores: o.valores.map((v) => ({ id: v.id, valor: v.valor })),
-          })) ?? []
-        }
-        variantes={
-          catalogo?.variantes.map((v) => ({
-            id: v.id,
-            sku: v.sku,
-            precio: v.precio,
-            cobraIva: v.cobraIva,
-            manejaInventario: v.manejaInventario,
-            stock: v.stock,
-            permiteNegativo: v.permiteNegativo,
-            imagenId: v.imagenId,
-            valores: v.valores.map((x) => ({
-              // El id del valor, no solo su texto: es con lo que la pantalla
-              // reconoce una variante después de que la renombraron.
-              valorId: x.valorId,
-              opcion: x.opcion,
-              valor: x.valor,
-            })),
-          })) ?? []
-        }
+        opciones={catalogo.opciones.map((o) => ({
+          id: o.id,
+          nombre: o.nombre,
+          valores: o.valores.map((v) => ({ id: v.id, valor: v.valor })),
+        }))}
+        variantes={catalogo.variantes.map((v) => ({
+          id: v.id,
+          sku: v.sku,
+          precio: v.precio,
+          cobraIva: v.cobraIva,
+          manejaInventario: v.manejaInventario,
+          stock: v.stock,
+          permiteNegativo: v.permiteNegativo,
+          imagenId: v.imagenId,
+          valores: v.valores.map((x) => ({
+            // El id del valor, no solo su texto: es con lo que la pantalla
+            // reconoce una variante después de que la renombraron.
+            valorId: x.valorId,
+            opcion: x.opcion,
+            valor: x.valor,
+          })),
+        }))}
       />
     </div>
   );
