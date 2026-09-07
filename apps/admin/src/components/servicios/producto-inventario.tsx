@@ -19,27 +19,34 @@ import { PrecioDeLista } from "./precio-de-lista";
 import type { VarianteFila } from "./producto-variantes";
 
 /**
- * El inventario de un bien **sin opciones**.
+ * Lo que se vende, cuando hay **una sola variante**.
  *
- * Un bien así tiene una sola variante, así que preguntar "cuál" no tiene
- * sentido: el stock, el SKU y los dos interruptores son del producto a los
- * ojos de quien mira, y esta card los pone donde se los espera. Por debajo
- * siguen siendo de la variante única — la misma fila que cuenta el resto del
- * sistema— así que agregar opciones después no cambia nada del modelo.
+ * Con una sola —todo servicio, y un bien sin opciones— preguntar "cuál" no
+ * tiene sentido: el precio, el SKU y el stock son del producto a los ojos de
+ * quien mira, y esta card los pone donde se los espera. Por debajo siguen
+ * siendo de la variante única, así que agregar opciones después no cambia nada
+ * del modelo — y ahí esta card desaparece, porque cada combinación tiene lo
+ * suyo y eso vive en la tabla de variantes.
  *
- * Con opciones esta card desaparece: ahí el stock es por combinación y vive en
- * la tabla de variantes.
+ * **De un servicio, por ahora, solo el SKU.** No lleva inventario —no hay stock
+ * de una poda— y ni el precio de lista ni el IVA se muestran todavía: una poda
+ * se cotiza cada vez, así que hoy las dos cosas se deciden en la orden o en la
+ * suscripción. Las columnas existen igual en la variante, así que mostrarlas es
+ * agregar el bloque, no cambiar el modelo.
  */
 export function ProductoInventario({
   variante,
   productoId,
   ivaTasa,
+  esBien,
   onCambio,
 }: {
   productoId: string;
   variante: VarianteFila;
   /** La tasa del producto: el *cuánto*. Acá solo se decide el *si*. */
   ivaTasa: number | null;
+  /** Un servicio no lleva inventario: se le oculta ese bloque entero. */
+  esBien: boolean;
   onCambio: (v: VarianteFila) => void;
 }) {
   const router = useRouter();
@@ -91,19 +98,23 @@ export function ProductoInventario({
     <>
       <Card>
         <CardHeader className="border-b py-3">
-          <CardTitle className="text-base">Inventario</CardTitle>
-          <CardAction>
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-              Se cuenta
-              <Switch
-                checked={variante.manejaInventario}
-                onCheckedChange={(on) => guardar({ manejaInventario: on })}
-              />
-            </label>
-          </CardAction>
+          <CardTitle className="text-base">
+            {esBien ? "Precio e inventario" : "SKU"}
+          </CardTitle>
+          {esBien && (
+            <CardAction>
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                Se cuenta
+                <Switch
+                  checked={variante.manejaInventario}
+                  onCheckedChange={(on) => guardar({ manejaInventario: on })}
+                />
+              </label>
+            </CardAction>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {variante.manejaInventario ? (
+          {!esBien ? null : variante.manejaInventario ? (
             <>
               {/* El número grande y clickeable: es el dato que se viene a ver,
                   y tocarlo es lo que se viene a hacer. */}
@@ -158,31 +169,40 @@ export function ProductoInventario({
             </p>
           )}
 
-          <div className="space-y-4 border-t pt-3">
-            <PrecioDeLista
-              precio={variante.precio}
-              onGuardar={(precio) => guardar({ precio })}
-            />
-            <label className="flex items-center justify-between gap-3 text-sm">
-              <span>
-                Cobrar IVA
-                <span className="block text-xs text-muted-foreground">
-                  {ivaTasa
-                    ? `Al ${ivaTasa}%, la tasa del producto.`
-                    : "El producto no tiene tasa cargada, así que se propone 0%."}
-                </span>
-              </span>
-              <Switch
-                checked={variante.cobraIva}
-                onCheckedChange={(on) => guardar({ cobraIva: on })}
+          {/* El precio de lista es **una propuesta**: se ofrece al armar la
+              orden y se puede cambiar ahí, y lo cobrado queda en la línea.
+              En un servicio todavía no se muestra —se cotiza cada vez— y el
+              IVA lo acompaña, porque decidir si cobra IVA sin ver el precio es
+              media pregunta. */}
+          {esBien && (
+            <div className="space-y-4 border-t pt-3">
+              <PrecioDeLista
+                precio={variante.precio}
+                onGuardar={(precio) => guardar({ precio })}
               />
-            </label>
-          </div>
+              <label className="flex items-center justify-between gap-3 text-sm">
+                <span>
+                  Cobrar IVA
+                  <span className="block text-xs text-muted-foreground">
+                    {ivaTasa
+                      ? `Al ${ivaTasa}%, la tasa del producto.`
+                      : "El producto no tiene tasa cargada, así que se propone 0%."}
+                  </span>
+                </span>
+                <Switch
+                  checked={variante.cobraIva}
+                  onCheckedChange={(on) => guardar({ cobraIva: on })}
+                />
+              </label>
+            </div>
+          )}
 
-          <div className="space-y-1.5 border-t pt-3">
-            <Label className="text-xs" htmlFor="sku">
-              SKU
-            </Label>
+          <div className={esBien ? "space-y-1.5 border-t pt-3" : "space-y-1.5"}>
+            {esBien && (
+              <Label className="text-xs" htmlFor="sku">
+                SKU
+              </Label>
+            )}
             <Input
               id="sku"
               defaultValue={variante.sku ?? ""}

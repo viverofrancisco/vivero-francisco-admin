@@ -37,16 +37,8 @@ interface ServicioData {
   tipo: string;
   descripcion: string | null;
   ivaTasa: string | number | null;
-  /** El que sale impreso como `codigoPrincipal` en la factura. */
-  codigo: string | null;
-  /**
-   * El producto tiene varias variantes, así que el código es de cada una.
-   *
-   * Con una sola —un servicio, o un bien sin opciones— el campo de acá arriba
-   * la edita. Con varias no hay "el código del producto" que editar: cada
-   * combinación tiene su SKU y se cambia en su ficha.
-   */
-  codigoEnLaVariante?: boolean;
+
+
   /** Si ya se puede vender. Un borrador no aparece en los selectores. */
   estado: "ACTIVO" | "BORRADOR";
   /** Cuándo se archivó, o `null` si está en el catálogo. */
@@ -95,7 +87,6 @@ export function ServicioDetail({
   const guardado = {
     nombre: servicio.nombre,
     descripcion: servicio.descripcion ?? "",
-    codigo: servicio.codigo ?? "",
     estado: servicio.estado,
     categoriaIds: servicio.categoriaIds,
     opciones,
@@ -140,7 +131,6 @@ export function ServicioDetail({
   const hayCambios =
     form.nombre !== guardado.nombre ||
     form.descripcion !== guardado.descripcion ||
-    form.codigo !== guardado.codigo ||
     form.estado !== guardado.estado ||
     form.categoriaIds.join() !== guardado.categoriaIds.join() ||
     // Por su forma y no por identidad: el editor rearma el arreglo en cada
@@ -290,7 +280,6 @@ export function ServicioDetail({
           // valide, no para cambiarlo.
           tipo: servicio.tipo,
           descripcion: form.descripcion,
-          codigo: form.codigo.trim() || null,
           estado: form.estado,
           categoriaIds: form.categoriaIds,
         }),
@@ -325,14 +314,13 @@ export function ServicioDetail({
   useRegistrarCambios(hayCambios, guardando, guardar, () => setForm(guardado));
 
   /**
-   * Un bien sin opciones tiene una variante y una sola: su stock es, a los ojos
-   * de quien mira, el del producto. Con opciones el stock es por combinación y
-   * esta card desaparece.
+   * Con una sola variante —todo servicio, y un bien sin opciones— lo que se
+   * vende es, a los ojos de quien mira, el producto: su precio, su SKU y su
+   * stock van en una card y no en una tabla de una fila. Con opciones cada
+   * combinación tiene lo suyo y esta card desaparece.
    */
   const varianteUnica =
-    servicio.tipo === "BIEN" && opciones.length === 0 && filas.length === 1
-      ? filas[0]
-      : null;
+    opciones.length === 0 && filas.length === 1 ? filas[0] : null;
 
   return (
     <div className="space-y-6">
@@ -390,26 +378,6 @@ export function ServicioDetail({
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 />
               </div>
-              {/* **El código, mientras haya una sola variante.** Ahí este campo
-                  edita su SKU, que es lo que se imprime y lo que va en la
-                  etiqueta. Con varias combinaciones cada una tiene el suyo y se
-                  cambia en su ficha: un "código del producto" ahí sería un dato
-                  que no se usa. */}
-              {!servicio.codigoEnLaVariante && (
-                <div className="space-y-2">
-                  <Label htmlFor="codigo">Código</Label>
-                  <Input
-                    id="codigo"
-                    value={form.codigo}
-                    onChange={(e) => setForm({ ...form, codigo: e.target.value })}
-                    placeholder="Ej: MANT-01"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Sale impreso en la factura. Vacío, se usa uno derivado del
-                    producto.
-                  </p>
-                </div>
-              )}
               <div className="space-y-2">
                 <Label>Descripción</Label>
                 <RichText
@@ -426,12 +394,13 @@ export function ServicioDetail({
             onCambio={setGaleria}
           />
 
-          {/* Sin opciones, todo el inventario del bien acá: una tabla de una
-              fila para decir "hay 12" es una tabla de más. */}
+          {/* Debajo de las fotos, como en Shopify: primero qué es y cómo se
+              ve, después cuánto vale y con qué código sale. */}
           {varianteUnica && (
             <ProductoInventario
               productoId={servicio.id}
               variante={varianteUnica}
+              esBien={servicio.tipo === "BIEN"}
               ivaTasa={
                 servicio.ivaTasa === null ? null : Number(servicio.ivaTasa)
               }

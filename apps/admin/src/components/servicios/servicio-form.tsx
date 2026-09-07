@@ -24,6 +24,31 @@ interface Categoria {
   nombre: string;
 }
 
+/** Una de las dos opciones del primer paso. */
+function ElegirTipo({
+  titulo,
+  detalle,
+  nota,
+  onClick,
+}: {
+  titulo: string;
+  detalle: string;
+  nota: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-lg border bg-card p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
+    >
+      <p className="font-medium">{titulo}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{detalle}</p>
+      <p className="mt-2 text-xs text-muted-foreground">{nota}</p>
+    </button>
+  );
+}
+
 /**
  * Dar de alta un producto: la misma pantalla que su ficha, pero vacía.
  *
@@ -44,11 +69,24 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
 
+  /**
+   * Qué se está creando. **Se elige antes de la ficha.**
+   *
+   * Es lo único del producto que no se puede cambiar después —cambiarlo dejaría
+   * suscripciones, visitas y líneas de orden con una semántica que ya no
+   * corresponde— así que preguntarlo primero es tratarlo como lo que es: una
+   * decisión, y no un campo más perdido entre otros diez que sí se editan.
+   *
+   * Y la ficha depende de la respuesta: un bien tiene precio, stock y
+   * variantes; un servicio, ninguna de las tres. Sabiéndolo de entrada, la
+   * pantalla muestra los campos que corresponden en vez de todos.
+   */
+  const [tipo, setTipo] = useState<"SERVICIO" | "BIEN" | null>(null);
+
   const vacio = {
     nombre: "",
     codigo: "",
     descripcion: "",
-    tipo: "SERVICIO" as "SERVICIO" | "BIEN",
     estado: "ACTIVO" as "ACTIVO" | "BORRADOR",
     categoriaIds: [] as string[],
   };
@@ -74,7 +112,7 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
           // con "" chocarían entre sí.
           codigo: form.codigo.trim() || null,
           descripcion: form.descripcion || null,
-          tipo: form.tipo,
+          tipo,
           estado: form.estado,
           categoriaIds: form.categoriaIds,
         }),
@@ -94,6 +132,42 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
   }
 
   useRegistrarCambios(hayCambios, guardando, guardar, () => setForm(vacio));
+
+  if (tipo === null) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard/productos">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight">Nuevo producto</h1>
+        </div>
+
+        <div className="max-w-2xl space-y-4">
+          <p className="text-sm text-muted-foreground">
+            ¿Qué vas a cargar? No se puede cambiar después, y de esto depende lo
+            que se le puede poner.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ElegirTipo
+              titulo="Servicio"
+              detalle="Un trabajo: poda, desmalezado, mantenimiento."
+              nota="Sin inventario. El precio se pone en la orden o en el plan."
+              onClick={() => setTipo("SERVICIO")}
+            />
+            <ElegirTipo
+              titulo="Bien"
+              detalle="Algo que se entrega: plantas, tierra, macetas."
+              nota="Lleva precio y stock, y puede tener variantes."
+              onClick={() => setTipo("BIEN")}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -125,7 +199,7 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="codigo">Código</Label>
+                <Label htmlFor="codigo">SKU</Label>
                 <Input
                   id="codigo"
                   value={form.codigo}
@@ -133,8 +207,7 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
                   placeholder="Ej: MANT-01"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Sale impreso en la factura. Vacío, se usa uno derivado del
-                  producto.
+                  Sale impreso en la factura y es lo que va en la etiqueta.
                 </p>
               </div>
               <div className="space-y-2">
@@ -152,7 +225,7 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
               la ficha sin explicar por qué. */}
           <p className="text-sm text-muted-foreground">
             Las fotos
-            {form.tipo === "BIEN" ? ", las variantes y el inventario" : ""} se
+            {tipo === "BIEN" ? ", el precio, las variantes y el inventario" : ""} se
             cargan después de guardar.
           </p>
         </div>
@@ -177,32 +250,23 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
                   },
                 ]}
               />
-              <div className="space-y-2 border-t pt-3">
-                <Label>Tipo *</Label>
-                {/* Acá sí se elige: después de creado es inmutable, porque
-                    cambiarlo dejaría suscripciones, visitas y líneas de orden
-                    con una semántica que ya no corresponde. */}
-                <CustomSelect
-                  value={form.tipo}
-                  onChange={(v) =>
-                    setForm({ ...form, tipo: v as "SERVICIO" | "BIEN" })
-                  }
-                  options={[
-                    {
-                      value: "SERVICIO",
-                      label: "Servicio",
-                      hint: "Un trabajo. No lleva inventario",
-                    },
-                    {
-                      value: "BIEN",
-                      label: "Bien",
-                      hint: "Se cuenta y puede tener variantes",
-                    },
-                  ]}
-                />
-                <p className="text-xs text-muted-foreground">
-                  No se puede cambiar después.
-                </p>
+              {/* Ya elegido en el paso anterior, y no se cambia: se muestra
+                  como en la ficha, que es donde va a estar siempre. */}
+              <div className="border-t pt-3">
+                <div className="text-xs text-muted-foreground">Tipo</div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm">
+                    {tipo === "BIEN" ? "Bien" : "Servicio"}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-muted-foreground hover:bg-transparent hover:underline"
+                    onClick={() => setTipo(null)}
+                  >
+                    Cambiar
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
