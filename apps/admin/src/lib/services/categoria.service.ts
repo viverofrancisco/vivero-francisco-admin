@@ -256,8 +256,26 @@ export async function fijarProductos(
  * Incluye los borradores: ordenar el catálogo antes de vender es exactamente
  * cuándo conviene hacerlo.
  */
-export async function productosParaElegir(viewer: Viewer, search?: string) {
+/**
+ * Los productos que se pueden sumar a una categoría, **de a tandas**.
+ *
+ * Antes traía los primeros 100 y cortaba ahí, sin decirlo: con un catálogo más
+ * grande había productos a los que no se llegaba ni buscándolos, porque el
+ * corte era antes del filtro que ve la pantalla. Ahora se pide de a poco y se
+ * sigue pidiendo al llegar al final de la lista.
+ *
+ * `hayMas` sale de pedir uno más de los que se van a devolver: es una sola
+ * consulta en vez de un `count` aparte, y lo único que hay que saber es si
+ * conviene seguir.
+ */
+export async function productosParaElegir(
+  viewer: Viewer,
+  opciones: { search?: string; offset?: number; limit?: number } = {}
+) {
   ensureAdmin(viewer);
+  const limit = Math.min(Math.max(opciones.limit ?? 20, 1), 100);
+  const offset = Math.max(0, opciones.offset ?? 0);
+  const search = opciones.search;
   const productos = await prisma.producto.findMany({
     where: {
       deletedAt: null,
@@ -266,7 +284,8 @@ export async function productosParaElegir(viewer: Viewer, search?: string) {
         : {}),
     },
     orderBy: { nombre: "asc" },
-    take: 100,
+    skip: offset,
+    take: limit + 1,
     select: {
       id: true,
       nombre: true,
@@ -281,7 +300,8 @@ export async function productosParaElegir(viewer: Viewer, search?: string) {
       },
     },
   });
-  return productos.map(armarFila);
+  const hayMas = productos.length > limit;
+  return { items: productos.slice(0, limit).map(armarFila), hayMas };
 }
 
 /** Una fila de producto, con lo que la ficha necesita para mostrar y ordenar. */

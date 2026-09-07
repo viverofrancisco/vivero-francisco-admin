@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,19 @@ const TIPO_LABEL: Record<string, string> = {
 };
 
 /**
+ * De a cuántos se piden.
+ *
+ * Medido contra la base: un pedido tarda lo mismo por 10 que por 100 —el costo
+ * es el viaje, no las filas— así que lo que conviene es hacer pocos viajes. La
+ * lista muestra unas diez filas a la vez, y veinte son dos pantallas: la
+ * primera tanda llena la vista y deja resto, así que la siguiente llega
+ * mientras se desplaza. Con diez, el pie quedaría visible de entrada y se
+ * pediría la segunda tanda enseguida: dos viajes para mostrar lo que uno ya
+ * mostraba.
+ */
+const POR_TANDA = 20;
+
+/**
  * Elegir productos para sumarlos a una categoría.
  *
  * Esconde los que **ya están elegidos** —incluidos los que se acaban de marcar
@@ -54,20 +67,74 @@ export function SelectorProductos({
 }) {
   const [items, setItems] = useState<ProductoElegible[] | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  /** Lo que de verdad se pidió: va detrás de lo tipeado. */
+  const [aplicada, setAplicada] = useState("");
   const [pedida, setPedida] = useState<string | null>(null);
+  const [hayMas, setHayMas] = useState(false);
+  const [cargandoMas, setCargandoMas] = useState(false);
   const [elegidos, setElegidos] = useState<string[]>([]);
+  const centinela = useRef<HTMLDivElement>(null);
 
-  // Se dispara al renderizar con una búsqueda nueva en vez de con un efecto: no
-  // hay dependencias que sincronizar ni un `setState` después de pintar.
-  if (pedida !== busqueda) {
-    setPedida(busqueda);
-    fetch(`/api/categorias/productos?q=${encodeURIComponent(busqueda)}`)
+  /**
+   * La búsqueda espera a que la mano pare.
+   *
+   * Cada pedido cuesta lo mismo vaya por 10 o por 100 filas —el costo es el
+   * viaje, no las filas— así que lo que hay que evitar es hacer uno por tecla.
+   */
+  useEffect(() => {
+    const t = setTimeout(() => setAplicada(busqueda), 300);
+    return () => clearTimeout(t);
+  }, [busqueda]);
+
+  const traer = (q: string, offset: number) => {
+    setCargandoMas(true);
+    fetch(
+      `/api/categorias/productos?q=${encodeURIComponent(q)}&offset=${offset}&limit=${POR_TANDA}`
+    )
       .then((r) => r.json())
-      .then((d) => setItems(d.productos ?? []))
-      .catch(() => setItems([]));
+      .then((d: { productos?: ProductoElegible[]; hayMas?: boolean }) => {
+        const nuevos = d.productos ?? [];
+        // Por offset y no acumulando a ciegas: si la búsqueda cambió mientras
+        // volaba el pedido, esto reemplaza en vez de mezclar dos listas.
+        setItems((prev) => (offset === 0 || prev === null ? nuevos : [...prev, ...nuevos]));
+        setHayMas(Boolean(d.hayMas));
+      })
+      .catch(() => setItems((prev) => prev ?? []))
+      .finally(() => setCargandoMas(false));
+  };
+
+  // Al renderizar con una búsqueda nueva en vez de con un efecto: no hay
+  // dependencias que sincronizar ni un `setState` después de pintar.
+  if (pedida !== aplicada) {
+    setPedida(aplicada);
+    setItems(null);
+    setHayMas(false);
+    traer(aplicada, 0);
   }
 
-  /** Lo que queda por elegir. El filtro es del cliente: la lista es corta. */
+  /**
+   * Sigue pidiendo al llegar al final de la lista.
+   *
+   * El centinela es un div al pie: cuando entra en la parte visible del
+   * scroll, hay que traer la tanda siguiente. Es lo mismo que mirar el scroll a
+   * mano, sin escuchar cada píxel.
+   */
+  useEffect(() => {
+    const nodo = centinela.current;
+    if (!nodo || !hayMas || cargandoMas || items === null) return;
+    const obs = new IntersectionObserver(
+      (entradas) => {
+        if (entradas[0]?.isIntersecting) traer(pedida ?? "", items.length);
+      },
+      // Un poco antes del borde: así la tanda llega mientras todavía se está
+      // desplazando y no se ve el hueco.
+      { rootMargin: "120px" }
+    );
+    obs.observe(nodo);
+    return () => obs.disconnect();
+  }, [hayMas, cargandoMas, items, pedida]);
+
+  /** Lo que queda por elegir: lo ya agregado no se vuelve a ofrecer. */
   const disponibles = (items ?? []).filter((p) => !excluir.includes(p.id));
 
   const alternar = (id: string) =>
@@ -155,6 +222,18 @@ export function SelectorProductos({
                 );
               })
             )}
+
+            {/* El pie que dispara la tanda siguiente. Va dentro del área que
+                se desplaza, que es de lo que el observador mira la visibilidad. */}
+            {items !== null && hayMas ? (
+              <div
+                ref={centinela}
+                className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground"
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Cargando más…
+              </div>
+            ) : null}
           </div>
 
           <div className="flex items-center justify-between gap-2 border-t pt-4">
