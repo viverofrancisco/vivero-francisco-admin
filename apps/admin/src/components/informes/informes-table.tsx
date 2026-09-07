@@ -204,7 +204,7 @@ export function InformesTable({
                     // tocar el menú además navegaba al editor.
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {/* Editar también acá: tocar la fila lo abre, pero el
+                    {/* Editar también aquí: tocar la fila lo abre, pero el
                         menú es donde la gente busca qué se le puede hacer a
                         algo, y "no está porque se toca la fila" es una regla
                         que hay que saber de antemano. */}
@@ -311,7 +311,7 @@ export function InformesTable({
             <DialogDescription>
               {borrando?.tipo === "borrador" ? (
                 <>
-                  Se pierde lo que había armado hasta acá. No se generó ningún
+                  Se pierde lo que había armado hasta aquí. No se generó ningún
                   PDF, así que no salió a ningún lado.
                 </>
               ) : (

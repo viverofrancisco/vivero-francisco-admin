@@ -30,7 +30,7 @@ export async function POST(
   if (id === actor.id) {
     // Dejarse afuera a uno mismo no tiene arreglo desde adentro.
     return NextResponse.json(
-      { error: "No podés revocar tu propio acceso" },
+      { error: "No puedes revocar tu propio acceso" },
       { status: 400 }
     );
   }

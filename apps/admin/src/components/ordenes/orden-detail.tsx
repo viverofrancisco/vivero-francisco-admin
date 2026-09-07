@@ -583,7 +583,7 @@ export function OrdenDetail({
 
   return (
     <div className="space-y-6">
-      {/* Pegado arriba: las acciones viven acá —también Guardar y Cancelar
+      {/* Pegado arriba: las acciones viven aquí —también Guardar y Cancelar
           mientras se edita— en vez de en una barra fija abajo, que le tapaba
           el contenido al resto de la página. Los márgenes negativos lo hacen
           sangrar hasta los bordes del contenedor con padding. */}
@@ -694,7 +694,7 @@ export function OrdenDetail({
                   }
                 />
                 <DropdownMenuContent align="end" className="w-60">
-                  {/* Lo de la factura no está acá: vive en el menú de su propia
+                  {/* Lo de la factura no está aquí: vive en el menú de su propia
                       card, que es de lo que habla. */}
                   {puedeEditar && (
                     <DropdownMenuItem onClick={empezarAEditar}>
@@ -1416,7 +1416,7 @@ export function OrdenDetail({
                 <DialogTitle>Anular la orden #{orden.numero}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 text-sm">
-                {/* Con factura viva no se llega acá: el menú apaga *Anular*
+                {/* Con factura viva no se llega aquí: el menú apaga *Anular*
                     y el servicio la rechaza. Un comprobante que el SRI ya
                     autorizó se corrige con una nota de crédito, no borrándolo
                     de nuestra base. */}

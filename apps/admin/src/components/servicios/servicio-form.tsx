@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { RichText } from "@/components/ui/rich-text";
 import { useRegistrarCambios } from "@/components/shared/cambios-pendientes";
@@ -149,7 +151,7 @@ function FotosNuevas({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              O arrastrá las imágenes acá.
+              O arrastra las imágenes aquí.
             </p>
           </div>
         </CardContent>
@@ -252,6 +254,20 @@ export function ServicioForm({
      * id — el mismo camino en dos pasos que usa la categoría con sus productos.
      */
     imagenes: [] as MediaItem[],
+    /**
+     * Lo de la variante única, solo para un bien.
+     *
+     * Se completa acá y se aplica apenas el producto existe: son sus datos, y
+     * pedirlos en una segunda pantalla partía en dos lo que se piensa junto.
+     * Las **opciones** sí quedan para después, y no por comodidad: agregar una
+     * opción reemplaza esta variante por las combinaciones, así que configurar
+     * su precio y su stock en la misma pantalla donde se la puede borrar sería
+     * pedir dos cosas que se contradicen.
+     */
+    precio: "",
+    cobraIva: true,
+    manejaInventario: true,
+    stock: "",
   };
   const [form, setForm] = useState(vacio);
 
@@ -263,7 +279,7 @@ export function ServicioForm({
    * existe para ofrecer. Con el nombre vacío el botón se ve, pero apagado y
    * diciendo qué falta — antes se podía apretar y saltaba un error.
    */
-  const falta = form.nombre.trim() ? null : "Ponele un nombre para guardarlo";
+  const falta = form.nombre.trim() ? null : "Agrega un nombre para guardarlo";
 
   async function guardar() {
     // La barra no deja apretar sin nombre; esto es el cinturón por si alguien
@@ -285,10 +301,42 @@ export function ServicioForm({
           categoriaIds: form.categoriaIds,
         }),
       });
-      const data: { id?: string; error?: string } = await res.json();
+      const data: { id?: string; varianteId?: string | null; error?: string } =
+        await res.json();
       if (!res.ok || !data.id) {
         throw new Error(data.error ?? "No pudimos crearlo");
       }
+      // Lo de la variante, si es un bien y se cargó algo. El servidor la creó
+      // junto con el producto y devolvió su id.
+      const precio = Number(form.precio);
+      const stock = Number(form.stock);
+      if (tipo === "BIEN" && data.varianteId) {
+        await fetch(`/api/variantes/${data.varianteId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            precio: form.precio.trim() && precio >= 0 ? precio : 0,
+            cobraIva: form.cobraIva,
+            manejaInventario: form.manejaInventario,
+          }),
+        });
+        // El stock entra por el libro, nunca escribiéndole encima: un número
+        // que cambia sin dejar rastro no se puede discutir después.
+        if (form.manejaInventario && form.stock.trim() && stock > 0) {
+          await fetch(`/api/variantes/${data.varianteId}/movimientos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // `cantidad` y no `valor`: un INGRESO dice **cuánto entró**. El
+            // CONTEO es el que manda `contado`, o sea cuánto hay.
+            body: JSON.stringify({
+              motivo: "INGRESO",
+              cantidad: stock,
+              nota: "Carga inicial",
+            }),
+          });
+        }
+      }
+
       // Las fotos van aparte: son una relación, y hasta que el POST no
       // responde no hay id al que atarlas.
       if (form.imagenes.length > 0) {
@@ -314,7 +362,21 @@ export function ServicioForm({
     }
   }
 
-  useRegistrarCambios(true, guardando, guardar, () => setForm(vacio), falta);
+  /**
+   * Descartar vuelve al listado.
+   *
+   * Limpiar el formulario era peor que no hacer nada: con la pantalla recién
+   * abierta no cambiaba nada visible, y el botón parecía roto. Acá lo que se
+   * descarta es el producto entero, que todavía no existe — así que la salida
+   * es irse.
+   */
+  useRegistrarCambios(
+    true,
+    guardando,
+    guardar,
+    () => router.push("/dashboard/productos"),
+    falta
+  );
 
   if (tipo === null) {
     return (
@@ -336,14 +398,14 @@ export function ServicioForm({
           <div className="grid gap-3 sm:grid-cols-2">
             <ElegirTipo
               titulo="Servicio"
-              detalle="Un trabajo: poda, desmalezado, mantenimiento."
-              nota="Sin inventario. El precio se pone en la orden o en el plan."
+              detalle="Algo que se hace."
+              nota="No lleva inventario."
               onClick={() => setTipo("SERVICIO")}
             />
             <ElegirTipo
               titulo="Bien"
-              detalle="Algo que se entrega: plantas, tierra, macetas."
-              nota="Lleva precio y stock, y puede tener variantes."
+              detalle="Algo que se entrega."
+              nota="Lleva inventario y puede tener variantes."
               onClick={() => setTipo("BIEN")}
             />
           </div>
@@ -415,13 +477,83 @@ export function ServicioForm({
             </CardContent>
           </Card>
 
-          {/* Lo que sí necesita el producto ya creado: el stock se cuenta
-              contra su variante, y las opciones la reemplazan por
-              combinaciones. */}
+          {tipo === "BIEN" && (
+            <Card>
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-base">Precio e inventario</CardTitle>
+                <CardAction>
+                  <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                    Se cuenta
+                    <Switch
+                      checked={form.manejaInventario}
+                      onCheckedChange={(on) =>
+                        setForm({ ...form, manejaInventario: on })
+                      }
+                    />
+                  </label>
+                </CardAction>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="precio">Precio</Label>
+                    <Input
+                      id="precio"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={form.precio}
+                      onChange={(e) =>
+                        setForm({ ...form, precio: e.target.value })
+                      }
+                      placeholder="0.00"
+                      className="text-right tabular-nums"
+                    />
+                    {/* Es una propuesta: al armar la orden se ofrece este y se
+                        puede cambiar ahí, y lo cobrado queda en la línea. */}
+                    <p className="text-xs text-muted-foreground">
+                      Se propone al armar una orden y se puede cambiar ahí.
+                    </p>
+                  </div>
+                  {form.manejaInventario && (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="stock">Stock inicial</Label>
+                      <Input
+                        id="stock"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={form.stock}
+                        onChange={(e) =>
+                          setForm({ ...form, stock: e.target.value })
+                        }
+                        placeholder="0"
+                        className="text-right tabular-nums"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Queda anotado como un ingreso en el libro.
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <label className="flex items-center justify-between gap-3 border-t pt-3 text-sm">
+                  <span>Cobrar IVA</span>
+                  <Switch
+                    checked={form.cobraIva}
+                    onCheckedChange={(on) => setForm({ ...form, cobraIva: on })}
+                  />
+                </label>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Las opciones sí quedan para después: agregar una reemplaza esta
+              variante por las combinaciones, y cada una lleva su propio precio
+              y su propio stock. */}
           {tipo === "BIEN" && (
             <p className="text-sm text-muted-foreground">
-              El precio, las variantes y el inventario se cargan después de
-              guardar.
+              Si este producto tiene variantes (color, tamaño), se agregan
+              después de guardar.
             </p>
           )}
         </div>

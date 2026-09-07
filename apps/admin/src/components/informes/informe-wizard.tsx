@@ -885,7 +885,7 @@ export function InformeWizard({
     4: {
       title: "Vista previa",
       description:
-        "El PDF como va a salir. Si algo no cuadra, volvé y ajustalo — todavía no se guardó nada.",
+        "El PDF como va a salir. Si algo no cuadra, vuelve y ajústalo — todavía no se guardó nada.",
     },
     5: {
       title: "Listo",
@@ -1165,7 +1165,7 @@ export function InformeWizard({
                 pierde es lo que se venía cambiando. */}
             <DialogDescription>
               El informe #{editando?.numero} queda como está, con la versión que
-              ya tiene. Se pierden los cambios que hiciste acá — si querés
+              ya tiene. Se pierden los cambios que hiciste aquí — si quieres
               seguir después, guardalos como borrador.
             </DialogDescription>
           </DialogHeader>
@@ -1568,9 +1568,9 @@ function Paso1ClienteYVisitas({
         ) : (
           <div className="flex h-full min-h-[16rem] flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-8 text-center">
             <Users className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium">Elegí un cliente primero</p>
+            <p className="text-sm font-medium">Elige un cliente primero</p>
             <p className="max-w-xs text-sm text-muted-foreground">
-              Sus visitas con fotos van a aparecer acá para que elijas cuáles
+              Sus visitas con fotos van a aparecer aquí para que elijas cuáles
               cubre el informe.
             </p>
           </div>
@@ -2518,7 +2518,7 @@ function Step3Secciones({
                           {s.fotos.map((f) => (
                             /* Arrastrable para reordenar: en el PDF salen en
                                  este orden, y "la del antes primero" es una
-                                 decisión que se toma acá. */
+                                 decisión que se toma aquí. */
                             <div
                               key={f.uid}
                               draggable
@@ -2660,7 +2660,7 @@ function Step3Secciones({
                         <p className="text-sm text-muted-foreground">
                           {isUploading
                             ? "Subiendo imágenes…"
-                            : "Arrastrá imágenes acá, o elegilas de las visitas."}
+                            : "Arrastra imágenes aquí, o elígelas de las visitas."}
                         </p>
                         <div className="mt-2 flex justify-center">
                           <Button
@@ -2827,8 +2827,8 @@ function PhotoPickerModal({
               {subiendo
                 ? "Subiendo imágenes…"
                 : arrastrando > 0
-                  ? "Soltá las imágenes acá"
-                  : "Arrastrá imágenes de tu computadora, o"}
+                  ? "Soltá las imágenes aquí"
+                  : "Arrastra imágenes de tu computadora, o"}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -2840,7 +2840,7 @@ function PhotoPickerModal({
                 <Upload className="mr-1 h-4 w-4" /> Buscar en mi computadora
               </Button>
               {/* Las fotos del portal viven todas en la misma biblioteca, así que
-                una que ya se subió para un producto sirve acá sin volver a
+                una que ya se subió para un producto sirve aquí sin volver a
                 buscarla en el disco. */}
               <Button
                 variant="ghost"
@@ -2961,7 +2961,7 @@ function PhotoPickerModal({
 
       {/* Fuera del fondo que cierra al clic, **a propósito**. El fondo de este
           modal está hecho a mano y cierra con `onClick`, y el diálogo de la
-          biblioteca se dibuja en un portal: el DOM lo saca de acá, pero React
+          biblioteca se dibuja en un portal: el DOM lo saca de aquí, pero React
           propaga los eventos por su propio árbol igual. Adentro, elegir una
           foto llegaba al fondo y cerraba los dos modales sin agregar nada. */}
       {eligiendoBiblioteca && (
@@ -3184,12 +3184,12 @@ function PanelEnVivo({
               ? error
               : actualizando
                 ? "Armando la vista previa…"
-                : "Agregá una sección para ver cómo queda."}
+                : "Agrega una sección para ver cómo queda."}
           </p>
         )}
         {/* Encima y translúcido, no en lugar del visor: se sigue viendo lo
             anterior, atenuado, que es justo lo que hay que decir — "esto ya no
-            es lo que tenés en pantalla". Un recuadro vacío en cada tecla haría
+            es lo que tienes en pantalla". Un recuadro vacío en cada tecla haría
             imposible comparar, que es para lo que está el panel. */}
         {actualizando && url ? (
           <div className="absolute inset-2 flex items-center justify-center gap-2 rounded-md bg-background/70 text-xs text-muted-foreground">
@@ -3222,10 +3222,10 @@ function PasoVistaPrevia({
   return (
     <div className="space-y-3">
       {/* Nada de "volver a armar": se rearma sola al entrar al paso. Lo único
-          que falta desde acá es verla más grande. */}
+          que falta desde aquí es verla más grande. */}
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Todavía no se guardó nada. Si algo no cuadra, volvé y ajustalo.
+          Todavía no se guardó nada. Si algo no cuadra, vuelve y ajústalo.
         </p>
         <Button
           variant="outline"
@@ -3282,7 +3282,7 @@ function PasoListo({
           </p>
         </div>
         <div className="flex flex-none items-center gap-2">
-          {/* La ficha es donde el informe vive de acá en adelante: desde ahí
+          {/* La ficha es donde el informe vive de aquí en adelante: desde ahí
               se descarga y se elimina si salió mal. */}
           {informeId ? (
             <Button

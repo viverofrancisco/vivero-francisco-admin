@@ -239,7 +239,7 @@ export async function ensureStockParaVender(
     return `"${nombre}" (hay ${v.stock}, se venden ${necesita.get(v.id)})`;
   });
   throw new ValidationError(
-    `No alcanza el stock: ${nombres.join(", ")}. Cargá inventario, o dejá que la variante se venda sin stock.`
+    `No alcanza el stock: ${nombres.join(", ")}. Carga inventario, o dejá que la variante se venda sin stock.`
   );
 }
 

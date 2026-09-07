@@ -204,14 +204,14 @@ export function SuscripcionDetail({
   }, 0);
 
   const guardar = async () => {
-    if (items.length === 0) return toast.error("Agregá al menos un producto");
+    if (items.length === 0) return toast.error("Agrega al menos un producto");
     for (const i of items) {
       if (!i.precio.trim() || Number(i.precio) < 0) {
-        return toast.error(`Ingresá el precio de "${i.nombre}"`);
+        return toast.error(`Ingresa el precio de "${i.nombre}"`);
       }
       if (Number(i.visitasPorPeriodo) < 1) {
         return toast.error(
-          `Ingresá las visitas por período de "${i.nombre}"`
+          `Ingresa las visitas por período de "${i.nombre}"`
         );
       }
     }
@@ -446,7 +446,7 @@ export function SuscripcionDetail({
           {!soloLectura && (
           <>
           {/* Órdenes y no facturas: el borrador que crea el cron todavía no
-              tiene factura, y era justo lo que no se veía desde acá. */}
+              tiene factura, y era justo lo que no se veía desde aquí. */}
           <Card>
             <CardHeader className="border-b">
               <CardTitle className="text-base">Órdenes</CardTitle>
@@ -503,7 +503,7 @@ export function SuscripcionDetail({
                           </span>
                           {/* La orden puede llevar productos sueltos agregados
                               a mano encima del período. Sin decirlo, el número
-                              de acá no cuadraba con el de la orden. */}
+                              de aquí no cuadraba con el de la orden. */}
                           {o.delPlan < o.total - 0.001 && (
                             <span className="block text-xs text-muted-foreground">
                               de {money(o.total)} en total

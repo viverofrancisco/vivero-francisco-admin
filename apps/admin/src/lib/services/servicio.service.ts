@@ -157,7 +157,15 @@ export async function createServicio(
     manejaInventario: producto.tipo === "BIEN",
   });
 
-  return producto;
+  // El id de la variante viaja con la respuesta: la pantalla de alta le pone
+  // el precio y el stock inmediatamente después, y sin esto tendría que salir
+  // a buscarla.
+  const variante = await prisma.variante.findFirst({
+    where: { productoId: producto.id },
+    select: { id: true },
+  });
+
+  return { ...producto, varianteId: variante?.id ?? null };
 }
 
 export interface UpdateServicioPayload {

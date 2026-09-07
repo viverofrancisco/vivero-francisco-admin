@@ -621,7 +621,7 @@ function FilaVariante({
         </span>
       )}
 
-      {/* Precio y stock se escriben acá mismo, pero solo de lo que existe: una
+      {/* Precio y stock se escriben aquí mismo, pero solo de lo que existe: una
           combinación sin guardar no tiene dónde anotarlos. */}
       {variante ? (
         <>

@@ -181,11 +181,19 @@ export function CategoriaForm({
     form.productos.map((p) => p.id).join() !==
       guardado.productos.map((p) => p.id).join();
 
+  /**
+   * Qué falta para poder guardar.
+   *
+   * El nombre y nada más: todo lo demás se puede completar después. Con esto la
+   * barra muestra *Guardar* apagado y dice qué falta, en vez de dejar apretar
+   * para contestar con un error.
+   */
+  const falta = form.nombre.trim() ? null : "Agrega un nombre para guardarla";
+
   const guardar = async () => {
-    if (!form.nombre.trim()) {
-      toast.error("La categoría necesita un nombre");
-      return;
-    }
+    // La barra no deja apretar sin nombre; esto es el cinturón por si alguien
+    // llega por otro lado.
+    if (!form.nombre.trim()) return;
     setGuardando(true);
     try {
       const cuerpo = {
@@ -237,7 +245,24 @@ export function CategoriaForm({
     }
   };
 
-  useRegistrarCambios(hayCambios, guardando, guardar, () => setForm(guardado));
+  /**
+   * Creando, la barra está desde que se abre la pantalla.
+   *
+   * Una categoría nueva es, por definición, algo sin guardar: mostrar la barra
+   * recién cuando alguien escribe algo esconde justo la acción que la pantalla
+   * existe para ofrecer. Editando aparece cuando hay algo distinto, que es lo
+   * que corresponde: ahí lo guardado ya existe.
+   */
+  useRegistrarCambios(
+    esNueva || hayCambios,
+    guardando,
+    guardar,
+    // Creando, descartar es irse: lo que se descarta es la categoría entera,
+    // que todavía no existe, y limpiar campos vacíos no se ve. Editando sí es
+    // volver a lo guardado, que es lo que hay.
+    () => (esNueva ? router.push(backHref) : setForm(guardado)),
+    falta
+  );
 
   /** Sube y deja la foto elegida: subir y elegir son el mismo gesto acá. */
   const subirFoto = async (files: File[]) => {
@@ -624,7 +649,7 @@ export function CategoriaForm({
                   ) : (
                     <>
                       <ImageOff className="h-6 w-6" />
-                      <span className="text-xs">Arrastrá una imagen acá</span>
+                      <span className="text-xs">Arrastra una imagen aquí</span>
                     </>
                   )}
                 </div>

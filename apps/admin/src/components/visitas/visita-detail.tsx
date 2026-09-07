@@ -355,7 +355,7 @@ export function VisitaDetail({
         </Card>
         )}
 
-        {/* Editable acá y no en el formulario de edición: las fotos se sacan
+        {/* Editable aquí y no en el formulario de edición: las fotos se sacan
             mientras se hace el trabajo, y quien las sube no tiene por qué
             pasar por otra pantalla ni esperar a completar la visita. */}
         <ArchivosVisita

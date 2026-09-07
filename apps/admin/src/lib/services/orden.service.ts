@@ -375,7 +375,7 @@ export async function crearOrden(viewer: Viewer, payload: CrearOrdenPayload) {
       error.code === "P2002"
     ) {
       throw new ConflictError(
-        "Parte de ese trabajo ya está en otra orden. Volvé a armarla."
+        "Parte de ese trabajo ya está en otra orden. Vuelve a armarla."
       );
     }
     throw error;
@@ -821,7 +821,7 @@ export async function actualizarOrden(
       error.code === "P2002"
     ) {
       throw new ConflictError(
-        "Parte de ese trabajo ya está en otra orden. Revisá los productos."
+        "Parte de ese trabajo ya está en otra orden. Revisa los productos."
       );
     }
     throw error;

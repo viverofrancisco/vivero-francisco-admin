@@ -106,14 +106,14 @@ export function NuevaSuscripcionForm({
     onItemsChange(items.filter((i) => i.productoId !== productoId));
 
   const guardar = async () => {
-    if (items.length === 0) return toast.error("Agregá al menos un producto");
+    if (items.length === 0) return toast.error("Agrega al menos un producto");
     for (const i of items) {
       if (!i.precio.trim() || Number(i.precio) < 0) {
-        return toast.error(`Ingresá el precio de "${i.nombre}"`);
+        return toast.error(`Ingresa el precio de "${i.nombre}"`);
       }
       if (Number(i.visitasPorPeriodo) < 1) {
         return toast.error(
-          `Ingresá las visitas por período de "${i.nombre}"`
+          `Ingresa las visitas por período de "${i.nombre}"`
         );
       }
     }

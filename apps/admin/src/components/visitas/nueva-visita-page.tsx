@@ -387,7 +387,7 @@ export function NuevaVisitaPage({
           </Card>
 
           {/* De qué plan es la visita: una decisión, de la visita entera. Lo
-              que el plan cubra sale de sus productos, no se elige acá. La X la
+              que el plan cubra sale de sus productos, no se elige aquí. La X la
               desvincula; una opción "Ninguna" diría lo mismo ocupando lugar. */}
           {planes.length > 0 && (
             <Card className="overflow-visible">

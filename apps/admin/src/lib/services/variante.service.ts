@@ -193,7 +193,7 @@ export async function guardarOpciones(
   const total = limpias.reduce((n, o) => n * o.valores.length, 1);
   if (limpias.length > 0 && total > MAX_VARIANTES) {
     throw new ValidationError(
-      `Esa combinación da ${total} variantes y el tope es ${MAX_VARIANTES}. Sacá algún valor.`
+      `Esa combinación da ${total} variantes y el tope es ${MAX_VARIANTES}. Saca algún valor.`
     );
   }
 

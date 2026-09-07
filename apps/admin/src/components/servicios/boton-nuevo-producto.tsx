@@ -56,14 +56,14 @@ export function ProductosHeader() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Opcion
               titulo="Servicio"
-              detalle="Un trabajo: poda, desmalezado, mantenimiento."
-              nota="Sin inventario. El precio se pone en la orden o en el plan."
+              detalle="Algo que se hace."
+              nota="No lleva inventario."
               onClick={() => elegir("SERVICIO")}
             />
             <Opcion
               titulo="Bien"
-              detalle="Algo que se entrega: plantas, tierra, macetas."
-              nota="Lleva precio y stock, y puede tener variantes."
+              detalle="Algo que se entrega."
+              nota="Lleva inventario y puede tener variantes."
               onClick={() => elegir("BIEN")}
             />
           </div>

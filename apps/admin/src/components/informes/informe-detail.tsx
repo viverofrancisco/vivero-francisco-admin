@@ -272,7 +272,7 @@ export function InformeDetail({
                       ) : (
                         <>
                           {/* En otra pestaña: es un archivo distinto del que
-                              muestra la ficha, y reemplazarlo acá haría creer
+                              muestra la ficha, y reemplazarlo aquí haría creer
                               que se volvió a esa versión. */}
                           <a
                             href={v.pdfUrl}

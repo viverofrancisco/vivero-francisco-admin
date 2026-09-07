@@ -510,7 +510,7 @@ export function EmitirFacturaPage({
                 <div className="space-y-1.5">
                   <Label className="text-xs">Emitir con *</Label>
                   {/* Se puede facturar con más de un RUC, y cuál se usa se
-                      decide acá y no en una configuración global. */}
+                      decide aquí y no en una configuración global. */}
                   <CustomSelect
                     value={emisorId}
                     onChange={setEmisorId}
@@ -524,7 +524,7 @@ export function EmitirFacturaPage({
                     }))}
                   />
                   {/* Lo emitido en pruebas se ve igual que lo real en el
-                      portal, así que hay que decirlo fuerte y acá.
+                      portal, así que hay que decirlo fuerte y aquí.
 
                       El texto va dentro de un `span`: en un contenedor flex
                       cada hijo es un ítem, así que un `<b>` suelto se plantaba

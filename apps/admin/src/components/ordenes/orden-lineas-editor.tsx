@@ -174,7 +174,7 @@ export function OrdenLineasEditor({
           return (
             <div key={l.uid} className="rounded-md border p-3 space-y-2">
               <div className="flex items-start gap-2">
-                  {/* El nombre no se edita acá. La orden registra **lo que
+                  {/* El nombre no se edita aquí. La orden registra **lo que
                       se hizo**, y renombrarlo es una decisión de qué sale
                       impreso: eso se toma al emitir, donde además se puede
                       juntar todo en una sola línea. Editarlo en los dos lados

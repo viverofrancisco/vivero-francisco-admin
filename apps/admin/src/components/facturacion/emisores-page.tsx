@@ -458,7 +458,7 @@ function EmisorDialog({
                   {
                     value: "PRODUCCION",
                     label: "Producción",
-                    hint: "Lo que se emita acá son facturas de verdad.",
+                    hint: "Lo que se emita aquí son facturas de verdad.",
                   },
                 ]}
               />
@@ -606,7 +606,7 @@ function CertificadoDialog({
   const [subiendo, setSubiendo] = useState(false);
 
   const subir = async () => {
-    if (!archivo) return toast.error("Elegí el archivo .p12");
+    if (!archivo) return toast.error("Elige el archivo .p12");
     setSubiendo(true);
     try {
       const datos = new FormData();

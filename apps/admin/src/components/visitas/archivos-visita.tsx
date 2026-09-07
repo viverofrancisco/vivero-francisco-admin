@@ -400,7 +400,7 @@ export function ArchivosVisita({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         {/* Mover = cambiar la etiqueta. Va a un diálogo con
-                            buscador y no a una lista acá: los destinos son
+                            buscador y no a una lista aquí: los destinos son
                             todo el catálogo, no los dos de la visita. */}
                         <DropdownMenuItem onClick={() => setMoviendo(a)}>
                           <FolderInput className="mr-2 h-4 w-4" />

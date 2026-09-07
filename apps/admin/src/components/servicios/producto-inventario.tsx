@@ -130,7 +130,7 @@ export function ProductoInventario({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* El libro vive en la ficha de la variante: acá está el
+                  {/* El libro vive en la ficha de la variante: aquí está el
                       número y cómo moverlo, allá el porqué de cada cambio. */}
                   <Link
                     href={`/dashboard/productos/${productoId}/variantes/${variante.id}`}

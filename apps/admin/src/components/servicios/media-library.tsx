@@ -204,7 +204,7 @@ export function MediaLibrary({
               <p className="py-10 text-center text-sm text-muted-foreground">
                 {busqueda
                   ? "Nada con ese nombre."
-                  : "La biblioteca está vacía. Subí la primera foto."}
+                  : "La biblioteca está vacía. Sube la primera foto."}
               </p>
             ) : (
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">

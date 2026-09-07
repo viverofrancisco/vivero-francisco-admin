@@ -176,7 +176,7 @@ export function EmpresaConfigForm({ initial }: { initial: InitialData }) {
               </button>
               <div className="flex-1 space-y-2 text-sm">
                 <p className="text-muted-foreground">
-                  Arrastrá la imagen acá o elegila del computador. PNG, JPG o
+                  Arrastra la imagen aquí o elegila del computador. PNG, JPG o
                   WEBP, máximo 2MB. Recomendado: PNG transparente ~400×200 px.
                 </p>
                 <div className="flex flex-wrap gap-2">

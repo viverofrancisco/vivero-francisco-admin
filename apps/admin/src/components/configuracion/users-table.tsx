@@ -268,7 +268,7 @@ export function UsersTable({
                     <DropdownMenuContent align="end" className="w-64">
                       {/* Lo que se ofrece depende de en qué estado está la
                           persona. Reenviarle una invitación a alguien que ya
-                          trabaja acá, o mandarle un "restablecé tu contraseña"
+                          trabaja aquí, o mandarle un "restablecé tu contraseña"
                           a quien nunca tuvo una, es hablarle de algo que no le
                           pasó. */}
                       {user.revocado ? (

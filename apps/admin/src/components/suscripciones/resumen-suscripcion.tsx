@@ -58,7 +58,7 @@ export function ResumenSuscripcion({
       <CardContent className="space-y-3 text-sm">
         {items.length === 0 ? (
           <p className="text-muted-foreground">
-            Agregá un producto para ver cuánto se cobra.
+            Agrega un producto para ver cuánto se cobra.
           </p>
         ) : (
           <>

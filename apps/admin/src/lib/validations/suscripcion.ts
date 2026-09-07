@@ -2,7 +2,7 @@ import { z } from "zod/v4";
 
 /** Un producto recurrente dentro de la suscripción, con su precio propio. */
 export const suscripcionItemSchema = z.object({
-  productoId: z.string().min(1, "Elegí un producto"),
+  productoId: z.string().min(1, "Elige un producto"),
   precio: z.number().min(0, "El precio no puede ser negativo"),
   /// Porcentaje. En Ecuador conviven 0% y 15%.
   ivaTasa: z.number().min(0).max(100).nullable().optional(),
@@ -33,7 +33,7 @@ export const crearSuscripcionSchema = z.object({
   periodicidad: periodicidadSchema.default("MENSUAL"),
   fechaInicio: z.string().min(1, "La fecha de inicio es obligatoria"),
   notas: z.string().max(1000).nullable().optional(),
-  items: z.array(suscripcionItemSchema).min(1, "Agregá al menos un producto"),
+  items: z.array(suscripcionItemSchema).min(1, "Agrega al menos un producto"),
 });
 
 /**

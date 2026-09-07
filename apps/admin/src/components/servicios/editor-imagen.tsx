@@ -253,7 +253,7 @@ export function EditorImagen({
             // resuelve en la imagen y en las sombras, que sí quedan adentro.
             className="relative mx-auto w-fit touch-none select-none rounded-md bg-muted"
           >
-            {/* Sin `next/image`: acá hace falta el tamaño natural del archivo
+            {/* Sin `next/image`: aquí hace falta el tamaño natural del archivo
                 para traducir el recuadro a píxeles, y el optimizador sirve otra
                 cosa. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}

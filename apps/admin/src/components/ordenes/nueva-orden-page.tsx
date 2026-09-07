@@ -432,7 +432,7 @@ export function NuevaOrdenPage({
    */
   const crear = async ({ cobrar }: { cobrar: boolean }) => {
     if (!clienteId) return toast.error("Selecciona un cliente");
-    if (lineas.length === 0) return toast.error("Agregá al menos un producto");
+    if (lineas.length === 0) return toast.error("Agrega al menos un producto");
     const sinDescripcion = lineas.find((l) => !l.descripcion.trim());
     if (sinDescripcion) return toast.error("Hay un producto sin descripción");
     const negativo = lineas.find((l) => Number(l.precioUnitario) < 0);
@@ -570,7 +570,7 @@ export function NuevaOrdenPage({
                         className="rounded-md border p-3 space-y-2"
                       >
                         <div className="flex items-start gap-2">
-                          {/* El nombre no se edita acá. La orden registra
+                          {/* El nombre no se edita aquí. La orden registra
                               **lo que se hizo**, y renombrarlo es una decisión
                               de qué sale impreso: eso se toma al emitir, donde
                               además se puede juntar todo en una sola línea. */}
@@ -839,7 +839,7 @@ export function NuevaOrdenPage({
             </CardContent>
           </Card>
 
-          {/* A nombre de quién sale la factura. Se pregunta acá y no al emitir:
+          {/* A nombre de quién sale la factura. Se pregunta aquí y no al emitir:
               en ese momento quien vende tiene al cliente delante. */}
           {clienteId && (
             <Card className="overflow-visible">

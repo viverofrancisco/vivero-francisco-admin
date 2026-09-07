@@ -275,7 +275,7 @@ export function ProductoImagenes({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              O arrastrá las imágenes acá.
+              O arrastra las imágenes aquí.
             </p>
           </div>
         </CardContent>

@@ -73,7 +73,7 @@ export function CobroDialog({
   const guardar = async () => {
     const valor = Number(monto);
     if (!Number.isFinite(valor) || valor <= 0) {
-      return toast.error("Ingresá un monto mayor a cero");
+      return toast.error("Ingresa un monto mayor a cero");
     }
     setGuardando(true);
     try {

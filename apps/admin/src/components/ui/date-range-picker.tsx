@@ -365,7 +365,7 @@ export function DateRangePicker({
         <div className="mt-3 flex items-center justify-between gap-3 border-t pt-3">
           <span className="text-xs text-muted-foreground">
             {ancla
-              ? "Elegí la fecha de cierre"
+              ? "Elige la fecha de cierre"
               : (etiqueta(desde, hasta) ?? "Sin fechas")}
           </span>
           <Button

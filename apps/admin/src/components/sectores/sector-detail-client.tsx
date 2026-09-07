@@ -276,7 +276,7 @@ export function SectorDetailClient({
           </Button>
         </div>
 
-        {/* Los clientes son lo que se viene a ver acá: se llevan la columna
+        {/* Los clientes son lo que se viene a ver aquí: se llevan la columna
             grande y toda la altura, con encabezado y paginación fijos y solo
             las filas scrolleando. */}
         <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card lg:col-span-2">
@@ -397,7 +397,7 @@ export function SectorDetailClient({
           <Card>
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Detalles</CardTitle>
-              {/* Editar vive acá y no en el encabezado de la página: lo que se
+              {/* Editar vive aquí y no en el encabezado de la página: lo que se
                   edita es lo que este card muestra. */}
               <CardAction>
                 <Button

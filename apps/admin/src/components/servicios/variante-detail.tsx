@@ -237,7 +237,7 @@ export function VarianteDetail({
                     ))}
                   </dl>
                 )}
-                {/* Los valores no se editan desde acá: cambiarlos en una sola
+                {/* Los valores no se editan desde aquí: cambiarlos en una sola
                     variante rompería la grilla —cada combinación tiene que
                     existir exactamente una vez— así que se editan en las
                     opciones del producto, que las regenera todas juntas. */}
@@ -276,7 +276,7 @@ export function VarianteDetail({
                 onGuardar={(precio) => guardar({ precio })}
               />
 
-              {/* El *si*, acá; el *cuánto* es del producto: la tasa es del bien
+              {/* El *si*, aquí; el *cuánto* es del producto: la tasa es del bien
                   y no de su color. Existe por variante porque hay bienes cuyo
                   gravamen depende de la presentación. */}
               <label className="flex items-center justify-between gap-3 border-t pt-3 text-sm">
