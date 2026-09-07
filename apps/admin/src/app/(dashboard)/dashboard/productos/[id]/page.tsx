@@ -71,7 +71,13 @@ export default async function EditarServicioPage({
             stock: v.stock,
             permiteNegativo: v.permiteNegativo,
             imagenId: v.imagenId,
-            valores: v.valores.map((x) => ({ opcion: x.opcion, valor: x.valor })),
+            valores: v.valores.map((x) => ({
+              // El id del valor, no solo su texto: es con lo que la pantalla
+              // reconoce una variante después de que la renombraron.
+              valorId: x.valorId,
+              opcion: x.opcion,
+              valor: x.valor,
+            })),
           })) ?? []
         }
       />

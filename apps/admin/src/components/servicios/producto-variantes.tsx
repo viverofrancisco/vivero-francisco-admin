@@ -46,7 +46,7 @@ export interface VarianteFila {
   stock: number;
   permiteNegativo: boolean;
   imagenId: string | null;
-  valores: { opcion: string; valor: string }[];
+  valores: { valorId: string; opcion: string; valor: string }[];
 }
 
 /**
@@ -71,8 +71,82 @@ function rangoDePrecios(filas: VarianteFila[]): string {
   return min === max ? precioTexto(min) : `${money(min)} – ${money(max)}`;
 }
 
+/**
+ * Una fila de la lista: una combinación de valores.
+ *
+ * `variante` es `null` en las que **todavía no existen** — las que el servidor
+ * va a crear al guardar. Se muestran igual, porque la pregunta que alguien se
+ * hace al agregar un eje es "¿en qué queda esto?", y contestarla recién después
+ * de guardar obliga a guardar para averiguarlo.
+ */
+interface FilaPreview {
+  clave: string;
+  valores: { opcion: string; valor: string }[];
+  variante: VarianteFila | null;
+}
+
+/**
+ * Todas las combinaciones de los ejes, casadas con las variantes que ya hay.
+ *
+ * El cruce es **por id de valor** y no por su texto: renombrar "Rojo" a "Rojo
+ * intenso" tiene que dejar la misma variante en su lugar, no marcarla como
+ * nueva. Un valor recién tipeado no tiene id, así que su combinación es nueva
+ * por definición.
+ */
+function combinar(
+  opciones: OpcionEditable[],
+  variantes: VarianteFila[]
+): FilaPreview[] {
+  if (opciones.length === 0) {
+    return variantes.map((v) => ({ clave: v.id, valores: [], variante: v }));
+  }
+
+  const ejes = opciones
+    .filter((o) => o.valores.length > 0)
+    .map((o) => ({
+      nombre: o.nombre,
+      valores: o.valores.filter((v) => v.valor.trim() !== ""),
+    }))
+    .filter((o) => o.valores.length > 0);
+  if (ejes.length === 0) return [];
+
+  const combos = ejes.reduce<{ id: string | null; opcion: string; valor: string }[][]>(
+    (acc, eje) =>
+      acc.flatMap((previa) =>
+        eje.valores.map((v) => [
+          ...previa,
+          { id: v.id, opcion: eje.nombre, valor: v.valor },
+        ])
+      ),
+    [[]]
+  );
+
+  /** Las que hay, indexadas por el conjunto de ids de sus valores. */
+  const porIds = new Map(
+    variantes.map((v) => [
+      [...v.valores.map((x) => x.valorId)].sort().join("|"),
+      v,
+    ])
+  );
+
+  return combos.map((combo) => {
+    const ids = combo.map((c) => c.id);
+    const clave = ids.every((id) => id !== null)
+      ? [...(ids as string[])].sort().join("|")
+      : null;
+    return {
+      clave: combo.map((c) => `${c.opcion}=${c.valor}`).join(" · "),
+      valores: combo.map((c) => ({ opcion: c.opcion, valor: c.valor })),
+      variante: (clave && porIds.get(clave)) || null,
+    };
+  });
+}
+
 /** Cómo se lee una variante: "Rojo · Grande", o el producto si no tiene ejes. */
-export function nombreVariante(v: VarianteFila, productoNombre: string): string {
+export function nombreVariante(
+  v: { valores: { valor: string }[] },
+  productoNombre: string
+): string {
   return v.valores.length === 0
     ? productoNombre
     : v.valores.map((x) => x.valor).join(" · ");
@@ -179,6 +253,21 @@ export function ProductoVariantes({
 
   const hayEjes = opciones.length > 0;
 
+  /**
+   * Las combinaciones que van a existir, con las que ya existen adentro.
+   *
+   * Sale de las **opciones del formulario**, así que agregar un eje muestra el
+   * resultado antes de guardar: la pregunta al tocar esto es "¿en qué queda?",
+   * y contestarla recién después de guardar obliga a guardar para averiguarlo.
+   */
+  const filas = useMemo(
+    () => combinar(opciones, variantes),
+    [opciones, variantes]
+  );
+
+  /** Cuántas van a nacer al guardar. */
+  const nuevas = filas.filter((f) => f.variante === null).length;
+
   /** El total, contando solo lo que se cuenta. `null` = nada lleva inventario. */
   const total = useMemo(() => {
     const cuentan = variantes.filter((v) => v.manejaInventario);
@@ -196,13 +285,13 @@ export function ProductoVariantes({
   const grupos = useMemo(() => {
     if (opciones.length < 2) return null;
     const eje = opciones[Math.min(agruparPor, opciones.length - 1)]?.nombre;
-    const mapa = new Map<string, VarianteFila[]>();
-    for (const v of variantes) {
-      const clave = v.valores.find((x) => x.opcion === eje)?.valor ?? "—";
-      mapa.set(clave, [...(mapa.get(clave) ?? []), v]);
+    const mapa = new Map<string, FilaPreview[]>();
+    for (const f of filas) {
+      const clave = f.valores.find((x) => x.opcion === eje)?.valor ?? "—";
+      mapa.set(clave, [...(mapa.get(clave) ?? []), f]);
     }
     return [...mapa.entries()].map(([valor, filas]) => ({ valor, filas }));
-  }, [opciones, agruparPor, variantes]);
+  }, [opciones, agruparPor, filas]);
 
   const alternar = (clave: string) =>
     setAbiertos((prev) => {
@@ -319,7 +408,9 @@ export function ProductoVariantes({
                 {grupos
                   ? grupos.map((g) => {
                       const abierto = abiertos.has(g.valor);
-                      const cuentan = g.filas.filter((v) => v.manejaInventario);
+                      const cuentan = g.filas
+                        .map((f) => f.variante)
+                        .filter((v) => v?.manejaInventario);
                       return (
                         <div key={g.valor}>
                           <button
@@ -342,27 +433,37 @@ export function ProductoVariantes({
                               </span>
                             </span>
                             <span className="w-24 flex-none text-right text-sm tabular-nums text-muted-foreground">
-                              {rangoDePrecios(g.filas)}
+                              {rangoDePrecios(
+                                g.filas
+                                  .map((f) => f.variante)
+                                  .filter((v): v is VarianteFila => v !== null)
+                              )}
                             </span>
                             <span className="w-20 flex-none text-right text-sm tabular-nums text-muted-foreground">
                               {cuentan.length === 0
                                 ? "—"
-                                : cuentan.reduce((n, v) => n + v.stock, 0)}
+                                : cuentan.reduce((n, v) => n + (v?.stock ?? 0), 0)}
                             </span>
                             <span className="w-7 flex-none" />
                           </button>
                           {abierto && (
                             <div className="divide-y border-t bg-muted/20">
-                              {g.filas.map((v) => (
+                              {g.filas.map((f) => (
                                 <FilaVariante
-                                  key={v.id}
-                                  variante={v}
+                                  key={f.clave}
+                                  fila={f}
                                   productoId={productoId}
                                   productoNombre={productoNombre}
                                   imagenes={imagenes}
                                   sangrada
-                                  onPrecio={(precio) => guardarPrecio(v.id, precio)}
-                                  onMover={(m) => mover(v.id, m)}
+                                  onPrecio={(precio) =>
+                                    f.variante && guardarPrecio(f.variante.id, precio)
+                                  }
+                                  onMover={(m) =>
+                                    f.variante
+                                      ? mover(f.variante.id, m)
+                                      : Promise.resolve()
+                                  }
                                 />
                               ))}
                             </div>
@@ -370,15 +471,19 @@ export function ProductoVariantes({
                         </div>
                       );
                     })
-                  : variantes.map((v) => (
+                  : filas.map((f) => (
                       <FilaVariante
-                        key={v.id}
-                        variante={v}
+                        key={f.clave}
+                        fila={f}
                         productoId={productoId}
                         productoNombre={productoNombre}
                         imagenes={imagenes}
-                        onPrecio={(precio) => guardarPrecio(v.id, precio)}
-                        onMover={(m) => mover(v.id, m)}
+                        onPrecio={(precio) =>
+                          f.variante && guardarPrecio(f.variante.id, precio)
+                        }
+                        onMover={(m) =>
+                          f.variante ? mover(f.variante.id, m) : Promise.resolve()
+                        }
                       />
                     ))}
               </div>
@@ -389,6 +494,8 @@ export function ProductoVariantes({
                 {total === null
                   ? "Ninguna de estas variantes lleva inventario."
                   : `Inventario total: ${total} disponible${total === 1 ? "" : "s"}.`}
+                {nuevas > 0 &&
+                  ` ${nuevas} ${nuevas === 1 ? "variante nueva se crea" : "variantes nuevas se crean"} al guardar.`}
               </p>
             </>
           )}
@@ -399,9 +506,15 @@ export function ProductoVariantes({
   );
 }
 
-/** Una variante en la lista: cómo se llama, su SKU y cuánto hay. */
+/**
+ * Una combinación en la lista: cómo se llama, su SKU y cuánto hay.
+ *
+ * Si todavía no existe —se agregó un valor y no se guardó— se muestra igual,
+ * marcada como **Nueva** y sin campos que tocar: no hay a qué variante
+ * mandarle un precio ni un movimiento hasta que el servidor la cree.
+ */
 function FilaVariante({
-  variante,
+  fila,
   productoId,
   productoNombre,
   imagenes,
@@ -409,7 +522,7 @@ function FilaVariante({
   onPrecio,
   onMover,
 }: {
-  variante: VarianteFila;
+  fila: FilaPreview;
   productoId: string;
   productoNombre: string;
   imagenes: ImagenProducto[];
@@ -422,8 +535,13 @@ function FilaVariante({
   }) => Promise<void>;
 }) {
   const from = useAca();
+  const variante = fila.variante;
+  const nombre = nombreVariante(
+    variante ?? { valores: fila.valores },
+    productoNombre
+  );
   const foto =
-    imagenes.find((i) => i.id === variante.imagenId) ?? imagenes[0] ?? null;
+    imagenes.find((i) => i.id === variante?.imagenId) ?? imagenes[0] ?? null;
 
   return (
     <div
@@ -441,74 +559,101 @@ function FilaVariante({
           />
         </div>
       )}
-      {/* El nombre lleva a la ficha de la variante; el número abre el
-          movimiento. Son las dos cosas que se hacen sobre una fila y cada una
-          tiene su blanco, en vez de un menú que las esconda a las dos. */}
-      <Link
-        href={`/dashboard/productos/${productoId}/variantes/${variante.id}?from=${from}`}
-        className="min-w-0 flex-1"
-      >
-        <span className="block truncate text-sm font-medium hover:underline">
-          {nombreVariante(variante, productoNombre)}
-        </span>
-        <span className="block truncate font-mono text-xs text-muted-foreground">
-          {variante.sku ?? "Sin SKU"}
-        </span>
-      </Link>
-      {/* Precio y stock se escriben acá mismo: cargar seis variantes era
-          entrar y salir de seis fichas. La ficha sigue estando para lo demás. */}
-      <div className="relative w-24 flex-none">
-        <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-          $
-        </span>
-        <Input
-          type="number"
-          min="0"
-          step="0.01"
-          defaultValue={variante.precio}
-          aria-label={`Precio de ${nombreVariante(variante, productoNombre)}`}
-          className={`h-8 pl-5 text-right text-sm tabular-nums ${
-            variante.precio === 0 ? "text-amber-700" : ""
-          }`}
-          onBlur={(e) => {
-            const texto = e.target.value.trim();
-            const nuevo = Number(texto);
-            // Vaciar no es "gratis": repone lo que decía. Marcar algo como
-            // gratis es una decisión, borrar un número mientras se reescribe no.
-            if (texto === "" || !Number.isFinite(nuevo) || nuevo < 0) {
-              e.target.value = String(variante.precio);
-              return;
-            }
-            if (nuevo !== variante.precio) onPrecio(nuevo);
-          }}
-        />
-      </div>
-      {/* El stock **no se escribe suelto**: toda edición es un movimiento del
-          libro —qué pasó, cuánto y por qué— y un input inline no tiene dónde
-          poner el "qué pasó". Se toca el número y se edita en el popover. */}
-      {variante.manejaInventario ? (
-        <PopoverStock
-          stock={variante.stock}
-          permiteNegativo={variante.permiteNegativo}
-          onMover={onMover}
+
+      {variante ? (
+        /* El nombre lleva a la ficha de la variante; el número abre el
+           movimiento. Son las dos cosas que se hacen sobre una fila y cada una
+           tiene su blanco, en vez de un menú que las esconda a las dos. */
+        <Link
+          href={`/dashboard/productos/${productoId}/variantes/${variante.id}?from=${from}`}
+          className="min-w-0 flex-1"
         >
-          <button
-            type="button"
-            aria-label={`Stock de ${nombreVariante(variante, productoNombre)}`}
-            className={`w-20 flex-none rounded-md border px-2 py-1 text-right text-sm tabular-nums hover:bg-muted ${
-              variante.stock <= 0 ? "font-medium text-amber-700" : ""
-            }`}
-          >
-            {variante.stock}
-          </button>
-        </PopoverStock>
+          <span className="block truncate text-sm font-medium hover:underline">
+            {nombre}
+          </span>
+          <span className="block truncate font-mono text-xs text-muted-foreground">
+            {variante.sku ?? "Sin SKU"}
+          </span>
+        </Link>
       ) : (
-        <span
-          className="w-20 flex-none text-right text-sm text-muted-foreground"
-          title="No lleva conteo de stock"
-        >
-          —
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-medium">{nombre}</span>
+            <span className="flex-none rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+              Nueva
+            </span>
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            Se crea al guardar
+          </span>
         </span>
+      )}
+
+      {/* Precio y stock se escriben acá mismo, pero solo de lo que existe: una
+          combinación sin guardar no tiene dónde anotarlos. */}
+      {variante ? (
+        <>
+          <div className="relative w-24 flex-none">
+            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+              $
+            </span>
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={variante.precio}
+              aria-label={`Precio de ${nombre}`}
+              className={`h-8 pl-5 text-right text-sm tabular-nums ${
+                variante.precio === 0 ? "text-amber-700" : ""
+              }`}
+              onBlur={(e) => {
+                const texto = e.target.value.trim();
+                const nuevo = Number(texto);
+                // Vaciar no es "gratis": repone lo que decía. Marcar algo como
+                // gratis es una decisión; borrar un número mientras se
+                // reescribe, no.
+                if (texto === "" || !Number.isFinite(nuevo) || nuevo < 0) {
+                  e.target.value = String(variante.precio);
+                  return;
+                }
+                if (nuevo !== variante.precio) onPrecio(nuevo);
+              }}
+            />
+          </div>
+          {variante.manejaInventario ? (
+            <PopoverStock
+              stock={variante.stock}
+              permiteNegativo={variante.permiteNegativo}
+              onMover={onMover}
+            >
+              <button
+                type="button"
+                aria-label={`Stock de ${nombre}`}
+                className={`w-20 flex-none rounded-md border px-2 py-1 text-right text-sm tabular-nums hover:bg-muted ${
+                  variante.stock <= 0 ? "font-medium text-amber-700" : ""
+                }`}
+              >
+                {variante.stock}
+              </button>
+            </PopoverStock>
+          ) : (
+            <span
+              className="w-20 flex-none text-right text-sm text-muted-foreground"
+              title="No lleva conteo de stock"
+            >
+              —
+            </span>
+          )}
+        </>
+      ) : (
+        <>
+          <span className="w-24 flex-none text-right text-sm text-muted-foreground">
+            —
+          </span>
+          <span className="w-20 flex-none text-right text-sm text-muted-foreground">
+            —
+          </span>
+        </>
       )}
     </div>
   );

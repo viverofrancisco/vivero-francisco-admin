@@ -62,6 +62,23 @@ en ella la convierte en un valor y abre otra debajo. La conversión es solo en
 esa fila; borrar el texto de un valor del medio lo deja en blanco para
 reescribirlo, en vez de hacerlo desaparecer bajo el cursor.
 
+### Las combinaciones se ven antes de guardar
+
+La lista de variantes sale de los **ejes del formulario**, no de lo que hay en
+la base: agregar un segundo eje muestra ahí mismo las cuatro combinaciones que
+van a existir, marcadas como *Nueva*. La pregunta al tocar esto es "¿en qué
+queda?", y contestarla recién después de guardar obliga a guardar para
+averiguarlo.
+
+El cruce con lo que ya existe es **por id de valor**, no por su texto:
+renombrar "Rojo" a "Rojo intenso" deja la misma variante en su lugar en vez de
+marcarla como nueva. Un valor recién tipeado no tiene id, así que su combinación
+es nueva por definición. Un eje a medio escribir —sin nombre o sin valores— se
+ignora hasta que tenga los dos.
+
+Una fila que todavía no existe se muestra sin precio ni stock: no hay a qué
+variante mandárselos hasta que el servidor la cree.
+
 ### Guardar los ejes es un reemplazo, no un parche
 
 `guardarOpciones()` recibe el **estado final** —igual que `actualizarOrden()`

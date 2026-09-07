@@ -390,13 +390,15 @@ export function CategoriaForm({
                       />
                     </div>
                   )}
+                  {/* `h-9`, la del selector de al lado: dos controles en la
+                      misma fila con alturas distintas se leen como un error. */}
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
+                    className="h-9"
                     onClick={() => setAgregando(true)}
                   >
-                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    <Plus className="mr-1.5 h-4 w-4" />
                     Agregar productos
                   </Button>
                 </div>
