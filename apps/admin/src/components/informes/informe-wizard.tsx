@@ -1018,109 +1018,114 @@ export function InformeWizard({
 
         {/* Nav footer — only spans the right column. */}
         <div className="border-t bg-card px-6 py-3">
-          <div
-            className={`flex items-center ${
-              terminado ? "justify-end" : "justify-between"
-            }`}
-          >
+          <div className="flex items-center justify-between gap-2">
             {/* Una vez generado no hay Atrás: el informe ya existe y no se
-                  edita, así que volver solo serviría para generar un segundo
-                  informe casi igual sin querer. */}
+                edita, así que volver solo serviría para generar un segundo
+                informe casi igual sin querer. */}
             {!terminado ? (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  disabled={step === 1 || generating}
-                  onClick={() =>
-                    setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
-                  }
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
-                </Button>
-                {/* También editando: una corrección se puede dejar por la
-                    mitad igual que un informe nuevo, y el borrador recuerda de
-                    qué informe era. Mientras tanto el informe sigue publicado
-                    con la versión que tiene — el borrador no lo toca. */}
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground"
-                  onClick={guardarBorrador}
-                  disabled={guardandoBorrador || generating}
-                >
-                  <Save className="mr-1 h-4 w-4" />
-                  {guardandoBorrador ? "Guardando…" : "Guardar borrador"}
-                </Button>
-                {/* Salir de la edición. Solo editando: en uno nuevo no hay a
-                    dónde volver, y el borrador es lo que evita perder el
-                    trabajo. */}
-                {editando ? (
+              <Button
+                variant="ghost"
+                disabled={step === 1 || generating}
+                onClick={() =>
+                  setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
+                }
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
+              </Button>
+            ) : null}
+
+            {/* Todo lo demás junto a la derecha: son las salidas de esta
+                pantalla —seguir, dejarlo guardado, abandonar— y repartidas en
+                los dos extremos había que buscarlas en dos lados. */}
+            <div className="flex items-center gap-2">
+              {!terminado ? (
+                <>
+                  {/* También editando: una corrección se puede dejar por la
+                      mitad igual que un informe nuevo, y el borrador recuerda
+                      de qué informe era. Mientras tanto el informe sigue
+                      publicado con la versión que tiene. */}
                   <Button
                     variant="ghost"
                     className="text-muted-foreground"
-                    onClick={() => setSaliendo(true)}
-                    disabled={generating}
+                    onClick={guardarBorrador}
+                    disabled={guardandoBorrador || generating}
                   >
-                    Cancelar
+                    <Save className="mr-1 h-4 w-4" />
+                    {guardandoBorrador ? "Guardando…" : "Guardar borrador"}
                   </Button>
-                ) : null}
-              </div>
-            ) : null}
-            {step === 1 ? (
-              <Button onClick={nextFromStep1} disabled={!clienteId}>
-                Continuar <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            ) : null}
-            {step === 2 ? (
-              <div className="flex items-center gap-2">
-                {/* Con pantalla ancha el panel de al lado ya la muestra y el
-                      botón solo lo prende y apaga. Sin ancho para el panel,
-                      abrirla a pantalla completa es la única forma de verla. */}
-                <Button
-                  variant="outline"
-                  className="hidden xl:inline-flex"
-                  onClick={() => setPanelEnVivo((v) => !v)}
-                >
-                  <FileText className="mr-1 h-4 w-4" />
-                  {panelEnVivo ? "Ocultar vista previa" : "Ver vista previa"}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="xl:hidden"
-                  onClick={vistaPrevia}
-                  disabled={previsualizando}
-                >
-                  <FileText className="mr-1 h-4 w-4" />
-                  {previsualizando ? "Armando…" : "Vista previa"}
-                </Button>
-                <Button onClick={nextFromStep2}>
+                  {/* Salir de la edición. Solo editando: en uno nuevo no hay a
+                      dónde volver, y el borrador es lo que evita perder el
+                      trabajo. */}
+                  {editando ? (
+                    <Button
+                      variant="ghost"
+                      className="text-muted-foreground"
+                      onClick={() => setSaliendo(true)}
+                      disabled={generating}
+                    >
+                      Cancelar
+                    </Button>
+                  ) : null}
+                </>
+              ) : null}
+
+              {step === 1 ? (
+                <Button onClick={nextFromStep1} disabled={!clienteId}>
                   Continuar <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
-              </div>
-            ) : null}
-            {step === 3 ? (
-              <Button onClick={nextFromStep3} disabled={previsualizando}>
-                {previsualizando ? "Armando…" : "Ver cómo queda"}{" "}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            ) : null}
-            {step === 4 ? (
-              <Button
-                onClick={generate}
-                disabled={generating || previsualizando}
-              >
-                {generating
-                  ? "Generando…"
-                  : editando
-                    ? "Guardar versión nueva"
-                    : "Generar PDF"}{" "}
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            ) : null}
-            {step === 5 ? (
-              <Button onClick={() => router.push("/dashboard/informes")}>
-                Volver al listado
-              </Button>
-            ) : null}
+              ) : null}
+              {step === 2 ? (
+                <>
+                  {/* Con pantalla ancha el panel de al lado ya la muestra y el
+                      botón solo lo prende y apaga. Sin ancho para el panel,
+                      abrirla a pantalla completa es la única forma de verla. */}
+                  <Button
+                    variant="outline"
+                    className="hidden xl:inline-flex"
+                    onClick={() => setPanelEnVivo((v) => !v)}
+                  >
+                    <FileText className="mr-1 h-4 w-4" />
+                    {panelEnVivo ? "Ocultar vista previa" : "Ver vista previa"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="xl:hidden"
+                    onClick={vistaPrevia}
+                    disabled={previsualizando}
+                  >
+                    <FileText className="mr-1 h-4 w-4" />
+                    {previsualizando ? "Armando…" : "Vista previa"}
+                  </Button>
+                  <Button onClick={nextFromStep2}>
+                    Continuar <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </>
+              ) : null}
+              {step === 3 ? (
+                <Button onClick={nextFromStep3} disabled={previsualizando}>
+                  {previsualizando ? "Armando…" : "Ver cómo queda"}{" "}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : null}
+              {step === 4 ? (
+                <Button
+                  onClick={generate}
+                  disabled={generating || previsualizando}
+                >
+                  {generating
+                    ? "Generando…"
+                    : editando
+                      ? "Guardar versión nueva"
+                      : "Generar PDF"}{" "}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : null}
+              {step === 5 ? (
+                <Button onClick={() => router.push("/dashboard/informes")}>
+                  Volver al listado
+                </Button>
+              ) : null}
+            </div>
           </div>
         </div>
       </main>

@@ -533,13 +533,7 @@ async function armarDatosDelInforme(
   if (payload.secciones.length === 0) {
     throw new ValidationError("Agrega al menos una sección al informe.");
   }
-  const firmantesNormalizados = (payload.firmantes ?? [])
-    .map((f) => ({
-      nombre: f.nombre.trim(),
-      cedula: (f.cedula ?? "").trim() || null,
-    }))
-    .filter((f) => f.nombre.length > 0)
-    .slice(0, 3);
+  const firmantesNormalizados = normalizarFirmantes(payload.firmantes);
 
   // Authorization check on each visita.
   const visitas = await Promise.all(
@@ -714,11 +708,7 @@ async function armarDatosDelInforme(
     }
   }
 
-  // Mediodía UTC y no medianoche: en Ecuador (UTC-5) medianoche cae el día
-  // anterior, y el PDF saldría con la fecha corrida.
-  const fechaImpresa = payload.fecha
-    ? new Date(`${payload.fecha}T12:00:00.000Z`)
-    : hoyEnEcuador();
+  const fechaImpresa = fechaImpresaDe(payload);
 
   const renderData: InformeRenderData = {
     fecha: fechaImpresa,
@@ -756,6 +746,127 @@ export async function previsualizarInforme(
     borrador: opciones.borrador ?? false,
   });
   return renderInformePDF(renderData);
+}
+
+/**
+ * La fecha que sale impresa.
+ *
+ * Mediodía UTC y no medianoche: en Ecuador (UTC-5) medianoche cae el día
+ * anterior y el PDF saldría con la fecha corrida.
+ */
+function normalizarFirmantes(
+  firmantes: InformeFirmanteInput[] | undefined
+): Array<{ nombre: string; cedula: string | null }> {
+  return (firmantes ?? [])
+    .map((f) => ({
+      nombre: f.nombre.trim(),
+      cedula: (f.cedula ?? "").trim() || null,
+    }))
+    .filter((f) => f.nombre.length > 0)
+    .slice(0, 3);
+}
+
+/**
+ * Las fechas que abarca el informe, según sus visitas.
+ *
+ * Aparte del armado completo porque el camino en que solo cambian las visitas
+ * necesita esto y nada más: bajar las fotos y rearmar el PDF para corregir un
+ * vínculo que no se imprime son tres segundos tirados.
+ */
+async function rangoDeVisitas(
+  viewer: Viewer,
+  payload: InformeGeneratePayload
+): Promise<{ fechaDesde?: Date; fechaHasta?: Date }> {
+  const visitas = await Promise.all(
+    payload.visitaIds.map((id) => getVisitaForViewer(id, viewer))
+  );
+  for (const v of visitas) {
+    if (v.cliente.id !== payload.clienteId) {
+      throw new ValidationError("Una de las visitas no pertenece al cliente.");
+    }
+  }
+  const fechas = visitas
+    .map((v) => (v as unknown as { fechaProgramada: Date }).fechaProgramada)
+    .sort((a, b) => a.getTime() - b.getTime());
+  return { fechaDesde: fechas[0], fechaHasta: fechas[fechas.length - 1] };
+}
+
+function fechaImpresaDe(payload: InformeGeneratePayload): Date {
+  return payload.fecha
+    ? new Date(`${payload.fecha}T12:00:00.000Z`)
+    : hoyEnEcuador();
+}
+
+/**
+ * Si lo que se está por guardar cambia **lo que sale impreso**.
+ *
+ * Es lo que decide si nace una versión. Una versión existe porque hay otro PDF
+ * entregable; si el documento sale igual, agregar una fila diría que se corrigió
+ * algo y no se corrigió nada.
+ *
+ * Las **visitas quedan afuera a propósito**: no se imprimen —el renderizador ni
+ * las mira— son el vínculo con el trabajo que el informe cuenta, y corregir ese
+ * vínculo no cambia el papel. El cliente tampoco entra: no se puede cambiar.
+ *
+ * Compara contra la versión vigente y no contra las columnas del informe porque
+ * es la versión la que sabe con qué se armó el PDF que hay.
+ */
+function cambiaElPdf(
+  payload: InformeGeneratePayload,
+  firmantes: Array<{ nombre: string; cedula: string | null }>,
+  vigente: {
+    titulo: string;
+    fecha: Date;
+    contenido: unknown;
+  } | null
+): boolean {
+  // Sin versión vigente —o con una de las viejas, rellenadas sin contenido— no
+  // hay con qué comparar, así que se asume que sí. Errar hacia crear una
+  // versión de más es preferible: la de menos perdería el PDF anterior.
+  if (!vigente) return true;
+  const c = vigente.contenido as
+    | { firmantes?: unknown; secciones?: unknown }
+    | null;
+  if (!c || typeof c !== "object" || !c.secciones) return true;
+
+  if (payload.titulo !== vigente.titulo) return true;
+  // Por día y no por instante: la columna es `@db.Date`, así que vuelve a
+  // medianoche UTC y nunca iba a coincidir con el mediodía con que se guarda —
+  // lo que hacía que "guardar sin tocar nada" creara una versión igual.
+  const dia = (d: Date) => d.toISOString().slice(0, 10);
+  if (dia(fechaImpresaDe(payload)) !== dia(vigente.fecha)) return true;
+  return (
+    !mismoJson(firmantes, c.firmantes) ||
+    !mismoJson(payload.secciones, c.secciones)
+  );
+}
+
+/**
+ * Si dos valores JSON dicen lo mismo, sin importar el orden de las claves.
+ *
+ * **`jsonb` de Postgres reordena las claves** al guardar: `{titulo, fotos}`
+ * vuelve como `{fotos, titulo}`. Comparar el texto de `JSON.stringify` daba
+ * siempre distinto, así que cada guardado creaba una versión aunque no se
+ * hubiera tocado nada. Se ordenan las claves de los dos lados antes de comparar.
+ *
+ * El orden de los **arreglos** sí importa y se respeta: mover una sección de
+ * lugar cambia el PDF.
+ */
+function mismoJson(a: unknown, b: unknown): boolean {
+  return JSON.stringify(canonico(a)) === JSON.stringify(canonico(b));
+}
+
+function canonico(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(canonico);
+  if (v && typeof v === "object") {
+    return Object.fromEntries(
+      Object.entries(v as Record<string, unknown>)
+        .filter(([, valor]) => valor !== undefined)
+        .sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))
+        .map(([clave, valor]) => [clave, canonico(valor)])
+    );
+  }
+  return v;
 }
 
 /** Las secciones tal como se guardan, iguales al crear y al editar. */
@@ -799,7 +910,7 @@ function seccionesParaGuardar(
  */
 function contenidoDeVersion(
   payload: InformeGeneratePayload,
-  firmantes: InformeFirmanteInput[]
+  firmantes: Array<{ nombre: string; cedula: string | null }>
 ) {
   return {
     visitaIds: payload.visitaIds,
@@ -911,7 +1022,19 @@ export async function editarInforme(
 
   const actual = await prisma.informe.findUnique({
     where: { id },
-    select: { id: true, clienteId: true, versionActual: true },
+    select: {
+      id: true,
+      clienteId: true,
+      versionActual: true,
+      pdfUrl: true,
+      visitas: { select: { visitaId: true } },
+      // La vigente: con qué se armó el PDF que hay ahora.
+      versiones: {
+        orderBy: { version: "desc" },
+        take: 1,
+        select: { titulo: true, fecha: true, contenido: true },
+      },
+    },
   });
   if (!actual) throw new NotFoundError("Informe no encontrado");
   if (actual.clienteId !== payload.clienteId) {
@@ -920,18 +1043,68 @@ export async function editarInforme(
     throw new ValidationError("Un informe no cambia de cliente.");
   }
 
+  const firmantesNormalizados = normalizarFirmantes(payload.firmantes);
+  if (firmantesNormalizados.length === 0) {
+    throw new ValidationError("Agrega al menos un firmante.");
+  }
+
+  const hayQueRehacer = cambiaElPdf(
+    payload,
+    firmantesNormalizados,
+    actual.versiones[0] ?? null
+  );
+  const cambianLasVisitas =
+    JSON.stringify([...actual.visitas.map((v) => v.visitaId)].sort()) !==
+    JSON.stringify([...payload.visitaIds].sort());
+
+  // Nada cambió: no se escribe. Estampar "última edición" por haber apretado
+  // guardar diría que alguien tocó el informe, y no lo tocó.
+  if (!hayQueRehacer && !cambianLasVisitas) {
+    return {
+      id,
+      pdfUrl: actual.pdfUrl,
+      version: actual.versionActual,
+      nuevaVersion: false,
+      huboCambios: false,
+    };
+  }
+
+  // Solo las visitas: se corrige el vínculo y listo. No sale otro PDF, así que
+  // no hay versión que crear — una versión existe porque hay otro documento
+  // entregable, y acá el papel es el mismo.
+  if (!hayQueRehacer) {
+    const { fechaDesde, fechaHasta } = await rangoDeVisitas(viewer, payload);
+    await prisma.$transaction(async (tx) => {
+      await tx.informeVisita.deleteMany({ where: { informeId: id } });
+      await tx.informe.update({
+        where: { id },
+        data: {
+          fechaDesde,
+          fechaHasta,
+          updatedById: viewer.id,
+          updatedByNombre: viewer.nombre ?? null,
+          visitas: {
+            create: payload.visitaIds.map((vid) => ({ visitaId: vid })),
+          },
+        },
+      });
+    });
+    return {
+      id,
+      pdfUrl: actual.pdfUrl,
+      version: actual.versionActual,
+      nuevaVersion: false,
+      huboCambios: true,
+    };
+  }
+
   const {
     renderData,
     seccionesResueltas,
-    firmantesNormalizados,
     fechaImpresa,
     fechaDesde,
     fechaHasta,
   } = await armarDatosDelInforme(viewer, payload, { borrador: false });
-
-  if (firmantesNormalizados.length === 0) {
-    throw new ValidationError("Agrega al menos un firmante.");
-  }
 
   const pdfBuffer = await renderInformePDF(renderData);
   const pdfKey = `informes/${payload.clienteId}/${randomUUID()}.pdf`;
@@ -987,7 +1160,7 @@ export async function editarInforme(
     });
   });
 
-  return { id, pdfUrl, version };
+  return { id, pdfUrl, version, nuevaVersion: true, huboCambios: true }
 }
 
 // ──────────────────────────────────────────────
@@ -1102,54 +1275,3 @@ export async function deleteInforme(viewer: Viewer, id: string) {
   ]);
 }
 
-/**
- * Cambia qué visitas cubre un informe ya generado.
- *
- * **No contradice que el informe sea inmutable.** Lo que no se toca es el
- * documento: su título, sus secciones, sus fotos y el PDF que el cliente ya
- * tiene. Las visitas no salen impresas —el renderizador ni las mira— son el
- * vínculo con el trabajo que el informe cuenta, y ese vínculo se corrige:
- * alguien marcó una visita de más, o faltó la del martes.
- *
- * Reemplaza el conjunto entero, como todo lo que se guarda desde una pantalla:
- * lo que llega es el estado final.
- */
-export async function actualizarVisitasDelInforme(
-  viewer: Viewer,
-  informeId: string,
-  visitaIds: string[]
-) {
-  ensureInformes(viewer);
-
-  const informe = await prisma.informe.findUnique({
-    where: { id: informeId },
-    select: { id: true, clienteId: true },
-  });
-  if (!informe) throw new NotFoundError("Informe no encontrado");
-
-  // Cada visita, con el mismo permiso que en cualquier otro lado, y del mismo
-  // cliente: sin esto un id a mano metería el trabajo de otro en este informe.
-  // Que el informe sea visible lo garantiza `getInforme` al devolverlo.
-  const visitas = await Promise.all(
-    visitaIds.map((id) => getVisitaForViewer(id, viewer))
-  );
-  for (const v of visitas) {
-    if (v.cliente.id !== informe.clienteId) {
-      throw new ValidationError("Una de las visitas no es de este cliente.");
-    }
-  }
-
-  await prisma.$transaction([
-    prisma.informeVisita.deleteMany({ where: { informeId } }),
-    ...(visitaIds.length > 0
-      ? [
-          prisma.informeVisita.createMany({
-            data: visitaIds.map((visitaId) => ({ informeId, visitaId })),
-            skipDuplicates: true,
-          }),
-        ]
-      : []),
-  ]);
-
-  return getInforme(viewer, informeId);
-}

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -33,9 +32,7 @@ import {
   ArrowLeft,
   ChevronDown,
   ImageIcon,
-  Pencil,
 } from "lucide-react";
-import { SelectorVisitasInforme } from "./selector-visitas-informe";
 import { toast } from "sonner";
 
 export interface InformeDetailData {
@@ -98,7 +95,6 @@ export function InformeDetail({
   const aca = useAca();
   const [borrando, setBorrando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
-  const [editandoVisitas, setEditandoVisitas] = useState(false);
 
   async function eliminar() {
     setEliminando(true);
@@ -303,17 +299,6 @@ export function InformeDetail({
               <CardTitle className="text-base">
                 Visitas incluidas ({informe.visitas.length})
               </CardTitle>
-              <CardAction>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditandoVisitas(true)}
-                >
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                  Editar
-                </Button>
-              </CardAction>
             </CardHeader>
             <CardContent className="p-0">
               <ul className="divide-y text-sm">
@@ -417,18 +402,6 @@ export function InformeDetail({
         </DialogContent>
       </Dialog>
 
-      {editandoVisitas && (
-        <SelectorVisitasInforme
-          informeId={informe.id}
-          clienteId={informe.cliente.id}
-          elegidas={informe.visitas.map((v) => v.id)}
-          onCerrar={() => setEditandoVisitas(false)}
-          onGuardado={() => {
-            setEditandoVisitas(false);
-            router.refresh();
-          }}
-        />
-      )}
     </div>
   );
 }
