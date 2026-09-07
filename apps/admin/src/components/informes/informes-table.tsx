@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -29,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, Eye, MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -191,9 +192,10 @@ export function InformesTable({
                     // tocar el menú además navegaba al editor.
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {/* Editar no está: para eso se toca la fila. Lo que queda
-                        son las cosas que se le hacen al PDF — y un borrador no
-                        tiene ninguna, porque todavía no hay PDF. */}
+                    {/* Editar también acá: tocar la fila lo abre, pero el
+                        menú es donde la gente busca qué se le puede hacer a
+                        algo, y "no está porque se toca la fila" es una regla
+                        que hay que saber de antemano. */}
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={
@@ -210,8 +212,20 @@ export function InformesTable({
                       >
                         <MoreVertical className="h-4 w-4" />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {item.pdfUrl ? (
+                      {/* Ancho propio: por defecto el menú toma el del botón
+                          que lo abre, y este es un botón de icono. */}
+                      <DropdownMenuContent align="end" className="w-48">
+                        {item.tipo === "borrador" ? (
+                          <DropdownMenuItem
+                            render={
+                              <Link
+                                href={`/dashboard/informes/nuevo?borrador=${item.id}`}
+                              />
+                            }
+                          >
+                            Seguir armándolo
+                          </DropdownMenuItem>
+                        ) : (
                           <>
                             {/* El PDF, en una pestaña aparte: mirarlo para
                                 saber si es el que se busca no debería sacar a
@@ -219,14 +233,13 @@ export function InformesTable({
                             <DropdownMenuItem
                               render={
                                 <a
-                                  href={item.pdfUrl}
+                                  href={item.pdfUrl ?? "#"}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 />
                               }
                             >
-                              <Eye className="mr-2 h-4 w-4" />
-                              Vista previa
+                              Abrir el PDF
                             </DropdownMenuItem>
                             {/* Por nuestra ruta y no directo a R2: `download`
                                 no funciona entre dominios, así que el enlace
@@ -238,17 +251,25 @@ export function InformesTable({
                                 />
                               }
                             >
-                              <Download className="mr-2 h-4 w-4" />
                               Descargar
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              render={
+                                <Link
+                                  href={`/dashboard/informes/${item.id}/editar?from=${aca()}`}
+                                />
+                              }
+                            >
+                              Editar
+                            </DropdownMenuItem>
                           </>
-                        ) : null}
+                        )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => setBorrando(item)}
                           className="text-destructive"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
