@@ -28,10 +28,12 @@ export type AggregateInforme = {
 
 export type InformeAvgAggregateOutputType = {
   numero: number | null
+  versionActual: number | null
 }
 
 export type InformeSumAggregateOutputType = {
   numero: number | null
+  versionActual: number | null
 }
 
 export type InformeMinAggregateOutputType = {
@@ -45,8 +47,12 @@ export type InformeMinAggregateOutputType = {
   pdfKey: string | null
   pdfUrl: string | null
   generatedById: string | null
+  generatedByNombre: string | null
   generatedAt: Date | null
+  updatedById: string | null
+  updatedByNombre: string | null
   updatedAt: Date | null
+  versionActual: number | null
 }
 
 export type InformeMaxAggregateOutputType = {
@@ -60,8 +66,12 @@ export type InformeMaxAggregateOutputType = {
   pdfKey: string | null
   pdfUrl: string | null
   generatedById: string | null
+  generatedByNombre: string | null
   generatedAt: Date | null
+  updatedById: string | null
+  updatedByNombre: string | null
   updatedAt: Date | null
+  versionActual: number | null
 }
 
 export type InformeCountAggregateOutputType = {
@@ -76,18 +86,24 @@ export type InformeCountAggregateOutputType = {
   pdfUrl: number
   firmantes: number
   generatedById: number
+  generatedByNombre: number
   generatedAt: number
+  updatedById: number
+  updatedByNombre: number
   updatedAt: number
+  versionActual: number
   _all: number
 }
 
 
 export type InformeAvgAggregateInputType = {
   numero?: true
+  versionActual?: true
 }
 
 export type InformeSumAggregateInputType = {
   numero?: true
+  versionActual?: true
 }
 
 export type InformeMinAggregateInputType = {
@@ -101,8 +117,12 @@ export type InformeMinAggregateInputType = {
   pdfKey?: true
   pdfUrl?: true
   generatedById?: true
+  generatedByNombre?: true
   generatedAt?: true
+  updatedById?: true
+  updatedByNombre?: true
   updatedAt?: true
+  versionActual?: true
 }
 
 export type InformeMaxAggregateInputType = {
@@ -116,8 +136,12 @@ export type InformeMaxAggregateInputType = {
   pdfKey?: true
   pdfUrl?: true
   generatedById?: true
+  generatedByNombre?: true
   generatedAt?: true
+  updatedById?: true
+  updatedByNombre?: true
   updatedAt?: true
+  versionActual?: true
 }
 
 export type InformeCountAggregateInputType = {
@@ -132,8 +156,12 @@ export type InformeCountAggregateInputType = {
   pdfUrl?: true
   firmantes?: true
   generatedById?: true
+  generatedByNombre?: true
   generatedAt?: true
+  updatedById?: true
+  updatedByNombre?: true
   updatedAt?: true
+  versionActual?: true
   _all?: true
 }
 
@@ -235,8 +263,12 @@ export type InformeGroupByOutputType = {
   pdfUrl: string
   firmantes: runtime.JsonValue
   generatedById: string
+  generatedByNombre: string | null
   generatedAt: Date
+  updatedById: string | null
+  updatedByNombre: string | null
   updatedAt: Date
+  versionActual: number
   _count: InformeCountAggregateOutputType | null
   _avg: InformeAvgAggregateOutputType | null
   _sum: InformeSumAggregateOutputType | null
@@ -274,12 +306,18 @@ export type InformeWhereInput = {
   pdfUrl?: Prisma.StringFilter<"Informe"> | string
   firmantes?: Prisma.JsonFilter<"Informe">
   generatedById?: Prisma.StringFilter<"Informe"> | string
+  generatedByNombre?: Prisma.StringNullableFilter<"Informe"> | string | null
   generatedAt?: Prisma.DateTimeFilter<"Informe"> | Date | string
+  updatedById?: Prisma.StringNullableFilter<"Informe"> | string | null
+  updatedByNombre?: Prisma.StringNullableFilter<"Informe"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"Informe"> | Date | string
+  versionActual?: Prisma.IntFilter<"Informe"> | number
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
   generatedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   visitas?: Prisma.InformeVisitaListRelationFilter
   secciones?: Prisma.InformeSeccionListRelationFilter
+  versiones?: Prisma.InformeVersionListRelationFilter
 }
 
 export type InformeOrderByWithRelationInput = {
@@ -294,12 +332,18 @@ export type InformeOrderByWithRelationInput = {
   pdfUrl?: Prisma.SortOrder
   firmantes?: Prisma.SortOrder
   generatedById?: Prisma.SortOrder
+  generatedByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   generatedAt?: Prisma.SortOrder
+  updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  versionActual?: Prisma.SortOrder
   cliente?: Prisma.ClienteOrderByWithRelationInput
   generatedBy?: Prisma.UserOrderByWithRelationInput
+  updatedBy?: Prisma.UserOrderByWithRelationInput
   visitas?: Prisma.InformeVisitaOrderByRelationAggregateInput
   secciones?: Prisma.InformeSeccionOrderByRelationAggregateInput
+  versiones?: Prisma.InformeVersionOrderByRelationAggregateInput
 }
 
 export type InformeWhereUniqueInput = Prisma.AtLeast<{
@@ -317,12 +361,18 @@ export type InformeWhereUniqueInput = Prisma.AtLeast<{
   pdfUrl?: Prisma.StringFilter<"Informe"> | string
   firmantes?: Prisma.JsonFilter<"Informe">
   generatedById?: Prisma.StringFilter<"Informe"> | string
+  generatedByNombre?: Prisma.StringNullableFilter<"Informe"> | string | null
   generatedAt?: Prisma.DateTimeFilter<"Informe"> | Date | string
+  updatedById?: Prisma.StringNullableFilter<"Informe"> | string | null
+  updatedByNombre?: Prisma.StringNullableFilter<"Informe"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"Informe"> | Date | string
+  versionActual?: Prisma.IntFilter<"Informe"> | number
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
   generatedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   visitas?: Prisma.InformeVisitaListRelationFilter
   secciones?: Prisma.InformeSeccionListRelationFilter
+  versiones?: Prisma.InformeVersionListRelationFilter
 }, "id" | "numero">
 
 export type InformeOrderByWithAggregationInput = {
@@ -337,8 +387,12 @@ export type InformeOrderByWithAggregationInput = {
   pdfUrl?: Prisma.SortOrder
   firmantes?: Prisma.SortOrder
   generatedById?: Prisma.SortOrder
+  generatedByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   generatedAt?: Prisma.SortOrder
+  updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  versionActual?: Prisma.SortOrder
   _count?: Prisma.InformeCountOrderByAggregateInput
   _avg?: Prisma.InformeAvgOrderByAggregateInput
   _max?: Prisma.InformeMaxOrderByAggregateInput
@@ -361,8 +415,12 @@ export type InformeScalarWhereWithAggregatesInput = {
   pdfUrl?: Prisma.StringWithAggregatesFilter<"Informe"> | string
   firmantes?: Prisma.JsonWithAggregatesFilter<"Informe">
   generatedById?: Prisma.StringWithAggregatesFilter<"Informe"> | string
+  generatedByNombre?: Prisma.StringNullableWithAggregatesFilter<"Informe"> | string | null
   generatedAt?: Prisma.DateTimeWithAggregatesFilter<"Informe"> | Date | string
+  updatedById?: Prisma.StringNullableWithAggregatesFilter<"Informe"> | string | null
+  updatedByNombre?: Prisma.StringNullableWithAggregatesFilter<"Informe"> | string | null
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Informe"> | Date | string
+  versionActual?: Prisma.IntWithAggregatesFilter<"Informe"> | number
 }
 
 export type InformeCreateInput = {
@@ -375,12 +433,17 @@ export type InformeCreateInput = {
   pdfKey: string
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   cliente: Prisma.ClienteCreateNestedOneWithoutInformesInput
   generatedBy: Prisma.UserCreateNestedOneWithoutInformesGeneradosInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateInput = {
@@ -395,10 +458,15 @@ export type InformeUncheckedCreateInput = {
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById: string
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUpdateInput = {
@@ -410,12 +478,17 @@ export type InformeUpdateInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutInformesNestedInput
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutInformesGeneradosNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateInput = {
@@ -430,10 +503,15 @@ export type InformeUncheckedUpdateInput = {
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeCreateManyInput = {
@@ -448,8 +526,12 @@ export type InformeCreateManyInput = {
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById: string
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
 }
 
 export type InformeUpdateManyMutationInput = {
@@ -461,8 +543,11 @@ export type InformeUpdateManyMutationInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type InformeUncheckedUpdateManyInput = {
@@ -477,8 +562,12 @@ export type InformeUncheckedUpdateManyInput = {
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type InformeListRelationFilter = {
@@ -503,12 +592,17 @@ export type InformeCountOrderByAggregateInput = {
   pdfUrl?: Prisma.SortOrder
   firmantes?: Prisma.SortOrder
   generatedById?: Prisma.SortOrder
+  generatedByNombre?: Prisma.SortOrder
   generatedAt?: Prisma.SortOrder
+  updatedById?: Prisma.SortOrder
+  updatedByNombre?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  versionActual?: Prisma.SortOrder
 }
 
 export type InformeAvgOrderByAggregateInput = {
   numero?: Prisma.SortOrder
+  versionActual?: Prisma.SortOrder
 }
 
 export type InformeMaxOrderByAggregateInput = {
@@ -522,8 +616,12 @@ export type InformeMaxOrderByAggregateInput = {
   pdfKey?: Prisma.SortOrder
   pdfUrl?: Prisma.SortOrder
   generatedById?: Prisma.SortOrder
+  generatedByNombre?: Prisma.SortOrder
   generatedAt?: Prisma.SortOrder
+  updatedById?: Prisma.SortOrder
+  updatedByNombre?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  versionActual?: Prisma.SortOrder
 }
 
 export type InformeMinOrderByAggregateInput = {
@@ -537,12 +635,17 @@ export type InformeMinOrderByAggregateInput = {
   pdfKey?: Prisma.SortOrder
   pdfUrl?: Prisma.SortOrder
   generatedById?: Prisma.SortOrder
+  generatedByNombre?: Prisma.SortOrder
   generatedAt?: Prisma.SortOrder
+  updatedById?: Prisma.SortOrder
+  updatedByNombre?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  versionActual?: Prisma.SortOrder
 }
 
 export type InformeSumOrderByAggregateInput = {
   numero?: Prisma.SortOrder
+  versionActual?: Prisma.SortOrder
 }
 
 export type InformeScalarRelationFilter = {
@@ -557,10 +660,24 @@ export type InformeCreateNestedManyWithoutGeneratedByInput = {
   connect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
 }
 
+export type InformeCreateNestedManyWithoutUpdatedByInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutUpdatedByInput, Prisma.InformeUncheckedCreateWithoutUpdatedByInput> | Prisma.InformeCreateWithoutUpdatedByInput[] | Prisma.InformeUncheckedCreateWithoutUpdatedByInput[]
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutUpdatedByInput | Prisma.InformeCreateOrConnectWithoutUpdatedByInput[]
+  createMany?: Prisma.InformeCreateManyUpdatedByInputEnvelope
+  connect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+}
+
 export type InformeUncheckedCreateNestedManyWithoutGeneratedByInput = {
   create?: Prisma.XOR<Prisma.InformeCreateWithoutGeneratedByInput, Prisma.InformeUncheckedCreateWithoutGeneratedByInput> | Prisma.InformeCreateWithoutGeneratedByInput[] | Prisma.InformeUncheckedCreateWithoutGeneratedByInput[]
   connectOrCreate?: Prisma.InformeCreateOrConnectWithoutGeneratedByInput | Prisma.InformeCreateOrConnectWithoutGeneratedByInput[]
   createMany?: Prisma.InformeCreateManyGeneratedByInputEnvelope
+  connect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+}
+
+export type InformeUncheckedCreateNestedManyWithoutUpdatedByInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutUpdatedByInput, Prisma.InformeUncheckedCreateWithoutUpdatedByInput> | Prisma.InformeCreateWithoutUpdatedByInput[] | Prisma.InformeUncheckedCreateWithoutUpdatedByInput[]
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutUpdatedByInput | Prisma.InformeCreateOrConnectWithoutUpdatedByInput[]
+  createMany?: Prisma.InformeCreateManyUpdatedByInputEnvelope
   connect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
 }
 
@@ -578,6 +695,20 @@ export type InformeUpdateManyWithoutGeneratedByNestedInput = {
   deleteMany?: Prisma.InformeScalarWhereInput | Prisma.InformeScalarWhereInput[]
 }
 
+export type InformeUpdateManyWithoutUpdatedByNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutUpdatedByInput, Prisma.InformeUncheckedCreateWithoutUpdatedByInput> | Prisma.InformeCreateWithoutUpdatedByInput[] | Prisma.InformeUncheckedCreateWithoutUpdatedByInput[]
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutUpdatedByInput | Prisma.InformeCreateOrConnectWithoutUpdatedByInput[]
+  upsert?: Prisma.InformeUpsertWithWhereUniqueWithoutUpdatedByInput | Prisma.InformeUpsertWithWhereUniqueWithoutUpdatedByInput[]
+  createMany?: Prisma.InformeCreateManyUpdatedByInputEnvelope
+  set?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  disconnect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  delete?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  connect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  update?: Prisma.InformeUpdateWithWhereUniqueWithoutUpdatedByInput | Prisma.InformeUpdateWithWhereUniqueWithoutUpdatedByInput[]
+  updateMany?: Prisma.InformeUpdateManyWithWhereWithoutUpdatedByInput | Prisma.InformeUpdateManyWithWhereWithoutUpdatedByInput[]
+  deleteMany?: Prisma.InformeScalarWhereInput | Prisma.InformeScalarWhereInput[]
+}
+
 export type InformeUncheckedUpdateManyWithoutGeneratedByNestedInput = {
   create?: Prisma.XOR<Prisma.InformeCreateWithoutGeneratedByInput, Prisma.InformeUncheckedCreateWithoutGeneratedByInput> | Prisma.InformeCreateWithoutGeneratedByInput[] | Prisma.InformeUncheckedCreateWithoutGeneratedByInput[]
   connectOrCreate?: Prisma.InformeCreateOrConnectWithoutGeneratedByInput | Prisma.InformeCreateOrConnectWithoutGeneratedByInput[]
@@ -589,6 +720,20 @@ export type InformeUncheckedUpdateManyWithoutGeneratedByNestedInput = {
   connect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
   update?: Prisma.InformeUpdateWithWhereUniqueWithoutGeneratedByInput | Prisma.InformeUpdateWithWhereUniqueWithoutGeneratedByInput[]
   updateMany?: Prisma.InformeUpdateManyWithWhereWithoutGeneratedByInput | Prisma.InformeUpdateManyWithWhereWithoutGeneratedByInput[]
+  deleteMany?: Prisma.InformeScalarWhereInput | Prisma.InformeScalarWhereInput[]
+}
+
+export type InformeUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutUpdatedByInput, Prisma.InformeUncheckedCreateWithoutUpdatedByInput> | Prisma.InformeCreateWithoutUpdatedByInput[] | Prisma.InformeUncheckedCreateWithoutUpdatedByInput[]
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutUpdatedByInput | Prisma.InformeCreateOrConnectWithoutUpdatedByInput[]
+  upsert?: Prisma.InformeUpsertWithWhereUniqueWithoutUpdatedByInput | Prisma.InformeUpsertWithWhereUniqueWithoutUpdatedByInput[]
+  createMany?: Prisma.InformeCreateManyUpdatedByInputEnvelope
+  set?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  disconnect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  delete?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  connect?: Prisma.InformeWhereUniqueInput | Prisma.InformeWhereUniqueInput[]
+  update?: Prisma.InformeUpdateWithWhereUniqueWithoutUpdatedByInput | Prisma.InformeUpdateWithWhereUniqueWithoutUpdatedByInput[]
+  updateMany?: Prisma.InformeUpdateManyWithWhereWithoutUpdatedByInput | Prisma.InformeUpdateManyWithWhereWithoutUpdatedByInput[]
   deleteMany?: Prisma.InformeScalarWhereInput | Prisma.InformeScalarWhereInput[]
 }
 
@@ -634,6 +779,20 @@ export type InformeUncheckedUpdateManyWithoutClienteNestedInput = {
   deleteMany?: Prisma.InformeScalarWhereInput | Prisma.InformeScalarWhereInput[]
 }
 
+export type InformeCreateNestedOneWithoutVersionesInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutVersionesInput, Prisma.InformeUncheckedCreateWithoutVersionesInput>
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutVersionesInput
+  connect?: Prisma.InformeWhereUniqueInput
+}
+
+export type InformeUpdateOneRequiredWithoutVersionesNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutVersionesInput, Prisma.InformeUncheckedCreateWithoutVersionesInput>
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutVersionesInput
+  upsert?: Prisma.InformeUpsertWithoutVersionesInput
+  connect?: Prisma.InformeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InformeUpdateToOneWithWhereWithoutVersionesInput, Prisma.InformeUpdateWithoutVersionesInput>, Prisma.InformeUncheckedUpdateWithoutVersionesInput>
+}
+
 export type InformeCreateNestedOneWithoutVisitasInput = {
   create?: Prisma.XOR<Prisma.InformeCreateWithoutVisitasInput, Prisma.InformeUncheckedCreateWithoutVisitasInput>
   connectOrCreate?: Prisma.InformeCreateOrConnectWithoutVisitasInput
@@ -672,11 +831,16 @@ export type InformeCreateWithoutGeneratedByInput = {
   pdfKey: string
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   cliente: Prisma.ClienteCreateNestedOneWithoutInformesInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutGeneratedByInput = {
@@ -690,10 +854,15 @@ export type InformeUncheckedCreateWithoutGeneratedByInput = {
   pdfKey: string
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutGeneratedByInput = {
@@ -703,6 +872,60 @@ export type InformeCreateOrConnectWithoutGeneratedByInput = {
 
 export type InformeCreateManyGeneratedByInputEnvelope = {
   data: Prisma.InformeCreateManyGeneratedByInput | Prisma.InformeCreateManyGeneratedByInput[]
+  skipDuplicates?: boolean
+}
+
+export type InformeCreateWithoutUpdatedByInput = {
+  id?: string
+  numero?: number
+  titulo: string
+  fecha: Date | string
+  fechaDesde?: Date | string | null
+  fechaHasta?: Date | string | null
+  pdfKey: string
+  pdfUrl: string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
+  generatedAt?: Date | string
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  versionActual?: number
+  cliente: Prisma.ClienteCreateNestedOneWithoutInformesInput
+  generatedBy: Prisma.UserCreateNestedOneWithoutInformesGeneradosInput
+  visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
+  secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+}
+
+export type InformeUncheckedCreateWithoutUpdatedByInput = {
+  id?: string
+  clienteId: string
+  numero?: number
+  titulo: string
+  fecha: Date | string
+  fechaDesde?: Date | string | null
+  fechaHasta?: Date | string | null
+  pdfKey: string
+  pdfUrl: string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById: string
+  generatedByNombre?: string | null
+  generatedAt?: Date | string
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  versionActual?: number
+  visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
+  secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+}
+
+export type InformeCreateOrConnectWithoutUpdatedByInput = {
+  where: Prisma.InformeWhereUniqueInput
+  create: Prisma.XOR<Prisma.InformeCreateWithoutUpdatedByInput, Prisma.InformeUncheckedCreateWithoutUpdatedByInput>
+}
+
+export type InformeCreateManyUpdatedByInputEnvelope = {
+  data: Prisma.InformeCreateManyUpdatedByInput | Prisma.InformeCreateManyUpdatedByInput[]
   skipDuplicates?: boolean
 }
 
@@ -737,8 +960,28 @@ export type InformeScalarWhereInput = {
   pdfUrl?: Prisma.StringFilter<"Informe"> | string
   firmantes?: Prisma.JsonFilter<"Informe">
   generatedById?: Prisma.StringFilter<"Informe"> | string
+  generatedByNombre?: Prisma.StringNullableFilter<"Informe"> | string | null
   generatedAt?: Prisma.DateTimeFilter<"Informe"> | Date | string
+  updatedById?: Prisma.StringNullableFilter<"Informe"> | string | null
+  updatedByNombre?: Prisma.StringNullableFilter<"Informe"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"Informe"> | Date | string
+  versionActual?: Prisma.IntFilter<"Informe"> | number
+}
+
+export type InformeUpsertWithWhereUniqueWithoutUpdatedByInput = {
+  where: Prisma.InformeWhereUniqueInput
+  update: Prisma.XOR<Prisma.InformeUpdateWithoutUpdatedByInput, Prisma.InformeUncheckedUpdateWithoutUpdatedByInput>
+  create: Prisma.XOR<Prisma.InformeCreateWithoutUpdatedByInput, Prisma.InformeUncheckedCreateWithoutUpdatedByInput>
+}
+
+export type InformeUpdateWithWhereUniqueWithoutUpdatedByInput = {
+  where: Prisma.InformeWhereUniqueInput
+  data: Prisma.XOR<Prisma.InformeUpdateWithoutUpdatedByInput, Prisma.InformeUncheckedUpdateWithoutUpdatedByInput>
+}
+
+export type InformeUpdateManyWithWhereWithoutUpdatedByInput = {
+  where: Prisma.InformeScalarWhereInput
+  data: Prisma.XOR<Prisma.InformeUpdateManyMutationInput, Prisma.InformeUncheckedUpdateManyWithoutUpdatedByInput>
 }
 
 export type InformeCreateWithoutClienteInput = {
@@ -751,11 +994,16 @@ export type InformeCreateWithoutClienteInput = {
   pdfKey: string
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   generatedBy: Prisma.UserCreateNestedOneWithoutInformesGeneradosInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutClienteInput = {
@@ -769,10 +1017,15 @@ export type InformeUncheckedCreateWithoutClienteInput = {
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById: string
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutClienteInput = {
@@ -801,6 +1054,109 @@ export type InformeUpdateManyWithWhereWithoutClienteInput = {
   data: Prisma.XOR<Prisma.InformeUpdateManyMutationInput, Prisma.InformeUncheckedUpdateManyWithoutClienteInput>
 }
 
+export type InformeCreateWithoutVersionesInput = {
+  id?: string
+  numero?: number
+  titulo: string
+  fecha: Date | string
+  fechaDesde?: Date | string | null
+  fechaHasta?: Date | string | null
+  pdfKey: string
+  pdfUrl: string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
+  generatedAt?: Date | string
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  versionActual?: number
+  cliente: Prisma.ClienteCreateNestedOneWithoutInformesInput
+  generatedBy: Prisma.UserCreateNestedOneWithoutInformesGeneradosInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
+  visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
+  secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+}
+
+export type InformeUncheckedCreateWithoutVersionesInput = {
+  id?: string
+  clienteId: string
+  numero?: number
+  titulo: string
+  fecha: Date | string
+  fechaDesde?: Date | string | null
+  fechaHasta?: Date | string | null
+  pdfKey: string
+  pdfUrl: string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById: string
+  generatedByNombre?: string | null
+  generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  versionActual?: number
+  visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
+  secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+}
+
+export type InformeCreateOrConnectWithoutVersionesInput = {
+  where: Prisma.InformeWhereUniqueInput
+  create: Prisma.XOR<Prisma.InformeCreateWithoutVersionesInput, Prisma.InformeUncheckedCreateWithoutVersionesInput>
+}
+
+export type InformeUpsertWithoutVersionesInput = {
+  update: Prisma.XOR<Prisma.InformeUpdateWithoutVersionesInput, Prisma.InformeUncheckedUpdateWithoutVersionesInput>
+  create: Prisma.XOR<Prisma.InformeCreateWithoutVersionesInput, Prisma.InformeUncheckedCreateWithoutVersionesInput>
+  where?: Prisma.InformeWhereInput
+}
+
+export type InformeUpdateToOneWithWhereWithoutVersionesInput = {
+  where?: Prisma.InformeWhereInput
+  data: Prisma.XOR<Prisma.InformeUpdateWithoutVersionesInput, Prisma.InformeUncheckedUpdateWithoutVersionesInput>
+}
+
+export type InformeUpdateWithoutVersionesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutInformesNestedInput
+  generatedBy?: Prisma.UserUpdateOneRequiredWithoutInformesGeneradosNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
+  visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
+  secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+}
+
+export type InformeUncheckedUpdateWithoutVersionesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
+  visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
+  secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+}
+
 export type InformeCreateWithoutVisitasInput = {
   id?: string
   numero?: number
@@ -811,11 +1167,16 @@ export type InformeCreateWithoutVisitasInput = {
   pdfKey: string
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   cliente: Prisma.ClienteCreateNestedOneWithoutInformesInput
   generatedBy: Prisma.UserCreateNestedOneWithoutInformesGeneradosInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutVisitasInput = {
@@ -830,9 +1191,14 @@ export type InformeUncheckedCreateWithoutVisitasInput = {
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById: string
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutVisitasInput = {
@@ -860,11 +1226,16 @@ export type InformeUpdateWithoutVisitasInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutInformesNestedInput
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutInformesGeneradosNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutVisitasInput = {
@@ -879,9 +1250,14 @@ export type InformeUncheckedUpdateWithoutVisitasInput = {
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeCreateWithoutSeccionesInput = {
@@ -894,11 +1270,16 @@ export type InformeCreateWithoutSeccionesInput = {
   pdfKey: string
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   cliente: Prisma.ClienteCreateNestedOneWithoutInformesInput
   generatedBy: Prisma.UserCreateNestedOneWithoutInformesGeneradosInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutSeccionesInput = {
@@ -913,9 +1294,14 @@ export type InformeUncheckedCreateWithoutSeccionesInput = {
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById: string
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutSeccionesInput = {
@@ -943,11 +1329,16 @@ export type InformeUpdateWithoutSeccionesInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutInformesNestedInput
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutInformesGeneradosNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutSeccionesInput = {
@@ -962,9 +1353,14 @@ export type InformeUncheckedUpdateWithoutSeccionesInput = {
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeCreateManyGeneratedByInput = {
@@ -978,8 +1374,31 @@ export type InformeCreateManyGeneratedByInput = {
   pdfKey: string
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
+}
+
+export type InformeCreateManyUpdatedByInput = {
+  id?: string
+  clienteId: string
+  numero?: number
+  titulo: string
+  fecha: Date | string
+  fechaDesde?: Date | string | null
+  fechaHasta?: Date | string | null
+  pdfKey: string
+  pdfUrl: string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById: string
+  generatedByNombre?: string | null
+  generatedAt?: Date | string
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  versionActual?: number
 }
 
 export type InformeUpdateWithoutGeneratedByInput = {
@@ -991,11 +1410,16 @@ export type InformeUpdateWithoutGeneratedByInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutInformesNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutGeneratedByInput = {
@@ -1009,10 +1433,15 @@ export type InformeUncheckedUpdateWithoutGeneratedByInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateManyWithoutGeneratedByInput = {
@@ -1026,8 +1455,74 @@ export type InformeUncheckedUpdateManyWithoutGeneratedByInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type InformeUpdateWithoutUpdatedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutInformesNestedInput
+  generatedBy?: Prisma.UserUpdateOneRequiredWithoutInformesGeneradosNestedInput
+  visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
+  secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+}
+
+export type InformeUncheckedUpdateWithoutUpdatedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
+  visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
+  secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
+}
+
+export type InformeUncheckedUpdateManyWithoutUpdatedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type InformeCreateManyClienteInput = {
@@ -1041,8 +1536,12 @@ export type InformeCreateManyClienteInput = {
   pdfUrl: string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById: string
+  generatedByNombre?: string | null
   generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
   updatedAt?: Date | string
+  versionActual?: number
 }
 
 export type InformeUpdateWithoutClienteInput = {
@@ -1054,11 +1553,16 @@ export type InformeUpdateWithoutClienteInput = {
   pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutInformesGeneradosNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutClienteInput = {
@@ -1072,10 +1576,15 @@ export type InformeUncheckedUpdateWithoutClienteInput = {
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateManyWithoutClienteInput = {
@@ -1089,8 +1598,12 @@ export type InformeUncheckedUpdateManyWithoutClienteInput = {
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -1101,11 +1614,13 @@ export type InformeUncheckedUpdateManyWithoutClienteInput = {
 export type InformeCountOutputType = {
   visitas: number
   secciones: number
+  versiones: number
 }
 
 export type InformeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visitas?: boolean | InformeCountOutputTypeCountVisitasArgs
   secciones?: boolean | InformeCountOutputTypeCountSeccionesArgs
+  versiones?: boolean | InformeCountOutputTypeCountVersionesArgs
 }
 
 /**
@@ -1132,6 +1647,13 @@ export type InformeCountOutputTypeCountSeccionesArgs<ExtArgs extends runtime.Typ
   where?: Prisma.InformeSeccionWhereInput
 }
 
+/**
+ * InformeCountOutputType without action
+ */
+export type InformeCountOutputTypeCountVersionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InformeVersionWhereInput
+}
+
 
 export type InformeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1145,12 +1667,18 @@ export type InformeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   pdfUrl?: boolean
   firmantes?: boolean
   generatedById?: boolean
+  generatedByNombre?: boolean
   generatedAt?: boolean
+  updatedById?: boolean
+  updatedByNombre?: boolean
   updatedAt?: boolean
+  versionActual?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  updatedBy?: boolean | Prisma.Informe$updatedByArgs<ExtArgs>
   visitas?: boolean | Prisma.Informe$visitasArgs<ExtArgs>
   secciones?: boolean | Prisma.Informe$seccionesArgs<ExtArgs>
+  versiones?: boolean | Prisma.Informe$versionesArgs<ExtArgs>
   _count?: boolean | Prisma.InformeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["informe"]>
 
@@ -1166,10 +1694,15 @@ export type InformeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   pdfUrl?: boolean
   firmantes?: boolean
   generatedById?: boolean
+  generatedByNombre?: boolean
   generatedAt?: boolean
+  updatedById?: boolean
+  updatedByNombre?: boolean
   updatedAt?: boolean
+  versionActual?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  updatedBy?: boolean | Prisma.Informe$updatedByArgs<ExtArgs>
 }, ExtArgs["result"]["informe"]>
 
 export type InformeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1184,10 +1717,15 @@ export type InformeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   pdfUrl?: boolean
   firmantes?: boolean
   generatedById?: boolean
+  generatedByNombre?: boolean
   generatedAt?: boolean
+  updatedById?: boolean
+  updatedByNombre?: boolean
   updatedAt?: boolean
+  versionActual?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  updatedBy?: boolean | Prisma.Informe$updatedByArgs<ExtArgs>
 }, ExtArgs["result"]["informe"]>
 
 export type InformeSelectScalar = {
@@ -1202,25 +1740,33 @@ export type InformeSelectScalar = {
   pdfUrl?: boolean
   firmantes?: boolean
   generatedById?: boolean
+  generatedByNombre?: boolean
   generatedAt?: boolean
+  updatedById?: boolean
+  updatedByNombre?: boolean
   updatedAt?: boolean
+  versionActual?: boolean
 }
 
-export type InformeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "numero" | "titulo" | "fecha" | "fechaDesde" | "fechaHasta" | "pdfKey" | "pdfUrl" | "firmantes" | "generatedById" | "generatedAt" | "updatedAt", ExtArgs["result"]["informe"]>
+export type InformeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "numero" | "titulo" | "fecha" | "fechaDesde" | "fechaHasta" | "pdfKey" | "pdfUrl" | "firmantes" | "generatedById" | "generatedByNombre" | "generatedAt" | "updatedById" | "updatedByNombre" | "updatedAt" | "versionActual", ExtArgs["result"]["informe"]>
 export type InformeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  updatedBy?: boolean | Prisma.Informe$updatedByArgs<ExtArgs>
   visitas?: boolean | Prisma.Informe$visitasArgs<ExtArgs>
   secciones?: boolean | Prisma.Informe$seccionesArgs<ExtArgs>
+  versiones?: boolean | Prisma.Informe$versionesArgs<ExtArgs>
   _count?: boolean | Prisma.InformeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InformeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  updatedBy?: boolean | Prisma.Informe$updatedByArgs<ExtArgs>
 }
 export type InformeIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  updatedBy?: boolean | Prisma.Informe$updatedByArgs<ExtArgs>
 }
 
 export type $InformePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1228,8 +1774,10 @@ export type $InformePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   objects: {
     cliente: Prisma.$ClientePayload<ExtArgs>
     generatedBy: Prisma.$UserPayload<ExtArgs>
+    updatedBy: Prisma.$UserPayload<ExtArgs> | null
     visitas: Prisma.$InformeVisitaPayload<ExtArgs>[]
     secciones: Prisma.$InformeSeccionPayload<ExtArgs>[]
+    versiones: Prisma.$InformeVersionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1257,8 +1805,23 @@ export type $InformePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     pdfUrl: string
     firmantes: runtime.JsonValue
     generatedById: string
+    /**
+     * Nombre de quien lo creó, congelado. El id sirve para filtrar; el texto es
+     * lo que pasó, y sobrevive a que la cuenta se renombre o se borre.
+     */
+    generatedByNombre: string | null
     generatedAt: Date
+    /**
+     * Quién y cuándo lo tocó por última vez. Nulo mientras nadie lo editó: eso
+     * dice "sigue como se creó", que es distinto de "lo actualizó quien lo hizo".
+     */
+    updatedById: string | null
+    updatedByNombre: string | null
     updatedAt: Date
+    /**
+     * En qué versión va. Arranca en 1 y sube con cada edición.
+     */
+    versionActual: number
   }, ExtArgs["result"]["informe"]>
   composites: {}
 }
@@ -1655,8 +2218,10 @@ export interface Prisma__InformeClient<T, Null = never, ExtArgs extends runtime.
   readonly [Symbol.toStringTag]: "PrismaPromise"
   cliente<T extends Prisma.ClienteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClienteDefaultArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   generatedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  updatedBy<T extends Prisma.Informe$updatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$updatedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   visitas<T extends Prisma.Informe$visitasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$visitasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeVisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   secciones<T extends Prisma.Informe$seccionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$seccionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeSeccionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  versiones<T extends Prisma.Informe$versionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$versionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1697,8 +2262,12 @@ export interface InformeFieldRefs {
   readonly pdfUrl: Prisma.FieldRef<"Informe", 'String'>
   readonly firmantes: Prisma.FieldRef<"Informe", 'Json'>
   readonly generatedById: Prisma.FieldRef<"Informe", 'String'>
+  readonly generatedByNombre: Prisma.FieldRef<"Informe", 'String'>
   readonly generatedAt: Prisma.FieldRef<"Informe", 'DateTime'>
+  readonly updatedById: Prisma.FieldRef<"Informe", 'String'>
+  readonly updatedByNombre: Prisma.FieldRef<"Informe", 'String'>
   readonly updatedAt: Prisma.FieldRef<"Informe", 'DateTime'>
+  readonly versionActual: Prisma.FieldRef<"Informe", 'Int'>
 }
     
 
@@ -2100,6 +2669,25 @@ export type InformeDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
+ * Informe.updatedBy
+ */
+export type Informe$updatedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+}
+
+/**
  * Informe.visitas
  */
 export type Informe$visitasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2145,6 +2733,30 @@ export type Informe$seccionesArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.InformeSeccionScalarFieldEnum | Prisma.InformeSeccionScalarFieldEnum[]
+}
+
+/**
+ * Informe.versiones
+ */
+export type Informe$versionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InformeVersion
+   */
+  select?: Prisma.InformeVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InformeVersion
+   */
+  omit?: Prisma.InformeVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InformeVersionInclude<ExtArgs> | null
+  where?: Prisma.InformeVersionWhereInput
+  orderBy?: Prisma.InformeVersionOrderByWithRelationInput | Prisma.InformeVersionOrderByWithRelationInput[]
+  cursor?: Prisma.InformeVersionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InformeVersionScalarFieldEnum | Prisma.InformeVersionScalarFieldEnum[]
 }
 
 /**

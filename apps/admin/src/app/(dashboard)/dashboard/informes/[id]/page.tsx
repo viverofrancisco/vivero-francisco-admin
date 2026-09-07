@@ -44,9 +44,21 @@ export default async function InformeDetailPage({
           : null,
     }));
 
-  const generadoPor = informe.generatedBy
-    ? `${informe.generatedBy.name ?? ""} ${informe.generatedBy.apellido ?? ""}`.trim()
-    : "";
+  /**
+   * El nombre congelado gana al de la cuenta.
+   *
+   * `generatedByNombre` es lo que la persona se llamaba cuando lo hizo; la
+   * cuenta puede haberse renombrado, o haber desaparecido. Se cae a la cuenta
+   * para los informes viejos, anteriores a que se guardara el nombre.
+   */
+  const nombreDeCuenta = (
+    u: { name: string | null; apellido: string | null } | null
+  ) => (u ? `${u.name ?? ""} ${u.apellido ?? ""}`.trim() : "");
+
+  const generadoPor =
+    informe.generatedByNombre || nombreDeCuenta(informe.generatedBy) || null;
+  const actualizadoPor =
+    informe.updatedByNombre || nombreDeCuenta(informe.updatedBy) || null;
 
   return (
     <div className="h-full p-4 md:p-6">
@@ -63,7 +75,25 @@ export default async function InformeDetailPage({
             id: informe.cliente.id,
             nombre: nombreCliente(informe.cliente),
           },
-          generadoPor: generadoPor || null,
+          generadoPor,
+          versionActual: informe.versionActual,
+          // Solo si alguien lo editó de verdad: `updatedAt` se mueve con
+          // cualquier escritura, así que sin `updatedById` no dice nada.
+          actualizadoEl: informe.updatedById
+            ? informe.updatedAt.toISOString()
+            : null,
+          actualizadoPor: informe.updatedById ? actualizadoPor : null,
+          versiones: informe.versiones.map((v) => ({
+            id: v.id,
+            version: v.version,
+            titulo: v.titulo,
+            fecha: v.fecha.toISOString().split("T")[0],
+            pdfUrl: v.pdfUrl,
+            generatedAt: v.generatedAt.toISOString(),
+            generadoPor:
+              v.generatedByNombre || nombreDeCuenta(v.generatedBy) || null,
+            nota: v.nota,
+          })),
           firmantes,
           visitas: informe.visitas
             .filter((v) => v.visita != null)

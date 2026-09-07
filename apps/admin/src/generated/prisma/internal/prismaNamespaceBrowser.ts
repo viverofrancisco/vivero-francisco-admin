@@ -89,6 +89,8 @@ export const ModelName = {
   ClienteImport: 'ClienteImport',
   SetPasswordToken: 'SetPasswordToken',
   Informe: 'Informe',
+  InformeVersion: 'InformeVersion',
+  InformeBorrador: 'InformeBorrador',
   InformeVisita: 'InformeVisita',
   InformeSeccion: 'InformeSeccion',
   InformeSeccionFoto: 'InformeSeccionFoto',
@@ -665,11 +667,49 @@ export const InformeScalarFieldEnum = {
   pdfUrl: 'pdfUrl',
   firmantes: 'firmantes',
   generatedById: 'generatedById',
+  generatedByNombre: 'generatedByNombre',
   generatedAt: 'generatedAt',
-  updatedAt: 'updatedAt'
+  updatedById: 'updatedById',
+  updatedByNombre: 'updatedByNombre',
+  updatedAt: 'updatedAt',
+  versionActual: 'versionActual'
 } as const
 
 export type InformeScalarFieldEnum = (typeof InformeScalarFieldEnum)[keyof typeof InformeScalarFieldEnum]
+
+
+export const InformeVersionScalarFieldEnum = {
+  id: 'id',
+  informeId: 'informeId',
+  version: 'version',
+  titulo: 'titulo',
+  fecha: 'fecha',
+  pdfKey: 'pdfKey',
+  pdfUrl: 'pdfUrl',
+  contenido: 'contenido',
+  generatedById: 'generatedById',
+  generatedByNombre: 'generatedByNombre',
+  generatedAt: 'generatedAt',
+  nota: 'nota'
+} as const
+
+export type InformeVersionScalarFieldEnum = (typeof InformeVersionScalarFieldEnum)[keyof typeof InformeVersionScalarFieldEnum]
+
+
+export const InformeBorradorScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  titulo: 'titulo',
+  contenido: 'contenido',
+  createdById: 'createdById',
+  createdByNombre: 'createdByNombre',
+  createdAt: 'createdAt',
+  updatedById: 'updatedById',
+  updatedByNombre: 'updatedByNombre',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InformeBorradorScalarFieldEnum = (typeof InformeBorradorScalarFieldEnum)[keyof typeof InformeBorradorScalarFieldEnum]
 
 
 export const InformeVisitaScalarFieldEnum = {

@@ -21,6 +21,7 @@ import {
   Maximize2,
   Pencil,
   Plus,
+  Save,
   Search,
   Trash2,
   Upload,
@@ -227,6 +228,56 @@ function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
   return { url, armando, error };
 }
 
+/**
+ * Con qué puede arrancar el asistente: un borrador guardado o un informe que se
+ * está editando.
+ *
+ * Es la misma forma en los dos casos porque es lo mismo — el estado del
+ * asistente— y tenerla una sola vez evita que retomar un borrador y editar un
+ * informe se comporten distinto.
+ *
+ * Las fotos viajan con su `url` para poder dibujarlas sin ir a buscarlas: la
+ * del borrador se guardó tal cual, y la del informe sale de la fila, que ya la
+ * tiene.
+ */
+export interface EstadoInicialInforme {
+  paso?: number;
+  clienteId: string | null;
+  titulo: string;
+  fecha: string;
+  visitaIds: string[];
+  firmantes: Array<{ nombre: string; cedula: string | null }>;
+  secciones: Array<{
+    productoId: string | null;
+    titulo: string;
+    descripcion: string;
+    saltoDePagina: boolean;
+    fotosPorFila: 2 | 3 | 4;
+    fotos: Array<{
+      visitaMediaId: string | null;
+      mediaId: string | null;
+      url: string;
+    }>;
+  }>;
+}
+
+/** Las secciones del estado inicial, con los ids que necesita el asistente. */
+function seccionesDesde(estado: EstadoInicialInforme): SeccionDraft[] {
+  return estado.secciones.map((sec, i) => ({
+    tempId: `inicial-${i}`,
+    productoId: sec.productoId,
+    titulo: sec.titulo,
+    descripcion: sec.descripcion,
+    saltoDePagina: sec.saltoDePagina,
+    fotosPorFila: sec.fotosPorFila,
+    fotos: sec.fotos.map((f) =>
+      f.visitaMediaId
+        ? { uid: `visita-${f.visitaMediaId}`, visitaMediaId: f.visitaMediaId, mediaId: null, url: f.url }
+        : { uid: `media-${f.mediaId}`, visitaMediaId: null, mediaId: f.mediaId, url: f.url }
+    ),
+  }));
+}
+
 type WizardStep = 1 | 2 | 3 | 4 | 5;
 
 interface SavedFirmante {
@@ -239,20 +290,39 @@ interface SavedFirmante {
 export function InformeWizard({
   defaultFirmantes,
   catalogo = [],
+  inicial,
+  borradorId,
+  editando,
 }: {
   defaultFirmantes?: Array<{ nombre: string; cedula: string | null }>;
   /** Todo el catálogo activo, para secciones de algo que no se visitó. */
   catalogo?: ProductoCatalogo[];
+  /** Con qué arranca: un borrador retomado o un informe que se edita. */
+  inicial?: EstadoInicialInforme;
+  /** El borrador del que salió, para pisarlo al guardar y borrarlo al generar. */
+  borradorId?: string;
+  /** El informe que se edita. Guardar crea una versión nueva, no otro informe. */
+  editando?: { id: string; numero: number };
 }) {
   const router = useRouter();
-  const [step, setStep] = useState<WizardStep>(1);
+  const [step, setStep] = useState<WizardStep>(() => {
+    // Retomar donde se dejó, sin pasar del de firmar: la vista previa se arma
+    // al llegar, así que aparecer directo ahí mostraría un visor vacío.
+    const guardado = inicial?.paso;
+    if (guardado && guardado >= 1 && guardado <= 3) return guardado as WizardStep;
+    // Editando se entra directo a las secciones: el cliente no se cambia y las
+    // visitas casi nunca son lo que se viene a corregir.
+    return editando ? 2 : 1;
+  });
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [serviciosDisponibles, setServiciosDisponibles] = useState<
     ServicioParaSeccion[]
   >([]);
   const [firmantesCatalog, setFirmantesCatalog] = useState<SavedFirmante[]>([]);
-  const [clienteId, setClienteId] = useState<string | null>(null);
+  const [clienteId, setClienteId] = useState<string | null>(
+    inicial?.clienteId ?? null
+  );
 
   const [dateRange, setDateRange] = useState<{
     label: string;
@@ -264,21 +334,30 @@ export function InformeWizard({
     [],
   );
   const [selectedVisitaIds, setSelectedVisitaIds] = useState<Set<string>>(
-    new Set(),
+    () => new Set(inicial?.visitaIds ?? []),
   );
   const [loadingVisitas, setLoadingVisitas] = useState(false);
 
   const [pool, setPool] = useState<MediaPoolItem[]>([]);
-  const [titulo, setTitulo] = useState("");
-  const [secciones, setSecciones] = useState<SeccionDraft[]>([]);
+  const [titulo, setTitulo] = useState(inicial?.titulo ?? "");
+  const [secciones, setSecciones] = useState<SeccionDraft[]>(() =>
+    inicial ? seccionesDesde(inicial) : [],
+  );
 
   /**
    * La fecha que sale impresa. Arranca en hoy, que es lo más común, pero un
    * informe de agosto se puede estar armando en septiembre.
    */
-  const [fecha, setFecha] = useState(hoyISOEcuador());
+  const [fecha, setFecha] = useState(inicial?.fecha ?? hoyISOEcuador());
 
   const [firmantes, setFirmantes] = useState<FirmanteDraft[]>(() => {
+    if (inicial && inicial.firmantes.length > 0) {
+      return inicial.firmantes.map((f, i) => ({
+        tempId: `inicial-${i}`,
+        nombre: f.nombre,
+        cedula: f.cedula ?? "",
+      }));
+    }
     if (defaultFirmantes && defaultFirmantes.length > 0) {
       return defaultFirmantes.slice(0, 3).map((f, i) => ({
         tempId: `default-${i}`,
@@ -290,6 +369,13 @@ export function InformeWizard({
   });
 
   const [generating, setGenerating] = useState(false);
+  const [guardandoBorrador, setGuardandoBorrador] = useState(false);
+  /** Qué se cambió, para que la lista de versiones lo diga. Solo al editar. */
+  const [notaDeCambio, setNotaDeCambio] = useState("");
+  /** El borrador en el que se está trabajando, si se guardó alguna vez. */
+  const [borradorGuardado, setBorradorGuardado] = useState<string | null>(
+    borradorId ?? null,
+  );
   const [previsualizando, setPrevisualizando] = useState(false);
   /** El PDF del paso 5, como blob local. Nunca se guardó en ningún lado. */
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -332,9 +418,9 @@ export function InformeWizard({
     })();
   }, []);
 
-  // Step 1 → fetch visitas whenever cliente or date range changes.
+  // Las visitas del cliente, cada vez que cambia él o el rango.
   useEffect(() => {
-    if (step !== 2 || !clienteId) return;
+    if (step !== 1 || !clienteId) return;
     setLoadingVisitas(true);
     const params = new URLSearchParams({ clienteId });
     if (dateRange.from) params.set("from", dateRange.from);
@@ -367,9 +453,11 @@ export function InformeWizard({
     }
   }, [clientes, clienteId, dateRange, titulo]);
 
-  // Load pool when entering step 2.
+  // Las fotos de las visitas elegidas, mientras se eligen y no después: el
+  // armado automático de secciones las necesita ya cargadas, y pedirlas al
+  // entrar al paso siguiente lo dejaba corriendo contra la respuesta.
   useEffect(() => {
-    if (step !== 2) return;
+    if (step !== 1) return;
     const ids = Array.from(selectedVisitaIds);
     if (ids.length === 0) {
       setPool([]);
@@ -391,12 +479,12 @@ export function InformeWizard({
    * Ya se armaron las secciones solas. Volver al paso 2 y adelante no las
    * vuelve a armar: lo que hay en pantalla es lo que alguien dejó.
    */
-  const autogeneradas = useRef(false);
+  const autogeneradas = useRef(inicial != null);
 
   // Los servicios que cubren las visitas seleccionadas son el catálogo de
   // secciones: título = nombre del servicio, descripción = la del servicio.
   useEffect(() => {
-    if (step !== 3) return;
+    if (step !== 2) return;
     const ids = Array.from(selectedVisitaIds);
     if (ids.length === 0) {
       setServiciosDisponibles([]);
@@ -629,17 +717,79 @@ export function InformeWizard({
     if (url) setAPantallaCompleta(url);
   }
 
+  /**
+   * Guarda lo que hay, para seguir después.
+   *
+   * Se guarda el estado del asistente entero —con las urls de las fotos— y no
+   * el pedido que va al servidor: retomar tiene que poder dibujar las miniaturas
+   * sin salir a resolver cada id, y un borrador puede estar a medio llenar de
+   * formas que el pedido definitivo no admite.
+   */
+  async function guardarBorrador() {
+    setGuardandoBorrador(true);
+    try {
+      const res = await fetch("/api/admin/informes/borradores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: borradorGuardado,
+          clienteId,
+          titulo: titulo.trim() || null,
+          contenido: {
+            paso: step,
+            clienteId,
+            titulo,
+            fecha,
+            visitaIds: Array.from(selectedVisitaIds),
+            firmantes: firmantes
+              .filter((f) => f.nombre.trim())
+              .map((f) => ({ nombre: f.nombre.trim(), cedula: f.cedula.trim() || null })),
+            secciones: secciones.map((sec) => ({
+              productoId: sec.productoId,
+              titulo: sec.titulo,
+              descripcion: sec.descripcion,
+              saltoDePagina: sec.saltoDePagina,
+              fotosPorFila: sec.fotosPorFila,
+              fotos: sec.fotos.map((f) => ({
+                visitaMediaId: f.visitaMediaId,
+                mediaId: f.mediaId,
+                url: f.url,
+              })),
+            })),
+          } satisfies EstadoInicialInforme & { paso: number },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "No pudimos guardarlo");
+      setBorradorGuardado(data.id);
+      toast.success("Borrador guardado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos guardarlo");
+    } finally {
+      setGuardandoBorrador(false);
+    }
+  }
+
   async function generate() {
     const cuerpo = cuerpoDelInforme();
     if (!cuerpo) return;
     setGenerating(true);
     setPdfUrl(null);
     try {
-      const res = await fetch("/api/admin/informes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cuerpo),
-      });
+      // Editando es un PUT sobre el mismo informe: sube una versión, conserva
+      // el número y deja el PDF anterior en la lista. Crear otro sería un
+      // segundo informe casi igual, que es justo lo que se venía haciendo por
+      // no poder editar.
+      const res = await fetch(
+        editando ? `/api/admin/informes/${editando.id}` : "/api/admin/informes",
+        {
+          method: editando ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            editando ? { ...cuerpo, nota: notaDeCambio.trim() || null } : cuerpo
+          ),
+        }
+      );
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error ?? "Error generando informe");
@@ -648,6 +798,14 @@ export function InformeWizard({
       setSavedInformeId(data.id);
       setPdfUrl(data.pdfUrl);
       setStep(5);
+      // El borrador ya cumplió: dejarlo sería ofrecer retomar algo que se
+      // terminó, y a la larga una lista de borradores ya publicados.
+      if (borradorGuardado) {
+        void fetch(`/api/admin/informes/borradores/${borradorGuardado}`, {
+          method: "DELETE",
+        }).catch(() => {});
+        setBorradorGuardado(null);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error generando informe");
     } finally {
@@ -783,13 +941,35 @@ export function InformeWizard({
             ) : null}
 
             {step === 4 ? (
-              <PasoVistaPrevia
-                url={previewUrl}
-                armando={previsualizando}
-                onExpandir={() =>
-                  previewUrl && setAPantallaCompleta(previewUrl)
-                }
-              />
+              <div className="space-y-4">
+                <PasoVistaPrevia
+                  url={previewUrl}
+                  armando={previsualizando}
+                  onExpandir={() =>
+                    previewUrl && setAPantallaCompleta(previewUrl)
+                  }
+                />
+                {editando ? (
+                  <div className="max-w-xl space-y-1.5">
+                    <label className="text-sm font-medium">
+                      Qué cambiaste{" "}
+                      <span className="font-normal text-muted-foreground">
+                        (opcional)
+                      </span>
+                    </label>
+                    <Input
+                      value={notaDeCambio}
+                      onChange={(e) => setNotaDeCambio(e.target.value)}
+                      placeholder="Ej. Faltaban las fotos del riego"
+                      maxLength={500}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Queda al lado de la versión, para saber por qué se rehízo
+                      sin abrir las dos y compararlas.
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             ) : null}
 
             {step === 5 && pdfUrl ? (
@@ -829,15 +1009,31 @@ export function InformeWizard({
                   edita, así que volver solo serviría para generar un segundo
                   informe casi igual sin querer. */}
             {!terminado ? (
-              <Button
-                variant="ghost"
-                disabled={step === 1 || generating}
-                onClick={() =>
-                  setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
-                }
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  disabled={step === 1 || generating}
+                  onClick={() =>
+                    setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
+                  }
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
+                </Button>
+                {/* Editando no hay borrador que guardar: el informe ya existe,
+                    y lo de a medias sería una versión sin terminar de un
+                    documento que ya salió. */}
+                {!editando ? (
+                  <Button
+                    variant="ghost"
+                    className="text-muted-foreground"
+                    onClick={guardarBorrador}
+                    disabled={guardandoBorrador || generating}
+                  >
+                    <Save className="mr-1 h-4 w-4" />
+                    {guardandoBorrador ? "Guardando…" : "Guardar borrador"}
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
             {step === 1 ? (
               <Button onClick={nextFromStep1} disabled={!clienteId}>
@@ -882,7 +1078,11 @@ export function InformeWizard({
                 onClick={generate}
                 disabled={generating || previsualizando}
               >
-                {generating ? "Generando…" : "Generar PDF"}{" "}
+                {generating
+                  ? "Generando…"
+                  : editando
+                    ? "Guardar versión nueva"
+                    : "Generar PDF"}{" "}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : null}

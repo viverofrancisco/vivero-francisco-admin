@@ -5,6 +5,8 @@ import { listClientes } from "@/lib/services/cliente.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { InformesTable } from "@/components/informes/informes-table";
 import { InformesFilters } from "@/components/informes/informes-filters";
+import { BorradoresInforme } from "@/components/informes/borradores-informe";
+import { listarBorradores } from "@/lib/services/informe-borrador.service";
 
 const PAGE_SIZE = 20;
 
@@ -47,6 +49,7 @@ export default async function InformesPage({
     }),
     listClientes(viewer, { limit: 200 }),
   ]);
+  const borradores = await listarBorradores(viewer);
 
   const serialized = items.map((i) => ({
     id: i.id,
@@ -78,6 +81,16 @@ export default async function InformesPage({
             primary: true,
           },
         ]}
+      />
+
+      <BorradoresInforme
+        items={borradores.map((b) => ({
+          id: b.id,
+          titulo: b.titulo,
+          cliente: b.cliente ? nombreCliente(b.cliente) : null,
+          updatedAt: b.updatedAt.toISOString(),
+          actualizadoPor: b.updatedByNombre,
+        }))}
       />
 
       <InformesFilters

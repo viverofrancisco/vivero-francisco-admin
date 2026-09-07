@@ -422,6 +422,8 @@ export const ModelName = {
   ClienteImport: 'ClienteImport',
   SetPasswordToken: 'SetPasswordToken',
   Informe: 'Informe',
+  InformeVersion: 'InformeVersion',
+  InformeBorrador: 'InformeBorrador',
   InformeVisita: 'InformeVisita',
   InformeSeccion: 'InformeSeccion',
   InformeSeccionFoto: 'InformeSeccionFoto',
@@ -452,7 +454,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "visita" | "visitaProducto" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "ordenLineaOrigen" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "visita" | "visitaProducto" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "ordenLineaOrigen" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3268,6 +3270,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InformeVersion: {
+      payload: Prisma.$InformeVersionPayload<ExtArgs>
+      fields: Prisma.InformeVersionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InformeVersionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InformeVersionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>
+        }
+        findFirst: {
+          args: Prisma.InformeVersionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InformeVersionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>
+        }
+        findMany: {
+          args: Prisma.InformeVersionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>[]
+        }
+        create: {
+          args: Prisma.InformeVersionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>
+        }
+        createMany: {
+          args: Prisma.InformeVersionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InformeVersionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>[]
+        }
+        delete: {
+          args: Prisma.InformeVersionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>
+        }
+        update: {
+          args: Prisma.InformeVersionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>
+        }
+        deleteMany: {
+          args: Prisma.InformeVersionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InformeVersionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InformeVersionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>[]
+        }
+        upsert: {
+          args: Prisma.InformeVersionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeVersionPayload>
+        }
+        aggregate: {
+          args: Prisma.InformeVersionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInformeVersion>
+        }
+        groupBy: {
+          args: Prisma.InformeVersionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InformeVersionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InformeVersionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InformeVersionCountAggregateOutputType> | number
+        }
+      }
+    }
+    InformeBorrador: {
+      payload: Prisma.$InformeBorradorPayload<ExtArgs>
+      fields: Prisma.InformeBorradorFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InformeBorradorFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InformeBorradorFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>
+        }
+        findFirst: {
+          args: Prisma.InformeBorradorFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InformeBorradorFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>
+        }
+        findMany: {
+          args: Prisma.InformeBorradorFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>[]
+        }
+        create: {
+          args: Prisma.InformeBorradorCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>
+        }
+        createMany: {
+          args: Prisma.InformeBorradorCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InformeBorradorCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>[]
+        }
+        delete: {
+          args: Prisma.InformeBorradorDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>
+        }
+        update: {
+          args: Prisma.InformeBorradorUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>
+        }
+        deleteMany: {
+          args: Prisma.InformeBorradorDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InformeBorradorUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InformeBorradorUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>[]
+        }
+        upsert: {
+          args: Prisma.InformeBorradorUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InformeBorradorPayload>
+        }
+        aggregate: {
+          args: Prisma.InformeBorradorAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInformeBorrador>
+        }
+        groupBy: {
+          args: Prisma.InformeBorradorGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InformeBorradorGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InformeBorradorCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InformeBorradorCountAggregateOutputType> | number
+        }
+      }
+    }
     InformeVisita: {
       payload: Prisma.$InformeVisitaPayload<ExtArgs>
       fields: Prisma.InformeVisitaFieldRefs
@@ -4960,11 +5110,49 @@ export const InformeScalarFieldEnum = {
   pdfUrl: 'pdfUrl',
   firmantes: 'firmantes',
   generatedById: 'generatedById',
+  generatedByNombre: 'generatedByNombre',
   generatedAt: 'generatedAt',
-  updatedAt: 'updatedAt'
+  updatedById: 'updatedById',
+  updatedByNombre: 'updatedByNombre',
+  updatedAt: 'updatedAt',
+  versionActual: 'versionActual'
 } as const
 
 export type InformeScalarFieldEnum = (typeof InformeScalarFieldEnum)[keyof typeof InformeScalarFieldEnum]
+
+
+export const InformeVersionScalarFieldEnum = {
+  id: 'id',
+  informeId: 'informeId',
+  version: 'version',
+  titulo: 'titulo',
+  fecha: 'fecha',
+  pdfKey: 'pdfKey',
+  pdfUrl: 'pdfUrl',
+  contenido: 'contenido',
+  generatedById: 'generatedById',
+  generatedByNombre: 'generatedByNombre',
+  generatedAt: 'generatedAt',
+  nota: 'nota'
+} as const
+
+export type InformeVersionScalarFieldEnum = (typeof InformeVersionScalarFieldEnum)[keyof typeof InformeVersionScalarFieldEnum]
+
+
+export const InformeBorradorScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  titulo: 'titulo',
+  contenido: 'contenido',
+  createdById: 'createdById',
+  createdByNombre: 'createdByNombre',
+  createdAt: 'createdAt',
+  updatedById: 'updatedById',
+  updatedByNombre: 'updatedByNombre',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InformeBorradorScalarFieldEnum = (typeof InformeBorradorScalarFieldEnum)[keyof typeof InformeBorradorScalarFieldEnum]
 
 
 export const InformeVisitaScalarFieldEnum = {
@@ -5756,6 +5944,8 @@ export type GlobalOmitConfig = {
   clienteImport?: Prisma.ClienteImportOmit
   setPasswordToken?: Prisma.SetPasswordTokenOmit
   informe?: Prisma.InformeOmit
+  informeVersion?: Prisma.InformeVersionOmit
+  informeBorrador?: Prisma.InformeBorradorOmit
   informeVisita?: Prisma.InformeVisitaOmit
   informeSeccion?: Prisma.InformeSeccionOmit
   informeSeccionFoto?: Prisma.InformeSeccionFotoOmit

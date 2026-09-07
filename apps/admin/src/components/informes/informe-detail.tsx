@@ -43,6 +43,21 @@ export interface InformeDetailData {
   pdfUrl: string;
   cliente: { id: string; nombre: string };
   generadoPor: string | null;
+  /** En qué versión va. 1 = nunca se editó. */
+  versionActual: number;
+  actualizadoEl: string | null;
+  actualizadoPor: string | null;
+  /** De la más nueva a la más vieja. La primera es la que se está mirando. */
+  versiones: Array<{
+    id: string;
+    version: number;
+    titulo: string;
+    fecha: string;
+    pdfUrl: string;
+    generatedAt: string;
+    generadoPor: string | null;
+    nota: string | null;
+  }>;
   firmantes: Array<{ nombre: string; cedula: string | null }>;
   visitas: Array<{
     id: string;
@@ -56,14 +71,16 @@ export interface InformeDetailData {
 /**
  * La ficha de un informe: el PDF y de qué está hecho.
  *
- * **El documento** es de solo lectura: ya salió firmado y con fecha, y
- * corregirlo por debajo dejaría al cliente con un PDF que no es el que tenemos
- * nosotros. Para arreglar algo se elimina y se hace el bueno, que además queda
- * con su propio número.
+ * **Se edita, y editarlo no pisa lo entregado.** Cada generación deja su
+ * archivo como versión, así que el PDF que el cliente tiene en la mano se sigue
+ * pudiendo abrir. Esa era exactamente la razón por la que antes no se editaba
+ * —quedaba circulando un documento que ya no coincidía con el nuestro— y es lo
+ * que las versiones desarman. El `numero` no cambia: es el mismo informe
+ * corregido, no uno nuevo.
  *
- * Las **visitas** sí se editan, y no es una excepción a lo anterior: no salen
- * impresas —el renderizador ni las mira— son el vínculo con el trabajo que el
- * informe cuenta, y ese vínculo se corrige.
+ * Las **visitas** se editan aparte, sin generar versión: no salen impresas —el
+ * renderizador ni las mira— son el vínculo con el trabajo que el informe
+ * cuenta.
  */
 export function InformeDetail({
   informe,
@@ -140,6 +157,16 @@ export function InformeDetail({
           <Button
             variant="outline"
             size="sm"
+            nativeButton={false}
+            render={
+              <Link href={`/dashboard/informes/${informe.id}/editar?from=${aca}`} />
+            }
+          >
+            <Pencil className="mr-1.5 h-4 w-4" /> Editar
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             className="text-destructive"
             onClick={() => setBorrando(true)}
           >
@@ -177,7 +204,7 @@ export function InformeDetail({
               {/* Dos fechas distintas a propósito: la impresa es la que dice
                   el documento, la de generado es cuándo se armó. */}
               <Dato etiqueta="Fecha del informe">{fechaLarga(informe.fecha)}</Dato>
-              <Dato etiqueta="Generado">
+              <Dato etiqueta="Creado">
                 {/* Quién lo hizo va abajo y no detrás de un punto: son dos
                     datos distintos, y juntos en un renglón el corte caía en
                     cualquier lado. */}
@@ -188,8 +215,72 @@ export function InformeDetail({
                   </span>
                 ) : null}
               </Dato>
+              {/* Solo si alguien lo editó. Repetir al creador como "última
+                  actualización" diría que lo tocó después, y no pasó. */}
+              {informe.actualizadoEl ? (
+                <Dato etiqueta="Última edición">
+                  <span className="block">
+                    {generadoEl(informe.actualizadoEl)}
+                  </span>
+                  {informe.actualizadoPor ? (
+                    <span className="block text-muted-foreground">
+                      {informe.actualizadoPor}
+                    </span>
+                  ) : null}
+                </Dato>
+              ) : null}
             </CardContent>
           </Card>
+
+          {/* Solo cuando hay más de una: con una sola, "versiones" es una
+              palabra grande para decir que nadie lo tocó. */}
+          {informe.versiones.length > 1 ? (
+            <Card>
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-base">
+                  Versiones ({informe.versiones.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="divide-y p-0">
+                {informe.versiones.map((v, i) => (
+                  <div key={v.id} className="space-y-1 px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Versión {v.version}</span>
+                      {i === 0 ? (
+                        <Badge variant="secondary" className="text-[10px]">
+                          Actual
+                        </Badge>
+                      ) : (
+                        /* La vieja se abre en otra pestaña: es un archivo
+                           distinto del que muestra la ficha, y reemplazarlo
+                           acá haría creer que se volvió a esa versión. */
+                        <a
+                          href={v.pdfUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-primary hover:underline"
+                        >
+                          Ver el PDF
+                        </a>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {generadoEl(v.generatedAt)}
+                      {v.generadoPor ? ` · ${v.generadoPor}` : ""}
+                    </p>
+                    {v.nota ? (
+                      <p className="text-xs text-foreground">{v.nota}</p>
+                    ) : null}
+                    {v.titulo !== informe.titulo ? (
+                      <p className="text-xs text-muted-foreground">
+                        Se llamaba «{v.titulo}»
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader className="border-b py-3">

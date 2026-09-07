@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { hoyEnEcuador } from "@/lib/fechas";
 import {
   s3,
@@ -621,6 +622,56 @@ export async function previsualizarInforme(
   return renderInformePDF(renderData);
 }
 
+/** Las secciones tal como se guardan, iguales al crear y al editar. */
+function seccionesParaGuardar(
+  secciones: Array<{
+    productoId?: string | null;
+    titulo: string;
+    descripcion?: string | null;
+    saltoDePagina?: boolean;
+    fotosPorFila?: FotosPorFila;
+    fotos: FotoResuelta[];
+  }>
+) {
+  return secciones.map((sec, idx) => ({
+    productoId: sec.productoId ?? null,
+    titulo: sec.titulo,
+    descripcion: sec.descripcion?.trim() || null,
+    orden: idx * 10,
+    // Se guarda aunque el PDF ya esté hecho: es lo que explica por qué salió
+    // así, y lo que hay que releer para volver a abrirlo y editarlo.
+    saltoDePagina: sec.saltoDePagina ?? false,
+    fotosPorFila: sec.fotosPorFila ?? 3,
+    fotos: {
+      create: sec.fotos.map((foto, fIdx) => ({
+        orden: fIdx,
+        key: foto.key,
+        mediaId: foto.mediaId,
+        url: foto.url,
+        visitaMediaId: foto.visitaMediaId,
+      })),
+    },
+  }));
+}
+
+/**
+ * Con qué se armó una versión, congelado.
+ *
+ * Se guarda el pedido tal como llegó, no lo resuelto: los ids de las fotos son
+ * estables y las urls no —una foto puede recortarse o moverse— así que el
+ * pedido es lo que se puede volver a ejecutar dentro de un año.
+ */
+function contenidoDeVersion(
+  payload: InformeGeneratePayload,
+  firmantes: InformeFirmanteInput[]
+) {
+  return {
+    visitaIds: payload.visitaIds,
+    firmantes,
+    secciones: payload.secciones,
+  } as unknown as Prisma.InputJsonValue;
+}
+
 export async function generateInforme(
   viewer: Viewer,
   payload: InformeGeneratePayload
@@ -667,29 +718,24 @@ export async function generateInforme(
         pdfUrl,
         firmantes: firmantesNormalizados,
         generatedById: viewer.id,
+        generatedByNombre: viewer.nombre ?? null,
         visitas: {
           create: payload.visitaIds.map((vid) => ({ visitaId: vid })),
         },
-        secciones: {
-          create: seccionesResueltas.map((sec, idx) => ({
-            productoId: sec.productoId ?? null,
-            titulo: sec.titulo,
-            descripcion: sec.descripcion?.trim() || null,
-            orden: idx * 10,
-            // Se guarda aunque el PDF ya esté hecho: es lo que explica por qué
-            // salió así, y lo que un "duplicar informe" necesitaría leer.
-            saltoDePagina: sec.saltoDePagina ?? false,
-            fotosPorFila: sec.fotosPorFila ?? 3,
-            fotos: {
-              create: sec.fotos.map((foto, fIdx) => ({
-                orden: fIdx,
-                key: foto.key,
-                mediaId: foto.mediaId,
-                url: foto.url,
-                visitaMediaId: foto.visitaMediaId,
-              })),
-            },
-          })),
+        secciones: { create: seccionesParaGuardar(seccionesResueltas) },
+        // La versión 1 nace con el informe, en la misma transacción: un informe
+        // sin ninguna versión sería uno cuyo PDF entregado no está en la lista.
+        versiones: {
+          create: {
+            version: 1,
+            titulo: payload.titulo,
+            fecha: fechaImpresa,
+            pdfKey,
+            pdfUrl,
+            contenido: contenidoDeVersion(payload, firmantesNormalizados),
+            generatedById: viewer.id,
+            generatedByNombre: viewer.nombre ?? null,
+          },
         },
       },
     });
@@ -697,6 +743,113 @@ export async function generateInforme(
   });
 
   return { id: result.id, pdfUrl };
+}
+
+/**
+ * Vuelve a generar un informe que ya existe, dejando la versión anterior.
+ *
+ * **Editar no pisa lo entregado.** El PDF viejo queda como `InformeVersion`,
+ * con su fecha y su autor, así que el que el cliente tiene en la mano se sigue
+ * pudiendo abrir. Esa era la razón por la que antes no se editaba —quedaba un
+ * documento circulando que ya no coincidía con el nuestro— y guardar las
+ * versiones es lo que la desarma.
+ *
+ * Lo que **no** cambia es el `numero`: es el mismo informe, corregido, no uno
+ * nuevo. Y `fechaDesde`/`fechaHasta` se recalculan porque dependen de las
+ * visitas, que se pueden haber cambiado.
+ *
+ * Las secciones se reemplazan enteras en vez de conciliarlas fila por fila: el
+ * asistente manda la lista completa y no hay nada colgando de una sección —las
+ * fotos son suyas y se van con ella— así que emparejar solo agregaría formas de
+ * equivocarse.
+ */
+export async function editarInforme(
+  viewer: Viewer,
+  id: string,
+  payload: InformeGeneratePayload,
+  nota?: string | null
+) {
+  ensureInformes(viewer);
+
+  const actual = await prisma.informe.findUnique({
+    where: { id },
+    select: { id: true, clienteId: true, versionActual: true },
+  });
+  if (!actual) throw new NotFoundError("Informe no encontrado");
+  if (actual.clienteId !== payload.clienteId) {
+    // Cambiarle el cliente sería otro informe: el número, las visitas y el
+    // subtítulo impreso dejan de tener que ver con lo que dice la fila.
+    throw new ValidationError("Un informe no cambia de cliente.");
+  }
+
+  const {
+    renderData,
+    seccionesResueltas,
+    firmantesNormalizados,
+    fechaImpresa,
+    fechaDesde,
+    fechaHasta,
+  } = await armarDatosDelInforme(viewer, payload, { borrador: false });
+
+  if (firmantesNormalizados.length === 0) {
+    throw new ValidationError("Agrega al menos un firmante.");
+  }
+
+  const pdfBuffer = await renderInformePDF(renderData);
+  const pdfKey = `informes/${payload.clienteId}/${randomUUID()}.pdf`;
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: pdfKey,
+      Body: pdfBuffer,
+      ContentType: "application/pdf",
+    })
+  );
+  const pdfUrl = publicUrlForKey(pdfKey);
+  const version = actual.versionActual + 1;
+
+  await prisma.$transaction(async (tx) => {
+    // Las secciones viejas se van con sus fotos (`Cascade`). Los archivos de
+    // R2 no se tocan: son de la visita o de la biblioteca, y las viejas subidas
+    // sueltas todavía las necesita la versión anterior para mostrarse.
+    await tx.informeSeccion.deleteMany({ where: { informeId: id } });
+    await tx.informeVisita.deleteMany({ where: { informeId: id } });
+
+    await tx.informe.update({
+      where: { id },
+      data: {
+        titulo: payload.titulo,
+        fecha: fechaImpresa,
+        fechaDesde,
+        fechaHasta,
+        pdfKey,
+        pdfUrl,
+        firmantes: firmantesNormalizados,
+        versionActual: version,
+        updatedById: viewer.id,
+        updatedByNombre: viewer.nombre ?? null,
+        visitas: {
+          create: payload.visitaIds.map((vid) => ({ visitaId: vid })),
+        },
+        secciones: { create: seccionesParaGuardar(seccionesResueltas) },
+        versiones: {
+          create: {
+            version,
+            titulo: payload.titulo,
+            fecha: fechaImpresa,
+            pdfKey,
+            pdfUrl,
+            contenido: contenidoDeVersion(payload, firmantesNormalizados),
+            generatedById: viewer.id,
+            generatedByNombre: viewer.nombre ?? null,
+            nota: nota?.trim() || null,
+          },
+        },
+      },
+    });
+  });
+
+  return { id, pdfUrl, version };
 }
 
 // ──────────────────────────────────────────────
@@ -712,6 +865,25 @@ export async function getInforme(viewer: Viewer, id: string) {
       },
       generatedBy: {
         select: { id: true, name: true, apellido: true },
+      },
+      updatedBy: {
+        select: { id: true, name: true, apellido: true },
+      },
+      // De la más nueva a la más vieja: la que interesa es la última, y las
+      // anteriores se miran cuando alguien busca "el que le mandé en agosto".
+      versiones: {
+        orderBy: { version: "desc" },
+        select: {
+          id: true,
+          version: true,
+          titulo: true,
+          fecha: true,
+          pdfUrl: true,
+          generatedAt: true,
+          generatedByNombre: true,
+          nota: true,
+          generatedBy: { select: { id: true, name: true, apellido: true } },
+        },
       },
       visitas: {
         select: {
@@ -763,6 +935,10 @@ export async function deleteInforme(viewer: Viewer, id: string) {
     where: { id },
     select: {
       pdfKey: true,
+      // Todas las versiones, no solo la actual: cada edición dejó su propio
+      // archivo, y borrar el informe sin ellos llenaría R2 de PDFs que ya no
+      // tienen quién los nombre.
+      versiones: { select: { pdfKey: true } },
       secciones: {
         select: {
           fotos: {
@@ -780,8 +956,11 @@ export async function deleteInforme(viewer: Viewer, id: string) {
   await prisma.informe.delete({ where: { id } });
 
   await deleteObjects([
-    informe.pdfKey,
-    ...informe.secciones.flatMap((s) => s.fotos.map((f) => f.key)),
+    ...new Set([
+      informe.pdfKey,
+      ...informe.versiones.map((v) => v.pdfKey),
+      ...informe.secciones.flatMap((s) => s.fotos.map((f) => f.key)),
+    ]),
   ]);
 }
 

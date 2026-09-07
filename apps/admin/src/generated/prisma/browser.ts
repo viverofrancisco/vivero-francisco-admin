@@ -259,6 +259,33 @@ export type SetPasswordToken = Prisma.SetPasswordTokenModel
  */
 export type Informe = Prisma.InformeModel
 /**
+ * Model InformeVersion
+ * Una versión del informe: **el PDF que se entregó en ese momento**.
+ * 
+ * El informe se puede editar, y editarlo no pisa lo anterior: cada generación
+ * deja su archivo. Esa era la razón por la que antes no se editaba —el cliente
+ * se quedaba con un PDF que ya no era el nuestro— y guardar las versiones es lo
+ * que la resuelve: el que él tiene sigue existiendo y se puede abrir.
+ * 
+ * El PDF es el documento. Las tablas `InformeSeccion` / `InformeSeccionFoto`
+ * son la versión **actual** —lo que se abre para editar—; una versión vieja
+ * conserva su archivo y, en `contenido`, con qué se armó.
+ */
+export type InformeVersion = Prisma.InformeVersionModel
+/**
+ * Model InformeBorrador
+ * Un informe a medio armar.
+ * 
+ * No es un `Informe` sin PDF: un informe es un documento emitido, con número y
+ * archivo, y un borrador no tiene nada de eso — es el estado del asistente
+ * guardado para seguir después. Meterlos en la misma tabla obligaría a que
+ * todo lo que lista informes explique cuáles no lo son.
+ * 
+ * El contenido va como JSON y no en tablas: nada lo consulta por partes, y
+ * mientras se arma cambia de forma todo el tiempo.
+ */
+export type InformeBorrador = Prisma.InformeBorradorModel
+/**
  * Model InformeVisita
  * 
  */

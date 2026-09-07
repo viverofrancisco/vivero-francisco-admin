@@ -198,6 +198,10 @@ model User {
   visitaMessages          VisitaMessage[]
   visitaChatReads         VisitaChatRead[]
   informesGenerados       Informe[]              @relation("InformeGeneratedBy")
+  informesActualizados    Informe[]              @relation("InformeUpdatedBy")
+  informeVersiones        InformeVersion[]       @relation("InformeVersionGeneratedBy")
+  informeBorradoresCreados     InformeBorrador[] @relation("InformeBorradorCreatedBy")
+  informeBorradoresActualizados InformeBorrador[] @relation("InformeBorradorUpdatedBy")
   clienteImports          ClienteImport[]        @relation("ClienteImportCreatedBy")
   ordenesCreated          Orden[]                @relation("OrdenCreatedBy")
   ordenesUpdated          Orden[]                @relation("OrdenUpdatedBy")
@@ -245,6 +249,7 @@ model Cliente {
   visitas           Visita[]
   ordenes           Orden[]
   informes          Informe[]
+  informeBorradores InformeBorrador[]
   setPasswordTokens SetPasswordToken[]
 }
 
@@ -1080,16 +1085,100 @@ model Informe {
   // Per-informe signers: [{ nombre: string, cedula?: string }]. 1 to 3.
   firmantes     Json      @default("[]")
   generatedById String
+  /// Nombre de quien lo creó, congelado. El id sirve para filtrar; el texto es
+  /// lo que pasó, y sobrevive a que la cuenta se renombre o se borre.
+  generatedByNombre String?
   generatedAt   DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+
+  /// Quién y cuándo lo tocó por última vez. Nulo mientras nadie lo editó: eso
+  /// dice "sigue como se creó", que es distinto de "lo actualizó quien lo hizo".
+  updatedById     String?
+  updatedByNombre String?
+  updatedAt       DateTime @updatedAt
+
+  /// En qué versión va. Arranca en 1 y sube con cada edición.
+  versionActual Int @default(1)
 
   cliente     Cliente          @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   generatedBy User             @relation("InformeGeneratedBy", fields: [generatedById], references: [id], onDelete: Restrict)
+  updatedBy   User?            @relation("InformeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   visitas     InformeVisita[]
   secciones   InformeSeccion[]
+  versiones   InformeVersion[]
 
   @@index([clienteId])
   @@index([generatedAt])
+}
+
+/// Una versión del informe: **el PDF que se entregó en ese momento**.
+///
+/// El informe se puede editar, y editarlo no pisa lo anterior: cada generación
+/// deja su archivo. Esa era la razón por la que antes no se editaba —el cliente
+/// se quedaba con un PDF que ya no era el nuestro— y guardar las versiones es lo
+/// que la resuelve: el que él tiene sigue existiendo y se puede abrir.
+///
+/// El PDF es el documento. Las tablas `InformeSeccion` / `InformeSeccionFoto`
+/// son la versión **actual** —lo que se abre para editar—; una versión vieja
+/// conserva su archivo y, en `contenido`, con qué se armó.
+model InformeVersion {
+  id        String @id @default(cuid())
+  informeId String
+  /// 1, 2, 3… Único dentro del informe.
+  version   Int
+
+  titulo String
+  /// La que salió impresa en **esta** versión.
+  fecha  DateTime @db.Date
+  pdfKey String
+  pdfUrl String
+
+  /// Con qué se armó: secciones, fotos y firmantes tal como se mandaron. Es lo
+  /// que permite mirar una versión vieja sin depender de las tablas vivas, que
+  /// para entonces ya describen otra cosa.
+  contenido Json
+
+  generatedById     String?
+  generatedByNombre String?
+  generatedAt       DateTime @default(now())
+  /// Qué se cambió, si alguien lo escribió. Opcional a propósito: obligar a
+  /// justificar cada corrección hace que se escriba "corrección" y nada más.
+  nota              String?
+
+  informe     Informe @relation(fields: [informeId], references: [id], onDelete: Cascade)
+  generatedBy User?   @relation("InformeVersionGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
+
+  @@unique([informeId, version])
+  @@index([informeId])
+}
+
+/// Un informe a medio armar.
+///
+/// No es un `Informe` sin PDF: un informe es un documento emitido, con número y
+/// archivo, y un borrador no tiene nada de eso — es el estado del asistente
+/// guardado para seguir después. Meterlos en la misma tabla obligaría a que
+/// todo lo que lista informes explique cuáles no lo son.
+///
+/// El contenido va como JSON y no en tablas: nada lo consulta por partes, y
+/// mientras se arma cambia de forma todo el tiempo.
+model InformeBorrador {
+  id        String  @id @default(cuid())
+  clienteId String?
+  titulo    String?
+  contenido Json
+
+  createdById     String?
+  createdByNombre String?
+  createdAt       DateTime @default(now())
+  updatedById     String?
+  updatedByNombre String?
+  updatedAt       DateTime @updatedAt
+
+  cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation("InformeBorradorCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?    @relation("InformeBorradorUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedAt])
+  @@index([clienteId])
 }
 
 model InformeVisita {
