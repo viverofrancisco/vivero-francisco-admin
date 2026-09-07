@@ -62,18 +62,29 @@ export function ServiciosTable({
   const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
   const [tipo, setTipo] = useFiltroUrl("tipo", "");
   /**
-   * Archivar es un borrado suave, así que el producto sigue existiendo — y
-   * hasta ahora no había forma de verlo desde el portal. Por defecto se listan
-   * los activos, que es lo que se está armando el 99% del tiempo.
+   * Un solo filtro para los tres estados que muestra la columna.
+   *
+   * Eran dos listas —activos/archivados por un lado, el estado por otro— y
+   * decían lo mismo desde distintos lugares: archivar es un borrado suave, así
+   * que a los ojos de quien mira el listado es un estado más. Archivado le gana
+   * a los otros dos, igual que en la insignia: uno archivado no se ofrece esté
+   * como esté.
+   *
+   * Sin nada elegido **no salen los archivados**: son los que ya no se ofrecen,
+   * y verlos mezclados con el catálogo es ruido. Siguen a un clic, que es lo
+   * único que los deja restaurar.
    */
-  const [archivados, setArchivados] = useFiltroUrl("archivados", "");
+  const [estado, setEstado] = useFiltroUrl("estado", "");
   const [categoria, setCategoria] = useFiltroUrl("categoria", "");
   const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
-    let result = productos.filter((s) =>
-      archivados === "SI" ? s.archivadoEl : !s.archivadoEl
-    );
+    let result =
+      estado === "ARCHIVADO"
+        ? productos.filter((s) => s.archivadoEl)
+        : productos.filter(
+            (s) => !s.archivadoEl && (!estado || s.estado === estado)
+          );
     if (tipo) result = result.filter((s) => s.tipo === tipo);
     if (categoria) {
       result = result.filter((s) =>
@@ -91,7 +102,7 @@ export function ServiciosTable({
       );
     }
     return result;
-  }, [productos, archivados, tipo, categoria, searchQuery]);
+  }, [productos, estado, tipo, categoria, searchQuery]);
 
   // La página se acota al renderizar: filtrar puede dejar menos páginas que la
   // actual, y así no hace falta un efecto que la corrija después de pintar.
@@ -167,15 +178,17 @@ export function ServiciosTable({
             />
           </div>
         )}
-        <div className="w-40">
+        <div className="w-48">
           <CustomSelect
-            value={archivados}
-            onChange={(v) => cambiar(() => setArchivados(v))}
+            value={estado}
+            onChange={(v) => cambiar(() => setEstado(v))}
             options={[
-              { value: "", label: "Activos" },
-              { value: "SI", label: "Archivados" },
+              { value: "", label: "Activos y borradores" },
+              { value: "ACTIVO", label: "Activos" },
+              { value: "BORRADOR", label: "Borradores" },
+              { value: "ARCHIVADO", label: "Archivados" },
             ]}
-            placeholder="Activos"
+            placeholder="Activos y borradores"
           />
         </div>
       </div>
