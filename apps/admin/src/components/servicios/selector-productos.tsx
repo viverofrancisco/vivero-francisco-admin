@@ -17,6 +17,10 @@ export interface ProductoElegible {
   nombre: string;
   tipo: string;
   estado: string;
+  /** El más bajo de sus variantes. `null` en un servicio: no tiene ninguna. */
+  precio: number | null;
+  /** Para poder ordenar por antigüedad. */
+  creadoEl: string;
   imagenUrl: string | null;
 }
 
@@ -28,18 +32,24 @@ const TIPO_LABEL: Record<string, string> = {
 /**
  * Elegir productos para sumarlos a una categoría.
  *
- * Solo ofrece los que **todavía no están**: mostrarlos todos obligaría a
- * recordar cuáles ya se agregaron, que es justo lo que la pantalla debería
- * contestar. Incluye los borradores — ordenar el catálogo antes de vender es
- * exactamente cuándo conviene hacerlo.
+ * Esconde los que **ya están elegidos** —incluidos los que se acaban de marcar
+ * y todavía no se guardaron— porque mostrarlos obligaría a recordar cuáles ya
+ * se agregaron, que es justo lo que la pantalla debería contestar. Incluye los
+ * borradores: ordenar el catálogo antes de vender es exactamente cuándo conviene
+ * hacerlo.
+ *
+ * Devuelve los productos **enteros** y no sus ids: quien los recibe los va a
+ * pintar en una lista, y volver al servidor por algo que acaba de tener en la
+ * mano es un viaje de más.
  */
 export function SelectorProductos({
-  categoriaId,
+  excluir,
   onElegir,
   onCerrar,
 }: {
-  categoriaId: string;
-  onElegir: (productoIds: string[]) => void;
+  /** Los que ya están en la categoría. No se ofrecen. */
+  excluir: string[];
+  onElegir: (productos: ProductoElegible[]) => void;
   onCerrar: () => void;
 }) {
   const [items, setItems] = useState<ProductoElegible[] | null>(null);
@@ -51,13 +61,14 @@ export function SelectorProductos({
   // hay dependencias que sincronizar ni un `setState` después de pintar.
   if (pedida !== busqueda) {
     setPedida(busqueda);
-    fetch(
-      `/api/categorias/${categoriaId}/productos?q=${encodeURIComponent(busqueda)}`
-    )
+    fetch(`/api/categorias/productos?q=${encodeURIComponent(busqueda)}`)
       .then((r) => r.json())
       .then((d) => setItems(d.productos ?? []))
       .catch(() => setItems([]));
   }
+
+  /** Lo que queda por elegir. El filtro es del cliente: la lista es corta. */
+  const disponibles = (items ?? []).filter((p) => !excluir.includes(p.id));
 
   const alternar = (id: string) =>
     setElegidos((prev) =>
@@ -88,14 +99,14 @@ export function SelectorProductos({
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Cargando…
               </p>
-            ) : items.length === 0 ? (
+            ) : disponibles.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
                 {busqueda
                   ? "Nada con ese nombre."
                   : "Todos los productos ya están en esta categoría."}
               </p>
             ) : (
-              items.map((p) => {
+              disponibles.map((p) => {
                 const elegido = elegidos.includes(p.id);
                 return (
                   <button
@@ -156,7 +167,13 @@ export function SelectorProductos({
                 Cancelar
               </Button>
               <Button
-                onClick={() => onElegir(elegidos)}
+                onClick={() =>
+                  onElegir(
+                    elegidos
+                      .map((id) => (items ?? []).find((p) => p.id === id))
+                      .filter((p): p is ProductoElegible => Boolean(p))
+                  )
+                }
                 disabled={elegidos.length === 0}
               >
                 Agregar

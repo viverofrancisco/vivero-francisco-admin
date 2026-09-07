@@ -143,7 +143,9 @@ export async function getCategoria(viewer: Viewer, id: string) {
       media: { select: { id: true, key: true, alt: true, nombre: true } },
       productos: {
         where: { producto: { deletedAt: null } },
-        orderBy: { producto: { nombre: "asc" } },
+        // Por su posición: es el orden guardado. Los otros —nombre, precio,
+        // fecha— los aplica la pantalla sobre esta lista.
+        orderBy: { posicion: "asc" },
         select: {
           producto: {
             select: {
@@ -151,6 +153,15 @@ export async function getCategoria(viewer: Viewer, id: string) {
               nombre: true,
               tipo: true,
               estado: true,
+              createdAt: true,
+              // El precio del producto es el más bajo de sus variantes: es lo
+              // que se muestra como "desde" y con lo que tiene sentido
+              // ordenar. Un servicio no tiene ninguna.
+              variantes: {
+                orderBy: { precio: "asc" },
+                take: 1,
+                select: { precio: true },
+              },
               imagenes: {
                 orderBy: { posicion: "asc" },
                 take: 1,
@@ -177,25 +188,21 @@ export async function getCategoria(viewer: Viewer, id: string) {
           nombre: categoria.media.nombre,
         }
       : null,
-    productos: categoria.productos.map((pc) => ({
-      id: pc.producto.id,
-      nombre: pc.producto.nombre,
-      tipo: pc.producto.tipo,
-      estado: pc.producto.estado,
-      imagenUrl: pc.producto.imagenes[0]
-        ? publicUrlForKey(pc.producto.imagenes[0].media.key)
-        : null,
-    })),
+    productos: categoria.productos.map((pc) => armarFila(pc.producto)),
   };
 }
 
 /**
- * Suma productos a la categoría.
+ * Deja la categoría con **exactamente** estos productos, **en este orden**.
  *
- * `skipDuplicates` en vez de fallar: agregar uno que ya estaba es un pedido sin
- * efecto, no un error — y con multiselección es fácil que pase.
+ * Un reemplazo y no un `add`/`remove` suelto, porque es lo que se guarda desde
+ * la ficha: lo que llega es el estado final, igual que las líneas de una orden.
+ *
+ * El índice en el arreglo es la `posicion`. Así "guardar el orden manual" y
+ * "guardar qué productos hay" son la misma operación, que es como se viven en
+ * la pantalla: se arrastra una fila y se aprieta guardar.
  */
-export async function agregarProductos(
+export async function fijarProductos(
   viewer: Viewer,
   categoriaId: string,
   productoIds: string[]
@@ -207,53 +214,66 @@ export async function agregarProductos(
   });
   if (!categoria) throw new NotFoundError("Categoría no encontrada");
 
-  await prisma.productoCategoria.createMany({
-    data: productoIds.map((productoId) => ({ categoriaId, productoId })),
-    skipDuplicates: true,
+  const quedan = new Set(productoIds);
+  const actuales = await prisma.productoCategoria.findMany({
+    where: { categoriaId },
+    select: { productoId: true },
   });
-  return getCategoria(viewer, categoriaId);
-}
+  const ya = new Set(actuales.map((p) => p.productoId));
 
-/** Lo saca de la categoría. El producto queda entero, con una etiqueta menos. */
-export async function quitarProducto(
-  viewer: Viewer,
-  categoriaId: string,
-  productoId: string
-) {
-  ensureAdmin(viewer);
-  await prisma.productoCategoria.deleteMany({
-    where: { categoriaId, productoId },
-  });
+  const sobran = [...ya].filter((id) => !quedan.has(id));
+
+  await prisma.$transaction([
+    ...(sobran.length
+      ? [
+          prisma.productoCategoria.deleteMany({
+            where: { categoriaId, productoId: { in: sobran } },
+          }),
+        ]
+      : []),
+    // Un `upsert` por producto y no un `createMany`: los que ya estaban pueden
+    // haber cambiado de lugar, y crear solo los nuevos dejaría el orden viejo.
+    ...productoIds.map((productoId, posicion) =>
+      prisma.productoCategoria.upsert({
+        where: { productoId_categoriaId: { productoId, categoriaId } },
+        create: { categoriaId, productoId, posicion },
+        update: { posicion },
+      })
+    ),
+  ]);
+
   return getCategoria(viewer, categoriaId);
 }
 
 /**
- * Los productos que **todavía no** están en la categoría, para poder elegirlos.
+ * El catálogo entero para elegir, con su miniatura.
  *
- * Incluye los borradores: una categoría es cómo se ordena el catálogo, y
- * ordenar algo que todavía no se vende es exactamente cuándo conviene hacerlo.
+ * Sin filtrar por categoría a propósito: el selector la usa tanto sobre una
+ * categoría que existe como sobre una que se está creando, y quién ya está
+ * elegido lo sabe la pantalla —incluidos los que se acaban de marcar y todavía
+ * no se guardaron—.
+ *
+ * Incluye los borradores: ordenar el catálogo antes de vender es exactamente
+ * cuándo conviene hacerlo.
  */
-export async function productosParaAgregar(
-  viewer: Viewer,
-  categoriaId: string,
-  search?: string
-) {
+export async function productosParaElegir(viewer: Viewer, search?: string) {
   ensureAdmin(viewer);
   const productos = await prisma.producto.findMany({
     where: {
       deletedAt: null,
-      categorias: { none: { categoriaId } },
       ...(search?.trim()
         ? { nombre: { contains: search.trim(), mode: "insensitive" } }
         : {}),
     },
     orderBy: { nombre: "asc" },
-    take: 50,
+    take: 100,
     select: {
       id: true,
       nombre: true,
       tipo: true,
       estado: true,
+      createdAt: true,
+      variantes: { orderBy: { precio: "asc" }, take: 1, select: { precio: true } },
       imagenes: {
         orderBy: { posicion: "asc" },
         take: 1,
@@ -261,11 +281,29 @@ export async function productosParaAgregar(
       },
     },
   });
-  return productos.map((p) => ({
+  return productos.map(armarFila);
+}
+
+/** Una fila de producto, con lo que la ficha necesita para mostrar y ordenar. */
+function armarFila(p: {
+  id: string;
+  nombre: string;
+  tipo: string;
+  estado: string;
+  createdAt: Date;
+  variantes: { precio: Prisma.Decimal }[];
+  imagenes: { media: { key: string } }[];
+}) {
+  return {
     id: p.id,
     nombre: p.nombre,
     tipo: p.tipo,
     estado: p.estado,
+    creadoEl: p.createdAt.toISOString(),
+    // `null` en un servicio: no tiene variantes, así que no tiene precio de
+    // lista, y ordenar por precio lo deja al final en vez de tratarlo como 0.
+    precio: p.variantes[0] ? Number(p.variantes[0].precio) : null,
     imagenUrl: p.imagenes[0] ? publicUrlForKey(p.imagenes[0].media.key) : null,
-  }));
+  };
 }
+

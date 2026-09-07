@@ -10,9 +10,12 @@ export const categoriaSchema = z.object({
   mediaId: z.string().min(1).nullable().optional(),
 });
 
-/** Qué productos se suman a la categoría. */
+/**
+ * Con qué productos queda la categoría. **La lista entera**, no un alta: vacía
+ * es una respuesta válida —una categoría sin nada— y por eso no lleva `min(1)`.
+ */
 export const agregarProductosSchema = z.object({
-  productoIds: z.array(z.string().min(1)).min(1),
+  productoIds: z.array(z.string().min(1)),
 });
 
 export type CategoriaFormData = z.infer<typeof categoriaSchema>;

@@ -328,12 +328,17 @@ model Categoria {
 model ProductoCategoria {
   productoId  String
   categoriaId String
+  /// El orden a mano dentro de la categoría. Es **el orden guardado**: los
+  /// demás —por nombre, por precio— son formas de mirar la lista y no se
+  /// guardan, porque sin vidriera que los consuma serían una columna que nadie
+  /// lee.
+  posicion    Int    @default(0)
 
   producto  Producto  @relation(fields: [productoId], references: [id], onDelete: Cascade)
   categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
 
   @@id([productoId, categoriaId])
-  @@index([categoriaId])
+  @@index([categoriaId, posicion])
 }
 
 /// ── Variantes e inventario ────────────────────────────────────────────────

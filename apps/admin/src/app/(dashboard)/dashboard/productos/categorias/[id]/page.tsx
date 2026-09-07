@@ -3,7 +3,7 @@ import { requireAdmin, viewerFromSession } from "@/lib/auth-helpers";
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { NotFoundError } from "@/lib/services/errors";
 import { getCategoria } from "@/lib/services/categoria.service";
-import { CategoriaDetail } from "@/components/servicios/categoria-detail";
+import { CategoriaForm } from "@/components/servicios/categoria-form";
 
 /**
  * La ficha de una categoría.
@@ -38,7 +38,7 @@ export default async function CategoriaRoute({
 
   return (
     <div className="p-4 md:p-6">
-      <CategoriaDetail categoria={categoria} backHref={backHref} />
+      <CategoriaForm categoria={categoria} backHref={backHref} />
     </div>
   );
 }

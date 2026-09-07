@@ -4534,7 +4534,8 @@ export type CategoriaScalarFieldEnum = (typeof CategoriaScalarFieldEnum)[keyof t
 
 export const ProductoCategoriaScalarFieldEnum = {
   productoId: 'productoId',
-  categoriaId: 'categoriaId'
+  categoriaId: 'categoriaId',
+  posicion: 'posicion'
 } as const
 
 export type ProductoCategoriaScalarFieldEnum = (typeof ProductoCategoriaScalarFieldEnum)[keyof typeof ProductoCategoriaScalarFieldEnum]
