@@ -18,7 +18,22 @@ import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { RichText } from "@/components/ui/rich-text";
 import { TablePagination } from "@/components/shared/table-pagination";
-import { ArrowLeft, GripVertical, ImageOff, Loader2, Plus, X } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowLeft,
+  ArrowUpToLine,
+  GripVertical,
+  ImageOff,
+  Loader2,
+  Plus,
+  X,
+} from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useRegistrarCambios } from "@/components/shared/cambios-pendientes";
 import { MediaLibrary, subirALaBiblioteca, type MediaItem } from "./media-library";
 import { SelectorProductos, type ProductoElegible } from "./selector-productos";
@@ -129,6 +144,10 @@ export function CategoriaForm({
   const [orden, setOrden] = useState<Orden>("MANUAL");
   /** Qué fila se está arrastrando, por su posición en la página visible. */
   const [arrastrada, setArrastrada] = useState<number | null>(null);
+  /** Qué productos están marcados, para moverlos de a varios. */
+  const [marcados, setMarcados] = useState<string[]>([]);
+  const [moviendo, setMoviendo] = useState(false);
+  const [aPosicion, setAPosicion] = useState("1");
   const [pagina, setPagina] = useState(1);
   const input = useRef<HTMLInputElement>(null);
 
@@ -249,6 +268,30 @@ export function CategoriaForm({
   );
 
   /**
+   * Mueve lo marcado a una posición, contando desde 1 sobre la lista entera.
+   *
+   * Los marcados conservan **su orden relativo** y entran juntos: mover cinco
+   * al principio no debería mezclarlos entre sí, que es lo que pasaría si cada
+   * uno viajara por su cuenta.
+   *
+   * Existe porque arrastrar sirve para mover una fila dos lugares, no para
+   * llevar diez del final al principio en una lista paginada.
+   */
+  const moverMarcados = (destino: number) => {
+    if (marcados.length === 0) return;
+    const sel = new Set(marcados);
+    const movidos = form.productos.filter((p) => sel.has(p.id));
+    const resto = form.productos.filter((p) => !sel.has(p.id));
+    const i = Math.max(0, Math.min(destino - 1, resto.length));
+    setForm({
+      ...form,
+      productos: [...resto.slice(0, i), ...movidos, ...resto.slice(i)],
+    });
+    setMarcados([]);
+    setMoviendo(false);
+  };
+
+  /**
    * Cambia el criterio de orden.
    *
    * Al pasar **a manual, se queda con lo que está viendo**: si alguien ordenó
@@ -262,6 +305,8 @@ export function CategoriaForm({
     }
     setOrden(nuevo);
     setPagina(1);
+    // Lo marcado era para moverlo, y fuera del orden manual no hay adónde.
+    setMarcados([]);
   };
 
   /**
@@ -364,6 +409,81 @@ export function CategoriaForm({
                 </p>
               ) : (
                 <>
+                  {/* Solo con algo marcado: una barra siempre visible ocupando
+                      lugar para decir "0 seleccionados" es ruido. */}
+                  {manual && marcados.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-3 py-2">
+                      <span className="text-sm">
+                        {marcados.length}{" "}
+                        {marcados.length === 1
+                          ? "producto marcado"
+                          : "productos marcados"}
+                        <button
+                          type="button"
+                          onClick={() => setMarcados([])}
+                          className="ml-2 text-primary hover:underline"
+                        >
+                          Desmarcar
+                        </button>
+                      </span>
+                      <Popover open={moviendo} onOpenChange={setMoviendo}>
+                        <PopoverTrigger
+                          render={
+                            <Button type="button" variant="outline" size="sm">
+                              Mover
+                            </Button>
+                          }
+                        />
+                        <PopoverContent align="end" className="w-auto p-1.5">
+                          <div className="space-y-0.5">
+                            <button
+                              type="button"
+                              onClick={() => moverMarcados(1)}
+                              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-muted"
+                            >
+                              <ArrowUpToLine className="h-3.5 w-3.5" />
+                              Al principio
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moverMarcados(form.productos.length)}
+                              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-muted"
+                            >
+                              <ArrowDownToLine className="h-3.5 w-3.5" />
+                              Al final
+                            </button>
+                            <div className="flex items-center gap-1.5 border-t px-2 pb-1 pt-2">
+                              <span className="text-sm">A la posición</span>
+                              <Input
+                                type="number"
+                                min="1"
+                                max={form.productos.length}
+                                value={aPosicion}
+                                onChange={(e) => setAPosicion(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key !== "Enter") return;
+                                  e.preventDefault();
+                                  moverMarcados(Number(aPosicion));
+                                }}
+                                className="h-8 w-20 text-right tabular-nums"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => moverMarcados(Number(aPosicion))}
+                                disabled={
+                                  !Number.isInteger(Number(aPosicion)) ||
+                                  Number(aPosicion) < 1
+                                }
+                              >
+                                Mover
+                              </Button>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
                   <ul className="divide-y">
                     {visibles.map((p, i) => (
                       <li
@@ -381,7 +501,27 @@ export function CategoriaForm({
                         } ${arrastrada === i ? "opacity-40" : ""}`}
                       >
                         {manual && (
-                          <GripVertical className="h-4 w-4 flex-none text-muted-foreground" />
+                          <>
+                            <GripVertical className="h-4 w-4 flex-none text-muted-foreground" />
+                            <Checkbox
+                              checked={marcados.includes(p.id)}
+                              onCheckedChange={(v) =>
+                                setMarcados((prev) =>
+                                  v
+                                    ? [...prev, p.id]
+                                    : prev.filter((x) => x !== p.id)
+                                )
+                              }
+                              aria-label={`Marcar ${p.nombre}`}
+                              className="flex-none"
+                            />
+                            {/* El número es la posición en la lista entera, no
+                                en la página: es con lo que alguien dice "movelo
+                                al 30". */}
+                            <span className="w-7 flex-none text-right text-xs tabular-nums text-muted-foreground">
+                              {(actualPagina - 1) * POR_PAGINA + i + 1}.
+                            </span>
+                          </>
                         )}
                         <Miniatura url={p.imagenUrl} />
                         {/* Un producto recién agregado todavía no está guardado
