@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { sanitizarHtml } from "@/lib/html-seguro";
 import { asegurarVarianteUnica } from "./variante.service";
 import {
   ConflictError,
@@ -113,6 +114,8 @@ export interface CreateServicioPayload {
    * del XML; si no hay, se emite con un código derivado del id.
    */
   codigo?: string | null;
+  /** Si ya se puede vender. Nace `ACTIVO`. */
+  estado?: "ACTIVO" | "BORRADOR";
 }
 
 export async function createServicio(
@@ -126,13 +129,16 @@ export async function createServicio(
       prisma.producto.create({
         data: {
           nombre: payload.nombre,
-          descripcion: payload.descripcion?.trim() || null,
+          // La descripción es HTML de un editor: se limpia **acá**, porque lo
+          // que valida la pantalla no cuenta.
+          descripcion: sanitizarHtml(payload.descripcion),
           tipo: payload.tipo ?? "SERVICIO",
           ivaTasa: payload.ivaTasa ?? null,
           categorias: payload.categoriaIds?.length
             ? { create: payload.categoriaIds.map((categoriaId) => ({ categoriaId })) }
             : undefined,
           codigo: payload.codigo?.trim() || null,
+          ...(payload.estado ? { estado: payload.estado } : {}),
           createdById: viewer.id,
           updatedById: viewer.id,
         },
@@ -160,6 +166,8 @@ export interface UpdateServicioPayload {
   categoriaIds?: string[];
   /** El que sale impreso como `codigoPrincipal`. */
   codigo?: string | null;
+  /** Si ya se puede vender. Un borrador no aparece en los selectores. */
+  estado?: "ACTIVO" | "BORRADOR";
 }
 
 export async function updateServicio(
@@ -192,7 +200,7 @@ export async function updateServicio(
         data: {
           ...(payload.nombre !== undefined ? { nombre: payload.nombre } : {}),
           ...(payload.descripcion !== undefined
-            ? { descripcion: payload.descripcion?.trim() || null }
+            ? { descripcion: sanitizarHtml(payload.descripcion) }
             : {}),
           ...(payload.ivaTasa !== undefined ? { ivaTasa: payload.ivaTasa } : {}),
           ...(payload.categoriaIds !== undefined
@@ -210,6 +218,7 @@ export async function updateServicio(
           ...(payload.codigo !== undefined
             ? { codigo: payload.codigo?.trim() || null }
             : {}),
+          ...(payload.estado !== undefined ? { estado: payload.estado } : {}),
           updatedById: viewer.id,
         },
       }),

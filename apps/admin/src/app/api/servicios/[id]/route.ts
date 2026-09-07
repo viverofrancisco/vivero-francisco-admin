@@ -58,6 +58,7 @@ export async function PUT(
         tipo: data.tipo,
         categoriaIds: data.categoriaIds ?? [],
         codigo: data.codigo ?? null,
+        estado: data.estado,
       })
     );
   } catch (error) {

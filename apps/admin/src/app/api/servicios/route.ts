@@ -47,6 +47,7 @@ export async function POST(request: Request) {
       ivaTasa: data.ivaTasa ?? null,
       categoriaIds: data.categoriaIds ?? [],
       codigo: data.codigo ?? null,
+      estado: data.estado,
     });
     return NextResponse.json(servicio, { status: 201 });
   } catch (error) {

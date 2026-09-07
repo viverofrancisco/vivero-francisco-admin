@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User } from "lucide-react";
 import { MobileNav } from "./mobile-nav";
 import { GlobalSearch } from "./global-search";
+import { useCambiosPendientes } from "@/components/shared/cambios-pendientes";
+import { Loader2 } from "lucide-react";
 
 interface BrandingProps {
   branding: { logoUrl: string | null; nombre: string | null };
@@ -20,6 +22,7 @@ interface BrandingProps {
 
 export function Header({ branding }: BrandingProps) {
   const { data: session } = useSession();
+  const cambios = useCambiosPendientes();
   const userName =
     [session?.user?.name, session?.user?.apellido].filter(Boolean).join(" ") ||
     "Usuario";
@@ -34,9 +37,39 @@ export function Header({ branding }: BrandingProps) {
     <header className="relative z-30 flex h-20 items-center gap-3 border-b bg-card/80 px-4 backdrop-blur-md md:px-6">
       <MobileNav branding={branding} />
 
-      <GlobalSearch className="w-full max-w-md" />
-
-      <div className="flex-1" />
+      {/* Con cambios sin guardar, el buscador se va y queda esto: buscar otra
+          cosa mientras hay algo a medio escribir no es lo que alguien está por
+          hacer, y guardar tiene que estar donde siempre se mira. */}
+      {cambios ? (
+        <div className="flex flex-1 items-center gap-3">
+          <span className="text-sm font-medium">Cambios sin guardar</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={cambios.onDescartar}
+              disabled={cambios.guardando}
+            >
+              Descartar
+            </Button>
+            <Button
+              type="button"
+              onClick={cambios.onGuardar}
+              disabled={cambios.guardando}
+            >
+              {cambios.guardando && (
+                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+              )}
+              Guardar
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <GlobalSearch className="w-full max-w-md" />
+          <div className="flex-1" />
+        </>
+      )}
 
       {/* Profile lives in the sidebar footer on desktop; only shown here on
           mobile, where the sidebar is hidden. */}

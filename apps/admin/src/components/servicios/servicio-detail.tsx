@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -15,7 +14,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Undo2 } from "lucide-react";
 import { toast } from "sonner";
-import { BarraCambios } from "@/components/shared/barra-cambios";
+import { useRegistrarCambios } from "@/components/shared/cambios-pendientes";
+import { RichText } from "@/components/ui/rich-text";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { SelectorCategorias } from "./selector-categorias";
 import { ProductoImagenes, type ImagenProducto } from "./producto-imagenes";
 import { ProductoInventario } from "./producto-inventario";
@@ -38,6 +39,8 @@ interface ServicioData {
   ivaTasa: string | number | null;
   /** El que sale impreso como `codigoPrincipal` en la factura. */
   codigo: string | null;
+  /** Si ya se puede vender. Un borrador no aparece en los selectores. */
+  estado: "ACTIVO" | "BORRADOR";
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
   /** Varias: un rosal es "Plantas" y también "Exterior". */
@@ -85,6 +88,7 @@ export function ServicioDetail({
     nombre: servicio.nombre,
     descripcion: servicio.descripcion ?? "",
     codigo: servicio.codigo ?? "",
+    estado: servicio.estado,
     categoriaIds: servicio.categoriaIds,
   };
   const [form, setForm] = useState(guardado);
@@ -93,6 +97,7 @@ export function ServicioDetail({
     form.nombre !== guardado.nombre ||
     form.descripcion !== guardado.descripcion ||
     form.codigo !== guardado.codigo ||
+    form.estado !== guardado.estado ||
     form.categoriaIds.join() !== guardado.categoriaIds.join();
 
   /** Lo devuelve al catálogo. */
@@ -130,6 +135,7 @@ export function ServicioDetail({
           tipo: servicio.tipo,
           descripcion: form.descripcion,
           codigo: form.codigo.trim() || null,
+          estado: form.estado,
           categoriaIds: form.categoriaIds,
         }),
       });
@@ -150,6 +156,9 @@ export function ServicioDetail({
     }
   };
 
+  // La barra de guardar vive en el header, en lugar del buscador.
+  useRegistrarCambios(hayCambios, guardando, guardar, () => setForm(guardado));
+
   /**
    * Un bien sin opciones tiene una variante y una sola: su stock es, a los ojos
    * de quien mira, el del producto. Con opciones el stock es por combinación y
@@ -162,34 +171,22 @@ export function ServicioDetail({
 
   return (
     <div className="space-y-6">
-      <BarraCambios
-        hayCambios={hayCambios}
-        guardando={guardando}
-        onGuardar={guardar}
-        onDescartar={() => setForm(guardado)}
-      />
-
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         {/* Faltaba: era la única ficha sin forma de volver al listado. */}
         <Link href={backHref}>
-          <Button variant="ghost" size="icon" className="mt-1">
+          <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <div className="min-w-0 flex-1">
-          {/* El título es el campo: cambiarle el nombre a un producto es lo que
-              más se hace, y esconderlo detrás de *Editar* lo convertía en tres
-              clics. */}
-          <Input
-            value={form.nombre}
-            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-            aria-label="Nombre del producto"
-            className="!h-auto border-transparent bg-transparent px-2 py-1 text-2xl font-bold tracking-tight shadow-none hover:border-input focus-visible:border-input"
-          />
-          <p className="px-2 text-muted-foreground">
-            {TIPO_LABEL[servicio.tipo] ?? servicio.tipo}
-          </p>
-        </div>
+        <h1 className="min-w-0 truncate text-2xl font-bold tracking-tight">
+          {form.nombre || "Sin nombre"}
+        </h1>
+        {/* El estado al lado del título: es lo primero que hay que saber de un
+            producto, y archivado gana porque es el que explica todo lo demás. */}
+        <EstadoBadge
+          archivado={servicio.archivadoEl !== null}
+          estado={form.estado}
+        />
       </div>
 
       {/* Archivado, la ficha se abre igual —se llega desde el filtro, y desde
@@ -220,6 +217,14 @@ export function ServicioDetail({
         <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre *</Label>
+                <Input
+                  id="nombre"
+                  value={form.nombre}
+                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                />
+              </div>
               {/* **El código solo en un servicio.** En un bien lo lleva la
                   variante como SKU —que es lo que se imprime y lo que va en la
                   etiqueta— y tener los dos era pedir el mismo dato dos veces
@@ -240,14 +245,10 @@ export function ServicioDetail({
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="descripcion">Descripción</Label>
-                <Textarea
-                  id="descripcion"
-                  rows={4}
+                <Label>Descripción</Label>
+                <RichText
                   value={form.descripcion}
-                  onChange={(e) =>
-                    setForm({ ...form, descripcion: e.target.value })
-                  }
+                  onChange={(html) => setForm({ ...form, descripcion: html })}
                   placeholder="Para qué sirve, qué incluye…"
                 />
               </div>
@@ -285,25 +286,80 @@ export function ServicioDetail({
           )}
         </div>
 
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Categorías</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {categorias.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Todavía no hay categorías creadas.
-              </p>
-            ) : (
-              <SelectorCategorias
-                categorias={categorias}
-                value={form.categoriaIds}
-                onChange={(ids) => setForm({ ...form, categoriaIds: ids })}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">Estado</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <CustomSelect
+                value={form.estado}
+                onChange={(v) =>
+                  setForm({ ...form, estado: v as "ACTIVO" | "BORRADOR" })
+                }
+                options={[
+                  { value: "ACTIVO", label: "Activo" },
+                  {
+                    value: "BORRADOR",
+                    label: "Borrador",
+                    hint: "No aparece al armar una orden",
+                  },
+                ]}
               />
-            )}
-          </CardContent>
-        </Card>
+              <div className="border-t pt-3">
+                <div className="text-xs text-muted-foreground">Tipo</div>
+                {/* Inmutable: cambiarlo dejaría suscripciones, visitas y líneas
+                    de orden con una semántica que ya no corresponde. */}
+                <div className="text-sm">
+                  {TIPO_LABEL[servicio.tipo] ?? servicio.tipo}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">Categorías</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {categorias.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Todavía no hay categorías creadas.
+                </p>
+              ) : (
+                <SelectorCategorias
+                  categorias={categorias}
+                  value={form.categoriaIds}
+                  onChange={(ids) => setForm({ ...form, categoriaIds: ids })}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
+  );
+}
+
+/** Qué estado se ve al lado del título. Archivado gana: explica todo lo demás. */
+function EstadoBadge({
+  archivado,
+  estado,
+}: {
+  archivado: boolean;
+  estado: "ACTIVO" | "BORRADOR";
+}) {
+  const [texto, clases] = archivado
+    ? ["Archivado", "border-amber-200 bg-amber-50 text-amber-900"]
+    : estado === "BORRADOR"
+      ? ["Borrador", "border-border bg-muted text-muted-foreground"]
+      : ["Activo", "border-primary/20 bg-primary/10 text-primary"];
+
+  return (
+    <span
+      className={`flex-none rounded-full border px-2 py-0.5 text-xs font-medium ${clases}`}
+    >
+      {texto}
+    </span>
   );
 }

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { ServiciosTable } from "@/components/servicios/servicios-table";
 import { PageHeader } from "@/components/shared/page-header";
+import { textoPlano } from "@/lib/html-seguro";
 
 export default async function ServiciosPage() {
   await requireAuth();
@@ -57,7 +58,8 @@ export default async function ServiciosPage() {
           id: p.id,
           nombre: p.nombre,
           tipo: p.tipo,
-          descripcion: p.descripcion,
+          // Sin etiquetas: la tabla la muestra en una línea y busca por ella.
+          descripcion: textoPlano(p.descripcion),
           codigo: p.codigo,
           // Texto y no `Date`: la tabla solo lo muestra.
           archivadoEl: p.deletedAt?.toISOString() ?? null,

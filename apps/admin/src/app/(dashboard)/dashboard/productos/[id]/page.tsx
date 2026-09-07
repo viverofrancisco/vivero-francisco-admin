@@ -49,6 +49,7 @@ export default async function EditarServicioPage({
           ivaTasa: servicio.ivaTasa === null ? null : Number(servicio.ivaTasa),
           // La ficha de un archivado se abre igual, pero tiene que decirlo.
           archivadoEl: servicio.deletedAt?.toISOString() ?? null,
+          estado: servicio.estado,
           categoriaIds: servicio.categorias.map((c) => c.categoriaId),
         }}
         categorias={categorias}

@@ -26,7 +26,9 @@ export interface ProductoConVariantes {
 
 export async function productosVendibles(): Promise<ProductoConVariantes[]> {
   const productos = await prisma.producto.findMany({
-    where: { deletedAt: null },
+    // Un borrador no se ofrece: es lo que evita que algo a medio configurar
+    // —sin precio, sin SKU— termine en una factura por estar en la lista.
+    where: { deletedAt: null, estado: "ACTIVO" },
     orderBy: { nombre: "asc" },
     select: {
       id: true,

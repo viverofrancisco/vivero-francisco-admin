@@ -211,6 +211,7 @@ export const ProductoScalarFieldEnum = {
   nombre: 'nombre',
   descripcion: 'descripcion',
   tipo: 'tipo',
+  estado: 'estado',
   codigo: 'codigo',
   ivaTasa: 'ivaTasa',
   createdAt: 'createdAt',

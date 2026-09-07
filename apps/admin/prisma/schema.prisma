@@ -59,6 +59,20 @@ enum UserRole {
   CLIENTE
 }
 
+/// Si el producto está listo para venderse.
+///
+/// `BORRADOR` es el que todavía se está armando: existe, se le cargan fotos y
+/// variantes, pero **no aparece en los selectores** de una orden. Es lo que
+/// evita que algo a medio configurar —sin precio, sin SKU— termine en una
+/// factura por estar en la lista.
+///
+/// Archivado es otra cosa y vive en `deletedAt`: un borrador nunca se vendió;
+/// un archivado se vendía y dejó de ofrecerse.
+enum EstadoProducto {
+  ACTIVO
+  BORRADOR
+}
+
 /// Qué es el ítem: algo que se ejecuta o algo que se despacha.
 ///
 /// **No cambia nada al facturar.** El `<detalle>` del SRI no distingue bienes
@@ -245,6 +259,9 @@ model Producto {
   /// catálogo: lo recurrente lo define la suscripción que contiene al producto,
   /// no el producto.
   tipo        TipoProducto @default(SERVICIO)
+
+  /// Si ya se puede vender. Un `BORRADOR` no aparece en los selectores.
+  estado EstadoProducto @default(ACTIVO)
 
   /// Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
   /// del XML; sin él se emite con uno derivado del id. Único porque es lo que

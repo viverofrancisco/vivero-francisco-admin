@@ -21,7 +21,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ChevronDown, ChevronRight, Loader2, Plus, X } from "lucide-react";
+import {
+  ArrowLeftRight,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  Plus,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useAca } from "@/lib/filtros-url";
 import { MovimientoDialog } from "./movimiento-dialog";
@@ -160,6 +167,49 @@ export function ProductoVariantes({
     }
   };
 
+  /** El precio de lista de una variante, desde la tabla. */
+  const guardarPrecio = async (id: string, precio: number) => {
+    const previas = variantes;
+    aplicar(variantes.map((x) => (x.id === id ? { ...x, precio } : x)));
+    try {
+      const res = await fetch(`/api/variantes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ precio }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+    } catch (e) {
+      aplicar(previas);
+      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
+    }
+  };
+
+  /**
+   * Escribir un stock en la tabla es **contar**.
+   *
+   * Se dice cuánto hay, no cuánto se movió, y el servidor anota la diferencia
+   * en el libro. Interpretarlo como un ajuste haría que tipear "12" sobre un 10
+   * dejara 22 — que es lo contrario de lo que alguien acaba de mirar.
+   */
+  const contar = async (id: string, contado: number) => {
+    const previas = variantes;
+    aplicar(variantes.map((x) => (x.id === id ? { ...x, stock: contado } : x)));
+    try {
+      const res = await fetch(`/api/variantes/${id}/movimientos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ motivo: "CONTEO", contado }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      router.refresh();
+    } catch (e) {
+      aplicar(previas);
+      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
+    }
+  };
+
   const hayEjes = opciones.length > 0;
 
   /** El total, contando solo lo que se cuenta. `null` = nada lleva inventario. */
@@ -281,8 +331,9 @@ export function ProductoVariantes({
                     grupos y sangran, que es lo que una tabla no sabe hacer. */}
                 <div className="flex items-center gap-3 bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground">
                   <span className="min-w-0 flex-1">Variante</span>
-                  <span className="w-20 flex-none text-right">Precio</span>
-                  <span className="w-12 flex-none text-right">Stock</span>
+                  <span className="w-24 flex-none text-right">Precio</span>
+                  <span className="w-20 flex-none text-right">Stock</span>
+                  <span className="w-7 flex-none" />
                 </div>
                 {grupos
                   ? grupos.map((g) => {
@@ -309,14 +360,15 @@ export function ProductoVariantes({
                                 {g.filas.length === 1 ? "variante" : "variantes"}
                               </span>
                             </span>
-                            <span className="w-20 flex-none text-right text-sm tabular-nums text-muted-foreground">
+                            <span className="w-24 flex-none text-right text-sm tabular-nums text-muted-foreground">
                               {rangoDePrecios(g.filas)}
                             </span>
-                            <span className="w-12 flex-none text-right text-sm tabular-nums text-muted-foreground">
+                            <span className="w-20 flex-none text-right text-sm tabular-nums text-muted-foreground">
                               {cuentan.length === 0
                                 ? "—"
                                 : cuentan.reduce((n, v) => n + v.stock, 0)}
                             </span>
+                            <span className="w-7 flex-none" />
                           </button>
                           {abierto && (
                             <div className="divide-y border-t bg-muted/20">
@@ -329,6 +381,8 @@ export function ProductoVariantes({
                                   imagenes={imagenes}
                                   sangrada
                                   onAjustar={() => setAjustando(v)}
+                                  onPrecio={(precio) => guardarPrecio(v.id, precio)}
+                                  onContar={(stock) => contar(v.id, stock)}
                                 />
                               ))}
                             </div>
@@ -344,6 +398,8 @@ export function ProductoVariantes({
                         productoNombre={productoNombre}
                         imagenes={imagenes}
                         onAjustar={() => setAjustando(v)}
+                        onPrecio={(precio) => guardarPrecio(v.id, precio)}
+                        onContar={(stock) => contar(v.id, stock)}
                       />
                     ))}
               </div>
@@ -401,6 +457,8 @@ function FilaVariante({
   imagenes,
   sangrada,
   onAjustar,
+  onPrecio,
+  onContar,
 }: {
   variante: VarianteFila;
   productoId: string;
@@ -408,6 +466,8 @@ function FilaVariante({
   imagenes: ImagenProducto[];
   sangrada?: boolean;
   onAjustar: () => void;
+  onPrecio: (precio: number) => void;
+  onContar: (stock: number) => void;
 }) {
   const from = useAca();
   const foto =
@@ -443,27 +503,70 @@ function FilaVariante({
           {variante.sku ?? "Sin SKU"}
         </span>
       </Link>
-      {/* El precio de lista, que es lo que se va a proponer al venderla. */}
-      <span
-        className={`w-20 flex-none text-right text-sm tabular-nums ${
-          variante.precio === 0 ? "text-amber-700" : "text-muted-foreground"
-        }`}
-      >
-        {precioTexto(variante.precio)}
-      </span>
-      {variante.manejaInventario ? (
-        <button
-          type="button"
-          onClick={onAjustar}
-          className={`w-12 flex-none text-right tabular-nums underline-offset-2 hover:underline ${
-            variante.stock <= 0 ? "font-medium text-amber-700" : ""
+      {/* Precio y stock se escriben acá mismo: cargar seis variantes era
+          entrar y salir de seis fichas. La ficha sigue estando para lo demás. */}
+      <div className="relative w-24 flex-none">
+        <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+          $
+        </span>
+        <Input
+          type="number"
+          min="0"
+          step="0.01"
+          defaultValue={variante.precio}
+          aria-label={`Precio de ${nombreVariante(variante, productoNombre)}`}
+          className={`h-8 pl-5 text-right text-sm tabular-nums ${
+            variante.precio === 0 ? "text-amber-700" : ""
           }`}
-        >
-          {variante.stock}
-        </button>
+          onBlur={(e) => {
+            const texto = e.target.value.trim();
+            const nuevo = Number(texto);
+            // Vaciar no es "gratis": repone lo que decía. Marcar algo como
+            // gratis es una decisión, borrar un número mientras se reescribe no.
+            if (texto === "" || !Number.isFinite(nuevo) || nuevo < 0) {
+              e.target.value = String(variante.precio);
+              return;
+            }
+            if (nuevo !== variante.precio) onPrecio(nuevo);
+          }}
+        />
+      </div>
+      {variante.manejaInventario ? (
+        <>
+          {/* Escribir un stock es **contar**: se dice cuánto hay, no cuánto se
+              movió, y el servidor anota la diferencia en el libro. Para un
+              ingreso o una corrección con nota está el botón de al lado. */}
+          <Input
+            type="number"
+            step="1"
+            defaultValue={variante.stock}
+            aria-label={`Stock de ${nombreVariante(variante, productoNombre)}`}
+            className={`h-8 w-20 flex-none text-right text-sm tabular-nums ${
+              variante.stock <= 0 ? "font-medium text-amber-700" : ""
+            }`}
+            onBlur={(e) => {
+              const texto = e.target.value.trim();
+              const nuevo = Number(texto);
+              if (texto === "" || !Number.isInteger(nuevo)) {
+                e.target.value = String(variante.stock);
+                return;
+              }
+              if (nuevo !== variante.stock) onContar(nuevo);
+            }}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Movimiento de stock"
+            onClick={onAjustar}
+          >
+            <ArrowLeftRight />
+          </Button>
+        </>
       ) : (
         <span
-          className="w-12 flex-none text-right text-sm text-muted-foreground"
+          className="w-20 flex-none text-right text-sm text-muted-foreground"
           title="No lleva conteo de stock"
         >
           —

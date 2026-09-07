@@ -20,6 +20,14 @@ export const UserRole = {
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 
+export const EstadoProducto = {
+  ACTIVO: 'ACTIVO',
+  BORRADOR: 'BORRADOR'
+} as const
+
+export type EstadoProducto = (typeof EstadoProducto)[keyof typeof EstadoProducto]
+
+
 export const TipoProducto = {
   SERVICIO: 'SERVICIO',
   BIEN: 'BIEN'

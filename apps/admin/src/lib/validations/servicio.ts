@@ -19,6 +19,8 @@ export const servicioSchema = z.object({
    * del XML; sin él se emite con uno derivado del id.
    */
   codigo: z.string().min(1).nullable().optional(),
+  /** Si ya se puede vender. Un borrador no aparece en los selectores. */
+  estado: z.enum(["ACTIVO", "BORRADOR"]).optional(),
 });
 
 export type ServicioFormData = z.infer<typeof servicioSchema>;
