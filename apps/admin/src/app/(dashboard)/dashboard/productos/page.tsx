@@ -20,19 +20,16 @@ export default async function ServiciosPage() {
       nombre: true,
       tipo: true,
       descripcion: true,
-
+      estado: true,
       deletedAt: true,
       categorias: {
         select: { categoria: { select: { id: true, nombre: true } } },
       },
       // Para la columna de stock: un bien puede tener varias variantes y lo
       // que se muestra es el total de las que se cuentan.
-      // El código sale del SKU de la variante: es donde vive. Con una sola
-      // —servicios y bienes sin opciones— es "el" código del producto; con
-      // varias, cada una tiene el suyo y la lista no muestra ninguno.
       variantes: {
         orderBy: { posicion: "asc" },
-        select: { manejaInventario: true, stock: true, sku: true },
+        select: { manejaInventario: true, stock: true },
       },
     },
   });
@@ -55,7 +52,7 @@ export default async function ServiciosPage() {
           tipo: p.tipo,
           // Sin etiquetas: la tabla la muestra en una línea y busca por ella.
           descripcion: textoPlano(p.descripcion),
-          codigo: p.variantes.length === 1 ? p.variantes[0].sku : null,
+          estado: p.estado,
           // Texto y no `Date`: la tabla solo lo muestra.
           archivadoEl: p.deletedAt?.toISOString() ?? null,
           categorias: p.categorias.map((c) => c.categoria),

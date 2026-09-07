@@ -20,6 +20,7 @@ import { CustomSelect } from "@/components/ui/custom-select";
 import { SelectorCategorias } from "./selector-categorias";
 import { ProductoImagenes, type ImagenProducto } from "./producto-imagenes";
 import { ProductoInventario } from "./producto-inventario";
+import { EstadoBadge } from "./estado-badge";
 import {
   ProductoVariantes,
   type OpcionEditable,
@@ -544,25 +545,3 @@ export function ServicioDetail({
   );
 }
 
-/** Qué estado se ve al lado del título. Archivado gana: explica todo lo demás. */
-function EstadoBadge({
-  archivado,
-  estado,
-}: {
-  archivado: boolean;
-  estado: "ACTIVO" | "BORRADOR";
-}) {
-  const [texto, clases] = archivado
-    ? ["Archivado", "border-amber-200 bg-amber-50 text-amber-900"]
-    : estado === "BORRADOR"
-      ? ["Borrador", "border-border bg-muted text-muted-foreground"]
-      : ["Activo", "border-primary/20 bg-primary/10 text-primary"];
-
-  return (
-    <span
-      className={`flex-none rounded-full border px-2 py-0.5 text-xs font-medium ${clases}`}
-    >
-      {texto}
-    </span>
-  );
-}

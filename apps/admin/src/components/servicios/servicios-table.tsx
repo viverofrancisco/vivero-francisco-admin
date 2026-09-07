@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { EstadoBadge } from "./estado-badge";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
@@ -30,8 +31,8 @@ interface Servicio {
   /** Qué es: servicio o bien. */
   tipo: string;
   descripcion?: string | null;
-  /** El que sale impreso en la factura como `codigoPrincipal`. */
-  codigo: string | null;
+  /** Si ya se ofrece o todavía se está armando. */
+  estado: "ACTIVO" | "BORRADOR";
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
   /**
@@ -189,8 +190,8 @@ export function ServiciosTable({
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Código</TableHead>
                   <TableHead className="w-24 text-right">Stock</TableHead>
+                  <TableHead className="w-28">Estado</TableHead>
                   <TableHead className="w-12" />
                 </TableRow>
               </TableHeader>
@@ -220,9 +221,6 @@ export function ServiciosTable({
                     <TableCell className="text-muted-foreground">
                       {TIPO_LABEL[servicio.tipo] ?? servicio.tipo}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {servicio.codigo ?? "—"}
-                    </TableCell>
                     {/* Un servicio no lleva stock, y un bien puede no
                         contarlo: en los dos casos un "0" mentiría. */}
                     <TableCell className="text-right tabular-nums">
@@ -242,6 +240,12 @@ export function ServiciosTable({
                           )}
                         </span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <EstadoBadge
+                        archivado={servicio.archivadoEl !== null}
+                        estado={servicio.estado}
+                      />
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {/* Archivado no se archiva de nuevo: lo que hace falta
