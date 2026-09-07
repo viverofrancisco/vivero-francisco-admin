@@ -94,6 +94,25 @@ export function ServicioDetail({
   };
   const [form, setForm] = useState(guardado);
 
+  /**
+   * Re-sincroniza el formulario cuando el servidor manda otra cosa.
+   *
+   * Sin esto, `form` quedaba con lo que había **antes** de guardar y `guardado`
+   * con lo que el servidor devolvió: cualquier normalización suya —la
+   * descripción saneada, un código en blanco que vuelve `null`— dejaba la barra
+   * de *Cambios sin guardar* prendida para siempre, sobre un cambio que ya
+   * estaba guardado.
+   *
+   * Se compara por forma y se resetea en el render, que es lo que React
+   * recomienda para derivar estado de props sin un efecto que pinte dos veces.
+   */
+  const [ultimo, setUltimo] = useState(() => JSON.stringify(guardado));
+  const actual = JSON.stringify(guardado);
+  if (actual !== ultimo) {
+    setUltimo(actual);
+    setForm(guardado);
+  }
+
   const hayCambios =
     form.nombre !== guardado.nombre ||
     form.descripcion !== guardado.descripcion ||
