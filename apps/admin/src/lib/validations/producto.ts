@@ -64,7 +64,8 @@ export const movimientoSchema = z.discriminatedUnion("motivo", [
   }),
 ]);
 
-export const imagenesSchema = z.object({
+/** Lo que se pide para subir a la biblioteca. */
+export const subirMediaSchema = z.object({
   files: z
     .array(
       z.object({
@@ -72,17 +73,34 @@ export const imagenesSchema = z.object({
         contentType: z
           .string()
           .min(1)
-          .refine((t) => t.startsWith("image/"), "Un producto solo lleva imágenes"),
+          .refine((t) => t.startsWith("image/"), "La biblioteca solo lleva imágenes"),
       })
     )
     .min(1)
     .max(10),
 });
 
-export const confirmarImagenesSchema = z.object({
-  imagenes: z
-    .array(z.object({ key: z.string().min(1), alt: z.string().nullable().optional() }))
+/** Lo que efectivamente llegó a R2. */
+export const confirmarMediaSchema = z.object({
+  archivos: z
+    .array(
+      z.object({
+        key: z.string().min(1),
+        nombre: z.string().min(1),
+        contentType: z.string().min(1),
+      })
+    )
     .min(1),
+});
+
+export const editarMediaSchema = z.object({
+  nombre: z.string().min(1).optional(),
+  alt: z.string().nullable().optional(),
+});
+
+/** Qué imágenes de la biblioteca usa un producto. */
+export const agregarImagenesSchema = z.object({
+  mediaIds: z.array(z.string().min(1)).min(1),
 });
 
 export const reordenarImagenesSchema = z.object({

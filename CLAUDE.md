@@ -158,11 +158,16 @@ counts the shelf doesn't know what the system said. Two switches per variant:
 `manejaInventario` (counted at all; turning it off with stock on hand is
 refused) and `permiteNegativo` (sellable at zero).
 
-**Images belong to the producto; the variante points at one.** Photos usually
-show a single axis — the color — so hanging them off each combination would mean
-uploading the same picture once per size. A variant with no pick shows the first.
-Upload is two-step (presigned URLs, then confirm), `image/*` only, validated
-server-side because the content type is what gets *signed*.
+**Media is a library.** `Media` is the file (uploaded once, lives in R2),
+`ProductoImagen` says which files a product uses and in what order, and
+`Variante.imagenId` picks which of those represents a variant. Removing a photo
+from a product doesn't delete it from the library; deleting it for real is
+`Restrict`-guarded and the service checks first so it can say *how many* products
+use it. Photos hang off the producto rather than the variante because a photo
+usually shows a single axis — the color — so per-combination would mean uploading
+the same picture once per size. Upload is two-step (presigned URLs, then confirm),
+`image/*` only, validated server-side because the content type is what gets
+*signed*.
 
 **A product is in several categories** (`ProductoCategoria`). It was one column,
 and a rosal is both "Plantas" and "Exterior".

@@ -235,6 +235,7 @@ export type UserWhereInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
   clientesCreated?: Prisma.ClienteListRelationFilter
   clientesUpdated?: Prisma.ClienteListRelationFilter
+  media?: Prisma.MediaListRelationFilter
   productosCreated?: Prisma.ProductoListRelationFilter
   productosUpdated?: Prisma.ProductoListRelationFilter
   movimientosInventario?: Prisma.MovimientoInventarioListRelationFilter
@@ -282,6 +283,7 @@ export type UserOrderByWithRelationInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenOrderByRelationAggregateInput
   clientesCreated?: Prisma.ClienteOrderByRelationAggregateInput
   clientesUpdated?: Prisma.ClienteOrderByRelationAggregateInput
+  media?: Prisma.MediaOrderByRelationAggregateInput
   productosCreated?: Prisma.ProductoOrderByRelationAggregateInput
   productosUpdated?: Prisma.ProductoOrderByRelationAggregateInput
   movimientosInventario?: Prisma.MovimientoInventarioOrderByRelationAggregateInput
@@ -332,6 +334,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
   clientesCreated?: Prisma.ClienteListRelationFilter
   clientesUpdated?: Prisma.ClienteListRelationFilter
+  media?: Prisma.MediaListRelationFilter
   productosCreated?: Prisma.ProductoListRelationFilter
   productosUpdated?: Prisma.ProductoListRelationFilter
   movimientosInventario?: Prisma.MovimientoInventarioListRelationFilter
@@ -413,6 +416,7 @@ export type UserCreateInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -460,6 +464,7 @@ export type UserUncheckedCreateInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -507,6 +512,7 @@ export type UserUpdateInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -554,6 +560,7 @@ export type UserUncheckedUpdateInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -792,6 +799,22 @@ export type UserUpdateOneWithoutProductosUpdatedNestedInput = {
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProductosUpdatedInput, Prisma.UserUpdateWithoutProductosUpdatedInput>, Prisma.UserUncheckedUpdateWithoutProductosUpdatedInput>
+}
+
+export type UserCreateNestedOneWithoutMediaInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMediaInput, Prisma.UserUncheckedCreateWithoutMediaInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMediaInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutMediaNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMediaInput, Prisma.UserUncheckedCreateWithoutMediaInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMediaInput
+  upsert?: Prisma.UserUpsertWithoutMediaInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMediaInput, Prisma.UserUpdateWithoutMediaInput>, Prisma.UserUncheckedUpdateWithoutMediaInput>
 }
 
 export type UserCreateNestedOneWithoutMovimientosInventarioInput = {
@@ -1214,6 +1237,7 @@ export type UserCreateWithoutAccountsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -1260,6 +1284,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1322,6 +1347,7 @@ export type UserUpdateWithoutAccountsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -1368,6 +1394,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1414,6 +1441,7 @@ export type UserCreateWithoutSessionsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -1460,6 +1488,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1522,6 +1551,7 @@ export type UserUpdateWithoutSessionsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -1568,6 +1598,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1614,6 +1645,7 @@ export type UserCreateWithoutClientesCreatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -1660,6 +1692,7 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1711,6 +1744,7 @@ export type UserCreateWithoutClientesUpdatedInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -1757,6 +1791,7 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1809,6 +1844,7 @@ export type UserCreateWithoutClienteInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -1855,6 +1891,7 @@ export type UserUncheckedCreateWithoutClienteInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1916,6 +1953,7 @@ export type UserUpdateWithoutClientesCreatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -1962,6 +2000,7 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2019,6 +2058,7 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -2065,6 +2105,7 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2123,6 +2164,7 @@ export type UserUpdateWithoutClienteInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -2169,6 +2211,7 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2215,6 +2258,7 @@ export type UserCreateWithoutProductosCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
   cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
@@ -2261,6 +2305,7 @@ export type UserUncheckedCreateWithoutProductosCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
   cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2312,6 +2357,7 @@ export type UserCreateWithoutProductosUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
   cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
@@ -2358,6 +2404,7 @@ export type UserUncheckedCreateWithoutProductosUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
   cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2420,6 +2467,7 @@ export type UserUpdateWithoutProductosCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
   cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
@@ -2466,6 +2514,7 @@ export type UserUncheckedUpdateWithoutProductosCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
   cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2523,6 +2572,7 @@ export type UserUpdateWithoutProductosUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
   cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
@@ -2569,7 +2619,212 @@ export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserCreateWithoutMediaInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutMediaInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutMediaInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMediaInput, Prisma.UserUncheckedCreateWithoutMediaInput>
+}
+
+export type UserUpsertWithoutMediaInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMediaInput, Prisma.UserUncheckedUpdateWithoutMediaInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMediaInput, Prisma.UserUncheckedCreateWithoutMediaInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMediaInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMediaInput, Prisma.UserUncheckedUpdateWithoutMediaInput>
+}
+
+export type UserUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
   cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
   personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2615,6 +2870,7 @@ export type UserCreateWithoutMovimientosInventarioInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
@@ -2661,6 +2917,7 @@ export type UserUncheckedCreateWithoutMovimientosInventarioInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2723,6 +2980,7 @@ export type UserUpdateWithoutMovimientosInventarioInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
@@ -2769,6 +3027,7 @@ export type UserUncheckedUpdateWithoutMovimientosInventarioInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2815,6 +3074,7 @@ export type UserCreateWithoutSuscripcionesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -2861,6 +3121,7 @@ export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2912,6 +3173,7 @@ export type UserCreateWithoutSuscripcionesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -2958,6 +3220,7 @@ export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3020,6 +3283,7 @@ export type UserUpdateWithoutSuscripcionesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -3066,6 +3330,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3123,6 +3388,7 @@ export type UserUpdateWithoutSuscripcionesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -3169,6 +3435,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3215,6 +3482,7 @@ export type UserCreateWithoutPersonalCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -3261,6 +3529,7 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3312,6 +3581,7 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -3358,6 +3628,7 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3409,6 +3680,7 @@ export type UserCreateWithoutPersonalInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -3455,6 +3727,7 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3517,6 +3790,7 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -3563,6 +3837,7 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3620,6 +3895,7 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -3666,6 +3942,7 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3723,6 +4000,7 @@ export type UserUpdateWithoutPersonalInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -3769,6 +4047,7 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3815,6 +4094,7 @@ export type UserCreateWithoutGruposCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -3861,6 +4141,7 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3912,6 +4193,7 @@ export type UserCreateWithoutGruposUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -3958,6 +4240,7 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4020,6 +4303,7 @@ export type UserUpdateWithoutGruposCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -4066,6 +4350,7 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4123,6 +4408,7 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -4169,6 +4455,7 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4215,6 +4502,7 @@ export type UserCreateWithoutVisitasCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -4261,6 +4549,7 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4312,6 +4601,7 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -4358,6 +4648,7 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4409,6 +4700,7 @@ export type UserCreateWithoutVisitasCompletadasInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -4455,6 +4747,7 @@ export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4517,6 +4810,7 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -4563,6 +4857,7 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4620,6 +4915,7 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -4666,6 +4962,7 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4723,6 +5020,7 @@ export type UserUpdateWithoutVisitasCompletadasInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -4769,6 +5067,7 @@ export type UserUncheckedUpdateWithoutVisitasCompletadasInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4815,6 +5114,7 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -4861,6 +5161,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4912,6 +5213,7 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -4958,6 +5260,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5020,6 +5323,7 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -5066,6 +5370,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5123,6 +5428,7 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -5169,6 +5475,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5215,6 +5522,7 @@ export type UserCreateWithoutVisitaMessagesInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -5261,6 +5569,7 @@ export type UserUncheckedCreateWithoutVisitaMessagesInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5323,6 +5632,7 @@ export type UserUpdateWithoutVisitaMessagesInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -5369,6 +5679,7 @@ export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5415,6 +5726,7 @@ export type UserCreateWithoutVisitaChatReadsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -5461,6 +5773,7 @@ export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5523,6 +5836,7 @@ export type UserUpdateWithoutVisitaChatReadsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -5569,6 +5883,7 @@ export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5615,6 +5930,7 @@ export type UserCreateWithoutSectorAdminsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -5661,6 +5977,7 @@ export type UserUncheckedCreateWithoutSectorAdminsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5723,6 +6040,7 @@ export type UserUpdateWithoutSectorAdminsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -5769,6 +6087,7 @@ export type UserUncheckedUpdateWithoutSectorAdminsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5815,6 +6134,7 @@ export type UserCreateWithoutPushTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -5861,6 +6181,7 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5923,6 +6244,7 @@ export type UserUpdateWithoutPushTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -5969,6 +6291,7 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6015,6 +6338,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -6061,6 +6385,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6123,6 +6448,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -6169,6 +6495,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6215,6 +6542,7 @@ export type UserCreateWithoutClienteImportsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -6261,6 +6589,7 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6323,6 +6652,7 @@ export type UserUpdateWithoutClienteImportsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -6369,6 +6699,7 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6414,6 +6745,7 @@ export type UserCreateWithoutSetPasswordTokensInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -6460,6 +6792,7 @@ export type UserUncheckedCreateWithoutSetPasswordTokensInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6522,6 +6855,7 @@ export type UserUpdateWithoutSetPasswordTokensInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -6568,6 +6902,7 @@ export type UserUncheckedUpdateWithoutSetPasswordTokensInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6615,6 +6950,7 @@ export type UserCreateWithoutInformesGeneradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -6661,6 +6997,7 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6723,6 +7060,7 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -6769,6 +7107,7 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6815,6 +7154,7 @@ export type UserCreateWithoutOrdenesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -6861,6 +7201,7 @@ export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6912,6 +7253,7 @@ export type UserCreateWithoutOrdenesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -6958,6 +7300,7 @@ export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7020,6 +7363,7 @@ export type UserUpdateWithoutOrdenesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -7066,6 +7410,7 @@ export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7123,6 +7468,7 @@ export type UserUpdateWithoutOrdenesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -7169,6 +7515,7 @@ export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7215,6 +7562,7 @@ export type UserCreateWithoutDatosFacturacionCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -7261,6 +7609,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7312,6 +7661,7 @@ export type UserCreateWithoutDatosFacturacionUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -7358,6 +7708,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7420,6 +7771,7 @@ export type UserUpdateWithoutDatosFacturacionCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -7466,6 +7818,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7523,6 +7876,7 @@ export type UserUpdateWithoutDatosFacturacionUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -7569,6 +7923,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7615,6 +7970,7 @@ export type UserCreateWithoutCobrosRegistradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
@@ -7661,6 +8017,7 @@ export type UserUncheckedCreateWithoutCobrosRegistradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
   productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
   productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7723,6 +8080,7 @@ export type UserUpdateWithoutCobrosRegistradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
@@ -7769,6 +8127,7 @@ export type UserUncheckedUpdateWithoutCobrosRegistradosInput = {
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
   productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
   productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
   movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7809,6 +8168,7 @@ export type UserCountOutputType = {
   setPasswordTokens: number
   clientesCreated: number
   clientesUpdated: number
+  media: number
   productosCreated: number
   productosUpdated: number
   movimientosInventario: number
@@ -7843,6 +8203,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   setPasswordTokens?: boolean | UserCountOutputTypeCountSetPasswordTokensArgs
   clientesCreated?: boolean | UserCountOutputTypeCountClientesCreatedArgs
   clientesUpdated?: boolean | UserCountOutputTypeCountClientesUpdatedArgs
+  media?: boolean | UserCountOutputTypeCountMediaArgs
   productosCreated?: boolean | UserCountOutputTypeCountProductosCreatedArgs
   productosUpdated?: boolean | UserCountOutputTypeCountProductosUpdatedArgs
   movimientosInventario?: boolean | UserCountOutputTypeCountMovimientosInventarioArgs
@@ -7914,6 +8275,13 @@ export type UserCountOutputTypeCountClientesCreatedArgs<ExtArgs extends runtime.
  */
 export type UserCountOutputTypeCountClientesUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ClienteWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMediaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MediaWhereInput
 }
 
 /**
@@ -8116,6 +8484,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   setPasswordTokens?: boolean | Prisma.User$setPasswordTokensArgs<ExtArgs>
   clientesCreated?: boolean | Prisma.User$clientesCreatedArgs<ExtArgs>
   clientesUpdated?: boolean | Prisma.User$clientesUpdatedArgs<ExtArgs>
+  media?: boolean | Prisma.User$mediaArgs<ExtArgs>
   productosCreated?: boolean | Prisma.User$productosCreatedArgs<ExtArgs>
   productosUpdated?: boolean | Prisma.User$productosUpdatedArgs<ExtArgs>
   movimientosInventario?: boolean | Prisma.User$movimientosInventarioArgs<ExtArgs>
@@ -8196,6 +8565,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   setPasswordTokens?: boolean | Prisma.User$setPasswordTokensArgs<ExtArgs>
   clientesCreated?: boolean | Prisma.User$clientesCreatedArgs<ExtArgs>
   clientesUpdated?: boolean | Prisma.User$clientesUpdatedArgs<ExtArgs>
+  media?: boolean | Prisma.User$mediaArgs<ExtArgs>
   productosCreated?: boolean | Prisma.User$productosCreatedArgs<ExtArgs>
   productosUpdated?: boolean | Prisma.User$productosUpdatedArgs<ExtArgs>
   movimientosInventario?: boolean | Prisma.User$movimientosInventarioArgs<ExtArgs>
@@ -8240,6 +8610,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     setPasswordTokens: Prisma.$SetPasswordTokenPayload<ExtArgs>[]
     clientesCreated: Prisma.$ClientePayload<ExtArgs>[]
     clientesUpdated: Prisma.$ClientePayload<ExtArgs>[]
+    media: Prisma.$MediaPayload<ExtArgs>[]
     productosCreated: Prisma.$ProductoPayload<ExtArgs>[]
     productosUpdated: Prisma.$ProductoPayload<ExtArgs>[]
     movimientosInventario: Prisma.$MovimientoInventarioPayload<ExtArgs>[]
@@ -8689,6 +9060,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   setPasswordTokens<T extends Prisma.User$setPasswordTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$setPasswordTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SetPasswordTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   clientesCreated<T extends Prisma.User$clientesCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   clientesUpdated<T extends Prisma.User$clientesUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientesUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  media<T extends Prisma.User$mediaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$mediaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MediaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productosCreated<T extends Prisma.User$productosCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$productosCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productosUpdated<T extends Prisma.User$productosUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$productosUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   movimientosInventario<T extends Prisma.User$movimientosInventarioArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$movimientosInventarioArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MovimientoInventarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -9267,6 +9639,30 @@ export type User$clientesUpdatedArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.ClienteScalarFieldEnum | Prisma.ClienteScalarFieldEnum[]
+}
+
+/**
+ * User.media
+ */
+export type User$mediaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Media
+   */
+  select?: Prisma.MediaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Media
+   */
+  omit?: Prisma.MediaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MediaInclude<ExtArgs> | null
+  where?: Prisma.MediaWhereInput
+  orderBy?: Prisma.MediaOrderByWithRelationInput | Prisma.MediaOrderByWithRelationInput[]
+  cursor?: Prisma.MediaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MediaScalarFieldEnum | Prisma.MediaScalarFieldEnum[]
 }
 
 /**

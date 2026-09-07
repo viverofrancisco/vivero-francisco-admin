@@ -5,12 +5,16 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Loader2, Star, Trash2 } from "lucide-react";
+import { Loader2, Star, Trash2 } from "lucide-react";
+import { MediaLibrary, subirALaBiblioteca } from "./media-library";
 
 export interface ImagenProducto {
   id: string;
+  /** El archivo en la biblioteca. Lo mismo puede estar en otro producto. */
+  mediaId: string;
   url: string;
   alt: string | null;
+  nombre: string;
   posicion: number;
 }
 
@@ -20,10 +24,13 @@ export interface ImagenProducto {
  * Las fotos son **del producto**, no de la variante: lo que una foto muestra
  * suele ser un eje solo —el color— así que colgarla de cada combinación
  * obligaría a subir la misma imagen una vez por talle. La variante elige cuál
- * de estas es la suya desde su propia fila.
+ * de estas es la suya desde su propia ficha.
  *
- * La primera es la que se usa cuando nadie eligió ninguna, y por eso se puede
- * mover: es la decisión que importa de todo el orden.
+ * Y el archivo es de la **biblioteca**: subir y elegir son dos caminos al mismo
+ * lugar, así que la misma foto en dos productos es un archivo y no dos.
+ *
+ * La primera es la que se usa cuando ninguna variante eligió otra, y por eso se
+ * puede mover: es la decisión que importa de todo el orden.
  */
 export function ProductoImagenes({
   productoId,
@@ -32,12 +39,14 @@ export function ProductoImagenes({
 }: {
   productoId: string;
   imagenes: ImagenProducto[];
-  /** Para que la tabla de variantes sepa qué fotos hay para elegir. */
+  /** Para que la variante sepa qué fotos hay para elegir. */
   onCambio?: (imagenes: ImagenProducto[]) => void;
 }) {
   const [imagenes, setImagenes] = useState(iniciales);
   const [subiendo, setSubiendo] = useState(false);
-  const [borrando, setBorrando] = useState<string | null>(null);
+  const [quitando, setQuitando] = useState<string | null>(null);
+  const [arrastrando, setArrastrando] = useState(false);
+  const [eligiendo, setEligiendo] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
   const aplicar = (nuevas: ImagenProducto[]) => {
@@ -45,55 +54,30 @@ export function ProductoImagenes({
     onCambio?.(nuevas);
   };
 
-  /**
-   * Sube en dos pasos: se piden URLs firmadas, el navegador manda el archivo
-   * directo a R2, y recién ahí se confirma. Un archivo grande nunca pasa por
-   * nuestro servidor.
-   */
-  const subir = async (files: FileList) => {
-    const elegidos = [...files].filter((f) => f.type.startsWith("image/"));
-    if (elegidos.length === 0) return;
-    setSubiendo(true);
+  /** Suma al producto imágenes que ya están en la biblioteca. */
+  const agregar = async (mediaIds: string[]) => {
+    if (mediaIds.length === 0) return;
     try {
       const res = await fetch(`/api/servicios/${productoId}/imagenes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          files: elegidos.map((f) => ({
-            fileName: f.name,
-            contentType: f.type,
-          })),
-        }),
+        body: JSON.stringify({ mediaIds }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Error");
+      aplicar(body.imagenes);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos agregarlas");
+    }
+  };
 
-      const subidas: { key: string }[] = [];
-      for (const [i, up] of body.uploads.entries()) {
-        const r = await fetch(up.uploadUrl, {
-          method: "PUT",
-          body: elegidos[i],
-          headers: { "Content-Type": elegidos[i].type },
-        });
-        // La que falla se saltea: perder una foto no tiene por qué tirar las
-        // otras cuatro que ya llegaron bien.
-        if (r.ok) subidas.push({ key: up.key });
-      }
-      if (subidas.length === 0) throw new Error("No pudimos subir las fotos");
-
-      const conf = await fetch(`/api/servicios/${productoId}/imagenes`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imagenes: subidas }),
-      });
-      const guardadas = await conf.json();
-      if (!conf.ok) throw new Error(guardadas.error ?? "Error");
-      aplicar(guardadas.imagenes);
-      toast.success(
-        subidas.length === elegidos.length
-          ? `${subidas.length} foto${subidas.length === 1 ? "" : "s"}`
-          : `${subidas.length} de ${elegidos.length}: alguna no subió`
-      );
+  /** Sube archivos nuevos y los suma de una: es un solo gesto para quien lo hace. */
+  const subir = async (files: File[]) => {
+    if (files.length === 0) return;
+    setSubiendo(true);
+    try {
+      const nuevas = await subirALaBiblioteca(files);
+      await agregar(nuevas.map((m) => m.id));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos subir");
     } finally {
@@ -102,8 +86,9 @@ export function ProductoImagenes({
     }
   };
 
-  const borrar = async (id: string) => {
-    setBorrando(id);
+  /** La saca del producto. Sigue en la biblioteca, para otro. */
+  const quitar = async (id: string) => {
+    setQuitando(id);
     try {
       const res = await fetch(`/api/servicios/${productoId}/imagenes/${id}`, {
         method: "DELETE",
@@ -112,9 +97,9 @@ export function ProductoImagenes({
       if (!res.ok) throw new Error(body.error ?? "Error");
       aplicar(body.imagenes);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos borrarla");
+      toast.error(e instanceof Error ? e.message : "No pudimos sacarla");
     } finally {
-      setBorrando(null);
+      setQuitando(null);
     }
   };
 
@@ -141,95 +126,133 @@ export function ProductoImagenes({
   };
 
   return (
-    <Card>
-      <CardHeader className="border-b py-3">
-        <CardTitle className="text-base">Fotos</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {imagenes.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Todavía no hay fotos. La primera que subas es la que se muestra por
-            defecto.
-          </p>
-        ) : (
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {imagenes.map((img, i) => (
-              <div
-                key={img.id}
-                className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
-              >
-                <Image
-                  src={img.url}
-                  alt={img.alt ?? ""}
-                  fill
-                  sizes="200px"
-                  className="object-cover"
-                  unoptimized
-                />
-                {i === 0 && (
-                  <span className="absolute left-1 top-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium">
-                    Principal
-                  </span>
-                )}
-                {/* Las acciones aparecen al pasar por encima: con seis fotos,
-                    doce botones siempre visibles tapan las fotos. */}
-                <div className="absolute inset-x-0 bottom-0 flex justify-end gap-0.5 bg-gradient-to-t from-black/60 to-transparent p-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  {i !== 0 && (
+    <>
+      <Card>
+        <CardHeader className="border-b py-3">
+          <CardTitle className="text-base">Fotos</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {imagenes.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {imagenes.map((img, i) => (
+                <div
+                  key={img.id}
+                  className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                >
+                  <Image
+                    src={img.url}
+                    alt={img.alt ?? ""}
+                    fill
+                    sizes="200px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                  {i === 0 && (
+                    <span className="absolute left-1 top-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium">
+                      Principal
+                    </span>
+                  )}
+                  {/* Las acciones aparecen al pasar por encima: con seis fotos,
+                      doce botones siempre visibles tapan las fotos. */}
+                  <div className="absolute inset-x-0 bottom-0 flex justify-end gap-0.5 bg-gradient-to-t from-black/60 to-transparent p-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    {i !== 0 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
+                        aria-label="Hacer principal"
+                        onClick={() => hacerPrincipal(img.id)}
+                      >
+                        <Star className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
-                      aria-label="Hacer principal"
-                      onClick={() => hacerPrincipal(img.id)}
+                      aria-label="Sacar del producto"
+                      disabled={quitando !== null}
+                      onClick={() => quitar(img.id)}
                     >
-                      <Star className="h-3.5 w-3.5" />
+                      {quitando === img.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
                     </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
-                    aria-label="Borrar foto"
-                    disabled={borrando !== null}
-                    onClick={() => borrar(img.id)}
-                  >
-                    {borrando === img.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <input
-          ref={input}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => e.target.files && subir(e.target.files)}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={subiendo}
-          onClick={() => input.current?.click()}
-        >
-          {subiendo ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <ImagePlus className="mr-2 h-4 w-4" />
+              ))}
+            </div>
           )}
-          Agregar fotos
-        </Button>
-      </CardContent>
-    </Card>
+
+          {/* Soltar el archivo encima es el gesto más corto que hay, y hasta
+              ahora había que buscar el botón y después el archivo. Los dos
+              caminos siguen: *Subir* abre el explorador, *Elegir existente*
+              abre la biblioteca. */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setArrastrando(true);
+            }}
+            onDragLeave={() => setArrastrando(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setArrastrando(false);
+              subir([...e.dataTransfer.files]);
+            }}
+            className={`flex flex-col items-center gap-2 rounded-md border-2 border-dashed p-6 text-center transition-colors ${
+              arrastrando ? "border-primary bg-primary/5" : "border-muted"
+            }`}
+          >
+            <input
+              ref={input}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => e.target.files && subir([...e.target.files])}
+            />
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={subiendo}
+                onClick={() => input.current?.click()}
+              >
+                {subiendo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Subir
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:bg-transparent hover:underline"
+                onClick={() => setEligiendo(true)}
+              >
+                Elegir existente
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              O arrastrá las imágenes acá.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {eligiendo && (
+        <MediaLibrary
+          yaUsadas={imagenes.map((i) => i.mediaId)}
+          onCerrar={() => setEligiendo(false)}
+          onElegir={async (ids) => {
+            setEligiendo(false);
+            await agregar(ids);
+          }}
+        />
+      )}
+    </>
   );
 }

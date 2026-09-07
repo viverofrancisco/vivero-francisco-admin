@@ -396,6 +396,7 @@ export const ModelName = {
   ValorOpcion: 'ValorOpcion',
   Variante: 'Variante',
   VarianteValor: 'VarianteValor',
+  Media: 'Media',
   ProductoImagen: 'ProductoImagen',
   MovimientoInventario: 'MovimientoInventario',
   Suscripcion: 'Suscripcion',
@@ -451,7 +452,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "visita" | "visitaProducto" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "ordenLineaOrigen" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "visita" | "visitaProducto" | "visitaPersonal" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "sectorAdmin" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "ordenLineaOrigen" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1340,6 +1341,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.VarianteValorCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.VarianteValorCountAggregateOutputType> | number
+        }
+      }
+    }
+    Media: {
+      payload: Prisma.$MediaPayload<ExtArgs>
+      fields: Prisma.MediaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MediaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MediaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        findFirst: {
+          args: Prisma.MediaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MediaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        findMany: {
+          args: Prisma.MediaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>[]
+        }
+        create: {
+          args: Prisma.MediaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        createMany: {
+          args: Prisma.MediaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MediaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>[]
+        }
+        delete: {
+          args: Prisma.MediaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        update: {
+          args: Prisma.MediaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        deleteMany: {
+          args: Prisma.MediaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MediaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MediaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>[]
+        }
+        upsert: {
+          args: Prisma.MediaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MediaPayload>
+        }
+        aggregate: {
+          args: Prisma.MediaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMedia>
+        }
+        groupBy: {
+          args: Prisma.MediaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MediaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MediaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MediaCountAggregateOutputType> | number
         }
       }
     }
@@ -4507,11 +4582,23 @@ export const VarianteValorScalarFieldEnum = {
 export type VarianteValorScalarFieldEnum = (typeof VarianteValorScalarFieldEnum)[keyof typeof VarianteValorScalarFieldEnum]
 
 
+export const MediaScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  nombre: 'nombre',
+  alt: 'alt',
+  contentType: 'contentType',
+  createdAt: 'createdAt',
+  createdById: 'createdById'
+} as const
+
+export type MediaScalarFieldEnum = (typeof MediaScalarFieldEnum)[keyof typeof MediaScalarFieldEnum]
+
+
 export const ProductoImagenScalarFieldEnum = {
   id: 'id',
   productoId: 'productoId',
-  key: 'key',
-  alt: 'alt',
+  mediaId: 'mediaId',
   posicion: 'posicion',
   createdAt: 'createdAt'
 } as const
@@ -5622,6 +5709,7 @@ export type GlobalOmitConfig = {
   valorOpcion?: Prisma.ValorOpcionOmit
   variante?: Prisma.VarianteOmit
   varianteValor?: Prisma.VarianteValorOmit
+  media?: Prisma.MediaOmit
   productoImagen?: Prisma.ProductoImagenOmit
   movimientoInventario?: Prisma.MovimientoInventarioOmit
   suscripcion?: Prisma.SuscripcionOmit

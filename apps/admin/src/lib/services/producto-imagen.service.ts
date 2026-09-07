@@ -1,5 +1,5 @@
 /**
- * Las fotos de un producto.
+ * Qué imágenes de la biblioteca usa un producto.
  *
  * **Del producto, no de la variante.** Lo que una foto muestra suele ser un eje
  * solo —el color— así que colgarla de cada combinación obligaría a subir la
@@ -7,14 +7,12 @@
  * cuatro veces. La variante *elige* cuál de estas es la suya
  * (`Variante.imagenId`), y la que no elige ninguna muestra la primera.
  *
- * La subida es en dos pasos, como la de una visita: primero se piden URLs
- * firmadas, después se confirma lo que llegó. El navegador sube directo a R2,
- * así que un archivo grande nunca pasa por el servidor.
+ * El archivo en sí vive en `media.service`: acá solo se decide cuál usa este
+ * producto y en qué orden. Sacar una la saca del producto, no de la biblioteca.
  */
-import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { getUploadUrl, publicUrlForKey, deleteObjects } from "@/lib/s3";
-import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
+import { publicUrlForKey } from "@/lib/s3";
+import { ForbiddenError, NotFoundError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 
@@ -22,21 +20,62 @@ function ensureAdmin(viewer: Viewer): void {
   if (!isAdminRole(viewer.role)) throw new ForbiddenError();
 }
 
-/** Cuántas fotos entran en un pedido de subida. */
-export const MAX_IMAGENES_POR_SUBIDA = 10;
+export interface ImagenDeProducto {
+  id: string;
+  mediaId: string;
+  url: string;
+  alt: string | null;
+  nombre: string;
+  posicion: number;
+}
+
+const SELECT = {
+  id: true,
+  mediaId: true,
+  posicion: true,
+  media: { select: { key: true, alt: true, nombre: true } },
+} as const;
+
+function armar(fila: {
+  id: string;
+  mediaId: string;
+  posicion: number;
+  media: { key: string; alt: string | null; nombre: string };
+}): ImagenDeProducto {
+  return {
+    id: fila.id,
+    mediaId: fila.mediaId,
+    url: publicUrlForKey(fila.media.key),
+    alt: fila.media.alt,
+    nombre: fila.media.nombre,
+    posicion: fila.posicion,
+  };
+}
+
+export async function listarImagenes(
+  viewer: Viewer,
+  productoId: string
+): Promise<ImagenDeProducto[]> {
+  ensureAdmin(viewer);
+  const filas = await prisma.productoImagen.findMany({
+    where: { productoId },
+    orderBy: { posicion: "asc" },
+    select: SELECT,
+  });
+  return filas.map(armar);
+}
 
 /**
- * URLs firmadas para subir.
+ * Suma imágenes de la biblioteca al producto, al final de la galería.
  *
- * Solo imágenes: el `contentType` es lo que se firma y R2 guarda lo que llegue
- * con ese tipo, así que filtrarlo acá es lo único que impide que un pedido
- * armado a mano deje un ejecutable guardado como foto de producto.
+ * Las que ya estaban se saltean en vez de fallar: elegir de nuevo una foto que
+ * el producto ya tiene es un pedido sin efecto, no un error.
  */
-export async function urlsParaSubir(
+export async function agregarImagenes(
   viewer: Viewer,
   productoId: string,
-  archivos: { fileName: string; contentType: string }[]
-) {
+  mediaIds: string[]
+): Promise<ImagenDeProducto[]> {
   ensureAdmin(viewer);
   const producto = await prisma.producto.findUnique({
     where: { id: productoId },
@@ -44,33 +83,6 @@ export async function urlsParaSubir(
   });
   if (!producto) throw new NotFoundError("Producto no encontrado");
 
-  if (archivos.length === 0 || archivos.length > MAX_IMAGENES_POR_SUBIDA) {
-    throw new ValidationError(
-      `Se pueden subir entre 1 y ${MAX_IMAGENES_POR_SUBIDA} fotos por vez.`
-    );
-  }
-  for (const a of archivos) {
-    if (!a.contentType.startsWith("image/")) {
-      throw new ValidationError("Un producto solo lleva imágenes.");
-    }
-  }
-
-  return Promise.all(
-    archivos.map(async (a) => {
-      const ext = a.fileName.split(".").pop() || "jpg";
-      const key = `productos/${productoId}/${randomUUID()}.${ext}`;
-      return { key, uploadUrl: await getUploadUrl(key, a.contentType) };
-    })
-  );
-}
-
-/** Confirma lo que ya está en R2 y lo guarda, al final de la galería. */
-export async function confirmarImagenes(
-  viewer: Viewer,
-  productoId: string,
-  imagenes: { key: string; alt?: string | null }[]
-) {
-  ensureAdmin(viewer);
   const ultima = await prisma.productoImagen.findFirst({
     where: { productoId },
     orderBy: { posicion: "desc" },
@@ -79,43 +91,29 @@ export async function confirmarImagenes(
   let posicion = (ultima?.posicion ?? -1) + 1;
 
   await prisma.productoImagen.createMany({
-    data: imagenes.map((i) => ({
-      productoId,
-      key: i.key,
-      alt: i.alt?.trim() || null,
-      posicion: posicion++,
-    })),
+    data: mediaIds.map((mediaId) => ({ productoId, mediaId, posicion: posicion++ })),
+    skipDuplicates: true,
   });
   return listarImagenes(viewer, productoId);
 }
 
-export async function listarImagenes(viewer: Viewer, productoId: string) {
-  ensureAdmin(viewer);
-  const imagenes = await prisma.productoImagen.findMany({
-    where: { productoId },
-    orderBy: { posicion: "asc" },
-    select: { id: true, key: true, alt: true, posicion: true },
-  });
-  return imagenes.map((i) => ({ ...i, url: publicUrlForKey(i.key) }));
-}
-
 /**
- * Borra una foto. La variante que la señalaba queda sin foto propia
- * (`onDelete: SetNull`) y vuelve a mostrar la primera del producto.
- *
- * El objeto de R2 se borra después de la fila: al revés quedaría una fila
- * apuntando a un archivo que ya no existe, que es un link roto para siempre.
+ * La saca **del producto**, no de la biblioteca: la foto sigue disponible para
+ * otro. La variante que la señalaba queda sin foto propia
+ * (`onDelete: SetNull`) y vuelve a mostrar la primera.
  */
-export async function borrarImagen(viewer: Viewer, imagenId: string) {
+export async function quitarImagen(
+  viewer: Viewer,
+  imagenId: string
+): Promise<ImagenDeProducto[]> {
   ensureAdmin(viewer);
   const imagen = await prisma.productoImagen.findUnique({
     where: { id: imagenId },
-    select: { id: true, key: true, productoId: true },
+    select: { id: true, productoId: true },
   });
   if (!imagen) throw new NotFoundError("Foto no encontrada");
 
   await prisma.productoImagen.delete({ where: { id: imagenId } });
-  await deleteObjects([imagen.key]);
   return listarImagenes(viewer, imagen.productoId);
 }
 
@@ -124,7 +122,7 @@ export async function reordenarImagenes(
   viewer: Viewer,
   productoId: string,
   idsEnOrden: string[]
-) {
+): Promise<ImagenDeProducto[]> {
   ensureAdmin(viewer);
   await prisma.$transaction(
     idsEnOrden.map((id, posicion) =>

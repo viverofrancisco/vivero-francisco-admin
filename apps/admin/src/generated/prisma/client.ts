@@ -118,13 +118,27 @@ export type Variante = Prisma.VarianteModel
  */
 export type VarianteValor = Prisma.VarianteValorModel
 /**
- * Model ProductoImagen
+ * Model Media
  * Una foto del producto.
  * 
  * **Del producto y no de la variante.** Lo que una foto muestra suele ser un
  * eje solo, así que colgarla de cada combinación obligaría a subir la misma
  * imagen una vez por talle: con 3 colores × 4 tamaños, la foto del rojo iría
  * cuatro veces. La variante elige cuál de estas es la suya.
+ * El archivo en sí, subido una vez y usable en varios productos.
+ * 
+ * Existe porque la misma foto se usa en más de un lado —el abono en su ficha y
+ * en la del combo que lo incluye— y sin una biblioteca había que subirla dos
+ * veces: dos objetos en R2, y renombrar uno dejaba al otro viejo.
+ */
+export type Media = Prisma.MediaModel
+/**
+ * Model ProductoImagen
+ * Qué imágenes de la biblioteca usa un producto, y en qué orden.
+ * 
+ * Sacar una de acá la saca **del producto**, no de la biblioteca: la foto
+ * sigue disponible para otro. Borrarla de verdad es otra acción, y la FK a
+ * `Media` es `Restrict` para que no se pueda mientras algún producto la use.
  */
 export type ProductoImagen = Prisma.ProductoImagenModel
 /**

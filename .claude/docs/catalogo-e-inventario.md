@@ -172,29 +172,58 @@ cómo se ve, cuánto hay—, a la derecha cómo se lo agrupa. Las categorías se
 guardan al elegirlas, sin pasar por *Editar*: reagrupar un producto no es
 editarlo, es una etiqueta que se pone y se saca mientras se ordena el catálogo.
 
-## Las fotos son del producto, la variante elige la suya
+## Biblioteca de medios
 
-`ProductoImagen` cuelga del **producto**. `Variante.imagenId` apunta a una de
-ellas, y la que no apunta a ninguna muestra la primera.
+Hay tres niveles y cada uno contesta una pregunta distinta:
 
-Colgar las fotos de la variante era la otra opción y es peor: lo que una foto
-muestra suele ser un eje solo —el color— así que con 3 colores × 4 tamaños la
-foto del rojo habría que subirla cuatro veces, una por talle. Con la galería en
-el producto se sube una vez y las cuatro variantes rojas apuntan ahí.
+| | Qué es |
+|---|---|
+| **`Media`** | El archivo. Se sube una vez y vive en R2 |
+| **`ProductoImagen`** | Qué archivos usa un producto, y en qué orden |
+| **`Variante.imagenId`** | Cuál de esos representa a una variante |
 
-La subida es en **dos pasos**, como la de una visita: `POST` devuelve URLs
-firmadas, el navegador manda el archivo directo a R2, y `PUT` confirma lo que
-llegó. Un archivo grande nunca pasa por el servidor. Si una de cinco falla, las
-otras cuatro se guardan igual.
+Antes cada `ProductoImagen` era su propio objeto en R2, así que usar la misma
+foto en dos productos eran **dos subidas**: dos objetos que pagar y, peor,
+renombrar una dejaba a la otra vieja.
+
+**Sacar una foto de un producto no la borra de la biblioteca**: sigue disponible
+para otro. Borrarla de verdad es otra acción y la FK es `Restrict`, así que no
+se puede mientras algún producto la use — el servicio lo chequea primero para
+poder decir *cuántos* la usan, porque un error de foreign key no le explica nada
+a nadie. Verificado: la misma foto en dos productos da `usos: 2` y el borrado se
+rechaza nombrándolos.
+
+`[productoId, mediaId]` es único, así que elegir de nuevo una foto que el
+producto ya tiene no la duplica — se saltea, porque es un pedido sin efecto y no
+un error.
+
+### Fotos del producto, no de la variante
+
+Lo que una foto muestra suele ser un eje solo —el color— así que colgarla de
+cada combinación obligaría a subir la misma imagen una vez por talle: con 3
+colores × 4 tamaños, la del rojo iría cuatro veces. La variante *elige* cuál de
+las del producto es la suya, y la que no elige ninguna muestra la primera.
+
+### La subida
+
+Dos pasos, como la de una visita: `POST /api/media` devuelve URLs firmadas, el
+navegador manda el archivo **directo a R2**, y `PUT` lo anota en la biblioteca.
+Un archivo grande nunca pasa por el servidor. Si una de cinco falla, las otras
+cuatro se guardan igual.
 
 Solo `image/*`, y se valida en el servidor porque **el `contentType` es lo que
 se firma**: R2 guarda lo que llegue con ese tipo, así que sin ese filtro un
 pedido armado a mano deja un ejecutable guardado como foto de producto.
 
-Borrar una foto deja sin foto propia a la variante que la señalaba
-(`onDelete: SetNull`) y la manda de vuelta a la primera. El objeto de R2 se
-borra **después** de la fila: al revés quedaría una fila apuntando a un archivo
-que no existe.
+En pantalla hay tres caminos al mismo lugar —arrastrar encima, *Subir*, *Elegir
+existente*— y el diálogo de la biblioteca también deja subir: quien vino a
+elegir y no encuentra lo que busca no tiene por qué cerrar y empezar de nuevo.
+
+`Media.nombre` es el nombre del archivo al subirlo, y es lo único con lo que se
+puede buscar una imagen sin verla: el `key` es un uuid. Las que venían de antes
+quedaron con ese uuid como nombre — se va a leer feo hasta que alguien las
+renombre, que es la verdad y es mejor que un "sin nombre" que esconde el
+problema.
 
 ## Un producto está en varias categorías
 

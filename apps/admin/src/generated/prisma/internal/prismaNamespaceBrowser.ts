@@ -63,6 +63,7 @@ export const ModelName = {
   ValorOpcion: 'ValorOpcion',
   Variante: 'Variante',
   VarianteValor: 'VarianteValor',
+  Media: 'Media',
   ProductoImagen: 'ProductoImagen',
   MovimientoInventario: 'MovimientoInventario',
   Suscripcion: 'Suscripcion',
@@ -286,11 +287,23 @@ export const VarianteValorScalarFieldEnum = {
 export type VarianteValorScalarFieldEnum = (typeof VarianteValorScalarFieldEnum)[keyof typeof VarianteValorScalarFieldEnum]
 
 
+export const MediaScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  nombre: 'nombre',
+  alt: 'alt',
+  contentType: 'contentType',
+  createdAt: 'createdAt',
+  createdById: 'createdById'
+} as const
+
+export type MediaScalarFieldEnum = (typeof MediaScalarFieldEnum)[keyof typeof MediaScalarFieldEnum]
+
+
 export const ProductoImagenScalarFieldEnum = {
   id: 'id',
   productoId: 'productoId',
-  key: 'key',
-  alt: 'alt',
+  mediaId: 'mediaId',
   posicion: 'posicion',
   createdAt: 'createdAt'
 } as const

@@ -160,6 +160,7 @@ model User {
   // Audit relations
   clientesCreated         Cliente[]              @relation("ClienteCreatedBy")
   clientesUpdated         Cliente[]              @relation("ClienteUpdatedBy")
+  media                   Media[]                @relation("MediaCreatedBy")
   productosCreated        Producto[]             @relation("ProductoCreatedBy")
   productosUpdated        Producto[]             @relation("ProductoUpdatedBy")
   movimientosInventario   MovimientoInventario[] @relation("MovimientoCreatedBy")
@@ -431,21 +432,53 @@ model VarianteValor {
 /// eje solo, así que colgarla de cada combinación obligaría a subir la misma
 /// imagen una vez por talle: con 3 colores × 4 tamaños, la foto del rojo iría
 /// cuatro veces. La variante elige cuál de estas es la suya.
-model ProductoImagen {
-  id         String  @id @default(cuid())
-  productoId String
-  /// Dónde vive en R2.
-  key        String
+/// El archivo en sí, subido una vez y usable en varios productos.
+///
+/// Existe porque la misma foto se usa en más de un lado —el abono en su ficha y
+/// en la del combo que lo incluye— y sin una biblioteca había que subirla dos
+/// veces: dos objetos en R2, y renombrar uno dejaba al otro viejo.
+model Media {
+  id          String  @id @default(cuid())
+  /// Dónde vive en R2. Único: es el archivo, y dos filas apuntando al mismo
+  /// harían que borrar una dejara a la otra colgada de un objeto que ya no está.
+  key         String  @unique
+  /// Cómo se llamaba el archivo al subirlo. Es con lo que se lo busca en la
+  /// biblioteca: el `key` es un uuid y no le dice nada a nadie.
+  nombre      String
   /// Para lectores de pantalla y para cuando la imagen no carga.
-  alt        String?
-  posicion   Int     @default(0)
+  alt         String?
+  contentType String
+
+  createdAt   DateTime @default(now())
+  createdById String?
+  createdBy   User?    @relation("MediaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  productos ProductoImagen[]
+
+  @@index([createdAt])
+}
+
+/// Qué imágenes de la biblioteca usa un producto, y en qué orden.
+///
+/// Sacar una de acá la saca **del producto**, no de la biblioteca: la foto
+/// sigue disponible para otro. Borrarla de verdad es otra acción, y la FK a
+/// `Media` es `Restrict` para que no se pueda mientras algún producto la use.
+model ProductoImagen {
+  id         String @id @default(cuid())
+  productoId String
+  mediaId    String
+  posicion   Int    @default(0)
 
   createdAt DateTime @default(now())
 
   producto  Producto   @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  media     Media      @relation(fields: [mediaId], references: [id], onDelete: Restrict)
   variantes Variante[]
 
+  /// La misma foto no entra dos veces en el mismo producto.
+  @@unique([productoId, mediaId])
   @@index([productoId, posicion])
+  @@index([mediaId])
 }
 
 /// Por qué se movió el stock.
