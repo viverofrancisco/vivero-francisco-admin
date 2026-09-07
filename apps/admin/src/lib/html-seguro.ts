@@ -9,8 +9,17 @@
  * La lista permitida es exactamente lo que el editor ofrece: formato de texto y
  * listas. Nada de enlaces, imágenes ni atributos — un `style` alcanza para
  * tapar media pantalla, y acá no hace falta ninguno.
+ *
+ * **`sanitize-html` y no DOMPurify.** DOMPurify necesita un DOM, y del lado del
+ * servidor eso significa `jsdom`: en el runtime de Vercel su cadena de
+ * dependencias termina en un `require()` de un módulo ESM y **tira al cargar el
+ * archivo**, o sea que cualquier página que lo importe da 500 antes de ejecutar
+ * una línea. Pasó en producción con `/dashboard/productos`.
+ *
+ * Este trabaja sobre el texto con un parser propio, sin DOM, así que no arrastra
+ * nada nativo ni nada que dependa del entorno.
  */
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 const ETIQUETAS = [
   "p",
@@ -30,9 +39,12 @@ const ETIQUETAS = [
 
 export function sanitizarHtml(html: string | null | undefined): string | null {
   if (!html) return null;
-  const limpio = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ETIQUETAS,
-    ALLOWED_ATTR: [],
+  const limpio = sanitizeHtml(html, {
+    allowedTags: ETIQUETAS,
+    allowedAttributes: {},
+    // Lo que no está permitido se va **con su contenido**: el texto de un
+    // `<script>` no es texto que alguien quiso escribir.
+    nonTextTags: ["script", "style", "textarea", "option", "noscript"],
   }).trim();
   // Un párrafo vacío se vería como "tiene descripción" en toda lista que
   // pregunte si la hay.
