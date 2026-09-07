@@ -274,6 +274,38 @@ cada combinación obligaría a subir la misma imagen una vez por talle: con 3
 colores × 4 tamaños, la del rojo iría cuatro veces. La variante *elige* cuál de
 las del producto es la suya, y la que no elige ninguna muestra la primera.
 
+### Recortar y redimensionar
+
+`POST /api/media/[id]/editar` con un rectángulo en píxeles del original, y
+opcionalmente un tamaño de salida. **Crea una imagen nueva y no toca la
+original**: la biblioteca es compartida, y recortar la foto de un producto
+cambiaría la de la categoría que usa la misma. Quien editó se queda apuntando al
+recorte; el original sigue disponible.
+
+Se hace **en el servidor** con `sharp`. Un canvas en el navegador era la otra
+opción y es peor: leer el archivo desde ahí depende de que R2 mande los
+encabezados de CORS, y si no lo hace el canvas queda "tainted" y `toBlob` falla
+sin decir por qué. El servidor ya tiene las credenciales para leerlo.
+
+Un rectángulo que se pasa de los bordes **se acota** en vez de tirar: es lo que
+quiso decir quien lo mandó, y `sharp` responde con un error que no le explica
+nada a nadie.
+
+El recorte se llama "foto (recorte).jpg", y "(recorte 2)" si ese nombre ya está.
+Sin el número, dos encuadres del mismo archivo quedaban con el mismo nombre —
+justo en la pantalla donde hay que elegir entre ellos. Recortar un recorte no
+encadena: da "(recorte 2)", no "(recorte) (recorte)".
+
+En la galería del producto el recorte **reemplaza el archivo de esa fila sin
+moverla** (`PATCH …/imagenes/[imagenId]`), así que no pierde su posición ni el
+vínculo de la variante que la había elegido. En una categoría queda como
+cualquier otro cambio de la ficha: esperando la barra de guardar.
+
+El editor trabaja en **fracciones** de la imagen y no en píxeles de pantalla: el
+recuadro se arrastra sobre una vista de cualquier tamaño, y guardar píxeles de
+pantalla haría que el recorte dependiera del ancho del monitor. Los píxeles
+reales se calculan al guardar, con las medidas del original.
+
 ### La subida
 
 Dos pasos, como la de una visita: `POST /api/media` devuelve URLs firmadas, el

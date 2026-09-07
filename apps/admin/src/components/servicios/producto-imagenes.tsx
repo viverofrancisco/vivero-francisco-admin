@@ -5,8 +5,9 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Star, Trash2 } from "lucide-react";
-import { MediaLibrary, subirALaBiblioteca } from "./media-library";
+import { Crop, Loader2, Star, Trash2 } from "lucide-react";
+import { MediaLibrary, subirALaBiblioteca, type MediaItem } from "./media-library";
+import { EditorImagen } from "./editor-imagen";
 
 export interface ImagenProducto {
   id: string;
@@ -47,6 +48,8 @@ export function ProductoImagenes({
   const [quitando, setQuitando] = useState<string | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
   const [eligiendo, setEligiendo] = useState(false);
+  /** Qué foto se está recortando: la fila de la galería y su archivo. */
+  const [recortando, setRecortando] = useState<ImagenProducto | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
   const aplicar = (nuevas: ImagenProducto[]) => {
@@ -100,6 +103,31 @@ export function ProductoImagenes({
       toast.error(e instanceof Error ? e.message : "No pudimos sacarla");
     } finally {
       setQuitando(null);
+    }
+  };
+
+  /**
+   * Deja la foto apuntando al recorte, **en su lugar**.
+   *
+   * El recorte es una imagen nueva de la biblioteca; la fila de la galería
+   * cambia de archivo sin moverse, así que la variante que la había elegido
+   * sigue apuntando a ella.
+   */
+  const usarRecorte = async (imagenId: string, nueva: MediaItem) => {
+    try {
+      const res = await fetch(
+        `/api/servicios/${productoId}/imagenes/${imagenId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mediaId: nueva.id }),
+        }
+      );
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error");
+      aplicar(body.imagenes);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos aplicarlo");
     }
   };
 
@@ -167,6 +195,16 @@ export function ProductoImagenes({
                         <Star className="h-3.5 w-3.5" />
                       </Button>
                     )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-white hover:bg-white/20 hover:text-white"
+                      aria-label="Recortar"
+                      onClick={() => setRecortando(img)}
+                    >
+                      <Crop className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
@@ -242,6 +280,24 @@ export function ProductoImagenes({
           </div>
         </CardContent>
       </Card>
+
+      {recortando && (
+        <EditorImagen
+          media={{
+            id: recortando.mediaId,
+            url: recortando.url,
+            nombre: recortando.nombre,
+            alt: recortando.alt,
+            usos: 0,
+          }}
+          onCerrar={() => setRecortando(null)}
+          onGuardado={async (nueva) => {
+            const fila = recortando;
+            setRecortando(null);
+            await usarRecorte(fila.id, nueva);
+          }}
+        />
+      )}
 
       {eligiendo && (
         <MediaLibrary

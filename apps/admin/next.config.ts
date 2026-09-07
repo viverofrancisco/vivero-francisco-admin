@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
     "facturacion-electronica-ec",
     "xmllint-wasm",
     "node-forge",
+    // Binario nativo: empaquetarlo rompe la resolución de su `.node`.
+    "sharp",
   ],
 };
 

@@ -117,6 +117,33 @@ export async function quitarImagen(
   return listarImagenes(viewer, imagen.productoId);
 }
 
+/**
+ * Cambia **qué archivo** usa una foto del producto, sin moverla de lugar.
+ *
+ * Es lo que hace falta al recortar: el recorte es una imagen nueva de la
+ * biblioteca, y la galería tiene que pasar a mostrarla sin perder su posición
+ * ni el vínculo de la variante que la había elegido. Borrar la fila y crear
+ * otra la mandaría al final y dejaría a esa variante sin foto.
+ */
+export async function reemplazarImagen(
+  viewer: Viewer,
+  imagenId: string,
+  mediaId: string
+): Promise<ImagenDeProducto[]> {
+  ensureAdmin(viewer);
+  const imagen = await prisma.productoImagen.findUnique({
+    where: { id: imagenId },
+    select: { id: true, productoId: true },
+  });
+  if (!imagen) throw new NotFoundError("Foto no encontrada");
+
+  await prisma.productoImagen.update({
+    where: { id: imagenId },
+    data: { mediaId },
+  });
+  return listarImagenes(viewer, imagen.productoId);
+}
+
 /** Reordena la galería. La primera es la que se muestra por defecto. */
 export async function reordenarImagenes(
   viewer: Viewer,

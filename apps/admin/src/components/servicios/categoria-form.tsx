@@ -22,6 +22,7 @@ import {
   ArrowDownToLine,
   ArrowLeft,
   ArrowUpToLine,
+  Crop,
   GripVertical,
   ImageOff,
   Loader2,
@@ -36,6 +37,7 @@ import {
 } from "@/components/ui/popover";
 import { useRegistrarCambios } from "@/components/shared/cambios-pendientes";
 import { MediaLibrary, subirALaBiblioteca, type MediaItem } from "./media-library";
+import { EditorImagen } from "./editor-imagen";
 import { SelectorProductos, type ProductoElegible } from "./selector-productos";
 import { money } from "@/components/ordenes/formato";
 import { useAca } from "@/lib/filtros-url";
@@ -138,6 +140,7 @@ export function CategoriaForm({
   const from = useAca();
   const [guardando, setGuardando] = useState(false);
   const [eligiendoFoto, setEligiendoFoto] = useState(false);
+  const [recortando, setRecortando] = useState(false);
   const [agregando, setAgregando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [arrastrando, setArrastrando] = useState(false);
@@ -657,19 +660,50 @@ export function CategoriaForm({
               </Button>
             </div>
             {form.imagen && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="w-full text-muted-foreground"
-                onClick={() => setForm({ ...form, imagen: null })}
-              >
-                Sacar la foto
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setRecortando(true)}
+                >
+                  <Crop className="mr-1.5 h-3.5 w-3.5" />
+                  Recortar
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 text-muted-foreground"
+                  onClick={() => setForm({ ...form, imagen: null })}
+                >
+                  Sacar
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {recortando && form.imagen && (
+        <EditorImagen
+          media={{
+            id: form.imagen.id,
+            url: form.imagen.url,
+            nombre: form.imagen.nombre,
+            alt: form.imagen.alt,
+            usos: 0,
+          }}
+          onCerrar={() => setRecortando(false)}
+          onGuardado={(nueva) => {
+            setRecortando(false);
+            // Como cualquier cambio de la ficha: queda sin guardar hasta que
+            // alguien apriete la barra de arriba.
+            elegirFoto([nueva]);
+          }}
+        />
+      )}
 
       {eligiendoFoto && (
         <MediaLibrary
