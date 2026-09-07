@@ -42,7 +42,11 @@ export function Header({ branding }: BrandingProps) {
           hacer, y guardar tiene que estar donde siempre se mira. */}
       {cambios ? (
         <div className="flex flex-1 items-center gap-3">
-          <span className="text-sm font-medium">Cambios sin guardar</span>
+          <span className="min-w-0 truncate text-sm font-medium">
+            {/* Qué falta, cuando falta algo: un botón gris sin explicación deja
+                a alguien probando campos a ver cuál lo destraba. */}
+            {cambios.motivo ?? "Cambios sin guardar"}
+          </span>
           <div className="ml-auto flex items-center gap-2">
             <Button
               type="button"
@@ -55,7 +59,7 @@ export function Header({ branding }: BrandingProps) {
             <Button
               type="button"
               onClick={cambios.onGuardar}
-              disabled={cambios.guardando}
+              disabled={cambios.guardando || !cambios.puedeGuardar}
             >
               {cambios.guardando && (
                 <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />

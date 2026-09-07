@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -17,11 +17,156 @@ import { CustomSelect } from "@/components/ui/custom-select";
 import { RichText } from "@/components/ui/rich-text";
 import { useRegistrarCambios } from "@/components/shared/cambios-pendientes";
 import { SelectorCategorias } from "./selector-categorias";
-import { ArrowLeft } from "lucide-react";
+import {
+  MediaLibrary,
+  subirALaBiblioteca,
+  type MediaItem,
+} from "./media-library";
+import { ArrowLeft, Loader2, X } from "lucide-react";
 
 interface Categoria {
   id: string;
   nombre: string;
+}
+
+/**
+ * Las fotos, antes de que el producto exista.
+ *
+ * Es una versión corta de la galería de la ficha: agregar y sacar, sin
+ * reordenar ni elegir la principal. Esas dos se hacen contra el producto ya
+ * creado, y acá lo que importa es no tener que volver a subir lo que uno ya
+ * tenía a mano.
+ */
+function FotosNuevas({
+  imagenes,
+  onCambio,
+}: {
+  imagenes: MediaItem[];
+  onCambio: (m: MediaItem[]) => void;
+}) {
+  const [eligiendo, setEligiendo] = useState(false);
+  const [subiendo, setSubiendo] = useState(false);
+  const [arrastrando, setArrastrando] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+
+  const sumar = (nuevas: MediaItem[]) => {
+    const ya = new Set(imagenes.map((m) => m.id));
+    onCambio([...imagenes, ...nuevas.filter((m) => !ya.has(m.id))]);
+  };
+
+  const subir = async (files: File[]) => {
+    const fotos = files.filter((f) => f.type.startsWith("image/"));
+    if (fotos.length === 0) return;
+    setSubiendo(true);
+    try {
+      sumar(await subirALaBiblioteca(fotos));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos subirlas");
+    } finally {
+      setSubiendo(false);
+      // Elegir el mismo archivo dos veces no dispara `change` si no se limpia.
+      if (input.current) input.current.value = "";
+    }
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="border-b py-3">
+          <CardTitle className="text-base">Fotos</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {imagenes.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {imagenes.map((m) => (
+                <div
+                  key={m.id}
+                  className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={m.url}
+                    alt={m.alt ?? ""}
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onCambio(imagenes.filter((x) => x.id !== m.id))
+                    }
+                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    title="Sacar"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setArrastrando(true);
+            }}
+            onDragLeave={() => setArrastrando(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setArrastrando(false);
+              void subir([...e.dataTransfer.files]);
+            }}
+            className={`flex flex-col items-center gap-2 rounded-md border-2 border-dashed p-6 text-center transition-colors ${
+              arrastrando ? "border-primary bg-primary/5" : "border-muted"
+            }`}
+          >
+            <input
+              ref={input}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => e.target.files && subir([...e.target.files])}
+            />
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={subiendo}
+                onClick={() => input.current?.click()}
+              >
+                {subiendo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Subir
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:bg-transparent hover:underline"
+                onClick={() => setEligiendo(true)}
+              >
+                Elegir existente
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              O arrastrá las imágenes acá.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {eligiendo && (
+        <MediaLibrary
+          yaUsadas={imagenes.map((m) => m.id)}
+          onCerrar={() => setEligiendo(false)}
+          onElegirItems={(items) => {
+            setEligiendo(false);
+            sumar(items);
+          }}
+        />
+      )}
+    </>
+  );
 }
 
 /** Una de las dos opciones del primer paso. */
@@ -65,7 +210,14 @@ function ElegirTipo({
  * *Crear* al pie porque entonces habría dos formas de guardar un producto según
  * en qué pantalla se esté.
  */
-export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
+export function ServicioForm({
+  categorias,
+  tipoInicial,
+}: {
+  categorias: Categoria[];
+  /** Lo eligió el diálogo del listado. Sin esto, la pantalla lo pregunta. */
+  tipoInicial?: "SERVICIO" | "BIEN";
+}) {
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
 
@@ -81,7 +233,9 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
    * variantes; un servicio, ninguna de las tres. Sabiéndolo de entrada, la
    * pantalla muestra los campos que corresponden en vez de todos.
    */
-  const [tipo, setTipo] = useState<"SERVICIO" | "BIEN" | null>(null);
+  const [tipo, setTipo] = useState<"SERVICIO" | "BIEN" | null>(
+    tipoInicial ?? null
+  );
 
   const vacio = {
     nombre: "",
@@ -89,18 +243,32 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
     descripcion: "",
     estado: "ACTIVO" as "ACTIVO" | "BORRADOR",
     categoriaIds: [] as string[],
+    /**
+     * Las fotos elegidas antes de que el producto exista.
+     *
+     * Se puede porque la **biblioteca es independiente del producto**: subir
+     * una foto la deja en `Media`, y recién `ProductoImagen` la ata a un
+     * producto. Así que acá se juntan y se vinculan apenas el POST devuelve el
+     * id — el mismo camino en dos pasos que usa la categoría con sus productos.
+     */
+    imagenes: [] as MediaItem[],
   };
   const [form, setForm] = useState(vacio);
 
-  // Cualquier cosa escrita cuenta: en una pantalla de alta no hay "lo guardado"
-  // contra qué comparar, y descartar tiene que poder limpiar lo tipeado.
-  const hayCambios = JSON.stringify(form) !== JSON.stringify(vacio);
+  /**
+   * La barra está desde que se abre la pantalla.
+   *
+   * Un producto nuevo es, por definición, algo sin guardar: mostrar la barra
+   * recién cuando alguien escribe algo esconde justo la acción que la pantalla
+   * existe para ofrecer. Con el nombre vacío el botón se ve, pero apagado y
+   * diciendo qué falta — antes se podía apretar y saltaba un error.
+   */
+  const falta = form.nombre.trim() ? null : "Ponele un nombre para guardarlo";
 
   async function guardar() {
-    if (!form.nombre.trim()) {
-      toast.error("El producto necesita un nombre");
-      return;
-    }
+    // La barra no deja apretar sin nombre; esto es el cinturón por si alguien
+    // llega por otro lado.
+    if (!form.nombre.trim()) return;
     setGuardando(true);
     try {
       const res = await fetch("/api/servicios", {
@@ -121,6 +289,21 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
       if (!res.ok || !data.id) {
         throw new Error(data.error ?? "No pudimos crearlo");
       }
+      // Las fotos van aparte: son una relación, y hasta que el POST no
+      // responde no hay id al que atarlas.
+      if (form.imagenes.length > 0) {
+        const r2 = await fetch(`/api/servicios/${data.id}/imagenes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mediaIds: form.imagenes.map((m) => m.id) }),
+        });
+        if (!r2.ok) {
+          throw new Error(
+            (await r2.json()).error ?? "El producto se creó, pero sin las fotos"
+          );
+        }
+      }
+
       toast.success("Producto creado");
       // A su ficha y no al listado: recién ahí están las fotos, las variantes y
       // el inventario, que es lo que sigue después de darlo de alta.
@@ -131,7 +314,7 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
     }
   }
 
-  useRegistrarCambios(hayCambios, guardando, guardar, () => setForm(vacio));
+  useRegistrarCambios(true, guardando, guardar, () => setForm(vacio), falta);
 
   if (tipo === null) {
     return (
@@ -199,18 +382,6 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="codigo">SKU</Label>
-                <Input
-                  id="codigo"
-                  value={form.codigo}
-                  onChange={(e) => setForm({ ...form, codigo: e.target.value })}
-                  placeholder="Ej: MANT-01"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Sale impreso en la factura y es lo que va en la etiqueta.
-                </p>
-              </div>
-              <div className="space-y-2">
                 <Label>Descripción</Label>
                 <RichText
                   value={form.descripcion}
@@ -220,14 +391,39 @@ export function ServicioForm({ categorias }: { categorias: Categoria[] }) {
             </CardContent>
           </Card>
 
-          {/* Las fotos, el inventario y las variantes necesitan un producto al
-              que colgarse. Decirlo es mejor que dejar la pantalla más corta que
-              la ficha sin explicar por qué. */}
-          <p className="text-sm text-muted-foreground">
-            Las fotos
-            {tipo === "BIEN" ? ", el precio, las variantes y el inventario" : ""} se
-            cargan después de guardar.
-          </p>
+          <FotosNuevas
+            imagenes={form.imagenes}
+            onCambio={(imagenes) => setForm({ ...form, imagenes })}
+          />
+
+          {/* Debajo de las fotos, en el mismo lugar que en la ficha. */}
+          <Card>
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">SKU</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <Input
+                id="codigo"
+                value={form.codigo}
+                onChange={(e) => setForm({ ...form, codigo: e.target.value })}
+                placeholder="—"
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Sale impreso en la factura y es lo que va en la etiqueta.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Lo que sí necesita el producto ya creado: el stock se cuenta
+              contra su variante, y las opciones la reemplazan por
+              combinaciones. */}
+          {tipo === "BIEN" && (
+            <p className="text-sm text-muted-foreground">
+              El precio, las variantes y el inventario se cargan después de
+              guardar.
+            </p>
+          )}
         </div>
 
         <div className="space-y-6">

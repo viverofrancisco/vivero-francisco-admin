@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { ServiciosTable } from "@/components/servicios/servicios-table";
-import { PageHeader } from "@/components/shared/page-header";
+import { ProductosHeader } from "@/components/servicios/boton-nuevo-producto";
 import { textoPlano } from "@/lib/html-seguro";
 
 export default async function ServiciosPage() {
@@ -44,18 +44,9 @@ export default async function ServiciosPage() {
 
   return (
     <div className="flex h-full flex-col gap-6 p-4 md:p-6">
-      <PageHeader
-        title="Productos"
-        description="Servicios y bienes que se le pueden vender a un cliente"
-        actions={[
-          {
-            label: "Nuevo producto",
-            href: "/dashboard/productos/nuevo",
-            icon: "plus",
-            primary: true,
-          },
-        ]}
-      />
+      {/* El encabezado es cliente: "Nuevo producto" abre el diálogo que
+          pregunta el tipo antes de llevar a la ficha. */}
+      <ProductosHeader />
 
       <ServiciosTable
         productos={servicios.map((p) => ({

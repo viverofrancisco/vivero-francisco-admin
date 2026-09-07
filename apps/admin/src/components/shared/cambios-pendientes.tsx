@@ -13,6 +13,17 @@ import {
 
 interface Pendiente {
   guardando: boolean;
+  /**
+   * Si todavía falta algo para poder guardar.
+   *
+   * El botón queda deshabilitado en vez de desaparecer: una pantalla de alta
+   * muestra la barra desde el principio —hay algo sin guardar apenas se abre—
+   * y esconder *Guardar* haría creer que no hay forma de terminar. Dejarlo
+   * habilitado era peor: se apretaba y saltaba un error por lo que falta.
+   */
+  puedeGuardar: boolean;
+  /** Qué falta, para que el botón deshabilitado no sea un misterio. */
+  motivo?: string;
   onGuardar: () => void;
   onDescartar: () => void;
 }
@@ -60,7 +71,12 @@ export function useRegistrarCambios(
   hayCambios: boolean,
   guardando: boolean,
   onGuardar: () => void,
-  onDescartar: () => void
+  onDescartar: () => void,
+  /**
+   * Qué falta para poder guardar, si falta algo. Con esto el botón se ve
+   * deshabilitado y el texto dice por qué; sin esto, siempre se puede guardar.
+   */
+  falta?: string | null
 ): void {
   const ultimos = useRef({ onGuardar, onDescartar });
   useEffect(() => {
@@ -77,8 +93,17 @@ export function useRegistrarCambios(
 
   const publicar = useContext(CambiosContext)?.publicar;
   useEffect(() => {
-    publicar?.(hayCambios ? { guardando, ...estables } : null);
-  }, [publicar, hayCambios, guardando, estables]);
+    publicar?.(
+      hayCambios
+        ? {
+            guardando,
+            puedeGuardar: !falta,
+            motivo: falta ?? undefined,
+            ...estables,
+          }
+        : null
+    );
+  }, [publicar, hayCambios, guardando, falta, estables]);
 
   // Al irse de la página no queda una barra ofreciendo guardar algo que ya no
   // está en pantalla.
