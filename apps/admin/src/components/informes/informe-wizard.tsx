@@ -24,6 +24,7 @@ import {
   Search,
   Trash2,
   Upload,
+  Users,
   X,
 } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
@@ -1250,43 +1251,39 @@ function Paso1ClienteYVisitas({
   onSelectAll: (all: boolean) => void;
   loading: boolean;
 }) {
-  const [cambiando, setCambiando] = useState(false);
-  const elegido = clientes.find((c) => c.id === clienteId) ?? null;
-  const eligiendo = !elegido || cambiando;
-
   return (
-    <div className="space-y-6">
-      {eligiendo ? (
-        <Step1Cliente
+    // El cliente en una columna angosta a la derecha y las visitas —que es lo
+    // que ocupa lugar— en el resto. En pantalla chica se apilan, y el cliente
+    // va primero en el DOM porque es lo primero que hay que elegir; el `order`
+    // lo manda a la derecha recién cuando hay dos columnas.
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <aside className="lg:order-2">
+        <SelectorCliente
           clientes={clientes}
           clienteId={clienteId}
-          onClienteChange={(id) => {
-            onClienteChange(id);
-            setCambiando(false);
-          }}
+          onClienteChange={onClienteChange}
         />
-      ) : (
-        <div className="flex max-w-3xl items-center gap-3 rounded-md border bg-card px-3 py-2.5">
-          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-            {nombreCliente(elegido).slice(0, 2).toUpperCase()}
-          </span>
-          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-            {nombreCliente(elegido)}
-          </span>
-          <Button variant="ghost" size="sm" onClick={() => setCambiando(true)}>
-            Cambiar
-          </Button>
-        </div>
-      )}
+      </aside>
 
-      {elegido && !cambiando ? (
-        <Step2Visitas cliente={elegido} {...visitas} />
-      ) : null}
+      <div className="min-w-0 lg:order-1">
+        {clienteId ? (
+          <Step2Visitas {...visitas} />
+        ) : (
+          <div className="flex h-full min-h-[16rem] flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-8 text-center">
+            <Users className="h-8 w-8 text-muted-foreground/40" />
+            <p className="text-sm font-medium">Elegí un cliente primero</p>
+            <p className="max-w-xs text-sm text-muted-foreground">
+              Sus visitas con fotos van a aparecer acá para que elijas cuáles
+              cubre el informe.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function Step1Cliente({
+function SelectorCliente({
   clientes,
   clienteId,
   onClienteChange,
@@ -1307,13 +1304,14 @@ function Step1Cliente({
   }, [clientes, search]);
 
   return (
-    <div className="space-y-4 max-w-3xl">
+    <div className="space-y-3">
+      <p className="text-sm font-medium">Cliente</p>
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar cliente por nombre o apellido"
+          placeholder="Buscar por nombre"
           className="pl-9"
           autoFocus
         />
@@ -1324,7 +1322,9 @@ function Step1Cliente({
       ) : filtered.length === 0 ? (
         <EmptyState text="Sin coincidencias." />
       ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
+        /* Con scroll propio: la lista completa empujaba el resto de la página
+           hacia abajo y dejaba las visitas fuera de la pantalla. */
+        <div className="grid max-h-[26rem] gap-2 overflow-y-auto pr-1">
           {filtered.map((c) => {
             const selected = clienteId === c.id;
             const initials = nombreCliente(c).slice(0, 2).toUpperCase();
@@ -1368,7 +1368,6 @@ function Step1Cliente({
 }
 
 function Step2Visitas({
-  cliente,
   dateRange,
   onDateRangeChange,
   visitas,
@@ -1377,7 +1376,6 @@ function Step2Visitas({
   onSelectAll,
   loading,
 }: {
-  cliente: Cliente | null;
   dateRange: { label: string; from: string | null; to: string | null };
   onDateRangeChange: (r: {
     label: string;
@@ -1420,14 +1418,8 @@ function Step2Visitas({
   const hasInListFilters = !!(servicioFilter || estadoFilter || fechaFilter);
 
   return (
-    <div className="space-y-5 max-w-4xl">
-      {cliente ? (
-        <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">Cliente:</span>
-          <span className="font-medium">{nombreCliente(cliente)}</span>
-        </div>
-      ) : null}
-
+    // El cliente no se repite acá: está en la columna de al lado, a la vista.
+    <div className="space-y-5">
       <Card>
         <CardContent className="py-5">
           <label className="text-sm font-medium block mb-1.5">
