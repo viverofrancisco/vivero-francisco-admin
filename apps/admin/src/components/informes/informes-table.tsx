@@ -30,15 +30,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Download, Eye, MoreVertical, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-interface InformeListItem {
+export interface InformeListItem {
   id: string;
-  numero: number;
+  /** Un borrador todavía no es un informe: no tiene número ni PDF. */
+  tipo: "emitido" | "borrador";
+  numero: number | null;
   titulo: string;
-  pdfUrl: string;
-  generatedAt: string;
-  cliente: { id: string; nombre: string };
+  pdfUrl: string | null;
+  /** Generado, para un informe; última edición, para un borrador. */
+  fecha: string;
+  version: number;
+  /** Si es el borrador de una **edición**, el número del informe que corrige. */
+  deInforme: number | null;
+  cliente: { id: string; nombre: string } | null;
 }
 
 /**
@@ -47,6 +54,10 @@ interface InformeListItem {
  * Muestra **cuándo se generó**, no la fecha impresa del informe: son dos
  * fechas distintas —un informe de agosto puede armarse en septiembre— y acá
  * la pregunta es "¿cuál es el último que hice?".
+ *
+ * Los borradores son filas más, no una lista aparte: lo que cambia entre uno y
+ * un informe emitido es una columna, y separarlos hacía que la mitad de lo que
+ * hay quedara fuera del orden y de los filtros.
  *
  * La paginación la resuelve el servidor (`?page=` en la URL), así que este
  * componente solo dibuja el pie: recibe la página que ya vino cortada, en vez
@@ -82,12 +93,17 @@ export function InformesTable({
     if (!borrando) return;
     setEliminando(true);
     try {
-      const res = await fetch(`/api/admin/informes/${borrando.id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        borrando.tipo === "borrador"
+          ? `/api/admin/informes/borradores/${borrando.id}`
+          : `/api/admin/informes/${borrando.id}`,
+        { method: "DELETE" }
+      );
       if (!res.ok) throw new Error();
       setBorrando(null);
-      toast.success("Informe eliminado");
+      toast.success(
+        borrando.tipo === "borrador" ? "Borrador eliminado" : "Informe eliminado"
+      );
       router.refresh();
     } catch {
       toast.error("No pudimos eliminar");
@@ -107,6 +123,7 @@ export function InformesTable({
               <TableRow>
                 <TableHead className="w-20">N.º</TableHead>
                 <TableHead>Cliente</TableHead>
+                <TableHead className="w-32">Estado</TableHead>
                 <TableHead>Generado</TableHead>
                 <TableHead className="w-32 text-right">Acciones</TableHead>
               </TableRow>
@@ -118,18 +135,55 @@ export function InformesTable({
                   className="cursor-pointer"
                   // Con `?from=` la flecha de la ficha vuelve a esta lista
                   // como estaba: mismos filtros, misma página.
+                  // Un borrador se retoma; un informe se abre. Son la misma
+                  // fila y dos destinos, porque son dos cosas distintas.
                   onClick={() =>
-                    router.push(`/dashboard/informes/${item.id}?from=${aca()}`)
+                    router.push(
+                      item.tipo !== "borrador"
+                        ? `/dashboard/informes/${item.id}?from=${aca()}`
+                        : // El de una edición vuelve a la edición de ese
+                          // informe; el suelto, al asistente.
+                          `/dashboard/informes/nuevo?borrador=${item.id}`
+                    )
                   }
                 >
                   <TableCell className="font-bold tabular-nums">
-                    #{item.numero}
+                    {item.numero ? `#${item.numero}` : "—"}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {item.cliente.nombre}
+                    {item.cliente?.nombre ?? (
+                      <span className="text-muted-foreground">Sin cliente</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <Badge
+                        variant={
+                          item.tipo === "borrador" ? "outline" : "secondary"
+                        }
+                        className={
+                          item.tipo === "borrador"
+                            ? "border-amber-300 bg-amber-50 text-amber-800"
+                            : ""
+                        }
+                      >
+                        {item.tipo === "borrador"
+                          ? item.deInforme
+                            ? `Editando #${item.deInforme}`
+                            : "Borrador"
+                          : "Emitido"}
+                      </Badge>
+                      {/* La versión solo si hubo más de una: "v1" en todos no
+                          dice nada y le saca peso al que sí fue corregido. */}
+                      {item.version > 1 ? (
+                        <span className="text-xs tabular-nums text-muted-foreground">
+                          v{item.version}
+                        </span>
+                      ) : null}
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground tabular-nums">
-                    {generadoEl(item.generatedAt)}
+                    {generadoEl(item.fecha)}
                   </TableCell>
                   <TableCell
                     className="text-right"
@@ -138,47 +192,58 @@ export function InformesTable({
                     onClick={(e) => e.stopPropagation()}
                   >
                     {/* Editar no está: para eso se toca la fila. Lo que queda
-                        son las tres cosas que se le hacen al PDF. */}
+                        son las cosas que se le hacen al PDF — y un borrador no
+                        tiene ninguna, porque todavía no hay PDF. */}
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Acciones del informe #${item.numero}`}
+                            aria-label={
+                              item.numero
+                                ? `Acciones del informe #${item.numero}`
+                                : "Acciones del borrador"
+                            }
                           />
                         }
                       >
                         <MoreVertical className="h-4 w-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {/* El PDF, en una pestaña aparte: mirarlo para saber
-                            si es el que se busca no debería sacar a nadie de
-                            la lista. */}
-                        <DropdownMenuItem
-                          render={
-                            <a
-                              href={item.pdfUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            />
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          Vista previa
-                        </DropdownMenuItem>
-                        {/* Por nuestra ruta y no directo a R2: `download` no
-                            funciona entre dominios, así que el enlace crudo
-                            abría el PDF en vez de guardarlo. */}
-                        <DropdownMenuItem
-                          render={
-                            <a href={`/api/admin/informes/${item.id}/descargar`} />
-                          }
-                        >
-                          <Download className="mr-2 h-4 w-4" />
-                          Descargar
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
+                        {item.pdfUrl ? (
+                          <>
+                            {/* El PDF, en una pestaña aparte: mirarlo para
+                                saber si es el que se busca no debería sacar a
+                                nadie de la lista. */}
+                            <DropdownMenuItem
+                              render={
+                                <a
+                                  href={item.pdfUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                />
+                              }
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              Vista previa
+                            </DropdownMenuItem>
+                            {/* Por nuestra ruta y no directo a R2: `download`
+                                no funciona entre dominios, así que el enlace
+                                crudo abría el PDF en vez de guardarlo. */}
+                            <DropdownMenuItem
+                              render={
+                                <a
+                                  href={`/api/admin/informes/${item.id}/descargar`}
+                                />
+                              }
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              Descargar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        ) : null}
                         <DropdownMenuItem
                           onClick={() => setBorrando(item)}
                           className="text-destructive"
@@ -203,14 +268,27 @@ export function InformesTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Eliminar el informe #{borrando?.numero}
+              {borrando?.tipo === "borrador"
+                ? "Eliminar el borrador"
+                : `Eliminar el informe #${borrando?.numero}`}
             </DialogTitle>
-            {/* Dice lo que de verdad hace: el PDF se va del bucket, así que
-                el link deja de abrir para quien ya lo tenga. */}
+            {/* Dice lo que de verdad hace en cada caso: un borrador no salió a
+                ningún lado, un informe emitido sí, y su PDF se va del bucket
+                aunque alguien ya lo tenga. */}
             <DialogDescription>
-              Se borra el informe de {borrando?.cliente.nombre}, sus secciones y
-              el PDF. El enlace deja de abrir, también para quien ya lo haya
-              recibido. No se puede deshacer.
+              {borrando?.tipo === "borrador" ? (
+                <>
+                  Se pierde lo que había armado hasta acá. No se generó ningún
+                  PDF, así que no salió a ningún lado.
+                </>
+              ) : (
+                <>
+                  Se borra el informe de {borrando?.cliente?.nombre}, sus
+                  secciones y los PDF de todas sus versiones. El enlace deja de
+                  abrir, también para quien ya lo haya recibido. No se puede
+                  deshacer.
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -17,8 +17,10 @@ import {
  */
 export default async function EditarInformePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ borrador?: string }>;
 }) {
   await requireStaff();
   await requireAuth();
@@ -39,7 +41,22 @@ export default async function EditarInformePage({
     ? (informe.firmantes as Array<{ nombre?: string; cedula?: string | null }>)
     : [];
 
-  const inicial: EstadoInicialInforme = {
+  /**
+   * Una edición dejada a medias.
+   *
+   * Gana sobre lo guardado en el informe: es lo último que esa persona estuvo
+   * escribiendo. El informe publicado no cambió —el borrador no lo toca— así
+   * que descartar el borrador siempre devuelve a la versión vigente.
+   */
+  const { borrador: borradorId } = await searchParams;
+  const borrador = borradorId
+    ? await prisma.informeBorrador.findFirst({
+        where: { id: borradorId, informeId: id },
+        select: { id: true, contenido: true },
+      })
+    : null;
+
+  const delInforme: EstadoInicialInforme = {
     clienteId: informe.clienteId,
     titulo: informe.titulo,
     // `toISOString` sobre una columna `date` la devuelve a medianoche UTC, que
@@ -72,8 +89,29 @@ export default async function EditarInformePage({
         nombre: f.nombre,
         cedula: f.cedula,
       }))}
-      inicial={inicial}
+      inicial={contenidoDelBorrador(borrador?.contenido) ?? delInforme}
+      borradorId={borrador?.id}
       editando={{ id: informe.id, numero: informe.numero }}
     />
   );
+}
+
+/** Un borrador guardado con otra forma no puede voltear la pantalla. */
+function contenidoDelBorrador(
+  contenido: unknown
+): EstadoInicialInforme | undefined {
+  if (!contenido || typeof contenido !== "object") return undefined;
+  const c = contenido as Partial<EstadoInicialInforme>;
+  if (!Array.isArray(c.secciones) || typeof c.titulo !== "string") {
+    return undefined;
+  }
+  return {
+    paso: typeof c.paso === "number" ? c.paso : undefined,
+    clienteId: c.clienteId ?? null,
+    titulo: c.titulo,
+    fecha: typeof c.fecha === "string" ? c.fecha : "",
+    visitaIds: Array.isArray(c.visitaIds) ? c.visitaIds : [],
+    firmantes: Array.isArray(c.firmantes) ? c.firmantes : [],
+    secciones: c.secciones,
+  };
 }

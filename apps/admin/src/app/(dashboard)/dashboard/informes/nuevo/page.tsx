@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireStaff } from "@/lib/auth-helpers";
 import { listDefaultFirmantes } from "@/lib/services/firmante.service";
@@ -34,9 +35,18 @@ export default async function NuevoInformePage({
   const borrador = borradorId
     ? await prisma.informeBorrador.findUnique({
         where: { id: borradorId },
-        select: { id: true, contenido: true },
+        select: { id: true, numero: true, contenido: true, informeId: true },
       })
     : null;
+
+  // Un borrador de una **edición** no se retoma acá: se vuelve a la edición del
+  // informe del que salió, o se terminaría creando un duplicado del que se
+  // quería corregir.
+  if (borrador?.informeId) {
+    redirect(
+      `/dashboard/informes/${borrador.informeId}/editar?borrador=${borrador.id}`
+    );
+  }
 
   return (
     <InformeWizard
@@ -44,6 +54,7 @@ export default async function NuevoInformePage({
       catalogo={catalogo}
       inicial={contenidoValido(borrador?.contenido)}
       borradorId={borrador?.id}
+      numeroDeBorrador={borrador?.numero}
     />
   );
 }

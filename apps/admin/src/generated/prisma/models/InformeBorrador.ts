@@ -28,14 +28,26 @@ export type InformeBorradorModel = runtime.Types.Result.DefaultSelection<Prisma.
 
 export type AggregateInformeBorrador = {
   _count: InformeBorradorCountAggregateOutputType | null
+  _avg: InformeBorradorAvgAggregateOutputType | null
+  _sum: InformeBorradorSumAggregateOutputType | null
   _min: InformeBorradorMinAggregateOutputType | null
   _max: InformeBorradorMaxAggregateOutputType | null
 }
 
+export type InformeBorradorAvgAggregateOutputType = {
+  numero: number | null
+}
+
+export type InformeBorradorSumAggregateOutputType = {
+  numero: number | null
+}
+
 export type InformeBorradorMinAggregateOutputType = {
   id: string | null
+  numero: number | null
   clienteId: string | null
   titulo: string | null
+  informeId: string | null
   createdById: string | null
   createdByNombre: string | null
   createdAt: Date | null
@@ -46,8 +58,10 @@ export type InformeBorradorMinAggregateOutputType = {
 
 export type InformeBorradorMaxAggregateOutputType = {
   id: string | null
+  numero: number | null
   clienteId: string | null
   titulo: string | null
+  informeId: string | null
   createdById: string | null
   createdByNombre: string | null
   createdAt: Date | null
@@ -58,9 +72,11 @@ export type InformeBorradorMaxAggregateOutputType = {
 
 export type InformeBorradorCountAggregateOutputType = {
   id: number
+  numero: number
   clienteId: number
   titulo: number
   contenido: number
+  informeId: number
   createdById: number
   createdByNombre: number
   createdAt: number
@@ -71,10 +87,20 @@ export type InformeBorradorCountAggregateOutputType = {
 }
 
 
+export type InformeBorradorAvgAggregateInputType = {
+  numero?: true
+}
+
+export type InformeBorradorSumAggregateInputType = {
+  numero?: true
+}
+
 export type InformeBorradorMinAggregateInputType = {
   id?: true
+  numero?: true
   clienteId?: true
   titulo?: true
+  informeId?: true
   createdById?: true
   createdByNombre?: true
   createdAt?: true
@@ -85,8 +111,10 @@ export type InformeBorradorMinAggregateInputType = {
 
 export type InformeBorradorMaxAggregateInputType = {
   id?: true
+  numero?: true
   clienteId?: true
   titulo?: true
+  informeId?: true
   createdById?: true
   createdByNombre?: true
   createdAt?: true
@@ -97,9 +125,11 @@ export type InformeBorradorMaxAggregateInputType = {
 
 export type InformeBorradorCountAggregateInputType = {
   id?: true
+  numero?: true
   clienteId?: true
   titulo?: true
   contenido?: true
+  informeId?: true
   createdById?: true
   createdByNombre?: true
   createdAt?: true
@@ -147,6 +177,18 @@ export type InformeBorradorAggregateArgs<ExtArgs extends runtime.Types.Extension
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: InformeBorradorAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: InformeBorradorSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: InformeBorradorMinAggregateInputType
@@ -177,15 +219,19 @@ export type InformeBorradorGroupByArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   _count?: InformeBorradorCountAggregateInputType | true
+  _avg?: InformeBorradorAvgAggregateInputType
+  _sum?: InformeBorradorSumAggregateInputType
   _min?: InformeBorradorMinAggregateInputType
   _max?: InformeBorradorMaxAggregateInputType
 }
 
 export type InformeBorradorGroupByOutputType = {
   id: string
+  numero: number
   clienteId: string | null
   titulo: string | null
   contenido: runtime.JsonValue
+  informeId: string | null
   createdById: string | null
   createdByNombre: string | null
   createdAt: Date
@@ -193,6 +239,8 @@ export type InformeBorradorGroupByOutputType = {
   updatedByNombre: string | null
   updatedAt: Date
   _count: InformeBorradorCountAggregateOutputType | null
+  _avg: InformeBorradorAvgAggregateOutputType | null
+  _sum: InformeBorradorSumAggregateOutputType | null
   _min: InformeBorradorMinAggregateOutputType | null
   _max: InformeBorradorMaxAggregateOutputType | null
 }
@@ -217,9 +265,11 @@ export type InformeBorradorWhereInput = {
   OR?: Prisma.InformeBorradorWhereInput[]
   NOT?: Prisma.InformeBorradorWhereInput | Prisma.InformeBorradorWhereInput[]
   id?: Prisma.StringFilter<"InformeBorrador"> | string
+  numero?: Prisma.IntFilter<"InformeBorrador"> | number
   clienteId?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   titulo?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   contenido?: Prisma.JsonFilter<"InformeBorrador">
+  informeId?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdById?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdByNombre?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InformeBorrador"> | Date | string
@@ -227,15 +277,18 @@ export type InformeBorradorWhereInput = {
   updatedByNombre?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"InformeBorrador"> | Date | string
   cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
+  informe?: Prisma.XOR<Prisma.InformeNullableScalarRelationFilter, Prisma.InformeWhereInput> | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type InformeBorradorOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrderInput | Prisma.SortOrder
   titulo?: Prisma.SortOrderInput | Prisma.SortOrder
   contenido?: Prisma.SortOrder
+  informeId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -243,18 +296,21 @@ export type InformeBorradorOrderByWithRelationInput = {
   updatedByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   cliente?: Prisma.ClienteOrderByWithRelationInput
+  informe?: Prisma.InformeOrderByWithRelationInput
   createdBy?: Prisma.UserOrderByWithRelationInput
   updatedBy?: Prisma.UserOrderByWithRelationInput
 }
 
 export type InformeBorradorWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  numero?: number
   AND?: Prisma.InformeBorradorWhereInput | Prisma.InformeBorradorWhereInput[]
   OR?: Prisma.InformeBorradorWhereInput[]
   NOT?: Prisma.InformeBorradorWhereInput | Prisma.InformeBorradorWhereInput[]
   clienteId?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   titulo?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   contenido?: Prisma.JsonFilter<"InformeBorrador">
+  informeId?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdById?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdByNombre?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InformeBorrador"> | Date | string
@@ -262,15 +318,18 @@ export type InformeBorradorWhereUniqueInput = Prisma.AtLeast<{
   updatedByNombre?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"InformeBorrador"> | Date | string
   cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
+  informe?: Prisma.XOR<Prisma.InformeNullableScalarRelationFilter, Prisma.InformeWhereInput> | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-}, "id">
+}, "id" | "numero">
 
 export type InformeBorradorOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrderInput | Prisma.SortOrder
   titulo?: Prisma.SortOrderInput | Prisma.SortOrder
   contenido?: Prisma.SortOrder
+  informeId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -278,8 +337,10 @@ export type InformeBorradorOrderByWithAggregationInput = {
   updatedByNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InformeBorradorCountOrderByAggregateInput
+  _avg?: Prisma.InformeBorradorAvgOrderByAggregateInput
   _max?: Prisma.InformeBorradorMaxOrderByAggregateInput
   _min?: Prisma.InformeBorradorMinOrderByAggregateInput
+  _sum?: Prisma.InformeBorradorSumOrderByAggregateInput
 }
 
 export type InformeBorradorScalarWhereWithAggregatesInput = {
@@ -287,9 +348,11 @@ export type InformeBorradorScalarWhereWithAggregatesInput = {
   OR?: Prisma.InformeBorradorScalarWhereWithAggregatesInput[]
   NOT?: Prisma.InformeBorradorScalarWhereWithAggregatesInput | Prisma.InformeBorradorScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"InformeBorrador"> | string
+  numero?: Prisma.IntWithAggregatesFilter<"InformeBorrador"> | number
   clienteId?: Prisma.StringNullableWithAggregatesFilter<"InformeBorrador"> | string | null
   titulo?: Prisma.StringNullableWithAggregatesFilter<"InformeBorrador"> | string | null
   contenido?: Prisma.JsonWithAggregatesFilter<"InformeBorrador">
+  informeId?: Prisma.StringNullableWithAggregatesFilter<"InformeBorrador"> | string | null
   createdById?: Prisma.StringNullableWithAggregatesFilter<"InformeBorrador"> | string | null
   createdByNombre?: Prisma.StringNullableWithAggregatesFilter<"InformeBorrador"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InformeBorrador"> | Date | string
@@ -300,6 +363,7 @@ export type InformeBorradorScalarWhereWithAggregatesInput = {
 
 export type InformeBorradorCreateInput = {
   id?: string
+  numero: number
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: string | null
@@ -307,15 +371,18 @@ export type InformeBorradorCreateInput = {
   updatedByNombre?: string | null
   updatedAt?: Date | string
   cliente?: Prisma.ClienteCreateNestedOneWithoutInformeBorradoresInput
+  informe?: Prisma.InformeCreateNestedOneWithoutBorradoresInput
   createdBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresCreadosInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresActualizadosInput
 }
 
 export type InformeBorradorUncheckedCreateInput = {
   id?: string
+  numero: number
   clienteId?: string | null
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdById?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
@@ -326,6 +393,7 @@ export type InformeBorradorUncheckedCreateInput = {
 
 export type InformeBorradorUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -333,15 +401,18 @@ export type InformeBorradorUpdateInput = {
   updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneWithoutInformeBorradoresNestedInput
+  informe?: Prisma.InformeUpdateOneWithoutBorradoresNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutInformeBorradoresCreadosNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutInformeBorradoresActualizadosNestedInput
 }
 
 export type InformeBorradorUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -352,9 +423,11 @@ export type InformeBorradorUncheckedUpdateInput = {
 
 export type InformeBorradorCreateManyInput = {
   id?: string
+  numero: number
   clienteId?: string | null
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdById?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
@@ -365,6 +438,7 @@ export type InformeBorradorCreateManyInput = {
 
 export type InformeBorradorUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -375,9 +449,11 @@ export type InformeBorradorUpdateManyMutationInput = {
 
 export type InformeBorradorUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -398,9 +474,11 @@ export type InformeBorradorOrderByRelationAggregateInput = {
 
 export type InformeBorradorCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
   contenido?: Prisma.SortOrder
+  informeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   createdByNombre?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -409,10 +487,16 @@ export type InformeBorradorCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type InformeBorradorAvgOrderByAggregateInput = {
+  numero?: Prisma.SortOrder
+}
+
 export type InformeBorradorMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  informeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   createdByNombre?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -423,14 +507,20 @@ export type InformeBorradorMaxOrderByAggregateInput = {
 
 export type InformeBorradorMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  informeId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   createdByNombre?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
   updatedByNombre?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type InformeBorradorSumOrderByAggregateInput = {
+  numero?: Prisma.SortOrder
 }
 
 export type InformeBorradorCreateNestedManyWithoutCreatedByInput = {
@@ -559,8 +649,51 @@ export type InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput = {
   deleteMany?: Prisma.InformeBorradorScalarWhereInput | Prisma.InformeBorradorScalarWhereInput[]
 }
 
+export type InformeBorradorCreateNestedManyWithoutInformeInput = {
+  create?: Prisma.XOR<Prisma.InformeBorradorCreateWithoutInformeInput, Prisma.InformeBorradorUncheckedCreateWithoutInformeInput> | Prisma.InformeBorradorCreateWithoutInformeInput[] | Prisma.InformeBorradorUncheckedCreateWithoutInformeInput[]
+  connectOrCreate?: Prisma.InformeBorradorCreateOrConnectWithoutInformeInput | Prisma.InformeBorradorCreateOrConnectWithoutInformeInput[]
+  createMany?: Prisma.InformeBorradorCreateManyInformeInputEnvelope
+  connect?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+}
+
+export type InformeBorradorUncheckedCreateNestedManyWithoutInformeInput = {
+  create?: Prisma.XOR<Prisma.InformeBorradorCreateWithoutInformeInput, Prisma.InformeBorradorUncheckedCreateWithoutInformeInput> | Prisma.InformeBorradorCreateWithoutInformeInput[] | Prisma.InformeBorradorUncheckedCreateWithoutInformeInput[]
+  connectOrCreate?: Prisma.InformeBorradorCreateOrConnectWithoutInformeInput | Prisma.InformeBorradorCreateOrConnectWithoutInformeInput[]
+  createMany?: Prisma.InformeBorradorCreateManyInformeInputEnvelope
+  connect?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+}
+
+export type InformeBorradorUpdateManyWithoutInformeNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeBorradorCreateWithoutInformeInput, Prisma.InformeBorradorUncheckedCreateWithoutInformeInput> | Prisma.InformeBorradorCreateWithoutInformeInput[] | Prisma.InformeBorradorUncheckedCreateWithoutInformeInput[]
+  connectOrCreate?: Prisma.InformeBorradorCreateOrConnectWithoutInformeInput | Prisma.InformeBorradorCreateOrConnectWithoutInformeInput[]
+  upsert?: Prisma.InformeBorradorUpsertWithWhereUniqueWithoutInformeInput | Prisma.InformeBorradorUpsertWithWhereUniqueWithoutInformeInput[]
+  createMany?: Prisma.InformeBorradorCreateManyInformeInputEnvelope
+  set?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  disconnect?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  delete?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  connect?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  update?: Prisma.InformeBorradorUpdateWithWhereUniqueWithoutInformeInput | Prisma.InformeBorradorUpdateWithWhereUniqueWithoutInformeInput[]
+  updateMany?: Prisma.InformeBorradorUpdateManyWithWhereWithoutInformeInput | Prisma.InformeBorradorUpdateManyWithWhereWithoutInformeInput[]
+  deleteMany?: Prisma.InformeBorradorScalarWhereInput | Prisma.InformeBorradorScalarWhereInput[]
+}
+
+export type InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeBorradorCreateWithoutInformeInput, Prisma.InformeBorradorUncheckedCreateWithoutInformeInput> | Prisma.InformeBorradorCreateWithoutInformeInput[] | Prisma.InformeBorradorUncheckedCreateWithoutInformeInput[]
+  connectOrCreate?: Prisma.InformeBorradorCreateOrConnectWithoutInformeInput | Prisma.InformeBorradorCreateOrConnectWithoutInformeInput[]
+  upsert?: Prisma.InformeBorradorUpsertWithWhereUniqueWithoutInformeInput | Prisma.InformeBorradorUpsertWithWhereUniqueWithoutInformeInput[]
+  createMany?: Prisma.InformeBorradorCreateManyInformeInputEnvelope
+  set?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  disconnect?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  delete?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  connect?: Prisma.InformeBorradorWhereUniqueInput | Prisma.InformeBorradorWhereUniqueInput[]
+  update?: Prisma.InformeBorradorUpdateWithWhereUniqueWithoutInformeInput | Prisma.InformeBorradorUpdateWithWhereUniqueWithoutInformeInput[]
+  updateMany?: Prisma.InformeBorradorUpdateManyWithWhereWithoutInformeInput | Prisma.InformeBorradorUpdateManyWithWhereWithoutInformeInput[]
+  deleteMany?: Prisma.InformeBorradorScalarWhereInput | Prisma.InformeBorradorScalarWhereInput[]
+}
+
 export type InformeBorradorCreateWithoutCreatedByInput = {
   id?: string
+  numero: number
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: string | null
@@ -568,14 +701,17 @@ export type InformeBorradorCreateWithoutCreatedByInput = {
   updatedByNombre?: string | null
   updatedAt?: Date | string
   cliente?: Prisma.ClienteCreateNestedOneWithoutInformeBorradoresInput
+  informe?: Prisma.InformeCreateNestedOneWithoutBorradoresInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresActualizadosInput
 }
 
 export type InformeBorradorUncheckedCreateWithoutCreatedByInput = {
   id?: string
+  numero: number
   clienteId?: string | null
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
   updatedById?: string | null
@@ -595,6 +731,7 @@ export type InformeBorradorCreateManyCreatedByInputEnvelope = {
 
 export type InformeBorradorCreateWithoutUpdatedByInput = {
   id?: string
+  numero: number
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: string | null
@@ -602,14 +739,17 @@ export type InformeBorradorCreateWithoutUpdatedByInput = {
   updatedByNombre?: string | null
   updatedAt?: Date | string
   cliente?: Prisma.ClienteCreateNestedOneWithoutInformeBorradoresInput
+  informe?: Prisma.InformeCreateNestedOneWithoutBorradoresInput
   createdBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresCreadosInput
 }
 
 export type InformeBorradorUncheckedCreateWithoutUpdatedByInput = {
   id?: string
+  numero: number
   clienteId?: string | null
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdById?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
@@ -648,9 +788,11 @@ export type InformeBorradorScalarWhereInput = {
   OR?: Prisma.InformeBorradorScalarWhereInput[]
   NOT?: Prisma.InformeBorradorScalarWhereInput | Prisma.InformeBorradorScalarWhereInput[]
   id?: Prisma.StringFilter<"InformeBorrador"> | string
+  numero?: Prisma.IntFilter<"InformeBorrador"> | number
   clienteId?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   titulo?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   contenido?: Prisma.JsonFilter<"InformeBorrador">
+  informeId?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdById?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdByNombre?: Prisma.StringNullableFilter<"InformeBorrador"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InformeBorrador"> | Date | string
@@ -677,20 +819,24 @@ export type InformeBorradorUpdateManyWithWhereWithoutUpdatedByInput = {
 
 export type InformeBorradorCreateWithoutClienteInput = {
   id?: string
+  numero: number
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: string | null
   createdAt?: Date | string
   updatedByNombre?: string | null
   updatedAt?: Date | string
+  informe?: Prisma.InformeCreateNestedOneWithoutBorradoresInput
   createdBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresCreadosInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresActualizadosInput
 }
 
 export type InformeBorradorUncheckedCreateWithoutClienteInput = {
   id?: string
+  numero: number
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdById?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
@@ -725,11 +871,67 @@ export type InformeBorradorUpdateManyWithWhereWithoutClienteInput = {
   data: Prisma.XOR<Prisma.InformeBorradorUpdateManyMutationInput, Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteInput>
 }
 
-export type InformeBorradorCreateManyCreatedByInput = {
+export type InformeBorradorCreateWithoutInformeInput = {
   id?: string
+  numero: number
+  titulo?: string | null
+  contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdByNombre?: string | null
+  createdAt?: Date | string
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  cliente?: Prisma.ClienteCreateNestedOneWithoutInformeBorradoresInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresCreadosInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformeBorradoresActualizadosInput
+}
+
+export type InformeBorradorUncheckedCreateWithoutInformeInput = {
+  id?: string
+  numero: number
   clienteId?: string | null
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdById?: string | null
+  createdByNombre?: string | null
+  createdAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+}
+
+export type InformeBorradorCreateOrConnectWithoutInformeInput = {
+  where: Prisma.InformeBorradorWhereUniqueInput
+  create: Prisma.XOR<Prisma.InformeBorradorCreateWithoutInformeInput, Prisma.InformeBorradorUncheckedCreateWithoutInformeInput>
+}
+
+export type InformeBorradorCreateManyInformeInputEnvelope = {
+  data: Prisma.InformeBorradorCreateManyInformeInput | Prisma.InformeBorradorCreateManyInformeInput[]
+  skipDuplicates?: boolean
+}
+
+export type InformeBorradorUpsertWithWhereUniqueWithoutInformeInput = {
+  where: Prisma.InformeBorradorWhereUniqueInput
+  update: Prisma.XOR<Prisma.InformeBorradorUpdateWithoutInformeInput, Prisma.InformeBorradorUncheckedUpdateWithoutInformeInput>
+  create: Prisma.XOR<Prisma.InformeBorradorCreateWithoutInformeInput, Prisma.InformeBorradorUncheckedCreateWithoutInformeInput>
+}
+
+export type InformeBorradorUpdateWithWhereUniqueWithoutInformeInput = {
+  where: Prisma.InformeBorradorWhereUniqueInput
+  data: Prisma.XOR<Prisma.InformeBorradorUpdateWithoutInformeInput, Prisma.InformeBorradorUncheckedUpdateWithoutInformeInput>
+}
+
+export type InformeBorradorUpdateManyWithWhereWithoutInformeInput = {
+  where: Prisma.InformeBorradorScalarWhereInput
+  data: Prisma.XOR<Prisma.InformeBorradorUpdateManyMutationInput, Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeInput>
+}
+
+export type InformeBorradorCreateManyCreatedByInput = {
+  id?: string
+  numero: number
+  clienteId?: string | null
+  titulo?: string | null
+  contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
   updatedById?: string | null
@@ -739,9 +941,11 @@ export type InformeBorradorCreateManyCreatedByInput = {
 
 export type InformeBorradorCreateManyUpdatedByInput = {
   id?: string
+  numero: number
   clienteId?: string | null
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdById?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
@@ -751,6 +955,7 @@ export type InformeBorradorCreateManyUpdatedByInput = {
 
 export type InformeBorradorUpdateWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -758,14 +963,17 @@ export type InformeBorradorUpdateWithoutCreatedByInput = {
   updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneWithoutInformeBorradoresNestedInput
+  informe?: Prisma.InformeUpdateOneWithoutBorradoresNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutInformeBorradoresActualizadosNestedInput
 }
 
 export type InformeBorradorUncheckedUpdateWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -775,9 +983,11 @@ export type InformeBorradorUncheckedUpdateWithoutCreatedByInput = {
 
 export type InformeBorradorUncheckedUpdateManyWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -787,6 +997,7 @@ export type InformeBorradorUncheckedUpdateManyWithoutCreatedByInput = {
 
 export type InformeBorradorUpdateWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -794,14 +1005,17 @@ export type InformeBorradorUpdateWithoutUpdatedByInput = {
   updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneWithoutInformeBorradoresNestedInput
+  informe?: Prisma.InformeUpdateOneWithoutBorradoresNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutInformeBorradoresCreadosNestedInput
 }
 
 export type InformeBorradorUncheckedUpdateWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -811,9 +1025,11 @@ export type InformeBorradorUncheckedUpdateWithoutUpdatedByInput = {
 
 export type InformeBorradorUncheckedUpdateManyWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -823,8 +1039,10 @@ export type InformeBorradorUncheckedUpdateManyWithoutUpdatedByInput = {
 
 export type InformeBorradorCreateManyClienteInput = {
   id?: string
+  numero: number
   titulo?: string | null
   contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: string | null
   createdById?: string | null
   createdByNombre?: string | null
   createdAt?: Date | string
@@ -835,20 +1053,24 @@ export type InformeBorradorCreateManyClienteInput = {
 
 export type InformeBorradorUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  informe?: Prisma.InformeUpdateOneWithoutBorradoresNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutInformeBorradoresCreadosNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutInformeBorradoresActualizadosNestedInput
 }
 
 export type InformeBorradorUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -859,6 +1081,64 @@ export type InformeBorradorUncheckedUpdateWithoutClienteInput = {
 
 export type InformeBorradorUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  informeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type InformeBorradorCreateManyInformeInput = {
+  id?: string
+  numero: number
+  clienteId?: string | null
+  titulo?: string | null
+  contenido: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdById?: string | null
+  createdByNombre?: string | null
+  createdAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+}
+
+export type InformeBorradorUpdateWithoutInformeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cliente?: Prisma.ClienteUpdateOneWithoutInformeBorradoresNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutInformeBorradoresCreadosNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformeBorradoresActualizadosNestedInput
+}
+
+export type InformeBorradorUncheckedUpdateWithoutInformeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type InformeBorradorUncheckedUpdateManyWithoutInformeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   titulo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contenido?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -873,9 +1153,11 @@ export type InformeBorradorUncheckedUpdateManyWithoutClienteInput = {
 
 export type InformeBorradorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
   titulo?: boolean
   contenido?: boolean
+  informeId?: boolean
   createdById?: boolean
   createdByNombre?: boolean
   createdAt?: boolean
@@ -883,15 +1165,18 @@ export type InformeBorradorSelect<ExtArgs extends runtime.Types.Extensions.Inter
   updatedByNombre?: boolean
   updatedAt?: boolean
   cliente?: boolean | Prisma.InformeBorrador$clienteArgs<ExtArgs>
+  informe?: boolean | Prisma.InformeBorrador$informeArgs<ExtArgs>
   createdBy?: boolean | Prisma.InformeBorrador$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.InformeBorrador$updatedByArgs<ExtArgs>
 }, ExtArgs["result"]["informeBorrador"]>
 
 export type InformeBorradorSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
   titulo?: boolean
   contenido?: boolean
+  informeId?: boolean
   createdById?: boolean
   createdByNombre?: boolean
   createdAt?: boolean
@@ -899,15 +1184,18 @@ export type InformeBorradorSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   updatedByNombre?: boolean
   updatedAt?: boolean
   cliente?: boolean | Prisma.InformeBorrador$clienteArgs<ExtArgs>
+  informe?: boolean | Prisma.InformeBorrador$informeArgs<ExtArgs>
   createdBy?: boolean | Prisma.InformeBorrador$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.InformeBorrador$updatedByArgs<ExtArgs>
 }, ExtArgs["result"]["informeBorrador"]>
 
 export type InformeBorradorSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
   titulo?: boolean
   contenido?: boolean
+  informeId?: boolean
   createdById?: boolean
   createdByNombre?: boolean
   createdAt?: boolean
@@ -915,15 +1203,18 @@ export type InformeBorradorSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   updatedByNombre?: boolean
   updatedAt?: boolean
   cliente?: boolean | Prisma.InformeBorrador$clienteArgs<ExtArgs>
+  informe?: boolean | Prisma.InformeBorrador$informeArgs<ExtArgs>
   createdBy?: boolean | Prisma.InformeBorrador$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.InformeBorrador$updatedByArgs<ExtArgs>
 }, ExtArgs["result"]["informeBorrador"]>
 
 export type InformeBorradorSelectScalar = {
   id?: boolean
+  numero?: boolean
   clienteId?: boolean
   titulo?: boolean
   contenido?: boolean
+  informeId?: boolean
   createdById?: boolean
   createdByNombre?: boolean
   createdAt?: boolean
@@ -932,19 +1223,22 @@ export type InformeBorradorSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InformeBorradorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "titulo" | "contenido" | "createdById" | "createdByNombre" | "createdAt" | "updatedById" | "updatedByNombre" | "updatedAt", ExtArgs["result"]["informeBorrador"]>
+export type InformeBorradorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero" | "clienteId" | "titulo" | "contenido" | "informeId" | "createdById" | "createdByNombre" | "createdAt" | "updatedById" | "updatedByNombre" | "updatedAt", ExtArgs["result"]["informeBorrador"]>
 export type InformeBorradorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.InformeBorrador$clienteArgs<ExtArgs>
+  informe?: boolean | Prisma.InformeBorrador$informeArgs<ExtArgs>
   createdBy?: boolean | Prisma.InformeBorrador$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.InformeBorrador$updatedByArgs<ExtArgs>
 }
 export type InformeBorradorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.InformeBorrador$clienteArgs<ExtArgs>
+  informe?: boolean | Prisma.InformeBorrador$informeArgs<ExtArgs>
   createdBy?: boolean | Prisma.InformeBorrador$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.InformeBorrador$updatedByArgs<ExtArgs>
 }
 export type InformeBorradorIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.InformeBorrador$clienteArgs<ExtArgs>
+  informe?: boolean | Prisma.InformeBorrador$informeArgs<ExtArgs>
   createdBy?: boolean | Prisma.InformeBorrador$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.InformeBorrador$updatedByArgs<ExtArgs>
 }
@@ -953,14 +1247,39 @@ export type $InformeBorradorPayload<ExtArgs extends runtime.Types.Extensions.Int
   name: "InformeBorrador"
   objects: {
     cliente: Prisma.$ClientePayload<ExtArgs> | null
+    /**
+     * Se va con el informe: un borrador de una edición de algo que ya no existe
+     * no se puede retomar ni tiene a dónde volver.
+     */
+    informe: Prisma.$InformePayload<ExtArgs> | null
     createdBy: Prisma.$UserPayload<ExtArgs> | null
     updatedBy: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    /**
+     * El mismo correlativo que los informes, **de la misma secuencia**.
+     * 
+     * Un borrador se nombra en voz alta igual que un informe, así que necesita
+     * número; y tiene que salir del mismo pozo, o el #17 sería dos cosas
+     * distintas. Se pide al crearlo y el informe lo hereda al generarse: el
+     * borrador #17 se convierte en el informe #17.
+     * 
+     * Descartar un borrador deja un hueco en la numeración, igual que pasa con
+     * las facturas. Es el precio de poder nombrarlo antes de que exista.
+     */
+    numero: number
     clienteId: string | null
     titulo: string | null
     contenido: runtime.JsonValue
+    /**
+     * De qué informe es esta edición a medio hacer. Nulo = es un informe nuevo.
+     * 
+     * Editar también se puede dejar por la mitad, y ese borrador no es "un
+     * informe nuevo": al retomarlo hay que volver a la edición del mismo, o se
+     * terminaría creando un duplicado del que se quería corregir.
+     */
+    informeId: string | null
     createdById: string | null
     createdByNombre: string | null
     createdAt: Date
@@ -1362,6 +1681,7 @@ readonly fields: InformeBorradorFieldRefs;
 export interface Prisma__InformeBorradorClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   cliente<T extends Prisma.InformeBorrador$clienteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeBorrador$clienteArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  informe<T extends Prisma.InformeBorrador$informeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeBorrador$informeArgs<ExtArgs>>): Prisma.Prisma__InformeClient<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   createdBy<T extends Prisma.InformeBorrador$createdByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeBorrador$createdByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   updatedBy<T extends Prisma.InformeBorrador$updatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeBorrador$updatedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
@@ -1394,9 +1714,11 @@ export interface Prisma__InformeBorradorClient<T, Null = never, ExtArgs extends 
  */
 export interface InformeBorradorFieldRefs {
   readonly id: Prisma.FieldRef<"InformeBorrador", 'String'>
+  readonly numero: Prisma.FieldRef<"InformeBorrador", 'Int'>
   readonly clienteId: Prisma.FieldRef<"InformeBorrador", 'String'>
   readonly titulo: Prisma.FieldRef<"InformeBorrador", 'String'>
   readonly contenido: Prisma.FieldRef<"InformeBorrador", 'Json'>
+  readonly informeId: Prisma.FieldRef<"InformeBorrador", 'String'>
   readonly createdById: Prisma.FieldRef<"InformeBorrador", 'String'>
   readonly createdByNombre: Prisma.FieldRef<"InformeBorrador", 'String'>
   readonly createdAt: Prisma.FieldRef<"InformeBorrador", 'DateTime'>
@@ -1820,6 +2142,25 @@ export type InformeBorrador$clienteArgs<ExtArgs extends runtime.Types.Extensions
    */
   include?: Prisma.ClienteInclude<ExtArgs> | null
   where?: Prisma.ClienteWhereInput
+}
+
+/**
+ * InformeBorrador.informe
+ */
+export type InformeBorrador$informeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Informe
+   */
+  select?: Prisma.InformeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Informe
+   */
+  omit?: Prisma.InformeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InformeInclude<ExtArgs> | null
+  where?: Prisma.InformeWhereInput
 }
 
 /**

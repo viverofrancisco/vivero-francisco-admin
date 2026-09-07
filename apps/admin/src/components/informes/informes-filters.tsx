@@ -12,9 +12,21 @@ interface Props {
   clienteId: string | null;
   from: string | null;
   to: string | null;
+  estado: string | null;
 }
 
-export function InformesFilters({ clientes, clienteId, from, to }: Props) {
+const ESTADOS = [
+  { value: "emitido", label: "Emitidos" },
+  { value: "borrador", label: "Borradores" },
+];
+
+export function InformesFilters({
+  clientes,
+  clienteId,
+  from,
+  to,
+  estado,
+}: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -32,14 +44,14 @@ export function InformesFilters({ clientes, clienteId, from, to }: Props) {
     });
   }
 
-  const hasFilters = !!(clienteId || from || to);
+  const hasFilters = !!(clienteId || from || to || estado);
 
   return (
     /* Sin card: los filtros son controles de la lista, no una sección aparte.
        Con el card, la pantalla eran dos recuadros apilados y la tabla parecía
        lo secundario. */
     <div className="flex-none">
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)_minmax(0,180px)_auto] sm:items-end">
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,150px)_minmax(0,180px)_minmax(0,180px)_auto] sm:items-end">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
             Cliente
@@ -50,6 +62,18 @@ export function InformesFilters({ clientes, clienteId, from, to }: Props) {
             options={clientes}
             placeholder="Todos los clientes"
             searchable
+            clearable
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">
+            Estado
+          </label>
+          <CustomSelect
+            value={estado ?? ""}
+            onChange={(v) => update({ estado: v || null })}
+            options={ESTADOS}
+            placeholder="Todos"
             clearable
           />
         </div>
@@ -81,7 +105,12 @@ export function InformesFilters({ clientes, clienteId, from, to }: Props) {
               variant="ghost"
               size="sm"
               onClick={() =>
-                update({ clienteId: null, from: null, to: null })
+                update({
+                  clienteId: null,
+                  from: null,
+                  to: null,
+                  estado: null,
+                })
               }
               disabled={isPending}
             >

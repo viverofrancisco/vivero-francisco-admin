@@ -23,7 +23,15 @@ import {
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { useAca } from "@/lib/filtros-url";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   ArrowLeft,
+  ChevronDown,
   Download,
   ExternalLink,
   ImageIcon,
@@ -130,48 +138,59 @@ export function InformeDetail({
           </p>
         </div>
         <div className="flex flex-none items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={
-              <a
-                href={informe.pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              />
-            }
-          >
-            <ExternalLink className="mr-1.5 h-4 w-4" /> Abrir
-          </Button>
-          {/* Por nuestra ruta y no directo a R2: `download` no funciona
-              entre dominios, así que el enlace crudo abría el PDF en vez de
-              guardarlo. */}
-          <Button
-            size="sm"
-            nativeButton={false}
-            render={<a href={`/api/admin/informes/${informe.id}/descargar`} />}
-          >
-            <Download className="mr-1.5 h-4 w-4" /> Descargar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={
-              <Link href={`/dashboard/informes/${informe.id}/editar?from=${aca}`} />
-            }
-          >
-            <Pencil className="mr-1.5 h-4 w-4" /> Editar
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-destructive"
-            onClick={() => setBorrando(true)}
-          >
-            <Trash2 className="mr-1.5 h-4 w-4" /> Eliminar
-          </Button>
+          {/* Un solo menú y no cuatro botones: son acciones de la misma cosa
+              y en fila competían con el título por la atención. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="outline" size="sm" />}
+            >
+              Acciones <ChevronDown className="ml-1.5 h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                render={
+                  <a
+                    href={informe.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Abrir en una pestaña
+              </DropdownMenuItem>
+              {/* Por nuestra ruta y no directo a R2: `download` no funciona
+                  entre dominios, así que el enlace crudo abría el PDF en vez
+                  de guardarlo. */}
+              <DropdownMenuItem
+                render={
+                  <a href={`/api/admin/informes/${informe.id}/descargar`} />
+                }
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Descargar
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href={`/dashboard/informes/${informe.id}/editar?from=${aca}`}
+                  />
+                }
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setBorrando(true)}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

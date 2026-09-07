@@ -24,6 +24,8 @@ function ensureBorradores(viewer: Viewer) {
 export interface BorradorInput {
   clienteId?: string | null;
   titulo?: string | null;
+  /** De qué informe es esta edición a medias. Nulo = un informe nuevo. */
+  informeId?: string | null;
   /** El estado del asistente. Lo interpreta el asistente, no el servidor. */
   contenido: unknown;
 }
@@ -34,11 +36,13 @@ export async function listarBorradores(viewer: Viewer) {
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,
+      numero: true,
       titulo: true,
       createdAt: true,
       createdByNombre: true,
       updatedAt: true,
       updatedByNombre: true,
+      informeId: true,
       cliente: {
         select: { id: true, nombre: true, apellido: true, empresa: true },
       },
@@ -69,6 +73,7 @@ export async function guardarBorrador(
   const datos = {
     clienteId: input.clienteId ?? null,
     titulo: input.titulo?.trim() || null,
+    informeId: input.informeId ?? null,
     contenido: (input.contenido ?? {}) as Prisma.InputJsonValue,
     updatedById: viewer.id,
     updatedByNombre: viewer.nombre ?? null,
@@ -85,18 +90,34 @@ export async function guardarBorrador(
     return prisma.informeBorrador.update({
       where: { id },
       data: datos,
-      select: { id: true, updatedAt: true },
+      select: { id: true, numero: true, updatedAt: true },
     });
   }
 
   return prisma.informeBorrador.create({
     data: {
       ...datos,
+      numero: await siguienteNumero(),
       createdById: viewer.id,
       createdByNombre: viewer.nombre ?? null,
     },
-    select: { id: true, updatedAt: true },
+    select: { id: true, numero: true, updatedAt: true },
   });
+}
+
+/**
+ * El próximo número, de la **misma secuencia** que los informes.
+ *
+ * Se pide explícitamente en vez de dejarlo como `@default(autoincrement())`
+ * porque eso le crearía a la tabla una secuencia propia, y entonces el #17
+ * sería un borrador y un informe a la vez. Así los dos salen del mismo pozo y
+ * el informe hereda el número del borrador del que salió.
+ */
+export async function siguienteNumero(): Promise<number> {
+  const [fila] = await prisma.$queryRaw<Array<{ numero: bigint }>>`
+    SELECT nextval('"Informe_numero_seq"') AS numero
+  `;
+  return Number(fila.numero);
 }
 
 export async function borrarBorrador(viewer: Viewer, id: string) {

@@ -1105,6 +1105,7 @@ model Informe {
   visitas     InformeVisita[]
   secciones   InformeSeccion[]
   versiones   InformeVersion[]
+  borradores  InformeBorrador[]
 
   @@index([clienteId])
   @@index([generatedAt])
@@ -1162,9 +1163,26 @@ model InformeVersion {
 /// mientras se arma cambia de forma todo el tiempo.
 model InformeBorrador {
   id        String  @id @default(cuid())
+  /// El mismo correlativo que los informes, **de la misma secuencia**.
+  ///
+  /// Un borrador se nombra en voz alta igual que un informe, así que necesita
+  /// número; y tiene que salir del mismo pozo, o el #17 sería dos cosas
+  /// distintas. Se pide al crearlo y el informe lo hereda al generarse: el
+  /// borrador #17 se convierte en el informe #17.
+  ///
+  /// Descartar un borrador deja un hueco en la numeración, igual que pasa con
+  /// las facturas. Es el precio de poder nombrarlo antes de que exista.
+  numero    Int     @unique
   clienteId String?
   titulo    String?
   contenido Json
+
+  /// De qué informe es esta edición a medio hacer. Nulo = es un informe nuevo.
+  ///
+  /// Editar también se puede dejar por la mitad, y ese borrador no es "un
+  /// informe nuevo": al retomarlo hay que volver a la edición del mismo, o se
+  /// terminaría creando un duplicado del que se quería corregir.
+  informeId String?
 
   createdById     String?
   createdByNombre String?
@@ -1174,11 +1192,15 @@ model InformeBorrador {
   updatedAt       DateTime @updatedAt
 
   cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  /// Se va con el informe: un borrador de una edición de algo que ya no existe
+  /// no se puede retomar ni tiene a dónde volver.
+  informe   Informe? @relation(fields: [informeId], references: [id], onDelete: Cascade)
   createdBy User?    @relation("InformeBorradorCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy User?    @relation("InformeBorradorUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([updatedAt])
   @@index([clienteId])
+  @@index([informeId])
 }
 
 model InformeVisita {

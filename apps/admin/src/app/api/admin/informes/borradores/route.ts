@@ -11,6 +11,8 @@ const schema = z.object({
   /** Con id se pisa el que hay; sin id, es uno nuevo. */
   id: z.string().min(1).nullable().optional(),
   clienteId: z.string().min(1).nullable().optional(),
+  /** Si es la edición de un informe, cuál. */
+  informeId: z.string().min(1).nullable().optional(),
   titulo: z.string().max(200).nullable().optional(),
   /**
    * El estado del asistente, tal cual. No se valida contra el schema del

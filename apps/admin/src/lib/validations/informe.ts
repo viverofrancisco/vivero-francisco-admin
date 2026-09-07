@@ -54,6 +54,8 @@ export const informeGenerateSchema = z.object({
    * lo llena solo cuando las hay, no un requisito.
    */
   visitaIds: z.array(z.string().min(1)),
+  /** El número heredado del borrador del que sale, si sale de uno. */
+  numero: z.number().int().positive().optional(),
   firmantes: z.array(informeFirmanteSchema).min(1).max(3),
   secciones: z.array(informeSeccionSchema).min(1),
 });

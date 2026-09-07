@@ -318,6 +318,7 @@ export type InformeWhereInput = {
   visitas?: Prisma.InformeVisitaListRelationFilter
   secciones?: Prisma.InformeSeccionListRelationFilter
   versiones?: Prisma.InformeVersionListRelationFilter
+  borradores?: Prisma.InformeBorradorListRelationFilter
 }
 
 export type InformeOrderByWithRelationInput = {
@@ -344,6 +345,7 @@ export type InformeOrderByWithRelationInput = {
   visitas?: Prisma.InformeVisitaOrderByRelationAggregateInput
   secciones?: Prisma.InformeSeccionOrderByRelationAggregateInput
   versiones?: Prisma.InformeVersionOrderByRelationAggregateInput
+  borradores?: Prisma.InformeBorradorOrderByRelationAggregateInput
 }
 
 export type InformeWhereUniqueInput = Prisma.AtLeast<{
@@ -373,6 +375,7 @@ export type InformeWhereUniqueInput = Prisma.AtLeast<{
   visitas?: Prisma.InformeVisitaListRelationFilter
   secciones?: Prisma.InformeSeccionListRelationFilter
   versiones?: Prisma.InformeVersionListRelationFilter
+  borradores?: Prisma.InformeBorradorListRelationFilter
 }, "id" | "numero">
 
 export type InformeOrderByWithAggregationInput = {
@@ -444,6 +447,7 @@ export type InformeCreateInput = {
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateInput = {
@@ -467,6 +471,7 @@ export type InformeUncheckedCreateInput = {
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUpdateInput = {
@@ -489,6 +494,7 @@ export type InformeUpdateInput = {
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateInput = {
@@ -512,6 +518,7 @@ export type InformeUncheckedUpdateInput = {
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeCreateManyInput = {
@@ -651,6 +658,11 @@ export type InformeSumOrderByAggregateInput = {
 export type InformeScalarRelationFilter = {
   is?: Prisma.InformeWhereInput
   isNot?: Prisma.InformeWhereInput
+}
+
+export type InformeNullableScalarRelationFilter = {
+  is?: Prisma.InformeWhereInput | null
+  isNot?: Prisma.InformeWhereInput | null
 }
 
 export type InformeCreateNestedManyWithoutGeneratedByInput = {
@@ -793,6 +805,22 @@ export type InformeUpdateOneRequiredWithoutVersionesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.InformeUpdateToOneWithWhereWithoutVersionesInput, Prisma.InformeUpdateWithoutVersionesInput>, Prisma.InformeUncheckedUpdateWithoutVersionesInput>
 }
 
+export type InformeCreateNestedOneWithoutBorradoresInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutBorradoresInput, Prisma.InformeUncheckedCreateWithoutBorradoresInput>
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutBorradoresInput
+  connect?: Prisma.InformeWhereUniqueInput
+}
+
+export type InformeUpdateOneWithoutBorradoresNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeCreateWithoutBorradoresInput, Prisma.InformeUncheckedCreateWithoutBorradoresInput>
+  connectOrCreate?: Prisma.InformeCreateOrConnectWithoutBorradoresInput
+  upsert?: Prisma.InformeUpsertWithoutBorradoresInput
+  disconnect?: Prisma.InformeWhereInput | boolean
+  delete?: Prisma.InformeWhereInput | boolean
+  connect?: Prisma.InformeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InformeUpdateToOneWithWhereWithoutBorradoresInput, Prisma.InformeUpdateWithoutBorradoresInput>, Prisma.InformeUncheckedUpdateWithoutBorradoresInput>
+}
+
 export type InformeCreateNestedOneWithoutVisitasInput = {
   create?: Prisma.XOR<Prisma.InformeCreateWithoutVisitasInput, Prisma.InformeUncheckedCreateWithoutVisitasInput>
   connectOrCreate?: Prisma.InformeCreateOrConnectWithoutVisitasInput
@@ -841,6 +869,7 @@ export type InformeCreateWithoutGeneratedByInput = {
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutGeneratedByInput = {
@@ -863,6 +892,7 @@ export type InformeUncheckedCreateWithoutGeneratedByInput = {
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutGeneratedByInput = {
@@ -895,6 +925,7 @@ export type InformeCreateWithoutUpdatedByInput = {
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutUpdatedByInput = {
@@ -917,6 +948,7 @@ export type InformeUncheckedCreateWithoutUpdatedByInput = {
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutUpdatedByInput = {
@@ -1004,6 +1036,7 @@ export type InformeCreateWithoutClienteInput = {
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutClienteInput = {
@@ -1026,6 +1059,7 @@ export type InformeUncheckedCreateWithoutClienteInput = {
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutClienteInput = {
@@ -1074,6 +1108,7 @@ export type InformeCreateWithoutVersionesInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutVersionesInput = {
@@ -1096,6 +1131,7 @@ export type InformeUncheckedCreateWithoutVersionesInput = {
   versionActual?: number
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutVersionesInput = {
@@ -1133,6 +1169,7 @@ export type InformeUpdateWithoutVersionesInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutVersionesInput = {
@@ -1155,6 +1192,114 @@ export type InformeUncheckedUpdateWithoutVersionesInput = {
   versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput
+}
+
+export type InformeCreateWithoutBorradoresInput = {
+  id?: string
+  numero?: number
+  titulo: string
+  fecha: Date | string
+  fechaDesde?: Date | string | null
+  fechaHasta?: Date | string | null
+  pdfKey: string
+  pdfUrl: string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: string | null
+  generatedAt?: Date | string
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  versionActual?: number
+  cliente: Prisma.ClienteCreateNestedOneWithoutInformesInput
+  generatedBy: Prisma.UserCreateNestedOneWithoutInformesGeneradosInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
+  visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
+  secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+}
+
+export type InformeUncheckedCreateWithoutBorradoresInput = {
+  id?: string
+  clienteId: string
+  numero?: number
+  titulo: string
+  fecha: Date | string
+  fechaDesde?: Date | string | null
+  fechaHasta?: Date | string | null
+  pdfKey: string
+  pdfUrl: string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById: string
+  generatedByNombre?: string | null
+  generatedAt?: Date | string
+  updatedById?: string | null
+  updatedByNombre?: string | null
+  updatedAt?: Date | string
+  versionActual?: number
+  visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
+  secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
+  versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+}
+
+export type InformeCreateOrConnectWithoutBorradoresInput = {
+  where: Prisma.InformeWhereUniqueInput
+  create: Prisma.XOR<Prisma.InformeCreateWithoutBorradoresInput, Prisma.InformeUncheckedCreateWithoutBorradoresInput>
+}
+
+export type InformeUpsertWithoutBorradoresInput = {
+  update: Prisma.XOR<Prisma.InformeUpdateWithoutBorradoresInput, Prisma.InformeUncheckedUpdateWithoutBorradoresInput>
+  create: Prisma.XOR<Prisma.InformeCreateWithoutBorradoresInput, Prisma.InformeUncheckedCreateWithoutBorradoresInput>
+  where?: Prisma.InformeWhereInput
+}
+
+export type InformeUpdateToOneWithWhereWithoutBorradoresInput = {
+  where?: Prisma.InformeWhereInput
+  data: Prisma.XOR<Prisma.InformeUpdateWithoutBorradoresInput, Prisma.InformeUncheckedUpdateWithoutBorradoresInput>
+}
+
+export type InformeUpdateWithoutBorradoresInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutInformesNestedInput
+  generatedBy?: Prisma.UserUpdateOneRequiredWithoutInformesGeneradosNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
+  visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
+  secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+}
+
+export type InformeUncheckedUpdateWithoutBorradoresInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  pdfKey?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  firmantes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  generatedById?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versionActual?: Prisma.IntFieldUpdateOperationsInput | number
+  visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
+  secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
+  versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeCreateWithoutVisitasInput = {
@@ -1177,6 +1322,7 @@ export type InformeCreateWithoutVisitasInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   secciones?: Prisma.InformeSeccionCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutVisitasInput = {
@@ -1199,6 +1345,7 @@ export type InformeUncheckedCreateWithoutVisitasInput = {
   versionActual?: number
   secciones?: Prisma.InformeSeccionUncheckedCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutVisitasInput = {
@@ -1236,6 +1383,7 @@ export type InformeUpdateWithoutVisitasInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutVisitasInput = {
@@ -1258,6 +1406,7 @@ export type InformeUncheckedUpdateWithoutVisitasInput = {
   versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeCreateWithoutSeccionesInput = {
@@ -1280,6 +1429,7 @@ export type InformeCreateWithoutSeccionesInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutInformesActualizadosInput
   visitas?: Prisma.InformeVisitaCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorCreateNestedManyWithoutInformeInput
 }
 
 export type InformeUncheckedCreateWithoutSeccionesInput = {
@@ -1302,6 +1452,7 @@ export type InformeUncheckedCreateWithoutSeccionesInput = {
   versionActual?: number
   visitas?: Prisma.InformeVisitaUncheckedCreateNestedManyWithoutInformeInput
   versiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutInformeInput
+  borradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutInformeInput
 }
 
 export type InformeCreateOrConnectWithoutSeccionesInput = {
@@ -1339,6 +1490,7 @@ export type InformeUpdateWithoutSeccionesInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutInformesActualizadosNestedInput
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutSeccionesInput = {
@@ -1361,6 +1513,7 @@ export type InformeUncheckedUpdateWithoutSeccionesInput = {
   versionActual?: Prisma.IntFieldUpdateOperationsInput | number
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeCreateManyGeneratedByInput = {
@@ -1420,6 +1573,7 @@ export type InformeUpdateWithoutGeneratedByInput = {
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutGeneratedByInput = {
@@ -1442,6 +1596,7 @@ export type InformeUncheckedUpdateWithoutGeneratedByInput = {
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateManyWithoutGeneratedByInput = {
@@ -1482,6 +1637,7 @@ export type InformeUpdateWithoutUpdatedByInput = {
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutUpdatedByInput = {
@@ -1504,6 +1660,7 @@ export type InformeUncheckedUpdateWithoutUpdatedByInput = {
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -1563,6 +1720,7 @@ export type InformeUpdateWithoutClienteInput = {
   visitas?: Prisma.InformeVisitaUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateWithoutClienteInput = {
@@ -1585,6 +1743,7 @@ export type InformeUncheckedUpdateWithoutClienteInput = {
   visitas?: Prisma.InformeVisitaUncheckedUpdateManyWithoutInformeNestedInput
   secciones?: Prisma.InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput
   versiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutInformeNestedInput
+  borradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutInformeNestedInput
 }
 
 export type InformeUncheckedUpdateManyWithoutClienteInput = {
@@ -1615,12 +1774,14 @@ export type InformeCountOutputType = {
   visitas: number
   secciones: number
   versiones: number
+  borradores: number
 }
 
 export type InformeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visitas?: boolean | InformeCountOutputTypeCountVisitasArgs
   secciones?: boolean | InformeCountOutputTypeCountSeccionesArgs
   versiones?: boolean | InformeCountOutputTypeCountVersionesArgs
+  borradores?: boolean | InformeCountOutputTypeCountBorradoresArgs
 }
 
 /**
@@ -1654,6 +1815,13 @@ export type InformeCountOutputTypeCountVersionesArgs<ExtArgs extends runtime.Typ
   where?: Prisma.InformeVersionWhereInput
 }
 
+/**
+ * InformeCountOutputType without action
+ */
+export type InformeCountOutputTypeCountBorradoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InformeBorradorWhereInput
+}
+
 
 export type InformeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1679,6 +1847,7 @@ export type InformeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   visitas?: boolean | Prisma.Informe$visitasArgs<ExtArgs>
   secciones?: boolean | Prisma.Informe$seccionesArgs<ExtArgs>
   versiones?: boolean | Prisma.Informe$versionesArgs<ExtArgs>
+  borradores?: boolean | Prisma.Informe$borradoresArgs<ExtArgs>
   _count?: boolean | Prisma.InformeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["informe"]>
 
@@ -1756,6 +1925,7 @@ export type InformeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   visitas?: boolean | Prisma.Informe$visitasArgs<ExtArgs>
   secciones?: boolean | Prisma.Informe$seccionesArgs<ExtArgs>
   versiones?: boolean | Prisma.Informe$versionesArgs<ExtArgs>
+  borradores?: boolean | Prisma.Informe$borradoresArgs<ExtArgs>
   _count?: boolean | Prisma.InformeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InformeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1778,6 +1948,7 @@ export type $InformePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     visitas: Prisma.$InformeVisitaPayload<ExtArgs>[]
     secciones: Prisma.$InformeSeccionPayload<ExtArgs>[]
     versiones: Prisma.$InformeVersionPayload<ExtArgs>[]
+    borradores: Prisma.$InformeBorradorPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2222,6 +2393,7 @@ export interface Prisma__InformeClient<T, Null = never, ExtArgs extends runtime.
   visitas<T extends Prisma.Informe$visitasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$visitasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeVisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   secciones<T extends Prisma.Informe$seccionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$seccionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeSeccionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   versiones<T extends Prisma.Informe$versionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$versionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  borradores<T extends Prisma.Informe$borradoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Informe$borradoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeBorradorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2757,6 +2929,30 @@ export type Informe$versionesArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.InformeVersionScalarFieldEnum | Prisma.InformeVersionScalarFieldEnum[]
+}
+
+/**
+ * Informe.borradores
+ */
+export type Informe$borradoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InformeBorrador
+   */
+  select?: Prisma.InformeBorradorSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InformeBorrador
+   */
+  omit?: Prisma.InformeBorradorOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InformeBorradorInclude<ExtArgs> | null
+  where?: Prisma.InformeBorradorWhereInput
+  orderBy?: Prisma.InformeBorradorOrderByWithRelationInput | Prisma.InformeBorradorOrderByWithRelationInput[]
+  cursor?: Prisma.InformeBorradorWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InformeBorradorScalarFieldEnum | Prisma.InformeBorradorScalarFieldEnum[]
 }
 
 /**

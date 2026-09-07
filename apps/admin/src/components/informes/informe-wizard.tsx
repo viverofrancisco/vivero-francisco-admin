@@ -43,6 +43,14 @@ import {
 } from "@/components/servicios/media-library";
 import { EditorImagen } from "@/components/servicios/editor-imagen";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -292,6 +300,7 @@ export function InformeWizard({
   catalogo = [],
   inicial,
   borradorId,
+  numeroDeBorrador,
   editando,
 }: {
   defaultFirmantes?: Array<{ nombre: string; cedula: string | null }>;
@@ -301,6 +310,8 @@ export function InformeWizard({
   inicial?: EstadoInicialInforme;
   /** El borrador del que salió, para pisarlo al guardar y borrarlo al generar. */
   borradorId?: string;
+  /** El número que trae el borrador. El informe lo hereda al generarse. */
+  numeroDeBorrador?: number;
   /** El informe que se edita. Guardar crea una versión nueva, no otro informe. */
   editando?: { id: string; numero: number };
 }) {
@@ -372,6 +383,8 @@ export function InformeWizard({
   const [guardandoBorrador, setGuardandoBorrador] = useState(false);
   /** Qué se cambió, para que la lista de versiones lo diga. Solo al editar. */
   const [notaDeCambio, setNotaDeCambio] = useState("");
+  /** Confirmando salir de la edición. */
+  const [saliendo, setSaliendo] = useState(false);
   /** El borrador en el que se está trabajando, si se guardó alguna vez. */
   const [borradorGuardado, setBorradorGuardado] = useState<string | null>(
     borradorId ?? null,
@@ -673,6 +686,8 @@ export function InformeWizard({
     return {
       clienteId,
       titulo: titulo.trim(),
+      // El del borrador, si vino de uno: el #17 sigue siendo el #17.
+      ...(numeroDeBorrador ? { numero: numeroDeBorrador } : {}),
       visitaIds: Array.from(selectedVisitaIds),
       fecha,
       firmantes: validFirmantes,
@@ -734,6 +749,9 @@ export function InformeWizard({
         body: JSON.stringify({
           id: borradorGuardado,
           clienteId,
+          // Editando, el borrador es de **ese** informe: al retomarlo hay que
+          // volver a su edición, no abrir uno nuevo.
+          informeId: editando?.id ?? null,
           titulo: titulo.trim() || null,
           contenido: {
             paso: step,
@@ -1019,18 +1037,30 @@ export function InformeWizard({
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
                 </Button>
-                {/* Editando no hay borrador que guardar: el informe ya existe,
-                    y lo de a medias sería una versión sin terminar de un
-                    documento que ya salió. */}
-                {!editando ? (
+                {/* También editando: una corrección se puede dejar por la
+                    mitad igual que un informe nuevo, y el borrador recuerda de
+                    qué informe era. Mientras tanto el informe sigue publicado
+                    con la versión que tiene — el borrador no lo toca. */}
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground"
+                  onClick={guardarBorrador}
+                  disabled={guardandoBorrador || generating}
+                >
+                  <Save className="mr-1 h-4 w-4" />
+                  {guardandoBorrador ? "Guardando…" : "Guardar borrador"}
+                </Button>
+                {/* Salir de la edición. Solo editando: en uno nuevo no hay a
+                    dónde volver, y el borrador es lo que evita perder el
+                    trabajo. */}
+                {editando ? (
                   <Button
                     variant="ghost"
                     className="text-muted-foreground"
-                    onClick={guardarBorrador}
-                    disabled={guardandoBorrador || generating}
+                    onClick={() => setSaliendo(true)}
+                    disabled={generating}
                   >
-                    <Save className="mr-1 h-4 w-4" />
-                    {guardandoBorrador ? "Guardando…" : "Guardar borrador"}
+                    Cancelar
                   </Button>
                 ) : null}
               </div>
@@ -1096,6 +1126,34 @@ export function InformeWizard({
       </main>
 
       <MediaViewer media={activeMedia} onClose={() => setActiveMedia(null)} />
+
+      <Dialog open={saliendo} onOpenChange={(v) => !v && setSaliendo(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Salir de la edición</DialogTitle>
+            {/* Lo que de verdad pasa: el informe queda como está, y lo que se
+                pierde es lo que se venía cambiando. */}
+            <DialogDescription>
+              El informe #{editando?.numero} queda como está, con la versión que
+              ya tiene. Se pierden los cambios que hiciste acá — si querés
+              seguir después, guardalos como borrador.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaliendo(false)}>
+              Seguir editando
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                router.push(`/dashboard/informes/${editando?.id}`)
+              }
+            >
+              Salir sin guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {aPantallaCompleta ? (
         <VisorPdf

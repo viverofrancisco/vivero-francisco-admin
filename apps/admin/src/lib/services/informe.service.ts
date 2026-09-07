@@ -100,6 +100,134 @@ export async function listInformes(
   };
 }
 
+/** Qué se está mirando en la lista. */
+export type EstadoInformeFiltro = "borrador" | "emitido";
+
+/**
+ * La lista de informes **con los borradores adentro**, ordenada por fecha.
+ *
+ * Son dos tablas y esto es lo que obliga a la unión en SQL: si cada una se
+ * paginara por su lado, un borrador de ayer aparecería arriba de un informe de
+ * hoy o directamente en otra página. Se ordena por lo que cada uno tiene de
+ * "cuándo": el informe por cuándo se generó, el borrador por cuándo se tocó por
+ * última vez, que es lo que contesta "¿en qué venía trabajando?".
+ *
+ * La unión trae **solo id y fecha** y después se hidrata cada lado por id: el
+ * orden y el corte de página los tiene que resolver la base, pero las columnas
+ * las sabe Prisma.
+ */
+export async function listInformesYBorradores(
+  viewer: Viewer,
+  options: {
+    clienteId?: string;
+    from?: Date;
+    to?: Date;
+    estado?: EstadoInformeFiltro;
+    limit?: number;
+    offset?: number;
+  } = {}
+) {
+  ensureInformes(viewer);
+
+  const limit = Math.min(Math.max(options.limit ?? 30, 1), 100);
+  const offset = Math.max(0, options.offset ?? 0);
+  const { clienteId, from, estado } = options;
+  // `to` inclusive del día entero.
+  const to = options.to
+    ? new Date(new Date(options.to).setUTCDate(options.to.getUTCDate() + 1))
+    : undefined;
+
+  const filas = await prisma.$queryRaw<
+    Array<{ id: string; tipo: string; fecha: Date; total: bigint }>
+  >`
+    WITH todo AS (
+      SELECT i."id", 'emitido' AS tipo, i."generatedAt" AS fecha
+      FROM "Informe" i
+      WHERE (${clienteId}::text IS NULL OR i."clienteId" = ${clienteId})
+        AND (${from}::timestamp IS NULL OR i."generatedAt" >= ${from})
+        AND (${to}::timestamp IS NULL OR i."generatedAt" < ${to})
+        AND (${estado}::text IS NULL OR ${estado} = 'emitido')
+      UNION ALL
+      SELECT b."id", 'borrador' AS tipo, b."updatedAt" AS fecha
+      FROM "InformeBorrador" b
+      WHERE (${clienteId}::text IS NULL OR b."clienteId" = ${clienteId})
+        AND (${from}::timestamp IS NULL OR b."updatedAt" >= ${from})
+        AND (${to}::timestamp IS NULL OR b."updatedAt" < ${to})
+        AND (${estado}::text IS NULL OR ${estado} = 'borrador')
+    )
+    SELECT "id", tipo, fecha, COUNT(*) OVER () AS total
+    FROM todo
+    ORDER BY fecha DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  const total = filas.length > 0 ? Number(filas[0].total) : 0;
+  const idsInformes = filas.filter((f) => f.tipo === "emitido").map((f) => f.id);
+  const idsBorradores = filas
+    .filter((f) => f.tipo === "borrador")
+    .map((f) => f.id);
+
+  const [informes, borradores] = await Promise.all([
+    idsInformes.length
+      ? prisma.informe.findMany({
+          where: { id: { in: idsInformes } },
+          select: {
+            id: true,
+            numero: true,
+            titulo: true,
+            pdfUrl: true,
+            generatedAt: true,
+            versionActual: true,
+            cliente: {
+              select: { id: true, nombre: true, apellido: true, empresa: true },
+            },
+          },
+        })
+      : [],
+    idsBorradores.length
+      ? prisma.informeBorrador.findMany({
+          where: { id: { in: idsBorradores } },
+          select: {
+            id: true,
+            numero: true,
+            titulo: true,
+            updatedAt: true,
+            updatedByNombre: true,
+            informeId: true,
+            // El número del informe que se está editando: es lo que hace que la
+            // fila diga "edición del #12" y no un borrador suelto más.
+            informe: { select: { numero: true } },
+            cliente: {
+              select: { id: true, nombre: true, apellido: true, empresa: true },
+            },
+          },
+        })
+      : [],
+  ]);
+
+  const porId = new Map<string, (typeof informes)[number]>(
+    informes.map((i) => [i.id, i])
+  );
+  const borradorPorId = new Map<string, (typeof borradores)[number]>(
+    borradores.map((b) => [b.id, b])
+  );
+
+  // El orden lo mandó la unión; acá solo se rellena.
+  const items = filas
+    .map((f) =>
+      f.tipo === "emitido"
+        ? { tipo: "emitido" as const, informe: porId.get(f.id) }
+        : { tipo: "borrador" as const, borrador: borradorPorId.get(f.id) }
+    )
+    .filter(
+      (x) =>
+        (x.tipo === "emitido" && x.informe) ||
+        (x.tipo === "borrador" && x.borrador)
+    );
+
+  return { items, total, limit, offset };
+}
+
 // ──────────────────────────────────────────────
 // Wizard step 1 — list candidate visitas
 // ──────────────────────────────────────────────
@@ -348,6 +476,14 @@ export interface InformeGeneratePayload {
    */
   fecha?: string;
   visitaIds: string[];
+  /**
+   * El número, cuando el informe sale de un borrador que ya tenía uno.
+   *
+   * Se hereda en vez de pedir otro: el borrador #17 se convierte en el informe
+   * #17, o quien lo venía nombrando así tendría que aprender un número nuevo
+   * justo al final. Sin esto, lo pone la secuencia.
+   */
+  numero?: number;
   firmantes: InformeFirmanteInput[]; // 1 to 3
   secciones: Array<{
     /// Servicio que origina la sección. Null = sección personalizada.
@@ -711,6 +847,8 @@ export async function generateInforme(
       data: {
         clienteId: payload.clienteId,
         titulo: payload.titulo,
+        // Si viene de un borrador, su número; si no, el que siga la secuencia.
+        ...(payload.numero ? { numero: payload.numero } : {}),
         fecha: fechaImpresa,
         fechaDesde,
         fechaHasta,

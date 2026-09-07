@@ -698,9 +698,11 @@ export type InformeVersionScalarFieldEnum = (typeof InformeVersionScalarFieldEnu
 
 export const InformeBorradorScalarFieldEnum = {
   id: 'id',
+  numero: 'numero',
   clienteId: 'clienteId',
   titulo: 'titulo',
   contenido: 'contenido',
+  informeId: 'informeId',
   createdById: 'createdById',
   createdByNombre: 'createdByNombre',
   createdAt: 'createdAt',
