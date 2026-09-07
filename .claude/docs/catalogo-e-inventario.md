@@ -251,6 +251,8 @@ Hay tres niveles y cada uno contesta una pregunta distinta:
 | **`Media`** | El archivo. Se sube una vez y vive en R2 |
 | **`ProductoImagen`** | Qué archivos usa un producto, y en qué orden |
 | **`Variante.imagenId`** | Cuál de esos representa a una variante |
+| **`Categoria.mediaId`** | La foto de una categoría |
+| **`InformeSeccionFoto.mediaId`** | Una foto de un informe que salió de acá |
 
 Antes cada `ProductoImagen` era su propio objeto en R2, así que usar la misma
 foto en dos productos eran **dos subidas**: dos objetos que pagar y, peor,
@@ -301,10 +303,53 @@ moverla** (`PATCH …/imagenes/[imagenId]`), así que no pierde su posición ni 
 vínculo de la variante que la había elegido. En una categoría queda como
 cualquier otro cambio de la ficha: esperando la barra de guardar.
 
+**Una foto de visita también se recorta**, con `origen: "visita"` en el cuerpo:
+ahí el `id` de la URL es una `VisitaMedia`. Se lee de la visita y el recorte
+nace en la **biblioteca**; la foto de la visita queda intacta, porque es el
+registro de lo que se vio en el jardín y el encuadre es una decisión de quien
+arma el informe. Hace falta porque casi todas las fotos de un informe salen de
+una visita: sin esto el recorte solo alcanzaba a las que alguien subió a mano.
+El nombre sale de la visita (`Foto de la visita #194 (recorte).jpg`) — una
+`VisitaMedia` no tiene nombre y su key es un uuid, así que en la biblioteca
+quedaría sin forma de reconocerla. Un video se rechaza con su motivo.
+
+Va en el cuerpo de la misma ruta y no en una hermana: es la misma operación
+sobre otro archivo, y dos rutas serían dos copias del mismo schema.
+
 El editor trabaja en **fracciones** de la imagen y no en píxeles de pantalla: el
 recuadro se arrastra sobre una vista de cualquier tamaño, y guardar píxeles de
 pantalla haría que el recorte dependiera del ancho del monitor. Los píxeles
 reales se calculan al guardar, con las medidas del original.
+
+Adentro del recuadro **no se dibuja nada**: lo que se ve ahí es la imagen de
+abajo, y lo oscurecido son cuatro rectángulos alrededor. Pintar una copia
+adentro con `background-position` fue el primer intento y no coincidía: el borde
+de 2px corre el área de posicionamiento del fondo, así que lo seleccionado y lo
+recortado no eran lo mismo.
+
+### Las fotos de un informe
+
+Una `InformeSeccionFoto` puede venir de tres lados, y **de quién es el archivo
+decide quién lo borra**:
+
+| | El archivo es de | Lo borra |
+|---|---|---|
+| `visitaMediaId` | la visita | borrar la visita |
+| `mediaId` | la biblioteca | borrarlo de la biblioteca |
+| ninguno de los dos | el informe (así se subían antes) | borrar el informe |
+
+`deleteInforme` borra de R2 **solo las del tercer caso**. Antes borraba todas
+las que no venían de una visita, y desde que las subidas van a la biblioteca eso
+se llevaba archivos que un producto seguía mostrando. El schema pide
+**exactamente uno** de los tres, así que no hay una foto que sea de dos dueños.
+
+La `key` de una foto con `mediaId` la resuelve el servidor leyendo el `Media`.
+No se acepta del cliente: si no, un pedido armado a mano metería en el informe
+cualquier archivo del bucket.
+
+En el wizard, subir un archivo lo deja en la biblioteca como cualquier otro —
+antes quedaba colgando de ese informe y de nadie más, sin poder reusarlo, ni
+recortarlo, ni encontrarlo.
 
 ### La subida
 

@@ -159,15 +159,28 @@ counts the shelf doesn't know what the system said. Two switches per variant:
 refused) and `permiteNegativo` (sellable at zero).
 
 **Media is a library.** `Media` is the file (uploaded once, lives in R2),
-`ProductoImagen` says which files a product uses and in what order, and
-`Variante.imagenId` picks which of those represents a variant. Removing a photo
+`ProductoImagen` says which files a product uses and in what order,
+`Variante.imagenId` picks which of those represents a variant, and
+`Categoria.mediaId` / `InformeSeccionFoto.mediaId` point at the same library. Removing a photo
 from a product doesn't delete it from the library; deleting it for real is
 `Restrict`-guarded and the service checks first so it can say *how many* products
 use it. Photos hang off the producto rather than the variante because a photo
 usually shows a single axis — the color — so per-combination would mean uploading
 the same picture once per size. Upload is two-step (presigned URLs, then confirm),
 `image/*` only, validated server-side because the content type is what gets
-*signed*.
+*signed*. **Any of them can be cropped, and cropping never overwrites** — it
+writes a new `Media` and the editor re-points at it, because the same file may
+be in a product and a category at once. It runs server-side with `sharp`: from
+the browser a canvas depends on R2's CORS headers and `toBlob` fails silently on
+a tainted one. A visita's photo crops too (`origen: "visita"`), and the crop
+lands in the library while the visita keeps its own file — that one is the record
+of what was seen in the garden.
+
+**An informe photo has one of three owners, and the owner is who deletes it**:
+`visitaMediaId` (the visita), `mediaId` (the library — it may also be on a
+product), or neither (the informe itself, how they used to be uploaded). The
+schema demands exactly one, and `deleteInforme` removes R2 objects only for the
+third kind. New uploads in the wizard go to the library like any other image.
 
 **A product is in several categories** (`ProductoCategoria`). It was one column,
 and a rosal is both "Plantas" and "Exterior".
