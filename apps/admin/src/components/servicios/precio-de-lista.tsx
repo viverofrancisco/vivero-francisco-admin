@@ -1,7 +1,8 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { InputNumero, comoNumero } from "@/components/ui/input-numero";
 
 /**
  * El precio de lista de una variante.
@@ -21,6 +22,14 @@ export function PrecioDeLista({
   precio: number;
   onGuardar: (precio: number) => void;
 }) {
+  const [texto, setTexto] = useState(String(precio));
+  // Si el precio cambia desde afuera (se guardó, se descartó), el campo sigue.
+  const [ultimo, setUltimo] = useState(precio);
+  if (ultimo !== precio) {
+    setUltimo(precio);
+    setTexto(String(precio));
+  }
+
   return (
     <div className="space-y-1.5">
       <Label className="text-xs">Precio de lista *</Label>
@@ -28,18 +37,16 @@ export function PrecioDeLista({
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
           $
         </span>
-        <Input
-          type="number"
-          min="0"
-          step="0.01"
-          defaultValue={precio}
+        <InputNumero
+          decimales
+          value={texto}
+          onChange={setTexto}
           className="pl-7"
-          onBlur={(e) => {
-            const texto = e.target.value.trim();
-            const nuevo = Number(texto);
-            if (texto === "" || !Number.isFinite(nuevo) || nuevo < 0) {
+          onBlur={() => {
+            const nuevo = comoNumero(texto);
+            if (nuevo === null) {
               // Se repone lo que había: un campo vacío no es "gratis".
-              e.target.value = String(precio);
+              setTexto(String(precio));
               return;
             }
             if (nuevo !== precio) onGuardar(nuevo);

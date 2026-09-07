@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputNumero, comoNumero } from "@/components/ui/input-numero";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
@@ -421,6 +422,7 @@ export function ProductoVariantes({
                     grupos y sangran, que es lo que una tabla no sabe hacer. */}
                 <div className="flex items-center gap-3 bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground">
                   <span className="min-w-0 flex-1">Variante</span>
+                  <span className="w-32 flex-none">SKU</span>
                   <span className="w-24 flex-none text-right">Precio</span>
                   <span className="w-20 flex-none text-right">Stock</span>
                   <span className="w-7 flex-none" />
@@ -647,26 +649,14 @@ function FilaVariante({
         /* El nombre lleva a la ficha de la variante; el número abre el
            movimiento. Son las dos cosas que se hacen sobre una fila y cada una
            tiene su blanco, en vez de un menú que las esconda a las dos. */
-        <span className="min-w-0 flex-1">
-          <Link
-            href={`/dashboard/productos/${productoId}/variantes/${variante.id}?from=${from}`}
-            className="block truncate text-sm font-medium hover:underline"
-          >
+        <Link
+          href={`/dashboard/productos/${productoId}/variantes/${variante.id}?from=${from}`}
+          className="min-w-0 flex-1"
+        >
+          <span className="block truncate text-sm font-medium hover:underline">
             {nombre}
-          </Link>
-          {/* El SKU se escribe acá y no solo en la ficha de la variante: al
-              armar una tabla de seis combinaciones, entrar y salir seis veces
-              para poner seis códigos es el camino largo del mismo trabajo. */}
-          <Input
-            value={skuPendiente ?? variante.sku ?? ""}
-            aria-label={`SKU de ${nombre}`}
-            placeholder="Sin SKU"
-            className={`h-6 border-0 bg-transparent px-0 font-mono text-xs shadow-none focus-visible:ring-0 ${
-              skuPendiente !== undefined ? "text-amber-700" : "text-muted-foreground"
-            }`}
-            onChange={(e) => onSku(e.target.value)}
-          />
-        </span>
+          </span>
+        </Link>
       ) : (
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
@@ -675,17 +665,38 @@ function FilaVariante({
               Nueva
             </span>
           </span>
-          <Input
-            value={pendiente?.sku ?? ""}
-            aria-label={`SKU de ${nombre}`}
-            placeholder="Sin SKU"
-            className="h-6 border-0 bg-transparent px-0 font-mono text-xs text-muted-foreground shadow-none focus-visible:ring-0"
-            onChange={(e) =>
-              onPendiente({ ...vacia(pendiente), sku: e.target.value })
-            }
-          />
+          <span className="block text-xs text-muted-foreground">
+            Se crea al guardar
+          </span>
         </span>
       )}
+
+      {/* El SKU, en su columna y a la izquierda del precio: es un dato de la
+          variante como los otros dos, y debajo del nombre se leía como una
+          etiqueta y no como algo que se escribe.
+
+          Va en las dos: la que existe y la que se va a crear. Armar seis
+          combinaciones y después entrar y salir seis veces para ponerles seis
+          códigos es el camino largo del mismo trabajo. */}
+      <Input
+        value={
+          variante
+            ? (skuPendiente ?? variante.sku ?? "")
+            : (pendiente?.sku ?? "")
+        }
+        aria-label={`SKU de ${nombre}`}
+        placeholder="Sin SKU"
+        className={`h-8 w-32 flex-none font-mono text-sm ${
+          (variante ? skuPendiente !== undefined : Boolean(pendiente?.sku))
+            ? "border-amber-400"
+            : ""
+        }`}
+        onChange={(e) =>
+          variante
+            ? onSku(e.target.value)
+            : onPendiente({ ...vacia(pendiente), sku: e.target.value })
+        }
+      />
 
       {/* Precio y stock se escriben aquí mismo, pero solo de lo que existe: una
           combinación sin guardar no tiene dónde anotarlos. */}
@@ -697,11 +708,9 @@ function FilaVariante({
             </span>
             {/* Lo escrito no se guarda solo: va a la barra del header con el
                 resto de la ficha. */}
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={precioPendiente ?? variante.precio}
+            <InputNumero
+              decimales
+              value={String(precioPendiente ?? variante.precio)}
               aria-label={`Precio de ${nombre}`}
               className={`h-8 pl-5 text-right text-sm tabular-nums ${
                 precioPendiente !== undefined
@@ -710,11 +719,12 @@ function FilaVariante({
                     ? "text-amber-700"
                     : ""
               }`}
-              onChange={(e) => {
-                const texto = e.target.value.trim();
-                const nuevo = Number(texto);
-                if (texto === "" || !Number.isFinite(nuevo) || nuevo < 0) return;
-                onPrecio(nuevo);
+              onChange={(texto) => {
+                const nuevo = comoNumero(texto);
+                // A medio escribir no se publica: "12." todavía no es un
+                // precio, y publicarlo como 12 borraría los decimales que se
+                // están por tipear.
+                if (nuevo !== null) onPrecio(nuevo);
               }}
             />
           </div>
@@ -761,33 +771,25 @@ function FilaVariante({
             <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
               $
             </span>
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={pendiente?.precio ?? 0}
+            <InputNumero
+              decimales
+              value={String(pendiente?.precio ?? 0)}
               aria-label={`Precio de ${nombre}`}
               className="h-8 pl-5 text-right text-sm tabular-nums"
-              onChange={(e) =>
+              onChange={(texto) =>
                 onPendiente({
                   ...vacia(pendiente),
-                  precio: Math.max(0, Number(e.target.value) || 0),
+                  precio: comoNumero(texto) ?? 0,
                 })
               }
             />
           </div>
-          <Input
-            type="number"
-            min="0"
-            step="1"
-            value={pendiente?.stock ?? 0}
+          <InputNumero
+            value={String(pendiente?.stock ?? 0)}
             aria-label={`Stock inicial de ${nombre}`}
             className="h-8 w-20 flex-none text-right text-sm tabular-nums"
-            onChange={(e) =>
-              onPendiente({
-                ...vacia(pendiente),
-                stock: Math.max(0, Math.trunc(Number(e.target.value) || 0)),
-              })
+            onChange={(texto) =>
+              onPendiente({ ...vacia(pendiente), stock: comoNumero(texto) ?? 0 })
             }
           />
         </>

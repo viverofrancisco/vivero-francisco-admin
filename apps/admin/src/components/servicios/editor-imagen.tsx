@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { InputNumero } from "@/components/ui/input-numero";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -391,21 +391,17 @@ export function EditorImagen({
             <div className="grid grid-cols-2 gap-2 border-t pt-3">
               <div className="space-y-1">
                 <Label className="text-xs">Ancho (px)</Label>
-                <Input
-                  type="number"
-                  min="1"
+                <InputNumero
                   value={salida.ancho}
-                  onChange={(e) => setSalida({ ...salida, ancho: e.target.value })}
+                  onChange={(ancho) => setSalida({ ...salida, ancho })}
                   className="h-8 text-sm tabular-nums"
                 />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Alto (px)</Label>
-                <Input
-                  type="number"
-                  min="1"
+                <InputNumero
                   value={salida.alto}
-                  onChange={(e) => setSalida({ ...salida, alto: e.target.value })}
+                  onChange={(alto) => setSalida({ ...salida, alto })}
                   className="h-8 text-sm tabular-nums"
                 />
               </div>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputNumero } from "@/components/ui/input-numero";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { RichText } from "@/components/ui/rich-text";
@@ -484,12 +485,9 @@ export function CategoriaForm({
                             </button>
                             <div className="flex items-center gap-1.5 border-t px-2 pb-1 pt-2">
                               <span className="text-sm">A la posición</span>
-                              <Input
-                                type="number"
-                                min="1"
-                                max={form.productos.length}
+                              <InputNumero
                                 value={aPosicion}
-                                onChange={(e) => setAPosicion(e.target.value)}
+                                onChange={setAPosicion}
                                 onKeyDown={(e) => {
                                   if (e.key !== "Enter") return;
                                   e.preventDefault();

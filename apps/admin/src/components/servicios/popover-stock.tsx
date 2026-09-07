@@ -140,11 +140,18 @@ export function PopoverStock({
                 </option>
               ))}
             </select>
+            {/* Entero, y con signo solo cuando "sumar" lo necesita: un ajuste
+                puede ser −3, un conteo y un ingreso nunca. */}
             <Input
-              type="number"
-              step="1"
+              type="text"
+              inputMode={motivo === "AJUSTE" ? "text" : "numeric"}
               value={valor}
-              onChange={(e) => setValor(e.target.value)}
+              onChange={(e) => {
+                const t = e.target.value;
+                const permitido =
+                  motivo === "AJUSTE" ? /^-?\d*$/ : /^\d*$/;
+                if (permitido.test(t)) setValor(t);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();

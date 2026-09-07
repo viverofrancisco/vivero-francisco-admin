@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputNumero } from "@/components/ui/input-numero";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -581,15 +582,11 @@ export function ServicioForm({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label htmlFor="precio">Precio</Label>
-                    <Input
+                    <InputNumero
                       id="precio"
-                      type="number"
-                      min="0"
-                      step="0.01"
+                      decimales
                       value={form.precio}
-                      onChange={(e) =>
-                        setForm({ ...form, precio: e.target.value })
-                      }
+                      onChange={(precio) => setForm({ ...form, precio })}
                       placeholder="0.00"
                       className="text-right tabular-nums"
                     />
@@ -602,15 +599,10 @@ export function ServicioForm({
                   {form.manejaInventario && (
                     <div className="space-y-1.5">
                       <Label htmlFor="stock">Stock inicial</Label>
-                      <Input
+                      <InputNumero
                         id="stock"
-                        type="number"
-                        min="0"
-                        step="1"
                         value={form.stock}
-                        onChange={(e) =>
-                          setForm({ ...form, stock: e.target.value })
-                        }
+                        onChange={(stock) => setForm({ ...form, stock })}
                         placeholder="0"
                         className="text-right tabular-nums"
                       />
