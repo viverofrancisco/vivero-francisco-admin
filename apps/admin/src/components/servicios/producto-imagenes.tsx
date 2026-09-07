@@ -222,8 +222,12 @@ export function ProductoImagenes({
           {imagenes.length > 0 && (
             /* La principal grande y el resto chicas, como en Shopify: el orden
                ya dice cuál manda, y hacerlo visible ahorra tener que decirlo.
-               La primera ocupa 2×2 de la grilla. */
-            <div className="grid grid-cols-4 gap-2">
+               La primera ocupa 2×2 de la grilla.
+
+               Seis columnas y ancho tope: sin el tope, en una pantalla ancha
+               una miniatura terminaba más grande que la foto de un producto en
+               el catálogo, y la card se comía la pantalla. */
+            <div className="grid max-w-xl grid-cols-6 gap-2">
               {imagenes.map((img, i) => (
                 <div
                   key={img.id}
