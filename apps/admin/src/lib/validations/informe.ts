@@ -7,11 +7,21 @@ import { z } from "zod/v4";
 export const informeSeccionFotoSchema = z
   .object({
     visitaMediaId: z.string().min(1).nullable().optional(),
+    /** De la biblioteca. Es por donde entran las nuevas. */
+    mediaId: z.string().min(1).nullable().optional(),
+    /** Subida directo al informe. Queda por los que ya existían. */
     key: z.string().min(1).nullable().optional(),
   })
-  .refine((f) => Boolean(f.visitaMediaId) !== Boolean(f.key), {
-    message: "Cada foto debe venir de una visita o ser una imagen subida.",
-  });
+  // Exactamente uno: de dónde viene el archivo decide de quién es, y por lo
+  // tanto quién lo borra. Dos orígenes a la vez no tendrían respuesta.
+  .refine(
+    (f) =>
+      [f.visitaMediaId, f.mediaId, f.key].filter(Boolean).length === 1,
+    {
+      message:
+        "Cada foto viene de una visita, de la biblioteca, o es una subida suelta.",
+    }
+  );
 
 export const informeSeccionSchema = z.object({
   /** Servicio que origina la sección. Null u omitido = sección personalizada. */

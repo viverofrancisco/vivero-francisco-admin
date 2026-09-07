@@ -38,6 +38,10 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { hoyISOEcuador } from "@/lib/fechas";
 import { toast } from "sonner";
 import {
+  MediaLibrary,
+  subirALaBiblioteca,
+} from "@/components/servicios/media-library";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -92,12 +96,12 @@ interface ServicioParaSeccion {
 
 /**
  * Foto de una sección. O viene de una visita (`visitaMediaId`) o se subió
- * directo al informe (`key`). `url` siempre sirve para previsualizar.
+ * de la biblioteca (`mediaId`). `url` siempre sirve para previsualizar.
  */
 interface SeccionFotoDraft {
   uid: string;
   visitaMediaId: string | null;
-  key: string | null;
+  mediaId: string | null;
   url: string;
 }
 
@@ -111,11 +115,26 @@ interface SeccionDraft {
 }
 
 function fotoDeVisita(m: MediaPoolItem): SeccionFotoDraft {
-  return { uid: `visita-${m.id}`, visitaMediaId: m.id, key: null, url: m.url };
+  return {
+    uid: `visita-${m.id}`,
+    visitaMediaId: m.id,
+    mediaId: null,
+    url: m.url,
+  };
 }
 
-function fotoSubida(key: string, url: string): SeccionFotoDraft {
-  return { uid: `upload-${key}`, visitaMediaId: null, key, url };
+/**
+ * Una de la biblioteca. Es por donde entran todas las que no salen de una
+ * visita: subir un archivo acá lo deja en la biblioteca y después lo referencia,
+ * en vez de dejarlo colgando de este informe y de nadie más.
+ */
+function fotoDeBiblioteca(m: { id: string; url: string }): SeccionFotoDraft {
+  return {
+    uid: `media-${m.id}`,
+    visitaMediaId: null,
+    mediaId: m.id,
+    url: m.url,
+  };
 }
 
 interface FirmanteDraft {
@@ -410,7 +429,7 @@ export function InformeWizard({
             fotos: s.fotos.map((f) =>
               f.visitaMediaId
                 ? { visitaMediaId: f.visitaMediaId }
-                : { key: f.key }
+                : { mediaId: f.mediaId }
             ),
           })),
         }),
@@ -1555,34 +1574,12 @@ function Step3Secciones({
     }
     setUploadingFor(tempId);
     try {
-      const res = await fetch("/api/admin/informes/uploads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clienteId,
-          files: imagenes.map((f) => ({
-            fileName: f.name,
-            contentType: f.type,
-          })),
-        }),
-      });
-      if (!res.ok) throw new Error("No pudimos preparar la subida.");
-      const { uploads } = (await res.json()) as {
-        uploads: Array<{ key: string; uploadUrl: string; url: string }>;
-      };
-
-      const subidas: SeccionFotoDraft[] = [];
-      await Promise.all(
-        uploads.map(async (u, i) => {
-          const file = imagenes[i];
-          const put = await fetch(u.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": file.type },
-            body: file,
-          });
-          if (!put.ok) throw new Error(`No se pudo subir ${file.name}.`);
-          subidas.push(fotoSubida(u.key, u.url));
-        })
+      // A la **biblioteca**, como cualquier otra imagen del portal. Antes el
+      // archivo quedaba colgando de este informe y de nadie más: no se podía
+      // reusar, ni recortar, ni encontrar.
+      const nuevas = await subirALaBiblioteca(imagenes);
+      const subidas: SeccionFotoDraft[] = nuevas.map((m) =>
+        fotoDeBiblioteca(m)
       );
 
       addFotosToSeccion(tempId, subidas);
@@ -2030,6 +2027,7 @@ function PhotoPickerModal({
   const [subidas, setSubidas] = useState<SeccionFotoDraft[]>([]);
   const [subiendo, setSubiendo] = useState(false);
   const [arrastrando, setArrastrando] = useState(0);
+  const [eligiendoBiblioteca, setEligiendoBiblioteca] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function subir(files: File[]) {
@@ -2046,35 +2044,13 @@ function PhotoPickerModal({
 
     setSubiendo(true);
     try {
-      const res = await fetch("/api/admin/informes/uploads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clienteId,
-          files: imagenes.map((f) => ({
-            fileName: f.name,
-            contentType: f.type,
-          })),
-        }),
-      });
-      if (!res.ok) throw new Error("No pudimos preparar la subida.");
-      const { uploads } = (await res.json()) as {
-        uploads: Array<{ key: string; uploadUrl: string; url: string }>;
-      };
-      const nuevas: SeccionFotoDraft[] = [];
-      await Promise.all(
-        uploads.map(async (u, i) => {
-          const file = imagenes[i];
-          const put = await fetch(u.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": file.type },
-            body: file,
-          });
-          if (!put.ok) throw new Error(`No se pudo subir ${file.name}.`);
-          nuevas.push(fotoSubida(u.key, u.url));
-        })
-      );
-      setSubidas((prev) => [...prev, ...nuevas]);
+      // A la biblioteca, igual que en el resto del portal: así se pueden
+      // reusar, recortar y encontrar después.
+      const subidasNuevas = await subirALaBiblioteca(imagenes);
+      setSubidas((prev) => [
+        ...prev,
+        ...subidasNuevas.map((m) => fotoDeBiblioteca(m)),
+      ]);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al subir imágenes");
     } finally {
@@ -2130,14 +2106,28 @@ function PhotoPickerModal({
                 ? "Soltá las imágenes acá"
                 : "Arrastrá imágenes de tu computadora, o"}
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => inputRef.current?.click()}
-            disabled={subiendo}
-          >
-            <Upload className="mr-1 h-4 w-4" /> Buscar en mi computadora
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => inputRef.current?.click()}
+              disabled={subiendo}
+            >
+              <Upload className="mr-1 h-4 w-4" /> Buscar en mi computadora
+            </Button>
+            {/* Las fotos del portal viven todas en la misma biblioteca, así que
+                una que ya se subió para un producto sirve acá sin volver a
+                buscarla en el disco. */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-primary hover:bg-transparent hover:underline"
+              onClick={() => setEligiendoBiblioteca(true)}
+              disabled={subiendo}
+            >
+              Elegir de la biblioteca
+            </Button>
+          </div>
           <input
             ref={inputRef}
             type="file"
@@ -2241,6 +2231,20 @@ function PhotoPickerModal({
           </Button>
         </div>
       </div>
+
+      {eligiendoBiblioteca && (
+        <MediaLibrary
+          // Las que ya se eligieron acá no se vuelven a ofrecer.
+          yaUsadas={subidas
+            .map((f) => f.mediaId)
+            .filter((id): id is string => Boolean(id))}
+          onCerrar={() => setEligiendoBiblioteca(false)}
+          onElegirItems={(items) => {
+            setEligiendoBiblioteca(false);
+            setSubidas((prev) => [...prev, ...items.map(fotoDeBiblioteca)]);
+          }}
+        />
+      )}
     </div>
   );
 }

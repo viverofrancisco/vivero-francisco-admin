@@ -4993,7 +4993,8 @@ export const InformeSeccionFotoScalarFieldEnum = {
   orden: 'orden',
   key: 'key',
   url: 'url',
-  visitaMediaId: 'visitaMediaId'
+  visitaMediaId: 'visitaMediaId',
+  mediaId: 'mediaId'
 } as const
 
 export type InformeSeccionFotoScalarFieldEnum = (typeof InformeSeccionFotoScalarFieldEnum)[keyof typeof InformeSeccionFotoScalarFieldEnum]

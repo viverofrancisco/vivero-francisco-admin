@@ -297,6 +297,17 @@ export type InformeSeccion = Prisma.InformeSeccionModel
  * Una foto de una sección: puede venir de una visita (visitaMediaId) o haber
  * sido subida directamente al informe. `key`/`url` siempre se guardan para que
  * el informe siga siendo editable aunque se borre la media de la visita.
+ * Una foto de una sección del informe.
+ * 
+ * `key` y `url` son **lo que se imprimió**: el PDF ya salió con esa imagen y
+ * eso no cambia. Los otros dos campos dicen de dónde vino, y son excluyentes:
+ * 
+ * - `visitaMediaId` — de la galería de una visita. El archivo es de la visita.
+ * - `mediaId` — de la biblioteca. El archivo es de la biblioteca, y puede
+ * estar en un producto o en otro informe.
+ * 
+ * Los dos en null es una foto vieja, subida cuando el informe era el único
+ * dueño de su archivo. De quién es el archivo decide **quién lo borra**.
  */
 export type InformeSeccionFoto = Prisma.InformeSeccionFotoModel
 /**

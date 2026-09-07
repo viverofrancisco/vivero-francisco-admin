@@ -315,11 +315,13 @@ export interface InformeFirmanteInput {
 }
 
 /**
- * Una foto de una sección: o viene de una visita (`visitaMediaId`) o se subió
+ * Una foto de una sección: viene de una visita, de la biblioteca, o se subió
  * directo al informe (`key`, ya en R2 vía URL prefirmada). Exactamente una.
  */
 export interface InformeSeccionFotoInput {
   visitaMediaId?: string | null;
+  /** De la biblioteca. Es por donde entran las nuevas. */
+  mediaId?: string | null;
   key?: string | null;
 }
 
@@ -358,6 +360,8 @@ interface FotoResuelta {
   key: string;
   url: string;
   visitaMediaId: string | null;
+  /** De la biblioteca. Decide quién es dueño del archivo, o sea quién lo borra. */
+  mediaId: string | null;
 }
 
 export async function generateInforme(
@@ -435,7 +439,26 @@ export async function generateInforme(
   }
   const visitaMediaById = new Map(visitaMedia.map((m) => [m.id, m]));
 
-  // Resuelve cada foto de cada sección a { key, url, visitaMediaId }.
+  // Las de la biblioteca, para poder resolver su `key`. Se piden por id y no
+  // se confía en la `key` que venga del cliente: si no, un pedido armado a mano
+  // metería en el informe cualquier archivo del bucket.
+  const mediaIds = [
+    ...new Set(
+      payload.secciones
+        .flatMap((s) => s.fotos)
+        .map((f) => f.mediaId)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  const media = mediaIds.length
+    ? await prisma.media.findMany({
+        where: { id: { in: mediaIds } },
+        select: { id: true, key: true },
+      })
+    : [];
+  const mediaById = new Map(media.map((m) => [m.id, m]));
+
+  // Resuelve cada foto a { key, url } más de dónde vino.
   const seccionesResueltas = payload.secciones.map((sec) => ({
     ...sec,
     fotos: sec.fotos
@@ -443,7 +466,18 @@ export async function generateInforme(
         if (f.visitaMediaId) {
           const m = visitaMediaById.get(f.visitaMediaId);
           return m
-            ? { key: m.key, url: m.url, visitaMediaId: m.id }
+            ? { key: m.key, url: m.url, visitaMediaId: m.id, mediaId: null }
+            : null;
+        }
+        if (f.mediaId) {
+          const m = mediaById.get(f.mediaId);
+          return m
+            ? {
+                key: m.key,
+                url: publicUrlForKey(m.key),
+                visitaMediaId: null,
+                mediaId: m.id,
+              }
             : null;
         }
         if (f.key) {
@@ -451,6 +485,7 @@ export async function generateInforme(
             key: f.key,
             url: publicUrlForKey(f.key),
             visitaMediaId: null,
+            mediaId: null,
           };
         }
         return null;
@@ -596,6 +631,7 @@ export async function generateInforme(
               create: sec.fotos.map((foto, fIdx) => ({
                 orden: fIdx,
                 key: foto.key,
+                mediaId: foto.mediaId,
                 url: foto.url,
                 visitaMediaId: foto.visitaMediaId,
               })),
@@ -659,9 +695,16 @@ export async function deleteInforme(viewer: Viewer, id: string) {
   /**
    * Qué archivos son de este informe y de nadie más.
    *
-   * El PDF, siempre. Y las fotos que se subieron **al informe**: las que
-   * vienen de una visita (`visitaMediaId`) son de la visita, siguen en su
-   * ficha y borrarlas dejaría esa galería con huecos.
+   * El PDF, siempre. De las fotos, **ninguna que tenga dueño**:
+   *
+   * - con `visitaMediaId`, el archivo es de la visita y borrarlo dejaría esa
+   *   galería con huecos;
+   * - con `mediaId`, es de la biblioteca y puede estar en un producto o en
+   *   otro informe.
+   *
+   * Quedan las viejas, subidas cuando el informe era el único dueño de su
+   * archivo. Desde que las fotos pasan por la biblioteca no se crean más, así
+   * que este caso se va apagando solo.
    */
   const informe = await prisma.informe.findUnique({
     where: { id },
@@ -669,7 +712,10 @@ export async function deleteInforme(viewer: Viewer, id: string) {
       pdfKey: true,
       secciones: {
         select: {
-          fotos: { where: { visitaMediaId: null }, select: { key: true } },
+          fotos: {
+            where: { visitaMediaId: null, mediaId: null },
+            select: { key: true },
+          },
         },
       },
     },

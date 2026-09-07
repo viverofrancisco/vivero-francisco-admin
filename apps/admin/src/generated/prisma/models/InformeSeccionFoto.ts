@@ -17,6 +17,17 @@ import type * as Prisma from "../internal/prismaNamespace"
  * Una foto de una sección: puede venir de una visita (visitaMediaId) o haber
  * sido subida directamente al informe. `key`/`url` siempre se guardan para que
  * el informe siga siendo editable aunque se borre la media de la visita.
+ * Una foto de una sección del informe.
+ * 
+ * `key` y `url` son **lo que se imprimió**: el PDF ya salió con esa imagen y
+ * eso no cambia. Los otros dos campos dicen de dónde vino, y son excluyentes:
+ * 
+ * - `visitaMediaId` — de la galería de una visita. El archivo es de la visita.
+ * - `mediaId` — de la biblioteca. El archivo es de la biblioteca, y puede
+ * estar en un producto o en otro informe.
+ * 
+ * Los dos en null es una foto vieja, subida cuando el informe era el único
+ * dueño de su archivo. De quién es el archivo decide **quién lo borra**.
  */
 export type InformeSeccionFotoModel = runtime.Types.Result.DefaultSelection<Prisma.$InformeSeccionFotoPayload>
 
@@ -43,6 +54,7 @@ export type InformeSeccionFotoMinAggregateOutputType = {
   key: string | null
   url: string | null
   visitaMediaId: string | null
+  mediaId: string | null
 }
 
 export type InformeSeccionFotoMaxAggregateOutputType = {
@@ -52,6 +64,7 @@ export type InformeSeccionFotoMaxAggregateOutputType = {
   key: string | null
   url: string | null
   visitaMediaId: string | null
+  mediaId: string | null
 }
 
 export type InformeSeccionFotoCountAggregateOutputType = {
@@ -61,6 +74,7 @@ export type InformeSeccionFotoCountAggregateOutputType = {
   key: number
   url: number
   visitaMediaId: number
+  mediaId: number
   _all: number
 }
 
@@ -80,6 +94,7 @@ export type InformeSeccionFotoMinAggregateInputType = {
   key?: true
   url?: true
   visitaMediaId?: true
+  mediaId?: true
 }
 
 export type InformeSeccionFotoMaxAggregateInputType = {
@@ -89,6 +104,7 @@ export type InformeSeccionFotoMaxAggregateInputType = {
   key?: true
   url?: true
   visitaMediaId?: true
+  mediaId?: true
 }
 
 export type InformeSeccionFotoCountAggregateInputType = {
@@ -98,6 +114,7 @@ export type InformeSeccionFotoCountAggregateInputType = {
   key?: true
   url?: true
   visitaMediaId?: true
+  mediaId?: true
   _all?: true
 }
 
@@ -194,6 +211,7 @@ export type InformeSeccionFotoGroupByOutputType = {
   key: string
   url: string
   visitaMediaId: string | null
+  mediaId: string | null
   _count: InformeSeccionFotoCountAggregateOutputType | null
   _avg: InformeSeccionFotoAvgAggregateOutputType | null
   _sum: InformeSeccionFotoSumAggregateOutputType | null
@@ -226,8 +244,10 @@ export type InformeSeccionFotoWhereInput = {
   key?: Prisma.StringFilter<"InformeSeccionFoto"> | string
   url?: Prisma.StringFilter<"InformeSeccionFoto"> | string
   visitaMediaId?: Prisma.StringNullableFilter<"InformeSeccionFoto"> | string | null
+  mediaId?: Prisma.StringNullableFilter<"InformeSeccionFoto"> | string | null
   seccion?: Prisma.XOR<Prisma.InformeSeccionScalarRelationFilter, Prisma.InformeSeccionWhereInput>
   visitaMedia?: Prisma.XOR<Prisma.VisitaMediaNullableScalarRelationFilter, Prisma.VisitaMediaWhereInput> | null
+  media?: Prisma.XOR<Prisma.MediaNullableScalarRelationFilter, Prisma.MediaWhereInput> | null
 }
 
 export type InformeSeccionFotoOrderByWithRelationInput = {
@@ -237,8 +257,10 @@ export type InformeSeccionFotoOrderByWithRelationInput = {
   key?: Prisma.SortOrder
   url?: Prisma.SortOrder
   visitaMediaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  mediaId?: Prisma.SortOrderInput | Prisma.SortOrder
   seccion?: Prisma.InformeSeccionOrderByWithRelationInput
   visitaMedia?: Prisma.VisitaMediaOrderByWithRelationInput
+  media?: Prisma.MediaOrderByWithRelationInput
 }
 
 export type InformeSeccionFotoWhereUniqueInput = Prisma.AtLeast<{
@@ -251,8 +273,10 @@ export type InformeSeccionFotoWhereUniqueInput = Prisma.AtLeast<{
   key?: Prisma.StringFilter<"InformeSeccionFoto"> | string
   url?: Prisma.StringFilter<"InformeSeccionFoto"> | string
   visitaMediaId?: Prisma.StringNullableFilter<"InformeSeccionFoto"> | string | null
+  mediaId?: Prisma.StringNullableFilter<"InformeSeccionFoto"> | string | null
   seccion?: Prisma.XOR<Prisma.InformeSeccionScalarRelationFilter, Prisma.InformeSeccionWhereInput>
   visitaMedia?: Prisma.XOR<Prisma.VisitaMediaNullableScalarRelationFilter, Prisma.VisitaMediaWhereInput> | null
+  media?: Prisma.XOR<Prisma.MediaNullableScalarRelationFilter, Prisma.MediaWhereInput> | null
 }, "id">
 
 export type InformeSeccionFotoOrderByWithAggregationInput = {
@@ -262,6 +286,7 @@ export type InformeSeccionFotoOrderByWithAggregationInput = {
   key?: Prisma.SortOrder
   url?: Prisma.SortOrder
   visitaMediaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  mediaId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.InformeSeccionFotoCountOrderByAggregateInput
   _avg?: Prisma.InformeSeccionFotoAvgOrderByAggregateInput
   _max?: Prisma.InformeSeccionFotoMaxOrderByAggregateInput
@@ -279,6 +304,7 @@ export type InformeSeccionFotoScalarWhereWithAggregatesInput = {
   key?: Prisma.StringWithAggregatesFilter<"InformeSeccionFoto"> | string
   url?: Prisma.StringWithAggregatesFilter<"InformeSeccionFoto"> | string
   visitaMediaId?: Prisma.StringNullableWithAggregatesFilter<"InformeSeccionFoto"> | string | null
+  mediaId?: Prisma.StringNullableWithAggregatesFilter<"InformeSeccionFoto"> | string | null
 }
 
 export type InformeSeccionFotoCreateInput = {
@@ -288,6 +314,7 @@ export type InformeSeccionFotoCreateInput = {
   url: string
   seccion: Prisma.InformeSeccionCreateNestedOneWithoutFotosInput
   visitaMedia?: Prisma.VisitaMediaCreateNestedOneWithoutInformeFotosInput
+  media?: Prisma.MediaCreateNestedOneWithoutInformesFotosInput
 }
 
 export type InformeSeccionFotoUncheckedCreateInput = {
@@ -297,6 +324,7 @@ export type InformeSeccionFotoUncheckedCreateInput = {
   key: string
   url: string
   visitaMediaId?: string | null
+  mediaId?: string | null
 }
 
 export type InformeSeccionFotoUpdateInput = {
@@ -306,6 +334,7 @@ export type InformeSeccionFotoUpdateInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   seccion?: Prisma.InformeSeccionUpdateOneRequiredWithoutFotosNestedInput
   visitaMedia?: Prisma.VisitaMediaUpdateOneWithoutInformeFotosNestedInput
+  media?: Prisma.MediaUpdateOneWithoutInformesFotosNestedInput
 }
 
 export type InformeSeccionFotoUncheckedUpdateInput = {
@@ -315,6 +344,7 @@ export type InformeSeccionFotoUncheckedUpdateInput = {
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   visitaMediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InformeSeccionFotoCreateManyInput = {
@@ -324,6 +354,7 @@ export type InformeSeccionFotoCreateManyInput = {
   key: string
   url: string
   visitaMediaId?: string | null
+  mediaId?: string | null
 }
 
 export type InformeSeccionFotoUpdateManyMutationInput = {
@@ -340,6 +371,7 @@ export type InformeSeccionFotoUncheckedUpdateManyInput = {
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   visitaMediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InformeSeccionFotoListRelationFilter = {
@@ -359,6 +391,7 @@ export type InformeSeccionFotoCountOrderByAggregateInput = {
   key?: Prisma.SortOrder
   url?: Prisma.SortOrder
   visitaMediaId?: Prisma.SortOrder
+  mediaId?: Prisma.SortOrder
 }
 
 export type InformeSeccionFotoAvgOrderByAggregateInput = {
@@ -372,6 +405,7 @@ export type InformeSeccionFotoMaxOrderByAggregateInput = {
   key?: Prisma.SortOrder
   url?: Prisma.SortOrder
   visitaMediaId?: Prisma.SortOrder
+  mediaId?: Prisma.SortOrder
 }
 
 export type InformeSeccionFotoMinOrderByAggregateInput = {
@@ -381,10 +415,53 @@ export type InformeSeccionFotoMinOrderByAggregateInput = {
   key?: Prisma.SortOrder
   url?: Prisma.SortOrder
   visitaMediaId?: Prisma.SortOrder
+  mediaId?: Prisma.SortOrder
 }
 
 export type InformeSeccionFotoSumOrderByAggregateInput = {
   orden?: Prisma.SortOrder
+}
+
+export type InformeSeccionFotoCreateNestedManyWithoutMediaInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionFotoCreateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput> | Prisma.InformeSeccionFotoCreateWithoutMediaInput[] | Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput | Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput[]
+  createMany?: Prisma.InformeSeccionFotoCreateManyMediaInputEnvelope
+  connect?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+}
+
+export type InformeSeccionFotoUncheckedCreateNestedManyWithoutMediaInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionFotoCreateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput> | Prisma.InformeSeccionFotoCreateWithoutMediaInput[] | Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput | Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput[]
+  createMany?: Prisma.InformeSeccionFotoCreateManyMediaInputEnvelope
+  connect?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+}
+
+export type InformeSeccionFotoUpdateManyWithoutMediaNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionFotoCreateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput> | Prisma.InformeSeccionFotoCreateWithoutMediaInput[] | Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput | Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput[]
+  upsert?: Prisma.InformeSeccionFotoUpsertWithWhereUniqueWithoutMediaInput | Prisma.InformeSeccionFotoUpsertWithWhereUniqueWithoutMediaInput[]
+  createMany?: Prisma.InformeSeccionFotoCreateManyMediaInputEnvelope
+  set?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  disconnect?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  delete?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  connect?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  update?: Prisma.InformeSeccionFotoUpdateWithWhereUniqueWithoutMediaInput | Prisma.InformeSeccionFotoUpdateWithWhereUniqueWithoutMediaInput[]
+  updateMany?: Prisma.InformeSeccionFotoUpdateManyWithWhereWithoutMediaInput | Prisma.InformeSeccionFotoUpdateManyWithWhereWithoutMediaInput[]
+  deleteMany?: Prisma.InformeSeccionFotoScalarWhereInput | Prisma.InformeSeccionFotoScalarWhereInput[]
+}
+
+export type InformeSeccionFotoUncheckedUpdateManyWithoutMediaNestedInput = {
+  create?: Prisma.XOR<Prisma.InformeSeccionFotoCreateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput> | Prisma.InformeSeccionFotoCreateWithoutMediaInput[] | Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput | Prisma.InformeSeccionFotoCreateOrConnectWithoutMediaInput[]
+  upsert?: Prisma.InformeSeccionFotoUpsertWithWhereUniqueWithoutMediaInput | Prisma.InformeSeccionFotoUpsertWithWhereUniqueWithoutMediaInput[]
+  createMany?: Prisma.InformeSeccionFotoCreateManyMediaInputEnvelope
+  set?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  disconnect?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  delete?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  connect?: Prisma.InformeSeccionFotoWhereUniqueInput | Prisma.InformeSeccionFotoWhereUniqueInput[]
+  update?: Prisma.InformeSeccionFotoUpdateWithWhereUniqueWithoutMediaInput | Prisma.InformeSeccionFotoUpdateWithWhereUniqueWithoutMediaInput[]
+  updateMany?: Prisma.InformeSeccionFotoUpdateManyWithWhereWithoutMediaInput | Prisma.InformeSeccionFotoUpdateManyWithWhereWithoutMediaInput[]
+  deleteMany?: Prisma.InformeSeccionFotoScalarWhereInput | Prisma.InformeSeccionFotoScalarWhereInput[]
 }
 
 export type InformeSeccionFotoCreateNestedManyWithoutVisitaMediaInput = {
@@ -471,12 +548,70 @@ export type InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput = {
   deleteMany?: Prisma.InformeSeccionFotoScalarWhereInput | Prisma.InformeSeccionFotoScalarWhereInput[]
 }
 
+export type InformeSeccionFotoCreateWithoutMediaInput = {
+  id?: string
+  orden: number
+  key: string
+  url: string
+  seccion: Prisma.InformeSeccionCreateNestedOneWithoutFotosInput
+  visitaMedia?: Prisma.VisitaMediaCreateNestedOneWithoutInformeFotosInput
+}
+
+export type InformeSeccionFotoUncheckedCreateWithoutMediaInput = {
+  id?: string
+  seccionId: string
+  orden: number
+  key: string
+  url: string
+  visitaMediaId?: string | null
+}
+
+export type InformeSeccionFotoCreateOrConnectWithoutMediaInput = {
+  where: Prisma.InformeSeccionFotoWhereUniqueInput
+  create: Prisma.XOR<Prisma.InformeSeccionFotoCreateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput>
+}
+
+export type InformeSeccionFotoCreateManyMediaInputEnvelope = {
+  data: Prisma.InformeSeccionFotoCreateManyMediaInput | Prisma.InformeSeccionFotoCreateManyMediaInput[]
+  skipDuplicates?: boolean
+}
+
+export type InformeSeccionFotoUpsertWithWhereUniqueWithoutMediaInput = {
+  where: Prisma.InformeSeccionFotoWhereUniqueInput
+  update: Prisma.XOR<Prisma.InformeSeccionFotoUpdateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedUpdateWithoutMediaInput>
+  create: Prisma.XOR<Prisma.InformeSeccionFotoCreateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedCreateWithoutMediaInput>
+}
+
+export type InformeSeccionFotoUpdateWithWhereUniqueWithoutMediaInput = {
+  where: Prisma.InformeSeccionFotoWhereUniqueInput
+  data: Prisma.XOR<Prisma.InformeSeccionFotoUpdateWithoutMediaInput, Prisma.InformeSeccionFotoUncheckedUpdateWithoutMediaInput>
+}
+
+export type InformeSeccionFotoUpdateManyWithWhereWithoutMediaInput = {
+  where: Prisma.InformeSeccionFotoScalarWhereInput
+  data: Prisma.XOR<Prisma.InformeSeccionFotoUpdateManyMutationInput, Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutMediaInput>
+}
+
+export type InformeSeccionFotoScalarWhereInput = {
+  AND?: Prisma.InformeSeccionFotoScalarWhereInput | Prisma.InformeSeccionFotoScalarWhereInput[]
+  OR?: Prisma.InformeSeccionFotoScalarWhereInput[]
+  NOT?: Prisma.InformeSeccionFotoScalarWhereInput | Prisma.InformeSeccionFotoScalarWhereInput[]
+  id?: Prisma.StringFilter<"InformeSeccionFoto"> | string
+  seccionId?: Prisma.StringFilter<"InformeSeccionFoto"> | string
+  orden?: Prisma.IntFilter<"InformeSeccionFoto"> | number
+  key?: Prisma.StringFilter<"InformeSeccionFoto"> | string
+  url?: Prisma.StringFilter<"InformeSeccionFoto"> | string
+  visitaMediaId?: Prisma.StringNullableFilter<"InformeSeccionFoto"> | string | null
+  mediaId?: Prisma.StringNullableFilter<"InformeSeccionFoto"> | string | null
+}
+
 export type InformeSeccionFotoCreateWithoutVisitaMediaInput = {
   id?: string
   orden: number
   key: string
   url: string
   seccion: Prisma.InformeSeccionCreateNestedOneWithoutFotosInput
+  media?: Prisma.MediaCreateNestedOneWithoutInformesFotosInput
 }
 
 export type InformeSeccionFotoUncheckedCreateWithoutVisitaMediaInput = {
@@ -485,6 +620,7 @@ export type InformeSeccionFotoUncheckedCreateWithoutVisitaMediaInput = {
   orden: number
   key: string
   url: string
+  mediaId?: string | null
 }
 
 export type InformeSeccionFotoCreateOrConnectWithoutVisitaMediaInput = {
@@ -513,24 +649,13 @@ export type InformeSeccionFotoUpdateManyWithWhereWithoutVisitaMediaInput = {
   data: Prisma.XOR<Prisma.InformeSeccionFotoUpdateManyMutationInput, Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutVisitaMediaInput>
 }
 
-export type InformeSeccionFotoScalarWhereInput = {
-  AND?: Prisma.InformeSeccionFotoScalarWhereInput | Prisma.InformeSeccionFotoScalarWhereInput[]
-  OR?: Prisma.InformeSeccionFotoScalarWhereInput[]
-  NOT?: Prisma.InformeSeccionFotoScalarWhereInput | Prisma.InformeSeccionFotoScalarWhereInput[]
-  id?: Prisma.StringFilter<"InformeSeccionFoto"> | string
-  seccionId?: Prisma.StringFilter<"InformeSeccionFoto"> | string
-  orden?: Prisma.IntFilter<"InformeSeccionFoto"> | number
-  key?: Prisma.StringFilter<"InformeSeccionFoto"> | string
-  url?: Prisma.StringFilter<"InformeSeccionFoto"> | string
-  visitaMediaId?: Prisma.StringNullableFilter<"InformeSeccionFoto"> | string | null
-}
-
 export type InformeSeccionFotoCreateWithoutSeccionInput = {
   id?: string
   orden: number
   key: string
   url: string
   visitaMedia?: Prisma.VisitaMediaCreateNestedOneWithoutInformeFotosInput
+  media?: Prisma.MediaCreateNestedOneWithoutInformesFotosInput
 }
 
 export type InformeSeccionFotoUncheckedCreateWithoutSeccionInput = {
@@ -539,6 +664,7 @@ export type InformeSeccionFotoUncheckedCreateWithoutSeccionInput = {
   key: string
   url: string
   visitaMediaId?: string | null
+  mediaId?: string | null
 }
 
 export type InformeSeccionFotoCreateOrConnectWithoutSeccionInput = {
@@ -567,12 +693,49 @@ export type InformeSeccionFotoUpdateManyWithWhereWithoutSeccionInput = {
   data: Prisma.XOR<Prisma.InformeSeccionFotoUpdateManyMutationInput, Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionInput>
 }
 
+export type InformeSeccionFotoCreateManyMediaInput = {
+  id?: string
+  seccionId: string
+  orden: number
+  key: string
+  url: string
+  visitaMediaId?: string | null
+}
+
+export type InformeSeccionFotoUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  seccion?: Prisma.InformeSeccionUpdateOneRequiredWithoutFotosNestedInput
+  visitaMedia?: Prisma.VisitaMediaUpdateOneWithoutInformeFotosNestedInput
+}
+
+export type InformeSeccionFotoUncheckedUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  seccionId?: Prisma.StringFieldUpdateOperationsInput | string
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  visitaMediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type InformeSeccionFotoUncheckedUpdateManyWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  seccionId?: Prisma.StringFieldUpdateOperationsInput | string
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  visitaMediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
 export type InformeSeccionFotoCreateManyVisitaMediaInput = {
   id?: string
   seccionId: string
   orden: number
   key: string
   url: string
+  mediaId?: string | null
 }
 
 export type InformeSeccionFotoUpdateWithoutVisitaMediaInput = {
@@ -581,6 +744,7 @@ export type InformeSeccionFotoUpdateWithoutVisitaMediaInput = {
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   seccion?: Prisma.InformeSeccionUpdateOneRequiredWithoutFotosNestedInput
+  media?: Prisma.MediaUpdateOneWithoutInformesFotosNestedInput
 }
 
 export type InformeSeccionFotoUncheckedUpdateWithoutVisitaMediaInput = {
@@ -589,6 +753,7 @@ export type InformeSeccionFotoUncheckedUpdateWithoutVisitaMediaInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InformeSeccionFotoUncheckedUpdateManyWithoutVisitaMediaInput = {
@@ -597,6 +762,7 @@ export type InformeSeccionFotoUncheckedUpdateManyWithoutVisitaMediaInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InformeSeccionFotoCreateManySeccionInput = {
@@ -605,6 +771,7 @@ export type InformeSeccionFotoCreateManySeccionInput = {
   key: string
   url: string
   visitaMediaId?: string | null
+  mediaId?: string | null
 }
 
 export type InformeSeccionFotoUpdateWithoutSeccionInput = {
@@ -613,6 +780,7 @@ export type InformeSeccionFotoUpdateWithoutSeccionInput = {
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   visitaMedia?: Prisma.VisitaMediaUpdateOneWithoutInformeFotosNestedInput
+  media?: Prisma.MediaUpdateOneWithoutInformesFotosNestedInput
 }
 
 export type InformeSeccionFotoUncheckedUpdateWithoutSeccionInput = {
@@ -621,6 +789,7 @@ export type InformeSeccionFotoUncheckedUpdateWithoutSeccionInput = {
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   visitaMediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type InformeSeccionFotoUncheckedUpdateManyWithoutSeccionInput = {
@@ -629,6 +798,7 @@ export type InformeSeccionFotoUncheckedUpdateManyWithoutSeccionInput = {
   key?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
   visitaMediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -640,8 +810,10 @@ export type InformeSeccionFotoSelect<ExtArgs extends runtime.Types.Extensions.In
   key?: boolean
   url?: boolean
   visitaMediaId?: boolean
+  mediaId?: boolean
   seccion?: boolean | Prisma.InformeSeccionDefaultArgs<ExtArgs>
   visitaMedia?: boolean | Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs>
+  media?: boolean | Prisma.InformeSeccionFoto$mediaArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccionFoto"]>
 
 export type InformeSeccionFotoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -651,8 +823,10 @@ export type InformeSeccionFotoSelectCreateManyAndReturn<ExtArgs extends runtime.
   key?: boolean
   url?: boolean
   visitaMediaId?: boolean
+  mediaId?: boolean
   seccion?: boolean | Prisma.InformeSeccionDefaultArgs<ExtArgs>
   visitaMedia?: boolean | Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs>
+  media?: boolean | Prisma.InformeSeccionFoto$mediaArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccionFoto"]>
 
 export type InformeSeccionFotoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -662,8 +836,10 @@ export type InformeSeccionFotoSelectUpdateManyAndReturn<ExtArgs extends runtime.
   key?: boolean
   url?: boolean
   visitaMediaId?: boolean
+  mediaId?: boolean
   seccion?: boolean | Prisma.InformeSeccionDefaultArgs<ExtArgs>
   visitaMedia?: boolean | Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs>
+  media?: boolean | Prisma.InformeSeccionFoto$mediaArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccionFoto"]>
 
 export type InformeSeccionFotoSelectScalar = {
@@ -673,20 +849,24 @@ export type InformeSeccionFotoSelectScalar = {
   key?: boolean
   url?: boolean
   visitaMediaId?: boolean
+  mediaId?: boolean
 }
 
-export type InformeSeccionFotoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "seccionId" | "orden" | "key" | "url" | "visitaMediaId", ExtArgs["result"]["informeSeccionFoto"]>
+export type InformeSeccionFotoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "seccionId" | "orden" | "key" | "url" | "visitaMediaId" | "mediaId", ExtArgs["result"]["informeSeccionFoto"]>
 export type InformeSeccionFotoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   seccion?: boolean | Prisma.InformeSeccionDefaultArgs<ExtArgs>
   visitaMedia?: boolean | Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs>
+  media?: boolean | Prisma.InformeSeccionFoto$mediaArgs<ExtArgs>
 }
 export type InformeSeccionFotoIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   seccion?: boolean | Prisma.InformeSeccionDefaultArgs<ExtArgs>
   visitaMedia?: boolean | Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs>
+  media?: boolean | Prisma.InformeSeccionFoto$mediaArgs<ExtArgs>
 }
 export type InformeSeccionFotoIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   seccion?: boolean | Prisma.InformeSeccionDefaultArgs<ExtArgs>
   visitaMedia?: boolean | Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs>
+  media?: boolean | Prisma.InformeSeccionFoto$mediaArgs<ExtArgs>
 }
 
 export type $InformeSeccionFotoPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -694,6 +874,7 @@ export type $InformeSeccionFotoPayload<ExtArgs extends runtime.Types.Extensions.
   objects: {
     seccion: Prisma.$InformeSeccionPayload<ExtArgs>
     visitaMedia: Prisma.$VisitaMediaPayload<ExtArgs> | null
+    media: Prisma.$MediaPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -702,6 +883,7 @@ export type $InformeSeccionFotoPayload<ExtArgs extends runtime.Types.Extensions.
     key: string
     url: string
     visitaMediaId: string | null
+    mediaId: string | null
   }, ExtArgs["result"]["informeSeccionFoto"]>
   composites: {}
 }
@@ -1098,6 +1280,7 @@ export interface Prisma__InformeSeccionFotoClient<T, Null = never, ExtArgs exten
   readonly [Symbol.toStringTag]: "PrismaPromise"
   seccion<T extends Prisma.InformeSeccionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeSeccionDefaultArgs<ExtArgs>>): Prisma.Prisma__InformeSeccionClient<runtime.Types.Result.GetResult<Prisma.$InformeSeccionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   visitaMedia<T extends Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeSeccionFoto$visitaMediaArgs<ExtArgs>>): Prisma.Prisma__VisitaMediaClient<runtime.Types.Result.GetResult<Prisma.$VisitaMediaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  media<T extends Prisma.InformeSeccionFoto$mediaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InformeSeccionFoto$mediaArgs<ExtArgs>>): Prisma.Prisma__MediaClient<runtime.Types.Result.GetResult<Prisma.$MediaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1133,6 +1316,7 @@ export interface InformeSeccionFotoFieldRefs {
   readonly key: Prisma.FieldRef<"InformeSeccionFoto", 'String'>
   readonly url: Prisma.FieldRef<"InformeSeccionFoto", 'String'>
   readonly visitaMediaId: Prisma.FieldRef<"InformeSeccionFoto", 'String'>
+  readonly mediaId: Prisma.FieldRef<"InformeSeccionFoto", 'String'>
 }
     
 
@@ -1550,6 +1734,25 @@ export type InformeSeccionFoto$visitaMediaArgs<ExtArgs extends runtime.Types.Ext
    */
   include?: Prisma.VisitaMediaInclude<ExtArgs> | null
   where?: Prisma.VisitaMediaWhereInput
+}
+
+/**
+ * InformeSeccionFoto.media
+ */
+export type InformeSeccionFoto$mediaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Media
+   */
+  select?: Prisma.MediaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Media
+   */
+  omit?: Prisma.MediaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MediaInclude<ExtArgs> | null
+  where?: Prisma.MediaWhereInput
 }
 
 /**
