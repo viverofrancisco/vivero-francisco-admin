@@ -44,10 +44,10 @@ export default async function EmitirRoute({
     redirect(`/dashboard/ordenes/${id}`);
   }
 
-  const [productos, datosFacturacion, emisores] = await Promise.all([
+  const [tandaProductos, datosFacturacion, emisores] = await Promise.all([
     // Con sus variantes: de la variante sale el SKU impreso y el stock que
     // baja cuando el SRI autoriza.
-    productosVendibles(),
+    productosVendibles({ limit: 20 }),
     prisma.datoFacturacion.findMany({
       where: { clienteId: orden.cliente.id, archivado: false },
       orderBy: [{ esPredeterminado: "desc" }, { razonSocial: "asc" }],
@@ -82,7 +82,8 @@ export default async function EmitirRoute({
           varianteId: l.varianteId,
         })),
       }}
-      productos={productos}
+      productos={tandaProductos.items}
+      hayMasProductos={tandaProductos.hayMas}
       emisores={emisores.map((e) => ({
         id: e.id,
         ruc: e.ruc,

@@ -20,6 +20,14 @@ import { CustomSelect } from "@/components/ui/custom-select";
 import { RichText } from "@/components/ui/rich-text";
 import { TablePagination } from "@/components/shared/table-pagination";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   ArrowDownToLine,
   ArrowLeft,
   ArrowUpToLine,
@@ -27,6 +35,7 @@ import {
   ImageOff,
   Loader2,
   Plus,
+  Trash2,
   X,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -141,6 +150,9 @@ export function CategoriaForm({
   const [guardando, setGuardando] = useState(false);
   const [eligiendoFoto, setEligiendoFoto] = useState(false);
   const [recortando, setRecortando] = useState(false);
+  /** Confirmando el borrado. Nunca se borra de un clic. */
+  const [borrando, setBorrando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
   const [agregando, setAgregando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [arrastrando, setArrastrando] = useState(false);
@@ -189,6 +201,24 @@ export function CategoriaForm({
    * para contestar con un error.
    */
   const falta = form.nombre.trim() ? null : "Agrega un nombre para guardarla";
+
+  const eliminar = async () => {
+    if (!categoria) return;
+    setEliminando(true);
+    try {
+      const res = await fetch(`/api/categorias/${categoria.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error((await res.json()).error ?? "No pudimos eliminarla");
+      }
+      toast.success("Categoría eliminada");
+      router.push("/dashboard/productos/categorias");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos eliminarla");
+      setEliminando(false);
+    }
+  };
 
   const guardar = async () => {
     // La barra no deja apretar sin nombre; esto es el cinturón por si alguien
@@ -368,9 +398,22 @@ export function CategoriaForm({
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <h1 className="min-w-0 truncate text-2xl font-bold tracking-tight">
+        <h1 className="min-w-0 flex-1 truncate text-2xl font-bold tracking-tight">
           {form.nombre || (esNueva ? "Nueva categoría" : "Sin nombre")}
         </h1>
+        {/* Solo en una que existe: en el alta lo que se descarta es el
+            formulario, y para eso está la barra de arriba. */}
+        {!esNueva && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-none text-destructive"
+            onClick={() => setBorrando(true)}
+          >
+            <Trash2 className="mr-1.5 h-4 w-4" />
+            Eliminar
+          </Button>
+        )}
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
@@ -707,6 +750,47 @@ export function CategoriaForm({
           </CardContent>
         </Card>
       </div>
+
+      {/* Se confirma antes: borrar una categoría deshace el agrupado de
+          todos sus productos, y no hay forma de volver atrás. */}
+      <Dialog open={borrando} onOpenChange={(v) => !v && setBorrando(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar «{guardado.nombre}»</DialogTitle>
+            <DialogDescription>
+              {guardado.productos.length > 0 ? (
+                <>
+                  Los {guardado.productos.length} producto
+                  {guardado.productos.length === 1 ? "" : "s"} que agrupa dejan
+                  de estar en esta categoría. Los productos no se borran: siguen
+                  en el catálogo y en las demás categorías donde estén.
+                </>
+              ) : (
+                <>
+                  No agrupa ningún producto, así que no cambia nada más. No se
+                  puede deshacer.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBorrando(false)}
+              disabled={eliminando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={eliminar}
+              disabled={eliminando}
+            >
+              {eliminando ? "Eliminando…" : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {recortando && form.imagen && (
         <EditorImagen

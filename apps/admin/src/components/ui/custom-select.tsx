@@ -45,6 +45,52 @@ interface CustomSelectProps {
    * si el disparador es un botón chico, conviene forzarlo.
    */
   anchoMinimo?: number;
+  /**
+   * Buscar **en el servidor**: con esto, `options` ya viene filtrado y acá no
+   * se filtra nada. Es para las listas que no entran enteras en el navegador.
+   */
+  onBuscar?: (texto: string) => void;
+  /** Pedir la tanda siguiente al llegar al pie de la lista. */
+  onMas?: () => void;
+  hayMas?: boolean;
+  cargando?: boolean;
+}
+
+/**
+ * El pie de una lista paginada: cuando entra en la parte visible, pide más.
+ *
+ * Un poco antes del borde, así la tanda llega mientras todavía se está
+ * desplazando y no se ve el hueco.
+ */
+function CentinelaMas({
+  onVisible,
+  cargando,
+}: {
+  onVisible: () => void;
+  cargando: boolean;
+}) {
+  const nodo = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = nodo.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (e) => {
+        if (e[0]?.isIntersecting) onVisible();
+      },
+      { rootMargin: "80px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [onVisible]);
+
+  return (
+    <div
+      ref={nodo}
+      className="py-2 text-center text-xs text-muted-foreground"
+    >
+      {cargando ? "Cargando más…" : " "}
+    </div>
+  );
 }
 
 export function CustomSelect({
@@ -58,6 +104,10 @@ export function CustomSelect({
   disabled = false,
   className,
   anchoMinimo,
+  onBuscar,
+  onMas,
+  hayMas = false,
+  cargando = false,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   /**
@@ -126,6 +176,9 @@ export function CustomSelect({
   }, [open, searchable]);
 
   const filtered = useMemo(() => {
+    // Con búsqueda del servidor, lo que llegó ya está filtrado: volver a
+    // filtrarlo acá escondería resultados que el servidor sí encontró.
+    if (onBuscar) return options;
     if (!searchable || !search.trim()) return options;
     const q = search.toLowerCase();
     const coinciden = options.filter(
@@ -137,7 +190,7 @@ export function CustomSelect({
       const siguiente = coinciden[i + 1];
       return siguiente !== undefined && !esEncabezado(siguiente);
     });
-  }, [options, search, searchable]);
+  }, [options, search, searchable, onBuscar]);
 
   const elegida = value
     ? options.find((o): o is Option => !esEncabezado(o) && o.value === value)
@@ -249,7 +302,12 @@ export function CustomSelect({
                   ref={searchRef}
                   type="text"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    // Con búsqueda del servidor, lo escrito viaja: quien la
+                    // implementa decide cuándo pedir.
+                    onBuscar?.(e.target.value);
+                  }}
                   placeholder={searchPlaceholder}
                   className="w-full rounded-md border bg-background pl-8 pr-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
@@ -259,7 +317,7 @@ export function CustomSelect({
           <div className="max-h-52 overflow-y-auto p-1">
             {filtered.length === 0 ? (
               <p className="py-3 text-center text-sm text-muted-foreground">
-                Sin resultados
+                {cargando ? "Buscando…" : "Sin resultados"}
               </p>
             ) : (
               filtered.map((option) =>
@@ -304,6 +362,12 @@ export function CustomSelect({
                 )
               )
             )}
+
+            {/* El pie que trae la tanda siguiente al asomarse. Va dentro del
+                área que se desplaza, que es de la que se mira la visibilidad. */}
+            {onMas && hayMas ? (
+              <CentinelaMas onVisible={onMas} cargando={cargando} />
+            ) : null}
           </div>
           </div>,
           document.body

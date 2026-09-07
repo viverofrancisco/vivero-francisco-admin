@@ -78,7 +78,9 @@ export default async function OrdenRoute({
   // variantes: un bien se vende por variante, y el editor tiene que poder
   // ofrecerlas sin volver al servidor.
   const productos =
-    orden.estado === "BORRADOR" ? await productosVendibles() : [];
+    orden.estado === "BORRADOR"
+      ? await productosVendibles({ limit: 20 })
+      : { items: [], hayMas: false };
 
   return (
     <div className="p-4 md:p-6">
@@ -163,7 +165,8 @@ export default async function OrdenRoute({
           })),
         }}
         clientes={clientes}
-        productos={productos}
+        productos={productos.items}
+        hayMasProductos={productos.hayMas}
         pendientes={pendientes.map((p) =>
           p.tipo === "visita"
             ? {

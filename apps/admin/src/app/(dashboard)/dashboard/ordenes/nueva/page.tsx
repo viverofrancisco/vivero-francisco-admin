@@ -22,13 +22,14 @@ export default async function NuevaOrdenRoute({
   if (user.role === "PERSONAL_ADMIN") {
     where.sectorId = { in: await getUserSectorIds(user.id) };
   }
-  const [clientes, productos] = await Promise.all([
+  const [clientes, primeraTanda] = await Promise.all([
     prisma.cliente.findMany({
       where,
       orderBy: { nombre: "asc" },
       select: { id: true, nombre: true, apellido: true, empresa: true },
     }),
-    productosVendibles(),
+    // La primera tanda: el resto llega al buscar o al bajar la lista.
+    productosVendibles({ limit: 20 }),
   ]);
 
   // Con cliente en la URL se resuelven acá: la pantalla llega completa.
@@ -75,7 +76,8 @@ export default async function NuevaOrdenRoute({
   return (
     <NuevaOrdenPage
       clientes={clientes}
-      productos={productos}
+      productos={primeraTanda.items}
+      hayMasProductos={primeraTanda.hayMas}
       clienteInicial={visible ? clienteInicial : undefined}
       suscritosIniciales={suscritos}
       preseleccion={preseleccion}

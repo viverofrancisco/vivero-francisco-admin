@@ -14,6 +14,7 @@ import {
 } from "@/components/facturacion/selector-datos-facturacion";
 import { ArrowLeft, Loader2, Trash2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
+import { useCatalogo } from "./use-catalogo";
 import { money, fecha } from "./formato";
 import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 import {
@@ -112,6 +113,7 @@ export interface EmisorOpcion {
 export function EmitirFacturaPage({
   orden,
   productos,
+  hayMasProductos = false,
   datosFacturacion,
   emisores = [],
   backHref,
@@ -119,7 +121,9 @@ export function EmitirFacturaPage({
   /** Con qué RUC se puede emitir. Sin ninguno no hay factura posible. */
   emisores?: EmisorOpcion[];
   orden: OrdenAEmitir;
+  /** La primera tanda del catálogo. El resto llega al buscar o al bajar. */
   productos: ProductoFacturable[];
+  hayMasProductos?: boolean;
   datosFacturacion: DatoFacturacionResumen[];
   backHref: string;
 }) {
@@ -148,9 +152,16 @@ export function EmitirFacturaPage({
     }))
   );
 
+  /**
+   * El catálogo, de a tandas. Las búsquedas por id van contra **lo conocido**
+   * —todo lo que se vio— y no contra la página que muestra el desplegable: una
+   * línea ya cargada no puede quedarse sin su producto porque alguien buscó
+   * otra cosa.
+   */
+  const catalogo = useCatalogo(productos, hayMasProductos);
   const porId = useMemo(
-    () => new Map(productos.map((p) => [p.id, p])),
-    [productos]
+    () => new Map(catalogo.conocidos.map((p) => [p.id, p])),
+    [catalogo.conocidos]
   );
 
   const actualizar = (uid: string, patch: Partial<LineaDocumento>) =>
@@ -386,7 +397,11 @@ export function EmitirFacturaPage({
                                       : null,
                                 });
                               }}
-                              options={productos.map((p) => ({
+                              onBuscar={catalogo.onBuscar}
+                              onMas={catalogo.onMas}
+                              hayMas={catalogo.hayMas}
+                              cargando={catalogo.cargando}
+                              options={catalogo.pagina.map((p) => ({
                                 value: p.id,
                                 label: p.nombre,
                               }))}
@@ -473,7 +488,7 @@ export function EmitirFacturaPage({
                 <CustomSelect
                   value=""
                   onChange={agregar}
-                  options={productos.map((p) => ({
+                  options={catalogo.pagina.map((p) => ({
                     value: p.id,
                     label: p.nombre,
                   }))}

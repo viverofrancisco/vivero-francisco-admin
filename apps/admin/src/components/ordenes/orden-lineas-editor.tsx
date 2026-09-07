@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { useCatalogo } from "./use-catalogo";
 import {
   SelectorVariante,
   ivaAlCambiarVariante,
@@ -73,6 +74,7 @@ export function OrdenLineasEditor({
   lineas,
   onLineasChange,
   productos,
+  hayMasProductos = false,
   clienteNombre,
   suscritos = [],
   onGuardar,
@@ -84,7 +86,9 @@ export function OrdenLineasEditor({
    */
   lineas: LineaEditable[];
   onLineasChange: (lineas: LineaEditable[]) => void;
+  /** La primera tanda del catálogo. El resto llega al buscar o al bajar. */
   productos: ProductoCatalogo[];
+  hayMasProductos?: boolean;
   /** Para nombrarlo en el aviso: "Fulano tiene este producto…". */
   clienteNombre?: string;
   /** Productos que este cliente ya tiene en un plan activo. */
@@ -95,6 +99,14 @@ export function OrdenLineasEditor({
    */
   onGuardar: (lineas: LineaEditable[]) => void;
 }) {
+  /**
+   * El catálogo, de a tandas. Las búsquedas por id van contra **lo conocido**
+   * —todo lo que se vio— y no contra la página que muestra el desplegable: una
+   * línea ya cargada no puede quedarse sin sus variantes porque alguien buscó
+   * otra cosa.
+   */
+  const catalogo = useCatalogo(productos, hayMasProductos);
+
   const setLineas = (f: (prev: LineaEditable[]) => LineaEditable[]) =>
     onLineasChange(f(lineas));
 
@@ -107,7 +119,7 @@ export function OrdenLineasEditor({
     setLineas((prev) => prev.filter((l) => l.uid !== uid));
 
   const agregarProducto = (productoId: string) => {
-    const p = productos.find((x) => x.id === productoId);
+    const p = catalogo.conocidos.find((x) => x.id === productoId);
     if (!p) return;
     setLineas((prev) => [
       ...prev,
@@ -209,11 +221,14 @@ export function OrdenLineasEditor({
               <div className="flex flex-wrap items-end gap-3">
                 <SelectorVariante
                   variantes={
-                    productos.find((p) => p.id === l.productoId)?.variantes ?? []
+                    catalogo.conocidos.find((p) => p.id === l.productoId)
+                      ?.variantes ?? []
                   }
                   value={l.varianteId}
                   onChange={(varianteId) => {
-                    const prod = productos.find((p) => p.id === l.productoId);
+                    const prod = catalogo.conocidos.find(
+                      (p) => p.id === l.productoId
+                    );
                     const vs = prod?.variantes ?? [];
                     const antes = vs.find((v) => v.id === l.varianteId);
                     const ahora = vs.find((v) => v.id === varianteId);
@@ -287,7 +302,11 @@ export function OrdenLineasEditor({
           <CustomSelect
             value=""
             onChange={agregarProducto}
-            options={productos.map((p) => ({
+            onBuscar={catalogo.onBuscar}
+            onMas={catalogo.onMas}
+            hayMas={catalogo.hayMas}
+            cargando={catalogo.cargando}
+            options={catalogo.pagina.map((p) => ({
               value: p.id,
               label: p.nombre,
               hint: suscritos.includes(p.id)

@@ -34,6 +34,7 @@ import {
 } from "./selector-visitas";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useCatalogo } from "./use-catalogo";
 import { nombreCliente } from "@vivero/shared";
 import { money, fecha } from "./formato";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
@@ -110,6 +111,7 @@ function importes(l: Linea) {
 export function NuevaOrdenPage({
   clientes,
   productos,
+  hayMasProductos = false,
   clienteInicial,
   pendientesIniciales,
   suscritosIniciales,
@@ -117,7 +119,9 @@ export function NuevaOrdenPage({
   desdeVisita,
 }: {
   clientes: Cliente[];
+  /** La primera tanda del catálogo. El resto llega al buscar o al bajar. */
   productos: Producto[];
+  hayMasProductos?: boolean;
   /** Preseleccionado al venir desde "Por facturar". */
   clienteInicial?: string;
   /**
@@ -141,6 +145,16 @@ export function NuevaOrdenPage({
   const [notas, setNotas] = useState("");
   // La preselección se resuelve en el estado inicial y no en un efecto: así no
   // hay un render con la orden vacía ni un `setState` después de pintar.
+  /**
+   * El catálogo, de a tandas.
+   *
+   * `pagina` es lo que muestra el desplegable; `conocidos` es todo lo que se
+   * vio, y de ahí salen el precio, el IVA y las variantes de cada línea — si
+   * al buscar otra cosa se fueran los anteriores, una línea ya cargada se
+   * quedaría sin los suyos.
+   */
+  const catalogo = useCatalogo(productos, hayMasProductos);
+
   const [lineas, setLineas] = useState<Linea[]>(() =>
     (pendientesIniciales ?? [])
       .filter((p) => p.visitaProductoId && preseleccion?.includes(p.visitaProductoId))
@@ -225,7 +239,7 @@ export function NuevaOrdenPage({
   };
 
   const agregarProducto = (productoId: string) => {
-    const p = productos.find((x) => x.id === productoId);
+    const p = catalogo.conocidos.find((x) => x.id === productoId);
     if (!p) return;
     setLineas((prev) => [
       ...prev,
@@ -598,12 +612,12 @@ export function NuevaOrdenPage({
                         <div className="flex flex-wrap items-end gap-3">
                           <SelectorVariante
                             variantes={
-                              productos.find((p) => p.id === l.productoId)
+                              catalogo.conocidos.find((p) => p.id === l.productoId)
                                 ?.variantes ?? []
                             }
                             value={l.varianteId}
                             onChange={(varianteId) => {
-                              const prod = productos.find(
+                              const prod = catalogo.conocidos.find(
                                 (p) => p.id === l.productoId
                               );
                               const vs = prod?.variantes ?? [];
@@ -689,7 +703,7 @@ export function NuevaOrdenPage({
                     // Lo que está en un plan del cliente **sí** se puede
                     // agregar: es un extra sobre lo que el plan cubre, y quien
                     // arma la orden es quien decide si se cobra.
-                    options={productos.map((p) => ({
+                    options={catalogo.pagina.map((p) => ({
                       value: p.id,
                       label: p.nombre,
                       hint: suscritos.includes(p.id)
@@ -698,6 +712,13 @@ export function NuevaOrdenPage({
                     }))}
                     placeholder="Buscar producto..."
                     searchable
+                    // El catálogo se busca y se pagina en el servidor: traerlo
+                    // entero al abrir la pantalla se paga aunque la orden
+                    // termine con dos líneas.
+                    onBuscar={catalogo.onBuscar}
+                    onMas={catalogo.onMas}
+                    hayMas={catalogo.hayMas}
+                    cargando={catalogo.cargando}
                     searchPlaceholder="Buscar producto..."
                   />
                 </div>

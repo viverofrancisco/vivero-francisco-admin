@@ -200,6 +200,7 @@ interface OrdenData {
 export function OrdenDetail({
   orden,
   productos,
+  hayMasProductos = false,
   clientes,
   pendientes = [],
   backHref = "/dashboard/ordenes",
@@ -207,7 +208,9 @@ export function OrdenDetail({
   orden: OrdenData;
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref?: string;
+  /** La primera tanda del catálogo. El resto llega al buscar o al bajar. */
   productos: ProductoCatalogo[];
+  hayMasProductos?: boolean;
   /** Para poder cambiar de cliente mientras la orden sea borrador. */
   clientes: ClienteOpcion[];
   /**
@@ -731,6 +734,7 @@ export function OrdenDetail({
                 lineas={lineasEdit}
                 onLineasChange={setLineasEdit}
                 productos={productos}
+                hayMasProductos={hayMasProductos}
                 clienteNombre={nombreCliente(orden.cliente)}
                 onGuardar={guardarEdicion}
               />

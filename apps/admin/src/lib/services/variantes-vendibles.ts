@@ -1,9 +1,13 @@
 /**
  * Las variantes que se pueden vender, listas para el selector de una orden.
  *
- * Una sola consulta para el catálogo entero en vez de una por producto: el
- * catálogo es chico y el editor de líneas los necesita todos igual, para poder
- * cambiar de producto sin ir al servidor.
+ * Se piden **de a tandas**. Antes venía el catálogo entero de una, con sus
+ * variantes: con veinte productos no se nota, pero cada uno arrastra sus
+ * combinaciones y eso crece rápido — y se pagaba enteroderecho al abrir la
+ * pantalla, aunque la orden terminara con dos líneas.
+ *
+ * La pantalla se queda con todo lo que fue viendo, así que cambiar de producto
+ * en una línea ya cargada sigue sin ir al servidor.
  */
 import { prisma } from "@/lib/prisma";
 
@@ -24,12 +28,25 @@ export interface ProductoConVariantes {
   }[];
 }
 
-export async function productosVendibles(): Promise<ProductoConVariantes[]> {
+export async function productosVendibles(
+  opciones: { search?: string; offset?: number; limit?: number; ids?: string[] } = {}
+): Promise<{ items: ProductoConVariantes[]; hayMas: boolean }> {
+  const limit = Math.min(Math.max(opciones.limit ?? 20, 1), 100);
+  const offset = Math.max(0, opciones.offset ?? 0);
+  const search = opciones.search?.trim();
   const productos = await prisma.producto.findMany({
-    // Un borrador no se ofrece: es lo que evita que algo a medio configurar
-    // —sin precio, sin SKU— termine en una factura por estar en la lista.
-    where: { deletedAt: null, estado: "ACTIVO" },
+    where: {
+      // Un borrador no se ofrece: es lo que evita que algo a medio configurar
+      // —sin precio, sin SKU— termine en una factura por estar en la lista.
+      deletedAt: null,
+      estado: "ACTIVO",
+      ...(search ? { nombre: { contains: search, mode: "insensitive" } } : {}),
+      // Pedidos por id: los que una orden ya usa. Tienen que venir aunque no
+      // entren en la primera tanda, o la línea se quedaría sin su producto.
+      ...(opciones.ids?.length ? { id: { in: opciones.ids } } : {}),
+    },
     orderBy: { nombre: "asc" },
+    ...(opciones.ids?.length ? {} : { skip: offset, take: limit + 1 }),
     select: {
       id: true,
       nombre: true,
@@ -58,7 +75,10 @@ export async function productosVendibles(): Promise<ProductoConVariantes[]> {
     },
   });
 
-  return productos.map((p) => ({
+  const hayMas = !opciones.ids?.length && productos.length > limit;
+  const enTanda = hayMas ? productos.slice(0, limit) : productos;
+
+  const items = enTanda.map((p) => ({
     id: p.id,
     nombre: p.nombre,
     ivaTasa: p.ivaTasa === null ? null : Number(p.ivaTasa),
@@ -78,4 +98,6 @@ export async function productosVendibles(): Promise<ProductoConVariantes[]> {
       stock: v.stock,
     })),
   }));
+
+  return { items, hayMas };
 }
