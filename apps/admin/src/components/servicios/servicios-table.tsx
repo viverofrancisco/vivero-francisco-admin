@@ -268,7 +268,7 @@ export function ServiciosTable({
                       ) : (
                         <DeleteDialog
                           title={`¿Eliminar "${servicio.nombre}"?`}
-                          description="Se archiva y deja de ofrecerse. Se puede restaurar desde el filtro Archivados."
+                          description="Se archiva y deja de ofrecerse."
                           onDelete={() => handleDelete(servicio.id)}
                           onSuccess={() => router.refresh()}
                         />
