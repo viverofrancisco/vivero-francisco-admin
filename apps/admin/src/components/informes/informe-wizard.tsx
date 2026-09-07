@@ -2989,8 +2989,9 @@ function DescripcionSeccion({
  * —el visor es del navegador, no de la página— así que esto es lo mejor que se
  * puede hacer sin dibujar un visor propio.
  *
- * En un recuadro chico la barra se come una franja que ya escasea; a pantalla
- * completa se deja, porque ahí el zoom sirve.
+ * Va en todos los visores, incluido el de pantalla completa: lo que se mira es
+ * el documento, y la barra del navegador ofrece descargar e imprimir un archivo
+ * que todavía no existe —la previa es un blob que no se guardó en ningún lado—.
  */
 const SIN_BARRA = "#toolbar=0&navpanes=0&scrollbar=0&view=FitH";
 
@@ -3026,7 +3027,7 @@ function VisorPdf({ url, onCerrar }: { url: string; onCerrar: () => void }) {
         </Button>
       </div>
       <iframe
-        src={url}
+        src={`${url}${SIN_BARRA}`}
         title="Vista previa del informe"
         className="min-h-0 flex-1 rounded-md bg-white"
       />
