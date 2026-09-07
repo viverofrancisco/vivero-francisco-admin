@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
-  ArrowLeftRight,
   ChevronDown,
   ChevronRight,
   Plus,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAca } from "@/lib/filtros-url";
-import { MovimientoDialog } from "./movimiento-dialog";
+import { PopoverStock } from "./popover-stock";
 import { money } from "@/components/ordenes/formato";
 import type { ImagenProducto } from "./producto-imagenes";
 
@@ -117,7 +116,6 @@ export function ProductoVariantes({
   /** Qué opción está desplegada. `null` = todas plegadas. */
   const [abierta, setAbierta] = useState<number | null>(null);
   const [variantes, setVariantes] = useState(variantesIniciales);
-  const [ajustando, setAjustando] = useState<VarianteFila | null>(null);
   /** Por qué eje se agrupa. Solo con dos o más: con uno no hay nada que juntar. */
   const [agruparPor, setAgruparPor] = useState(0);
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set());
@@ -146,28 +144,37 @@ export function ProductoVariantes({
   };
 
   /**
-   * Escribir un stock en la tabla es **contar**.
+   * Un movimiento de stock desde la tabla.
    *
-   * Se dice cuánto hay, no cuánto se movió, y el servidor anota la diferencia
-   * en el libro. Interpretarlo como un ajuste haría que tipear "12" sobre un 10
-   * dejara 22 — que es lo contrario de lo que alguien acaba de mirar.
+   * `CONTEO` manda **cuánto hay** y el servidor saca la diferencia; los otros
+   * mandan cuánto se movió. Son dos preguntas distintas y por eso el popover
+   * las separa: quien cuenta el estante no sabe qué decía el sistema.
    */
-  const contar = async (id: string, contado: number) => {
-    const previas = variantes;
-    aplicar(variantes.map((x) => (x.id === id ? { ...x, stock: contado } : x)));
-    try {
-      const res = await fetch(`/api/variantes/${id}/movimientos`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ motivo: "CONTEO", contado }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Error");
-      router.refresh();
-    } catch (e) {
-      aplicar(previas);
-      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
+  const mover = async (
+    id: string,
+    m: { motivo: "CONTEO" | "AJUSTE" | "INGRESO"; valor: number; nota: string | null }
+  ) => {
+    const res = await fetch(`/api/variantes/${id}/movimientos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(
+        m.motivo === "CONTEO"
+          ? { motivo: m.motivo, contado: m.valor, nota: m.nota }
+          : {
+              motivo: m.motivo,
+              cantidad: m.motivo === "INGRESO" ? Math.abs(m.valor) : m.valor,
+              nota: m.nota,
+            }
+      ),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error ?? "Error");
+    // Un conteo que da lo mismo no mueve nada y el servidor devuelve `null`.
+    const saldo = body.movimiento?.saldo;
+    if (saldo !== undefined) {
+      aplicar(variantes.map((x) => (x.id === id ? { ...x, stock: saldo } : x)));
     }
+    router.refresh();
   };
 
   const hayEjes = opciones.length > 0;
@@ -354,9 +361,8 @@ export function ProductoVariantes({
                                   productoNombre={productoNombre}
                                   imagenes={imagenes}
                                   sangrada
-                                  onAjustar={() => setAjustando(v)}
                                   onPrecio={(precio) => guardarPrecio(v.id, precio)}
-                                  onContar={(stock) => contar(v.id, stock)}
+                                  onMover={(m) => mover(v.id, m)}
                                 />
                               ))}
                             </div>
@@ -371,9 +377,8 @@ export function ProductoVariantes({
                         productoId={productoId}
                         productoNombre={productoNombre}
                         imagenes={imagenes}
-                        onAjustar={() => setAjustando(v)}
                         onPrecio={(precio) => guardarPrecio(v.id, precio)}
-                        onContar={(stock) => contar(v.id, stock)}
+                        onMover={(m) => mover(v.id, m)}
                       />
                     ))}
               </div>
@@ -390,25 +395,6 @@ export function ProductoVariantes({
         </CardContent>
       </Card>
 
-      {ajustando && (
-        <MovimientoDialog
-          varianteId={ajustando.id}
-          nombre={nombreVariante(ajustando, productoNombre)}
-          stock={ajustando.stock}
-          permiteNegativo={ajustando.permiteNegativo}
-          onCerrar={() => setAjustando(null)}
-          onHecho={(stock) => {
-            aplicar(
-              variantes.map((x) =>
-                x.id === ajustando.id ? { ...x, stock } : x
-              )
-            );
-            setAjustando(null);
-            router.refresh();
-          }}
-        />
-      )}
-
     </>
   );
 }
@@ -420,18 +406,20 @@ function FilaVariante({
   productoNombre,
   imagenes,
   sangrada,
-  onAjustar,
   onPrecio,
-  onContar,
+  onMover,
 }: {
   variante: VarianteFila;
   productoId: string;
   productoNombre: string;
   imagenes: ImagenProducto[];
   sangrada?: boolean;
-  onAjustar: () => void;
   onPrecio: (precio: number) => void;
-  onContar: (stock: number) => void;
+  onMover: (m: {
+    motivo: "CONTEO" | "AJUSTE" | "INGRESO";
+    valor: number;
+    nota: string | null;
+  }) => Promise<void>;
 }) {
   const from = useAca();
   const foto =
@@ -495,39 +483,25 @@ function FilaVariante({
           }}
         />
       </div>
+      {/* El stock **no se escribe suelto**: toda edición es un movimiento del
+          libro —qué pasó, cuánto y por qué— y un input inline no tiene dónde
+          poner el "qué pasó". Se toca el número y se edita en el popover. */}
       {variante.manejaInventario ? (
-        <>
-          {/* Escribir un stock es **contar**: se dice cuánto hay, no cuánto se
-              movió, y el servidor anota la diferencia en el libro. Para un
-              ingreso o una corrección con nota está el botón de al lado. */}
-          <Input
-            type="number"
-            step="1"
-            defaultValue={variante.stock}
+        <PopoverStock
+          stock={variante.stock}
+          permiteNegativo={variante.permiteNegativo}
+          onMover={onMover}
+        >
+          <button
+            type="button"
             aria-label={`Stock de ${nombreVariante(variante, productoNombre)}`}
-            className={`h-8 w-20 flex-none text-right text-sm tabular-nums ${
+            className={`w-20 flex-none rounded-md border px-2 py-1 text-right text-sm tabular-nums hover:bg-muted ${
               variante.stock <= 0 ? "font-medium text-amber-700" : ""
             }`}
-            onBlur={(e) => {
-              const texto = e.target.value.trim();
-              const nuevo = Number(texto);
-              if (texto === "" || !Number.isInteger(nuevo)) {
-                e.target.value = String(variante.stock);
-                return;
-              }
-              if (nuevo !== variante.stock) onContar(nuevo);
-            }}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Movimiento de stock"
-            onClick={onAjustar}
           >
-            <ArrowLeftRight />
-          </Button>
-        </>
+            {variante.stock}
+          </button>
+        </PopoverStock>
       ) : (
         <span
           className="w-20 flex-none text-right text-sm text-muted-foreground"

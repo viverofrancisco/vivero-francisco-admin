@@ -185,9 +185,15 @@ blanco en vez de un menú que las esconda a las dos.
 valor de uno de ellos. Con ejes de 3 y 6 valores son dieciocho filas y ninguna
 se encuentra; agrupadas son tres, y se abre la que interesa.
 
-El **historial de movimientos** va dentro del diálogo de ajuste, no en otra
-pantalla: cuando alguien está por corregir un número, lo que le dice si confiar
-en él es ver qué pasó antes.
+**El stock no se escribe suelto.** Se toca el número y se abre un popover
+pegado a él —el de Shopify— con qué pasó, cuánto, una nota opcional y el saldo
+que va a quedar. Un input inline no tiene dónde poner el "qué pasó", y toda
+edición de stock **es** un movimiento del libro. Un diálogo tampoco: tapa la
+lista que se estaba mirando, que es justo lo que dice si el número está bien.
+
+El **historial** vive en la ficha de la variante, entero. Desde la card de
+Inventario de un bien sin opciones hay un enlace: acá está el número y cómo
+moverlo, allá el porqué de cada cambio.
 
 La ficha es de **dos columnas**: a la izquierda lo que el producto *es* —qué es,
 cómo se ve, cuánto hay—, a la derecha cómo se lo agrupa. Las categorías se

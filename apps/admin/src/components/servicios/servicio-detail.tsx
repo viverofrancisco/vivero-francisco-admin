@@ -317,6 +317,7 @@ export function ServicioDetail({
               fila para decir "hay 12" es una tabla de más. */}
           {varianteUnica && (
             <ProductoInventario
+              productoId={servicio.id}
               variante={varianteUnica}
               ivaTasa={
                 servicio.ivaTasa === null ? null : Number(servicio.ivaTasa)

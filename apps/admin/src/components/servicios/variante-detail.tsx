@@ -18,9 +18,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { ArrowLeft, ImageOff } from "lucide-react";
-import { MovimientoDialog, type MovimientoFila } from "./movimiento-dialog";
+import { PopoverStock } from "./popover-stock";
 import { PrecioDeLista } from "./precio-de-lista";
 import type { ImagenProducto } from "./producto-imagenes";
+
+export interface MovimientoFila {
+  id: string;
+  cantidad: number;
+  saldo: number;
+  motivo: string;
+  nota: string | null;
+  createdAt: string;
+  createdByNombre: string | null;
+}
 
 export interface VarianteDetalle {
   id: string;
@@ -78,7 +88,32 @@ export function VarianteDetail({
 }) {
   const router = useRouter();
   const [variante, setVariante] = useState(inicial);
-  const [ajustando, setAjustando] = useState(false);
+
+  /** Un movimiento de stock. El libro de abajo se recarga con el refresh. */
+  const mover = async (m: {
+    motivo: "CONTEO" | "AJUSTE" | "INGRESO";
+    valor: number;
+    nota: string | null;
+  }) => {
+    const res = await fetch(`/api/variantes/${variante.id}/movimientos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(
+        m.motivo === "CONTEO"
+          ? { motivo: m.motivo, contado: m.valor, nota: m.nota }
+          : {
+              motivo: m.motivo,
+              cantidad: m.motivo === "INGRESO" ? Math.abs(m.valor) : m.valor,
+              nota: m.nota,
+            }
+      ),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error ?? "Error");
+    const saldo = body.movimiento?.saldo;
+    if (saldo !== undefined) setVariante({ ...variante, stock: saldo });
+    router.refresh();
+  };
 
   const nombre =
     variante.valores.map((v) => v.valor).join(" · ") || variante.producto.nombre;
@@ -288,13 +323,15 @@ export function VarianteDetail({
                         {variante.stock}
                       </p>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setAjustando(true)}
+                    <PopoverStock
+                      stock={variante.stock}
+                      permiteNegativo={variante.permiteNegativo}
+                      onMover={mover}
                     >
-                      Ajustar
-                    </Button>
+                      <Button type="button" variant="outline">
+                        Ajustar
+                      </Button>
+                    </PopoverStock>
                   </div>
 
                   <label className="flex items-center justify-between gap-3 border-t pt-3 text-sm">
@@ -390,20 +427,6 @@ export function VarianteDetail({
         </div>
       </div>
 
-      {ajustando && (
-        <MovimientoDialog
-          varianteId={variante.id}
-          nombre={nombre}
-          stock={variante.stock}
-          permiteNegativo={variante.permiteNegativo}
-          onCerrar={() => setAjustando(false)}
-          onHecho={(stock) => {
-            setVariante({ ...variante, stock });
-            setAjustando(false);
-            router.refresh();
-          }}
-        />
-      )}
     </div>
   );
 }

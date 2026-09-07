@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -14,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { MovimientoDialog } from "./movimiento-dialog";
+import Link from "next/link";
+import { PopoverStock } from "./popover-stock";
 import { PrecioDeLista } from "./precio-de-lista";
 import type { VarianteFila } from "./producto-variantes";
 
@@ -32,16 +32,43 @@ import type { VarianteFila } from "./producto-variantes";
  */
 export function ProductoInventario({
   variante,
+  productoId,
   ivaTasa,
   onCambio,
 }: {
+  productoId: string;
   variante: VarianteFila;
   /** La tasa del producto: el *cuánto*. Acá solo se decide el *si*. */
   ivaTasa: number | null;
   onCambio: (v: VarianteFila) => void;
 }) {
   const router = useRouter();
-  const [ajustando, setAjustando] = useState(false);
+
+  /** Un movimiento de stock. El libro es el que manda; acá se lo alimenta. */
+  const mover = async (m: {
+    motivo: "CONTEO" | "AJUSTE" | "INGRESO";
+    valor: number;
+    nota: string | null;
+  }) => {
+    const res = await fetch(`/api/variantes/${variante.id}/movimientos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(
+        m.motivo === "CONTEO"
+          ? { motivo: m.motivo, contado: m.valor, nota: m.nota }
+          : {
+              motivo: m.motivo,
+              cantidad: m.motivo === "INGRESO" ? Math.abs(m.valor) : m.valor,
+              nota: m.nota,
+            }
+      ),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error ?? "Error");
+    const saldo = body.movimiento?.saldo;
+    if (saldo !== undefined) onCambio({ ...variante, stock: saldo });
+    router.refresh();
+  };
 
   const guardar = async (patch: Partial<VarianteFila>) => {
     const previa = variante;
@@ -91,13 +118,25 @@ export function ProductoInventario({
                     {variante.stock}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setAjustando(true)}
-                >
-                  Ajustar
-                </Button>
+                <div className="flex items-center gap-2">
+                  {/* El libro vive en la ficha de la variante: acá está el
+                      número y cómo moverlo, allá el porqué de cada cambio. */}
+                  <Link
+                    href={`/dashboard/productos/${productoId}/variantes/${variante.id}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Movimientos
+                  </Link>
+                  <PopoverStock
+                    stock={variante.stock}
+                    permiteNegativo={variante.permiteNegativo}
+                    onMover={mover}
+                  >
+                    <Button type="button" variant="outline">
+                      Ajustar
+                    </Button>
+                  </PopoverStock>
+                </div>
               </div>
 
               <label className="flex items-center justify-between gap-3 border-t pt-3 text-sm">
@@ -163,20 +202,6 @@ export function ProductoInventario({
         </CardContent>
       </Card>
 
-      {ajustando && (
-        <MovimientoDialog
-          varianteId={variante.id}
-          nombre="Ajustar inventario"
-          stock={variante.stock}
-          permiteNegativo={variante.permiteNegativo}
-          onCerrar={() => setAjustando(false)}
-          onHecho={(stock) => {
-            onCambio({ ...variante, stock });
-            setAjustando(false);
-            router.refresh();
-          }}
-        />
-      )}
     </>
   );
 }
