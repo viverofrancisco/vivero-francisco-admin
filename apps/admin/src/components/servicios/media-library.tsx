@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -120,6 +120,8 @@ export function MediaLibrary({
       .catch(() => setItems([]));
   }
 
+  const archivo = useRef<HTMLInputElement>(null);
+
   const subir = async (files: FileList | null) => {
     if (!files?.length) return;
     setSubiendo(true);
@@ -132,6 +134,9 @@ export function MediaLibrary({
       toast.error(e instanceof Error ? e.message : "No pudimos subir");
     } finally {
       setSubiendo(false);
+      // El input se limpia o elegir **el mismo archivo** otra vez no dispara
+      // `change`: el valor no cambió, y para el navegador no pasó nada.
+      if (archivo.current) archivo.current.value = "";
     }
   };
 
@@ -161,29 +166,32 @@ export function MediaLibrary({
                 className="pl-9"
               />
             </div>
-            <label>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => subir(e.target.files)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-none"
-                disabled={subiendo}
-                render={<span />}
-              >
-                {subiendo ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="mr-2 h-4 w-4" />
-                )}
-                Subir
-              </Button>
-            </label>
+            {/* El input escondido se dispara desde el botón, y no envuelto en
+                un `<label>`: ahí el botón tenía que dibujarse como `<span>`
+                para no tragarse el clic, y un span no es un botón — se pierde
+                el foco y el Enter, y Base UI avisa con razón. */}
+            <input
+              ref={archivo}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => subir(e.target.files)}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-none"
+              disabled={subiendo}
+              onClick={() => archivo.current?.click()}
+            >
+              {subiendo ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
+              Subir
+            </Button>
           </div>
 
           <div className="max-h-[50vh] overflow-y-auto">
