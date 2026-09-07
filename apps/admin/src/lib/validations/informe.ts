@@ -35,7 +35,12 @@ export const informeGenerateSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida")
     .optional(),
-  visitaIds: z.array(z.string().min(1)).min(1),
+  /**
+   * Qué visitas cubre. **Puede ir vacío**: un informe sin visitas es el que se
+   * arma a mano —un resumen de temporada, una propuesta— y la lista es lo que
+   * lo llena solo cuando las hay, no un requisito.
+   */
+  visitaIds: z.array(z.string().min(1)),
   firmantes: z.array(informeFirmanteSchema).min(1).max(3),
   secciones: z.array(informeSeccionSchema).min(1),
 });

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -26,8 +27,10 @@ import {
   Download,
   ExternalLink,
   ImageIcon,
+  Pencil,
   Trash2,
 } from "lucide-react";
+import { SelectorVisitasInforme } from "./selector-visitas-informe";
 import { toast } from "sonner";
 
 export interface InformeDetailData {
@@ -53,10 +56,14 @@ export interface InformeDetailData {
 /**
  * La ficha de un informe: el PDF y de qué está hecho.
  *
- * Es de solo lectura porque un informe no se edita. Ya salió firmado y con
- * fecha; corregirlo por debajo dejaría al cliente con un documento que no es
- * el que tenemos nosotros. Para arreglar algo se elimina y se hace el bueno,
- * que además queda con su propio número.
+ * **El documento** es de solo lectura: ya salió firmado y con fecha, y
+ * corregirlo por debajo dejaría al cliente con un PDF que no es el que tenemos
+ * nosotros. Para arreglar algo se elimina y se hace el bueno, que además queda
+ * con su propio número.
+ *
+ * Las **visitas** sí se editan, y no es una excepción a lo anterior: no salen
+ * impresas —el renderizador ni las mira— son el vínculo con el trabajo que el
+ * informe cuenta, y ese vínculo se corrige.
  */
 export function InformeDetail({
   informe,
@@ -69,6 +76,7 @@ export function InformeDetail({
   const aca = useAca();
   const [borrando, setBorrando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
+  const [editandoVisitas, setEditandoVisitas] = useState(false);
 
   async function eliminar() {
     setEliminando(true);
@@ -188,6 +196,17 @@ export function InformeDetail({
               <CardTitle className="text-base">
                 Visitas incluidas ({informe.visitas.length})
               </CardTitle>
+              <CardAction>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditandoVisitas(true)}
+                >
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                  Editar
+                </Button>
+              </CardAction>
             </CardHeader>
             <CardContent className="p-0">
               <ul className="divide-y text-sm">
@@ -290,6 +309,19 @@ export function InformeDetail({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {editandoVisitas && (
+        <SelectorVisitasInforme
+          informeId={informe.id}
+          clienteId={informe.cliente.id}
+          elegidas={informe.visitas.map((v) => v.id)}
+          onCerrar={() => setEditandoVisitas(false)}
+          onGuardado={() => {
+            setEditandoVisitas(false);
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }

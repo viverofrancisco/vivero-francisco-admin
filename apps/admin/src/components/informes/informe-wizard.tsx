@@ -371,8 +371,8 @@ export function InformeWizard({
   }
 
   function nextFromStep2() {
-    if (selectedVisitaIds.size === 0)
-      return toast.error("Selecciona al menos una visita");
+    // Sin visitas se sigue igual: las secciones se arman a mano, que es lo que
+    // pasa cuando el informe no sale de una visita.
     setStep(3);
   }
 
@@ -439,7 +439,8 @@ export function InformeWizard({
     },
     2: {
       title: "Visitas",
-      description: "Selecciona las visitas a incluir.",
+      description:
+        "Qué visitas cubre el informe. Podés seguir sin elegir ninguna y armar las secciones a mano.",
     },
     3: {
       title: "Componer secciones",
@@ -599,10 +600,7 @@ export function InformeWizard({
                 </Button>
               ) : null}
               {step === 2 ? (
-                <Button
-                  onClick={nextFromStep2}
-                  disabled={selectedVisitaIds.size === 0}
-                >
+                <Button onClick={nextFromStep2}>
                   Continuar <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               ) : null}

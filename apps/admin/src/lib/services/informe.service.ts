@@ -366,9 +366,8 @@ export async function generateInforme(
 ) {
   ensureInformes(viewer);
 
-  if (payload.visitaIds.length === 0) {
-    throw new ValidationError("Selecciona al menos una visita.");
-  }
+  // Sin visitas se puede: un informe es un documento, y hay documentos que no
+  // salen de una visita. Lo que sí necesita es contenido, que es lo de abajo.
   if (payload.secciones.length === 0) {
     throw new ValidationError("Agrega al menos una sección al informe.");
   }
@@ -685,4 +684,56 @@ export async function deleteInforme(viewer: Viewer, id: string) {
     informe.pdfKey,
     ...informe.secciones.flatMap((s) => s.fotos.map((f) => f.key)),
   ]);
+}
+
+/**
+ * Cambia qué visitas cubre un informe ya generado.
+ *
+ * **No contradice que el informe sea inmutable.** Lo que no se toca es el
+ * documento: su título, sus secciones, sus fotos y el PDF que el cliente ya
+ * tiene. Las visitas no salen impresas —el renderizador ni las mira— son el
+ * vínculo con el trabajo que el informe cuenta, y ese vínculo se corrige:
+ * alguien marcó una visita de más, o faltó la del martes.
+ *
+ * Reemplaza el conjunto entero, como todo lo que se guarda desde una pantalla:
+ * lo que llega es el estado final.
+ */
+export async function actualizarVisitasDelInforme(
+  viewer: Viewer,
+  informeId: string,
+  visitaIds: string[]
+) {
+  ensureInformes(viewer);
+
+  const informe = await prisma.informe.findUnique({
+    where: { id: informeId },
+    select: { id: true, clienteId: true },
+  });
+  if (!informe) throw new NotFoundError("Informe no encontrado");
+
+  // Cada visita, con el mismo permiso que en cualquier otro lado, y del mismo
+  // cliente: sin esto un id a mano metería el trabajo de otro en este informe.
+  // Que el informe sea visible lo garantiza `getInforme` al devolverlo.
+  const visitas = await Promise.all(
+    visitaIds.map((id) => getVisitaForViewer(id, viewer))
+  );
+  for (const v of visitas) {
+    if (v.cliente.id !== informe.clienteId) {
+      throw new ValidationError("Una de las visitas no es de este cliente.");
+    }
+  }
+
+  await prisma.$transaction([
+    prisma.informeVisita.deleteMany({ where: { informeId } }),
+    ...(visitaIds.length > 0
+      ? [
+          prisma.informeVisita.createMany({
+            data: visitaIds.map((visitaId) => ({ informeId, visitaId })),
+            skipDuplicates: true,
+          }),
+        ]
+      : []),
+  ]);
+
+  return getInforme(viewer, informeId);
 }
