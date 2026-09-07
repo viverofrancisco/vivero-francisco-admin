@@ -62,29 +62,21 @@ export function ServiciosTable({
   const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
   const [tipo, setTipo] = useFiltroUrl("tipo", "");
   /**
-   * Un solo filtro para los tres estados que muestra la columna.
+   * Activo o borrador. Sin nada elegido salen los dos, que es lo que hay.
    *
-   * Eran dos listas —activos/archivados por un lado, el estado por otro— y
-   * decían lo mismo desde distintos lugares: archivar es un borrado suave, así
-   * que a los ojos de quien mira el listado es un estado más. Archivado le gana
-   * a los otros dos, igual que en la insignia: uno archivado no se ofrece esté
-   * como esté.
-   *
-   * Sin nada elegido **no salen los archivados**: son los que ya no se ofrecen,
-   * y verlos mezclados con el catálogo es ruido. Siguen a un clic, que es lo
-   * único que los deja restaurar.
+   * **Los archivados no se listan.** Archivar es un borrado suave y el producto
+   * sigue existiendo, pero ya no se ofrece: en la pantalla del catálogo es
+   * ruido. Por eso tampoco es una opción del filtro — una que no cambiara nada
+   * sería peor que no tenerla.
    */
   const [estado, setEstado] = useFiltroUrl("estado", "");
   const [categoria, setCategoria] = useFiltroUrl("categoria", "");
   const [page, setPage] = useFiltroUrl("pagina", 1);
 
   const filtered = useMemo(() => {
-    let result =
-      estado === "ARCHIVADO"
-        ? productos.filter((s) => s.archivadoEl)
-        : productos.filter(
-            (s) => !s.archivadoEl && (!estado || s.estado === estado)
-          );
+    let result = productos.filter(
+      (s) => !s.archivadoEl && (!estado || s.estado === estado)
+    );
     if (tipo) result = result.filter((s) => s.tipo === tipo);
     if (categoria) {
       result = result.filter((s) =>
@@ -178,17 +170,16 @@ export function ServiciosTable({
             />
           </div>
         )}
-        <div className="w-48">
+        <div className="w-40">
           <CustomSelect
             value={estado}
             onChange={(v) => cambiar(() => setEstado(v))}
             options={[
-              { value: "", label: "Activos y borradores" },
+              { value: "", label: "Todo estado" },
               { value: "ACTIVO", label: "Activos" },
               { value: "BORRADOR", label: "Borradores" },
-              { value: "ARCHIVADO", label: "Archivados" },
             ]}
-            placeholder="Activos y borradores"
+            placeholder="Todo estado"
           />
         </div>
       </div>
@@ -262,7 +253,9 @@ export function ServiciosTable({
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {/* Archivado no se archiva de nuevo: lo que hace falta
-                          ahí es la puerta de vuelta. */}
+                          ahí es la puerta de vuelta. Hoy no se llega —el
+                          listado no los muestra—, y queda porque es la vuelta
+                          el día que se puedan ver otra vez. */}
                       {servicio.archivadoEl ? (
                         <Button
                           variant="ghost"
