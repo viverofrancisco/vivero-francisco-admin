@@ -275,7 +275,7 @@ export type OrdenLineaGroupByOutputType = {
   iva: runtime.Decimal
   total: runtime.Decimal
   productoId: string
-  varianteId: string | null
+  varianteId: string
   suscripcionItemId: string | null
   periodoInicio: Date | null
   periodoFin: Date | null
@@ -316,13 +316,13 @@ export type OrdenLineaWhereInput = {
   iva?: Prisma.DecimalFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFilter<"OrdenLinea"> | string
-  varianteId?: Prisma.StringNullableFilter<"OrdenLinea"> | string | null
+  varianteId?: Prisma.StringFilter<"OrdenLinea"> | string
   suscripcionItemId?: Prisma.StringNullableFilter<"OrdenLinea"> | string | null
   periodoInicio?: Prisma.DateTimeNullableFilter<"OrdenLinea"> | Date | string | null
   periodoFin?: Prisma.DateTimeNullableFilter<"OrdenLinea"> | Date | string | null
   orden?: Prisma.XOR<Prisma.OrdenScalarRelationFilter, Prisma.OrdenWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
-  variante?: Prisma.XOR<Prisma.VarianteNullableScalarRelationFilter, Prisma.VarianteWhereInput> | null
+  variante?: Prisma.XOR<Prisma.VarianteScalarRelationFilter, Prisma.VarianteWhereInput>
   suscripcionItem?: Prisma.XOR<Prisma.SuscripcionItemNullableScalarRelationFilter, Prisma.SuscripcionItemWhereInput> | null
   origenes?: Prisma.OrdenLineaOrigenListRelationFilter
 }
@@ -339,7 +339,7 @@ export type OrdenLineaOrderByWithRelationInput = {
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
-  varianteId?: Prisma.SortOrderInput | Prisma.SortOrder
+  varianteId?: Prisma.SortOrder
   suscripcionItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   periodoInicio?: Prisma.SortOrderInput | Prisma.SortOrder
   periodoFin?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -366,13 +366,13 @@ export type OrdenLineaWhereUniqueInput = Prisma.AtLeast<{
   iva?: Prisma.DecimalFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFilter<"OrdenLinea"> | string
-  varianteId?: Prisma.StringNullableFilter<"OrdenLinea"> | string | null
+  varianteId?: Prisma.StringFilter<"OrdenLinea"> | string
   suscripcionItemId?: Prisma.StringNullableFilter<"OrdenLinea"> | string | null
   periodoInicio?: Prisma.DateTimeNullableFilter<"OrdenLinea"> | Date | string | null
   periodoFin?: Prisma.DateTimeNullableFilter<"OrdenLinea"> | Date | string | null
   orden?: Prisma.XOR<Prisma.OrdenScalarRelationFilter, Prisma.OrdenWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
-  variante?: Prisma.XOR<Prisma.VarianteNullableScalarRelationFilter, Prisma.VarianteWhereInput> | null
+  variante?: Prisma.XOR<Prisma.VarianteScalarRelationFilter, Prisma.VarianteWhereInput>
   suscripcionItem?: Prisma.XOR<Prisma.SuscripcionItemNullableScalarRelationFilter, Prisma.SuscripcionItemWhereInput> | null
   origenes?: Prisma.OrdenLineaOrigenListRelationFilter
 }, "id" | "suscripcionItemId_periodoInicio">
@@ -389,7 +389,7 @@ export type OrdenLineaOrderByWithAggregationInput = {
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
-  varianteId?: Prisma.SortOrderInput | Prisma.SortOrder
+  varianteId?: Prisma.SortOrder
   suscripcionItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   periodoInicio?: Prisma.SortOrderInput | Prisma.SortOrder
   periodoFin?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -415,7 +415,7 @@ export type OrdenLineaScalarWhereWithAggregatesInput = {
   iva?: Prisma.DecimalWithAggregatesFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalWithAggregatesFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringWithAggregatesFilter<"OrdenLinea"> | string
-  varianteId?: Prisma.StringNullableWithAggregatesFilter<"OrdenLinea"> | string | null
+  varianteId?: Prisma.StringWithAggregatesFilter<"OrdenLinea"> | string
   suscripcionItemId?: Prisma.StringNullableWithAggregatesFilter<"OrdenLinea"> | string | null
   periodoInicio?: Prisma.DateTimeNullableWithAggregatesFilter<"OrdenLinea"> | Date | string | null
   periodoFin?: Prisma.DateTimeNullableWithAggregatesFilter<"OrdenLinea"> | Date | string | null
@@ -435,7 +435,7 @@ export type OrdenLineaCreateInput = {
   periodoFin?: Date | string | null
   orden: Prisma.OrdenCreateNestedOneWithoutLineasInput
   producto: Prisma.ProductoCreateNestedOneWithoutOrdenLineasInput
-  variante?: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
+  variante: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutOrdenLineasInput
   origenes?: Prisma.OrdenLineaOrigenCreateNestedManyWithoutOrdenLineaInput
 }
@@ -452,7 +452,7 @@ export type OrdenLineaUncheckedCreateInput = {
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId: string
-  varianteId?: string | null
+  varianteId: string
   suscripcionItemId?: string | null
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
@@ -473,7 +473,7 @@ export type OrdenLineaUpdateInput = {
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orden?: Prisma.OrdenUpdateOneRequiredWithoutLineasNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutOrdenLineasNestedInput
-  variante?: Prisma.VarianteUpdateOneWithoutOrdenLineasNestedInput
+  variante?: Prisma.VarianteUpdateOneRequiredWithoutOrdenLineasNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutOrdenLineasNestedInput
   origenes?: Prisma.OrdenLineaOrigenUpdateManyWithoutOrdenLineaNestedInput
 }
@@ -490,7 +490,7 @@ export type OrdenLineaUncheckedUpdateInput = {
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -509,7 +509,7 @@ export type OrdenLineaCreateManyInput = {
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId: string
-  varianteId?: string | null
+  varianteId: string
   suscripcionItemId?: string | null
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
@@ -541,7 +541,7 @@ export type OrdenLineaUncheckedUpdateManyInput = {
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -836,7 +836,7 @@ export type OrdenLineaCreateWithoutProductoInput = {
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
   orden: Prisma.OrdenCreateNestedOneWithoutLineasInput
-  variante?: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
+  variante: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutOrdenLineasInput
   origenes?: Prisma.OrdenLineaOrigenCreateNestedManyWithoutOrdenLineaInput
 }
@@ -852,7 +852,7 @@ export type OrdenLineaUncheckedCreateWithoutProductoInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId?: string | null
+  varianteId: string
   suscripcionItemId?: string | null
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
@@ -900,7 +900,7 @@ export type OrdenLineaScalarWhereInput = {
   iva?: Prisma.DecimalFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"OrdenLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFilter<"OrdenLinea"> | string
-  varianteId?: Prisma.StringNullableFilter<"OrdenLinea"> | string | null
+  varianteId?: Prisma.StringFilter<"OrdenLinea"> | string
   suscripcionItemId?: Prisma.StringNullableFilter<"OrdenLinea"> | string | null
   periodoInicio?: Prisma.DateTimeNullableFilter<"OrdenLinea"> | Date | string | null
   periodoFin?: Prisma.DateTimeNullableFilter<"OrdenLinea"> | Date | string | null
@@ -982,7 +982,7 @@ export type OrdenLineaCreateWithoutSuscripcionItemInput = {
   periodoFin?: Date | string | null
   orden: Prisma.OrdenCreateNestedOneWithoutLineasInput
   producto: Prisma.ProductoCreateNestedOneWithoutOrdenLineasInput
-  variante?: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
+  variante: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
   origenes?: Prisma.OrdenLineaOrigenCreateNestedManyWithoutOrdenLineaInput
 }
 
@@ -998,7 +998,7 @@ export type OrdenLineaUncheckedCreateWithoutSuscripcionItemInput = {
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId: string
-  varianteId?: string | null
+  varianteId: string
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
   origenes?: Prisma.OrdenLineaOrigenUncheckedCreateNestedManyWithoutOrdenLineaInput
@@ -1043,7 +1043,7 @@ export type OrdenLineaCreateWithoutOrdenInput = {
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
   producto: Prisma.ProductoCreateNestedOneWithoutOrdenLineasInput
-  variante?: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
+  variante: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutOrdenLineasInput
   origenes?: Prisma.OrdenLineaOrigenCreateNestedManyWithoutOrdenLineaInput
 }
@@ -1059,7 +1059,7 @@ export type OrdenLineaUncheckedCreateWithoutOrdenInput = {
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId: string
-  varianteId?: string | null
+  varianteId: string
   suscripcionItemId?: string | null
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
@@ -1106,7 +1106,7 @@ export type OrdenLineaCreateWithoutOrigenesInput = {
   periodoFin?: Date | string | null
   orden: Prisma.OrdenCreateNestedOneWithoutLineasInput
   producto: Prisma.ProductoCreateNestedOneWithoutOrdenLineasInput
-  variante?: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
+  variante: Prisma.VarianteCreateNestedOneWithoutOrdenLineasInput
   suscripcionItem?: Prisma.SuscripcionItemCreateNestedOneWithoutOrdenLineasInput
 }
 
@@ -1122,7 +1122,7 @@ export type OrdenLineaUncheckedCreateWithoutOrigenesInput = {
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId: string
-  varianteId?: string | null
+  varianteId: string
   suscripcionItemId?: string | null
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
@@ -1158,7 +1158,7 @@ export type OrdenLineaUpdateWithoutOrigenesInput = {
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orden?: Prisma.OrdenUpdateOneRequiredWithoutLineasNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutOrdenLineasNestedInput
-  variante?: Prisma.VarianteUpdateOneWithoutOrdenLineasNestedInput
+  variante?: Prisma.VarianteUpdateOneRequiredWithoutOrdenLineasNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutOrdenLineasNestedInput
 }
 
@@ -1174,7 +1174,7 @@ export type OrdenLineaUncheckedUpdateWithoutOrigenesInput = {
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1191,7 +1191,7 @@ export type OrdenLineaCreateManyProductoInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId?: string | null
+  varianteId: string
   suscripcionItemId?: string | null
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
@@ -1210,7 +1210,7 @@ export type OrdenLineaUpdateWithoutProductoInput = {
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orden?: Prisma.OrdenUpdateOneRequiredWithoutLineasNestedInput
-  variante?: Prisma.VarianteUpdateOneWithoutOrdenLineasNestedInput
+  variante?: Prisma.VarianteUpdateOneRequiredWithoutOrdenLineasNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutOrdenLineasNestedInput
   origenes?: Prisma.OrdenLineaOrigenUpdateManyWithoutOrdenLineaNestedInput
 }
@@ -1226,7 +1226,7 @@ export type OrdenLineaUncheckedUpdateWithoutProductoInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1244,7 +1244,7 @@ export type OrdenLineaUncheckedUpdateManyWithoutProductoInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1332,7 +1332,7 @@ export type OrdenLineaCreateManySuscripcionItemInput = {
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId: string
-  varianteId?: string | null
+  varianteId: string
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
 }
@@ -1351,7 +1351,7 @@ export type OrdenLineaUpdateWithoutSuscripcionItemInput = {
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orden?: Prisma.OrdenUpdateOneRequiredWithoutLineasNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutOrdenLineasNestedInput
-  variante?: Prisma.VarianteUpdateOneWithoutOrdenLineasNestedInput
+  variante?: Prisma.VarianteUpdateOneRequiredWithoutOrdenLineasNestedInput
   origenes?: Prisma.OrdenLineaOrigenUpdateManyWithoutOrdenLineaNestedInput
 }
 
@@ -1367,7 +1367,7 @@ export type OrdenLineaUncheckedUpdateWithoutSuscripcionItemInput = {
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   origenes?: Prisma.OrdenLineaOrigenUncheckedUpdateManyWithoutOrdenLineaNestedInput
@@ -1385,7 +1385,7 @@ export type OrdenLineaUncheckedUpdateManyWithoutSuscripcionItemInput = {
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -1401,7 +1401,7 @@ export type OrdenLineaCreateManyOrdenInput = {
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId: string
-  varianteId?: string | null
+  varianteId: string
   suscripcionItemId?: string | null
   periodoInicio?: Date | string | null
   periodoFin?: Date | string | null
@@ -1420,7 +1420,7 @@ export type OrdenLineaUpdateWithoutOrdenInput = {
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   producto?: Prisma.ProductoUpdateOneRequiredWithoutOrdenLineasNestedInput
-  variante?: Prisma.VarianteUpdateOneWithoutOrdenLineasNestedInput
+  variante?: Prisma.VarianteUpdateOneRequiredWithoutOrdenLineasNestedInput
   suscripcionItem?: Prisma.SuscripcionItemUpdateOneWithoutOrdenLineasNestedInput
   origenes?: Prisma.OrdenLineaOrigenUpdateManyWithoutOrdenLineaNestedInput
 }
@@ -1436,7 +1436,7 @@ export type OrdenLineaUncheckedUpdateWithoutOrdenInput = {
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1454,7 +1454,7 @@ export type OrdenLineaUncheckedUpdateManyWithoutOrdenInput = {
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
   suscripcionItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodoInicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodoFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1509,7 +1509,7 @@ export type OrdenLineaSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   periodoFin?: boolean
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.OrdenLinea$varianteArgs<ExtArgs>
+  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs>
   origenes?: boolean | Prisma.OrdenLinea$origenesArgs<ExtArgs>
   _count?: boolean | Prisma.OrdenLineaCountOutputTypeDefaultArgs<ExtArgs>
@@ -1533,7 +1533,7 @@ export type OrdenLineaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   periodoFin?: boolean
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.OrdenLinea$varianteArgs<ExtArgs>
+  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs>
 }, ExtArgs["result"]["ordenLinea"]>
 
@@ -1555,7 +1555,7 @@ export type OrdenLineaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   periodoFin?: boolean
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.OrdenLinea$varianteArgs<ExtArgs>
+  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs>
 }, ExtArgs["result"]["ordenLinea"]>
 
@@ -1581,7 +1581,7 @@ export type OrdenLineaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type OrdenLineaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.OrdenLinea$varianteArgs<ExtArgs>
+  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs>
   origenes?: boolean | Prisma.OrdenLinea$origenesArgs<ExtArgs>
   _count?: boolean | Prisma.OrdenLineaCountOutputTypeDefaultArgs<ExtArgs>
@@ -1589,13 +1589,13 @@ export type OrdenLineaInclude<ExtArgs extends runtime.Types.Extensions.InternalA
 export type OrdenLineaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.OrdenLinea$varianteArgs<ExtArgs>
+  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs>
 }
 export type OrdenLineaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orden?: boolean | Prisma.OrdenDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.OrdenLinea$varianteArgs<ExtArgs>
+  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
   suscripcionItem?: boolean | Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs>
 }
 
@@ -1613,7 +1613,7 @@ export type $OrdenLineaPayload<ExtArgs extends runtime.Types.Extensions.Internal
      * `Restrict` por lo mismo que el producto: una variante ya vendida no se
      * borra. Eso hace, de paso, que sacar un eje avise en vez de romper.
      */
-    variante: Prisma.$VariantePayload<ExtArgs> | null
+    variante: Prisma.$VariantePayload<ExtArgs>
     suscripcionItem: Prisma.$SuscripcionItemPayload<ExtArgs> | null
     /**
      * De qué trabajos de visita sale esta línea. Pueden ser varios.
@@ -1642,11 +1642,17 @@ export type $OrdenLineaPayload<ExtArgs extends runtime.Types.Extensions.Internal
      */
     productoId: string
     /**
-     * **Qué variante**, cuando el producto es un bien. Un servicio no tiene:
-     * por eso es opcional acá y lo exige el servicio, que es quien sabe el
-     * `tipo`. Es de dónde sale el SKU impreso y qué stock se descuenta.
+     * **Qué variante se vendió. Siempre hay una.**
+     * 
+     * Todo producto tiene exactamente una variante —un servicio y un bien sin
+     * opciones incluidos— así que acá nunca falta. Antes era opcional "porque un
+     * servicio no tiene", y eso hacía que una línea apuntara a un producto o a
+     * una variante según el tipo: dos formas para la misma cosa, y una rama en
+     * cada lugar que preguntaba el SKU, el precio o el stock.
+     * 
+     * De acá salen el SKU impreso y el stock que baja.
      */
-    varianteId: string | null
+    varianteId: string
     suscripcionItemId: string | null
     periodoInicio: Date | null
     periodoFin: Date | null
@@ -2046,7 +2052,7 @@ export interface Prisma__OrdenLineaClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   orden<T extends Prisma.OrdenDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrdenDefaultArgs<ExtArgs>>): Prisma.Prisma__OrdenClient<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   producto<T extends Prisma.ProductoDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductoDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  variante<T extends Prisma.OrdenLinea$varianteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrdenLinea$varianteArgs<ExtArgs>>): Prisma.Prisma__VarianteClient<runtime.Types.Result.GetResult<Prisma.$VariantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  variante<T extends Prisma.VarianteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VarianteDefaultArgs<ExtArgs>>): Prisma.Prisma__VarianteClient<runtime.Types.Result.GetResult<Prisma.$VariantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   suscripcionItem<T extends Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrdenLinea$suscripcionItemArgs<ExtArgs>>): Prisma.Prisma__SuscripcionItemClient<runtime.Types.Result.GetResult<Prisma.$SuscripcionItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   origenes<T extends Prisma.OrdenLinea$origenesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrdenLinea$origenesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenLineaOrigenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2491,25 +2497,6 @@ export type OrdenLineaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many OrdenLineas to delete.
    */
   limit?: number
-}
-
-/**
- * OrdenLinea.variante
- */
-export type OrdenLinea$varianteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Variante
-   */
-  select?: Prisma.VarianteSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Variante
-   */
-  omit?: Prisma.VarianteOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.VarianteInclude<ExtArgs> | null
-  where?: Prisma.VarianteWhereInput
 }
 
 /**

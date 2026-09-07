@@ -268,11 +268,6 @@ model Producto {
   /// Si ya se puede vender. Un `BORRADOR` no aparece en los selectores.
   estado EstadoProducto @default(ACTIVO)
 
-  /// Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
-  /// del XML; sin él se emite con uno derivado del id. Único porque es lo que
-  /// identifica al producto en el papel: repetirlo haría ambigua la factura.
-  codigo String? @unique
-
   /// Tasa de IVA por defecto (porcentaje). En Ecuador conviven 0% y 15%.
   ivaTasa Decimal? @db.Decimal(5, 2)
 
@@ -1488,10 +1483,17 @@ model OrdenLinea {
   /// no se puede cobrar. Es además lo que hace que un reporte por producto sea
   /// un `groupBy` y no una reconstrucción.
   productoId        String
-  /// **Qué variante**, cuando el producto es un bien. Un servicio no tiene:
-  /// por eso es opcional acá y lo exige el servicio, que es quien sabe el
-  /// `tipo`. Es de dónde sale el SKU impreso y qué stock se descuenta.
-  varianteId        String?
+  /// **Qué variante se vendió. Siempre hay una.**
+  ///
+  /// Todo producto tiene **al menos** una —un servicio y un bien sin opciones
+  /// tienen exactamente una; con opciones hay una por combinación— así que acá
+  /// nunca falta. Antes era opcional "porque un servicio no tiene", y eso hacía
+  /// que una línea apuntara a un producto o a una variante según el tipo: dos
+  /// formas para la misma cosa, y una rama en cada lugar que preguntaba el SKU,
+  /// el precio o el stock.
+  ///
+  /// De acá salen el SKU impreso y el stock que baja.
+  varianteId        String
   suscripcionItemId String?
   periodoInicio     DateTime? @db.Date
   periodoFin        DateTime? @db.Date
@@ -1503,7 +1505,7 @@ model OrdenLinea {
   producto        Producto           @relation(fields: [productoId], references: [id], onDelete: Restrict)
   /// `Restrict` por lo mismo que el producto: una variante ya vendida no se
   /// borra. Eso hace, de paso, que sacar un eje avise en vez de romper.
-  variante        Variante?          @relation(fields: [varianteId], references: [id], onDelete: Restrict)
+  variante        Variante           @relation(fields: [varianteId], references: [id], onDelete: Restrict)
   suscripcionItem SuscripcionItem?   @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
   /// De qué trabajos de visita sale esta línea. Pueden ser varios.
   origenes        OrdenLineaOrigen[]
@@ -1747,12 +1749,12 @@ model FacturaLinea {
 
   /// De dónde sale el `codigoPrincipal`, y con qué queda asociada la venta.
   productoId String
-  /// Qué variante salió, cuando el producto es un bien. Su SKU es lo que se
-  /// imprime como `codigoPrincipal`, y es de dónde se descontó el stock.
-  varianteId String?
+  /// Qué variante salió. Siempre hay una: su SKU es lo que se imprime como
+  /// `codigoPrincipal`, y es de dónde se descontó el stock.
+  varianteId String
 
   factura  Factura   @relation(fields: [facturaId], references: [id], onDelete: Cascade)
-  variante Variante? @relation(fields: [varianteId], references: [id], onDelete: Restrict)
+  variante Variante  @relation(fields: [varianteId], references: [id], onDelete: Restrict)
   /// `Restrict` como en `OrdenLinea`: un producto ya facturado no se borra, o
   /// la factura se queda sin con qué reconciliarse.
   producto Producto  @relation(fields: [productoId], references: [id], onDelete: Restrict)

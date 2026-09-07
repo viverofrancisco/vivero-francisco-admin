@@ -63,8 +63,8 @@ function ensureCanWrite(viewer: Viewer): void {
 /** Una línea tal como la arma quien emite, que puede no ser la de la orden. */
 export interface LineaFacturaInput {
   productoId: string;
-  /** Qué variante sale, cuando el producto es un bien. Su SKU es el código. */
-  varianteId?: string | null;
+  /** Qué variante sale. Su SKU es el código impreso; todo producto tiene una. */
+  varianteId: string;
   /** Lo que sale impreso, tal cual: va al `descripcion` del detalle del XML. */
   descripcion: string;
   cantidad: number;
@@ -101,7 +101,7 @@ function lineasParaGuardar(propuestas: LineaFacturaInput[]) {
       posicion: i,
       descripcion: l.descripcion,
       cantidad: l.cantidad,
-      varianteId: l.varianteId ?? null,
+      varianteId: l.varianteId,
       precioUnitario: l.precioUnitario,
       ivaTasa: l.ivaTasa,
       subtotal,
@@ -360,16 +360,15 @@ async function emitirPorSri(
 
   const productos = await prisma.producto.findMany({
     where: { id: { in: [...new Set(propuestas.map((l) => l.productoId))] } },
-    select: { id: true, nombre: true, codigo: true },
+    select: { id: true, nombre: true },
   });
   const porId = new Map(productos.map((p) => [p.id, p]));
 
-  // El SKU de la variante manda sobre el código del producto: es lo que
-  // identifica exactamente lo que salió —"Rojo · Grande" y no "Maceta"— y es
-  // lo que está pegado en la etiqueta que el cliente tiene en la mano.
-  const varianteIds = [
-    ...new Set(propuestas.map((l) => l.varianteId).filter(Boolean) as string[]),
-  ];
+  // El código impreso sale del SKU de la variante, que es lo único que
+  // identifica exactamente lo que salió —"Rojo · Grande" y no "Maceta"— y es lo
+  // que está pegado en la etiqueta que el cliente tiene en la mano. Todo
+  // producto tiene una variante, así que acá nunca falta de dónde sacarlo.
+  const varianteIds = [...new Set(propuestas.map((l) => l.varianteId))];
   const skus = new Map(
     (
       await prisma.variante.findMany({
@@ -390,10 +389,9 @@ async function emitirPorSri(
       );
     }
     return {
-      codigo:
-        (l.varianteId ? skus.get(l.varianteId) : null) ??
-        producto.codigo ??
-        producto.id.slice(-10).toUpperCase(),
+      // Sin SKU cargado se deriva del id: el SRI exige un `codigoPrincipal` en
+      // cada detalle, así que no puede quedar vacío.
+      codigo: skus.get(l.varianteId) ?? producto.id.slice(-10).toUpperCase(),
       // Lo que el armador decidió imprimir, tal cual.
       descripcion: l.descripcion,
       cantidad: l.cantidad,
@@ -594,7 +592,7 @@ export async function emitirNotaCredito(
           ivaTasa: true,
           productoId: true,
           varianteId: true,
-          producto: { select: { codigo: true, id: true } },
+          producto: { select: { id: true } },
           variante: { select: { sku: true } },
         },
       },
@@ -640,10 +638,7 @@ export async function emitirNotaCredito(
       direccion: factura.datoFacturacion?.direccion,
     },
     factura.lineas.map((l) => ({
-      codigo:
-        l.variante?.sku ??
-        l.producto.codigo ??
-        l.producto.id.slice(-10).toUpperCase(),
+      codigo: l.variante.sku ?? l.producto.id.slice(-10).toUpperCase(),
       descripcion: l.descripcion,
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),

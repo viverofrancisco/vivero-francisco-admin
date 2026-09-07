@@ -13,9 +13,9 @@ export const lineaFacturaSchema = z.object({
   productoId: z.string().min(1),
   /**
    * Qué variante sale. **Su SKU es el `codigoPrincipal`** impreso, y es de
-   * dónde se descuenta el stock al autorizar. Un servicio no tiene.
+   * dónde se descuenta el stock al autorizar. Todo producto tiene una.
    */
-  varianteId: z.string().min(1).nullable().optional(),
+  varianteId: z.string().min(1),
   /** Lo que sale impreso, tal cual: va al `descripcion` del detalle del XML. */
   descripcion: z.string().min(1, "La línea necesita una descripción"),
   cantidad: z.number().positive(),

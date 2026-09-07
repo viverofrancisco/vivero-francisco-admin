@@ -592,15 +592,26 @@ export async function actualizarVariante(
 }
 
 /**
- * Le da a un bien su variante única, si todavía no tiene ninguna.
+ * Le da a un producto su primera variante, si todavía no tiene ninguna.
  *
  * Un bien nace sin variantes porque el producto se crea antes de que nadie
  * piense en opciones. Esto es lo que hace que igual tenga dónde contarse.
  */
-export async function asegurarVarianteUnica(productoId: string, sku?: string | null) {
+export async function asegurarVarianteUnica(
+  productoId: string,
+  sku?: string | null,
+  opciones: { manejaInventario?: boolean } = {}
+) {
   const hay = await prisma.variante.count({ where: { productoId } });
   if (hay > 0) return;
   await prisma.variante.create({
-    data: { productoId, combinacion: "", sku: sku?.trim() || null },
+    data: {
+      productoId,
+      combinacion: "",
+      sku: sku?.trim() || null,
+      // Un servicio no se cuenta. Es lo único que lo distingue de un bien sin
+      // opciones: los dos tienen su variante, y en los dos ahí vive el código.
+      manejaInventario: opciones.manejaInventario ?? true,
+    },
   });
 }

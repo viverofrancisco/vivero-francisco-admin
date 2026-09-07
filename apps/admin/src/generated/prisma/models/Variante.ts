@@ -550,11 +550,6 @@ export type VarianteScalarRelationFilter = {
   isNot?: Prisma.VarianteWhereInput
 }
 
-export type VarianteNullableScalarRelationFilter = {
-  is?: Prisma.VarianteWhereInput | null
-  isNot?: Prisma.VarianteWhereInput | null
-}
-
 export type VarianteCreateNestedManyWithoutProductoInput = {
   create?: Prisma.XOR<Prisma.VarianteCreateWithoutProductoInput, Prisma.VarianteUncheckedCreateWithoutProductoInput> | Prisma.VarianteCreateWithoutProductoInput[] | Prisma.VarianteUncheckedCreateWithoutProductoInput[]
   connectOrCreate?: Prisma.VarianteCreateOrConnectWithoutProductoInput | Prisma.VarianteCreateOrConnectWithoutProductoInput[]
@@ -681,12 +676,10 @@ export type VarianteCreateNestedOneWithoutOrdenLineasInput = {
   connect?: Prisma.VarianteWhereUniqueInput
 }
 
-export type VarianteUpdateOneWithoutOrdenLineasNestedInput = {
+export type VarianteUpdateOneRequiredWithoutOrdenLineasNestedInput = {
   create?: Prisma.XOR<Prisma.VarianteCreateWithoutOrdenLineasInput, Prisma.VarianteUncheckedCreateWithoutOrdenLineasInput>
   connectOrCreate?: Prisma.VarianteCreateOrConnectWithoutOrdenLineasInput
   upsert?: Prisma.VarianteUpsertWithoutOrdenLineasInput
-  disconnect?: Prisma.VarianteWhereInput | boolean
-  delete?: Prisma.VarianteWhereInput | boolean
   connect?: Prisma.VarianteWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.VarianteUpdateToOneWithWhereWithoutOrdenLineasInput, Prisma.VarianteUpdateWithoutOrdenLineasInput>, Prisma.VarianteUncheckedUpdateWithoutOrdenLineasInput>
 }
@@ -697,12 +690,10 @@ export type VarianteCreateNestedOneWithoutFacturaLineasInput = {
   connect?: Prisma.VarianteWhereUniqueInput
 }
 
-export type VarianteUpdateOneWithoutFacturaLineasNestedInput = {
+export type VarianteUpdateOneRequiredWithoutFacturaLineasNestedInput = {
   create?: Prisma.XOR<Prisma.VarianteCreateWithoutFacturaLineasInput, Prisma.VarianteUncheckedCreateWithoutFacturaLineasInput>
   connectOrCreate?: Prisma.VarianteCreateOrConnectWithoutFacturaLineasInput
   upsert?: Prisma.VarianteUpsertWithoutFacturaLineasInput
-  disconnect?: Prisma.VarianteWhereInput | boolean
-  delete?: Prisma.VarianteWhereInput | boolean
   connect?: Prisma.VarianteWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.VarianteUpdateToOneWithWhereWithoutFacturaLineasInput, Prisma.VarianteUpdateWithoutFacturaLineasInput>, Prisma.VarianteUncheckedUpdateWithoutFacturaLineasInput>
 }

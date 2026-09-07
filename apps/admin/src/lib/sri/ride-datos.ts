@@ -51,7 +51,8 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
           precioUnitario: true,
           subtotal: true,
           total: true,
-          producto: { select: { codigo: true, id: true } },
+          producto: { select: { id: true } },
+          variante: { select: { sku: true } },
         },
       },
     },
@@ -87,7 +88,8 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
       direccion: factura.datoFacturacion?.direccion ?? null,
     },
     lineas: factura.lineas.map((l) => ({
-      codigo: l.producto.codigo ?? l.producto.id.slice(-10).toUpperCase(),
+      // El SKU de la variante: es donde vive el código del catálogo.
+      codigo: l.variante.sku ?? l.producto.id.slice(-10).toUpperCase(),
       descripcion: l.descripcion,
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),

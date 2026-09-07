@@ -20,7 +20,13 @@ export default async function EditarServicioPage({
 
   const servicio = await prisma.producto.findUnique({
     where: { id },
-    include: { categorias: { select: { categoriaId: true } } },
+    include: {
+      categorias: { select: { categoriaId: true } },
+      // El código vive en la variante. Con una sola —un servicio, o un bien sin
+      // opciones— es "el" código del producto y se edita acá; con varias, cada
+      // una tiene el suyo y se edita en su propia ficha.
+      variantes: { orderBy: { posicion: "asc" }, select: { sku: true } },
+    },
   });
 
   if (!servicio) {
@@ -45,6 +51,10 @@ export default async function EditarServicioPage({
         backHref={backHref}
         servicio={{
           ...servicio,
+          codigo:
+            servicio.variantes.length === 1 ? servicio.variantes[0].sku : null,
+          /** Con varias variantes el código es de cada una, no del producto. */
+          codigoEnLaVariante: servicio.variantes.length > 1,
           // Decimal no cruza a un componente cliente.
           ivaTasa: servicio.ivaTasa === null ? null : Number(servicio.ivaTasa),
           // La ficha de un archivado se abre igual, pero tiene que decirlo.

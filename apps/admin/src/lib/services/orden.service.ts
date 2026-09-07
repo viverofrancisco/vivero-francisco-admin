@@ -413,7 +413,8 @@ function armarLineas(entrada: LineaOrdenInput[]) {
       l.ivaTasa
     ),
     productoId: l.productoId,
-    varianteId: l.varianteId ?? null,
+    // `ensureVariantes` ya la completó: acá nunca falta.
+    varianteId: l.varianteId!,
     suscripcionItemId: l.suscripcionItemId ?? null,
     periodoInicio: l.periodoInicio ?? null,
     periodoFin: l.periodoFin ?? null,
@@ -493,16 +494,20 @@ async function validarLineas(
 }
 
 /**
- * Un bien se vende por variante; un servicio no tiene ninguna.
+ * Toda línea sale de una variante, y acá se completa si no vino.
  *
- * **Con una sola variante la completa sola.** Un bien sin opciones tiene
- * exactamente una, así que preguntar cuál sería preguntar por una decisión que
- * no existe — y los borradores que arma el portal solo (al completar una
- * visita, al renovar un plan) no tienen a nadie a quien preguntarle.
+ * **Todo producto tiene al menos una.** Un servicio y un bien sin opciones
+ * tienen exactamente una, así que preguntar cuál sería preguntar por una
+ * decisión que no existe — y los borradores que arma el portal solo (al
+ * completar una visita, al renovar un plan) no tienen a nadie a quien
+ * preguntarle.
  *
  * Con varias sí hace falta elegir: nadie puede adivinar cuál de las seis
  * macetas se vendió, y sin eso no se sabe qué SKU imprimir ni de dónde
  * descontar. Ahí corta, y quien arma la orden lo resuelve en pantalla.
+ *
+ * Después de esto, `varianteId` está en todas — que es lo que permite que la
+ * columna sea obligatoria y que nada más abajo tenga que preguntarse el tipo.
  */
 async function ensureVariantes(lineas: LineaOrdenInput[]): Promise<void> {
   const productos = await prisma.producto.findMany({
@@ -510,7 +515,6 @@ async function ensureVariantes(lineas: LineaOrdenInput[]): Promise<void> {
     select: {
       id: true,
       nombre: true,
-      tipo: true,
       variantes: { select: { id: true }, orderBy: { posicion: "asc" } },
     },
   });
@@ -520,15 +524,6 @@ async function ensureVariantes(lineas: LineaOrdenInput[]): Promise<void> {
     const producto = porId.get(l.productoId);
     if (!producto) {
       throw new ValidationError(`"${l.descripcion}" apunta a un producto que no existe.`);
-    }
-    if (producto.tipo !== "BIEN") {
-      // Un servicio no tiene variantes: mandar una sería inventar un vínculo.
-      if (l.varianteId) {
-        throw new ValidationError(
-          `"${producto.nombre}" es un servicio y no tiene variantes.`
-        );
-      }
-      continue;
     }
     if (!l.varianteId) {
       if (producto.variantes.length === 1) {
@@ -542,9 +537,7 @@ async function ensureVariantes(lineas: LineaOrdenInput[]): Promise<void> {
       );
     }
     if (!producto.variantes.some((v) => v.id === l.varianteId)) {
-      throw new ValidationError(
-        `Esa variante no es de "${producto.nombre}".`
-      );
+      throw new ValidationError(`Esa variante no es de "${producto.nombre}".`);
     }
   }
 }

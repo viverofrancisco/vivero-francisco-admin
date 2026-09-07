@@ -23,15 +23,25 @@ Producto "Maceta"
 └── 6 variantes: Rojo·Grande, Rojo·Chico, Azul·Grande, …
 ```
 
-**Solo los bienes.** Un servicio no tiene nada que combinar: lo que cambia de
-una poda a otra es el precio, y eso vive en la orden, no en el catálogo.
-`guardarOpciones()` lo rechaza y la ficha de un servicio no muestra la sección.
+**Las opciones, solo en un bien.** Un servicio no tiene nada que combinar: lo
+que cambia de una poda a otra es el precio, y eso vive en la orden, no en el
+catálogo. `guardarOpciones()` lo rechaza y la ficha de un servicio no muestra la
+sección.
 
-**Un bien sin opciones tiene una variante igual**, sin valores. Es lo que hace
-que todo lo que pregunta "cuánto hay" mire siempre al mismo lado: no hay un
-camino para el producto simple y otro para el que tiene combinaciones. Se crea
-sola al dar de alta el bien (`asegurarVarianteUnica()`), hereda el código del
-producto como SKU, y quien nunca usa opciones no se entera de que existen.
+**Pero todo producto tiene al menos una variante, servicios incluidos.** Sin
+opciones es exactamente una; con opciones, una por combinación. La variante no
+es "dónde se cuenta el stock" —eso lo dice `manejaInventario`, que en un
+servicio nace apagado— es **lo que se vende**. Ahí viven el SKU, el precio de
+lista y el stock, y por eso una línea de orden apunta siempre a una variante y
+nunca tiene que preguntar el `tipo` para saber dónde mirar.
+
+Antes la tenían solo los bienes, y eso hacía que una línea apuntara a un
+producto o a una variante según el tipo: dos formas para la misma cosa, y una
+rama en cada lugar que preguntaba el código, el precio o el stock.
+
+La única se crea sola al dar de alta el producto (`asegurarVarianteUnica()`) y
+hereda el código que se escribió en el formulario como SKU. Quien nunca usa
+opciones no se entera de que existen.
 
 ### La combinación es lo que la base garantiza
 
@@ -163,15 +173,14 @@ anota nada: no pasó nada.
 
 ### Vender descuenta, y la nota de crédito devuelve
 
-`OrdenLinea.varianteId` y `FacturaLinea.varianteId` dicen qué variante salió.
-Son **nulables** porque un servicio no tiene ninguna; que un bien sí la lleve lo
-exige `ensureVariantes()` en `orden.service`, que es quien sabe el `tipo` — la
-base no puede expresar "obligatorio solo si el producto es un BIEN".
+`OrdenLinea.varianteId` y `FacturaLinea.varianteId` dicen qué variante salió, y
+son **obligatorias**: todo producto tiene una, así que la base puede exigirlo.
 
-**Con una sola variante la completa sola.** Un bien sin opciones tiene
-exactamente una, así que preguntar cuál sería preguntar por una decisión que no
-existe — y los borradores que arma el portal solo (al completar una visita, al
-renovar un plan) no tienen a quién preguntarle. Con varias corta y lo dice.
+**Con una sola variante la completa `ensureVariantes()`.** Un servicio y un bien
+sin opciones tienen exactamente una, así que preguntar cuál sería preguntar por
+una decisión que no existe — y los borradores que arma el portal solo (al
+completar una visita, al renovar un plan) no tienen a quién preguntarle. Con
+varias corta y lo dice: nadie puede adivinar cuál de las seis macetas salió.
 
 El orden de la emisión importa y no es simétrico:
 
@@ -425,9 +434,9 @@ línea del documento existe para repartir lo que la orden ya dice; proponerle un
 precio de catálogo la haría nacer descuadrada, y el cuadre es lo único que esa
 pantalla no negocia.
 
-Un **servicio no tiene precio de lista** porque no tiene variantes: una poda se
-cotiza cada vez. Si algún día hace falta, el lugar es una
-variante única de servicio — no una columna nueva en `Producto`.
+Un **servicio no muestra precio de lista** aunque su variante tenga la columna:
+una poda se cotiza cada vez, y el precio se decide en la suscripción o en la
+orden. El lugar ya existe si algún día hace falta mostrarlo.
 
 ## El SKU y el código
 
@@ -435,8 +444,13 @@ El `codigoPrincipal` de cada detalle del XML sale, en este orden:
 
 1. **`Variante.sku`** — lo que identifica exactamente lo que salió, y lo que
    está pegado en la etiqueta que el cliente tiene en la mano;
-2. **`Producto.codigo`** — para un servicio, que no tiene variantes;
-3. un código derivado del id, si no hay ninguno de los dos.
+2. un código derivado del id, si la variante no tiene SKU cargado.
+
+`Producto.codigo` **ya no existe**: el código es de la variante, que es lo que se
+vende. Mientras el producto tiene una sola, el campo «Código» de su ficha edita
+ese SKU; con varias, cada combinación tiene el suyo y se cambia en su página.
+Tenerlo en los dos lados dejaba dos campos donde escribir un código y solo uno
+ganaba al facturar.
 
 Verificado sobre el XML firmado de `001-001-000000010`:
 `<codigoPrincipal>MAC-ROJ-…</codigoPrincipal>` con

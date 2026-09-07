@@ -39,6 +39,14 @@ interface ServicioData {
   ivaTasa: string | number | null;
   /** El que sale impreso como `codigoPrincipal` en la factura. */
   codigo: string | null;
+  /**
+   * El producto tiene varias variantes, así que el código es de cada una.
+   *
+   * Con una sola —un servicio, o un bien sin opciones— el campo de acá arriba
+   * la edita. Con varias no hay "el código del producto" que editar: cada
+   * combinación tiene su SKU y se cambia en su ficha.
+   */
+  codigoEnLaVariante?: boolean;
   /** Si ya se puede vender. Un borrador no aparece en los selectores. */
   estado: "ACTIVO" | "BORRADOR";
   /** Cuándo se archivó, o `null` si está en el catálogo. */
@@ -382,11 +390,12 @@ export function ServicioDetail({
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 />
               </div>
-              {/* **El código solo en un servicio.** En un bien lo lleva la
-                  variante como SKU —que es lo que se imprime y lo que va en la
-                  etiqueta— y tener los dos era pedir el mismo dato dos veces
-                  para que después uno de los dos ganara. */}
-              {servicio.tipo === "SERVICIO" && (
+              {/* **El código, mientras haya una sola variante.** Ahí este campo
+                  edita su SKU, que es lo que se imprime y lo que va en la
+                  etiqueta. Con varias combinaciones cada una tiene el suyo y se
+                  cambia en su ficha: un "código del producto" ahí sería un dato
+                  que no se usa. */}
+              {!servicio.codigoEnLaVariante && (
                 <div className="space-y-2">
                   <Label htmlFor="codigo">Código</Label>
                   <Input

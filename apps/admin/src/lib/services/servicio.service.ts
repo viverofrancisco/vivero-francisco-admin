@@ -110,8 +110,9 @@ export interface CreateServicioPayload {
    */
   categoriaIds?: string[];
   /**
-   * Código del catálogo. Sale impreso como `codigoPrincipal` en cada detalle
-   * del XML; si no hay, se emite con un código derivado del id.
+   * Código del catálogo. Se guarda como el `sku` de la variante única, que es
+   * de donde sale el `codigoPrincipal` del XML; sin él se emite uno derivado
+   * del id.
    */
   codigo?: string | null;
   /** Si ya se puede vender. Nace `ACTIVO`. */
@@ -137,7 +138,6 @@ export async function createServicio(
           categorias: payload.categoriaIds?.length
             ? { create: payload.categoriaIds.map((categoriaId) => ({ categoriaId })) }
             : undefined,
-          codigo: payload.codigo?.trim() || null,
           ...(payload.estado ? { estado: payload.estado } : {}),
           createdById: viewer.id,
           updatedById: viewer.id,
@@ -146,12 +146,16 @@ export async function createServicio(
     payload.codigo
   );
 
-  // Un bien nace con su variante única, sin opciones. Es lo que hace que tenga
-  // dónde contarse desde el primer día: agregar opciones después la reemplaza
-  // por las combinaciones, y el que nunca las usa no se entera de que existen.
-  if (producto.tipo === "BIEN") {
-    await asegurarVarianteUnica(producto.id, producto.codigo);
-  }
+  // **Todo producto nace con una variante**, servicios incluidos. La
+  // variante es lo que se vende, y por eso ahí vive el código: sin ella, una
+  // línea de orden apuntaría a un producto o a una variante según el tipo.
+  //
+  // Un servicio no lleva inventario, y eso lo dice `manejaInventario`, no la
+  // ausencia de variante. Agregar opciones —solo un bien puede— reemplaza esta
+  // única por las combinaciones.
+  await asegurarVarianteUnica(producto.id, payload.codigo?.trim() || null, {
+    manejaInventario: producto.tipo === "BIEN",
+  });
 
   return producto;
 }
@@ -164,7 +168,7 @@ export interface UpdateServicioPayload {
   ivaTasa?: number | null;
   /** En qué categorías está. Reemplaza el conjunto entero. */
   categoriaIds?: string[];
-  /** El que sale impreso como `codigoPrincipal`. */
+  /** El que sale impreso como `codigoPrincipal`. Va al `sku` de la variante. */
   codigo?: string | null;
   /** Si ya se puede vender. Un borrador no aparece en los selectores. */
   estado?: "ACTIVO" | "BORRADOR";
@@ -193,7 +197,7 @@ export async function updateServicio(
     );
   }
 
-  return conCodigoUnico(
+  const actualizado = await conCodigoUnico(
     () =>
       prisma.producto.update({
         where: { id: productoId },
@@ -215,15 +219,34 @@ export async function updateServicio(
                 },
               }
             : {}),
-          ...(payload.codigo !== undefined
-            ? { codigo: payload.codigo?.trim() || null }
-            : {}),
           ...(payload.estado !== undefined ? { estado: payload.estado } : {}),
           updatedById: viewer.id,
         },
       }),
     payload.codigo
   );
+
+  // El código vive en la variante. Se escribe solo cuando el producto tiene
+  // **una sola**: con varias, cada una tiene su propio SKU y no hay un "el
+  // código del producto" que actualizar — eso se edita en la ficha de cada una.
+  if (payload.codigo !== undefined) {
+    const variantes = await prisma.variante.findMany({
+      where: { productoId },
+      select: { id: true },
+    });
+    if (variantes.length === 1) {
+      await conCodigoUnico(
+        () =>
+          prisma.variante.update({
+            where: { id: variantes[0].id },
+            data: { sku: payload.codigo?.trim() || null },
+          }),
+        payload.codigo
+      );
+    }
+  }
+
+  return actualizado;
 }
 
 export async function getServicio(productoId: string, viewer: Viewer) {

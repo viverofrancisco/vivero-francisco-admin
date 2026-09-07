@@ -137,6 +137,8 @@ classifying axis is `tipo`: `SERVICIO` | `BIEN` — what it *is*. **It changes
 nothing at invoicing time** (the SRI's `<detalle>` has no goods/services field);
 what it does decide is **who gets variants and stock: only a `BIEN`**.
 
+**Every product has *at least* one variant; only a `BIEN` can have several.** No options means exactly one; options mean one per combination (3 colours × 2 sizes = 6). A servicio has one too — created with it, `manejaInventario: false`. The variant is not "where stock is counted", it is **what gets sold**, so `OrdenLinea.varianteId` and `FacturaLinea.varianteId` are NOT NULL and a line never has to ask the `tipo` to know where the SKU, the price or the stock live. It used to be bienes-only, which meant a line pointed at a producto or at a variante depending on the type — two shapes for the same thing, and a branch in every place that asked. **The catalog code lives on `Variante.sku`**, not on the producto: it is what prints as `codigoPrincipal`, and the product form edits it directly while there is a single variant (with several, each has its own and it is edited on its page).
+
 **A bien splits into variants, Shopify-style.** `OpcionProducto` is an axis
 (Color, Tamaño), `ValorOpcion` its values, and a **`Variante`** is one
 combination — 3 colors × 2 sizes is 6 variants, each with its own SKU and its
@@ -196,13 +198,13 @@ what was there. The typed price follows the list only while untouched
 redistribute what the order already says, and a catalog price would make them
 start out of square.
 
-**A bien is sold by variant.** `OrdenLinea.varianteId` and
-`FacturaLinea.varianteId` say which one went out — nullable, because a servicio
-has none; `ensureVariantes()` is what requires it for a `BIEN`, since only the
-service knows the `tipo`. **With a single variant it fills itself in**: a bien
-with no options has exactly one, and the drafts the portal builds on its own
-have nobody to ask. The variant's `sku` becomes the line's `codigoPrincipal`,
-falling back to `Producto.codigo` and then to a code derived from the id.
+**Everything is sold by variant.** `OrdenLinea.varianteId` and
+`FacturaLinea.varianteId` say which one went out, and both are NOT NULL.
+**With a single variant `ensureVariantes()` fills it in**: a servicio and a bien
+with no options have exactly one, and the drafts the portal builds on its own
+have nobody to ask. With several it refuses — nobody can guess which of six
+pots was sold. The variant's `sku` becomes the line's `codigoPrincipal`, falling
+back to a code derived from the id.
 
 **Stock moves at invoicing, and the order isn't symmetric.** `ensureStockParaVender()`
 runs *before* emitting — the only moment where saying no is still possible, since
@@ -465,7 +467,7 @@ goes back to pending before you can proceed.
 
 **Any catalog product can be sold.** There is no external catalog to link it to
 any more: the invoice line carries a `codigoPrincipal` and a description that are
-both ours, so `Producto.codigo` (unique, optional) is all a product needs — and
+both ours, so `Variante.sku` (unique, optional) is all a product needs — and
 without one the emission derives a code from its id. What the line does need is
 a **product from our own catalog**: `OrdenLinea.productoId` and
 `FacturaLinea.productoId` are NOT NULL with `RESTRICT`, so a sold product can't

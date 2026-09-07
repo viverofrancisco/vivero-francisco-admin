@@ -292,7 +292,14 @@ async function sembrar(
 
   const vendibles = await prisma.producto.findMany({
     where: { deletedAt: null },
-    select: { id: true, nombre: true, ivaTasa: true },
+    // La variante es lo que se vende: toda línea de factura la lleva. Con una
+    // sola —servicios y bienes sin opciones— es la del producto.
+    select: {
+      id: true,
+      nombre: true,
+      ivaTasa: true,
+      variantes: { orderBy: { posicion: "asc" }, select: { id: true } },
+    },
   });
   if (!vendibles.length) {
     throw new Error("El catálogo está vacío: no hay nada que vender.");
@@ -573,6 +580,7 @@ async function sembrar(
     }
     return [...porTasa].map(([ivaTasa, base]) => ({
       productoId: agrupador.id,
+      varianteId: agrupador.variantes[0].id,
       descripcion,
       cantidad: 1,
       precioUnitario: Math.round(base * 100) / 100,
