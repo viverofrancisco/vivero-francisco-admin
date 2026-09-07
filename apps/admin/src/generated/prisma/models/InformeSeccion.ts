@@ -44,7 +44,6 @@ export type InformeSeccionMinAggregateOutputType = {
   descripcion: string | null
   orden: number | null
   saltoDePagina: boolean | null
-  mantenerJunta: boolean | null
   fotosPorFila: number | null
 }
 
@@ -56,7 +55,6 @@ export type InformeSeccionMaxAggregateOutputType = {
   descripcion: string | null
   orden: number | null
   saltoDePagina: boolean | null
-  mantenerJunta: boolean | null
   fotosPorFila: number | null
 }
 
@@ -68,7 +66,6 @@ export type InformeSeccionCountAggregateOutputType = {
   descripcion: number
   orden: number
   saltoDePagina: number
-  mantenerJunta: number
   fotosPorFila: number
   _all: number
 }
@@ -92,7 +89,6 @@ export type InformeSeccionMinAggregateInputType = {
   descripcion?: true
   orden?: true
   saltoDePagina?: true
-  mantenerJunta?: true
   fotosPorFila?: true
 }
 
@@ -104,7 +100,6 @@ export type InformeSeccionMaxAggregateInputType = {
   descripcion?: true
   orden?: true
   saltoDePagina?: true
-  mantenerJunta?: true
   fotosPorFila?: true
 }
 
@@ -116,7 +111,6 @@ export type InformeSeccionCountAggregateInputType = {
   descripcion?: true
   orden?: true
   saltoDePagina?: true
-  mantenerJunta?: true
   fotosPorFila?: true
   _all?: true
 }
@@ -215,7 +209,6 @@ export type InformeSeccionGroupByOutputType = {
   descripcion: string | null
   orden: number
   saltoDePagina: boolean
-  mantenerJunta: boolean
   fotosPorFila: number
   _count: InformeSeccionCountAggregateOutputType | null
   _avg: InformeSeccionAvgAggregateOutputType | null
@@ -250,7 +243,6 @@ export type InformeSeccionWhereInput = {
   descripcion?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolFilter<"InformeSeccion"> | boolean
-  mantenerJunta?: Prisma.BoolFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntFilter<"InformeSeccion"> | number
   informe?: Prisma.XOR<Prisma.InformeScalarRelationFilter, Prisma.InformeWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
@@ -265,7 +257,6 @@ export type InformeSeccionOrderByWithRelationInput = {
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
-  mantenerJunta?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
   informe?: Prisma.InformeOrderByWithRelationInput
   producto?: Prisma.ProductoOrderByWithRelationInput
@@ -283,7 +274,6 @@ export type InformeSeccionWhereUniqueInput = Prisma.AtLeast<{
   descripcion?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolFilter<"InformeSeccion"> | boolean
-  mantenerJunta?: Prisma.BoolFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntFilter<"InformeSeccion"> | number
   informe?: Prisma.XOR<Prisma.InformeScalarRelationFilter, Prisma.InformeWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
@@ -298,7 +288,6 @@ export type InformeSeccionOrderByWithAggregationInput = {
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
-  mantenerJunta?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
   _count?: Prisma.InformeSeccionCountOrderByAggregateInput
   _avg?: Prisma.InformeSeccionAvgOrderByAggregateInput
@@ -318,7 +307,6 @@ export type InformeSeccionScalarWhereWithAggregatesInput = {
   descripcion?: Prisma.StringNullableWithAggregatesFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntWithAggregatesFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolWithAggregatesFilter<"InformeSeccion"> | boolean
-  mantenerJunta?: Prisma.BoolWithAggregatesFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntWithAggregatesFilter<"InformeSeccion"> | number
 }
 
@@ -328,7 +316,6 @@ export type InformeSeccionCreateInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
   producto?: Prisma.ProductoCreateNestedOneWithoutInformeSeccionesInput
@@ -343,7 +330,6 @@ export type InformeSeccionUncheckedCreateInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
   fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
@@ -354,7 +340,6 @@ export type InformeSeccionUpdateInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
   producto?: Prisma.ProductoUpdateOneWithoutInformeSeccionesNestedInput
@@ -369,7 +354,6 @@ export type InformeSeccionUncheckedUpdateInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
   fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
@@ -382,7 +366,6 @@ export type InformeSeccionCreateManyInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
 }
 
@@ -392,7 +375,6 @@ export type InformeSeccionUpdateManyMutationInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -404,7 +386,6 @@ export type InformeSeccionUncheckedUpdateManyInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -426,7 +407,6 @@ export type InformeSeccionCountOrderByAggregateInput = {
   descripcion?: Prisma.SortOrder
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
-  mantenerJunta?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
 }
 
@@ -443,7 +423,6 @@ export type InformeSeccionMaxOrderByAggregateInput = {
   descripcion?: Prisma.SortOrder
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
-  mantenerJunta?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
 }
 
@@ -455,7 +434,6 @@ export type InformeSeccionMinOrderByAggregateInput = {
   descripcion?: Prisma.SortOrder
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
-  mantenerJunta?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
 }
 
@@ -573,7 +551,6 @@ export type InformeSeccionCreateWithoutProductoInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
   fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
@@ -586,7 +563,6 @@ export type InformeSeccionUncheckedCreateWithoutProductoInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
   fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
@@ -628,7 +604,6 @@ export type InformeSeccionScalarWhereInput = {
   descripcion?: Prisma.StringNullableFilter<"InformeSeccion"> | string | null
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolFilter<"InformeSeccion"> | boolean
-  mantenerJunta?: Prisma.BoolFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntFilter<"InformeSeccion"> | number
 }
 
@@ -638,7 +613,6 @@ export type InformeSeccionCreateWithoutInformeInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
   producto?: Prisma.ProductoCreateNestedOneWithoutInformeSeccionesInput
   fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
@@ -651,7 +625,6 @@ export type InformeSeccionUncheckedCreateWithoutInformeInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
   fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
@@ -688,7 +661,6 @@ export type InformeSeccionCreateWithoutFotosInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
   producto?: Prisma.ProductoCreateNestedOneWithoutInformeSeccionesInput
@@ -702,7 +674,6 @@ export type InformeSeccionUncheckedCreateWithoutFotosInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
 }
 
@@ -728,7 +699,6 @@ export type InformeSeccionUpdateWithoutFotosInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
   producto?: Prisma.ProductoUpdateOneWithoutInformeSeccionesNestedInput
@@ -742,7 +712,6 @@ export type InformeSeccionUncheckedUpdateWithoutFotosInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -753,7 +722,6 @@ export type InformeSeccionCreateManyProductoInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
 }
 
@@ -763,7 +731,6 @@ export type InformeSeccionUpdateWithoutProductoInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
   fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
@@ -776,7 +743,6 @@ export type InformeSeccionUncheckedUpdateWithoutProductoInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
   fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
@@ -788,7 +754,6 @@ export type InformeSeccionUncheckedUpdateManyWithoutProductoInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -799,7 +764,6 @@ export type InformeSeccionCreateManyInformeInput = {
   descripcion?: string | null
   orden: number
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: number
 }
 
@@ -809,7 +773,6 @@ export type InformeSeccionUpdateWithoutInformeInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
   producto?: Prisma.ProductoUpdateOneWithoutInformeSeccionesNestedInput
   fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
@@ -822,7 +785,6 @@ export type InformeSeccionUncheckedUpdateWithoutInformeInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
   fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
@@ -834,7 +796,6 @@ export type InformeSeccionUncheckedUpdateManyWithoutInformeInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  mantenerJunta?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -877,7 +838,6 @@ export type InformeSeccionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   descripcion?: boolean
   orden?: boolean
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
@@ -893,7 +853,6 @@ export type InformeSeccionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   descripcion?: boolean
   orden?: boolean
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
@@ -907,7 +866,6 @@ export type InformeSeccionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   descripcion?: boolean
   orden?: boolean
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
@@ -921,11 +879,10 @@ export type InformeSeccionSelectScalar = {
   descripcion?: boolean
   orden?: boolean
   saltoDePagina?: boolean
-  mantenerJunta?: boolean
   fotosPorFila?: boolean
 }
 
-export type InformeSeccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "informeId" | "productoId" | "titulo" | "descripcion" | "orden" | "saltoDePagina" | "mantenerJunta" | "fotosPorFila", ExtArgs["result"]["informeSeccion"]>
+export type InformeSeccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "informeId" | "productoId" | "titulo" | "descripcion" | "orden" | "saltoDePagina" | "fotosPorFila", ExtArgs["result"]["informeSeccion"]>
 export type InformeSeccionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.InformeSeccion$productoArgs<ExtArgs>
@@ -962,10 +919,6 @@ export type $InformeSeccionPayload<ExtArgs extends runtime.Types.Extensions.Inte
      * Empieza en una hoja nueva. Para separar bloques que no se leen juntos.
      */
     saltoDePagina: boolean
-    /**
-     * No se parte entre dos hojas. Si no entra donde está, baja entera.
-     */
-    mantenerJunta: boolean
     /**
      * Cuántas fotos por fila: 2 (grandes), 3 (por defecto) o 4 (chicas). Es la
      * palanca de densidad — pocas fotos grandes llenan la hoja, muchas chicas la
@@ -1405,7 +1358,6 @@ export interface InformeSeccionFieldRefs {
   readonly descripcion: Prisma.FieldRef<"InformeSeccion", 'String'>
   readonly orden: Prisma.FieldRef<"InformeSeccion", 'Int'>
   readonly saltoDePagina: Prisma.FieldRef<"InformeSeccion", 'Boolean'>
-  readonly mantenerJunta: Prisma.FieldRef<"InformeSeccion", 'Boolean'>
   readonly fotosPorFila: Prisma.FieldRef<"InformeSeccion", 'Int'>
 }
     

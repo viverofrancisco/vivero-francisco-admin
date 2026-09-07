@@ -4983,7 +4983,6 @@ export const InformeSeccionScalarFieldEnum = {
   descripcion: 'descripcion',
   orden: 'orden',
   saltoDePagina: 'saltoDePagina',
-  mantenerJunta: 'mantenerJunta',
   fotosPorFila: 'fotosPorFila'
 } as const
 

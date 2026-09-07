@@ -1114,8 +1114,6 @@ model InformeSeccion {
 
   /// Empieza en una hoja nueva. Para separar bloques que no se leen juntos.
   saltoDePagina Boolean @default(false)
-  /// No se parte entre dos hojas. Si no entra donde está, baja entera.
-  mantenerJunta Boolean @default(false)
   /// Cuántas fotos por fila: 2 (grandes), 3 (por defecto) o 4 (chicas). Es la
   /// palanca de densidad — pocas fotos grandes llenan la hoja, muchas chicas la
   /// dejan corta.

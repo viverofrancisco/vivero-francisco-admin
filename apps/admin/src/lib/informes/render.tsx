@@ -211,7 +211,7 @@ const MAX_PASADAS = 3;
  * quedarse dando vueltas.
  */
 export async function renderInformePDF(
-  data: InformeRenderData
+  data: InformeRenderData,
 ): Promise<Buffer> {
   const forzados = new Set<number>();
   let ultimo: Buffer | null = null;
@@ -230,7 +230,7 @@ export async function renderInformePDF(
 /** Una pasada: el PDF y qué secciones quedaron con el título solo al pie. */
 async function armar(
   data: InformeRenderData,
-  forzados: Set<number>
+  forzados: Set<number>,
 ): Promise<{ buffer: Buffer; huerfanos: number[] }> {
   let arbol: NodoMaquetado | null = null;
   const doc = (
@@ -286,7 +286,10 @@ function titulosAlPie(arbol: NodoMaquetado | null): number[] {
     let ultimo: NodoMaquetado | null = null;
     const bajar = (n: NodoMaquetado) => {
       if (n.props?.fixed) return;
-      if ((n.box?.height ?? 0) > 0 && (n.type === "TEXT" || n.type === "IMAGE")) {
+      if (
+        (n.box?.height ?? 0) > 0 &&
+        (n.type === "TEXT" || n.type === "IMAGE")
+      ) {
         ultimo = n;
       }
       if (n.type === "TEXT") return; // sus hijos son los renglones
@@ -364,9 +367,8 @@ function InformeDocument({
 }
 
 /**
- * Una sección, **sin envolverla en un `View`** salvo que se pida mantenerla
- * junta. Esto no es un detalle de estilo: es lo que hace que funcione la
- * protección contra el título huérfano.
+ * Una sección, **sin envolverla en un `View`**. Esto no es un detalle de
+ * estilo: es lo que hace que funcione la protección contra el título huérfano.
  *
  * `minPresenceAhead` se aplica en `shouldBreak`, y ahí una de las condiciones
  * es `breakingImprovesPresence`: solo corta si el elemento tiene hermanos
@@ -375,9 +377,6 @@ function InformeDocument({
  * concluía que bajarlo de página no mejoraba nada — así que lo dejaba solo al
  * pie con sus fotos en la hoja siguiente. Sueltos en la página, el título tiene
  * detrás todo lo de las secciones anteriores y la regla se aplica.
- *
- * El `View` vuelve solo cuando hay que mantener la sección junta, y ahí no hay
- * huérfano posible: se mueve entera.
  */
 function Section({
   seccion,
@@ -389,7 +388,7 @@ function Section({
   forzarSalto: boolean;
 }) {
   const medida = MEDIDA_FOTO[seccion.fotosPorFila];
-  const partes = (
+  return (
     <>
       <Text
         // El `id` es lo que después permite reconocer un título en el árbol
@@ -433,13 +432,6 @@ function Section({
         </View>
       ))}
     </>
-  );
-
-  if (!seccion.mantenerJunta) return partes;
-  return (
-    <View wrap={false} break={seccion.saltoDePagina || forzarSalto}>
-      {partes}
-    </View>
   );
 }
 

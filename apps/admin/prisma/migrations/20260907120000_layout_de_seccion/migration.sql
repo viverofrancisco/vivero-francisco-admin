@@ -6,5 +6,4 @@
 -- imprimiendo, así que los informes viejos no cambian.
 ALTER TABLE "InformeSeccion"
   ADD COLUMN "saltoDePagina" BOOLEAN NOT NULL DEFAULT false,
-  ADD COLUMN "mantenerJunta" BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN "fotosPorFila" INTEGER NOT NULL DEFAULT 3;

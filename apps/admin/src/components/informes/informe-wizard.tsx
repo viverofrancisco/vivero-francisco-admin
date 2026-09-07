@@ -114,14 +114,12 @@ interface SeccionDraft {
    * imprimiendo, así que un informe donde nadie toca nada sale igual que antes.
    */
   saltoDePagina: boolean;
-  mantenerJunta: boolean;
   fotosPorFila: 2 | 3 | 4;
 }
 
 /** Lo que trae una sección recién creada. */
 const LAYOUT_POR_DEFECTO = {
   saltoDePagina: false,
-  mantenerJunta: false,
   fotosPorFila: 3 as const,
 };
 
@@ -154,7 +152,7 @@ interface FirmanteDraft {
   cedula: string;
 }
 
-type WizardStep = 1 | 2 | 3 | 4 | 5;
+type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface SavedFirmante {
   id: string;
@@ -218,6 +216,8 @@ export function InformeWizard({
 
   const [generating, setGenerating] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
+  /** El PDF del paso 5, como blob local. Nunca se guardó en ningún lado. */
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [savedInformeId, setSavedInformeId] = useState<string | null>(null);
 
@@ -225,7 +225,7 @@ export function InformeWizard({
    * El informe ya se generó. De acá no se vuelve: existe, tiene número y no se
    * edita. Lo que sigue es descargarlo, abrir su ficha o salir.
    */
-  const terminado = step === 5 && savedInformeId != null;
+  const terminado = step === 6 && savedInformeId != null;
 
   const [addPhotosFor, setAddPhotosFor] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
@@ -420,6 +420,54 @@ export function InformeWizard({
   }
 
   /**
+   * Al paso de la vista previa, armándola de entrada.
+   *
+   * Se rearma cada vez que se entra, no la primera nada más: si alguien vuelve
+   * a corregir una sección y sigue, tiene que ver lo corregido. Una previa
+   * cacheada que muestra lo de antes es peor que no tenerla.
+   */
+  async function nextFromStep4() {
+    const cuerpo = cuerpoDelInforme();
+    if (!cuerpo) return;
+    setStep(5);
+    await armarVistaPrevia(cuerpo);
+  }
+
+  async function rearmarVistaPrevia() {
+    const cuerpo = cuerpoDelInforme();
+    if (cuerpo) await armarVistaPrevia(cuerpo);
+  }
+
+  async function armarVistaPrevia(cuerpo: ReturnType<typeof cuerpoDelInforme>) {
+    if (!cuerpo) return;
+    setPrevisualizando(true);
+    try {
+      const res = await fetch("/api/admin/informes/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cuerpo),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? "No pudimos armar la vista previa");
+      }
+      const url = URL.createObjectURL(await res.blob());
+      setPreviewUrl((anterior) => {
+        // El anterior se suelta recién acá: hacerlo antes deja el visor en
+        // blanco mientras se arma el nuevo.
+        if (anterior) URL.revokeObjectURL(anterior);
+        return url;
+      });
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "No pudimos armar la vista previa"
+      );
+    } finally {
+      setPrevisualizando(false);
+    }
+  }
+
+  /**
    * El cuerpo del informe, uno solo para generar y para la vista previa.
    *
    * Si fueran dos, la vista previa terminaría mostrando algo distinto de lo que
@@ -452,7 +500,6 @@ export function InformeWizard({
         titulo: s.titulo,
         descripcion: s.descripcion || null,
         saltoDePagina: s.saltoDePagina,
-        mantenerJunta: s.mantenerJunta,
         fotosPorFila: s.fotosPorFila,
         fotos: s.fotos.map((f) =>
           f.visitaMediaId
@@ -523,7 +570,7 @@ export function InformeWizard({
       const data: { id: string; pdfUrl: string } = await res.json();
       setSavedInformeId(data.id);
       setPdfUrl(data.pdfUrl);
-      setStep(5);
+      setStep(6);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error generando informe");
     } finally {
@@ -557,6 +604,11 @@ export function InformeWizard({
     },
     5: {
       title: "Vista previa",
+      description:
+        "El PDF como va a salir. Si algo no cuadra, volvé y ajustalo — todavía no se guardó nada.",
+    },
+    6: {
+      title: "Listo",
       description: "Tu informe está listo. Descárgalo o compártelo.",
     },
   };
@@ -666,8 +718,16 @@ export function InformeWizard({
               />
             ) : null}
 
-            {step === 5 && pdfUrl ? (
-              <Step5Preview
+            {step === 5 ? (
+              <PasoVistaPrevia
+                url={previewUrl}
+                armando={previsualizando}
+                onRearmar={rearmarVistaPrevia}
+              />
+            ) : null}
+
+            {step === 6 && pdfUrl ? (
+              <PasoListo
                 pdfUrl={pdfUrl}
                 titulo={titulo}
                 informeId={savedInformeId}
@@ -706,32 +766,38 @@ export function InformeWizard({
                   Continuar <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               ) : null}
-              {step === 3 || step === 4 ? (
+              {step === 3 ? (
                 <div className="flex items-center gap-2">
-                  {/* Acá es donde se decide el layout, así que acá tiene que
-                      estar el botón de verlo. Sin esto había que generar el
-                      informe para mirarlo y borrarlo si no gustaba. */}
+                  {/* Acá es donde se decide el layout, así que acá también está
+                      el botón de mirarlo: el paso 5 ya lo muestra, pero ajustar
+                      las fotos por fila con dos pasos de ida y dos de vuelta
+                      por cada prueba no es ajustar nada. */}
                   <Button
                     variant="outline"
                     onClick={vistaPrevia}
-                    disabled={previsualizando || generating}
+                    disabled={previsualizando}
                   >
                     <FileText className="mr-1 h-4 w-4" />
                     {previsualizando ? "Armando…" : "Vista previa"}
                   </Button>
-                  {step === 3 ? (
-                    <Button onClick={nextFromStep3}>
-                      Continuar <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  ) : (
-                    <Button onClick={generate} disabled={generating}>
-                      {generating ? "Generando…" : "Generar PDF"}{" "}
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  )}
+                  <Button onClick={nextFromStep3}>
+                    Continuar <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
                 </div>
               ) : null}
+              {step === 4 ? (
+                <Button onClick={nextFromStep4} disabled={previsualizando}>
+                  {previsualizando ? "Armando…" : "Ver cómo queda"}{" "}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : null}
               {step === 5 ? (
+                <Button onClick={generate} disabled={generating || previsualizando}>
+                  {generating ? "Generando…" : "Generar PDF"}{" "}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : null}
+              {step === 6 ? (
                 <Button onClick={() => router.push("/dashboard/informes")}>
                   Volver al listado
                 </Button>
@@ -1002,7 +1068,8 @@ function VerticalStepper({
       label: "Firma y fecha",
       description: "Fecha del informe y quién firma",
     },
-    { n: 5, label: "Vista previa", description: "Descarga y comparte" },
+    { n: 5, label: "Vista previa", description: "Cómo va a salir" },
+    { n: 6, label: "Listo", description: "Descarga y comparte" },
   ];
   return (
     <ol className="space-y-1">
@@ -2475,13 +2542,6 @@ function LayoutSeccion({
         />
         Empezar en hoja nueva
       </label>
-      <label className="flex cursor-pointer items-center gap-1.5">
-        <Checkbox
-          checked={seccion.mantenerJunta}
-          onCheckedChange={(v) => onCambiar({ mantenerJunta: v === true })}
-        />
-        No partirla entre dos hojas
-      </label>
     </div>
   );
 }
@@ -2523,7 +2583,56 @@ function DescripcionSeccion({
   );
 }
 
-function Step5Preview({
+/**
+ * El PDF como va a salir, antes de guardarlo.
+ *
+ * Va incrustado y no en otra pestaña: es un paso del asistente, y el punto es
+ * mirarlo y volver a corregir sin perder de vista dónde se está. Lo que se ve
+ * sale del mismo armado que el informe definitivo, así que no es una
+ * aproximación — es el documento.
+ */
+function PasoVistaPrevia({
+  url,
+  armando,
+  onRearmar,
+}: {
+  url: string | null;
+  armando: boolean;
+  onRearmar: () => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          Todavía no se guardó nada. Si algo no cuadra, volvé y ajustalo.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRearmar}
+          disabled={armando}
+        >
+          {armando ? "Armando…" : "Volver a armar"}
+        </Button>
+      </div>
+
+      <div className="relative h-[70vh] w-full overflow-hidden rounded-md border bg-muted">
+        {url ? (
+          <iframe src={url} title="Vista previa del informe" className="h-full w-full" />
+        ) : null}
+        {armando ? (
+          // Encima y no en lugar del visor: mientras se rearma, seguir viendo
+          // lo anterior dice mucho más que un recuadro vacío.
+          <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-sm text-muted-foreground">
+            Armando la vista previa…
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function PasoListo({
   pdfUrl,
   titulo,
   informeId,

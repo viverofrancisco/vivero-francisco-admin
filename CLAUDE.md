@@ -328,13 +328,16 @@ were avoiding. So `renderInformePDF` lays out, reads the resulting tree
 (`onRender`'s `_INTERNAL__LAYOUT__DATA_`, guarded: no tree means no correction
 and the old behaviour), and re-renders with a forced break on any section whose
 title ended its page. It converges in one extra pass and is capped at three.
-Two related details: a section is **not** wrapped in its own `View` unless
-`mantenerJunta` asks for it — inside a wrapper the title is the first child, and
-react-pdf refuses to break an element with no preceding siblings — and photos go
-out one **row** at a time with `wrap={false}`, so a break can't split a row.
-Each section carries its own `saltoDePagina`, `mantenerJunta` and `fotosPorFila`
-(2/3/4, the density lever), and **`POST /api/admin/informes/preview` renders the
-real PDF without saving anything** so those choices aren't made blind.
+Two related details: a section is **not** wrapped in its own `View` — inside a
+wrapper the title is the first child, and react-pdf refuses to break an element
+with no preceding siblings — and photos go out one **row** at a time with
+`wrap={false}`, so a break can't split a row. Each section carries its own
+`saltoDePagina` and `fotosPorFila` (2/3/4, the density lever). **The wizard has
+a preview step before generating**: `POST /api/admin/informes/preview` renders
+the real PDF without saving anything, off the same `armarDatosDelInforme()` as
+the real thing — two assemblies would mean previewing a document that isn't the
+one being filed. It rebuilds on every entry to the step, because a cached
+preview showing the pre-correction version is worse than none.
 
 **Files belong to the visita, not to any form.** `ArchivosVisita` lives on the
 visita's own page and every change — upload, re-tag, delete — goes out on its

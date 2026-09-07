@@ -355,7 +355,6 @@ export interface InformeGeneratePayload {
     fotos: InformeSeccionFotoInput[];
     /// Cómo se imprime. Ausentes = lo que se venía imprimiendo.
     saltoDePagina?: boolean;
-    mantenerJunta?: boolean;
     fotosPorFila?: FotosPorFila;
   }>;
 }
@@ -548,7 +547,6 @@ async function armarDatosDelInforme(
       titulo: sec.titulo,
       descripcion: sec.descripcion?.trim() || null,
       saltoDePagina: sec.saltoDePagina ?? false,
-      mantenerJunta: sec.mantenerJunta ?? false,
       fotosPorFila: sec.fotosPorFila ?? 3,
       fotos: sec.fotos
         .map((foto) => {
@@ -686,7 +684,6 @@ export async function generateInforme(
             // Se guarda aunque el PDF ya esté hecho: es lo que explica por qué
             // salió así, y lo que un "duplicar informe" necesitaría leer.
             saltoDePagina: sec.saltoDePagina ?? false,
-            mantenerJunta: sec.mantenerJunta ?? false,
             fotosPorFila: sec.fotosPorFila ?? 3,
             fotos: {
               create: sec.fotos.map((foto, fIdx) => ({

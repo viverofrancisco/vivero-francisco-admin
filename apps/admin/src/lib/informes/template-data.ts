@@ -12,8 +12,6 @@ export interface InformeRenderSeccion {
   fotos: { id: string; bytes: Uint8Array; mimeType: string }[];
   /** Empieza en una hoja nueva. */
   saltoDePagina: boolean;
-  /** No se parte entre dos hojas: si no entra donde está, baja entera. */
-  mantenerJunta: boolean;
   fotosPorFila: FotosPorFila;
 }
 
