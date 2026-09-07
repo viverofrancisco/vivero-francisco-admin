@@ -207,17 +207,17 @@ export function EditorImagen({
 
   return (
     <Dialog open onOpenChange={(v) => !v && onCerrar()}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Recortar imagen</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
+        <div className="grid gap-4 sm:grid-cols-[1fr_220px]">
           <div
             ref={marco}
             onPointerMove={alMover}
             onPointerUp={soltar}
             onPointerCancel={soltar}
-            className="relative touch-none select-none overflow-hidden rounded-md bg-muted"
+            className="relative mx-auto w-fit touch-none select-none overflow-hidden rounded-md bg-muted"
           >
             {/* Sin `next/image`: acá hace falta el tamaño natural del archivo
                 para traducir el recuadro a píxeles, y el optimizador sirve otra
@@ -226,7 +226,11 @@ export function EditorImagen({
             <img
               src={media.url}
               alt={media.alt ?? ""}
-              className="w-full select-none"
+              // `w-auto` y no `object-contain`: con `contain` la imagen se
+              // dibuja centrada dentro de un elemento más grande, y el marco
+              // —que es contra el que se mide el recuadro— dejaría de coincidir
+              // con lo que se ve. Así el marco mide exactamente la imagen.
+              className="block max-h-[65vh] w-auto max-w-full select-none"
               draggable={false}
               onLoad={(e) => {
                 const el = e.currentTarget;
@@ -237,8 +241,41 @@ export function EditorImagen({
                 });
               }}
             />
-            {/* Lo de afuera del recuadro, apagado: es lo que se va. */}
-            <div className="pointer-events-none absolute inset-0 bg-black/50" />
+            {/* Lo de afuera, apagado con cuatro rectángulos alrededor del
+                recuadro — y no repintando la imagen adentro de él.
+
+                Repintarla era lo primero que hice y quedaba corrido: el
+                `background` se posiciona contra la caja de padding, así que el
+                borde de 2px del recuadro desplazaba y escalaba la copia, y lo
+                seleccionado no coincidía con lo que se veía. Con sombras
+                alrededor, lo que se ve dentro del recuadro **es** la imagen de
+                abajo: no hay dos copias que puedan desalinearse. */}
+            <div className="pointer-events-none absolute inset-0">
+              <div
+                className="absolute inset-x-0 top-0 bg-black/60"
+                style={{ height: pct(recorte.y) }}
+              />
+              <div
+                className="absolute inset-x-0 bottom-0 bg-black/60"
+                style={{ height: pct(1 - recorte.y - recorte.alto) }}
+              />
+              <div
+                className="absolute left-0 bg-black/60"
+                style={{
+                  top: pct(recorte.y),
+                  height: pct(recorte.alto),
+                  width: pct(recorte.x),
+                }}
+              />
+              <div
+                className="absolute right-0 bg-black/60"
+                style={{
+                  top: pct(recorte.y),
+                  height: pct(recorte.alto),
+                  width: pct(1 - recorte.x - recorte.ancho),
+                }}
+              />
+            </div>
             <div
               onPointerDown={(e) => alPuntero(e, "mover")}
               style={{
@@ -246,11 +283,8 @@ export function EditorImagen({
                 top: pct(recorte.y),
                 width: pct(recorte.ancho),
                 height: pct(recorte.alto),
-                backgroundImage: `url(${media.url})`,
-                backgroundSize: `${100 / recorte.ancho}% ${100 / recorte.alto}%`,
-                backgroundPosition: `${(recorte.x / (1 - recorte.ancho || 1)) * 100}% ${(recorte.y / (1 - recorte.alto || 1)) * 100}%`,
               }}
-              className="absolute cursor-move border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0)]"
+              className="absolute cursor-move outline outline-2 -outline-offset-1 outline-white"
             >
               {(["nw", "ne", "sw", "se"] as const).map((asa) => (
                 <span
