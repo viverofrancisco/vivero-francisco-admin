@@ -189,6 +189,13 @@ function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
   // cada render y con él en las dependencias esto no pararía nunca.
   const clave = cuerpo ? JSON.stringify(cuerpo) : null;
   const ultimaUrl = useRef<string | null>(null);
+  /**
+   * Con qué contenido se armó lo que se está viendo.
+   *
+   * Estado y no `ref` porque se lee al dibujar: un ref no dispara render, así
+   * que el aviso podría quedarse prendido después de que la previa ya llegó.
+   */
+  const [claveMostrada, setClaveMostrada] = useState<string | null>(null);
 
   useEffect(() => {
     if (!activo || !clave) return;
@@ -211,10 +218,12 @@ function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
           // blanco mientras se arma la nueva.
           if (ultimaUrl.current) URL.revokeObjectURL(ultimaUrl.current);
           ultimaUrl.current = nueva;
+          setClaveMostrada(clave);
           setUrl(nueva);
           setError(null);
         })
         .catch((e: unknown) => {
+          // Un pedido cancelado no es un error: es que llegó un cambio nuevo.
           if (e instanceof DOMException && e.name === "AbortError") return;
           setError(e instanceof Error ? e.message : "No pudimos armarla");
         })
@@ -233,7 +242,17 @@ function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
     };
   }, []);
 
-  return { url, armando, error };
+  /**
+   * Lo que se ve **ya no corresponde** a lo que hay en pantalla.
+   *
+   * No es lo mismo que `armando`: eso arranca recién cuando sale el pedido, o
+   * sea 700 ms después del último cambio, y en ese rato el visor mostraba con
+   * total normalidad un PDF viejo. Comparando contra el contenido con el que se
+   * armó lo que se está viendo, el aviso aparece **en la tecla**.
+   */
+  const desactualizada = clave !== null && clave !== claveMostrada;
+
+  return { url, actualizando: armando || desactualizada, error };
 }
 
 /**
@@ -1004,7 +1023,7 @@ export function InformeWizard({
             <aside className="hidden w-[420px] flex-none flex-col border-l bg-muted/20 xl:flex">
               <PanelEnVivo
                 url={enVivo.url}
-                armando={enVivo.armando}
+                actualizando={enVivo.actualizando}
                 error={enVivo.error}
                 onExpandir={() =>
                   enVivo.url && setAPantallaCompleta(enVivo.url)
@@ -3044,12 +3063,16 @@ function VisorPdf({ url, onCerrar }: { url: string; onCerrar: () => void }) {
  */
 function PanelEnVivo({
   url,
-  armando,
+  actualizando,
   error,
   onExpandir,
 }: {
   url: string | null;
-  armando: boolean;
+  /**
+   * Lo que se ve ya no es lo que hay en pantalla — desde la tecla, no desde que
+   * sale el pedido.
+   */
+  actualizando: boolean;
   error: string | null;
   onExpandir: () => void;
 }) {
@@ -3060,7 +3083,7 @@ function PanelEnVivo({
       <div className="flex flex-none items-center justify-between gap-2 border-b px-3 py-2">
         <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           Vista previa
-          {armando ? (
+          {actualizando ? (
             <Loader2
               className="h-3 w-3 animate-spin"
               aria-label="Actualizando"
@@ -3078,7 +3101,7 @@ function PanelEnVivo({
           <Maximize2 className="h-3.5 w-3.5" />
         </Button>
       </div>
-      <div className="min-h-0 flex-1 p-2">
+      <div className="relative min-h-0 flex-1 p-2">
         {url ? (
           <iframe
             src={`${url}${SIN_BARRA}`}
@@ -3089,11 +3112,21 @@ function PanelEnVivo({
           <p className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
             {error
               ? error
-              : armando
+              : actualizando
                 ? "Armando la vista previa…"
                 : "Agregá una sección para ver cómo queda."}
           </p>
         )}
+        {/* Encima y translúcido, no en lugar del visor: se sigue viendo lo
+            anterior, atenuado, que es justo lo que hay que decir — "esto ya no
+            es lo que tenés en pantalla". Un recuadro vacío en cada tecla haría
+            imposible comparar, que es para lo que está el panel. */}
+        {actualizando && url ? (
+          <div className="absolute inset-2 flex items-center justify-center gap-2 rounded-md bg-background/70 text-xs text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Actualizando…
+          </div>
+        ) : null}
       </div>
     </>
   );
@@ -3145,7 +3178,8 @@ function PasoVistaPrevia({
         {armando ? (
           // Encima y no en lugar del visor: mientras se rearma, seguir viendo
           // lo anterior dice mucho más que un recuadro vacío.
-          <div className="absolute inset-0 flex items-center justify-center bg-background/70 text-sm text-muted-foreground">
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-background/70 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
             Armando la vista previa…
           </div>
         ) : null}
