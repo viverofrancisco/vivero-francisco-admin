@@ -69,6 +69,7 @@ function contenidoValido(contenido: unknown): EstadoInicialInforme | undefined {
   return {
     paso: typeof c.paso === "number" ? c.paso : undefined,
     clienteId: c.clienteId ?? null,
+    rango: c.rango,
     titulo: c.titulo,
     fecha: typeof c.fecha === "string" ? c.fecha : hoyISOEcuador(),
     visitaIds: Array.isArray(c.visitaIds) ? c.visitaIds : [],

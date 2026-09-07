@@ -247,9 +247,16 @@ export async function listVisitasParaInforme(
     estado: { in: ["COMPLETADA", "INCOMPLETA"] },
   };
   if (options.from || options.to) {
-    const range: { gte?: Date; lte?: Date } = {};
+    const range: { gte?: Date; lt?: Date } = {};
     if (options.from) range.gte = options.from;
-    if (options.to) range.lte = options.to;
+    if (options.to) {
+      // El día entero, no hasta su medianoche. `fechaProgramada` es un
+      // `DateTime`, así que con `lte` a las 00:00 quedaban afuera todas las
+      // visitas de ese mismo día — un rango de un solo día no traía ninguna.
+      const siguiente = new Date(options.to);
+      siguiente.setUTCDate(siguiente.getUTCDate() + 1);
+      range.lt = siguiente;
+    }
     where.fechaProgramada = range;
   }
 

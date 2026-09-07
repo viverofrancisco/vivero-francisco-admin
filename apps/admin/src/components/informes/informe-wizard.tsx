@@ -270,6 +270,14 @@ function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
 export interface EstadoInicialInforme {
   paso?: number;
   clienteId: string | null;
+  /**
+   * Qué rango mirar en el paso de visitas.
+   *
+   * Sin esto, editar un informe de agosto abría la lista en "este mes" y sus
+   * propias visitas no aparecían — seleccionadas pero fuera del rango, o sea
+   * invisibles. Viene del período que el informe ya abarca.
+   */
+  rango?: { label: string; from: string | null; to: string | null };
   titulo: string;
   fecha: string;
   visitaIds: string[];
@@ -358,7 +366,7 @@ export function InformeWizard({
     label: string;
     from: string | null;
     to: string | null;
-  }>(() => quickRange("este-mes"));
+  }>(() => inicial?.rango ?? quickRange("este-mes"));
 
   const [availableVisitas, setAvailableVisitas] = useState<VisitaParaInforme[]>(
     [],
@@ -775,6 +783,7 @@ export function InformeWizard({
             clienteId,
             titulo,
             fecha,
+            rango: dateRange,
             visitaIds: Array.from(selectedVisitaIds),
             firmantes: firmantes
               .filter((f) => f.nombre.trim())
@@ -920,6 +929,7 @@ export function InformeWizard({
               <Paso1ClienteYVisitas
                 clientes={clientes}
                 clienteId={clienteId}
+                bloqueado={editando != null}
                 onClienteChange={(id) => {
                   setClienteId(id);
                   setSelectedVisitaIds(new Set());
@@ -1507,11 +1517,14 @@ function Paso1ClienteYVisitas({
   clientes,
   clienteId,
   onClienteChange,
+  bloqueado,
   ...visitas
 }: {
   clientes: Cliente[];
   clienteId: string | null;
   onClienteChange: (id: string) => void;
+  /** Editando: el cliente no se cambia, así que se muestra cuál es y nada más. */
+  bloqueado?: boolean;
   dateRange: { label: string; from: string | null; to: string | null };
   onDateRangeChange: (r: {
     label: string;
@@ -1531,11 +1544,17 @@ function Paso1ClienteYVisitas({
     // lo manda a la derecha recién cuando hay dos columnas.
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
       <aside className="lg:order-2">
-        <SelectorCliente
-          clientes={clientes}
-          clienteId={clienteId}
-          onClienteChange={onClienteChange}
-        />
+        {bloqueado ? (
+          <ClienteFijo
+            cliente={clientes.find((c) => c.id === clienteId) ?? null}
+          />
+        ) : (
+          <SelectorCliente
+            clientes={clientes}
+            clienteId={clienteId}
+            onClienteChange={onClienteChange}
+          />
+        )}
       </aside>
 
       <div className="min-w-0 lg:order-1">
@@ -1556,6 +1575,32 @@ function Paso1ClienteYVisitas({
   );
 }
 
+/**
+ * El cliente, cuando no se puede cambiar.
+ *
+ * Editando, `editarInforme` rechaza el cambio de cliente —sería otro informe—
+ * así que ofrecer el buscador con toda la lista invita a una acción que después
+ * se niega. Se muestra cuál es y listo.
+ */
+function ClienteFijo({ cliente }: { cliente: Cliente | null }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm font-medium">Cliente</p>
+      <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2.5">
+        <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+          {cliente ? nombreCliente(cliente).slice(0, 2).toUpperCase() : "?"}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+          {cliente ? nombreCliente(cliente) : "Cargando…"}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Un informe no cambia de cliente: sería otro informe, con otro número.
+      </p>
+    </div>
+  );
+}
+
 function SelectorCliente({
   clientes,
   clienteId,
@@ -1566,6 +1611,14 @@ function SelectorCliente({
   onClienteChange: (id: string) => void;
 }) {
   const [search, setSearch] = useState("");
+  const elegido = useRef<HTMLButtonElement>(null);
+
+  // Retomando un borrador el elegido puede estar a veinte filas de distancia,
+  // o sea marcado pero fuera de la parte visible: se ve una lista sin nada
+  // seleccionado. `nearest` para no mover la página, solo la lista.
+  useEffect(() => {
+    elegido.current?.scrollIntoView({ block: "nearest" });
+  }, [clienteId, clientes.length]);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return clientes;
@@ -1604,6 +1657,7 @@ function SelectorCliente({
             return (
               <button
                 key={c.id}
+                ref={selected ? elegido : undefined}
                 type="button"
                 onClick={() => onClienteChange(c.id)}
                 className={`flex items-center gap-3 rounded-md border px-3 py-3 text-left transition-colors ${

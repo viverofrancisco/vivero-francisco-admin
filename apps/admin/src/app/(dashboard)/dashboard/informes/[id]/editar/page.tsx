@@ -58,6 +58,16 @@ export default async function EditarInformePage({
 
   const delInforme: EstadoInicialInforme = {
     clienteId: informe.clienteId,
+    // El período que el informe ya abarca, para que sus visitas estén en la
+    // lista. Sin visitas no hay período, y ahí sirve el rango por defecto.
+    rango:
+      informe.fechaDesde && informe.fechaHasta
+        ? {
+            label: "Personalizado",
+            from: informe.fechaDesde.toISOString().slice(0, 10),
+            to: informe.fechaHasta.toISOString().slice(0, 10),
+          }
+        : undefined,
     titulo: informe.titulo,
     // `toISOString` sobre una columna `date` la devuelve a medianoche UTC, que
     // en Ecuador es el día anterior. Se corta el texto, que ya es el día.
@@ -108,6 +118,7 @@ function contenidoDelBorrador(
   return {
     paso: typeof c.paso === "number" ? c.paso : undefined,
     clienteId: c.clienteId ?? null,
+    rango: c.rango,
     titulo: c.titulo,
     fecha: typeof c.fecha === "string" ? c.fecha : "",
     visitaIds: Array.isArray(c.visitaIds) ? c.visitaIds : [],
