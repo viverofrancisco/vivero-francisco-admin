@@ -32,11 +32,8 @@ import {
 import {
   ArrowLeft,
   ChevronDown,
-  Download,
-  ExternalLink,
   ImageIcon,
   Pencil,
-  Trash2,
 } from "lucide-react";
 import { SelectorVisitasInforme } from "./selector-visitas-informe";
 import { toast } from "sonner";
@@ -146,7 +143,11 @@ export function InformeDetail({
             >
               Acciones <ChevronDown className="ml-1.5 h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            {/* Ancho propio: por defecto el menú toma el del botón que lo
+                abre (`w-(--anchor-width)`), y con un botón chico cada opción se
+                partía en dos renglones. Sin iconos: son cuatro acciones con
+                nombre, y el icono no agrega nada que el texto no diga. */}
+            <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem
                 render={
                   <a
@@ -156,7 +157,6 @@ export function InformeDetail({
                   />
                 }
               >
-                <ExternalLink className="mr-2 h-4 w-4" />
                 Abrir en una pestaña
               </DropdownMenuItem>
               {/* Por nuestra ruta y no directo a R2: `download` no funciona
@@ -167,7 +167,6 @@ export function InformeDetail({
                   <a href={`/api/admin/informes/${informe.id}/descargar`} />
                 }
               >
-                <Download className="mr-2 h-4 w-4" />
                 Descargar
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -178,7 +177,6 @@ export function InformeDetail({
                   />
                 }
               >
-                <Pencil className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -186,7 +184,6 @@ export function InformeDetail({
                 onClick={() => setBorrando(true)}
                 className="text-destructive"
               >
-                <Trash2 className="mr-2 h-4 w-4" />
                 Eliminar
               </DropdownMenuItem>
             </DropdownMenuContent>
