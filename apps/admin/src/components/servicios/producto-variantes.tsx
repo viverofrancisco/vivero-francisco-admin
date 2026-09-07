@@ -27,6 +27,24 @@ import type { ImagenProducto } from "./producto-imagenes";
 /** Cuántos ejes admite un producto. El servicio aplica el mismo tope. */
 const MAX_OPCIONES = 3;
 
+/**
+ * Con qué nace una combinación que el servidor todavía no creó.
+ *
+ * El SKU va acá igual que el precio y el stock: son los tres datos de la
+ * variante, y separarlos obligaba a crear las seis combinaciones, entrar a cada
+ * una y ponerle un código que ya se sabía al armarlas.
+ */
+export interface VariantePendiente {
+  sku: string;
+  precio: number;
+  stock: number;
+}
+
+/** Lo que trae una combinación sin nada cargado. */
+export function vacia(p?: VariantePendiente): VariantePendiente {
+  return { sku: p?.sku ?? "", precio: p?.precio ?? 0, stock: p?.stock ?? 0 };
+}
+
 export interface OpcionEditable {
   id: string | null;
   nombre: string;
@@ -204,6 +222,8 @@ export function ProductoVariantes({
   onNuevasChange,
   precios,
   onPreciosChange,
+  skus,
+  onSkusChange,
   movimientos,
   onMovimientosChange,
   variantes: variantesIniciales,
@@ -228,11 +248,14 @@ export function ProductoVariantes({
    * El precio y el stock con los que van a nacer las combinaciones nuevas, por
    * su nombre. Se aplican al guardar, cuando el servidor ya les dio un id.
    */
-  nuevas: Record<string, { precio: number; stock: number }>;
-  onNuevasChange: (n: Record<string, { precio: number; stock: number }>) => void;
+  nuevas: Record<string, VariantePendiente>;
+  onNuevasChange: (n: Record<string, VariantePendiente>) => void;
   /** Precios cambiados y todavía sin guardar, por variante. */
   precios: Record<string, number>;
   onPreciosChange: (p: Record<string, number>) => void;
+  /** SKU cambiados y todavía sin guardar, por variante. */
+  skus: Record<string, string>;
+  onSkusChange: (s: Record<string, string>) => void;
   /** Movimientos de stock sin guardar, uno por variante. */
   movimientos: Record<string, MovimientoPendiente>;
   onMovimientosChange: (m: Record<string, MovimientoPendiente>) => void;
@@ -463,6 +486,9 @@ export function ProductoVariantes({
                                   precioPendiente={
                                     f.variante ? precios[f.variante.id] : undefined
                                   }
+                                  skuPendiente={
+                                    f.variante ? skus[f.variante.id] : undefined
+                                  }
                                   movimientoPendiente={
                                     f.variante
                                       ? movimientos[f.variante.id]
@@ -473,6 +499,13 @@ export function ProductoVariantes({
                                     onPreciosChange({
                                       ...precios,
                                       [f.variante.id]: precio,
+                                    })
+                                  }
+                                  onSku={(sku) =>
+                                    f.variante &&
+                                    onSkusChange({
+                                      ...skus,
+                                      [f.variante.id]: sku,
                                     })
                                   }
                                   onMover={(m) =>
@@ -503,12 +536,19 @@ export function ProductoVariantes({
                         precioPendiente={
                           f.variante ? precios[f.variante.id] : undefined
                         }
+                        skuPendiente={
+                          f.variante ? skus[f.variante.id] : undefined
+                        }
                         movimientoPendiente={
                           f.variante ? movimientos[f.variante.id] : undefined
                         }
                         onPrecio={(precio) =>
                           f.variante &&
                           onPreciosChange({ ...precios, [f.variante.id]: precio })
+                        }
+                        onSku={(sku) =>
+                          f.variante &&
+                          onSkusChange({ ...skus, [f.variante.id]: sku })
                         }
                         onMover={(m) =>
                           f.variante &&
@@ -555,8 +595,10 @@ function FilaVariante({
   pendiente,
   onPendiente,
   precioPendiente,
+  skuPendiente,
   movimientoPendiente,
   onPrecio,
+  onSku,
   onMover,
 }: {
   fila: FilaPreview;
@@ -564,13 +606,15 @@ function FilaVariante({
   productoNombre: string;
   imagenes: ImagenProducto[];
   sangrada?: boolean;
-  /** Con qué precio y stock nace, si todavía no existe. */
-  pendiente?: { precio: number; stock: number };
-  onPendiente: (v: { precio: number; stock: number }) => void;
+  /** Con qué SKU, precio y stock nace, si todavía no existe. */
+  pendiente?: VariantePendiente;
+  onPendiente: (v: VariantePendiente) => void;
   /** Lo escrito sobre una variante que sí existe, todavía sin guardar. */
   precioPendiente?: number;
+  skuPendiente?: string;
   movimientoPendiente?: MovimientoPendiente;
   onPrecio: (precio: number) => void;
+  onSku: (sku: string) => void;
   onMover: (m: MovimientoPendiente) => void;
 }) {
   const from = useAca();
@@ -603,17 +647,26 @@ function FilaVariante({
         /* El nombre lleva a la ficha de la variante; el número abre el
            movimiento. Son las dos cosas que se hacen sobre una fila y cada una
            tiene su blanco, en vez de un menú que las esconda a las dos. */
-        <Link
-          href={`/dashboard/productos/${productoId}/variantes/${variante.id}?from=${from}`}
-          className="min-w-0 flex-1"
-        >
-          <span className="block truncate text-sm font-medium hover:underline">
+        <span className="min-w-0 flex-1">
+          <Link
+            href={`/dashboard/productos/${productoId}/variantes/${variante.id}?from=${from}`}
+            className="block truncate text-sm font-medium hover:underline"
+          >
             {nombre}
-          </span>
-          <span className="block truncate font-mono text-xs text-muted-foreground">
-            {variante.sku ?? "Sin SKU"}
-          </span>
-        </Link>
+          </Link>
+          {/* El SKU se escribe acá y no solo en la ficha de la variante: al
+              armar una tabla de seis combinaciones, entrar y salir seis veces
+              para poner seis códigos es el camino largo del mismo trabajo. */}
+          <Input
+            value={skuPendiente ?? variante.sku ?? ""}
+            aria-label={`SKU de ${nombre}`}
+            placeholder="Sin SKU"
+            className={`h-6 border-0 bg-transparent px-0 font-mono text-xs shadow-none focus-visible:ring-0 ${
+              skuPendiente !== undefined ? "text-amber-700" : "text-muted-foreground"
+            }`}
+            onChange={(e) => onSku(e.target.value)}
+          />
+        </span>
       ) : (
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
@@ -622,9 +675,15 @@ function FilaVariante({
               Nueva
             </span>
           </span>
-          <span className="block text-xs text-muted-foreground">
-            Se crea al guardar
-          </span>
+          <Input
+            value={pendiente?.sku ?? ""}
+            aria-label={`SKU de ${nombre}`}
+            placeholder="Sin SKU"
+            className="h-6 border-0 bg-transparent px-0 font-mono text-xs text-muted-foreground shadow-none focus-visible:ring-0"
+            onChange={(e) =>
+              onPendiente({ ...vacia(pendiente), sku: e.target.value })
+            }
+          />
         </span>
       )}
 
@@ -711,8 +770,8 @@ function FilaVariante({
               className="h-8 pl-5 text-right text-sm tabular-nums"
               onChange={(e) =>
                 onPendiente({
+                  ...vacia(pendiente),
                   precio: Math.max(0, Number(e.target.value) || 0),
-                  stock: pendiente?.stock ?? 0,
                 })
               }
             />
@@ -726,7 +785,7 @@ function FilaVariante({
             className="h-8 w-20 flex-none text-right text-sm tabular-nums"
             onChange={(e) =>
               onPendiente({
-                precio: pendiente?.precio ?? 0,
+                ...vacia(pendiente),
                 stock: Math.max(0, Math.trunc(Number(e.target.value) || 0)),
               })
             }

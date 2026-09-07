@@ -24,6 +24,7 @@ import {
   ProductoVariantes,
   type OpcionEditable,
   type VarianteFila,
+  type VariantePendiente,
 } from "./producto-variantes";
 
 const TIPO_LABEL: Record<string, string> = {
@@ -95,9 +96,11 @@ export function ServicioDetail({
      * su nombre ("Rojo · Chica"). Viven acá y no en la tabla porque se aplican
      * al guardar, cuando el servidor ya las creó y les dio un id.
      */
-    nuevas: {} as Record<string, { precio: number; stock: number }>,
+    nuevas: {} as Record<string, VariantePendiente>,
     /** Precios cambiados en la tabla, por variante. */
     precios: {} as Record<string, number>,
+    /** SKU cambiados en la tabla, por variante. */
+    skus: {} as Record<string, string>,
     /**
      * Movimientos de stock sin guardar, uno por variante. Uno solo: dos sobre
      * la misma variante antes de guardar no se acumulan.
@@ -138,6 +141,7 @@ export function ServicioDetail({
     JSON.stringify(form.opciones) !== JSON.stringify(guardado.opciones) ||
     Object.keys(form.nuevas).length > 0 ||
     Object.keys(form.precios).length > 0 ||
+    Object.keys(form.skus).length > 0 ||
     Object.keys(form.movimientos).length > 0;
 
   /** Lo devuelve al catálogo. */
@@ -207,11 +211,14 @@ export function ServicioDetail({
     for (const [nombre, valores] of pendientes) {
       const id = porNombre.get(nombre);
       if (!id) continue;
-      if (valores.precio > 0) {
+      if (valores.precio > 0 || valores.sku.trim()) {
         await fetch(`/api/variantes/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ precio: valores.precio }),
+          body: JSON.stringify({
+            ...(valores.precio > 0 ? { precio: valores.precio } : {}),
+            ...(valores.sku.trim() ? { sku: valores.sku.trim() } : {}),
+          }),
         });
       }
       if (valores.stock > 0) {
@@ -237,6 +244,16 @@ export function ServicioDetail({
    * la pantalla se hayan tocado en la misma fila.
    */
   const guardarCambiosDeVariantes = async () => {
+    for (const [id, sku] of Object.entries(form.skus)) {
+      const r = await fetch(`/api/variantes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        // Vacío es "sin SKU", no cadena vacía: el índice único no admite dos
+        // cadenas vacías, y "sin código" es un estado válido.
+        body: JSON.stringify({ sku: sku.trim() || null }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error ?? "Error con un SKU");
+    }
     for (const [id, precio] of Object.entries(form.precios)) {
       const r = await fetch(`/api/variantes/${id}`, {
         method: "PATCH",
@@ -261,7 +278,7 @@ export function ServicioDetail({
       });
       if (!r.ok) throw new Error((await r.json()).error ?? "Error con el stock");
     }
-    setForm((f) => ({ ...f, precios: {}, movimientos: {} }));
+    setForm((f) => ({ ...f, precios: {}, skus: {}, movimientos: {} }));
   };
 
   const guardar = async () => {
@@ -320,7 +337,10 @@ export function ServicioDetail({
    * combinación tiene lo suyo y esta card desaparece.
    */
   const varianteUnica =
-    opciones.length === 0 && filas.length === 1 ? filas[0] : null;
+    // Por lo que hay **en el formulario**, no por lo guardado: al agregar la
+    // primera opción el SKU, el precio y el stock pasan a ser de cada
+    // combinación, y esta card tiene que irse en ese momento y no al guardar.
+    form.opciones.length === 0 && filas.length === 1 ? filas[0] : null;
 
   return (
     <div className="space-y-6">
@@ -419,6 +439,8 @@ export function ServicioDetail({
               onNuevasChange={(n) => setForm({ ...form, nuevas: n })}
               precios={form.precios}
               onPreciosChange={(p) => setForm({ ...form, precios: p })}
+              skus={form.skus}
+              onSkusChange={(sk) => setForm({ ...form, skus: sk })}
               movimientos={form.movimientos}
               onMovimientosChange={(m) => setForm({ ...form, movimientos: m })}
               variantes={filas}

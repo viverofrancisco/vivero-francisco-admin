@@ -22,6 +22,7 @@ import { SelectorCategorias } from "./selector-categorias";
 import {
   ProductoVariantes,
   type OpcionEditable,
+  type VariantePendiente,
 } from "./producto-variantes";
 import {
   MediaLibrary,
@@ -240,7 +241,7 @@ export function ServicioForm({
    * pantalla muestra los campos que corresponden en vez de todos.
    */
   const [tipo, setTipo] = useState<"SERVICIO" | "BIEN" | null>(
-    tipoInicial ?? null
+    tipoInicial ?? null,
   );
 
   const vacio = {
@@ -283,7 +284,7 @@ export function ServicioForm({
      * creada.
      */
     opciones: [] as OpcionEditable[],
-    nuevas: {} as Record<string, { precio: number; stock: number }>,
+    nuevas: {} as Record<string, VariantePendiente>,
   };
   const [form, setForm] = useState(vacio);
 
@@ -305,17 +306,22 @@ export function ServicioForm({
    * lo único que existía en ese momento.
    */
   async function estrenarVariantes(
-    variantes: { id: string; valores: string[] }[]
+    variantes: { id: string; valores: string[] }[],
   ) {
-    const porNombre = new Map(variantes.map((v) => [v.valores.join(" · "), v.id]));
+    const porNombre = new Map(
+      variantes.map((v) => [v.valores.join(" · "), v.id]),
+    );
     for (const [nombre, valores] of Object.entries(form.nuevas)) {
       const id = porNombre.get(nombre);
       if (!id) continue;
-      if (valores.precio > 0) {
+      if (valores.precio > 0 || valores.sku.trim()) {
         await fetch(`/api/variantes/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ precio: valores.precio }),
+          body: JSON.stringify({
+            ...(valores.precio > 0 ? { precio: valores.precio } : {}),
+            ...(valores.sku.trim() ? { sku: valores.sku.trim() } : {}),
+          }),
         });
       }
       if (valores.stock > 0) {
@@ -369,7 +375,9 @@ export function ServicioForm({
         });
         const body = await r.json();
         if (!r.ok) {
-          throw new Error(body.error ?? "El producto se creó, pero sin las opciones");
+          throw new Error(
+            body.error ?? "El producto se creó, pero sin las opciones",
+          );
         }
         await estrenarVariantes(body.variantes ?? []);
       }
@@ -415,7 +423,8 @@ export function ServicioForm({
         });
         if (!r2.ok) {
           throw new Error(
-            (await r2.json()).error ?? "El producto se creó, pero sin las fotos"
+            (await r2.json()).error ??
+              "El producto se creó, pero sin las fotos",
           );
         }
       }
@@ -443,7 +452,7 @@ export function ServicioForm({
     guardando,
     guardar,
     () => router.push("/dashboard/productos"),
-    falta
+    falta,
   );
 
   if (tipo === null) {
@@ -526,24 +535,28 @@ export function ServicioForm({
             onCambio={(imagenes) => setForm({ ...form, imagenes })}
           />
 
-          {/* Debajo de las fotos, en el mismo lugar que en la ficha. */}
-          <Card>
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">SKU</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1.5">
-              <Input
-                id="codigo"
-                value={form.codigo}
-                onChange={(e) => setForm({ ...form, codigo: e.target.value })}
-                placeholder="—"
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                Sale impreso en la factura y es lo que va en la etiqueta.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Debajo de las fotos, en el mismo lugar que en la ficha — y solo
+              mientras haya una sola variante: al agregar una opción el SKU pasa
+              a ser de cada combinación, igual que el precio y el stock. */}
+          {form.opciones.length === 0 && (
+            <Card>
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-base">SKU</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                <Input
+                  id="codigo"
+                  value={form.codigo}
+                  onChange={(e) => setForm({ ...form, codigo: e.target.value })}
+                  placeholder="—"
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Sale impreso en la factura y es lo que va en la etiqueta.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Sin opciones hay una sola variante y su precio y su stock son,
               a los ojos de quien mira, los del producto. Al agregar una opción
@@ -632,6 +645,8 @@ export function ServicioForm({
               onNuevasChange={(nuevas) => setForm({ ...form, nuevas })}
               precios={{}}
               onPreciosChange={() => {}}
+              skus={{}}
+              onSkusChange={() => {}}
               movimientos={{}}
               onMovimientosChange={() => {}}
               variantes={[]}
