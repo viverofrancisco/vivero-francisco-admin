@@ -11,7 +11,7 @@ export default async function NuevoServicioPage() {
   });
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="p-4 md:p-6">
       <ServicioForm categorias={categorias} />
     </div>
   );
