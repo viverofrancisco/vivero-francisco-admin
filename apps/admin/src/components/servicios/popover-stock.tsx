@@ -22,7 +22,7 @@ function textoPendiente(p: { motivo: Motivo; valor: number }): string {
 
 const MOTIVOS: { valor: Motivo; etiqueta: string }[] = [
   { valor: "CONTEO", etiqueta: "Poner en" },
-  { valor: "AJUSTE", etiqueta: "Sumar o restar" },
+  { valor: "AJUSTE", etiqueta: "Sumar" },
   { valor: "INGRESO", etiqueta: "Entró" },
 ];
 
@@ -107,9 +107,8 @@ export function PopoverStock({
   return (
     <Popover open={abierto} onOpenChange={(v) => (v ? setAbierto(true) : cerrar())}>
       <PopoverTrigger render={children as React.ReactElement} />
-      {/* Ancho fijo y no `w-auto`: con el ancho del contenido, los tres
-          rótulos de arriba se repartían lo que sobraba de la fila de abajo y
-          terminaban partidos en dos renglones. */}
+      {/* Ancho fijo y no `w-auto`: con el ancho del contenido, la fila se
+          apretaba contra el número de la variante y los rótulos se partían. */}
       <PopoverContent align="end" className="w-80 p-2">
         <div className="space-y-2">
           <p className="px-1 text-xs text-muted-foreground">
@@ -121,34 +120,26 @@ export function PopoverStock({
               </span>
             )}
           </p>
-          {/* Tres botones y no un desplegable. Con tres opciones el
-              desplegable cuesta dos clics para mostrar lo mismo — y el nuestro
-              se dibuja en un portal, así que el popover lo tomaba por un clic
-              afuera y se cerraba solo al elegir. */}
-          <div
-            role="radiogroup"
-            aria-label="Qué pasó"
-            className="flex rounded-md border p-0.5"
-          >
-            {MOTIVOS.map((m) => (
-              <button
-                key={m.valor}
-                type="button"
-                role="radio"
-                aria-checked={motivo === m.valor}
-                onClick={() => setMotivo(m.valor)}
-                className={`flex-1 whitespace-nowrap rounded px-2 py-1 text-xs transition-colors ${
-                  motivo === m.valor
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {m.etiqueta}
-              </button>
-            ))}
-          </div>
+          {/* Todo en una fila: qué pasó, cuánto, la nota y el visto. Partido
+              en dos, la mitad de arriba parecía un encabezado y no un campo.
 
+              El desplegable es un `select` **nativo** y no el del portal: ese
+              se dibuja fuera del popover, así que Base UI tomaba el clic en una
+              opción por uno "afuera" y cerraba todo al elegir. El nativo abre
+              en la capa del navegador y no toca el DOM. */}
           <div className="flex items-center gap-1.5">
+            <select
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value as Motivo)}
+              aria-label="Qué pasó"
+              className="h-8 flex-none rounded-md border bg-background px-1.5 text-sm"
+            >
+              {MOTIVOS.map((m) => (
+                <option key={m.valor} value={m.valor}>
+                  {m.etiqueta}
+                </option>
+              ))}
+            </select>
             <Input
               type="number"
               step="1"
@@ -161,16 +152,17 @@ export function PopoverStock({
                 }
               }}
               placeholder={motivo === "AJUSTE" ? "-2" : String(stock)}
-              className="flex-1 text-right tabular-nums"
+              className="h-8 min-w-0 flex-1 text-right tabular-nums"
               autoFocus
             />
             {/* La nota se pide solo si alguien la quiere: la mayoría de los
-                conteos no tienen nada que aclarar, y un campo más por delante
+                conteos no tienen nada que aclarar, y un campo por delante
                 convierte "poner 12" en dos decisiones. */}
             <Button
               type="button"
               variant={conNota ? "secondary" : "ghost"}
               size="icon"
+              className="flex-none"
               aria-label="Agregar una nota"
               onClick={() => setConNota((v) => !v)}
             >
@@ -179,6 +171,7 @@ export function PopoverStock({
             <Button
               type="button"
               size="icon"
+              className="flex-none"
               aria-label="Guardar"
               disabled={!valido || guardando}
               onClick={confirmar}
