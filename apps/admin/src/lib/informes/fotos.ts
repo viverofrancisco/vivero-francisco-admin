@@ -7,15 +7,22 @@ export interface FotoParaPdf {
 }
 
 /**
- * El lado más largo con que se guarda una foto de **borrador**.
+ * El lado más largo de una foto, según para qué es el PDF.
  *
- * Impresa mide como mucho 252 pt de ancho (dos por fila), así que 520 px la
- * cubre con margen de sobra para cualquier pantalla. Es la diferencia entre un
- * PDF de 13 MB que tarda 1,6 s en armarse y uno de 0,03 MB que tarda 50 ms —
- * medido—, y **el corte de páginas no cambia**: el layout depende del alto en
- * puntos que declara el estilo, no de cuántos píxeles trae el archivo.
+ * Impresa mide como mucho 252 pt de ancho (dos por fila). El **borrador** con
+ * 520 px la cubre de sobra en pantalla; el **definitivo** va a 1200 px, que a
+ * ese tamaño impreso son más de 300 ppp — o sea, todo lo que se puede ver en
+ * papel.
+ *
+ * Las cámaras dan 3164 px y meterlos enteros dejaba informes de 13 MB, que es
+ * un archivo que cuesta mandar por mail o WhatsApp. **El corte de páginas no
+ * cambia** en ninguno de los dos casos: el layout depende del alto en puntos
+ * que declara el estilo, no de cuántos píxeles trae el archivo.
  */
-const LADO_BORRADOR = 520;
+const LADO = { borrador: 520, final: 1200 } as const;
+
+/** Cuánta compresión. El borrador se mira en pantalla y no se archiva. */
+const CALIDAD = { borrador: 70, final: 82 } as const;
 
 /**
  * Fotos que ya se bajaron, guardadas **achicadas**.
@@ -64,8 +71,9 @@ export async function bajarFotos(
         }
         const mimeType = res.headers.get("content-type") ?? "image/jpeg";
         const bytes = new Uint8Array(await res.arrayBuffer());
-        if (!opciones.borrador) return { key: f.key, foto: { bytes, mimeType } };
-        return { key: f.key, foto: await achicar(bytes, mimeType) };
+        // Las dos calidades se achican; lo que cambia es cuánto.
+        const modo = opciones.borrador ? "borrador" : "final";
+        return { key: f.key, foto: await achicar(bytes, mimeType, modo) };
       })
     );
     for (const { key, foto } of bajadas) {
@@ -78,24 +86,25 @@ export async function bajarFotos(
 }
 
 /**
- * La deja en `LADO_BORRADOR` de lado mayor y la pasa a JPEG.
+ * La deja en `LADO[modo]` de lado mayor y la pasa a JPEG.
  *
  * Sale siempre JPEG y el `mimeType` lo dice: react-pdf usa lo que se le declara
  * para decidir cómo decodificar, y decirle "png" mandándole JPEG imprime
  * "Incomplete or corrupt PNG file" y deja la foto en blanco. Pasó.
  *
- * Si sharp no puede con el archivo, se devuelve el original: una previa con la
- * foto pesada es mejor que una previa sin la foto, que además cambiaría el
- * corte de páginas.
+ * Si sharp no puede con el archivo, se devuelve el original: un informe con la
+ * foto pesada es mejor que uno sin la foto, que además cambiaría el corte de
+ * páginas.
  */
 async function achicar(
   bytes: Uint8Array,
-  mimeType: string
+  mimeType: string,
+  modo: "borrador" | "final"
 ): Promise<FotoParaPdf> {
   try {
     const salida = await sharp(Buffer.from(bytes))
       .rotate()
-      .resize(LADO_BORRADOR, LADO_BORRADOR, {
+      .resize(LADO[modo], LADO[modo], {
         fit: "inside",
         withoutEnlargement: true,
       })
@@ -103,7 +112,7 @@ async function achicar(
       // contra blanco, sharp la rellena de negro y la previa muestra un
       // manchón donde el informe definitivo no lo tiene.
       .flatten({ background: "#ffffff" })
-      .jpeg({ quality: 70 })
+      .jpeg({ quality: CALIDAD[modo] })
       .toBuffer();
     return { bytes: new Uint8Array(salida), mimeType: "image/jpeg" };
   } catch {

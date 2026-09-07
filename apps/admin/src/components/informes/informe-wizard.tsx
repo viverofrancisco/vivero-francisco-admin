@@ -18,6 +18,7 @@ import {
   FileText,
   GripVertical,
   Loader2,
+  Maximize2,
   Pencil,
   Plus,
   Search,
@@ -225,7 +226,7 @@ function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
   return { url, armando, error };
 }
 
-type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
+type WizardStep = 1 | 2 | 3 | 4 | 5;
 
 interface SavedFirmante {
   id: string;
@@ -293,6 +294,10 @@ export function InformeWizard({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   /** El panel de al lado, mientras se arman las secciones. */
   const [panelEnVivo, setPanelEnVivo] = useState(true);
+  /** El PDF que se está mirando a pantalla completa, si hay alguno. */
+  const [aPantallaCompleta, setAPantallaCompleta] = useState<string | null>(
+    null,
+  );
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [savedInformeId, setSavedInformeId] = useState<string | null>(null);
 
@@ -300,7 +305,7 @@ export function InformeWizard({
    * El informe ya se generó. De acá no se vuelve: existe, tiene número y no se
    * edita. Lo que sigue es descargarlo, abrir su ficha o salir.
    */
-  const terminado = step === 6 && savedInformeId != null;
+  const terminado = step === 5 && savedInformeId != null;
 
   const [addPhotosFor, setAddPhotosFor] = useState<string | null>(null);
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
@@ -478,20 +483,16 @@ export function InformeWizard({
 
   function nextFromStep1() {
     if (!clienteId) return toast.error("Selecciona un cliente");
+    // Sin visitas se sigue igual: las secciones se arman a mano, que es lo que
+    // pasa cuando el informe no sale de una visita.
     setStep(2);
   }
 
   function nextFromStep2() {
-    // Sin visitas se sigue igual: las secciones se arman a mano, que es lo que
-    // pasa cuando el informe no sale de una visita.
-    setStep(3);
-  }
-
-  function nextFromStep3() {
     if (!titulo.trim()) return toast.error("El título es obligatorio");
     if (secciones.length === 0)
       return toast.error("Agrega al menos una sección");
-    setStep(4);
+    setStep(3);
   }
 
   /**
@@ -501,26 +502,27 @@ export function InformeWizard({
    * a corregir una sección y sigue, tiene que ver lo corregido. Una previa
    * cacheada que muestra lo de antes es peor que no tenerla.
    */
-  async function nextFromStep4() {
+  async function nextFromStep3() {
     const cuerpo = cuerpoDelInforme();
     if (!cuerpo) return;
-    setStep(5);
+    setStep(4);
     await armarVistaPrevia(cuerpo);
   }
 
-  async function rearmarVistaPrevia() {
-    const cuerpo = cuerpoDelInforme();
-    if (cuerpo) await armarVistaPrevia(cuerpo);
-  }
-
-  async function armarVistaPrevia(cuerpo: ReturnType<typeof cuerpoDelInforme>) {
-    if (!cuerpo) return;
+  async function armarVistaPrevia(
+    cuerpo: ReturnType<typeof cuerpoBase>,
+    opciones: { borrador?: boolean } = {},
+  ): Promise<string | null> {
+    if (!cuerpo) return null;
     setPrevisualizando(true);
     try {
       const res = await fetch("/api/admin/informes/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cuerpo),
+        body: JSON.stringify({
+          ...cuerpo,
+          borrador: opciones.borrador ?? false,
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -533,10 +535,12 @@ export function InformeWizard({
         if (anterior) URL.revokeObjectURL(anterior);
         return url;
       });
+      return url;
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : "No pudimos armar la vista previa"
+        e instanceof Error ? e.message : "No pudimos armar la vista previa",
       );
+      return null;
     } finally {
       setPrevisualizando(false);
     }
@@ -603,49 +607,25 @@ export function InformeWizard({
   const cuerpoVivo = cuerpoBase();
   const enVivo = useVistaPreviaEnVivo(
     cuerpoVivo && cuerpoVivo.secciones.length > 0 ? cuerpoVivo : null,
-    step === 3 && panelEnVivo
+    step === 2 && panelEnVivo,
   );
 
   /**
-   * El PDF como va a salir, en otra pestaña y sin guardar nada.
+   * Arma la previa y la muestra a pantalla completa.
    *
-   * Es la única forma de decidir el layout —cuántas fotos por fila, qué sección
-   * arranca en hoja nueva— sin generar un informe para mirarlo y después
-   * borrarlo.
+   * Es para las pantallas sin ancho para el panel de al lado. Antes abría otra
+   * pestaña —con el rodeo de abrirla antes del `await` para que el navegador no
+   * la bloqueara—; el visor no necesita nada de eso y deja el asistente montado
+   * atrás, así que cerrar vuelve a donde se estaba.
    */
   async function vistaPrevia() {
-    const cuerpo = cuerpoDelInforme();
-    if (!cuerpo) return;
+    const cuerpo = cuerpoBase();
+    if (!cuerpo) return toast.error("Selecciona un cliente");
     if (cuerpo.secciones.length === 0) {
       return toast.error("Agrega al menos una sección");
     }
-    // La pestaña se abre **antes** del await: abrirla después de una respuesta
-    // asíncrona ya no cuenta como "la abrió una persona" y el navegador la
-    // bloquea.
-    const pestana = window.open("", "_blank");
-    setPrevisualizando(true);
-    try {
-      const res = await fetch("/api/admin/informes/preview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cuerpo),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "No pudimos armar la vista previa");
-      }
-      const url = URL.createObjectURL(await res.blob());
-      if (pestana) pestana.location.href = url;
-      else window.open(url, "_blank");
-      // El objeto vive mientras la pestaña lo esté mostrando; soltarlo enseguida
-      // deja la pestaña en blanco.
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch (e) {
-      pestana?.close();
-      toast.error(e instanceof Error ? e.message : "No pudimos armar la vista previa");
-    } finally {
-      setPrevisualizando(false);
-    }
+    const url = await armarVistaPrevia(cuerpo, { borrador: true });
+    if (url) setAPantallaCompleta(url);
   }
 
   async function generate() {
@@ -666,7 +646,7 @@ export function InformeWizard({
       const data: { id: string; pdfUrl: string } = await res.json();
       setSavedInformeId(data.id);
       setPdfUrl(data.pdfUrl);
-      setStep(6);
+      setStep(5);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error generando informe");
     } finally {
@@ -681,29 +661,25 @@ export function InformeWizard({
     { title: string; description: string }
   > = {
     1: {
-      title: "Cliente",
-      description: "Escoge el cliente para el cual generar el informe.",
+      title: "Cliente y visitas",
+      description:
+        "De quién es el informe y qué visitas cubre. Podés seguir sin elegir ninguna visita y armar las secciones a mano.",
     },
     2: {
-      title: "Visitas",
-      description:
-        "Qué visitas cubre el informe. Podés seguir sin elegir ninguna y armar las secciones a mano.",
-    },
-    3: {
       title: "Componer secciones",
       description:
         "Arma las secciones del informe asignándole fotos del pool a cada una.",
     },
-    4: {
+    3: {
       title: "Firma y fecha",
       description: "Con qué fecha sale el informe y quién lo firma.",
     },
-    5: {
+    4: {
       title: "Vista previa",
       description:
         "El PDF como va a salir. Si algo no cuadra, volvé y ajustalo — todavía no se guardó nada.",
     },
-    6: {
+    5: {
       title: "Listo",
       description: "Tu informe está listo. Descárgalo o compártelo.",
     },
@@ -721,7 +697,7 @@ export function InformeWizard({
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Paso {step} de 6
+              Paso {step} de 5
             </p>
             <h2 className="text-lg font-semibold truncate">{heading.title}</h2>
             <p className="text-sm text-muted-foreground truncate">
@@ -731,25 +707,23 @@ export function InformeWizard({
         </div>
       </div>
 
-      {/* Body */}
-      <div className="flex flex-1 min-h-0">
-        {/* Vertical stepper */}
-        <aside className="hidden md:block w-64 flex-none border-r bg-muted/20 px-4 py-6 overflow-y-auto">
-          <VerticalStepper
-            step={step}
-            onJump={(s) => {
-              if (!terminado && s <= step) setStep(s);
-            }}
-            terminado={terminado}
-          />
-        </aside>
+      {/* Los pasos, arriba y en una franja */}
+      <div className="border-b bg-muted/20 px-6 py-2">
+        <PasosHorizontales
+          step={step}
+          onJump={(s) => {
+            if (!terminado && s <= step) setStep(s);
+          }}
+          terminado={terminado}
+        />
+      </div>
 
-        {/* Content + nav (right column) */}
-        <main className="flex flex-1 min-w-0 flex-col">
-          <div className="flex min-h-0 flex-1">
-            <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
+      {/* Body: el contenido y, cuando corresponde, la vista previa al lado */}
+      <main className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1">
+          <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8">
             {step === 1 ? (
-              <Step1Cliente
+              <Paso1ClienteYVisitas
                 clientes={clientes}
                 clienteId={clienteId}
                 onClienteChange={(id) => {
@@ -757,12 +731,6 @@ export function InformeWizard({
                   setSelectedVisitaIds(new Set());
                   setTitulo("");
                 }}
-              />
-            ) : null}
-
-            {step === 2 ? (
-              <Step2Visitas
-                cliente={clientes.find((c) => c.id === clienteId) ?? null}
                 dateRange={dateRange}
                 onDateRangeChange={setDateRange}
                 visitas={availableVisitas}
@@ -776,19 +744,17 @@ export function InformeWizard({
                   });
                 }}
                 onSelectAll={(all) => {
-                  if (all) {
-                    setSelectedVisitaIds(
-                      new Set(availableVisitas.map((v) => v.id)),
-                    );
-                  } else {
-                    setSelectedVisitaIds(new Set());
-                  }
+                  setSelectedVisitaIds(
+                    all
+                      ? new Set(availableVisitas.map((v) => v.id))
+                      : new Set(),
+                  );
                 }}
                 loading={loadingVisitas}
               />
             ) : null}
 
-            {step === 3 ? (
+            {step === 2 ? (
               <Step3Secciones
                 titulo={titulo}
                 onTituloChange={setTitulo}
@@ -805,7 +771,7 @@ export function InformeWizard({
               />
             ) : null}
 
-            {step === 4 ? (
+            {step === 3 ? (
               <Step4Firmantes
                 firmantes={firmantes}
                 onChange={setFirmantes}
@@ -815,119 +781,127 @@ export function InformeWizard({
               />
             ) : null}
 
-            {step === 5 ? (
+            {step === 4 ? (
               <PasoVistaPrevia
                 url={previewUrl}
                 armando={previsualizando}
-                onRearmar={rearmarVistaPrevia}
+                onExpandir={() =>
+                  previewUrl && setAPantallaCompleta(previewUrl)
+                }
               />
             ) : null}
 
-            {step === 6 && pdfUrl ? (
+            {step === 5 && pdfUrl ? (
               <PasoListo
                 pdfUrl={pdfUrl}
                 titulo={titulo}
                 informeId={savedInformeId}
               />
             ) : null}
-            </div>
-
-            {/* Al lado y no debajo: el punto es ver el efecto de lo que se
-                toca sin dejar de mirar lo que se toca. Desde `xl` porque abajo
-                de eso las dos columnas dejan a las dos sin ancho. */}
-            {step === 3 && panelEnVivo ? (
-              <aside className="hidden w-[420px] flex-none flex-col border-l bg-muted/20 xl:flex">
-                <PanelEnVivo
-                  url={enVivo.url}
-                  armando={enVivo.armando}
-                  error={enVivo.error}
-                  onCerrar={() => setPanelEnVivo(false)}
-                />
-              </aside>
-            ) : null}
           </div>
 
-          {/* Nav footer — only spans the right column. */}
-          <div className="border-t bg-card px-6 py-3">
-            <div
-              className={`flex items-center ${
-                terminado ? "justify-end" : "justify-between"
-              }`}
-            >
-              {/* Una vez generado no hay Atrás: el informe ya existe y no se
+          {/* Al lado y no debajo: el punto es ver el efecto de lo que se toca
+              sin dejar de mirar lo que se toca. Desde `xl` porque abajo de eso
+              las dos columnas dejan a las dos sin ancho. */}
+          {step === 2 && panelEnVivo ? (
+            <aside className="hidden w-[420px] flex-none flex-col border-l bg-muted/20 xl:flex">
+              <PanelEnVivo
+                url={enVivo.url}
+                armando={enVivo.armando}
+                error={enVivo.error}
+                onExpandir={() =>
+                  enVivo.url && setAPantallaCompleta(enVivo.url)
+                }
+              />
+            </aside>
+          ) : null}
+        </div>
+
+        {/* Nav footer — only spans the right column. */}
+        <div className="border-t bg-card px-6 py-3">
+          <div
+            className={`flex items-center ${
+              terminado ? "justify-end" : "justify-between"
+            }`}
+          >
+            {/* Una vez generado no hay Atrás: el informe ya existe y no se
                   edita, así que volver solo serviría para generar un segundo
                   informe casi igual sin querer. */}
-              {!terminado ? (
+            {!terminado ? (
+              <Button
+                variant="ghost"
+                disabled={step === 1 || generating}
+                onClick={() =>
+                  setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
+                }
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
+              </Button>
+            ) : null}
+            {step === 1 ? (
+              <Button onClick={nextFromStep1} disabled={!clienteId}>
+                Continuar <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : null}
+            {step === 2 ? (
+              <div className="flex items-center gap-2">
+                {/* Con pantalla ancha el panel de al lado ya la muestra y el
+                      botón solo lo prende y apaga. Sin ancho para el panel,
+                      abrirla a pantalla completa es la única forma de verla. */}
                 <Button
-                  variant="ghost"
-                  disabled={step === 1 || generating}
-                  onClick={() =>
-                    setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s))
-                  }
+                  variant="outline"
+                  className="hidden xl:inline-flex"
+                  onClick={() => setPanelEnVivo((v) => !v)}
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Atrás
+                  <FileText className="mr-1 h-4 w-4" />
+                  {panelEnVivo ? "Ocultar vista previa" : "Ver vista previa"}
                 </Button>
-              ) : null}
-              {step === 1 ? (
-                <Button onClick={nextFromStep1} disabled={!clienteId}>
-                  Continuar <ChevronRight className="h-4 w-4 ml-1" />
+                <Button
+                  variant="outline"
+                  className="xl:hidden"
+                  onClick={vistaPrevia}
+                  disabled={previsualizando}
+                >
+                  <FileText className="mr-1 h-4 w-4" />
+                  {previsualizando ? "Armando…" : "Vista previa"}
                 </Button>
-              ) : null}
-              {step === 2 ? (
                 <Button onClick={nextFromStep2}>
                   Continuar <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
-              ) : null}
-              {step === 3 ? (
-                <div className="flex items-center gap-2">
-                  {/* Con pantalla ancha el panel de al lado ya la muestra y el
-                      botón solo lo prende y apaga. Sin ancho para el panel,
-                      abrirla en otra pestaña es la única forma de verla. */}
-                  <Button
-                    variant="outline"
-                    className="hidden xl:inline-flex"
-                    onClick={() => setPanelEnVivo((v) => !v)}
-                  >
-                    <FileText className="mr-1 h-4 w-4" />
-                    {panelEnVivo ? "Ocultar vista previa" : "Ver vista previa"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="xl:hidden"
-                    onClick={vistaPrevia}
-                    disabled={previsualizando}
-                  >
-                    <FileText className="mr-1 h-4 w-4" />
-                    {previsualizando ? "Armando…" : "Vista previa"}
-                  </Button>
-                  <Button onClick={nextFromStep3}>
-                    Continuar <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
-              ) : null}
-              {step === 4 ? (
-                <Button onClick={nextFromStep4} disabled={previsualizando}>
-                  {previsualizando ? "Armando…" : "Ver cómo queda"}{" "}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              ) : null}
-              {step === 5 ? (
-                <Button onClick={generate} disabled={generating || previsualizando}>
-                  {generating ? "Generando…" : "Generar PDF"}{" "}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              ) : null}
-              {step === 6 ? (
-                <Button onClick={() => router.push("/dashboard/informes")}>
-                  Volver al listado
-                </Button>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
+            {step === 3 ? (
+              <Button onClick={nextFromStep3} disabled={previsualizando}>
+                {previsualizando ? "Armando…" : "Ver cómo queda"}{" "}
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : null}
+            {step === 4 ? (
+              <Button
+                onClick={generate}
+                disabled={generating || previsualizando}
+              >
+                {generating ? "Generando…" : "Generar PDF"}{" "}
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : null}
+            {step === 5 ? (
+              <Button onClick={() => router.push("/dashboard/informes")}>
+                Volver al listado
+              </Button>
+            ) : null}
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
 
       <MediaViewer media={activeMedia} onClose={() => setActiveMedia(null)} />
+
+      {aPantallaCompleta ? (
+        <VisorPdf
+          url={aPantallaCompleta}
+          onCerrar={() => setAPantallaCompleta(null)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -1165,7 +1139,14 @@ function Step4Firmantes({
   );
 }
 
-function VerticalStepper({
+/**
+ * Los pasos, en una tira horizontal arriba del contenido.
+ *
+ * Era una columna de 256 px a la izquierda, y esa columna se la comía al editor
+ * de secciones —que es donde se pasa el tiempo— para mostrar cinco renglones
+ * que no cambian. Arriba ocupa una franja y devuelve todo el ancho.
+ */
+function PasosHorizontales({
   step,
   onJump,
   terminado,
@@ -1175,76 +1156,59 @@ function VerticalStepper({
   /** El informe ya existe: no se vuelve a ningún paso. */
   terminado: boolean;
 }) {
-  const items: Array<{ n: WizardStep; label: string; description: string }> = [
-    { n: 1, label: "Cliente", description: "Selecciona el cliente" },
-    { n: 2, label: "Visitas", description: "Visitas a incluir" },
-    {
-      n: 3,
-      label: "Componer secciones",
-      description: "Asigna fotos a cada sección",
-    },
-    {
-      n: 4,
-      label: "Firma y fecha",
-      description: "Fecha del informe y quién firma",
-    },
-    { n: 5, label: "Vista previa", description: "Cómo va a salir" },
-    { n: 6, label: "Listo", description: "Descarga y comparte" },
+  const items: Array<{ n: WizardStep; label: string }> = [
+    { n: 1, label: "Cliente y visitas" },
+    { n: 2, label: "Secciones" },
+    { n: 3, label: "Firma y fecha" },
+    { n: 4, label: "Vista previa" },
+    { n: 5, label: "Listo" },
   ];
+
   return (
-    <ol className="space-y-1">
+    <ol className="flex items-center gap-1 overflow-x-auto">
       {items.map((it, i) => {
-        const completed = it.n < step;
-        const current = it.n === step;
-        const clickable = !terminado && it.n <= step;
-        const isLast = i === items.length - 1;
+        const hecho = it.n < step;
+        const actual = it.n === step;
+        const clickable = !terminado && it.n < step;
         return (
-          <li key={it.n} className="relative">
-            {/* Connector line to next item */}
-            {!isLast ? (
-              <span
-                className={`absolute left-4 top-9 bottom-[-4px] w-0.5 ${
-                  it.n < step ? "bg-primary" : "bg-muted"
-                }`}
-                aria-hidden
-              />
-            ) : null}
+          <li key={it.n} className="flex flex-none items-center gap-1">
             <button
               type="button"
               disabled={!clickable}
               onClick={() => clickable && onJump(it.n)}
-              className={`relative flex w-full items-start gap-3 rounded-md px-2 py-2 text-left transition-colors disabled:cursor-not-allowed ${
-                current ? "bg-primary/5" : clickable ? "hover:bg-muted/40" : ""
+              className={`flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition-colors disabled:cursor-default ${
+                actual ? "bg-primary/10" : clickable ? "hover:bg-muted" : ""
               }`}
             >
               <span
-                className={`flex h-8 w-8 flex-none items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors ${
-                  completed
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : current
-                      ? "border-primary bg-card text-primary"
-                      : "border-muted bg-card text-muted-foreground"
+                className={`flex h-6 w-6 flex-none items-center justify-center rounded-full text-xs font-semibold ${
+                  hecho
+                    ? "bg-primary text-primary-foreground"
+                    : actual
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
                 }`}
               >
-                {completed ? "✓" : it.n}
+                {hecho ? <Check className="h-3.5 w-3.5" /> : it.n}
               </span>
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`text-sm leading-tight ${
-                    current
-                      ? "font-semibold text-foreground"
-                      : completed
-                        ? "font-medium text-foreground"
-                        : "text-muted-foreground"
-                  }`}
-                >
-                  {it.label}
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground leading-tight">
-                  {it.description}
-                </p>
-              </div>
+              <span
+                className={`whitespace-nowrap text-xs ${
+                  actual
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {it.label}
+              </span>
             </button>
+            {i < items.length - 1 ? (
+              <span
+                className={`h-px w-4 flex-none ${
+                  it.n < step ? "bg-primary" : "bg-border"
+                }`}
+                aria-hidden
+              />
+            ) : null}
           </li>
         );
       })}
@@ -1253,6 +1217,74 @@ function VerticalStepper({
 }
 
 // ───────────── Step 1 ─────────────
+
+/**
+ * Cliente y visitas en un solo paso.
+ *
+ * Eran dos y elegir un cliente no es un paso: es un dato. Juntarlos también le
+ * devuelve alto a la pantalla de las secciones, que es donde se trabaja de
+ * verdad.
+ *
+ * Con el cliente ya elegido, la grilla se colapsa a un renglón: dejarla abierta
+ * empujaba la lista de visitas fuera de la pantalla justo cuando pasa a ser lo
+ * único que importa.
+ */
+function Paso1ClienteYVisitas({
+  clientes,
+  clienteId,
+  onClienteChange,
+  ...visitas
+}: {
+  clientes: Cliente[];
+  clienteId: string | null;
+  onClienteChange: (id: string) => void;
+  dateRange: { label: string; from: string | null; to: string | null };
+  onDateRangeChange: (r: {
+    label: string;
+    from: string | null;
+    to: string | null;
+  }) => void;
+  visitas: VisitaParaInforme[];
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  onSelectAll: (all: boolean) => void;
+  loading: boolean;
+}) {
+  const [cambiando, setCambiando] = useState(false);
+  const elegido = clientes.find((c) => c.id === clienteId) ?? null;
+  const eligiendo = !elegido || cambiando;
+
+  return (
+    <div className="space-y-6">
+      {eligiendo ? (
+        <Step1Cliente
+          clientes={clientes}
+          clienteId={clienteId}
+          onClienteChange={(id) => {
+            onClienteChange(id);
+            setCambiando(false);
+          }}
+        />
+      ) : (
+        <div className="flex max-w-3xl items-center gap-3 rounded-md border bg-card px-3 py-2.5">
+          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+            {nombreCliente(elegido).slice(0, 2).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-sm font-medium">
+            {nombreCliente(elegido)}
+          </span>
+          <Button variant="ghost" size="sm" onClick={() => setCambiando(true)}>
+            Cambiar
+          </Button>
+        </div>
+      )}
+
+      {elegido && !cambiando ? (
+        <Step2Visitas cliente={elegido} {...visitas} />
+      ) : null}
+    </div>
+  );
+}
 
 function Step1Cliente({
   clientes,
@@ -2704,6 +2736,46 @@ function DescripcionSeccion({
 }
 
 /**
+ * El PDF ocupando la pantalla.
+ *
+ * Un popup y no otra pestaña: el asistente sigue montado atrás, así que cerrar
+ * devuelve exactamente al lugar donde se estaba, sin buscar la pestaña de vuelta
+ * ni perder lo que se venía editando. Es el mismo blob que ya está en memoria,
+ * o sea que abrir es instantáneo.
+ */
+function VisorPdf({ url, onCerrar }: { url: string; onCerrar: () => void }) {
+  useEffect(() => {
+    const alTeclado = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCerrar();
+    };
+    window.addEventListener("keydown", alTeclado);
+    return () => window.removeEventListener("keydown", alTeclado);
+  }, [onCerrar]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-black/70 p-3 sm:p-6">
+      <div className="mb-2 flex flex-none items-center justify-between gap-3">
+        <span className="text-sm font-medium text-white">Vista previa</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white hover:bg-white/20 hover:text-white"
+          onClick={onCerrar}
+          title="Cerrar (Esc)"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+      <iframe
+        src={url}
+        title="Vista previa del informe"
+        className="min-h-0 flex-1 rounded-md bg-white"
+      />
+    </div>
+  );
+}
+
+/**
  * El panel de al lado en el paso de las secciones.
  *
  * Muestra el PDF de verdad —achicado, no una maqueta— y se rehace solo cuando
@@ -2714,30 +2786,36 @@ function PanelEnVivo({
   url,
   armando,
   error,
-  onCerrar,
+  onExpandir,
 }: {
   url: string | null;
   armando: boolean;
   error: string | null;
-  onCerrar: () => void;
+  onExpandir: () => void;
 }) {
   return (
     <>
+      {/* Un solo botón: agrandarla. Ocultar el panel ya está en la barra de
+          abajo, y rearmarla no hace falta — se rearma sola. */}
       <div className="flex flex-none items-center justify-between gap-2 border-b px-3 py-2">
         <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           Vista previa
           {armando ? (
-            <Loader2 className="h-3 w-3 animate-spin" aria-label="Actualizando" />
+            <Loader2
+              className="h-3 w-3 animate-spin"
+              aria-label="Actualizando"
+            />
           ) : null}
         </span>
         <Button
           variant="ghost"
           size="icon"
           className="h-6 w-6"
-          onClick={onCerrar}
-          title="Ocultar la vista previa"
+          onClick={onExpandir}
+          disabled={!url}
+          title="Verla en grande"
         >
-          <X className="h-3.5 w-3.5" />
+          <Maximize2 className="h-3.5 w-3.5" />
         </Button>
       </div>
       <div className="min-h-0 flex-1 p-2">
@@ -2772,14 +2850,16 @@ function PanelEnVivo({
 function PasoVistaPrevia({
   url,
   armando,
-  onRearmar,
+  onExpandir,
 }: {
   url: string | null;
   armando: boolean;
-  onRearmar: () => void;
+  onExpandir: () => void;
 }) {
   return (
     <div className="space-y-3">
+      {/* Nada de "volver a armar": se rearma sola al entrar al paso. Lo único
+          que falta desde acá es verla más grande. */}
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           Todavía no se guardó nada. Si algo no cuadra, volvé y ajustalo.
@@ -2787,16 +2867,20 @@ function PasoVistaPrevia({
         <Button
           variant="outline"
           size="sm"
-          onClick={onRearmar}
-          disabled={armando}
+          onClick={onExpandir}
+          disabled={!url || armando}
         >
-          {armando ? "Armando…" : "Volver a armar"}
+          <Maximize2 className="mr-1 h-4 w-4" /> Verla en grande
         </Button>
       </div>
 
       <div className="relative h-[70vh] w-full overflow-hidden rounded-md border bg-muted">
         {url ? (
-          <iframe src={url} title="Vista previa del informe" className="h-full w-full" />
+          <iframe
+            src={url}
+            title="Vista previa del informe"
+            className="h-full w-full"
+          />
         ) : null}
         {armando ? (
           // Encima y no en lugar del visor: mientras se rearma, seguir viendo

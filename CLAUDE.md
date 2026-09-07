@@ -339,13 +339,14 @@ previewing a document that isn't the one being filed. There's a preview step
 before generating (rebuilt on every entry, since a cached one showing the
 pre-correction version is worse than none) and a **live panel beside the section
 editor** that refreshes ~700 ms after you stop typing. What makes that viable is
-`borrador` mode in `src/lib/informes/fotos.ts`: photos are downloaded in
-parallel, shrunk to print size and cached in-process, which takes a refresh from
-~3 s / 13 MB to ~0.5 s / 0.15 MB. **The page breaks are identical** because
-layout reads the height in points the style declares, not the file's pixels; a
-draft photo is re-encoded to JPEG and flattened onto white, or a transparent PNG
-would show black where the real PDF doesn't. The definitive PDF always uses the
-originals. The preview also accepts **zero firmantes** — it's looked at before
+`src/lib/informes/fotos.ts`: photos are downloaded in parallel and shrunk —
+**1200 px for the filed PDF, 520 px for a draft**, which is also cached
+in-process. A refresh goes from ~3 s / 13 MB to ~0.5 s / 0.15 MB, and the filed
+informe went from 13.35 MB to 0.71 MB (1200 px is over 300 dpi at the size a
+photo actually prints, and a 13 MB PDF is one nobody can email). **The page
+breaks are identical** at either size because layout reads the height in points
+the style declares, not the file's pixels; every photo is re-encoded to JPEG and
+flattened onto white, or a transparent PNG would come out black. The preview also accepts **zero firmantes** — it's looked at before
 the signature step — while generating still demands one.
 
 **Files belong to the visita, not to any form.** `ArchivosVisita` lives on the
