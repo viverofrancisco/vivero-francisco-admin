@@ -209,7 +209,14 @@ export function ProductoVariantes({
   variantes: variantesIniciales,
   imagenes,
 }: {
-  productoId: string;
+  /**
+   * Nulo mientras el producto no existe.
+   *
+   * En el alta este editor arma las opciones y lo que cada combinación va a
+   * traer puesto, todo en estado: no hay variantes guardadas, así que tampoco
+   * hay ficha a la que enlazar. El servidor las genera al guardar.
+   */
+  productoId: string | null;
   productoNombre: string;
   /**
    * Las opciones **del formulario**, no las guardadas: editarlas es un cambio
@@ -553,7 +560,7 @@ function FilaVariante({
   onMover,
 }: {
   fila: FilaPreview;
-  productoId: string;
+  productoId: string | null;
   productoNombre: string;
   imagenes: ImagenProducto[];
   sangrada?: boolean;
@@ -592,7 +599,7 @@ function FilaVariante({
         </div>
       )}
 
-      {variante ? (
+      {variante && productoId ? (
         /* El nombre lleva a la ficha de la variante; el número abre el
            movimiento. Son las dos cosas que se hacen sobre una fila y cada una
            tiene su blanco, en vez de un menú que las esconda a las dos. */

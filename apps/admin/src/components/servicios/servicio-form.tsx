@@ -20,6 +20,10 @@ import { RichText } from "@/components/ui/rich-text";
 import { useRegistrarCambios } from "@/components/shared/cambios-pendientes";
 import { SelectorCategorias } from "./selector-categorias";
 import {
+  ProductoVariantes,
+  type OpcionEditable,
+} from "./producto-variantes";
+import {
   MediaLibrary,
   subirALaBiblioteca,
   type MediaItem,
@@ -268,6 +272,18 @@ export function ServicioForm({
     cobraIva: true,
     manejaInventario: true,
     stock: "",
+    /**
+     * Las opciones del bien y, por nombre de combinación, con qué precio y
+     * stock nacen.
+     *
+     * Se pueden armar antes de guardar porque el editor de variantes es puro
+     * estado: no toca el servidor. Al guardar se manda la lista de opciones, el
+     * servidor genera las combinaciones y recién ahí cada una recibe lo suyo —
+     * por nombre, que es lo único que existe de una variante que todavía no fue
+     * creada.
+     */
+    opciones: [] as OpcionEditable[],
+    nuevas: {} as Record<string, { precio: number; stock: number }>,
   };
   const [form, setForm] = useState(vacio);
 
@@ -280,6 +296,41 @@ export function ServicioForm({
    * diciendo qué falta — antes se podía apretar y saltaba un error.
    */
   const falta = form.nombre.trim() ? null : "Agrega un nombre para guardarlo";
+
+  /**
+   * Lo que cada combinación recién creada trae puesto.
+   *
+   * Se emparejan **por nombre** ("Rojo · Grande") porque hasta que el servidor
+   * no las genera no tienen id: lo que se cargó en pantalla está indexado por
+   * lo único que existía en ese momento.
+   */
+  async function estrenarVariantes(
+    variantes: { id: string; valores: string[] }[]
+  ) {
+    const porNombre = new Map(variantes.map((v) => [v.valores.join(" · "), v.id]));
+    for (const [nombre, valores] of Object.entries(form.nuevas)) {
+      const id = porNombre.get(nombre);
+      if (!id) continue;
+      if (valores.precio > 0) {
+        await fetch(`/api/variantes/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ precio: valores.precio }),
+        });
+      }
+      if (valores.stock > 0) {
+        await fetch(`/api/variantes/${id}/movimientos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            motivo: "INGRESO",
+            cantidad: valores.stock,
+            nota: "Stock inicial",
+          }),
+        });
+      }
+    }
+  }
 
   async function guardar() {
     // La barra no deja apretar sin nombre; esto es el cinturón por si alguien
@@ -306,11 +357,28 @@ export function ServicioForm({
       if (!res.ok || !data.id) {
         throw new Error(data.error ?? "No pudimos crearlo");
       }
-      // Lo de la variante, si es un bien y se cargó algo. El servidor la creó
-      // junto con el producto y devolvió su id.
+      // Con opciones, la variante única se reemplaza por las combinaciones:
+      // el precio y el stock de arriba dejan de aplicar, y cada combinación
+      // recibe el suyo. Sin opciones, se configura la única.
+      const conOpciones = tipo === "BIEN" && form.opciones.length > 0;
+      if (conOpciones) {
+        const r = await fetch(`/api/servicios/${data.id}/opciones`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ opciones: form.opciones }),
+        });
+        const body = await r.json();
+        if (!r.ok) {
+          throw new Error(body.error ?? "El producto se creó, pero sin las opciones");
+        }
+        await estrenarVariantes(body.variantes ?? []);
+      }
+
+      // Lo de la variante, si es un bien sin opciones y se cargó algo. El
+      // servidor la creó junto con el producto y devolvió su id.
       const precio = Number(form.precio);
       const stock = Number(form.stock);
-      if (tipo === "BIEN" && data.varianteId) {
+      if (tipo === "BIEN" && !conOpciones && data.varianteId) {
         await fetch(`/api/variantes/${data.varianteId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -477,7 +545,10 @@ export function ServicioForm({
             </CardContent>
           </Card>
 
-          {tipo === "BIEN" && (
+          {/* Sin opciones hay una sola variante y su precio y su stock son,
+              a los ojos de quien mira, los del producto. Al agregar una opción
+              pasan a ser de cada combinación y esta card desaparece. */}
+          {tipo === "BIEN" && form.opciones.length === 0 && (
             <Card>
               <CardHeader className="border-b py-3">
                 <CardTitle className="text-base">Precio e inventario</CardTitle>
@@ -547,14 +618,25 @@ export function ServicioForm({
             </Card>
           )}
 
-          {/* Las opciones sí quedan para después: agregar una reemplaza esta
-              variante por las combinaciones, y cada una lleva su propio precio
-              y su propio stock. */}
+          {/* Las opciones, igual que en la ficha. Al agregar una, la variante
+              única se reemplaza por las combinaciones y cada una lleva su
+              propio precio y su propio stock — por eso la card de arriba deja
+              de aplicar y se oculta. */}
           {tipo === "BIEN" && (
-            <p className="text-sm text-muted-foreground">
-              Si este producto tiene variantes (color, tamaño), se agregan
-              después de guardar.
-            </p>
+            <ProductoVariantes
+              productoId={null}
+              productoNombre={form.nombre}
+              opciones={form.opciones}
+              onOpcionesChange={(opciones) => setForm({ ...form, opciones })}
+              nuevas={form.nuevas}
+              onNuevasChange={(nuevas) => setForm({ ...form, nuevas })}
+              precios={{}}
+              onPreciosChange={() => {}}
+              movimientos={{}}
+              onMovimientosChange={() => {}}
+              variantes={[]}
+              imagenes={[]}
+            />
           )}
         </div>
 
