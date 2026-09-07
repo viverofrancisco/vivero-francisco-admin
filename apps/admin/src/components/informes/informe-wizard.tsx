@@ -2505,7 +2505,11 @@ function Step3Secciones({
                   <div className="px-4 pb-4 pt-2">
                     {hasPhotos ? (
                       <>
-                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                        {/* Cuatro por fila, cinco en pantallas muy anchas.
+                            Con seis la miniatura quedaba tan chica que no se
+                            distinguía una foto de otra, que es justo para lo
+                            que se las mira. */}
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5">
                           {s.fotos.map((f) => (
                             /* Arrastrable para reordenar: en el PDF salen en
                                  este orden, y "la del antes primero" es una
@@ -2590,12 +2594,19 @@ function Step3Secciones({
                                   className="h-full w-full object-cover transition-transform hover:scale-105"
                                 />
                               </button>
+                              {/* Abajo a la izquierda: arriba a la derecha
+                                  están recortar y quitar, y en una miniatura
+                                  chica el cartel se les montaba encima.
+
+                                  "Agregada" y no "Subida" porque también puede
+                                  venir de la biblioteca. Lo que marca es la
+                                  excepción: la mayoría sale de las visitas. */}
                               {!f.visitaMediaId ? (
                                 <span
-                                  className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
-                                  title="Imagen subida al informe, no viene de una visita"
+                                  className="pointer-events-none absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white"
+                                  title="No viene de una visita: la subiste o la elegiste de la biblioteca"
                                 >
-                                  Subida
+                                  Agregada
                                 </span>
                               ) : null}
                               <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -2868,8 +2879,8 @@ function PhotoPickerModal({
                       alt=""
                       className="h-full w-full object-cover"
                     />
-                    <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                      Subida
+                    <span className="pointer-events-none absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                      Agregada
                     </span>
                     <button
                       type="button"
