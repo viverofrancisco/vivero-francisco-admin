@@ -24,15 +24,21 @@ export default async function CategoriaRoute({
   const { from } = await searchParams;
   const backHref = hrefDeVuelta(from, "/dashboard/productos/categorias");
 
+  // El `try` envuelve **solo la consulta**: el JSX se construye afuera. React
+  // no renderiza en el momento en que se lo escribe, así que un error del
+  // componente no caería en este `catch` — y el `notFound()` de adentro sí
+  // sería atrapado por él, que es peor.
+  let categoria;
   try {
-    const categoria = await getCategoria(viewer, id);
-    return (
-      <div className="p-4 md:p-6">
-        <CategoriaDetail categoria={categoria} backHref={backHref} />
-      </div>
-    );
+    categoria = await getCategoria(viewer, id);
   } catch (error) {
     if (error instanceof NotFoundError) notFound();
     throw error;
   }
+
+  return (
+    <div className="p-4 md:p-6">
+      <CategoriaDetail categoria={categoria} backHref={backHref} />
+    </div>
+  );
 }
