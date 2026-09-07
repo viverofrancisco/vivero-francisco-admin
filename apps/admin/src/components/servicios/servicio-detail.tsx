@@ -90,6 +90,7 @@ export function ServicioDetail({
     codigo: servicio.codigo ?? "",
     estado: servicio.estado,
     categoriaIds: servicio.categoriaIds,
+    opciones,
   };
   const [form, setForm] = useState(guardado);
 
@@ -98,7 +99,10 @@ export function ServicioDetail({
     form.descripcion !== guardado.descripcion ||
     form.codigo !== guardado.codigo ||
     form.estado !== guardado.estado ||
-    form.categoriaIds.join() !== guardado.categoriaIds.join();
+    form.categoriaIds.join() !== guardado.categoriaIds.join() ||
+    // Por su forma y no por identidad: el editor rearma el arreglo en cada
+    // tecla, así que comparar referencias diría "cambió" siempre.
+    JSON.stringify(form.opciones) !== JSON.stringify(guardado.opciones);
 
   /** Lo devuelve al catálogo. */
   const restaurar = async () => {
@@ -116,6 +120,30 @@ export function ServicioDetail({
     } finally {
       setRestaurando(false);
     }
+  };
+
+  /**
+   * Los ejes, si cambiaron. Van en su propio pedido porque **regeneran las
+   * variantes**: no son un campo del producto sino una operación estructural,
+   * y el servidor puede rechazarla si el cambio borra variantes con stock.
+   */
+  const guardarOpciones = async (descartarVariantes = false): Promise<void> => {
+    const res = await fetch(`/api/servicios/${servicio.id}/opciones`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ opciones: form.opciones, descartarVariantes }),
+    });
+    const body = await res.json();
+    if (res.ok) return;
+    // 409 = el cambio borra variantes con inventario. El servidor dice cuáles
+    // y con cuánto; acá solo hace falta el sí.
+    if (res.status === 409 && !descartarVariantes) {
+      if (!confirm(`${body.error}\n\n¿Seguir igual?`)) {
+        throw new Error("cancelado");
+      }
+      return guardarOpciones(true);
+    }
+    throw new Error(body.error ?? "Error al guardar las opciones");
   };
 
   const guardar = async () => {
@@ -143,11 +171,16 @@ export function ServicioDetail({
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "Error al guardar el producto");
       }
+      if (JSON.stringify(form.opciones) !== JSON.stringify(opciones)) {
+        await guardarOpciones();
+      }
       toast.success("Producto actualizado");
       // El servidor es el que dice qué quedó guardado: `router.refresh()` trae
       // la ficha de nuevo y `guardado` vuelve a coincidir con el formulario.
       router.refresh();
     } catch (e) {
+      // El "no" de la confirmación no es un error que haya que mostrar.
+      if (e instanceof Error && e.message === "cancelado") return;
       toast.error(
         e instanceof Error ? e.message : "Error al guardar el producto"
       );
@@ -278,7 +311,8 @@ export function ServicioDetail({
             <ProductoVariantes
               productoId={servicio.id}
               productoNombre={form.nombre}
-              opciones={opciones}
+              opciones={form.opciones}
+              onOpcionesChange={(o) => setForm({ ...form, opciones: o })}
               variantes={filas}
               imagenes={galeria}
               onVariantesChange={setFilas}

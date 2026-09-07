@@ -18,7 +18,6 @@ import {
   ArrowLeftRight,
   ChevronDown,
   ChevronRight,
-  Loader2,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -95,25 +94,28 @@ export function nombreVariante(v: VarianteFila, productoNombre: string): string 
 export function ProductoVariantes({
   productoId,
   productoNombre,
-  opciones: opcionesIniciales,
+  opciones,
+  onOpcionesChange,
   variantes: variantesIniciales,
   imagenes,
   onVariantesChange,
 }: {
   productoId: string;
   productoNombre: string;
+  /**
+   * Las opciones **del formulario**, no las guardadas: editarlas es un cambio
+   * del producto como cualquier otro, y se guarda con la barra del header.
+   */
   opciones: OpcionEditable[];
+  onOpcionesChange: (o: OpcionEditable[]) => void;
   variantes: VarianteFila[];
   imagenes: ImagenProducto[];
   /** Para que la card de Inventario siga en acuerdo con la variante única. */
   onVariantesChange?: (v: VarianteFila[]) => void;
 }) {
   const router = useRouter();
-  /** Qué opción está abierta, y cómo va quedando. `null` = ninguna. */
+  /** Qué opción está desplegada. `null` = todas plegadas. */
   const [abierta, setAbierta] = useState<number | null>(null);
-  const [opciones, setOpciones] = useState(opcionesIniciales);
-  const [borrador, setBorrador] = useState<OpcionEditable | null>(null);
-  const [guardando, setGuardando] = useState(false);
   const [variantes, setVariantes] = useState(variantesIniciales);
   const [ajustando, setAjustando] = useState<VarianteFila | null>(null);
   /** Por qué eje se agrupa. Solo con dos o más: con uno no hay nada que juntar. */
@@ -123,56 +125,6 @@ export function ProductoVariantes({
   const aplicar = (v: VarianteFila[]) => {
     setVariantes(v);
     onVariantesChange?.(v);
-  };
-
-  /**
-   * Guarda los ejes y deja que el servidor regenere las variantes.
-   *
-   * Se guarda al cerrar la opción y no con el resto del producto: agregar un
-   * valor cambia **cuántas variantes hay**, y eso es una operación del servidor
-   * —no un campo de texto que se pueda previsualizar en pantalla—.
-   */
-  const guardarOpciones = async (
-    lista: OpcionEditable[],
-    descartarVariantes = false
-  ) => {
-    setGuardando(true);
-    try {
-      const res = await fetch(`/api/servicios/${productoId}/opciones`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ opciones: lista, descartarVariantes }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        // 409 = hay variantes con inventario que este cambio borra. El servidor
-        // dice cuáles y con cuánto; acá solo hace falta el sí.
-        if (res.status === 409 && !descartarVariantes) {
-          if (confirm(`${body.error}\n\n¿Seguir igual?`)) {
-            setGuardando(false);
-            return guardarOpciones(lista, true);
-          }
-          setGuardando(false);
-          return;
-        }
-        throw new Error(body.error ?? "Error");
-      }
-      setOpciones(lista);
-      setAbierta(null);
-      setBorrador(null);
-      toast.success(
-        body.variantes === 1
-          ? "Guardado: una variante"
-          : `Guardado: ${body.variantes} variantes`
-      );
-      // Las variantes las rearmó el servidor: se recarga en vez de adivinar
-      // cuáles sobrevivieron.
-      router.refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
-    } finally {
-      setGuardando(false);
-    }
   };
 
   /** El precio de lista de una variante, desde la tabla. */
@@ -267,38 +219,26 @@ export function ProductoVariantes({
               saber si el cambio es el que se quería. */}
           <div className="divide-y rounded-md border">
             {opciones.map((o, i) =>
-              abierta === i && borrador ? (
+              abierta === i ? (
                 <EditorOpcion
-                  key={o.id ?? `nueva-${i}`}
-                  opcion={borrador}
-                  onChange={setBorrador}
-                  guardando={guardando}
-                  onListo={() =>
-                    guardarOpciones(
-                      opciones.map((x, j) => (j === i ? borrador : x))
+                  key={`op-${i}`}
+                  opcion={o}
+                  onChange={(nueva) =>
+                    onOpcionesChange(
+                      opciones.map((x, j) => (j === i ? nueva : x))
                     )
                   }
-                  onBorrar={() =>
-                    guardarOpciones(opciones.filter((_, j) => j !== i))
-                  }
-                  onCancelar={() => {
-                    // Una opción recién agregada que se cancela no queda a
-                    // medias: se va con el gesto que la creó.
-                    if (o.id === null && o.nombre === "") {
-                      setOpciones(opciones.filter((_, j) => j !== i));
-                    }
+                  onListo={() => setAbierta(null)}
+                  onBorrar={() => {
+                    onOpcionesChange(opciones.filter((_, j) => j !== i));
                     setAbierta(null);
-                    setBorrador(null);
                   }}
                 />
               ) : (
                 <button
-                  key={o.id ?? `op-${i}`}
+                  key={`op-${i}`}
                   type="button"
-                  onClick={() => {
-                    setAbierta(i);
-                    setBorrador(o);
-                  }}
+                  onClick={() => setAbierta(i)}
                   className="block w-full space-y-1.5 p-3 text-left hover:bg-muted/40"
                 >
                   <p className="text-sm font-medium">{o.nombre || "Sin nombre"}</p>
@@ -320,14 +260,11 @@ export function ProductoVariantes({
               <button
                 type="button"
                 onClick={() => {
-                  const nueva: OpcionEditable = {
-                    id: null,
-                    nombre: "",
-                    valores: [],
-                  };
-                  setOpciones([...opciones, nueva]);
+                  onOpcionesChange([
+                    ...opciones,
+                    { id: null, nombre: "", valores: [] },
+                  ]);
                   setAbierta(opciones.length);
-                  setBorrador(nueva);
                 }}
                 className="flex w-full items-center gap-1.5 p-3 text-left text-sm text-primary hover:bg-muted/40"
               >
@@ -604,43 +541,61 @@ function FilaVariante({
 }
 
 /**
- * Un eje abierto: su nombre y sus valores.
+ * Un eje desplegado: su nombre y sus valores.
  *
  * Se edita **en el lugar**, como en Shopify: un diálogo para cambiar una
  * palabra tapaba la lista de variantes, que es justo lo que hay que mirar para
  * saber si el cambio es el que se quería.
  *
- * *Listo* guarda y el servidor regenera las variantes: agregar un valor cambia
- * cuántas hay, y eso no es un campo de texto que se pueda previsualizar.
+ * *Listo* solo pliega. Lo que se escribe acá es un cambio del producto como
+ * cualquier otro y se guarda con la barra del header — un botón que guardara
+ * solo esta parte convivía con otro que guarda todo, y nadie sabría cuál de los
+ * dos hace falta.
  */
 function EditorOpcion({
   opcion,
   onChange,
   onListo,
   onBorrar,
-  onCancelar,
-  guardando,
 }: {
   opcion: OpcionEditable;
   onChange: (o: OpcionEditable) => void;
   onListo: () => void;
   onBorrar: () => void;
-  onCancelar: () => void;
-  guardando: boolean;
 }) {
-  const [nuevo, setNuevo] = useState("");
+  /**
+   * Los valores más uno vacío al final.
+   *
+   * Escribir en ese último lo convierte en un valor y abre otro debajo, así que
+   * cargar cinco talles es tipear cinco veces. Antes había que confirmar cada
+   * uno con Enter, que es un paso que nadie descubre solo.
+   */
+  const filas = [...opcion.valores, { id: null, valor: "" }];
 
-  const agregarValor = (valor: string) => {
-    const limpio = valor.trim();
-    if (!limpio) return;
+  const escribir = (k: number, valor: string) => {
+    // La fila del final: escribir en ella la convierte en un valor, y el render
+    // abre otra debajo. La conversión es **solo acá**: filtrar los vacíos en
+    // todas haría que borrar el texto de un valor del medio para reescribirlo
+    // lo hiciera desaparecer bajo el cursor.
+    if (k === opcion.valores.length) {
+      if (valor === "") return;
+      onChange({
+        ...opcion,
+        valores: [...opcion.valores, { id: null, valor }],
+      });
+      return;
+    }
     onChange({
       ...opcion,
-      valores: [...opcion.valores, { id: null, valor: limpio }],
+      valores: opcion.valores.map((v, j) => (j === k ? { ...v, valor } : v)),
     });
-    setNuevo("");
   };
 
-  const listo = opcion.nombre.trim() !== "" && opcion.valores.length > 0;
+  // Un valor que quedó en blanco no cuenta: el servidor los descarta al
+  // guardar, así que decir que está listo sería prometer algo que no queda.
+  const listo =
+    opcion.nombre.trim() !== "" &&
+    opcion.valores.some((v) => v.valor.trim() !== "");
 
   return (
     <div className="space-y-3 bg-muted/20 p-3">
@@ -656,50 +611,40 @@ function EditorOpcion({
 
       <div className="space-y-1.5">
         <Label className="text-xs">Valores</Label>
-        {opcion.valores.map((v, k) => (
-          <div key={k} className="flex items-center gap-1.5">
-            <Input
-              value={v.valor}
-              onChange={(e) =>
-                onChange({
-                  ...opcion,
-                  valores: opcion.valores.map((x, j) =>
-                    j === k ? { ...x, valor: e.target.value } : x
-                  ),
-                })
-              }
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="flex-none"
-              aria-label={`Sacar ${v.valor}`}
-              onClick={() =>
-                onChange({
-                  ...opcion,
-                  valores: opcion.valores.filter((_, j) => j !== k),
-                })
-              }
-            >
-              <Trash2 className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </div>
-        ))}
-        {/* Enter agrega y deja el campo listo para el siguiente: así se cargan
-            cinco talles seguidos sin levantar las manos del teclado. */}
-        <Input
-          value={nuevo}
-          onChange={(e) => setNuevo(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key !== "Enter") return;
-            e.preventDefault();
-            agregarValor(nuevo);
-          }}
-          onBlur={() => agregarValor(nuevo)}
-          placeholder="Agregar otro valor"
-          className="mr-10"
-        />
+        {filas.map((v, k) => {
+          const ultima = k === filas.length - 1;
+          return (
+            <div key={k} className="flex items-center gap-1.5">
+              <Input
+                value={v.valor}
+                onChange={(e) => escribir(k, e.target.value)}
+                placeholder={ultima ? "Agregar otro valor" : undefined}
+              />
+              {/* El campo vacío del final no tiene qué borrar, pero ocupa el
+                  lugar del botón: sin eso los inputs bailan de ancho al tipear
+                  la primera letra. */}
+              {ultima ? (
+                <span className="h-8 w-8 flex-none" />
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="flex-none"
+                  aria-label={`Sacar ${v.valor}`}
+                  onClick={() =>
+                    onChange({
+                      ...opcion,
+                      valores: opcion.valores.filter((_, j) => j !== k),
+                    })
+                  }
+                >
+                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex items-center justify-between gap-2">
@@ -708,34 +653,19 @@ function EditorOpcion({
           variant="ghost"
           size="sm"
           className="text-destructive hover:bg-destructive/10"
-          disabled={guardando}
           onClick={onBorrar}
         >
           Borrar
         </Button>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={guardando}
-            onClick={onCancelar}
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            disabled={guardando || !listo}
-            title={
-              listo ? undefined : "La opción necesita un nombre y algún valor."
-            }
-            onClick={onListo}
-          >
-            {guardando && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
-            Listo
-          </Button>
-        </div>
+        <Button
+          type="button"
+          size="sm"
+          disabled={!listo}
+          title={listo ? undefined : "La opción necesita un nombre y algún valor."}
+          onClick={onListo}
+        >
+          Listo
+        </Button>
       </div>
     </div>
   );

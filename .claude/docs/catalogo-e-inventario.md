@@ -47,11 +47,20 @@ toca, ahí mismo, como en Shopify. Un diálogo para cambiar una palabra tapaba l
 lista de variantes, que es justo lo que hay que mirar para saber si el cambio es
 el que se quería.
 
-*Listo* **guarda**, a diferencia del resto de la ficha, que espera la barra del
-header: agregar un valor cambia *cuántas variantes hay*, y eso es una operación
-del servidor, no un campo de texto que se pueda previsualizar en pantalla.
-También es lo que le da un momento explícito a la confirmación cuando el cambio
-borra variantes con stock.
+*Listo* solo **pliega**: lo que se escribe ahí es un cambio del producto como
+cualquier otro y se guarda con la barra del header. Un botón que guardara solo
+esa parte convivía con otro que guarda todo, y nadie sabría cuál de los dos hace
+falta.
+
+Al guardar, los ejes van en **su propio pedido** (`PUT …/opciones`) después del
+producto: regeneran las variantes, así que no son un campo sino una operación
+del servidor — y es la que puede responder 409 cuando el cambio borra variantes
+con stock. Esa confirmación aparece ahí, dentro del guardado.
+
+Los valores se cargan de a uno **tipeando**: la última fila está vacía, escribir
+en ella la convierte en un valor y abre otra debajo. La conversión es solo en
+esa fila; borrar el texto de un valor del medio lo deja en blanco para
+reescribirlo, en vez de hacerlo desaparecer bajo el cursor.
 
 ### Guardar los ejes es un reemplazo, no un parche
 
