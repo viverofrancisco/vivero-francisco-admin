@@ -10,6 +10,8 @@ import { ConflictError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { ForbiddenError } from "./errors";
+import { sanitizarHtml } from "@/lib/html-seguro";
+import { publicUrlForKey } from "@/lib/s3";
 
 function ensureAdmin(viewer: Viewer): void {
   if (!isAdminRole(viewer.role)) throw new ForbiddenError();
@@ -18,6 +20,10 @@ function ensureAdmin(viewer: Viewer): void {
 export interface CategoriaInput {
   nombre: string;
   orden?: number;
+  /** De qué se trata. HTML de un editor: se sanea acá. */
+  descripcion?: string | null;
+  /** La foto que la representa. Sale de la biblioteca. */
+  mediaId?: string | null;
 }
 
 /** Todas, con cuántos productos vivos tiene cada una. */
@@ -41,6 +47,10 @@ function limpiar(payload: CategoriaInput) {
   return {
     nombre,
     orden: payload.orden ?? 0,
+    ...(payload.descripcion !== undefined
+      ? { descripcion: sanitizarHtml(payload.descripcion) }
+      : {}),
+    ...(payload.mediaId !== undefined ? { mediaId: payload.mediaId } : {}),
   };
 }
 
@@ -112,4 +122,150 @@ export async function borrarCategoria(viewer: Viewer, id: string) {
     }
     throw error;
   }
+}
+
+/**
+ * La ficha de una categoría, con los productos que agrupa.
+ *
+ * Los trae **enteros y sin paginar**: el catálogo de un vivero son decenas, no
+ * miles, y una categoría existe justamente para verla completa.
+ */
+export async function getCategoria(viewer: Viewer, id: string) {
+  ensureAdmin(viewer);
+  const categoria = await prisma.categoria.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      nombre: true,
+      orden: true,
+      descripcion: true,
+      mediaId: true,
+      media: { select: { id: true, key: true, alt: true, nombre: true } },
+      productos: {
+        where: { producto: { deletedAt: null } },
+        orderBy: { producto: { nombre: "asc" } },
+        select: {
+          producto: {
+            select: {
+              id: true,
+              nombre: true,
+              tipo: true,
+              estado: true,
+              imagenes: {
+                orderBy: { posicion: "asc" },
+                take: 1,
+                select: { media: { select: { key: true } } },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  if (!categoria) throw new NotFoundError("Categoría no encontrada");
+
+  return {
+    id: categoria.id,
+    nombre: categoria.nombre,
+    orden: categoria.orden,
+    descripcion: categoria.descripcion,
+    imagen: categoria.media
+      ? {
+          id: categoria.media.id,
+          url: publicUrlForKey(categoria.media.key),
+          alt: categoria.media.alt,
+          nombre: categoria.media.nombre,
+        }
+      : null,
+    productos: categoria.productos.map((pc) => ({
+      id: pc.producto.id,
+      nombre: pc.producto.nombre,
+      tipo: pc.producto.tipo,
+      estado: pc.producto.estado,
+      imagenUrl: pc.producto.imagenes[0]
+        ? publicUrlForKey(pc.producto.imagenes[0].media.key)
+        : null,
+    })),
+  };
+}
+
+/**
+ * Suma productos a la categoría.
+ *
+ * `skipDuplicates` en vez de fallar: agregar uno que ya estaba es un pedido sin
+ * efecto, no un error — y con multiselección es fácil que pase.
+ */
+export async function agregarProductos(
+  viewer: Viewer,
+  categoriaId: string,
+  productoIds: string[]
+) {
+  ensureAdmin(viewer);
+  const categoria = await prisma.categoria.findUnique({
+    where: { id: categoriaId },
+    select: { id: true },
+  });
+  if (!categoria) throw new NotFoundError("Categoría no encontrada");
+
+  await prisma.productoCategoria.createMany({
+    data: productoIds.map((productoId) => ({ categoriaId, productoId })),
+    skipDuplicates: true,
+  });
+  return getCategoria(viewer, categoriaId);
+}
+
+/** Lo saca de la categoría. El producto queda entero, con una etiqueta menos. */
+export async function quitarProducto(
+  viewer: Viewer,
+  categoriaId: string,
+  productoId: string
+) {
+  ensureAdmin(viewer);
+  await prisma.productoCategoria.deleteMany({
+    where: { categoriaId, productoId },
+  });
+  return getCategoria(viewer, categoriaId);
+}
+
+/**
+ * Los productos que **todavía no** están en la categoría, para poder elegirlos.
+ *
+ * Incluye los borradores: una categoría es cómo se ordena el catálogo, y
+ * ordenar algo que todavía no se vende es exactamente cuándo conviene hacerlo.
+ */
+export async function productosParaAgregar(
+  viewer: Viewer,
+  categoriaId: string,
+  search?: string
+) {
+  ensureAdmin(viewer);
+  const productos = await prisma.producto.findMany({
+    where: {
+      deletedAt: null,
+      categorias: { none: { categoriaId } },
+      ...(search?.trim()
+        ? { nombre: { contains: search.trim(), mode: "insensitive" } }
+        : {}),
+    },
+    orderBy: { nombre: "asc" },
+    take: 50,
+    select: {
+      id: true,
+      nombre: true,
+      tipo: true,
+      estado: true,
+      imagenes: {
+        orderBy: { posicion: "asc" },
+        take: 1,
+        select: { media: { select: { key: true } } },
+      },
+    },
+  });
+  return productos.map((p) => ({
+    id: p.id,
+    nombre: p.nombre,
+    tipo: p.tipo,
+    estado: p.estado,
+    imagenUrl: p.imagenes[0] ? publicUrlForKey(p.imagenes[0].media.key) : null,
+  }));
 }

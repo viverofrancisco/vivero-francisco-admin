@@ -4523,6 +4523,8 @@ export const CategoriaScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
   orden: 'orden',
+  descripcion: 'descripcion',
+  mediaId: 'mediaId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -39,6 +39,8 @@ export type CategoriaMinAggregateOutputType = {
   id: string | null
   nombre: string | null
   orden: number | null
+  descripcion: string | null
+  mediaId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,6 +49,8 @@ export type CategoriaMaxAggregateOutputType = {
   id: string | null
   nombre: string | null
   orden: number | null
+  descripcion: string | null
+  mediaId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -55,6 +59,8 @@ export type CategoriaCountAggregateOutputType = {
   id: number
   nombre: number
   orden: number
+  descripcion: number
+  mediaId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -73,6 +79,8 @@ export type CategoriaMinAggregateInputType = {
   id?: true
   nombre?: true
   orden?: true
+  descripcion?: true
+  mediaId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -81,6 +89,8 @@ export type CategoriaMaxAggregateInputType = {
   id?: true
   nombre?: true
   orden?: true
+  descripcion?: true
+  mediaId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -89,6 +99,8 @@ export type CategoriaCountAggregateInputType = {
   id?: true
   nombre?: true
   orden?: true
+  descripcion?: true
+  mediaId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -184,6 +196,8 @@ export type CategoriaGroupByOutputType = {
   id: string
   nombre: string
   orden: number
+  descripcion: string | null
+  mediaId: string | null
   createdAt: Date
   updatedAt: Date
   _count: CategoriaCountAggregateOutputType | null
@@ -215,8 +229,11 @@ export type CategoriaWhereInput = {
   id?: Prisma.StringFilter<"Categoria"> | string
   nombre?: Prisma.StringFilter<"Categoria"> | string
   orden?: Prisma.IntFilter<"Categoria"> | number
+  descripcion?: Prisma.StringNullableFilter<"Categoria"> | string | null
+  mediaId?: Prisma.StringNullableFilter<"Categoria"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
+  media?: Prisma.XOR<Prisma.MediaNullableScalarRelationFilter, Prisma.MediaWhereInput> | null
   productos?: Prisma.ProductoCategoriaListRelationFilter
 }
 
@@ -224,8 +241,11 @@ export type CategoriaOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
+  descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
+  mediaId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  media?: Prisma.MediaOrderByWithRelationInput
   productos?: Prisma.ProductoCategoriaOrderByRelationAggregateInput
 }
 
@@ -236,8 +256,11 @@ export type CategoriaWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.CategoriaWhereInput[]
   NOT?: Prisma.CategoriaWhereInput | Prisma.CategoriaWhereInput[]
   orden?: Prisma.IntFilter<"Categoria"> | number
+  descripcion?: Prisma.StringNullableFilter<"Categoria"> | string | null
+  mediaId?: Prisma.StringNullableFilter<"Categoria"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
+  media?: Prisma.XOR<Prisma.MediaNullableScalarRelationFilter, Prisma.MediaWhereInput> | null
   productos?: Prisma.ProductoCategoriaListRelationFilter
 }, "id" | "nombre">
 
@@ -245,6 +268,8 @@ export type CategoriaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
+  descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
+  mediaId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CategoriaCountOrderByAggregateInput
@@ -261,6 +286,8 @@ export type CategoriaScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Categoria"> | string
   nombre?: Prisma.StringWithAggregatesFilter<"Categoria"> | string
   orden?: Prisma.IntWithAggregatesFilter<"Categoria"> | number
+  descripcion?: Prisma.StringNullableWithAggregatesFilter<"Categoria"> | string | null
+  mediaId?: Prisma.StringNullableWithAggregatesFilter<"Categoria"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Categoria"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Categoria"> | Date | string
 }
@@ -269,8 +296,10 @@ export type CategoriaCreateInput = {
   id?: string
   nombre: string
   orden?: number
+  descripcion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  media?: Prisma.MediaCreateNestedOneWithoutCategoriasInput
   productos?: Prisma.ProductoCategoriaCreateNestedManyWithoutCategoriaInput
 }
 
@@ -278,6 +307,8 @@ export type CategoriaUncheckedCreateInput = {
   id?: string
   nombre: string
   orden?: number
+  descripcion?: string | null
+  mediaId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   productos?: Prisma.ProductoCategoriaUncheckedCreateNestedManyWithoutCategoriaInput
@@ -287,8 +318,10 @@ export type CategoriaUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  media?: Prisma.MediaUpdateOneWithoutCategoriasNestedInput
   productos?: Prisma.ProductoCategoriaUpdateManyWithoutCategoriaNestedInput
 }
 
@@ -296,6 +329,8 @@ export type CategoriaUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   productos?: Prisma.ProductoCategoriaUncheckedUpdateManyWithoutCategoriaNestedInput
@@ -305,6 +340,8 @@ export type CategoriaCreateManyInput = {
   id?: string
   nombre: string
   orden?: number
+  descripcion?: string | null
+  mediaId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -313,6 +350,7 @@ export type CategoriaUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -321,6 +359,8 @@ export type CategoriaUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -329,6 +369,8 @@ export type CategoriaCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
+  descripcion?: Prisma.SortOrder
+  mediaId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -341,6 +383,8 @@ export type CategoriaMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
+  descripcion?: Prisma.SortOrder
+  mediaId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -349,6 +393,8 @@ export type CategoriaMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nombre?: Prisma.SortOrder
   orden?: Prisma.SortOrder
+  descripcion?: Prisma.SortOrder
+  mediaId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -360,6 +406,16 @@ export type CategoriaSumOrderByAggregateInput = {
 export type CategoriaScalarRelationFilter = {
   is?: Prisma.CategoriaWhereInput
   isNot?: Prisma.CategoriaWhereInput
+}
+
+export type CategoriaListRelationFilter = {
+  every?: Prisma.CategoriaWhereInput
+  some?: Prisma.CategoriaWhereInput
+  none?: Prisma.CategoriaWhereInput
+}
+
+export type CategoriaOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -384,18 +440,64 @@ export type CategoriaUpdateOneRequiredWithoutProductosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CategoriaUpdateToOneWithWhereWithoutProductosInput, Prisma.CategoriaUpdateWithoutProductosInput>, Prisma.CategoriaUncheckedUpdateWithoutProductosInput>
 }
 
+export type CategoriaCreateNestedManyWithoutMediaInput = {
+  create?: Prisma.XOR<Prisma.CategoriaCreateWithoutMediaInput, Prisma.CategoriaUncheckedCreateWithoutMediaInput> | Prisma.CategoriaCreateWithoutMediaInput[] | Prisma.CategoriaUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.CategoriaCreateOrConnectWithoutMediaInput | Prisma.CategoriaCreateOrConnectWithoutMediaInput[]
+  createMany?: Prisma.CategoriaCreateManyMediaInputEnvelope
+  connect?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+}
+
+export type CategoriaUncheckedCreateNestedManyWithoutMediaInput = {
+  create?: Prisma.XOR<Prisma.CategoriaCreateWithoutMediaInput, Prisma.CategoriaUncheckedCreateWithoutMediaInput> | Prisma.CategoriaCreateWithoutMediaInput[] | Prisma.CategoriaUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.CategoriaCreateOrConnectWithoutMediaInput | Prisma.CategoriaCreateOrConnectWithoutMediaInput[]
+  createMany?: Prisma.CategoriaCreateManyMediaInputEnvelope
+  connect?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+}
+
+export type CategoriaUpdateManyWithoutMediaNestedInput = {
+  create?: Prisma.XOR<Prisma.CategoriaCreateWithoutMediaInput, Prisma.CategoriaUncheckedCreateWithoutMediaInput> | Prisma.CategoriaCreateWithoutMediaInput[] | Prisma.CategoriaUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.CategoriaCreateOrConnectWithoutMediaInput | Prisma.CategoriaCreateOrConnectWithoutMediaInput[]
+  upsert?: Prisma.CategoriaUpsertWithWhereUniqueWithoutMediaInput | Prisma.CategoriaUpsertWithWhereUniqueWithoutMediaInput[]
+  createMany?: Prisma.CategoriaCreateManyMediaInputEnvelope
+  set?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  disconnect?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  delete?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  connect?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  update?: Prisma.CategoriaUpdateWithWhereUniqueWithoutMediaInput | Prisma.CategoriaUpdateWithWhereUniqueWithoutMediaInput[]
+  updateMany?: Prisma.CategoriaUpdateManyWithWhereWithoutMediaInput | Prisma.CategoriaUpdateManyWithWhereWithoutMediaInput[]
+  deleteMany?: Prisma.CategoriaScalarWhereInput | Prisma.CategoriaScalarWhereInput[]
+}
+
+export type CategoriaUncheckedUpdateManyWithoutMediaNestedInput = {
+  create?: Prisma.XOR<Prisma.CategoriaCreateWithoutMediaInput, Prisma.CategoriaUncheckedCreateWithoutMediaInput> | Prisma.CategoriaCreateWithoutMediaInput[] | Prisma.CategoriaUncheckedCreateWithoutMediaInput[]
+  connectOrCreate?: Prisma.CategoriaCreateOrConnectWithoutMediaInput | Prisma.CategoriaCreateOrConnectWithoutMediaInput[]
+  upsert?: Prisma.CategoriaUpsertWithWhereUniqueWithoutMediaInput | Prisma.CategoriaUpsertWithWhereUniqueWithoutMediaInput[]
+  createMany?: Prisma.CategoriaCreateManyMediaInputEnvelope
+  set?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  disconnect?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  delete?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  connect?: Prisma.CategoriaWhereUniqueInput | Prisma.CategoriaWhereUniqueInput[]
+  update?: Prisma.CategoriaUpdateWithWhereUniqueWithoutMediaInput | Prisma.CategoriaUpdateWithWhereUniqueWithoutMediaInput[]
+  updateMany?: Prisma.CategoriaUpdateManyWithWhereWithoutMediaInput | Prisma.CategoriaUpdateManyWithWhereWithoutMediaInput[]
+  deleteMany?: Prisma.CategoriaScalarWhereInput | Prisma.CategoriaScalarWhereInput[]
+}
+
 export type CategoriaCreateWithoutProductosInput = {
   id?: string
   nombre: string
   orden?: number
+  descripcion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  media?: Prisma.MediaCreateNestedOneWithoutCategoriasInput
 }
 
 export type CategoriaUncheckedCreateWithoutProductosInput = {
   id?: string
   nombre: string
   orden?: number
+  descripcion?: string | null
+  mediaId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -420,14 +522,115 @@ export type CategoriaUpdateWithoutProductosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  media?: Prisma.MediaUpdateOneWithoutCategoriasNestedInput
 }
 
 export type CategoriaUncheckedUpdateWithoutProductosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CategoriaCreateWithoutMediaInput = {
+  id?: string
+  nombre: string
+  orden?: number
+  descripcion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  productos?: Prisma.ProductoCategoriaCreateNestedManyWithoutCategoriaInput
+}
+
+export type CategoriaUncheckedCreateWithoutMediaInput = {
+  id?: string
+  nombre: string
+  orden?: number
+  descripcion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  productos?: Prisma.ProductoCategoriaUncheckedCreateNestedManyWithoutCategoriaInput
+}
+
+export type CategoriaCreateOrConnectWithoutMediaInput = {
+  where: Prisma.CategoriaWhereUniqueInput
+  create: Prisma.XOR<Prisma.CategoriaCreateWithoutMediaInput, Prisma.CategoriaUncheckedCreateWithoutMediaInput>
+}
+
+export type CategoriaCreateManyMediaInputEnvelope = {
+  data: Prisma.CategoriaCreateManyMediaInput | Prisma.CategoriaCreateManyMediaInput[]
+  skipDuplicates?: boolean
+}
+
+export type CategoriaUpsertWithWhereUniqueWithoutMediaInput = {
+  where: Prisma.CategoriaWhereUniqueInput
+  update: Prisma.XOR<Prisma.CategoriaUpdateWithoutMediaInput, Prisma.CategoriaUncheckedUpdateWithoutMediaInput>
+  create: Prisma.XOR<Prisma.CategoriaCreateWithoutMediaInput, Prisma.CategoriaUncheckedCreateWithoutMediaInput>
+}
+
+export type CategoriaUpdateWithWhereUniqueWithoutMediaInput = {
+  where: Prisma.CategoriaWhereUniqueInput
+  data: Prisma.XOR<Prisma.CategoriaUpdateWithoutMediaInput, Prisma.CategoriaUncheckedUpdateWithoutMediaInput>
+}
+
+export type CategoriaUpdateManyWithWhereWithoutMediaInput = {
+  where: Prisma.CategoriaScalarWhereInput
+  data: Prisma.XOR<Prisma.CategoriaUpdateManyMutationInput, Prisma.CategoriaUncheckedUpdateManyWithoutMediaInput>
+}
+
+export type CategoriaScalarWhereInput = {
+  AND?: Prisma.CategoriaScalarWhereInput | Prisma.CategoriaScalarWhereInput[]
+  OR?: Prisma.CategoriaScalarWhereInput[]
+  NOT?: Prisma.CategoriaScalarWhereInput | Prisma.CategoriaScalarWhereInput[]
+  id?: Prisma.StringFilter<"Categoria"> | string
+  nombre?: Prisma.StringFilter<"Categoria"> | string
+  orden?: Prisma.IntFilter<"Categoria"> | number
+  descripcion?: Prisma.StringNullableFilter<"Categoria"> | string | null
+  mediaId?: Prisma.StringNullableFilter<"Categoria"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Categoria"> | Date | string
+}
+
+export type CategoriaCreateManyMediaInput = {
+  id?: string
+  nombre: string
+  orden?: number
+  descripcion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CategoriaUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  productos?: Prisma.ProductoCategoriaUpdateManyWithoutCategoriaNestedInput
+}
+
+export type CategoriaUncheckedUpdateWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  productos?: Prisma.ProductoCategoriaUncheckedUpdateManyWithoutCategoriaNestedInput
+}
+
+export type CategoriaUncheckedUpdateManyWithoutMediaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  orden?: Prisma.IntFieldUpdateOperationsInput | number
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -467,8 +670,11 @@ export type CategoriaSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   id?: boolean
   nombre?: boolean
   orden?: boolean
+  descripcion?: boolean
+  mediaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  media?: boolean | Prisma.Categoria$mediaArgs<ExtArgs>
   productos?: boolean | Prisma.Categoria$productosArgs<ExtArgs>
   _count?: boolean | Prisma.CategoriaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["categoria"]>
@@ -477,37 +683,51 @@ export type CategoriaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   nombre?: boolean
   orden?: boolean
+  descripcion?: boolean
+  mediaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  media?: boolean | Prisma.Categoria$mediaArgs<ExtArgs>
 }, ExtArgs["result"]["categoria"]>
 
 export type CategoriaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   nombre?: boolean
   orden?: boolean
+  descripcion?: boolean
+  mediaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  media?: boolean | Prisma.Categoria$mediaArgs<ExtArgs>
 }, ExtArgs["result"]["categoria"]>
 
 export type CategoriaSelectScalar = {
   id?: boolean
   nombre?: boolean
   orden?: boolean
+  descripcion?: boolean
+  mediaId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CategoriaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "orden" | "createdAt" | "updatedAt", ExtArgs["result"]["categoria"]>
+export type CategoriaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "orden" | "descripcion" | "mediaId" | "createdAt" | "updatedAt", ExtArgs["result"]["categoria"]>
 export type CategoriaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  media?: boolean | Prisma.Categoria$mediaArgs<ExtArgs>
   productos?: boolean | Prisma.Categoria$productosArgs<ExtArgs>
   _count?: boolean | Prisma.CategoriaCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type CategoriaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type CategoriaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type CategoriaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  media?: boolean | Prisma.Categoria$mediaArgs<ExtArgs>
+}
+export type CategoriaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  media?: boolean | Prisma.Categoria$mediaArgs<ExtArgs>
+}
 
 export type $CategoriaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Categoria"
   objects: {
+    media: Prisma.$MediaPayload<ExtArgs> | null
     productos: Prisma.$ProductoCategoriaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -517,6 +737,16 @@ export type $CategoriaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
      * Para ordenar la lista a mano; a igual orden, alfabético.
      */
     orden: number
+    /**
+     * De qué se trata, con formato. Es HTML de un editor y se sanea al guardar.
+     */
+    descripcion: string | null
+    /**
+     * La foto que la representa. Sale de la biblioteca, igual que las de un
+     * producto: la misma imagen puede ser la de la categoría y la de su
+     * producto estrella sin subirla dos veces.
+     */
+    mediaId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["categoria"]>
@@ -913,6 +1143,7 @@ readonly fields: CategoriaFieldRefs;
  */
 export interface Prisma__CategoriaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  media<T extends Prisma.Categoria$mediaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Categoria$mediaArgs<ExtArgs>>): Prisma.Prisma__MediaClient<runtime.Types.Result.GetResult<Prisma.$MediaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   productos<T extends Prisma.Categoria$productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Categoria$productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductoCategoriaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -946,6 +1177,8 @@ export interface CategoriaFieldRefs {
   readonly id: Prisma.FieldRef<"Categoria", 'String'>
   readonly nombre: Prisma.FieldRef<"Categoria", 'String'>
   readonly orden: Prisma.FieldRef<"Categoria", 'Int'>
+  readonly descripcion: Prisma.FieldRef<"Categoria", 'String'>
+  readonly mediaId: Prisma.FieldRef<"Categoria", 'String'>
   readonly createdAt: Prisma.FieldRef<"Categoria", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Categoria", 'DateTime'>
 }
@@ -1202,6 +1435,10 @@ export type CategoriaCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    */
   data: Prisma.CategoriaCreateManyInput | Prisma.CategoriaCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CategoriaIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1272,6 +1509,10 @@ export type CategoriaUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many Categorias to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CategoriaIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1338,6 +1579,25 @@ export type CategoriaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many Categorias to delete.
    */
   limit?: number
+}
+
+/**
+ * Categoria.media
+ */
+export type Categoria$mediaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Media
+   */
+  select?: Prisma.MediaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Media
+   */
+  omit?: Prisma.MediaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MediaInclude<ExtArgs> | null
+  where?: Prisma.MediaWhereInput
 }
 
 /**

@@ -22,7 +22,8 @@ import {
 import { EmptyState } from "@/components/shared/empty-state";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { PageHeader } from "@/components/shared/page-header";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { aca } from "@/lib/filtros-url";
 import { toast } from "sonner";
 
 export interface CategoriaFila {
@@ -39,13 +40,9 @@ export interface CategoriaFila {
  */
 export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) {
   const router = useRouter();
-  const [editando, setEditando] = useState<CategoriaFila | null>(null);
   const [creando, setCreando] = useState(false);
 
-  const cerrar = () => {
-    setEditando(null);
-    setCreando(false);
-  };
+  const cerrar = () => setCreando(false);
 
   const borrar = async (id: string) => {
     const res = await fetch(`/api/categorias/${id}`, { method: "DELETE" });
@@ -85,21 +82,21 @@ export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) 
             </TableHeader>
             <TableBody>
               {categorias.map((c) => (
-                <TableRow key={c.id}>
+                // La fila lleva a la ficha: es donde se le suman productos, que
+                // es para lo que alguien abre una categoría.
+                <TableRow
+                  key={c.id}
+                  className="cursor-pointer"
+                  onClick={() =>
+                    router.push(`/dashboard/productos/categorias/${c.id}?from=${aca()}`)
+                  }
+                >
                   <TableCell className="font-medium">{c.nombre}</TableCell>
                   <TableCell className="text-muted-foreground">
                     {c.productos}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditando(c)}
-                        aria-label={`Editar ${c.nombre}`}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
                       <DeleteDialog
                         title={`¿Eliminar "${c.nombre}"?`}
                         description={
@@ -119,9 +116,9 @@ export function CategoriasPage({ categorias }: { categorias: CategoriaFila[] }) 
         )}
       </div>
 
-      {(creando || editando) && (
+      {creando && (
         <CategoriaDialog
-          categoria={editando}
+          categoria={null}
           onClose={cerrar}
           onGuardado={() => {
             cerrar();

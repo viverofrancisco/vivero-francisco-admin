@@ -301,7 +301,6 @@ export function ServicioDetail({
                 <RichText
                   value={form.descripcion}
                   onChange={(html) => setForm({ ...form, descripcion: html })}
-                  placeholder="Para qué sirve, qué incluye…"
                 />
               </div>
             </CardContent>

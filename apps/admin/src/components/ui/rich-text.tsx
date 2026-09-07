@@ -20,12 +20,10 @@ import { Button } from "@/components/ui/button";
 export function RichText({
   value,
   onChange,
-  placeholder,
   className,
 }: {
   value: string;
   onChange: (html: string) => void;
-  placeholder?: string;
   className?: string;
 }) {
   const editor = useEditor({
@@ -134,11 +132,6 @@ export function RichText({
         )}
       </div>
       <EditorContent editor={editor} />
-      {editor.isEmpty && placeholder && (
-        <p className="pointer-events-none -mt-[1.85rem] px-3 text-sm text-muted-foreground">
-          {placeholder}
-        </p>
-      )}
     </div>
   );
 }

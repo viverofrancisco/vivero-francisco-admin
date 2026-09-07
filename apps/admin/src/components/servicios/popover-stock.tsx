@@ -4,7 +4,6 @@ import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CustomSelect } from "@/components/ui/custom-select";
 import {
   Popover,
   PopoverContent,
@@ -13,6 +12,12 @@ import {
 import { Check, Loader2, StickyNote } from "lucide-react";
 
 type Motivo = "CONTEO" | "AJUSTE" | "INGRESO";
+
+const MOTIVOS: { valor: Motivo; etiqueta: string }[] = [
+  { valor: "CONTEO", etiqueta: "Poner en" },
+  { valor: "AJUSTE", etiqueta: "Sumar" },
+  { valor: "INGRESO", etiqueta: "Entró" },
+];
 
 /**
  * Mover el stock de una variante, en un popover pegado al número.
@@ -86,18 +91,34 @@ export function PopoverStock({
       <PopoverTrigger render={children as React.ReactElement} />
       <PopoverContent align="end" className="w-auto p-2">
         <div className="space-y-2">
+          {/* Tres botones y no un desplegable. Con tres opciones el
+              desplegable cuesta dos clics para mostrar lo mismo — y el nuestro
+              se dibuja en un portal, así que el popover lo tomaba por un clic
+              afuera y se cerraba solo al elegir. */}
+          <div
+            role="radiogroup"
+            aria-label="Qué pasó"
+            className="flex rounded-md border p-0.5"
+          >
+            {MOTIVOS.map((m) => (
+              <button
+                key={m.valor}
+                type="button"
+                role="radio"
+                aria-checked={motivo === m.valor}
+                onClick={() => setMotivo(m.valor)}
+                className={`flex-1 rounded px-2 py-1 text-xs transition-colors ${
+                  motivo === m.valor
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {m.etiqueta}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-1.5">
-            <div className="w-36">
-              <CustomSelect
-                value={motivo}
-                onChange={(v) => setMotivo(v as Motivo)}
-                options={[
-                  { value: "CONTEO", label: "Poner en" },
-                  { value: "AJUSTE", label: "Sumar o restar" },
-                  { value: "INGRESO", label: "Entró" },
-                ]}
-              />
-            </div>
             <Input
               type="number"
               step="1"

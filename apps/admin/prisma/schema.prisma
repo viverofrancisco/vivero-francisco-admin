@@ -302,10 +302,21 @@ model Categoria {
   /// Para ordenar la lista a mano; a igual orden, alfabético.
   orden  Int    @default(0)
 
+  /// De qué se trata, con formato. Es HTML de un editor y se sanea al guardar.
+  descripcion String? @db.Text
+
+  /// La foto que la representa. Sale de la biblioteca, igual que las de un
+  /// producto: la misma imagen puede ser la de la categoría y la de su
+  /// producto estrella sin subirla dos veces.
+  mediaId String?
+  media   Media?  @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   productos ProductoCategoria[]
+
+  @@index([mediaId])
 }
 
 /// En qué categorías está un producto.
@@ -470,7 +481,8 @@ model Media {
   createdById String?
   createdBy   User?    @relation("MediaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
-  productos ProductoImagen[]
+  productos  ProductoImagen[]
+  categorias Categoria[]
 
   @@index([createdAt])
 }

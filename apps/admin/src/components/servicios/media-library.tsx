@@ -88,11 +88,20 @@ export async function subirALaBiblioteca(files: File[]): Promise<MediaItem[]> {
 export function MediaLibrary({
   yaUsadas,
   onElegir,
+  onElegirItems,
+  unaSola,
   onCerrar,
 }: {
-  /** Los `mediaId` que el producto ya tiene: se marcan y no se pueden elegir. */
+  /** Los `mediaId` que ya están en uso ahí: se marcan y no se pueden elegir. */
   yaUsadas: string[];
-  onElegir: (mediaIds: string[]) => void;
+  onElegir?: (mediaIds: string[]) => void;
+  /**
+   * Los elegidos enteros, no solo sus ids. Lo usa quien necesita pintar la
+   * imagen sin volver al servidor — la foto de una categoría, por ejemplo.
+   */
+  onElegirItems?: (items: MediaItem[]) => void;
+  /** Una sola, para donde no hay galería sino una foto. */
+  unaSola?: boolean;
   onCerrar: () => void;
 }) {
   const [items, setItems] = useState<MediaItem[] | null>(null);
@@ -128,7 +137,11 @@ export function MediaLibrary({
 
   const alternar = (id: string) =>
     setElegidas((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : unaSola
+          ? [id]
+          : [...prev, id]
     );
 
   return (
@@ -244,10 +257,17 @@ export function MediaLibrary({
                 Cancelar
               </Button>
               <Button
-                onClick={() => onElegir(elegidas)}
+                onClick={() => {
+                  onElegir?.(elegidas);
+                  onElegirItems?.(
+                    elegidas
+                      .map((id) => (items ?? []).find((m) => m.id === id))
+                      .filter((m): m is MediaItem => Boolean(m))
+                  );
+                }}
                 disabled={elegidas.length === 0}
               >
-                Agregar
+                {unaSola ? "Elegir" : "Agregar"}
               </Button>
             </div>
           </div>
