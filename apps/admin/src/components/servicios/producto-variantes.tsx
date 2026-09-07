@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
   Dialog,
@@ -23,8 +22,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ChevronDown, ChevronRight, Loader2, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { useAca } from "@/lib/filtros-url";
 import { MovimientoDialog } from "./movimiento-dialog";
-import { PrecioDeLista } from "./precio-de-lista";
 import { money } from "@/components/ordenes/formato";
 import type { ImagenProducto } from "./producto-imagenes";
 
@@ -39,6 +39,8 @@ export interface VarianteFila {
   sku: string | null;
   /** Precio de lista. Cero es gratis; lo cobrado vive en la orden. */
   precio: number;
+  /** Si se le cobra IVA. La tasa sale del producto. */
+  cobraIva: boolean;
   manejaInventario: boolean;
   stock: number;
   permiteNegativo: boolean;
@@ -110,7 +112,6 @@ export function ProductoVariantes({
   const [guardando, setGuardando] = useState(false);
   const [variantes, setVariantes] = useState(variantesIniciales);
   const [ajustando, setAjustando] = useState<VarianteFila | null>(null);
-  const [editando, setEditando] = useState<VarianteFila | null>(null);
   /** Por qué eje se agrupa. Solo con dos o más: con uno no hay nada que juntar. */
   const [agruparPor, setAgruparPor] = useState(0);
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set());
@@ -156,23 +157,6 @@ export function ProductoVariantes({
       toast.error(e instanceof Error ? e.message : "No pudimos guardar");
     } finally {
       setGuardando(false);
-    }
-  };
-
-  const actualizarVariante = async (id: string, patch: Partial<VarianteFila>) => {
-    const previas = variantes;
-    aplicar(variantes.map((x) => (x.id === id ? { ...x, ...patch } : x)));
-    try {
-      const res = await fetch(`/api/variantes/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Error");
-    } catch (e) {
-      aplicar(previas);
-      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
     }
   };
 
@@ -340,11 +324,11 @@ export function ProductoVariantes({
                                 <FilaVariante
                                   key={v.id}
                                   variante={v}
+                                  productoId={productoId}
                                   productoNombre={productoNombre}
                                   imagenes={imagenes}
                                   sangrada
                                   onAjustar={() => setAjustando(v)}
-                                  onEditar={() => setEditando(v)}
                                 />
                               ))}
                             </div>
@@ -356,10 +340,10 @@ export function ProductoVariantes({
                       <FilaVariante
                         key={v.id}
                         variante={v}
+                        productoId={productoId}
                         productoNombre={productoNombre}
                         imagenes={imagenes}
                         onAjustar={() => setAjustando(v)}
-                        onEditar={() => setEditando(v)}
                       />
                     ))}
               </div>
@@ -405,15 +389,6 @@ export function ProductoVariantes({
         />
       )}
 
-      {editando && (
-        <VarianteDialog
-          variante={variantes.find((v) => v.id === editando.id) ?? editando}
-          nombre={nombreVariante(editando, productoNombre)}
-          imagenes={imagenes}
-          onGuardar={(patch) => actualizarVariante(editando.id, patch)}
-          onCerrar={() => setEditando(null)}
-        />
-      )}
     </>
   );
 }
@@ -421,19 +396,20 @@ export function ProductoVariantes({
 /** Una variante en la lista: cómo se llama, su SKU y cuánto hay. */
 function FilaVariante({
   variante,
+  productoId,
   productoNombre,
   imagenes,
   sangrada,
   onAjustar,
-  onEditar,
 }: {
   variante: VarianteFila;
+  productoId: string;
   productoNombre: string;
   imagenes: ImagenProducto[];
   sangrada?: boolean;
   onAjustar: () => void;
-  onEditar: () => void;
 }) {
+  const from = useAca();
   const foto =
     imagenes.find((i) => i.id === variante.imagenId) ?? imagenes[0] ?? null;
 
@@ -453,13 +429,12 @@ function FilaVariante({
           />
         </div>
       )}
-      {/* El nombre abre los ajustes de la variante; el número, el movimiento.
-          Son las dos cosas que se hacen sobre una fila y cada una tiene su
-          blanco, en vez de un menú que las esconda a las dos. */}
-      <button
-        type="button"
-        onClick={onEditar}
-        className="min-w-0 flex-1 text-left"
+      {/* El nombre lleva a la ficha de la variante; el número abre el
+          movimiento. Son las dos cosas que se hacen sobre una fila y cada una
+          tiene su blanco, en vez de un menú que las esconda a las dos. */}
+      <Link
+        href={`/dashboard/productos/${productoId}/variantes/${variante.id}?from=${from}`}
+        className="min-w-0 flex-1"
       >
         <span className="block truncate text-sm font-medium hover:underline">
           {nombreVariante(variante, productoNombre)}
@@ -467,7 +442,7 @@ function FilaVariante({
         <span className="block truncate font-mono text-xs text-muted-foreground">
           {variante.sku ?? "Sin SKU"}
         </span>
-      </button>
+      </Link>
       {/* El precio de lista, que es lo que se va a proponer al venderla. */}
       <span
         className={`w-20 flex-none text-right text-sm tabular-nums ${
@@ -495,99 +470,6 @@ function FilaVariante({
         </span>
       )}
     </div>
-  );
-}
-
-/** Lo propio de una variante: su SKU, si se cuenta, y con qué foto sale. */
-function VarianteDialog({
-  variante,
-  nombre,
-  imagenes,
-  onGuardar,
-  onCerrar,
-}: {
-  variante: VarianteFila;
-  nombre: string;
-  imagenes: ImagenProducto[];
-  onGuardar: (patch: Partial<VarianteFila>) => void;
-  onCerrar: () => void;
-}) {
-  return (
-    <Dialog open onOpenChange={(v) => !v && onCerrar()}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>{nombre}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <PrecioDeLista
-            precio={variante.precio}
-            onGuardar={(precio) => onGuardar({ precio })}
-          />
-
-          <div className="space-y-1.5">
-            <Label className="text-xs">SKU</Label>
-            <Input
-              defaultValue={variante.sku ?? ""}
-              placeholder="—"
-              className="font-mono text-sm"
-              onBlur={(e) => {
-                const sku = e.target.value.trim() || null;
-                if (sku !== variante.sku) onGuardar({ sku });
-              }}
-            />
-            <p className="text-xs text-muted-foreground">
-              Sale impreso en la factura y es lo que va en la etiqueta.
-            </p>
-          </div>
-
-          <label className="flex items-center justify-between gap-3 border-t pt-3 text-sm">
-            Se cuenta
-            <Switch
-              checked={variante.manejaInventario}
-              onCheckedChange={(on) => onGuardar({ manejaInventario: on })}
-            />
-          </label>
-
-          {variante.manejaInventario && (
-            <label className="flex items-center justify-between gap-3 text-sm">
-              <span>
-                Vender sin stock
-                <span className="block text-xs text-muted-foreground">
-                  Deja que la cantidad quede en negativo.
-                </span>
-              </span>
-              <Switch
-                checked={variante.permiteNegativo}
-                onCheckedChange={(on) => onGuardar({ permiteNegativo: on })}
-              />
-            </label>
-          )}
-
-          {imagenes.length > 0 && (
-            <div className="space-y-1.5 border-t pt-3">
-              <Label className="text-xs">Foto</Label>
-              <CustomSelect
-                value={variante.imagenId ?? ""}
-                onChange={(id) => onGuardar({ imagenId: id || null })}
-                options={[
-                  { value: "", label: "La principal" },
-                  ...imagenes.map((img, i) => ({
-                    value: img.id,
-                    label: `Foto ${i + 1}`,
-                  })),
-                ]}
-              />
-            </div>
-          )}
-
-          <div className="flex justify-end border-t pt-4">
-            <Button variant="outline" onClick={onCerrar}>
-              Listo
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
 

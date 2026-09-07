@@ -69,6 +69,7 @@ export async function getCatalogoDelProducto(viewer: Viewer, productoId: string)
           id: true,
           sku: true,
           precio: true,
+          cobraIva: true,
           combinacion: true,
           manejaInventario: true,
           stock: true,
@@ -98,6 +99,7 @@ export async function getCatalogoDelProducto(viewer: Viewer, productoId: string)
       sku: v.sku,
       // Decimal no cruza a un componente cliente.
       precio: Number(v.precio),
+      cobraIva: v.cobraIva,
       manejaInventario: v.manejaInventario,
       stock: v.stock,
       permiteNegativo: v.permiteNegativo,
@@ -383,10 +385,115 @@ async function regenerarVariantes(
   return tx.variante.count({ where: { productoId } });
 }
 
+/**
+ * Una variante con todo lo que su ficha necesita.
+ *
+ * Trae también a sus **hermanas**: la ficha es un lugar donde se salta de una a
+ * otra —cargando precios o contando el estante— y volver al producto entre cada
+ * una convierte seis variantes en doce viajes.
+ */
+export async function getVariante(viewer: Viewer, varianteId: string) {
+  ensureAdmin(viewer);
+  const variante = await prisma.variante.findUnique({
+    where: { id: varianteId },
+    select: {
+      id: true,
+      sku: true,
+      precio: true,
+      cobraIva: true,
+      stock: true,
+      manejaInventario: true,
+      permiteNegativo: true,
+      imagenId: true,
+      valores: {
+        select: {
+          valor: {
+            select: {
+              valor: true,
+              opcion: { select: { nombre: true, posicion: true } },
+            },
+          },
+        },
+      },
+      producto: {
+        select: {
+          id: true,
+          nombre: true,
+          tipo: true,
+          deletedAt: true,
+          ivaTasa: true,
+          variantes: {
+            orderBy: { posicion: "asc" },
+            select: {
+              id: true,
+              sku: true,
+              stock: true,
+              manejaInventario: true,
+              valores: {
+                select: {
+                  valor: {
+                    select: {
+                      valor: true,
+                      opcion: { select: { posicion: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  if (!variante) throw new NotFoundError("Variante no encontrada");
+
+  /** Los valores en el orden de sus ejes: "Rojo · Grande", no al revés. */
+  const ordenados = <T extends { valor: { opcion: { posicion: number } } }>(
+    vs: T[]
+  ) => [...vs].sort((a, b) => a.valor.opcion.posicion - b.valor.opcion.posicion);
+
+  return {
+    id: variante.id,
+    sku: variante.sku,
+    precio: Number(variante.precio),
+    cobraIva: variante.cobraIva,
+    stock: variante.stock,
+    manejaInventario: variante.manejaInventario,
+    permiteNegativo: variante.permiteNegativo,
+    imagenId: variante.imagenId,
+    valores: ordenados(variante.valores).map((v) => ({
+      opcion: v.valor.opcion.nombre,
+      valor: v.valor.valor,
+    })),
+    producto: {
+      id: variante.producto.id,
+      nombre: variante.producto.nombre,
+      archivado: variante.producto.deletedAt !== null,
+      // El *cuánto* del IVA es del producto; la variante decide el *si*.
+      ivaTasa:
+        variante.producto.ivaTasa === null
+          ? null
+          : Number(variante.producto.ivaTasa),
+    },
+    hermanas: variante.producto.variantes.map((h) => ({
+      id: h.id,
+      sku: h.sku,
+      stock: h.stock,
+      manejaInventario: h.manejaInventario,
+      nombre:
+        ordenados(h.valores)
+          .map((v) => v.valor.valor)
+          .join(" · ") || variante.producto.nombre,
+    })),
+  };
+}
+
 export interface VarianteInput {
   sku?: string | null;
   /** Precio de lista. Cero es gratis. Lo cobrado vive en la orden, no acá. */
   precio?: number;
+  /** Si se le cobra IVA. El cuánto es del producto (`Producto.ivaTasa`). */
+  cobraIva?: boolean;
   manejaInventario?: boolean;
   permiteNegativo?: boolean;
   /** Cuál de las fotos del producto la representa. */
@@ -434,6 +541,7 @@ export async function actualizarVariante(
       data: {
         ...(payload.sku !== undefined ? { sku: payload.sku?.trim() || null } : {}),
         ...(payload.precio !== undefined ? { precio: payload.precio } : {}),
+        ...(payload.cobraIva !== undefined ? { cobraIva: payload.cobraIva } : {}),
         ...(payload.manejaInventario !== undefined
           ? { manejaInventario: payload.manejaInventario }
           : {}),

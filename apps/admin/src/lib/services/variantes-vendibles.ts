@@ -17,6 +17,8 @@ export interface ProductoConVariantes {
     sku: string | null;
     /** Precio de lista: lo que se propone al agregarla a una orden. */
     precio: number;
+    /** Si se le cobra IVA. La tasa sale del producto. */
+    cobraIva: boolean;
     manejaInventario: boolean;
     stock: number;
   }[];
@@ -36,6 +38,7 @@ export async function productosVendibles(): Promise<ProductoConVariantes[]> {
           id: true,
           sku: true,
           precio: true,
+          cobraIva: true,
           manejaInventario: true,
           stock: true,
           valores: {
@@ -68,6 +71,7 @@ export async function productosVendibles(): Promise<ProductoConVariantes[]> {
           .join(" · ") || p.nombre,
       sku: v.sku,
       precio: Number(v.precio),
+      cobraIva: v.cobraIva,
       manejaInventario: v.manejaInventario,
       stock: v.stock,
     })),

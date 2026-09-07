@@ -375,6 +375,17 @@ model Variante {
   /// Vacía en la variante única de un producto sin opciones.
   combinacion String @default("")
 
+  /// **Si se le cobra IVA.** El *cuánto* sigue siendo del producto
+  /// (`Producto.ivaTasa`): en Ecuador conviven 0% y 15%, y la tasa es del
+  /// bien, no de su color. Esto es el interruptor — apagado, la línea se
+  /// propone al 0% aunque el producto tenga tasa.
+  ///
+  /// Por variante y no por producto porque hay bienes cuyo gravamen depende de
+  /// la presentación: el mismo abono a granel y fraccionado no siempre tributan
+  /// igual. Y como todo lo demás, es una **propuesta**: la tasa que se cobró
+  /// queda en `OrdenLinea.ivaTasa`, donde se puede cambiar.
+  cobraIva Boolean @default(true)
+
   /// Si lleva stock. Una planta se cuenta; la tierra a granel puede que no.
   manejaInventario Boolean @default(true)
   /// Cuánto hay. Lo mantiene `MovimientoInventario` y **nunca se escribe

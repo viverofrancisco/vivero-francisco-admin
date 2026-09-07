@@ -32,9 +32,12 @@ import type { VarianteFila } from "./producto-variantes";
  */
 export function ProductoInventario({
   variante,
+  ivaTasa,
   onCambio,
 }: {
   variante: VarianteFila;
+  /** La tasa del producto: el *cuánto*. Acá solo se decide el *si*. */
+  ivaTasa: number | null;
   onCambio: (v: VarianteFila) => void;
 }) {
   const router = useRouter();
@@ -116,11 +119,25 @@ export function ProductoInventario({
             </p>
           )}
 
-          <div className="border-t pt-3">
+          <div className="space-y-4 border-t pt-3">
             <PrecioDeLista
               precio={variante.precio}
               onGuardar={(precio) => guardar({ precio })}
             />
+            <label className="flex items-center justify-between gap-3 text-sm">
+              <span>
+                Cobrar IVA
+                <span className="block text-xs text-muted-foreground">
+                  {ivaTasa
+                    ? `Al ${ivaTasa}%, la tasa del producto.`
+                    : "El producto no tiene tasa cargada, así que se propone 0%."}
+                </span>
+              </span>
+              <Switch
+                checked={variante.cobraIva}
+                onCheckedChange={(on) => guardar({ cobraIva: on })}
+              />
+            </label>
           </div>
 
           <div className="space-y-1.5 border-t pt-3">

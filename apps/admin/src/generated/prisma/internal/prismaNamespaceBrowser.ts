@@ -268,6 +268,7 @@ export const VarianteScalarFieldEnum = {
   sku: 'sku',
   posicion: 'posicion',
   combinacion: 'combinacion',
+  cobraIva: 'cobraIva',
   manejaInventario: 'manejaInventario',
   stock: 'stock',
   permiteNegativo: 'permiteNegativo',

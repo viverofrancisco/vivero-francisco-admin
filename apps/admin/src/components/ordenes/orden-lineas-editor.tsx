@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
   SelectorVariante,
+  ivaAlCambiarVariante,
+  ivaDeLista,
   precioAlCambiarVariante,
   precioDeLista,
   type VarianteVendible,
@@ -112,14 +114,19 @@ export function OrdenLineasEditor({
       {
         ...lineaBase(),
         descripcion: p.nombre,
-        ivaTasa: p.ivaTasa != null ? String(p.ivaTasa) : "0",
         productoId: p.id,
         // Con una sola no hay nada que preguntar; con varias, el selector.
         varianteId: p.variantes.length === 1 ? p.variantes[0].id : null,
-        // El precio de lista viene propuesto y se puede cambiar: lo que se
+        // El precio y la tasa vienen propuestos y se pueden cambiar: lo que se
         // cobra es lo que quede en la línea.
         precioUnitario:
           p.variantes.length === 1 ? precioDeLista(p.variantes[0]) : "",
+        ivaTasa:
+          p.variantes.length === 1
+            ? ivaDeLista(p.variantes[0], p.ivaTasa)
+            : p.ivaTasa != null
+              ? String(p.ivaTasa)
+              : "0",
       },
     ]);
   };
@@ -206,14 +213,22 @@ export function OrdenLineasEditor({
                   }
                   value={l.varianteId}
                   onChange={(varianteId) => {
-                    const vs =
-                      productos.find((p) => p.id === l.productoId)?.variantes ?? [];
+                    const prod = productos.find((p) => p.id === l.productoId);
+                    const vs = prod?.variantes ?? [];
+                    const antes = vs.find((v) => v.id === l.varianteId);
+                    const ahora = vs.find((v) => v.id === varianteId);
                     actualizar(l.uid, {
                       varianteId,
                       precioUnitario: precioAlCambiarVariante(
                         l.precioUnitario,
-                        vs.find((v) => v.id === l.varianteId),
-                        vs.find((v) => v.id === varianteId)
+                        antes,
+                        ahora
+                      ),
+                      ivaTasa: ivaAlCambiarVariante(
+                        l.ivaTasa,
+                        antes,
+                        ahora,
+                        prod?.ivaTasa ?? null
                       ),
                     });
                   }}

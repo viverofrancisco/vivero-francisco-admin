@@ -11,6 +11,8 @@ export interface VarianteVendible {
   sku: string | null;
   /** Precio de lista: lo que se propone acá. Lo cobrado queda en la línea. */
   precio: number;
+  /** Si se le cobra IVA. La tasa es del producto; esto es el interruptor. */
+  cobraIva: boolean;
   manejaInventario: boolean;
   stock: number;
 }
@@ -18,6 +20,33 @@ export interface VarianteVendible {
 /** El precio de lista como texto para el campo. */
 export function precioDeLista(v: VarianteVendible | undefined): string {
   return v ? String(v.precio) : "";
+}
+
+/**
+ * La tasa de IVA que corresponde a una variante: la del producto, o 0 si esta
+ * variante no cobra IVA. El *cuánto* es del bien; el *si*, de la variante.
+ */
+export function ivaDeLista(
+  v: VarianteVendible | undefined,
+  ivaTasaProducto: number | null
+): string {
+  if (!v) return ivaTasaProducto != null ? String(ivaTasaProducto) : "0";
+  return v.cobraIva && ivaTasaProducto != null ? String(ivaTasaProducto) : "0";
+}
+
+/**
+ * Qué tasa corresponde al cambiar de variante, con la misma regla que el
+ * precio: sigue a la propuesta mientras nadie la haya tocado.
+ */
+export function ivaAlCambiarVariante(
+  actual: string,
+  anterior: VarianteVendible | undefined,
+  nueva: VarianteVendible | undefined,
+  ivaTasaProducto: number | null
+): string {
+  const sinTocar =
+    actual.trim() === "" || actual === ivaDeLista(anterior, ivaTasaProducto);
+  return sinTocar ? ivaDeLista(nueva, ivaTasaProducto) : actual;
 }
 
 /**
@@ -72,6 +101,7 @@ export function SelectorVariante({
           label: v.sku ? `${v.nombre} · ${v.sku}` : v.nombre,
           hint: [
             v.precio === 0 ? "Gratis" : money(v.precio),
+            v.cobraIva ? null : "sin IVA",
             v.manejaInventario
               ? v.stock > 0
                 ? `hay ${v.stock}`

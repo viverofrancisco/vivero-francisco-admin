@@ -49,6 +49,7 @@ export type VarianteMinAggregateOutputType = {
   sku: string | null
   posicion: number | null
   combinacion: string | null
+  cobraIva: boolean | null
   manejaInventario: boolean | null
   stock: number | null
   permiteNegativo: boolean | null
@@ -62,6 +63,7 @@ export type VarianteMaxAggregateOutputType = {
   sku: string | null
   posicion: number | null
   combinacion: string | null
+  cobraIva: boolean | null
   manejaInventario: boolean | null
   stock: number | null
   permiteNegativo: boolean | null
@@ -75,6 +77,7 @@ export type VarianteCountAggregateOutputType = {
   sku: number
   posicion: number
   combinacion: number
+  cobraIva: number
   manejaInventario: number
   stock: number
   permiteNegativo: number
@@ -102,6 +105,7 @@ export type VarianteMinAggregateInputType = {
   sku?: true
   posicion?: true
   combinacion?: true
+  cobraIva?: true
   manejaInventario?: true
   stock?: true
   permiteNegativo?: true
@@ -115,6 +119,7 @@ export type VarianteMaxAggregateInputType = {
   sku?: true
   posicion?: true
   combinacion?: true
+  cobraIva?: true
   manejaInventario?: true
   stock?: true
   permiteNegativo?: true
@@ -128,6 +133,7 @@ export type VarianteCountAggregateInputType = {
   sku?: true
   posicion?: true
   combinacion?: true
+  cobraIva?: true
   manejaInventario?: true
   stock?: true
   permiteNegativo?: true
@@ -228,6 +234,7 @@ export type VarianteGroupByOutputType = {
   sku: string | null
   posicion: number
   combinacion: string
+  cobraIva: boolean
   manejaInventario: boolean
   stock: number
   permiteNegativo: boolean
@@ -264,6 +271,7 @@ export type VarianteWhereInput = {
   sku?: Prisma.StringNullableFilter<"Variante"> | string | null
   posicion?: Prisma.IntFilter<"Variante"> | number
   combinacion?: Prisma.StringFilter<"Variante"> | string
+  cobraIva?: Prisma.BoolFilter<"Variante"> | boolean
   manejaInventario?: Prisma.BoolFilter<"Variante"> | boolean
   stock?: Prisma.IntFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolFilter<"Variante"> | boolean
@@ -283,6 +291,7 @@ export type VarianteOrderByWithRelationInput = {
   sku?: Prisma.SortOrderInput | Prisma.SortOrder
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
+  cobraIva?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -306,6 +315,7 @@ export type VarianteWhereUniqueInput = Prisma.AtLeast<{
   precio?: Prisma.DecimalFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   posicion?: Prisma.IntFilter<"Variante"> | number
   combinacion?: Prisma.StringFilter<"Variante"> | string
+  cobraIva?: Prisma.BoolFilter<"Variante"> | boolean
   manejaInventario?: Prisma.BoolFilter<"Variante"> | boolean
   stock?: Prisma.IntFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolFilter<"Variante"> | boolean
@@ -325,6 +335,7 @@ export type VarianteOrderByWithAggregationInput = {
   sku?: Prisma.SortOrderInput | Prisma.SortOrder
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
+  cobraIva?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -346,6 +357,7 @@ export type VarianteScalarWhereWithAggregatesInput = {
   sku?: Prisma.StringNullableWithAggregatesFilter<"Variante"> | string | null
   posicion?: Prisma.IntWithAggregatesFilter<"Variante"> | number
   combinacion?: Prisma.StringWithAggregatesFilter<"Variante"> | string
+  cobraIva?: Prisma.BoolWithAggregatesFilter<"Variante"> | boolean
   manejaInventario?: Prisma.BoolWithAggregatesFilter<"Variante"> | boolean
   stock?: Prisma.IntWithAggregatesFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolWithAggregatesFilter<"Variante"> | boolean
@@ -358,6 +370,7 @@ export type VarianteCreateInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -376,6 +389,7 @@ export type VarianteUncheckedCreateInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -392,6 +406,7 @@ export type VarianteUpdateInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -410,6 +425,7 @@ export type VarianteUncheckedUpdateInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -427,6 +443,7 @@ export type VarianteCreateManyInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -439,6 +456,7 @@ export type VarianteUpdateManyMutationInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -451,6 +469,7 @@ export type VarianteUncheckedUpdateManyInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -479,6 +498,7 @@ export type VarianteCountOrderByAggregateInput = {
   sku?: Prisma.SortOrder
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
+  cobraIva?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -498,6 +518,7 @@ export type VarianteMaxOrderByAggregateInput = {
   sku?: Prisma.SortOrder
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
+  cobraIva?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -511,6 +532,7 @@ export type VarianteMinOrderByAggregateInput = {
   sku?: Prisma.SortOrder
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
+  cobraIva?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -691,6 +713,7 @@ export type VarianteCreateWithoutProductoInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -707,6 +730,7 @@ export type VarianteUncheckedCreateWithoutProductoInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -753,6 +777,7 @@ export type VarianteScalarWhereInput = {
   sku?: Prisma.StringNullableFilter<"Variante"> | string | null
   posicion?: Prisma.IntFilter<"Variante"> | number
   combinacion?: Prisma.StringFilter<"Variante"> | string
+  cobraIva?: Prisma.BoolFilter<"Variante"> | boolean
   manejaInventario?: Prisma.BoolFilter<"Variante"> | boolean
   stock?: Prisma.IntFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolFilter<"Variante"> | boolean
@@ -765,6 +790,7 @@ export type VarianteCreateWithoutValoresInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -782,6 +808,7 @@ export type VarianteUncheckedCreateWithoutValoresInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -813,6 +840,7 @@ export type VarianteUpdateWithoutValoresInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -830,6 +858,7 @@ export type VarianteUncheckedUpdateWithoutValoresInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -845,6 +874,7 @@ export type VarianteCreateWithoutImagenInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -862,6 +892,7 @@ export type VarianteUncheckedCreateWithoutImagenInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -903,6 +934,7 @@ export type VarianteCreateWithoutMovimientosInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -920,6 +952,7 @@ export type VarianteUncheckedCreateWithoutMovimientosInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -951,6 +984,7 @@ export type VarianteUpdateWithoutMovimientosInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -968,6 +1002,7 @@ export type VarianteUncheckedUpdateWithoutMovimientosInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -983,6 +1018,7 @@ export type VarianteCreateWithoutOrdenLineasInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1000,6 +1036,7 @@ export type VarianteUncheckedCreateWithoutOrdenLineasInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1031,6 +1068,7 @@ export type VarianteUpdateWithoutOrdenLineasInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1048,6 +1086,7 @@ export type VarianteUncheckedUpdateWithoutOrdenLineasInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1063,6 +1102,7 @@ export type VarianteCreateWithoutFacturaLineasInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1080,6 +1120,7 @@ export type VarianteUncheckedCreateWithoutFacturaLineasInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1111,6 +1152,7 @@ export type VarianteUpdateWithoutFacturaLineasInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1128,6 +1170,7 @@ export type VarianteUncheckedUpdateWithoutFacturaLineasInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1143,6 +1186,7 @@ export type VarianteCreateManyProductoInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1155,6 +1199,7 @@ export type VarianteUpdateWithoutProductoInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1171,6 +1216,7 @@ export type VarianteUncheckedUpdateWithoutProductoInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1187,6 +1233,7 @@ export type VarianteUncheckedUpdateManyWithoutProductoInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1200,6 +1247,7 @@ export type VarianteCreateManyImagenInput = {
   sku?: string | null
   posicion?: number
   combinacion?: string
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1211,6 +1259,7 @@ export type VarianteUpdateWithoutImagenInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1228,6 +1277,7 @@ export type VarianteUncheckedUpdateWithoutImagenInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1244,6 +1294,7 @@ export type VarianteUncheckedUpdateManyWithoutImagenInput = {
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
+  cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1314,6 +1365,7 @@ export type VarianteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   sku?: boolean
   posicion?: boolean
   combinacion?: boolean
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
@@ -1334,6 +1386,7 @@ export type VarianteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   sku?: boolean
   posicion?: boolean
   combinacion?: boolean
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
@@ -1349,6 +1402,7 @@ export type VarianteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   sku?: boolean
   posicion?: boolean
   combinacion?: boolean
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
@@ -1364,13 +1418,14 @@ export type VarianteSelectScalar = {
   sku?: boolean
   posicion?: boolean
   combinacion?: boolean
+  cobraIva?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
   imagenId?: boolean
 }
 
-export type VarianteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productoId" | "precio" | "sku" | "posicion" | "combinacion" | "manejaInventario" | "stock" | "permiteNegativo" | "imagenId", ExtArgs["result"]["variante"]>
+export type VarianteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productoId" | "precio" | "sku" | "posicion" | "combinacion" | "cobraIva" | "manejaInventario" | "stock" | "permiteNegativo" | "imagenId", ExtArgs["result"]["variante"]>
 export type VarianteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   imagen?: boolean | Prisma.Variante$imagenArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
@@ -1428,6 +1483,18 @@ export type $VariantePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
      * Vacía en la variante única de un producto sin opciones.
      */
     combinacion: string
+    /**
+     * **Si se le cobra IVA.** El *cuánto* sigue siendo del producto
+     * (`Producto.ivaTasa`): en Ecuador conviven 0% y 15%, y la tasa es del
+     * bien, no de su color. Esto es el interruptor — apagado, la línea se
+     * propone al 0% aunque el producto tenga tasa.
+     * 
+     * Por variante y no por producto porque hay bienes cuyo gravamen depende de
+     * la presentación: el mismo abono a granel y fraccionado no siempre tributan
+     * igual. Y como todo lo demás, es una **propuesta**: la tasa que se cobró
+     * queda en `OrdenLinea.ivaTasa`, donde se puede cambiar.
+     */
+    cobraIva: boolean
     /**
      * Si lleva stock. Una planta se cuenta; la tierra a granel puede que no.
      */
@@ -1884,6 +1951,7 @@ export interface VarianteFieldRefs {
   readonly sku: Prisma.FieldRef<"Variante", 'String'>
   readonly posicion: Prisma.FieldRef<"Variante", 'Int'>
   readonly combinacion: Prisma.FieldRef<"Variante", 'String'>
+  readonly cobraIva: Prisma.FieldRef<"Variante", 'Boolean'>
   readonly manejaInventario: Prisma.FieldRef<"Variante", 'Boolean'>
   readonly stock: Prisma.FieldRef<"Variante", 'Int'>
   readonly permiteNegativo: Prisma.FieldRef<"Variante", 'Boolean'>

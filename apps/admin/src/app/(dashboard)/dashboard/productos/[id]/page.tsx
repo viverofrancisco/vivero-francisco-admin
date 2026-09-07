@@ -65,6 +65,7 @@ export default async function EditarServicioPage({
             id: v.id,
             sku: v.sku,
             precio: v.precio,
+            cobraIva: v.cobraIva,
             manejaInventario: v.manejaInventario,
             stock: v.stock,
             permiteNegativo: v.permiteNegativo,
