@@ -286,9 +286,6 @@ export function ProductoVariantes({
     [opciones, variantes]
   );
 
-  /** Cuántas van a nacer al guardar. */
-  const porNacer = filas.filter((f) => f.variante === null).length;
-
   /** El total, contando solo lo que se cuenta. `null` = nada lleva inventario. */
   const total = useMemo(() => {
     const cuentan = variantes.filter((v) => v.manejaInventario);
@@ -564,14 +561,16 @@ export function ProductoVariantes({
               </div>
 
               {/* El total al pie, como en Shopify: es la pregunta que alguien
-                  se hace mirando la lista entera. */}
-              <p className="text-sm text-muted-foreground">
-                {total === null
-                  ? "Ninguna de estas variantes lleva inventario."
-                  : `Inventario total: ${total} disponible${total === 1 ? "" : "s"}.`}
-                {porNacer > 0 &&
-                  ` ${porNacer} ${porNacer === 1 ? "variante nueva se crea" : "variantes nuevas se crean"} al guardar.`}
-              </p>
+                  se hace mirando la lista entera.
+
+                  Solo cuando hay algo que contar. "Ninguna lleva inventario" no
+                  contesta nada —ya se ve en la columna, toda en guiones— y
+                  cuántas se crean al guardar lo dice cada fila con su "Nueva". */}
+              {total !== null && (
+                <p className="text-sm text-muted-foreground">
+                  Inventario total: {total} disponible{total === 1 ? "" : "s"}.
+                </p>
+              )}
             </>
           )}
         </CardContent>
