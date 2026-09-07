@@ -2016,10 +2016,8 @@ function Step3Secciones({
   /** Reordenar fotos dentro de una sección. */
   const [fotoArrastrada, setFotoArrastrada] = useState<string | null>(null);
   /** Dónde caería la foto: sobre cuál y de qué lado. */
-  const [fotoSobre, setFotoSobre] = useState<{
-    uid: string;
-    antes: boolean;
-  } | null>(null);
+  /** En qué posición caería. Con eso se dibuja la lista ya reordenada. */
+  const [fotoSobre, setFotoSobre] = useState<number | null>(null);
   const [editandoTitulo, setEditandoTitulo] = useState(false);
   /** Qué foto se está recortando, y de qué sección. */
   const [recortando, setRecortando] = useState<{
@@ -2149,23 +2147,22 @@ function Step3Secciones({
    * El lugar se calcula **después** de sacarla de donde estaba: si no, mover
    * hacia la derecha cae siempre un casillero antes de lo que se ve.
    */
-  function reordenarFotos(
-    tempId: string,
-    fromUid: string,
-    toUid: string,
-    antes: boolean,
-  ) {
-    if (fromUid === toUid) return;
-    const seccion = secciones.find((x) => x.tempId === tempId);
-    if (!seccion) return;
-    const desde = seccion.fotos.findIndex((f) => f.uid === fromUid);
+  /**
+   * Las fotos de una sección **como quedarían** si se soltara ahora.
+   *
+   * Se dibuja esto y no una barra entre dos: la pregunta al arrastrar es "¿cómo
+   * va a quedar?", y una línea obliga a imaginarlo. Acá las fotos se corren
+   * solas y lo que se ve es el resultado.
+   */
+  function vistaDeFotos(fotos: SeccionFotoDraft[]): SeccionFotoDraft[] {
+    if (!fotoArrastrada || fotoSobre === null) return fotos;
+    const desde = fotos.findIndex((f) => f.uid === fotoArrastrada);
     // Arrastrada desde otra sección: acá solo se reordena dentro de la misma.
-    if (desde < 0 || !seccion.fotos.some((f) => f.uid === toUid)) return;
-    const fotos = [...seccion.fotos];
-    const [movida] = fotos.splice(desde, 1);
-    const ref = fotos.findIndex((f) => f.uid === toUid);
-    fotos.splice(antes ? ref : ref + 1, 0, movida);
-    updateSeccion(tempId, { fotos });
+    if (desde < 0 || desde === fotoSobre) return fotos;
+    const lista = [...fotos];
+    const [movida] = lista.splice(desde, 1);
+    lista.splice(fotoSobre, 0, movida);
+    return lista;
   }
 
   function removeFotoFromSeccion(tempId: string, uid: string) {
@@ -2502,10 +2499,14 @@ function Step3Secciones({
                             distinguía una foto de otra, que es justo para lo
                             que se las mira. */}
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5">
-                          {s.fotos.map((f) => (
+                          {vistaDeFotos(s.fotos).map((f, i) => (
                             /* Arrastrable para reordenar: en el PDF salen en
                                  este orden, y "la del antes primero" es una
-                                 decisión que se toma aquí. */
+                                 decisión que se toma aquí.
+
+                                 Se agarra desde cualquier parte: si hay que
+                                 apuntar a un ícono chico, la mitad de los
+                                 intentos terminan en un clic. */
                             <div
                               key={f.uid}
                               draggable
@@ -2534,43 +2535,33 @@ function Step3Secciones({
                                   return;
                                 e.preventDefault();
                                 e.stopPropagation();
-                                // De qué mitad: es lo que decide si cae
-                                // antes o después, y lo que dibuja la barra.
-                                const caja =
-                                  e.currentTarget.getBoundingClientRect();
-                                setFotoSobre({
-                                  uid: f.uid,
-                                  antes: e.clientX < caja.left + caja.width / 2,
-                                });
+                                setFotoSobre(i);
                               }}
                               onDrop={(e) => {
-                                const uid = e.dataTransfer.getData(TIPO_FOTO);
-                                if (!uid) return;
+                                if (!e.dataTransfer.types.includes(TIPO_FOTO))
+                                  return;
                                 e.preventDefault();
                                 e.stopPropagation();
-                                const caja =
-                                  e.currentTarget.getBoundingClientRect();
-                                const antes =
-                                  e.clientX < caja.left + caja.width / 2;
+                                // Lo que se ve es lo que queda: la vista previa
+                                // ya está en el orden final.
+                                updateSeccion(s.tempId, {
+                                  fotos: vistaDeFotos(s.fotos),
+                                });
                                 setFotoSobre(null);
                                 setFotoArrastrada(null);
-                                reordenarFotos(s.tempId, uid, f.uid, antes);
                               }}
-                              className={`group relative aspect-square cursor-grab rounded-md border bg-muted active:cursor-grabbing ${
-                                fotoArrastrada === f.uid ? "opacity-30" : ""
+                              className={`group relative aspect-square rounded-md border bg-muted ${
+                                fotoArrastrada === f.uid
+                                  ? "opacity-50 ring-2 ring-primary"
+                                  : ""
                               }`}
                             >
-                              {/* La barra dice dónde va a caer. Un anillo
-                                    sobre la de destino decía "cambiala por
-                                    esta", que es otra cosa. */}
-                              {fotoSobre?.uid === f.uid &&
-                              fotoArrastrada !== f.uid ? (
-                                <span
-                                  className={`pointer-events-none absolute inset-y-0 z-10 w-1 rounded-full bg-primary ${
-                                    fotoSobre.antes ? "-left-1.5" : "-right-1.5"
-                                  }`}
-                                />
-                              ) : null}
+                              {/* El asa: no hace falta para arrastrar —se
+                                  arrastra de cualquier lado— pero es lo que
+                                  dice que se puede. */}
+                              <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/50 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                <GripVertical className="h-3.5 w-3.5" />
+                              </span>
                               {/* Tocar la foto la abre para editarla, como en
                                   el resto del portal: es lo que se quiere hacer
                                   con una foto que se está mirando, y el editor
