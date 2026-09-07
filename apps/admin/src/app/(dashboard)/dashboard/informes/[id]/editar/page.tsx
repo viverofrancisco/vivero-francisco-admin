@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireStaff, viewerFromSession } from "@/lib/auth-helpers";
-import { getInforme } from "@/lib/services/informe.service";
+import {
+  contenidoDeVersionParaEditar,
+  getInforme,
+} from "@/lib/services/informe.service";
 import { listDefaultFirmantes } from "@/lib/services/firmante.service";
 import {
   InformeWizard,
@@ -20,7 +23,7 @@ export default async function EditarInformePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ borrador?: string }>;
+  searchParams: Promise<{ borrador?: string; version?: string }>;
 }) {
   await requireStaff();
   await requireAuth();
@@ -48,7 +51,7 @@ export default async function EditarInformePage({
    * escribiendo. El informe publicado no cambió —el borrador no lo toca— así
    * que descartar el borrador siempre devuelve a la versión vigente.
    */
-  const { borrador: borradorId } = await searchParams;
+  const { borrador: borradorId, version: versionStr } = await searchParams;
   const borrador = borradorId
     ? await prisma.informeBorrador.findFirst({
         where: { id: borradorId, informeId: id },
@@ -92,6 +95,33 @@ export default async function EditarInformePage({
     })),
   };
 
+  /**
+   * Retomar una versión anterior.
+   *
+   * Es cómo se deshace una corrección: se abre la que estaba bien y al guardar
+   * sale una versión nueva. No se "vuelve" a la vieja —el historial no se
+   * toca— se hace otra que se le parece.
+   */
+  const versionPedida = Number(versionStr);
+  const vieja =
+    Number.isInteger(versionPedida) && versionPedida > 0
+      ? await contenidoDeVersionParaEditar(viewer, id, versionPedida).catch(
+          () => null
+        )
+      : null;
+
+  const deLaVersion: EstadoInicialInforme | undefined = vieja
+    ? {
+        clienteId: informe.clienteId,
+        titulo: vieja.titulo,
+        fecha: vieja.fecha.toISOString().slice(0, 10),
+        rango: delInforme.rango,
+        visitaIds: vieja.visitaIds,
+        firmantes: vieja.firmantes,
+        secciones: vieja.secciones,
+      }
+    : undefined;
+
   return (
     <InformeWizard
       catalogo={catalogo}
@@ -99,9 +129,20 @@ export default async function EditarInformePage({
         nombre: f.nombre,
         cedula: f.cedula,
       }))}
-      inicial={contenidoDelBorrador(borrador?.contenido) ?? delInforme}
+      // Un borrador a medio hacer gana sobre todo: es lo último que alguien
+      // estuvo escribiendo. Después, la versión que se pidió retomar. Si no,
+      // lo que el informe tiene hoy.
+      inicial={
+        contenidoDelBorrador(borrador?.contenido) ?? deLaVersion ?? delInforme
+      }
       borradorId={borrador?.id}
-      editando={{ id: informe.id, numero: informe.numero }}
+      editando={{
+        id: informe.id,
+        numero: informe.numero,
+        retomando: vieja
+          ? { version: vieja.version, fotosPerdidas: vieja.perdidas }
+          : undefined,
+      }}
     />
   );
 }

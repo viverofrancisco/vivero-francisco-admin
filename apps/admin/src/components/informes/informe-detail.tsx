@@ -59,6 +59,13 @@ export interface InformeDetailData {
     generatedAt: string;
     generadoPor: string | null;
     nota: string | null;
+    /**
+     * Se puede volver a abrir en el asistente.
+     *
+     * Las versiones anteriores a que se guardara el contenido quedaron sin él:
+     * de esas solo hay PDF para mirar.
+     */
+    retomable: boolean;
   }>;
   firmantes: Array<{ nombre: string; cedula: string | null }>;
   visitas: Array<{
@@ -256,24 +263,37 @@ export function InformeDetail({
               <CardContent className="divide-y p-0">
                 {informe.versiones.map((v, i) => (
                   <div key={v.id} className="space-y-1 px-4 py-3 text-sm">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <span className="font-medium">Versión {v.version}</span>
                       {i === 0 ? (
                         <Badge variant="secondary" className="text-[10px]">
                           Actual
                         </Badge>
                       ) : (
-                        /* La vieja se abre en otra pestaña: es un archivo
-                           distinto del que muestra la ficha, y reemplazarlo
-                           acá haría creer que se volvió a esa versión. */
-                        <a
-                          href={v.pdfUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-primary hover:underline"
-                        >
-                          Ver el PDF
-                        </a>
+                        <>
+                          {/* En otra pestaña: es un archivo distinto del que
+                              muestra la ficha, y reemplazarlo acá haría creer
+                              que se volvió a esa versión. */}
+                          <a
+                            href={v.pdfUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Ver el PDF
+                          </a>
+                          {/* Retomar es cómo se deshace una corrección: se
+                              abre la que estaba bien y al guardar sale una
+                              nueva. El historial no se toca. */}
+                          {v.retomable ? (
+                            <Link
+                              href={`/dashboard/informes/${informe.id}/editar?version=${v.version}&from=${aca}`}
+                              className="text-xs text-primary hover:underline"
+                            >
+                              Partir de esta
+                            </Link>
+                          ) : null}
+                        </>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">

@@ -340,7 +340,12 @@ export function InformeWizard({
   /** El número que trae el borrador. El informe lo hereda al generarse. */
   numeroDeBorrador?: number;
   /** El informe que se edita. Guardar crea una versión nueva, no otro informe. */
-  editando?: { id: string; numero: number };
+  editando?: {
+    id: string;
+    numero: number;
+    /** Se abrió una versión vieja para rehacerla a partir de ella. */
+    retomando?: { version: number; fotosPerdidas: number };
+  };
 }) {
   const router = useRouter();
   const [step, setStep] = useState<WizardStep>(() => {

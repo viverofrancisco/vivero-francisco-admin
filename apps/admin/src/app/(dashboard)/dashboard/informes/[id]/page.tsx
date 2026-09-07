@@ -93,6 +93,14 @@ export default async function InformeDetailPage({
             generadoPor:
               v.generatedByNombre || nombreDeCuenta(v.generatedBy) || null,
             nota: v.nota,
+            // Las viejas, rellenadas por la migración, quedaron sin el
+            // contenido con que se armaron: de esas solo hay PDF para mirar.
+            retomable:
+              !!v.contenido &&
+              typeof v.contenido === "object" &&
+              Array.isArray(
+                (v.contenido as { secciones?: unknown }).secciones
+              ),
           })),
           firmantes,
           visitas: informe.visitas

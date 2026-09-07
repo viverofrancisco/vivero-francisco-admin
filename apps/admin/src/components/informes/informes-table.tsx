@@ -124,7 +124,8 @@ export function InformesTable({
               <TableRow>
                 <TableHead className="w-20">N.º</TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead className="w-32">Estado</TableHead>
+                <TableHead className="w-28">Estado</TableHead>
+                <TableHead className="w-24">Versión</TableHead>
                 <TableHead>Generado</TableHead>
                 <TableHead className="w-32 text-right">Acciones</TableHead>
               </TableRow>
@@ -157,31 +158,42 @@ export function InformesTable({
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <Badge
-                        variant={
-                          item.tipo === "borrador" ? "outline" : "secondary"
-                        }
+                    <Badge
+                      variant={
+                        item.tipo === "borrador" ? "outline" : "secondary"
+                      }
+                      className={
+                        item.tipo === "borrador"
+                          ? "border-amber-300 bg-amber-50 text-amber-800"
+                          : ""
+                      }
+                    >
+                      {item.tipo === "borrador"
+                        ? item.deInforme
+                          ? `Editando #${item.deInforme}`
+                          : "Borrador"
+                        : "Emitido"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="tabular-nums">
+                    {item.tipo === "borrador" ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      <span
                         className={
-                          item.tipo === "borrador"
-                            ? "border-amber-300 bg-amber-50 text-amber-800"
-                            : ""
+                          item.version > 1
+                            ? "font-medium"
+                            : "text-muted-foreground"
+                        }
+                        title={
+                          item.version > 1
+                            ? `Se rehizo ${item.version - 1} ${item.version === 2 ? "vez" : "veces"}`
+                            : "Como se emitió"
                         }
                       >
-                        {item.tipo === "borrador"
-                          ? item.deInforme
-                            ? `Editando #${item.deInforme}`
-                            : "Borrador"
-                          : "Emitido"}
-                      </Badge>
-                      {/* La versión solo si hubo más de una: "v1" en todos no
-                          dice nada y le saca peso al que sí fue corregido. */}
-                      {item.version > 1 ? (
-                        <span className="text-xs tabular-nums text-muted-foreground">
-                          v{item.version}
-                        </span>
-                      ) : null}
-                    </div>
+                        v{item.version}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground tabular-nums">
                     {generadoEl(item.fecha)}

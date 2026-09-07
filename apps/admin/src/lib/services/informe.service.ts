@@ -228,6 +228,126 @@ export async function listInformesYBorradores(
   return { items, total, limit, offset };
 }
 
+/** Una foto de una sección, con la url resuelta para poder dibujarla. */
+export interface FotoDeVersion {
+  visitaMediaId: string | null;
+  mediaId: string | null;
+  url: string;
+}
+
+/**
+ * Con qué se armó una versión, listo para volver a abrirlo en el asistente.
+ *
+ * Retomar una versión vieja es cómo se deshace una corrección: se abre la que
+ * estaba bien, se ajusta lo que haga falta y al guardar sale una versión nueva.
+ * El historial no se toca — no se "vuelve" a la versión 2, se hace una 5 que se
+ * parece a la 2— porque las que ya se entregaron no se borran.
+ *
+ * Las urls se resuelven acá y no se guardan en el snapshot: una foto se puede
+ * recortar o mover, y la url de hace tres meses puede no existir más. Los ids
+ * sí son estables. Una foto cuyo archivo ya no está simplemente no vuelve, y el
+ * resultado dice cuántas faltaron para que nadie lo descubra mirando el PDF.
+ */
+export async function contenidoDeVersionParaEditar(
+  viewer: Viewer,
+  informeId: string,
+  version: number
+) {
+  ensureInformes(viewer);
+
+  const fila = await prisma.informeVersion.findFirst({
+    where: { informeId, version },
+    select: { version: true, titulo: true, fecha: true, contenido: true },
+  });
+  if (!fila) throw new NotFoundError("Versión no encontrada");
+
+  const c = fila.contenido as {
+    visitaIds?: unknown;
+    firmantes?: unknown;
+    secciones?: unknown;
+  } | null;
+  // Las versiones anteriores a que se guardara el contenido quedaron con un
+  // objeto vacío: de esas solo se puede mirar el PDF.
+  if (!c || !Array.isArray(c.secciones)) return null;
+
+  const secciones = c.secciones as Array<{
+    productoId?: string | null;
+    titulo?: string;
+    descripcion?: string | null;
+    saltoDePagina?: boolean;
+    fotosPorFila?: number;
+    fotos?: Array<{ visitaMediaId?: string | null; mediaId?: string | null }>;
+  }>;
+
+  const todas = secciones.flatMap((sec) => sec.fotos ?? []);
+  const [visitaMedia, media] = await Promise.all([
+    prisma.visitaMedia.findMany({
+      where: {
+        id: {
+          in: todas
+            .map((f) => f.visitaMediaId)
+            .filter((x): x is string => Boolean(x)),
+        },
+      },
+      select: { id: true, url: true },
+    }),
+    prisma.media.findMany({
+      where: {
+        id: {
+          in: todas.map((f) => f.mediaId).filter((x): x is string => Boolean(x)),
+        },
+      },
+      select: { id: true, key: true },
+    }),
+  ]);
+  const urlDeVisita = new Map(visitaMedia.map((m) => [m.id, m.url]));
+  const urlDeMedia = new Map(
+    media.map((m) => [m.id, publicUrlForKey(m.key)] as const)
+  );
+
+  let perdidas = 0;
+  const resueltas = secciones.map((sec) => ({
+    productoId: sec.productoId ?? null,
+    titulo: sec.titulo ?? "",
+    descripcion: sec.descripcion ?? "",
+    saltoDePagina: sec.saltoDePagina ?? false,
+    fotosPorFila: (sec.fotosPorFila === 2 || sec.fotosPorFila === 4
+      ? sec.fotosPorFila
+      : 3) as 2 | 3 | 4,
+    fotos: (sec.fotos ?? [])
+      .map((f): FotoDeVersion | null => {
+        const url = f.visitaMediaId
+          ? urlDeVisita.get(f.visitaMediaId)
+          : f.mediaId
+            ? urlDeMedia.get(f.mediaId)
+            : undefined;
+        if (!url) {
+          perdidas++;
+          return null;
+        }
+        return {
+          visitaMediaId: f.visitaMediaId ?? null,
+          mediaId: f.mediaId ?? null,
+          url,
+        };
+      })
+      .filter((f): f is FotoDeVersion => f !== null),
+  }));
+
+  return {
+    version: fila.version,
+    titulo: fila.titulo,
+    fecha: fila.fecha,
+    visitaIds: Array.isArray(c.visitaIds) ? (c.visitaIds as string[]) : [],
+    firmantes: Array.isArray(c.firmantes)
+      ? (c.firmantes as Array<{ nombre: string; cedula: string | null }>)
+      : [],
+    secciones: resueltas,
+    /** Fotos que ya no existen y no se pudieron traer. */
+    perdidas,
+  };
+}
+
 // ──────────────────────────────────────────────
 // Wizard step 1 — list candidate visitas
 // ──────────────────────────────────────────────
@@ -1200,6 +1320,7 @@ export async function getInforme(viewer: Viewer, id: string) {
           generatedAt: true,
           generatedByNombre: true,
           nota: true,
+          contenido: true,
           generatedBy: { select: { id: true, name: true, apellido: true } },
         },
       },
