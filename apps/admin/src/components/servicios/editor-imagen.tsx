@@ -47,10 +47,19 @@ type Asa = "mover" | "nw" | "ne" | "sw" | "se";
  */
 export function EditorImagen({
   media,
+  origen = "biblioteca",
   onGuardado,
   onCerrar,
 }: {
-  media: MediaItem;
+  /** Solo lo que hace falta para dibujarla: el nombre del recorte lo pone el servidor. */
+  media: Pick<MediaItem, "id" | "url" | "alt">;
+  /**
+   * De dónde sale el archivo que se está editando. Con `"visita"`, `media.id`
+   * es una `VisitaMedia`: se lee de ahí y el recorte igual nace en la
+   * biblioteca, sin tocar la foto de la visita.
+   */
+  origen?: "biblioteca" | "visita";
+  /** Siempre una imagen **nueva** de la biblioteca: el original nunca se pisa. */
   onGuardado: (nueva: MediaItem) => void;
   onCerrar: () => void;
 }) {
@@ -190,7 +199,7 @@ export function EditorImagen({
       const res = await fetch(`/api/media/${media.id}/editar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cuerpo),
+        body: JSON.stringify({ ...cuerpo, origen }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Error");

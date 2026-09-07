@@ -236,10 +236,53 @@ export async function editarImagen(
   ensureAdmin(viewer);
   const original = await prisma.media.findUnique({
     where: { id: mediaId },
-    select: { id: true, key: true, nombre: true, alt: true },
+    select: { key: true, nombre: true, alt: true },
   });
   if (!original) throw new NotFoundError("Imagen no encontrada");
+  return aplicarEdicion(viewer, original, edicion);
+}
 
+/**
+ * Lo mismo, pero sobre una foto de una **visita**.
+ *
+ * El recorte sale a la biblioteca, no a la visita: el archivo de la visita es
+ * lo que se fotografió en el jardín y no se edita —es el registro de lo que
+ * pasó—, mientras que el encuadre es una decisión de quien arma el informe. Así
+ * que se lee de ahí y se escribe acá, y la visita queda intacta.
+ *
+ * Es lo que permite recortar las fotos de un informe: casi todas salen de una
+ * visita, y sin esto el recorte solo alcanzaba a las que alguien subió a mano.
+ */
+export async function editarFotoDeVisita(
+  viewer: Viewer,
+  visitaMediaId: string,
+  edicion: EdicionImagen
+): Promise<MediaResumen> {
+  ensureAdmin(viewer);
+  const foto = await prisma.visitaMedia.findUnique({
+    where: { id: visitaMediaId },
+    select: { key: true, tipo: true, visita: { select: { numero: true } } },
+  });
+  if (!foto) throw new NotFoundError("Foto no encontrada");
+  if (foto.tipo === "video") {
+    throw new ValidationError("Un video no se puede recortar.");
+  }
+  // La `VisitaMedia` no tiene nombre —nadie se lo puso al subirla— y la key es
+  // un uuid, así que en la biblioteca quedaría sin forma de reconocerla. La
+  // visita es lo único que la identifica para una persona.
+  return aplicarEdicion(
+    viewer,
+    { key: foto.key, nombre: `Foto de la visita #${foto.visita.numero}.jpg`, alt: null },
+    edicion
+  );
+}
+
+/** El trabajo en sí, una vez que se sabe qué archivo se está editando. */
+async function aplicarEdicion(
+  viewer: Viewer,
+  original: { key: string; nombre: string; alt: string | null },
+  edicion: EdicionImagen
+): Promise<MediaResumen> {
   if (!edicion.recorte && !edicion.redimensionar && !edicion.circulo) {
     throw new ValidationError("No hay nada que cambiarle a la imagen.");
   }

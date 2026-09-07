@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Crop,
   Download,
   ExternalLink,
   FileText,
@@ -41,6 +42,7 @@ import {
   MediaLibrary,
   subirALaBiblioteca,
 } from "@/components/servicios/media-library";
+import { EditorImagen } from "@/components/servicios/editor-imagen";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1390,6 +1392,11 @@ function Step3Secciones({
     antes: boolean;
   } | null>(null);
   const [editandoTitulo, setEditandoTitulo] = useState(false);
+  /** Qué foto se está recortando, y de qué sección. */
+  const [recortando, setRecortando] = useState<{
+    tempId: string;
+    foto: SeccionFotoDraft;
+  } | null>(null);
 
   function toggleCollapsed(tempId: string) {
     setCollapsed((prev) => {
@@ -1537,6 +1544,24 @@ function Step3Secciones({
     if (!seccion) return;
     updateSeccion(tempId, {
       fotos: seccion.fotos.filter((f) => f.uid !== uid),
+    });
+  }
+
+  /**
+   * Cambia una foto por su recorte, en el mismo lugar.
+   *
+   * En el lugar y no al final: el orden de las fotos es el orden en que salen
+   * impresas, y recortar una no es reordenar la sección. Si el recorte ya
+   * estaba en la sección, la vieja simplemente se va — dos veces la misma foto
+   * no es lo que quiso nadie.
+   */
+  function reemplazarFoto(tempId: string, uid: string, nueva: SeccionFotoDraft) {
+    const seccion = secciones.find((s) => s.tempId === tempId);
+    if (!seccion) return;
+    updateSeccion(tempId, {
+      fotos: seccion.fotos
+        .map((f) => (f.uid === uid ? nueva : f))
+        .filter((f, i, todas) => todas.findIndex((o) => o.uid === f.uid) === i),
     });
   }
 
@@ -1928,16 +1953,28 @@ function Step3Secciones({
                                     Subida
                                   </span>
                                 ) : null}
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    removeFotoFromSeccion(s.tempId, f.uid)
-                                  }
-                                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                                  title="Quitar de esta sección"
-                                >
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
+                                <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setRecortando({ tempId: s.tempId, foto: f })
+                                    }
+                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
+                                    title="Recortar"
+                                  >
+                                    <Crop className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeFotoFromSeccion(s.tempId, f.uid)
+                                    }
+                                    className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white"
+                                    title="Quitar de esta sección"
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -1996,6 +2033,27 @@ function Step3Secciones({
           onConfirm={(fotos) => {
             addFotosToSeccion(addPhotosFor, fotos);
             setAddPhotosFor(null);
+          }}
+        />
+      ) : null}
+
+      {/* El recorte sale a la biblioteca en los dos casos, y el original queda
+          donde estaba: si la foto era de una visita, la visita conserva la
+          suya —es el registro de lo que se vio en el jardín— y esta sección
+          pasa a mostrar el encuadre. */}
+      {recortando ? (
+        <EditorImagen
+          media={{
+            id: recortando.foto.visitaMediaId ?? recortando.foto.mediaId!,
+            url: recortando.foto.url,
+            alt: null,
+          }}
+          origen={recortando.foto.visitaMediaId ? "visita" : "biblioteca"}
+          onCerrar={() => setRecortando(null)}
+          onGuardado={(nueva) => {
+            const donde = recortando;
+            setRecortando(null);
+            reemplazarFoto(donde.tempId, donde.foto.uid, fotoDeBiblioteca(nueva));
           }}
         />
       ) : null}

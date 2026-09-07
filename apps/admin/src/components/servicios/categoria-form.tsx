@@ -691,9 +691,7 @@ export function CategoriaForm({
           media={{
             id: form.imagen.id,
             url: form.imagen.url,
-            nombre: form.imagen.nombre,
             alt: form.imagen.alt,
-            usos: 0,
           }}
           onCerrar={() => setRecortando(false)}
           onGuardado={(nueva) => {

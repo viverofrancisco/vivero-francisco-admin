@@ -286,9 +286,7 @@ export function ProductoImagenes({
           media={{
             id: recortando.mediaId,
             url: recortando.url,
-            nombre: recortando.nombre,
             alt: recortando.alt,
-            usos: 0,
           }}
           onCerrar={() => setRecortando(null)}
           onGuardado={async (nueva) => {

@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { viewerFromSession } from "@/lib/auth-helpers";
-import { editarImagen } from "@/lib/services/media.service";
+import { editarFotoDeVisita, editarImagen } from "@/lib/services/media.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 const schema = z.object({
+  /**
+   * Qué es el `id` de la URL. Por defecto una imagen de la biblioteca; con
+   * `"visita"` es una `VisitaMedia`, y el recorte igual sale a la biblioteca.
+   *
+   * Va acá y no en una ruta aparte porque es la misma operación sobre otro
+   * archivo: dos rutas serían dos copias del mismo schema, y se separan a la
+   * primera corrección.
+   */
+  origen: z.enum(["biblioteca", "visita"]).default("biblioteca"),
   recorte: z
     .object({
       x: z.number().min(0),
@@ -36,7 +45,12 @@ export async function POST(
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
   try {
-    return NextResponse.json({ media: await editarImagen(viewer, id, parsed.data) });
+    const { origen, ...edicion } = parsed.data;
+    const media =
+      origen === "visita"
+        ? await editarFotoDeVisita(viewer, id, edicion)
+        : await editarImagen(viewer, id, edicion);
+    return NextResponse.json({ media });
   } catch (error) {
     return serviceErrorResponse(error);
   }
