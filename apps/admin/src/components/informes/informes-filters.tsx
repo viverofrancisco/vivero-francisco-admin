@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useBusquedaEnUrl } from "@/lib/filtros-url";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -24,13 +25,8 @@ const ESTADOS = [
 
 export function InformesFilters({ q, from, to, estado }: Props) {
   const router = useRouter();
-  // Igual que en visitas: el estado recuerda con qué valor de la URL se
-  // tecleó, así el campo sigue a la URL cuando cambia por fuera sin un efecto
-  // que lo reescriba.
+  const [, startTransition] = useTransition();
   const enUrl = q ?? "";
-  const [busqueda, setBusqueda] = useState({ valor: enUrl, deUrl: enUrl });
-  const texto = busqueda.deUrl === enUrl ? busqueda.valor : enUrl;
-  const setTexto = (v: string) => setBusqueda({ valor: v, deUrl: enUrl });
 
   function update(patch: Record<string, string | null>) {
     const params = new URLSearchParams(window.location.search);
@@ -44,18 +40,22 @@ export function InformesFilters({ q, from, to, estado }: Props) {
     // `replace` y no `push`: esta lista la arma el servidor, así que cada
     // tecleada dejaría una entrada en el historial y volver atrás sería
     // deshacer letra por letra en vez de salir del listado.
-    router.replace(`/dashboard/informes${qs ? `?${qs}` : ""}`);
+    //
+    // Y dentro de una transición: sin eso, cada tecleada desmonta la tabla y
+    // pone el esqueleto de `loading.tsx`, que es el parpadeo que hacía parecer
+    // que la pantalla se recargaba sola. Así la lista de antes se queda hasta
+    // que llega la nueva.
+    startTransition(() => {
+      router.replace(`/dashboard/informes${qs ? `?${qs}` : ""}`);
+    });
   }
 
-  // El buscador con un respiro: la lista la trae el servidor, y pedirla en
-  // cada tecla es una consulta por letra.
-  useEffect(() => {
-    if (texto === enUrl) return;
-    const t = setTimeout(() => update({ q: texto || null }), 300);
-    return () => clearTimeout(t);
-    // `update` se rearma en cada render y no aporta nada como dependencia.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [texto, enUrl]);
+  // Lo tecleado manda mientras se escribe; la URL solo cuando cambia por fuera.
+  // Ver `useBusquedaEnUrl`: sincronizarse con cada eco se comía las letras
+  // escritas mientras la consulta viajaba.
+  const [texto, setTexto] = useBusquedaEnUrl(enUrl, (v) =>
+    update({ q: v || null })
+  );
 
   const activos = [from, to, estado].filter(Boolean).length;
 
@@ -72,7 +72,7 @@ export function InformesFilters({ q, from, to, estado }: Props) {
         <div className="relative min-w-0 flex-1 md:min-w-[220px] md:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por cliente o título..."
+            placeholder="Buscar..."
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             className="pl-9"

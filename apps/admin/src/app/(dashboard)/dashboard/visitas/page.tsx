@@ -1,4 +1,9 @@
 import { prisma } from "@/lib/prisma";
+import {
+  esSoloNumero,
+  filtroClientePorTexto,
+  numeroBuscado,
+} from "@/lib/services/busqueda";
 import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
 import { VisitasPageClient } from "@/components/visitas/visitas-page-client";
 import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
@@ -61,15 +66,26 @@ export default async function VisitasPage({
   // Buscar por cliente escribiendo, en vez de encontrarlo en el desplegable.
   // Va contra la base y no sobre lo ya traído: la lista está acotada al mes,
   // y filtrar en el cliente buscaría solo dentro de ese mes.
-  const texto = filtros.q?.trim();
-  if (texto) {
-    visitasWhere.cliente = {
-      OR: [
-        { nombre: { contains: texto, mode: "insensitive" } },
-        { apellido: { contains: texto, mode: "insensitive" } },
-        { empresa: { contains: texto, mode: "insensitive" } },
-      ],
-    };
+  //
+  // Palabra por palabra, no la frase entera contra cada campo: "Maria Luisa"
+  // es el nombre completo de una y nombre + apellido de otra (ver
+  // `filtroClientePorTexto`).
+  //
+  // Y el mismo campo entiende el número de la visita, con o sin `#`: "336" es
+  // como se la nombra, y tener que acordarse de que ese buscador es solo de
+  // clientes obliga a recorrer la lista a ojo. Van con OR porque un cliente
+  // puede llamarse "Grupo 24" y esa búsqueda tiene que seguir encontrándolo.
+  const numero = numeroBuscado(filtros.q);
+  const cliente = esSoloNumero(filtros.q)
+    ? null
+    : filtroClientePorTexto(filtros.q);
+  if (numero !== null) {
+    visitasWhere.OR = [
+      { numero },
+      ...(cliente ? [{ cliente }] : []),
+    ];
+  } else if (cliente) {
+    visitasWhere.cliente = cliente;
   }
   // Quién la cerró y cuándo. Van juntos porque responden la misma pregunta
   // —"¿qué cerró fulano la semana pasada?"— y las dos condiciones son sobre

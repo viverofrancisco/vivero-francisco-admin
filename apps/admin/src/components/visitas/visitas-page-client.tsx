@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { hoyISOEcuador } from "@/lib/fechas";
-import { useFiltroUrl } from "@/lib/filtros-url";
+import { useBusquedaEnUrl, useFiltroUrl } from "@/lib/filtros-url";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
@@ -148,21 +148,12 @@ export function VisitasPageClient({
 
   // El buscador escribe en su propio estado y recién después navega: la lista
   // la trae el servidor, así que pedirla en cada tecla es una consulta por
-  // letra.
-  //
-  // El estado recuerda con qué valor de la URL se tecleó, para que cuando la
-  // URL cambie por fuera —volver atrás, limpiar filtros— el campo la siga sin
-  // un efecto que lo reescriba después de pintar.
-  const [busqueda, setBusqueda] = useState({ valor: texto, deUrl: texto });
-  const buscado = busqueda.deUrl === texto ? busqueda.valor : texto;
-  const setBuscado = (v: string) => setBusqueda({ valor: v, deUrl: texto });
-  useEffect(() => {
-    if (buscado === texto) return;
-    const t = setTimeout(() => navegar({ q: buscado }), 300);
-    return () => clearTimeout(t);
-    // `navegar` se rearma en cada render y no aporta como dependencia.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buscado, texto]);
+  // letra. El hook es el que sabe distinguir el eco de la URL de un cambio de
+  // afuera, que es lo que antes se comía las letras tecleadas mientras la
+  // consulta viajaba.
+  const [buscado, setBuscado] = useBusquedaEnUrl(texto, (v) =>
+    navegar({ q: v })
+  );
 
   /**
    * Cuántos filtros están puestos, para el contador del botón. El estado no
@@ -250,7 +241,7 @@ export function VisitasPageClient({
             <div className="relative min-w-0 flex-1 md:min-w-[220px] md:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar por cliente..."
+                placeholder="Buscar..."
                 value={buscado}
                 onChange={(e) => setBuscado(e.target.value)}
                 className="pl-9"
@@ -380,25 +371,33 @@ export function VisitasPageClient({
         </div>
       </div>
 
-      {loadingFilter ? (
-        <p className="text-sm text-muted-foreground">Cargando...</p>
-      ) : vista === "calendario" ? (
-        // El calendario se dibuja aunque no haya nada: un mes vacío es
-        // información, y sin grilla no habría cómo pasar al mes siguiente.
-        // El scroll lo maneja el calendario, no este envoltorio: así su
-        // cabecera y la fila de días quedan fuera del área que se mueve.
-        <div className="min-h-0 flex-1">
-          <VisitasCalendar
-            visitas={visibles}
-            mes={mesVisible}
-            onMesChange={handleMesChange}
-          />
-        </div>
-      ) : visibles.length === 0 ? (
-        <EmptyState message="No hay visitas para este periodo" />
-      ) : (
-        <VisitasTable visitas={visibles} />
-      )}
+      {/* La lista de antes se queda puesta mientras viaja la nueva, apenas
+          apagada. Cambiarla por un "Cargando..." en cada respiro del buscador
+          hacía parecer que la pantalla se recargaba sola mientras se escribe. */}
+      <div
+        className={`flex min-h-0 flex-1 flex-col transition-opacity ${
+          loadingFilter ? "opacity-60" : ""
+        }`}
+        aria-busy={loadingFilter}
+      >
+        {vista === "calendario" ? (
+          // El calendario se dibuja aunque no haya nada: un mes vacío es
+          // información, y sin grilla no habría cómo pasar al mes siguiente.
+          // El scroll lo maneja el calendario, no este envoltorio: así su
+          // cabecera y la fila de días quedan fuera del área que se mueve.
+          <div className="min-h-0 flex-1">
+            <VisitasCalendar
+              visitas={visibles}
+              mes={mesVisible}
+              onMesChange={handleMesChange}
+            />
+          </div>
+        ) : visibles.length === 0 ? (
+          <EmptyState message="No hay visitas para este periodo" />
+        ) : (
+          <VisitasTable visitas={visibles} />
+        )}
+      </div>
     </>
   );
 }

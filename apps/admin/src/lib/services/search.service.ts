@@ -4,6 +4,7 @@ import { nombreCliente } from "@vivero/shared";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
+import { filtroClientePorTexto } from "./busqueda";
 
 export type SearchType =
   | "cliente"
@@ -112,25 +113,11 @@ export async function globalSearch(
   const sectorIds = personalAdmin ? await sectorIdsFor(viewer) : [];
 
   const insensitive = { mode: "insensitive" as const };
-  // Multi-word terms (e.g. "Jorge Francisco") must match across nombre +
-  // apellido: every token has to hit one of them. Single tokens just match
-  // either field.
-  const tokens = term.split(/\s+/).filter(Boolean);
-  const clienteNameMatch = (): Prisma.ClienteWhereInput => ({
-    // Coincide por nombre+apellido (cada token en uno de los dos) o por empresa
-    // (clientes que solo tienen empresa, sin nombre de persona).
-    OR: [
-      {
-        AND: tokens.map((tok) => ({
-          OR: [
-            { nombre: { contains: tok, ...insensitive } },
-            { apellido: { contains: tok, ...insensitive } },
-          ],
-        })),
-      },
-      { empresa: { contains: term, ...insensitive } },
-    ],
-  });
+  // Una sola regla para todos los buscadores de clientes: cada palabra en
+  // alguno de los campos. Vivía acá y las listas tenían su propia versión, que
+  // era la que no encontraba "nombre apellido" (ver `filtroClientePorTexto`).
+  const clienteNameMatch = (): Prisma.ClienteWhereInput =>
+    filtroClientePorTexto(term) ?? {};
 
   // ── Clientes (staff + sector-scoped personal_admin) ──
   let clienteWhere: Prisma.ClienteWhereInput | null = null;

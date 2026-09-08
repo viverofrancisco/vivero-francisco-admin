@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { filtroClientePorTexto } from "./busqueda";
 import { ForbiddenError, NotFoundError, ValidationError, ServiceError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
@@ -97,19 +98,13 @@ export async function listClientes(
   filters: ListClientesFilters = {}
 ) {
   const where = await buildClienteWhereForStaff(viewer);
-  if (filters.search) {
-    const q = filters.search.trim();
-    if (q.length > 0) {
-      Object.assign(where, {
-        OR: [
-          { nombre: { contains: q, mode: "insensitive" } },
-          { apellido: { contains: q, mode: "insensitive" } },
-          { empresa: { contains: q, mode: "insensitive" } },
-          { telefono: { contains: q } },
-        ],
-      });
-    }
-  }
+  // Palabra por palabra: la frase entera contra cada campo no encontraba a
+  // nadie por "nombre apellido", que es como se busca a una persona. El
+  // teléfono entra en la misma pregunta (ver `filtroClientePorTexto`).
+  const porTexto = filtroClientePorTexto(filters.search, (palabra) => [
+    { telefono: { contains: palabra } },
+  ]);
+  if (porTexto) Object.assign(where, porTexto);
 
   const limit = Math.min(Math.max(filters.limit ?? 50, 1), 200);
   const items = await prisma.cliente.findMany({

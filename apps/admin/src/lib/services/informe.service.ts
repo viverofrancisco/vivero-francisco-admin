@@ -2,7 +2,12 @@ import { randomUUID } from "crypto";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
+import {
+  esSoloNumero,
+  numeroBuscado,
+  palabrasParaIlike,
+} from "./busqueda";
 import { hoyEnEcuador } from "@/lib/fechas";
 import {
   s3,
@@ -138,8 +143,41 @@ export async function listInformesYBorradores(
   // vez de encontrarlo en una lista de doscientos. Va contra la base y no
   // sobre la página traída, porque la lista está paginada y filtrar acá
   // buscaría solo dentro de los veinte que se están viendo.
-  const texto = options.q?.trim();
-  const like = texto ? `%${texto}%` : null;
+  // Palabra por palabra contra el cliente **y** el título juntos: así "Maria
+  // Luisa" encuentra tanto a quien se llama así como a Maria de apellido
+  // Luisa, y "Maria poda" encuentra el informe de poda de Maria. La frase
+  // entera contra cada campo dejaba afuera el caso más común de todos, el
+  // nombre y apellido escritos como uno los dice.
+  const palabras = esSoloNumero(options.q) ? [] : palabrasParaIlike(options.q);
+  // El mismo campo entiende el número del informe, con o sin `#`: es como se
+  // lo nombra. Con OR y no en su lugar, porque un título puede tener un año o
+  // un número adentro y esa búsqueda tiene que seguir andando.
+  const numero = numeroBuscado(options.q);
+  /** Los alias son constantes de esta consulta, no entra nada de afuera. */
+  const buscaEn = (cliente: string, tabla: string) => {
+    const condiciones: Prisma.Sql[] = [];
+    if (numero !== null) {
+      condiciones.push(
+        Prisma.sql`${Prisma.raw(`${tabla}."numero"`)} = ${numero}`
+      );
+    }
+    if (palabras.length > 0) {
+      // Todas las palabras, contra el cliente y el título juntos.
+      condiciones.push(
+        Prisma.sql`(${Prisma.join(
+          palabras.map(
+            (palabra) =>
+              Prisma.sql`concat_ws(' ', ${Prisma.raw(
+                `${cliente}."nombre", ${cliente}."apellido", ${cliente}."empresa", ${tabla}."titulo"`
+              )}) ILIKE ${palabra}`
+          ),
+          " AND "
+        )})`
+      );
+    }
+    if (condiciones.length === 0) return Prisma.empty;
+    return Prisma.sql`AND (${Prisma.join(condiciones, " OR ")})`;
+  };
   // `to` inclusive del día entero.
   const to = options.to
     ? new Date(new Date(options.to).setUTCDate(options.to.getUTCDate() + 1))
@@ -156,9 +194,7 @@ export async function listInformesYBorradores(
         AND (${from}::timestamp IS NULL OR i."generatedAt" >= ${from})
         AND (${to}::timestamp IS NULL OR i."generatedAt" < ${to})
         AND (${estado}::text IS NULL OR ${estado} = 'emitido')
-        AND (${like}::text IS NULL
-             OR concat_ws(' ', ci."nombre", ci."apellido", ci."empresa") ILIKE ${like}
-             OR i."titulo" ILIKE ${like})
+        ${buscaEn("ci", "i")}
       UNION ALL
       -- LEFT JOIN: un borrador puede no tener cliente todavía, y esconderlo
       -- del listado lo dejaría sin manera de retomarse.
@@ -169,9 +205,7 @@ export async function listInformesYBorradores(
         AND (${from}::timestamp IS NULL OR b."updatedAt" >= ${from})
         AND (${to}::timestamp IS NULL OR b."updatedAt" < ${to})
         AND (${estado}::text IS NULL OR ${estado} = 'borrador')
-        AND (${like}::text IS NULL
-             OR concat_ws(' ', cb."nombre", cb."apellido", cb."empresa") ILIKE ${like}
-             OR b."titulo" ILIKE ${like})
+        ${buscaEn("cb", "b")}
     )
     SELECT "id", tipo, fecha, COUNT(*) OVER () AS total
     FROM todo

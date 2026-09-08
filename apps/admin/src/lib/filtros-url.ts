@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 type Valor = string | number | boolean | null;
@@ -74,6 +74,73 @@ export function useFiltroUrl<T extends Valor>(
   };
 
   return [valor, aplicar];
+}
+
+/**
+ * El texto de un buscador cuya lista arma el **servidor**.
+ *
+ * El problema que resuelve: entre que se manda `?q=Jor` y vuelve la lista pasa
+ * medio segundo, y en ese rato la persona sigue escribiendo. Si el campo se
+ * resincroniza con la URL cada vez que la URL cambia, al llegar el eco de
+ * `Jor` se pierde el `ge` que se tecleó mientras tanto —el cursor salta, la
+ * palabra queda cortada, y no se puede escribir de corrido—.
+ *
+ * La regla es distinguir el **eco** del cambio de afuera: se recuerda lo
+ * último que este buscador pidió, y la URL solo se adopta cuando trae otra
+ * cosa (volver atrás, "Limpiar filtros", un enlace con el filtro puesto).
+ * Mientras tanto manda lo tecleado.
+ *
+ * `enviar` corre con un respiro de `esperaMs`: la lista la trae el servidor y
+ * pedirla en cada tecla es una consulta por letra. El temporizador **no** se
+ * reinicia cuando vuelve el eco, solo cuando se sigue escribiendo.
+ */
+export function useBusquedaEnUrl(
+  enUrl: string,
+  enviar: (valor: string) => void,
+  esperaMs = 300
+): [string, (valor: string) => void] {
+  /**
+   * Los tres en un solo estado —y no un `useRef` para `pedido`— porque la
+   * decisión se toma **durante el render**, y un ref leído ahí es justamente
+   * lo que React desaconseja: un render descartado lo dejaría escrito.
+   */
+  const [estado, setEstado] = useState({
+    /** Lo que se ve en el campo. */
+    escrito: enUrl,
+    /** Lo último que este buscador mandó a la URL. */
+    pedido: enUrl,
+    /** La última URL que vimos, para saber cuándo cambió. */
+    url: enUrl,
+  });
+
+  // Ajuste durante el render, que es como React recomienda seguir a una prop:
+  // un efecto pintaría primero el valor viejo y lo corregiría después.
+  if (estado.url !== enUrl) {
+    setEstado((e) =>
+      e.pedido === enUrl
+        ? // El eco de lo que pedimos: se anota y no se toca lo tecleado.
+          { ...e, url: enUrl }
+        : // Vino de afuera —volver atrás, limpiar filtros, un enlace—: manda
+          // la URL.
+          { escrito: enUrl, pedido: enUrl, url: enUrl }
+    );
+  }
+
+  useEffect(() => {
+    if (estado.escrito === estado.pedido) return;
+    const t = setTimeout(() => {
+      setEstado((e) => ({ ...e, pedido: e.escrito }));
+      enviar(estado.escrito);
+    }, esperaMs);
+    return () => clearTimeout(t);
+    // `enviar` se arma de nuevo en cada render y no aporta como dependencia.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estado.escrito, estado.pedido, esperaMs]);
+
+  return [
+    estado.escrito,
+    (valor: string) => setEstado((e) => ({ ...e, escrito: valor })),
+  ];
 }
 
 /**
