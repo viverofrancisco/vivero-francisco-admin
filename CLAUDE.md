@@ -330,6 +330,8 @@ block. See [the invoicing doc](./.claude/docs/facturacion-sri.md).
 and that's fine: nothing ever shows a bare number without saying what it is.
 The cuid stays the identity and the URL; the number is what people say out loud.
 
+**The gap above the signature line is where the electronic signature is stamped.** Those 90 pt of empty space are not decoration: the seal people paste there is a QR plus three lines of text, some 60 pt tall, and with the old 32 pt it landed across the line and over the name.
+
 **The PDF's page breaks are fixed by looking, not by predicting.** A section
 title landing at the foot of a page with its photos on the next one is the
 classic failure, and react-pdf's `minPresenceAhead` doesn't solve it: how much

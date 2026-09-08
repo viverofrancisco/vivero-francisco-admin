@@ -166,7 +166,13 @@ const styles = StyleSheet.create({
     color: COLOR_TEXT,
   },
   signaturesRow: {
-    marginTop: 32,
+    /**
+     * El hueco entre "Atentamente," y la línea es **donde se estampa la firma
+     * electrónica**: un sello con QR y tres renglones de texto, de unos 60 pt
+     * de alto. Con 32 pt no entraba y quedaba montado sobre la línea y sobre
+     * el nombre, así que hay lugar de sobra para que caiga adentro.
+     */
+    marginTop: 90,
     flexDirection: "row",
     justifyContent: "flex-start",
     flexWrap: "wrap",
