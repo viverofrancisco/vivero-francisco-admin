@@ -37,6 +37,37 @@ const ETIQUETAS = [
   "h3",
 ];
 
+/**
+ * El encabezado del informe se sanea con su propia lista.
+ *
+ * Ahí sí hacen falta `style`: el tamaño y el color de cada pedazo son lo que se
+ * imprime, y sin ellos el encabezado saldría todo del mismo tamaño. Se
+ * permiten **solo** esos dos, y `sanitize-html` valida el valor contra la
+ * expresión regular: un `style` libre alcanza para tapar media pantalla.
+ */
+export function sanitizarEncabezado(
+  html: string | null | undefined
+): string | null {
+  if (!html) return null;
+  const limpio = sanitizeHtml(html, {
+    allowedTags: ["p", "br", "strong", "b", "em", "i", "u", "span", "h2"],
+    allowedAttributes: { span: ["style"], p: ["style"], h2: ["style"] },
+    allowedStyles: {
+      "*": {
+        color: [/^#[0-9a-fA-F]{3,8}$/, /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/],
+        "font-size": [/^\d{1,3}(\.\d+)?(pt|px|rem|em)$/],
+        "text-align": [/^(left|center|right)$/],
+        "background-color": [
+          /^#[0-9a-fA-F]{3,8}$/,
+          /^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/,
+        ],
+      },
+    },
+    nonTextTags: ["script", "style", "textarea", "option", "noscript"],
+  }).trim();
+  return limpio === "" || limpio === "<p></p>" ? null : limpio;
+}
+
 export function sanitizarHtml(html: string | null | undefined): string | null {
   if (!html) return null;
   const limpio = sanitizeHtml(html, {

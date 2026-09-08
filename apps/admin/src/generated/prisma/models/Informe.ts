@@ -41,6 +41,7 @@ export type InformeMinAggregateOutputType = {
   clienteId: string | null
   numero: number | null
   titulo: string | null
+  encabezado: string | null
   fecha: Date | null
   fechaDesde: Date | null
   fechaHasta: Date | null
@@ -60,6 +61,7 @@ export type InformeMaxAggregateOutputType = {
   clienteId: string | null
   numero: number | null
   titulo: string | null
+  encabezado: string | null
   fecha: Date | null
   fechaDesde: Date | null
   fechaHasta: Date | null
@@ -79,6 +81,7 @@ export type InformeCountAggregateOutputType = {
   clienteId: number
   numero: number
   titulo: number
+  encabezado: number
   fecha: number
   fechaDesde: number
   fechaHasta: number
@@ -111,6 +114,7 @@ export type InformeMinAggregateInputType = {
   clienteId?: true
   numero?: true
   titulo?: true
+  encabezado?: true
   fecha?: true
   fechaDesde?: true
   fechaHasta?: true
@@ -130,6 +134,7 @@ export type InformeMaxAggregateInputType = {
   clienteId?: true
   numero?: true
   titulo?: true
+  encabezado?: true
   fecha?: true
   fechaDesde?: true
   fechaHasta?: true
@@ -149,6 +154,7 @@ export type InformeCountAggregateInputType = {
   clienteId?: true
   numero?: true
   titulo?: true
+  encabezado?: true
   fecha?: true
   fechaDesde?: true
   fechaHasta?: true
@@ -256,6 +262,7 @@ export type InformeGroupByOutputType = {
   clienteId: string
   numero: number
   titulo: string
+  encabezado: string | null
   fecha: Date
   fechaDesde: Date | null
   fechaHasta: Date | null
@@ -299,6 +306,7 @@ export type InformeWhereInput = {
   clienteId?: Prisma.StringFilter<"Informe"> | string
   numero?: Prisma.IntFilter<"Informe"> | number
   titulo?: Prisma.StringFilter<"Informe"> | string
+  encabezado?: Prisma.StringNullableFilter<"Informe"> | string | null
   fecha?: Prisma.DateTimeFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
@@ -326,6 +334,7 @@ export type InformeOrderByWithRelationInput = {
   clienteId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  encabezado?: Prisma.SortOrderInput | Prisma.SortOrder
   fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaHasta?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -356,6 +365,7 @@ export type InformeWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.InformeWhereInput | Prisma.InformeWhereInput[]
   clienteId?: Prisma.StringFilter<"Informe"> | string
   titulo?: Prisma.StringFilter<"Informe"> | string
+  encabezado?: Prisma.StringNullableFilter<"Informe"> | string | null
   fecha?: Prisma.DateTimeFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
@@ -383,6 +393,7 @@ export type InformeOrderByWithAggregationInput = {
   clienteId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  encabezado?: Prisma.SortOrderInput | Prisma.SortOrder
   fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaHasta?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -411,6 +422,7 @@ export type InformeScalarWhereWithAggregatesInput = {
   clienteId?: Prisma.StringWithAggregatesFilter<"Informe"> | string
   numero?: Prisma.IntWithAggregatesFilter<"Informe"> | number
   titulo?: Prisma.StringWithAggregatesFilter<"Informe"> | string
+  encabezado?: Prisma.StringNullableWithAggregatesFilter<"Informe"> | string | null
   fecha?: Prisma.DateTimeWithAggregatesFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableWithAggregatesFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableWithAggregatesFilter<"Informe"> | Date | string | null
@@ -430,6 +442,7 @@ export type InformeCreateInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -455,6 +468,7 @@ export type InformeUncheckedCreateInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -477,6 +491,7 @@ export type InformeUncheckedCreateInput = {
 export type InformeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -502,6 +517,7 @@ export type InformeUncheckedUpdateInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -526,6 +542,7 @@ export type InformeCreateManyInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -544,6 +561,7 @@ export type InformeCreateManyInput = {
 export type InformeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -562,6 +580,7 @@ export type InformeUncheckedUpdateManyInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -592,6 +611,7 @@ export type InformeCountOrderByAggregateInput = {
   clienteId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  encabezado?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrder
   fechaHasta?: Prisma.SortOrder
@@ -617,6 +637,7 @@ export type InformeMaxOrderByAggregateInput = {
   clienteId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  encabezado?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrder
   fechaHasta?: Prisma.SortOrder
@@ -636,6 +657,7 @@ export type InformeMinOrderByAggregateInput = {
   clienteId?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   titulo?: Prisma.SortOrder
+  encabezado?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   fechaDesde?: Prisma.SortOrder
   fechaHasta?: Prisma.SortOrder
@@ -853,6 +875,7 @@ export type InformeCreateWithoutGeneratedByInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -877,6 +900,7 @@ export type InformeUncheckedCreateWithoutGeneratedByInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -909,6 +933,7 @@ export type InformeCreateWithoutUpdatedByInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -933,6 +958,7 @@ export type InformeUncheckedCreateWithoutUpdatedByInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -985,6 +1011,7 @@ export type InformeScalarWhereInput = {
   clienteId?: Prisma.StringFilter<"Informe"> | string
   numero?: Prisma.IntFilter<"Informe"> | number
   titulo?: Prisma.StringFilter<"Informe"> | string
+  encabezado?: Prisma.StringNullableFilter<"Informe"> | string | null
   fecha?: Prisma.DateTimeFilter<"Informe"> | Date | string
   fechaDesde?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
   fechaHasta?: Prisma.DateTimeNullableFilter<"Informe"> | Date | string | null
@@ -1020,6 +1047,7 @@ export type InformeCreateWithoutClienteInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1043,6 +1071,7 @@ export type InformeUncheckedCreateWithoutClienteInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1092,6 +1121,7 @@ export type InformeCreateWithoutVersionesInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1116,6 +1146,7 @@ export type InformeUncheckedCreateWithoutVersionesInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1153,6 +1184,7 @@ export type InformeUpdateToOneWithWhereWithoutVersionesInput = {
 export type InformeUpdateWithoutVersionesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1177,6 +1209,7 @@ export type InformeUncheckedUpdateWithoutVersionesInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1199,6 +1232,7 @@ export type InformeCreateWithoutBorradoresInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1223,6 +1257,7 @@ export type InformeUncheckedCreateWithoutBorradoresInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1260,6 +1295,7 @@ export type InformeUpdateToOneWithWhereWithoutBorradoresInput = {
 export type InformeUpdateWithoutBorradoresInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1284,6 +1320,7 @@ export type InformeUncheckedUpdateWithoutBorradoresInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1306,6 +1343,7 @@ export type InformeCreateWithoutVisitasInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1330,6 +1368,7 @@ export type InformeUncheckedCreateWithoutVisitasInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1367,6 +1406,7 @@ export type InformeUpdateToOneWithWhereWithoutVisitasInput = {
 export type InformeUpdateWithoutVisitasInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1391,6 +1431,7 @@ export type InformeUncheckedUpdateWithoutVisitasInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1413,6 +1454,7 @@ export type InformeCreateWithoutSeccionesInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1437,6 +1479,7 @@ export type InformeUncheckedCreateWithoutSeccionesInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1474,6 +1517,7 @@ export type InformeUpdateToOneWithWhereWithoutSeccionesInput = {
 export type InformeUpdateWithoutSeccionesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1498,6 +1542,7 @@ export type InformeUncheckedUpdateWithoutSeccionesInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1521,6 +1566,7 @@ export type InformeCreateManyGeneratedByInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1540,6 +1586,7 @@ export type InformeCreateManyUpdatedByInput = {
   clienteId: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1557,6 +1604,7 @@ export type InformeCreateManyUpdatedByInput = {
 export type InformeUpdateWithoutGeneratedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1581,6 +1629,7 @@ export type InformeUncheckedUpdateWithoutGeneratedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1604,6 +1653,7 @@ export type InformeUncheckedUpdateManyWithoutGeneratedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1621,6 +1671,7 @@ export type InformeUncheckedUpdateManyWithoutGeneratedByInput = {
 export type InformeUpdateWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1645,6 +1696,7 @@ export type InformeUncheckedUpdateWithoutUpdatedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1668,6 +1720,7 @@ export type InformeUncheckedUpdateManyWithoutUpdatedByInput = {
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1686,6 +1739,7 @@ export type InformeCreateManyClienteInput = {
   id?: string
   numero?: number
   titulo: string
+  encabezado?: string | null
   fecha: Date | string
   fechaDesde?: Date | string | null
   fechaHasta?: Date | string | null
@@ -1704,6 +1758,7 @@ export type InformeCreateManyClienteInput = {
 export type InformeUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1727,6 +1782,7 @@ export type InformeUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1750,6 +1806,7 @@ export type InformeUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  encabezado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fechaHasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1828,6 +1885,7 @@ export type InformeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   clienteId?: boolean
   numero?: boolean
   titulo?: boolean
+  encabezado?: boolean
   fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
@@ -1856,6 +1914,7 @@ export type InformeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   clienteId?: boolean
   numero?: boolean
   titulo?: boolean
+  encabezado?: boolean
   fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
@@ -1879,6 +1938,7 @@ export type InformeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   clienteId?: boolean
   numero?: boolean
   titulo?: boolean
+  encabezado?: boolean
   fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
@@ -1902,6 +1962,7 @@ export type InformeSelectScalar = {
   clienteId?: boolean
   numero?: boolean
   titulo?: boolean
+  encabezado?: boolean
   fecha?: boolean
   fechaDesde?: boolean
   fechaHasta?: boolean
@@ -1917,7 +1978,7 @@ export type InformeSelectScalar = {
   versionActual?: boolean
 }
 
-export type InformeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "numero" | "titulo" | "fecha" | "fechaDesde" | "fechaHasta" | "pdfKey" | "pdfUrl" | "firmantes" | "generatedById" | "generatedByNombre" | "generatedAt" | "updatedById" | "updatedByNombre" | "updatedAt" | "versionActual", ExtArgs["result"]["informe"]>
+export type InformeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clienteId" | "numero" | "titulo" | "encabezado" | "fecha" | "fechaDesde" | "fechaHasta" | "pdfKey" | "pdfUrl" | "firmantes" | "generatedById" | "generatedByNombre" | "generatedAt" | "updatedById" | "updatedByNombre" | "updatedAt" | "versionActual", ExtArgs["result"]["informe"]>
 export type InformeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1959,7 +2020,29 @@ export type $InformePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
      * nunca se muestra un número sin decir de qué es.
      */
     numero: number
+    /**
+     * Cómo se llama el informe en las listas y en el buscador.
+     * 
+     * Es texto plano y sale de la primera línea del encabezado: lo que se
+     * imprime vive en `encabezado`, que puede tener formato y varias líneas, y
+     * eso no se puede mostrar en una fila de tabla.
+     */
     titulo: string
+    /**
+     * El encabezado impreso, tal como se escribió, en HTML.
+     * 
+     * Antes eran dos cosas: `titulo` y una segunda línea —"ACTIVIDADES
+     * REALIZADAS PARA X"— que **armaba el renderer** y no se podía tocar. El
+     * nombre largo de una urbanización se partía a mitad de palabra y no había
+     * dónde meter el corte. Ahora es un solo campo con formato: `<h2>` es una
+     * línea con el estilo del título (verde, cursiva, subrayada) y `<p>` una con
+     * el del subtítulo (azul), y negrita/cursiva/subrayado se agregan encima.
+     * 
+     * Null en los informes anteriores a esto: el PDF los sigue armando como
+     * antes, con `titulo` y la línea generada, así que regenerar uno viejo no le
+     * cambia el aspecto.
+     */
+    encabezado: string | null
     /**
      * La fecha que **sale impresa** en el PDF, y solo eso.
      * 
@@ -2427,6 +2510,7 @@ export interface InformeFieldRefs {
   readonly clienteId: Prisma.FieldRef<"Informe", 'String'>
   readonly numero: Prisma.FieldRef<"Informe", 'Int'>
   readonly titulo: Prisma.FieldRef<"Informe", 'String'>
+  readonly encabezado: Prisma.FieldRef<"Informe", 'String'>
   readonly fecha: Prisma.FieldRef<"Informe", 'DateTime'>
   readonly fechaDesde: Prisma.FieldRef<"Informe", 'DateTime'>
   readonly fechaHasta: Prisma.FieldRef<"Informe", 'DateTime'>

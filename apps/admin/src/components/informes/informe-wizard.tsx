@@ -18,7 +18,6 @@ import {
   GripVertical,
   Loader2,
   Maximize2,
-  Pencil,
   Plus,
   Save,
   Search,
@@ -37,6 +36,11 @@ import {
   subirALaBiblioteca,
 } from "@/components/servicios/media-library";
 import { EditorImagen } from "@/components/servicios/editor-imagen";
+import { EncabezadoEditor } from "@/components/informes/encabezado-editor";
+import {
+  encabezadoPorDefecto,
+  primeraLineaPlana,
+} from "@/lib/informes/encabezado-texto";
 import {
   Dialog,
   DialogContent,
@@ -274,6 +278,8 @@ export interface EstadoInicialInforme {
    */
   rango?: { label: string; from: string | null; to: string | null };
   titulo: string;
+  /** El encabezado impreso, en HTML. Vacío en los informes anteriores al campo. */
+  encabezado?: string | null;
   fecha: string;
   visitaIds: string[];
   firmantes: Array<{ nombre: string; cedula: string | null }>;
@@ -377,7 +383,18 @@ export function InformeWizard({
   const [loadingVisitas, setLoadingVisitas] = useState(false);
 
   const [pool, setPool] = useState<MediaPoolItem[]>([]);
-  const [titulo, setTitulo] = useState(inicial?.titulo ?? "");
+  /**
+   * El encabezado impreso, en HTML. Es lo que se escribe y lo que sale.
+   *
+   * El título ya no es un campo aparte: es su primera línea. Eran dos nombres
+   * para lo mismo, y la segunda línea —"ACTIVIDADES REALIZADAS PARA X"— la
+   * armaba el PDF sin que nadie pudiera tocarla.
+   */
+  const [encabezado, setEncabezado] = useState(
+    inicial?.encabezado ||
+      (inicial?.titulo ? encabezadoPorDefecto(inicial.titulo, null) : "")
+  );
+  const titulo = primeraLineaPlana(encabezado) ?? "";
   const [secciones, setSecciones] = useState<SeccionDraft[]>(() =>
     inicial ? seccionesDesde(inicial) : [],
   );
@@ -471,9 +488,10 @@ export function InformeWizard({
       .finally(() => setLoadingVisitas(false));
   }, [step, clienteId, dateRange]);
 
-  // Auto-suggest title when both cliente + date range known.
+  // El encabezado que se propone al saber de quién y de cuándo es el informe:
+  // las dos líneas que el PDF venía armando solo. Desde ahí se edita.
   useEffect(() => {
-    if (titulo) return;
+    if (encabezado) return;
     const cliente = clientes.find((c) => c.id === clienteId);
     if (cliente && dateRange.from && dateRange.to) {
       const fecha = new Date(dateRange.from);
@@ -482,11 +500,14 @@ export function InformeWizard({
         year: "numeric",
         timeZone: "UTC",
       });
-      setTitulo(
-        `Informe de Áreas Verdes — ${capitalize(mes)} — ${nombreCliente(cliente)}`.trim(),
+      setEncabezado(
+        encabezadoPorDefecto(
+          `Informe de Áreas Verdes — ${capitalize(mes)} — ${nombreCliente(cliente)}`.trim(),
+          nombreCliente(cliente)
+        )
       );
     }
-  }, [clientes, clienteId, dateRange, titulo]);
+  }, [clientes, clienteId, dateRange, encabezado]);
 
   // Las fotos de las visitas elegidas, mientras se eligen y no después: el
   // armado automático de secciones las necesita ya cargadas, y pedirlas al
@@ -708,6 +729,7 @@ export function InformeWizard({
     return {
       clienteId,
       titulo: titulo.trim(),
+      encabezado,
       // El del borrador, si vino de uno: el #17 sigue siendo el #17.
       ...(numeroDeBorrador ? { numero: numeroDeBorrador } : {}),
       visitaIds: Array.from(selectedVisitaIds),
@@ -779,6 +801,7 @@ export function InformeWizard({
             paso: step,
             clienteId,
             titulo,
+            encabezado,
             fecha,
             rango: dateRange,
             visitaIds: Array.from(selectedVisitaIds),
@@ -856,58 +879,15 @@ export function InformeWizard({
 
   // ──────────────── Render ────────────────
 
-  const stepHeadings: Record<
-    WizardStep,
-    { title: string; description: string }
-  > = {
-    1: {
-      title: "Cliente y visitas",
-      description:
-        "De quién es el informe y qué visitas cubre. Podés seguir sin elegir ninguna visita y armar las secciones a mano.",
-    },
-    2: {
-      title: "Componer secciones",
-      description:
-        "Arma las secciones del informe asignándole fotos del pool a cada una.",
-    },
-    3: {
-      title: "Firma y fecha",
-      description: "Con qué fecha sale el informe y quién lo firma.",
-    },
-    4: {
-      title: "Vista previa",
-      description:
-        "El PDF como va a salir. Si algo no cuadra, vuelve y ajústalo — todavía no se guardó nada.",
-    },
-    5: {
-      title: "Listo",
-      description: "Tu informe está listo. Descárgalo o compártelo.",
-    },
-  };
-
-  const heading = stepHeadings[step];
-
   return (
     /* `h-full` y no un `calc` con la altura del header: el header no mide
        4rem —tiene la barra de búsqueda— así que el wizard sobresalía y la
        barra de Atrás/Continuar quedaba cortada abajo. */
     <div className="flex h-full flex-col bg-background">
-      {/* Sticky top: step heading */}
-      <div className="border-b bg-card px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Paso {step} de 5
-            </p>
-            <h2 className="text-lg font-semibold truncate">{heading.title}</h2>
-            <p className="text-sm text-muted-foreground truncate">
-              {heading.description}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Los pasos, arriba y en una franja */}
+      {/* Sin encabezado de paso: decía tres veces lo mismo —"Paso 2 de 5", el
+          título y una explicación— y se comía tres renglones de una pantalla
+          donde lo que hace falta es ver el informe. La franja de abajo ya dice
+          en cuál se está. */}
       <div className="border-b bg-muted/20 px-6 py-2">
         <PasosHorizontales
           step={step}
@@ -930,7 +910,9 @@ export function InformeWizard({
                 onClienteChange={(id) => {
                   setClienteId(id);
                   setSelectedVisitaIds(new Set());
-                  setTitulo("");
+                  // El encabezado nombra al cliente: cambiarlo lo deja
+                  // hablando del anterior. Se vuelve a proponer solo.
+                  setEncabezado("");
                 }}
                 dateRange={dateRange}
                 onDateRangeChange={setDateRange}
@@ -957,8 +939,8 @@ export function InformeWizard({
 
             {step === 2 ? (
               <Step3Secciones
-                titulo={titulo}
-                onTituloChange={setTitulo}
+                encabezado={encabezado}
+                onEncabezadoChange={setEncabezado}
                 pool={unassignedPool}
                 secciones={secciones}
                 onSeccionesChange={setSecciones}
@@ -1968,8 +1950,8 @@ function Step2Visitas({
 // ───────────── Step 2 ─────────────
 
 function Step3Secciones({
-  titulo,
-  onTituloChange,
+  encabezado,
+  onEncabezadoChange,
   pool,
   secciones,
   onSeccionesChange,
@@ -1980,8 +1962,8 @@ function Step3Secciones({
   addPhotosFor,
   setAddPhotosFor,
 }: {
-  titulo: string;
-  onTituloChange: (v: string) => void;
+  encabezado: string;
+  onEncabezadoChange: (html: string) => void;
   pool: MediaPoolItem[];
   secciones: SeccionDraft[];
   onSeccionesChange: (s: SeccionDraft[]) => void;
@@ -2018,7 +2000,6 @@ function Step3Secciones({
   /** Dónde caería la foto: sobre cuál y de qué lado. */
   /** En qué posición caería. Con eso se dibuja la lista ya reordenada. */
   const [fotoSobre, setFotoSobre] = useState<number | null>(null);
-  const [editandoTitulo, setEditandoTitulo] = useState(false);
   /** Qué foto se está recortando, y de qué sección. */
   const [recortando, setRecortando] = useState<{
     tempId: string;
@@ -2309,45 +2290,22 @@ function Step3Secciones({
     <div className="flex h-full flex-col gap-4">
       {/* Fija arriba: el título y el botón de agregar son de todo el paso, no
           de una sección, así que no viajan con el scroll. */}
-      <div className="flex flex-none items-center gap-3 rounded-lg border bg-card px-4 py-3">
-        {editandoTitulo ? (
-          <Input
-            autoFocus
-            value={titulo}
-            onChange={(e) => onTituloChange(e.target.value)}
-            onBlur={() => setEditandoTitulo(false)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === "Escape") {
-                e.preventDefault();
-                setEditandoTitulo(false);
-              }
-            }}
-            placeholder="Ej. Informe de Áreas Verdes — Enero 2026 — Pacífica"
-            className="flex-1"
-          />
-        ) : (
-          <>
-            {/* Texto y no un campo: se escribe una vez y después estorba. */}
-            <span
-              className={`min-w-0 flex-1 truncate text-base font-semibold ${
-                titulo ? "" : "text-muted-foreground"
-              }`}
-              title={titulo || undefined}
-            >
-              {titulo || "Sin título"}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setEditandoTitulo(true)}
-              aria-label="Editar el título"
-              className="flex-none"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          </>
-        )}
-        <div className="w-56 flex-none">
+      {/* El encabezado impreso, entero y a todo el ancho: es lo primero que se
+          ve en el PDF y hasta ahora la mitad la escribía el sistema. Sin
+          etiqueta ni tarjeta alrededor: se ve lo que es —el título del
+          documento, con su barra de formato— y cada renglón de más es uno
+          menos para las secciones. */}
+      <EncabezadoEditor
+        value={encabezado}
+        onChange={onEncabezadoChange}
+        className="flex-none bg-card"
+      />
+
+      {/* Agregar una sección es la acción de la lista que sigue, así que vive
+          con ella y no arriba, apretando al encabezado contra un costado. */}
+      <div className="flex flex-none items-center justify-between gap-3">
+        <span className="text-sm font-semibold">Secciones</span>
+        <div className="w-64">
           <CustomSelect
             value=""
             onChange={agregarDesdeCatalogo}

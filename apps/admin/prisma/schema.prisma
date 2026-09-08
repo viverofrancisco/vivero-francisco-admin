@@ -1075,7 +1075,25 @@ model Informe {
   /// órdenes: cada tabla tiene su propia secuencia y eso está bien, porque
   /// nunca se muestra un número sin decir de qué es.
   numero        Int       @unique @default(autoincrement())
+  /// Cómo se llama el informe en las listas y en el buscador.
+  ///
+  /// Es texto plano y sale de la primera línea del encabezado: lo que se
+  /// imprime vive en `encabezado`, que puede tener formato y varias líneas, y
+  /// eso no se puede mostrar en una fila de tabla.
   titulo        String
+  /// El encabezado impreso, tal como se escribió, en HTML.
+  ///
+  /// Antes eran dos cosas: `titulo` y una segunda línea —"ACTIVIDADES
+  /// REALIZADAS PARA X"— que **armaba el renderer** y no se podía tocar. El
+  /// nombre largo de una urbanización se partía a mitad de palabra y no había
+  /// dónde meter el corte. Ahora es un solo campo con formato: `<h2>` es una
+  /// línea con el estilo del título (verde, cursiva, subrayada) y `<p>` una con
+  /// el del subtítulo (azul), y negrita/cursiva/subrayado se agregan encima.
+  ///
+  /// Null en los informes anteriores a esto: el PDF los sigue armando como
+  /// antes, con `titulo` y la línea generada, así que regenerar uno viejo no le
+  /// cambia el aspecto.
+  encabezado    String?   @db.Text
   /// La fecha que **sale impresa** en el PDF, y solo eso.
   ///
   /// Va aparte de `generatedAt` porque son dos hechos distintos: cuándo se

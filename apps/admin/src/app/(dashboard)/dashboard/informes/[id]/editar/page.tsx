@@ -72,6 +72,9 @@ export default async function EditarInformePage({
           }
         : undefined,
     titulo: informe.titulo,
+    // Vacío en los informes anteriores al campo: el asistente arma el de
+    // siempre a partir del título, que es lo que esos imprimieron.
+    encabezado: informe.encabezado,
     // `toISOString` sobre una columna `date` la devuelve a medianoche UTC, que
     // en Ecuador es el día anterior. Se corta el texto, que ya es el día.
     fecha: informe.fecha.toISOString().slice(0, 10),
@@ -114,6 +117,7 @@ export default async function EditarInformePage({
     ? {
         clienteId: informe.clienteId,
         titulo: vieja.titulo,
+        encabezado: vieja.encabezado,
         fecha: vieja.fecha.toISOString().slice(0, 10),
         rango: delInforme.rango,
         visitaIds: vieja.visitaIds,
@@ -161,6 +165,7 @@ function contenidoDelBorrador(
     clienteId: c.clienteId ?? null,
     rango: c.rango,
     titulo: c.titulo,
+    encabezado: typeof c.encabezado === "string" ? c.encabezado : null,
     fecha: typeof c.fecha === "string" ? c.fecha : "",
     visitaIds: Array.isArray(c.visitaIds) ? c.visitaIds : [],
     firmantes: Array.isArray(c.firmantes) ? c.firmantes : [],

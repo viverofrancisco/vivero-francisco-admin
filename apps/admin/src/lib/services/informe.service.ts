@@ -27,6 +27,12 @@ import { getVisitaForViewer } from "./visita.service";
 import { resumenProductos } from "@/lib/visita-productos";
 import { renderInformePDF } from "@/lib/informes/render";
 import { bajarFotos, bajarLogo } from "@/lib/informes/fotos";
+import {
+  encabezadoPorDefecto,
+  parsearEncabezado,
+  tituloDelEncabezado,
+} from "@/lib/informes/encabezado";
+import { sanitizarEncabezado } from "@/lib/html-seguro";
 import type {
   FotosPorFila,
   InformeRenderData,
@@ -317,6 +323,7 @@ export async function contenidoDeVersionParaEditar(
     visitaIds?: unknown;
     firmantes?: unknown;
     secciones?: unknown;
+    encabezado?: unknown;
   } | null;
   // Las versiones anteriores a que se guardara el contenido quedaron con un
   // objeto vacío: de esas solo se puede mirar el PDF.
@@ -389,6 +396,8 @@ export async function contenidoDeVersionParaEditar(
   return {
     version: fila.version,
     titulo: fila.titulo,
+    /** El encabezado con el que se imprimió esa versión, si lo guardó. */
+    encabezado: typeof c.encabezado === "string" ? c.encabezado : null,
     fecha: fila.fecha,
     visitaIds: Array.isArray(c.visitaIds) ? (c.visitaIds as string[]) : [],
     firmantes: Array.isArray(c.firmantes)
@@ -645,7 +654,19 @@ export interface InformeSeccionFotoInput {
  */
 export interface InformeGeneratePayload {
   clienteId: string;
+  /**
+   * Cómo se llama el informe en las listas y en el buscador.
+   *
+   * Lo manda la pantalla, pero si viene `encabezado` la primera línea de ese
+   * manda: es lo que la persona escribió, y dos nombres para lo mismo terminan
+   * en una lista que no dice lo que el PDF dice.
+   */
   titulo: string;
+  /**
+   * El encabezado impreso, en HTML (ver `encabezado.ts`). Ausente = el de
+   * siempre: el título en una línea y "ACTIVIDADES REALIZADAS PARA X" abajo.
+   */
+  encabezado?: string | null;
   /**
    * La que sale impresa, `YYYY-MM-DD`. Sin esto, el día de hoy.
    *
@@ -849,9 +870,12 @@ async function armarDatosDelInforme(
     where: { id: payload.clienteId },
     select: { nombre: true, apellido: true, empresa: true },
   });
-  const subtituloDefault = cliente
-    ? `ACTIVIDADES REALIZADAS PARA ${nombreCliente(cliente).toUpperCase()}`
-    : "ACTIVIDADES REALIZADAS";
+  // El encabezado escrito, o el de siempre para los informes que se hicieron
+  // antes de que fuera un campo: así regenerar uno viejo no le cambia la cara.
+  const encabezadoHtml =
+    sanitizarEncabezado(payload.encabezado) ??
+    encabezadoPorDefecto(payload.titulo, cliente ? nombreCliente(cliente) : null);
+  const encabezado = parsearEncabezado(encabezadoHtml);
 
   const renderSecciones: InformeRenderSeccion[] = seccionesResueltas.map(
     (sec) => ({
@@ -891,8 +915,7 @@ async function armarDatosDelInforme(
 
   const renderData: InformeRenderData = {
     fecha: fechaImpresa,
-    titulo: payload.titulo.toUpperCase(),
-    subtitulo: subtituloDefault,
+    encabezado,
     secciones: renderSecciones,
     firmantes: firmantesNormalizados,
     logo,
@@ -905,6 +928,10 @@ async function armarDatosDelInforme(
     fechaImpresa,
     fechaDesde,
     fechaHasta,
+    encabezadoHtml,
+    // El nombre en las listas sale del encabezado, no de un campo aparte: son
+    // la misma cosa dicha una vez.
+    tituloFinal: tituloDelEncabezado(encabezadoHtml) ?? payload.titulo,
   };
 }
 
@@ -997,7 +1024,14 @@ function cambiaElPdf(
     titulo: string;
     fecha: Date;
     contenido: unknown;
-  } | null
+  } | null,
+  /**
+   * El encabezado de antes y el de ahora, ya resueltos: el guardado, o el que
+   * se generaba solo cuando el informe es anterior al campo. Se comparan
+   * resueltos y no crudos, o reabrir un informe viejo y guardarlo sin tocar
+   * nada crearía una versión idéntica a la anterior.
+   */
+  encabezados: { antes: string; ahora: string }
 ): boolean {
   // Sin versión vigente —o con una de las viejas, rellenadas sin contenido— no
   // hay con qué comparar, así que se asume que sí. Errar hacia crear una
@@ -1008,7 +1042,7 @@ function cambiaElPdf(
     | null;
   if (!c || typeof c !== "object" || !c.secciones) return true;
 
-  if (payload.titulo !== vigente.titulo) return true;
+  if (encabezados.antes !== encabezados.ahora) return true;
   // Por día y no por instante: la columna es `@db.Date`, así que vuelve a
   // medianoche UTC y nunca iba a coincidir con el mediodía con que se guarda —
   // lo que hacía que "guardar sin tocar nada" creara una versión igual.
@@ -1089,12 +1123,15 @@ function seccionesParaGuardar(
  */
 function contenidoDeVersion(
   payload: InformeGeneratePayload,
-  firmantes: Array<{ nombre: string; cedula: string | null }>
+  firmantes: Array<{ nombre: string; cedula: string | null }>,
+  /** Ya saneado: es lo que se imprimió, no lo que llegó del navegador. */
+  encabezado: string
 ) {
   return {
     visitaIds: payload.visitaIds,
     firmantes,
     secciones: payload.secciones,
+    encabezado,
   } as unknown as Prisma.InputJsonValue;
 }
 
@@ -1109,6 +1146,8 @@ export async function generateInforme(
     fechaImpresa,
     fechaDesde,
     fechaHasta,
+    encabezadoHtml,
+    tituloFinal,
   } = await armarDatosDelInforme(viewer, payload, { borrador: false });
 
   // Acá y no al armar los datos: es un requisito del documento que se emite, no
@@ -1136,7 +1175,8 @@ export async function generateInforme(
     const created = await tx.informe.create({
       data: {
         clienteId: payload.clienteId,
-        titulo: payload.titulo,
+        titulo: tituloFinal,
+        encabezado: encabezadoHtml,
         // Si viene de un borrador, su número; si no, el que siga la secuencia.
         ...(payload.numero ? { numero: payload.numero } : {}),
         fecha: fechaImpresa,
@@ -1156,11 +1196,15 @@ export async function generateInforme(
         versiones: {
           create: {
             version: 1,
-            titulo: payload.titulo,
+            titulo: tituloFinal,
             fecha: fechaImpresa,
             pdfKey,
             pdfUrl,
-            contenido: contenidoDeVersion(payload, firmantesNormalizados),
+            contenido: contenidoDeVersion(
+              payload,
+              firmantesNormalizados,
+              encabezadoHtml
+            ),
             generatedById: viewer.id,
             generatedByNombre: viewer.nombre ?? null,
           },
@@ -1206,6 +1250,7 @@ export async function editarInforme(
       clienteId: true,
       versionActual: true,
       pdfUrl: true,
+      encabezado: true,
       visitas: { select: { visitaId: true } },
       // La vigente: con qué se armó el PDF que hay ahora.
       versiones: {
@@ -1227,10 +1272,28 @@ export async function editarInforme(
     throw new ValidationError("Agrega al menos un firmante.");
   }
 
+  // Para comparar encabezados hace falta el nombre del cliente: es lo que lleva
+  // la línea que el PDF armaba solo en los informes anteriores al campo.
+  const clienteDelInforme = await prisma.cliente.findUnique({
+    where: { id: actual.clienteId },
+    select: { nombre: true, apellido: true, empresa: true },
+  });
+  const nombreDelCliente = clienteDelInforme
+    ? nombreCliente(clienteDelInforme)
+    : null;
+  const vigente = actual.versiones[0] ?? null;
   const hayQueRehacer = cambiaElPdf(
     payload,
     firmantesNormalizados,
-    actual.versiones[0] ?? null
+    vigente,
+    {
+      antes:
+        actual.encabezado ??
+        encabezadoPorDefecto(vigente?.titulo ?? "", nombreDelCliente),
+      ahora:
+        sanitizarEncabezado(payload.encabezado) ??
+        encabezadoPorDefecto(payload.titulo, nombreDelCliente),
+    }
   );
   const cambianLasVisitas =
     JSON.stringify([...actual.visitas.map((v) => v.visitaId)].sort()) !==
@@ -1283,6 +1346,8 @@ export async function editarInforme(
     fechaImpresa,
     fechaDesde,
     fechaHasta,
+    encabezadoHtml,
+    tituloFinal,
   } = await armarDatosDelInforme(viewer, payload, { borrador: false });
 
   const pdfBuffer = await renderInformePDF(renderData);
@@ -1308,7 +1373,8 @@ export async function editarInforme(
     await tx.informe.update({
       where: { id },
       data: {
-        titulo: payload.titulo,
+        titulo: tituloFinal,
+        encabezado: encabezadoHtml,
         fecha: fechaImpresa,
         fechaDesde,
         fechaHasta,
@@ -1325,11 +1391,15 @@ export async function editarInforme(
         versiones: {
           create: {
             version,
-            titulo: payload.titulo,
+            titulo: tituloFinal,
             fecha: fechaImpresa,
             pdfKey,
             pdfUrl,
-            contenido: contenidoDeVersion(payload, firmantesNormalizados),
+            contenido: contenidoDeVersion(
+              payload,
+              firmantesNormalizados,
+              encabezadoHtml
+            ),
             generatedById: viewer.id,
             generatedByNombre: viewer.nombre ?? null,
             nota: nota?.trim() || null,

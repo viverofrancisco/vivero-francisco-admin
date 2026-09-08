@@ -43,6 +43,12 @@ export const informeFirmanteSchema = z.object({
 export const informeGenerateSchema = z.object({
   clienteId: z.string().min(1),
   titulo: z.string().min(1).max(200),
+  /**
+   * El encabezado impreso, en HTML. Ausente = el de siempre (el título en una
+   * línea y "ACTIVIDADES REALIZADAS PARA X" abajo). El servidor lo sanea antes
+   * de guardarlo: lo que valida la pantalla no cuenta.
+   */
+  encabezado: z.string().max(4000).nullable().optional(),
   /** La que se imprime, `YYYY-MM-DD`. Ausente = hoy. */
   fecha: z
     .string()

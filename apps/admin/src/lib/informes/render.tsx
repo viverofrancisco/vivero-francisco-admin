@@ -14,6 +14,7 @@ import type {
   InformeRenderFirmante,
   InformeRenderSeccion,
 } from "./template-data";
+import type { LineaEncabezado, TrozoEncabezado } from "./encabezado";
 
 // Use built-in Helvetica family. Loading custom fonts at runtime in
 // serverless environments is fragile and not worth it for v1.
@@ -95,23 +96,26 @@ const styles = StyleSheet.create({
   },
   titleBlock: {
     marginBottom: 16,
-    alignItems: "center",
+    // **Sin `alignItems: center`**: eso encoge cada línea al ancho de su texto
+    // y la centra, así que el `textAlign` de la línea no tenía nada que hacer
+    // —alinear a la derecha no movía nada—. Estiradas a todo el ancho, el
+    // centrado lo pone `lineaEncabezado` y cada línea puede pedir otro.
   },
-  title: {
-    fontSize: 14,
-    fontFamily: "Helvetica-BoldOblique",
-    color: COLOR_GREEN,
-    textDecoration: "underline",
-    textAlign: "center",
-    lineHeight: 1.3,
-  },
-  subtitle: {
+  /**
+   * Una línea del encabezado. Solo pone lo que **todas** comparten —centrado y
+   * separación—; el tamaño, el color y las marcas los decide cada pedazo, que
+   * es lo que hace que el editor sirva para algo.
+   */
+  lineaEncabezado: {
     fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    color: COLOR_BLUE,
+    color: COLOR_TEXT,
     textAlign: "center",
     marginTop: 14,
     lineHeight: 1.3,
+  },
+  /** La primera línea no lleva separación: no tiene nada arriba. */
+  primeraLinea: {
+    marginTop: 0,
   },
   sectionTitle: {
     fontSize: 12,
@@ -347,8 +351,9 @@ function InformeDocument({
           <Text>Samborondón, {formatLongDate(data.fecha)}</Text>
         </View>
         <View style={styles.titleBlock}>
-          <Text style={styles.title}>{data.titulo}</Text>
-          <Text style={styles.subtitle}>{data.subtitulo}</Text>
+          {data.encabezado.map((linea, i) => (
+            <LineaDelEncabezado key={i} linea={linea} primera={i === 0} />
+          ))}
         </View>
 
         {data.secciones.map((seccion, i) => (
@@ -364,6 +369,68 @@ function InformeDocument({
       </Page>
     </Document>
   );
+}
+
+/**
+ * Una línea del encabezado.
+ *
+ * El estilo de base lo pone el tipo de línea —título o subtítulo, que son los
+ * dos que el documento tuvo siempre— y encima se suman las marcas de cada
+ * pedazo. Como negrita y cursiva en Helvetica son **familias distintas** y no
+ * atributos, la combinación se resuelve con una tabla en vez de acumular
+ * estilos: pedirle `fontWeight: bold` a Helvetica-Oblique no la vuelve
+ * Helvetica-BoldOblique.
+ */
+function LineaDelEncabezado({
+  linea,
+  primera,
+}: {
+  linea: LineaEncabezado;
+  primera: boolean;
+}) {
+  return (
+    <Text
+      style={[
+        styles.lineaEncabezado,
+        primera ? styles.primeraLinea : {},
+        // Centrada salvo que se haya dicho otra cosa: es como va un encabezado.
+        linea.alineacion ? { textAlign: linea.alineacion } : {},
+      ]}
+    >
+      {linea.trozos.map((trozo, i) => (
+        <Text key={i} style={estiloDelTrozo(trozo)}>
+          {trozo.texto}
+        </Text>
+      ))}
+    </Text>
+  );
+}
+
+/**
+ * Helvetica no combina: cada mezcla de negrita y cursiva es **otra familia**.
+ * Pedirle `fontWeight: bold` a Helvetica-Oblique no la vuelve
+ * Helvetica-BoldOblique, así que la combinación se elige de una tabla.
+ */
+const FAMILIA = {
+  "": "Helvetica",
+  b: "Helvetica-Bold",
+  i: "Helvetica-Oblique",
+  bi: "Helvetica-BoldOblique",
+} as const;
+
+function estiloDelTrozo(trozo: TrozoEncabezado) {
+  const clave = `${trozo.negrita ? "b" : ""}${
+    trozo.cursiva ? "i" : ""
+  }` as keyof typeof FAMILIA;
+  return {
+    fontFamily: FAMILIA[clave],
+    textDecoration: trozo.subrayado ? ("underline" as const) : ("none" as const),
+    // Ausentes = lo que diga la línea. El editor los escribe siempre en el
+    // encabezado que propone, así que en la práctica vienen.
+    ...(trozo.tamano !== undefined ? { fontSize: trozo.tamano } : {}),
+    ...(trozo.color !== undefined ? { color: trozo.color } : {}),
+    ...(trozo.fondo !== undefined ? { backgroundColor: trozo.fondo } : {}),
+  };
 }
 
 /**

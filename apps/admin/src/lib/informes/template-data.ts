@@ -1,6 +1,8 @@
 // Plain data the PDF renderer needs. Keep this file dependency-free so it
 // can be imported from both the service (server) and any preview UI.
 
+import type { LineaEncabezado } from "./encabezado";
+
 /** Cuántas fotos entran en una fila. Es la palanca de densidad de la sección. */
 export type FotosPorFila = 2 | 3 | 4;
 
@@ -27,8 +29,13 @@ export interface InformeRenderLogo {
 
 export interface InformeRenderData {
   fecha: Date; // fecha de emisión (default: now); aparece arriba a la derecha
-  titulo: string; // ej. "INFORME DE ÁREAS VERDES MES DE ENERO 2026 DE LA URBANIZACIÓN PACÍFICA"
-  subtitulo: string; // ej. "ACTIVIDADES REALIZADA EN EL MANTENIMIENTO DE ÁREAS VERDES DE LA URBANIZACIÓN PACÍFICA"
+  /**
+   * El encabezado ya parseado: una entrada por línea, con su estilo y sus
+   * pedazos de texto. Lo arma `parsearEncabezado` a partir del HTML guardado, o
+   * —en los informes anteriores al campo— de `titulo` más la línea de
+   * actividades que se generaba sola.
+   */
+  encabezado: LineaEncabezado[];
   secciones: InformeRenderSeccion[];
   firmantes: InformeRenderFirmante[]; // 1 to 3
   logo?: InformeRenderLogo | null;
