@@ -4860,7 +4860,9 @@ export const VisitaScalarFieldEnum = {
   updatedByNombre: 'updatedByNombre',
   completadaEl: 'completadaEl',
   completadaPorId: 'completadaPorId',
-  completadaPorNombre: 'completadaPorNombre'
+  completadaPorNombre: 'completadaPorNombre',
+  deletedById: 'deletedById',
+  deletedByNombre: 'deletedByNombre'
 } as const
 
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]
@@ -5102,6 +5104,7 @@ export const InformeScalarFieldEnum = {
   clienteId: 'clienteId',
   numero: 'numero',
   titulo: 'titulo',
+  encabezado: 'encabezado',
   fecha: 'fecha',
   fechaDesde: 'fechaDesde',
   fechaHasta: 'fechaHasta',

@@ -1644,11 +1644,12 @@ export type $OrdenLineaPayload<ExtArgs extends runtime.Types.Extensions.Internal
     /**
      * **Qué variante se vendió. Siempre hay una.**
      * 
-     * Todo producto tiene exactamente una variante —un servicio y un bien sin
-     * opciones incluidos— así que acá nunca falta. Antes era opcional "porque un
-     * servicio no tiene", y eso hacía que una línea apuntara a un producto o a
-     * una variante según el tipo: dos formas para la misma cosa, y una rama en
-     * cada lugar que preguntaba el SKU, el precio o el stock.
+     * Todo producto tiene **al menos** una —un servicio y un bien sin opciones
+     * tienen exactamente una; con opciones hay una por combinación— así que acá
+     * nunca falta. Antes era opcional "porque un servicio no tiene", y eso hacía
+     * que una línea apuntara a un producto o a una variante según el tipo: dos
+     * formas para la misma cosa, y una rama en cada lugar que preguntaba el SKU,
+     * el precio o el stock.
      * 
      * De acá salen el SKU impreso y el stock que baja.
      */

@@ -39,6 +39,17 @@ export const actualizarVisitaSchema = z.object({
   personalIds: z.array(z.string()).optional(),
 });
 
+/**
+ * POST /api/visitas/eliminar — eliminar varias de una vez.
+ *
+ * Con tope: la pantalla manda lo que esté seleccionado, y cada visita revisa
+ * sus órdenes por su cuenta, así que un pedido de miles de ids sería una
+ * request que no termina.
+ */
+export const eliminarVisitasSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(200),
+});
+
 export type ActualizarVisitaFormData = z.infer<typeof actualizarVisitaSchema>;
 export type CrearVisitasFormData = z.infer<typeof crearVisitasSchema>;
 

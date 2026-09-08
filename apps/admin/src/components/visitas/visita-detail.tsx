@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Card,
   CardAction,
@@ -17,6 +27,7 @@ import {
   MessageSquare,
   Pencil,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
@@ -93,9 +104,36 @@ export function VisitaDetail({
   hasMessages = false,
   catalogo = [],
 }: VisitaDetailProps) {
+  const router = useRouter();
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(
     null
   );
+  const [confirmando, setConfirmando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+
+  async function eliminar() {
+    setEliminando(true);
+    try {
+      const res = await fetch(`/api/visitas/${visita.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        // El servidor dice *por qué* no se pudo —"ya está facturada en la
+        // orden #12"—, que es lo único que le sirve a quien lo intentó.
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "No pudimos eliminar la visita");
+      }
+      toast.success(`Visita #${visita.numero} eliminada`);
+      router.push(backHref);
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "No pudimos eliminar la visita"
+      );
+      setEliminando(false);
+      setConfirmando(false);
+    }
+  }
 
   const isProgramada = visita.estado === "PROGRAMADA";
   const canModify = userRole !== "PERSONAL";
@@ -215,6 +253,19 @@ export function VisitaDetail({
                   </Button>
                 </Link>
               )}
+              {/* Solo el ícono: es la acción que nadie viene a buscar, y con
+                  su nombre al lado de las otras dos compite por el mismo
+                  lugar de la pantalla. */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:text-destructive"
+                aria-label="Eliminar visita"
+                title="Eliminar visita"
+                onClick={() => setConfirmando(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           )}
         </div>
@@ -536,6 +587,40 @@ export function VisitaDetail({
         media={activeMedia}
         onClose={() => setActiveMedia(null)}
       />
+
+      {/* Sin promesa de recuperarla: la fila se queda marcada, pero del
+          portal no vuelve, y decir "se archiva" invita a intentarlo. */}
+      <Dialog
+        open={confirmando}
+        onOpenChange={(v) => !v && !eliminando && setConfirmando(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar la visita #{visita.numero}</DialogTitle>
+            <DialogDescription>
+              Sale de las listas, del calendario y de lo que queda por facturar,
+              con sus fotos y su chat. Si su trabajo está en una orden en
+              borrador, también sale de ahí. No se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmando(false)}
+              disabled={eliminando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={eliminar}
+              disabled={eliminando}
+            >
+              {eliminando ? "Eliminando…" : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

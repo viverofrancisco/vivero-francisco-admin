@@ -129,6 +129,11 @@ export function VisitasPageClient({
    * alcanza con la URL a secas, sin pedirle nada al servidor.
    */
   const [soloSinOrden, setSoloSinOrden] = useFiltroUrl("sinOrden", false);
+  /**
+   * Modo selección de móvil. Vive acá y no en la tabla porque se prende desde
+   * el menú del encabezado, que es la única barra de herramientas del teléfono.
+   */
+  const [seleccionando, setSeleccionando] = useState(false);
   const [vista, setVista] = useFiltroUrl<"tabla" | "calendario">(
     "vista",
     "tabla"
@@ -224,6 +229,18 @@ export function VisitasPageClient({
                   icon: "plus",
                   primary: true,
                 },
+                // Solo en móvil, solo en la tabla y solo si hay algo que
+                // marcar: en escritorio las casillas ya están en cada fila, y
+                // en el calendario no hay filas.
+                ...(vista === "tabla" && !seleccionando && visibles.length > 0
+                  ? [
+                      {
+                        label: "Seleccionar visitas",
+                        onClick: () => setSeleccionando(true),
+                        soloMovil: true,
+                      } as const,
+                    ]
+                  : []),
               ]
             : []
         }
@@ -355,7 +372,10 @@ export function VisitasPageClient({
             <button
               key={v}
               type="button"
-              onClick={() => setVista(v)}
+              onClick={() => {
+                setVista(v);
+                setSeleccionando(false);
+              }}
               aria-label={label}
               aria-pressed={vista === v}
               title={label}
@@ -395,7 +415,12 @@ export function VisitasPageClient({
         ) : visibles.length === 0 ? (
           <EmptyState message="No hay visitas para este periodo" />
         ) : (
-          <VisitasTable visitas={visibles} />
+          <VisitasTable
+            visitas={visibles}
+            puedeEliminar={userRole !== "PERSONAL"}
+            seleccionando={seleccionando}
+            onSalirSeleccion={() => setSeleccionando(false)}
+          />
         )}
       </div>
     </>

@@ -22,10 +22,22 @@ export interface HeaderAction {
   href?: string;
   /** Acción: se renderiza con onClick. */
   onClick?: () => void;
-  /** Ícono opcional (por nombre). */
+  /**
+   * Ícono opcional (por nombre). **Solo en escritorio**: en el menú de móvil
+   * las acciones van con su nombre a secas, que ya dice todo lo que el ícono
+   * repetía.
+   */
   icon?: HeaderActionIcon;
   /** Estilo primario en escritorio. */
   primary?: boolean;
+  /**
+   * Solo en el menú de móvil.
+   *
+   * Para lo que en escritorio ya está resuelto de otra manera —seleccionar
+   * filas, por ejemplo, que ahí se hace con las casillas de la tabla— y en el
+   * teléfono necesita una puerta de entrada.
+   */
+  soloMovil?: boolean;
 }
 
 function ActionIcon({ name }: { name?: HeaderActionIcon }) {
@@ -43,11 +55,13 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
   const router = useRouter();
   if (actions.length === 0) return null;
 
+  const enEscritorio = actions.filter((a) => !a.soloMovil);
+
   return (
     <>
       {/* Escritorio: botones en línea */}
       <div className="hidden items-center gap-2 sm:flex">
-        {actions.map((action, i) =>
+        {enEscritorio.map((action, i) =>
           action.href ? (
             <Link key={i} href={action.href}>
               <Button
@@ -97,7 +111,6 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
                     : action.onClick
                 }
               >
-                <ActionIcon name={action.icon} />
                 {action.label}
               </DropdownMenuItem>
             ))}

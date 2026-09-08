@@ -3,6 +3,7 @@ import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
+  ServiceError,
   ValidationError,
 } from "./errors";
 import type { Viewer } from "./viewer";
@@ -1291,21 +1292,188 @@ export async function updateVisitaInfo(
   return actualizada;
 }
 
+/**
+ * Elimina una visita: se marca, no se borra.
+ *
+ * La fila se queda —con `deletedAt` y con **quién** la eliminó— porque de ella
+ * cuelgan las fotos, el chat y la procedencia de lo que se haya facturado. Lo
+ * que desaparece es de las listas: todas las consultas filtran `deletedAt: null`.
+ *
+ * **Lo facturado en firme no se puede eliminar.** Si algo de la visita está en
+ * una orden que ya salió, borrarla dejaría la línea cobrando sin poder decir de
+ * dónde vino; hay que anular la orden primero, que es lo que libera el trabajo.
+ * Un borrador es otra cosa: todavía se edita, así que se le suelta lo de esta
+ * visita igual que cuando se le saca un producto (ver `updateVisitaInfo`), y si
+ * se queda sin líneas `recalcularBorrador` lo borra.
+ *
+ * Los informes que la citan se quedan como están: `InformeVisita` no llega al
+ * PDF, es rastro de dónde salió, y el documento ya emitido no cambia.
+ */
 export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
   if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
     throw new ForbiddenError();
   }
 
-  try {
-    await prisma.visita.update({
+  const visita = await prisma.visita.findFirst({
+    where: { id: visitaId, deletedAt: null },
+    select: {
+      id: true,
+      cliente: {
+        select: {
+          userId: true,
+          sector: { select: { id: true, nombre: true } },
+        },
+      },
+    },
+  });
+  if (!visita) throw new NotFoundError("Visita no encontrada");
+  // Un PERSONAL_ADMIN elimina solo en sus sectores. Antes alcanzaba con el rol,
+  // así que podía eliminar la visita de cualquiera sabiendo el id.
+  await ensureViewerCanSeeVisita(viewer, visita);
+
+  const cobrados = await prisma.visitaProducto.findMany({
+    where: { visitaId, ordenLineaOrigen: { isNot: null } },
+    select: {
+      ordenLineaOrigen: {
+        select: {
+          visitaProductoId: true,
+          ordenLinea: {
+            select: {
+              id: true,
+              ordenId: true,
+              orden: { select: { numero: true, estado: true } },
+              _count: { select: { origenes: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const enFirme = cobrados.filter(
+    (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado !== "BORRADOR"
+  );
+  if (enFirme.length > 0) {
+    const numeros = [
+      ...new Set(
+        enFirme.map((vp) => vp.ordenLineaOrigen!.ordenLinea.orden.numero)
+      ),
+    ];
+    throw new ConflictError(
+      `El trabajo de esta visita ya está facturado en ${
+        numeros.length === 1
+          ? `la orden #${numeros[0]}`
+          : `las órdenes ${numeros.map((n) => `#${n}`).join(", ")}`
+      }. Anulá la orden primero.`
+    );
+  }
+
+  const enBorrador = cobrados.filter(
+    (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado === "BORRADOR"
+  );
+
+  await prisma.$transaction(async (tx) => {
+    if (enBorrador.length > 0) {
+      await tx.ordenLineaOrigen.deleteMany({
+        where: {
+          visitaProductoId: {
+            in: enBorrador.map((vp) => vp.ordenLineaOrigen!.visitaProductoId),
+          },
+        },
+      });
+      // La línea se va solo si se queda sin ninguna procedencia: una misma
+      // línea puede pagar el mismo producto de varias visitas.
+      const sueltas = enBorrador
+        .filter((vp) => vp.ordenLineaOrigen!.ordenLinea._count.origenes === 1)
+        .map((vp) => vp.ordenLineaOrigen!.ordenLinea.id);
+      if (sueltas.length > 0) {
+        await tx.ordenLinea.deleteMany({ where: { id: { in: sueltas } } });
+      }
+    }
+
+    // La cabecera del borrador tampoco puede seguir diciendo que es de esta
+    // visita. Las órdenes en firme conservan la suya: es su historia.
+    await tx.ordenVisita.deleteMany({
+      where: { visitaId, orden: { estado: "BORRADOR" } },
+    });
+
+    await tx.visita.update({
       where: { id: visitaId },
       data: {
         deletedAt: new Date(),
-        updatedById: viewer.id,
-        updatedByNombre: viewer.nombre,
+        deletedById: viewer.id,
+        deletedByNombre: viewer.nombre,
       },
     });
-  } catch {
-    throw new NotFoundError("Visita no encontrada");
+  });
+
+  // Fuera de la transacción, como en `updateVisitaInfo`: es otra agregación y
+  // no debe poder tumbar la eliminación, que es lo que se pidió.
+  const ordenesTocadas = [
+    ...new Set(enBorrador.map((vp) => vp.ordenLineaOrigen!.ordenLinea.ordenId)),
+  ];
+  for (const ordenId of ordenesTocadas) {
+    try {
+      await recalcularBorrador(ordenId, viewer);
+    } catch (error) {
+      console.error(
+        `No se pudo recalcular el borrador ${ordenId} al eliminar la visita ${visitaId}:`,
+        error
+      );
+    }
   }
+}
+
+export interface ResultadoEliminarVisitas {
+  eliminadas: number;
+  /** Las que no se pudieron, con el motivo tal como se le muestra a la persona. */
+  errores: { id: string; numero: number | null; motivo: string }[];
+}
+
+/**
+ * Elimina varias visitas, y sigue aunque alguna no se pueda.
+ *
+ * Se eliminan de a una y no con un `updateMany`: cada una tiene que revisar sus
+ * órdenes y soltar lo que tenga en borradores. Y una que falle no cancela a las
+ * demás —seleccionar diez y que no se borre ninguna porque la séptima está
+ * facturada es peor que borrar nueve y decir cuál faltó—, así que el resultado
+ * dice cuántas salieron y por qué se quedaron las otras.
+ */
+export async function softDeleteVisitas(
+  ids: string[],
+  viewer: Viewer
+): Promise<ResultadoEliminarVisitas> {
+  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+    throw new ForbiddenError();
+  }
+
+  // El número es lo que la persona ve en pantalla; el id no le dice nada.
+  const numeros = new Map(
+    (
+      await prisma.visita.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, numero: true },
+      })
+    ).map((v) => [v.id, v.numero])
+  );
+
+  const resultado: ResultadoEliminarVisitas = { eliminadas: 0, errores: [] };
+  for (const id of ids) {
+    try {
+      await softDeleteVisita(id, viewer);
+      resultado.eliminadas += 1;
+    } catch (error) {
+      // El mensaje del servicio dice *por qué* —"ya está facturada en la orden
+      // #12"—, que es lo único accionable; un "no se pudo" manda a adivinar.
+      const motivo =
+        error instanceof ServiceError ? error.message : "No se pudo eliminar";
+      if (!(error instanceof ServiceError)) console.error(error);
+      resultado.errores.push({
+        id,
+        numero: numeros.get(id) ?? null,
+        motivo,
+      });
+    }
+  }
+  return resultado;
 }

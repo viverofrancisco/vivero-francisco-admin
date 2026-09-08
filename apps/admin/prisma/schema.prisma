@@ -188,6 +188,7 @@ model User {
   visitasCreated          Visita[]               @relation("VisitaCreatedBy")
   visitasUpdated          Visita[]               @relation("VisitaUpdatedBy")
   visitasCompletadas      Visita[]               @relation("VisitaCompletadaPor")
+  visitasEliminadas       Visita[]               @relation("VisitaDeletedBy")
   visitaPersonalAdded     VisitaPersonal[]       @relation("VisitaPersonalAddedBy")
   visitaPersonalRemoved   VisitaPersonal[]       @relation("VisitaPersonalRemovedBy")
   personal                Personal?
@@ -722,6 +723,15 @@ model Visita {
   /// El nombre de quien la completó, congelado en ese momento. Ver
   /// `updatedByNombre`: mismo motivo.
   completadaPorNombre String?
+  /// Quién la eliminó. `deletedAt` dice cuándo.
+  ///
+  /// Eliminar una visita saca de la vista un trabajo que alguien programó y
+  /// puede haber estado esperando, así que la pregunta que sigue siempre es
+  /// "¿quién la sacó?". El nombre va congelado al lado del id, como en
+  /// `completadaPorNombre`: el id sirve para consultar y se queda sin dueño si
+  /// la cuenta se borra; el texto es lo que se muestra.
+  deletedById         String?
+  deletedByNombre     String?
 
   cliente        Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   productos      VisitaProducto[]
@@ -729,6 +739,7 @@ model Visita {
   createdBy      User?             @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy      User?             @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   completadaPor  User?             @relation("VisitaCompletadaPor", fields: [completadaPorId], references: [id], onDelete: SetNull)
+  deletedBy      User?             @relation("VisitaDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
   media          VisitaMedia[]
   personal       VisitaPersonal[]
   notificaciones NotificacionLog[]

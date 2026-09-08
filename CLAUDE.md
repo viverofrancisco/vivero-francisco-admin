@@ -412,6 +412,43 @@ it came, so a partial PUT can't blank the rest. Editing happens on its own page
 (`/dashboard/visitas/[id]/editar`), laid out like the create wizard; the client
 is the one thing it won't change, since that would orphan the subscription link.
 
+**Deleting a visita marks it, and says who did it.** `deletedAt` +
+`deletedById`/`deletedByNombre` (the usual id-plus-name-snapshot split): the row
+stays because the photos, the chat and the provenance of anything billed hang
+off it, and every query filters `deletedAt: null`, so what disappears is the
+listings. It is **refused while its work is on a live order** —
+`softDeleteVisita` names the orden and asks for it to be annulled first, since
+otherwise the line would keep charging with nothing left saying where it came
+from. A **draft** is different: it is still editable, so the visita's
+`OrdenLineaOrigen` rows are released exactly as when a product is removed
+(`updateVisitaInfo`), lines left with no origin go, `recalcularBorrador` deletes
+the draft if it emptied, and the draft's `OrdenVisita` header row goes with them
+— an order in firme keeps its own, which is its history. The informes that cite
+it keep their `InformeVisita`: it never reaches the PDF, and an issued document
+doesn't change. Nothing in the portal brings it back, and the dialog doesn't
+promise otherwise. **Deleting in bulk is one visita at a time**
+(`softDeleteVisitas`, `POST /api/visitas/eliminar`): each one has to check its
+own orders, and one that can't be deleted doesn't cancel the rest — the response
+says how many went and names each one that stayed, with the reason. **How you
+pick differs by screen**, and both copy Shopify. The desktop table has a
+checkbox on every row, always — there is nothing to turn on — and with something
+marked a bar **covers the header row**: the count, the select-all box (now
+indeterminate: clicking it clears) and the actions. It covers rather than sits
+above because a strip above the table pushes every row down at the moment
+someone is aiming at one, and it is rendered **outside** the `<table>` rather
+than in a `<th>` because the table scrolls horizontally and the button went off
+screen with it. The phone has no room for a checkbox column, so *Seleccionar
+visitas* in the header's ⋯ menu (a `soloMovil` header action) turns the rows into
+checkboxes and floats a dark pill over the nav with the count, a ✕ to leave, and
+the actions — today only *Eliminar*, and when there are more they go behind a ⋯
+beside it. **Neither *Eliminar* is red**, and neither carries a trash icon: the
+red belongs to the confirm dialog, which is where the decision is made, and on
+the dark pill the house `destructive` variant — a 10% wash made for a light card
+— vanished outright. A row that would open the visita must not sometimes
+navigate and sometimes mark, so while selecting it is a `button`, not a `Link`.
+Header actions render their `icon` **only on the desktop buttons**; the phone's ⋯
+menu lists them by name alone.
+
 **DatoFacturacion** holds who an invoice is made out to — identification, razón
 social, tipo de persona, address. A cliente can have several (own name vs.
 company) and one is the default; the invoice flow picks one or captures new ones

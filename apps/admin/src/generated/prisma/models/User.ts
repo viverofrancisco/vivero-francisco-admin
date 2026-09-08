@@ -249,6 +249,7 @@ export type UserWhereInput = {
   visitasCreated?: Prisma.VisitaListRelationFilter
   visitasUpdated?: Prisma.VisitaListRelationFilter
   visitasCompletadas?: Prisma.VisitaListRelationFilter
+  visitasEliminadas?: Prisma.VisitaListRelationFilter
   visitaPersonalAdded?: Prisma.VisitaPersonalListRelationFilter
   visitaPersonalRemoved?: Prisma.VisitaPersonalListRelationFilter
   personal?: Prisma.XOR<Prisma.PersonalNullableScalarRelationFilter, Prisma.PersonalWhereInput> | null
@@ -301,6 +302,7 @@ export type UserOrderByWithRelationInput = {
   visitasCreated?: Prisma.VisitaOrderByRelationAggregateInput
   visitasUpdated?: Prisma.VisitaOrderByRelationAggregateInput
   visitasCompletadas?: Prisma.VisitaOrderByRelationAggregateInput
+  visitasEliminadas?: Prisma.VisitaOrderByRelationAggregateInput
   visitaPersonalAdded?: Prisma.VisitaPersonalOrderByRelationAggregateInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalOrderByRelationAggregateInput
   personal?: Prisma.PersonalOrderByWithRelationInput
@@ -356,6 +358,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   visitasCreated?: Prisma.VisitaListRelationFilter
   visitasUpdated?: Prisma.VisitaListRelationFilter
   visitasCompletadas?: Prisma.VisitaListRelationFilter
+  visitasEliminadas?: Prisma.VisitaListRelationFilter
   visitaPersonalAdded?: Prisma.VisitaPersonalListRelationFilter
   visitaPersonalRemoved?: Prisma.VisitaPersonalListRelationFilter
   personal?: Prisma.XOR<Prisma.PersonalNullableScalarRelationFilter, Prisma.PersonalWhereInput> | null
@@ -442,6 +445,7 @@ export type UserCreateInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -494,6 +498,7 @@ export type UserUncheckedCreateInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -546,6 +551,7 @@ export type UserUpdateInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -598,6 +604,7 @@ export type UserUncheckedUpdateInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -991,6 +998,12 @@ export type UserCreateNestedOneWithoutVisitasCompletadasInput = {
   connect?: Prisma.UserWhereUniqueInput
 }
 
+export type UserCreateNestedOneWithoutVisitasEliminadasInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitasEliminadasInput, Prisma.UserUncheckedCreateWithoutVisitasEliminadasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitasEliminadasInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
 export type UserUpdateOneWithoutVisitasCreatedNestedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutVisitasCreatedInput, Prisma.UserUncheckedCreateWithoutVisitasCreatedInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitasCreatedInput
@@ -1019,6 +1032,16 @@ export type UserUpdateOneWithoutVisitasCompletadasNestedInput = {
   delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitasCompletadasInput, Prisma.UserUpdateWithoutVisitasCompletadasInput>, Prisma.UserUncheckedUpdateWithoutVisitasCompletadasInput>
+}
+
+export type UserUpdateOneWithoutVisitasEliminadasNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitasEliminadasInput, Prisma.UserUncheckedCreateWithoutVisitasEliminadasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitasEliminadasInput
+  upsert?: Prisma.UserUpsertWithoutVisitasEliminadasInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitasEliminadasInput, Prisma.UserUpdateWithoutVisitasEliminadasInput>, Prisma.UserUncheckedUpdateWithoutVisitasEliminadasInput>
 }
 
 export type UserCreateNestedOneWithoutVisitaPersonalAddedInput = {
@@ -1343,6 +1366,7 @@ export type UserCreateWithoutAccountsInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -1394,6 +1418,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -1461,6 +1486,7 @@ export type UserUpdateWithoutAccountsInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -1512,6 +1538,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -1563,6 +1590,7 @@ export type UserCreateWithoutSessionsInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -1614,6 +1642,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -1681,6 +1710,7 @@ export type UserUpdateWithoutSessionsInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -1732,6 +1762,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -1783,6 +1814,7 @@ export type UserCreateWithoutClientesCreatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -1834,6 +1866,7 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -1890,6 +1923,7 @@ export type UserCreateWithoutClientesUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -1941,6 +1975,7 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -1998,6 +2033,7 @@ export type UserCreateWithoutClienteInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -2049,6 +2085,7 @@ export type UserUncheckedCreateWithoutClienteInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -2115,6 +2152,7 @@ export type UserUpdateWithoutClientesCreatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -2166,6 +2204,7 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -2228,6 +2267,7 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -2279,6 +2319,7 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -2342,6 +2383,7 @@ export type UserUpdateWithoutClienteInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -2393,6 +2435,7 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -2443,6 +2486,7 @@ export type UserCreateWithoutProductosCreatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -2494,6 +2538,7 @@ export type UserUncheckedCreateWithoutProductosCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -2550,6 +2595,7 @@ export type UserCreateWithoutProductosUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -2601,6 +2647,7 @@ export type UserUncheckedCreateWithoutProductosUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -2668,6 +2715,7 @@ export type UserUpdateWithoutProductosCreatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -2719,6 +2767,7 @@ export type UserUncheckedUpdateWithoutProductosCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -2781,6 +2830,7 @@ export type UserUpdateWithoutProductosUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -2832,6 +2882,7 @@ export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -2883,6 +2934,7 @@ export type UserCreateWithoutMediaInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -2934,6 +2986,7 @@ export type UserUncheckedCreateWithoutMediaInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -3001,6 +3054,7 @@ export type UserUpdateWithoutMediaInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -3052,6 +3106,7 @@ export type UserUncheckedUpdateWithoutMediaInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -3103,6 +3158,7 @@ export type UserCreateWithoutMovimientosInventarioInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -3154,6 +3210,7 @@ export type UserUncheckedCreateWithoutMovimientosInventarioInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -3221,6 +3278,7 @@ export type UserUpdateWithoutMovimientosInventarioInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -3272,6 +3330,7 @@ export type UserUncheckedUpdateWithoutMovimientosInventarioInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -3323,6 +3382,7 @@ export type UserCreateWithoutSuscripcionesCreatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -3374,6 +3434,7 @@ export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -3430,6 +3491,7 @@ export type UserCreateWithoutSuscripcionesUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -3481,6 +3543,7 @@ export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -3548,6 +3611,7 @@ export type UserUpdateWithoutSuscripcionesCreatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -3599,6 +3663,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -3661,6 +3726,7 @@ export type UserUpdateWithoutSuscripcionesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -3712,6 +3778,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -3763,6 +3830,7 @@ export type UserCreateWithoutPersonalCreatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -3814,6 +3882,7 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -3870,6 +3939,7 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -3921,6 +3991,7 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -3978,6 +4049,7 @@ export type UserCreateWithoutPersonalInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
@@ -4029,6 +4101,7 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
@@ -4095,6 +4168,7 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -4146,6 +4220,7 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -4208,6 +4283,7 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -4259,6 +4335,7 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -4322,6 +4399,7 @@ export type UserUpdateWithoutPersonalInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
@@ -4373,6 +4451,7 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
@@ -4423,6 +4502,7 @@ export type UserCreateWithoutGruposCreatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -4474,6 +4554,7 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -4530,6 +4611,7 @@ export type UserCreateWithoutGruposUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -4581,6 +4663,7 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -4648,6 +4731,7 @@ export type UserUpdateWithoutGruposCreatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -4699,6 +4783,7 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -4761,6 +4846,7 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -4812,6 +4898,7 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -4863,6 +4950,7 @@ export type UserCreateWithoutVisitasCreatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -4914,6 +5002,7 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -4970,6 +5059,7 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -5021,6 +5111,7 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -5077,6 +5168,7 @@ export type UserCreateWithoutVisitasCompletadasInput = {
   suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -5128,6 +5220,7 @@ export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -5152,6 +5245,115 @@ export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
 export type UserCreateOrConnectWithoutVisitasCompletadasInput = {
   where: Prisma.UserWhereUniqueInput
   create: Prisma.XOR<Prisma.UserCreateWithoutVisitasCompletadasInput, Prisma.UserUncheckedCreateWithoutVisitasCompletadasInput>
+}
+
+export type UserCreateWithoutVisitasEliminadasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutVisitasEliminadasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutVisitasEliminadasInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutVisitasEliminadasInput, Prisma.UserUncheckedCreateWithoutVisitasEliminadasInput>
 }
 
 export type UserUpsertWithoutVisitasCreatedInput = {
@@ -5195,6 +5397,7 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -5246,6 +5449,7 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -5308,6 +5512,7 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -5359,6 +5564,7 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -5421,6 +5627,7 @@ export type UserUpdateWithoutVisitasCompletadasInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -5472,6 +5679,122 @@ export type UserUncheckedUpdateWithoutVisitasCompletadasInput = {
   suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUpsertWithoutVisitasEliminadasInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutVisitasEliminadasInput, Prisma.UserUncheckedUpdateWithoutVisitasEliminadasInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutVisitasEliminadasInput, Prisma.UserUncheckedCreateWithoutVisitasEliminadasInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutVisitasEliminadasInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutVisitasEliminadasInput, Prisma.UserUncheckedUpdateWithoutVisitasEliminadasInput>
+}
+
+export type UserUpdateWithoutVisitasEliminadasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutVisitasEliminadasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -5524,6 +5847,7 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
   sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
@@ -5575,6 +5899,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
   sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
@@ -5631,6 +5956,7 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
   sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
@@ -5682,6 +6008,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
   sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
@@ -5749,6 +6076,7 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
   sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
@@ -5800,6 +6128,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
   sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
@@ -5862,6 +6191,7 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
   sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
@@ -5913,6 +6243,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
   sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
@@ -5964,6 +6295,7 @@ export type UserCreateWithoutVisitaMessagesInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -6015,6 +6347,7 @@ export type UserUncheckedCreateWithoutVisitaMessagesInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -6082,6 +6415,7 @@ export type UserUpdateWithoutVisitaMessagesInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -6133,6 +6467,7 @@ export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -6184,6 +6519,7 @@ export type UserCreateWithoutVisitaChatReadsInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -6235,6 +6571,7 @@ export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -6302,6 +6639,7 @@ export type UserUpdateWithoutVisitaChatReadsInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -6353,6 +6691,7 @@ export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -6404,6 +6743,7 @@ export type UserCreateWithoutSectorAdminsInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -6455,6 +6795,7 @@ export type UserUncheckedCreateWithoutSectorAdminsInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -6522,6 +6863,7 @@ export type UserUpdateWithoutSectorAdminsInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -6573,6 +6915,7 @@ export type UserUncheckedUpdateWithoutSectorAdminsInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -6624,6 +6967,7 @@ export type UserCreateWithoutPushTokensInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -6675,6 +7019,7 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -6742,6 +7087,7 @@ export type UserUpdateWithoutPushTokensInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -6793,6 +7139,7 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -6844,6 +7191,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -6895,6 +7243,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -6962,6 +7311,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -7013,6 +7363,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -7064,6 +7415,7 @@ export type UserCreateWithoutClienteImportsInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -7115,6 +7467,7 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -7182,6 +7535,7 @@ export type UserUpdateWithoutClienteImportsInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -7233,6 +7587,7 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -7283,6 +7638,7 @@ export type UserCreateWithoutSetPasswordTokensInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -7334,6 +7690,7 @@ export type UserUncheckedCreateWithoutSetPasswordTokensInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -7401,6 +7758,7 @@ export type UserUpdateWithoutSetPasswordTokensInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -7452,6 +7810,7 @@ export type UserUncheckedUpdateWithoutSetPasswordTokensInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -7504,6 +7863,7 @@ export type UserCreateWithoutInformesGeneradosInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -7555,6 +7915,7 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -7611,6 +7972,7 @@ export type UserCreateWithoutInformesActualizadosInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -7662,6 +8024,7 @@ export type UserUncheckedCreateWithoutInformesActualizadosInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -7729,6 +8092,7 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -7780,6 +8144,7 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -7842,6 +8207,7 @@ export type UserUpdateWithoutInformesActualizadosInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -7893,6 +8259,7 @@ export type UserUncheckedUpdateWithoutInformesActualizadosInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -7944,6 +8311,7 @@ export type UserCreateWithoutInformeVersionesInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -7995,6 +8363,7 @@ export type UserUncheckedCreateWithoutInformeVersionesInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -8062,6 +8431,7 @@ export type UserUpdateWithoutInformeVersionesInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -8113,6 +8483,7 @@ export type UserUncheckedUpdateWithoutInformeVersionesInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -8164,6 +8535,7 @@ export type UserCreateWithoutInformeBorradoresCreadosInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -8215,6 +8587,7 @@ export type UserUncheckedCreateWithoutInformeBorradoresCreadosInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -8271,6 +8644,7 @@ export type UserCreateWithoutInformeBorradoresActualizadosInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -8322,6 +8696,7 @@ export type UserUncheckedCreateWithoutInformeBorradoresActualizadosInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -8389,6 +8764,7 @@ export type UserUpdateWithoutInformeBorradoresCreadosInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -8440,6 +8816,7 @@ export type UserUncheckedUpdateWithoutInformeBorradoresCreadosInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -8502,6 +8879,7 @@ export type UserUpdateWithoutInformeBorradoresActualizadosInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -8553,6 +8931,7 @@ export type UserUncheckedUpdateWithoutInformeBorradoresActualizadosInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -8604,6 +8983,7 @@ export type UserCreateWithoutOrdenesCreatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -8655,6 +9035,7 @@ export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -8711,6 +9092,7 @@ export type UserCreateWithoutOrdenesUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -8762,6 +9144,7 @@ export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -8829,6 +9212,7 @@ export type UserUpdateWithoutOrdenesCreatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -8880,6 +9264,7 @@ export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -8942,6 +9327,7 @@ export type UserUpdateWithoutOrdenesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -8993,6 +9379,7 @@ export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -9044,6 +9431,7 @@ export type UserCreateWithoutDatosFacturacionCreatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -9095,6 +9483,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -9151,6 +9540,7 @@ export type UserCreateWithoutDatosFacturacionUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -9202,6 +9592,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -9269,6 +9660,7 @@ export type UserUpdateWithoutDatosFacturacionCreatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -9320,6 +9712,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -9382,6 +9775,7 @@ export type UserUpdateWithoutDatosFacturacionUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -9433,6 +9827,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -9483,6 +9878,7 @@ export type UserCreateWithoutCobrosRegistradosInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
@@ -9534,6 +9930,7 @@ export type UserUncheckedCreateWithoutCobrosRegistradosInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
@@ -9601,6 +9998,7 @@ export type UserUpdateWithoutCobrosRegistradosInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
@@ -9652,6 +10050,7 @@ export type UserUncheckedUpdateWithoutCobrosRegistradosInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -9698,6 +10097,7 @@ export type UserCountOutputType = {
   visitasCreated: number
   visitasUpdated: number
   visitasCompletadas: number
+  visitasEliminadas: number
   visitaPersonalAdded: number
   visitaPersonalRemoved: number
   sectorAdmins: number
@@ -9737,6 +10137,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   visitasCreated?: boolean | UserCountOutputTypeCountVisitasCreatedArgs
   visitasUpdated?: boolean | UserCountOutputTypeCountVisitasUpdatedArgs
   visitasCompletadas?: boolean | UserCountOutputTypeCountVisitasCompletadasArgs
+  visitasEliminadas?: boolean | UserCountOutputTypeCountVisitasEliminadasArgs
   visitaPersonalAdded?: boolean | UserCountOutputTypeCountVisitaPersonalAddedArgs
   visitaPersonalRemoved?: boolean | UserCountOutputTypeCountVisitaPersonalRemovedArgs
   sectorAdmins?: boolean | UserCountOutputTypeCountSectorAdminsArgs
@@ -9902,6 +10303,13 @@ export type UserCountOutputTypeCountVisitasCompletadasArgs<ExtArgs extends runti
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountVisitasEliminadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VisitaWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountVisitaPersonalAddedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.VisitaPersonalWhereInput
 }
@@ -10050,6 +10458,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   visitasCreated?: boolean | Prisma.User$visitasCreatedArgs<ExtArgs>
   visitasUpdated?: boolean | Prisma.User$visitasUpdatedArgs<ExtArgs>
   visitasCompletadas?: boolean | Prisma.User$visitasCompletadasArgs<ExtArgs>
+  visitasEliminadas?: boolean | Prisma.User$visitasEliminadasArgs<ExtArgs>
   visitaPersonalAdded?: boolean | Prisma.User$visitaPersonalAddedArgs<ExtArgs>
   visitaPersonalRemoved?: boolean | Prisma.User$visitaPersonalRemovedArgs<ExtArgs>
   personal?: boolean | Prisma.User$personalArgs<ExtArgs>
@@ -10135,6 +10544,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   visitasCreated?: boolean | Prisma.User$visitasCreatedArgs<ExtArgs>
   visitasUpdated?: boolean | Prisma.User$visitasUpdatedArgs<ExtArgs>
   visitasCompletadas?: boolean | Prisma.User$visitasCompletadasArgs<ExtArgs>
+  visitasEliminadas?: boolean | Prisma.User$visitasEliminadasArgs<ExtArgs>
   visitaPersonalAdded?: boolean | Prisma.User$visitaPersonalAddedArgs<ExtArgs>
   visitaPersonalRemoved?: boolean | Prisma.User$visitaPersonalRemovedArgs<ExtArgs>
   personal?: boolean | Prisma.User$personalArgs<ExtArgs>
@@ -10184,6 +10594,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     visitasCreated: Prisma.$VisitaPayload<ExtArgs>[]
     visitasUpdated: Prisma.$VisitaPayload<ExtArgs>[]
     visitasCompletadas: Prisma.$VisitaPayload<ExtArgs>[]
+    visitasEliminadas: Prisma.$VisitaPayload<ExtArgs>[]
     visitaPersonalAdded: Prisma.$VisitaPersonalPayload<ExtArgs>[]
     visitaPersonalRemoved: Prisma.$VisitaPersonalPayload<ExtArgs>[]
     personal: Prisma.$PersonalPayload<ExtArgs> | null
@@ -10638,6 +11049,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   visitasCreated<T extends Prisma.User$visitasCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitasUpdated<T extends Prisma.User$visitasUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitasCompletadas<T extends Prisma.User$visitasCompletadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasCompletadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  visitasEliminadas<T extends Prisma.User$visitasEliminadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasEliminadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitaPersonalAdded<T extends Prisma.User$visitaPersonalAddedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaPersonalAddedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitaPersonalRemoved<T extends Prisma.User$visitaPersonalRemovedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaPersonalRemovedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   personal<T extends Prisma.User$personalArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$personalArgs<ExtArgs>>): Prisma.Prisma__PersonalClient<runtime.Types.Result.GetResult<Prisma.$PersonalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -11525,6 +11937,30 @@ export type User$visitasUpdatedArgs<ExtArgs extends runtime.Types.Extensions.Int
  * User.visitasCompletadas
  */
 export type User$visitasCompletadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Visita
+   */
+  select?: Prisma.VisitaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Visita
+   */
+  omit?: Prisma.VisitaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VisitaInclude<ExtArgs> | null
+  where?: Prisma.VisitaWhereInput
+  orderBy?: Prisma.VisitaOrderByWithRelationInput | Prisma.VisitaOrderByWithRelationInput[]
+  cursor?: Prisma.VisitaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VisitaScalarFieldEnum | Prisma.VisitaScalarFieldEnum[]
+}
+
+/**
+ * User.visitasEliminadas
+ */
+export type User$visitasEliminadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the Visita
    */
