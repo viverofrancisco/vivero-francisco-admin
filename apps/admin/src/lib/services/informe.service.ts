@@ -26,7 +26,7 @@ import { isAdminRole } from "./viewer";
 import { getVisitaForViewer } from "./visita.service";
 import { resumenProductos } from "@/lib/visita-productos";
 import { renderInformePDF } from "@/lib/informes/render";
-import { bajarFotos, bajarLogo } from "@/lib/informes/fotos";
+import { LADO_FINAL, bajarFotos, bajarLogo } from "@/lib/informes/fotos";
 import {
   encabezadoPorDefecto,
   parsearEncabezado,
@@ -856,7 +856,15 @@ async function armarDatosDelInforme(
   let fotosCache: Map<string, { bytes: Uint8Array; mimeType: string }>;
   try {
     fotosCache = await bajarFotos(
-      seccionesResueltas.flatMap((sec) => sec.fotos),
+      // Cada foto se baja al tamaño que va a ocupar impresa: con cuatro por
+      // fila la caja mide un tercio que con dos, y mandar los mismos píxeles
+      // para las tres es pagar cuatro veces lo que se puede ver.
+      seccionesResueltas.flatMap((sec) =>
+        sec.fotos.map((f) => ({
+          ...f,
+          lado: LADO_FINAL[sec.fotosPorFila ?? 3],
+        }))
+      ),
       { borrador }
     );
   } catch (e) {

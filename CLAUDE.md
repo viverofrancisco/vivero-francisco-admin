@@ -353,13 +353,19 @@ previewing a document that isn't the one being filed. There's a preview step
 before generating (rebuilt on every entry, since a cached one showing the
 pre-correction version is worse than none) and a **live panel beside the section
 editor** that refreshes ~700 ms after you stop typing. What makes that viable is
-`src/lib/informes/fotos.ts`: photos are downloaded in parallel and shrunk —
-**1200 px for the filed PDF, 520 px for a draft**, which is also cached
-in-process. A refresh goes from ~3 s / 13 MB to ~0.5 s / 0.15 MB, and the filed
-informe went from 13.35 MB to 0.71 MB (1200 px is over 300 dpi at the size a
-photo actually prints, and a 13 MB PDF is one nobody can email). **The page
-breaks are identical** at either size because layout reads the height in points
-the style declares, not the file's pixels; every photo is re-encoded to JPEG and
+`src/lib/informes/fotos.ts`: photos are downloaded in parallel and shrunk. A
+draft goes to a flat 520 px and is cached in-process (a refresh drops from ~3 s
+/ 13 MB to ~0.5 s / 0.15 MB); the filed PDF is sized **per density**, because
+what a photo needs is what it measures printed — `LADO_FINAL` is 1200 px at two
+per row, 800 at three and 600 at four, all around 350 dpi at their box, and
+sending 1200 for all three pays four times the pixels the four-per-row one can
+show. The same photo in two densities is downloaded once, at the larger — **not one copy per section**, which is the obvious move and the wrong one: react-pdf reuses an image when the bytes are identical, embedding it once and referencing it twice, so two sizes mean two embedded images (measured: 86 KB shared at 1200 px against 115 KB as 1200 + 600). The library always keeps the original; the shrinking happens in memory while the PDF is built, which is why changing a section from three per row to two prints the next one with more resolution. The
+filed informe went from 13.35 MB to 0.71 MB when the shrinking arrived, and
+another 18% (two per row) to 73% (four per row) when the sizes split and
+`mozjpeg` came in — same q82, encoded better, and only on the filed PDF because
+it is slower and the draft exists to refresh fast. **The page breaks are
+identical** at any of these sizes because layout reads the height in points the
+style declares, not the file's pixels; every photo is re-encoded to JPEG and
 flattened onto white, or a transparent PNG would come out black. The preview also accepts **zero firmantes** — it's looked at before
 the signature step — while generating still demands one.
 
