@@ -1,13 +1,12 @@
-import { nombreCliente } from "@vivero/shared";
 import { requireAuth, viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import {
   listInformesYBorradores,
   type EstadoInformeFiltro,
 } from "@/lib/services/informe.service";
-import { listClientes } from "@/lib/services/cliente.service";
 import { PageHeader } from "@/components/shared/page-header";
 import { InformesTable } from "@/components/informes/informes-table";
 import { InformesFilters } from "@/components/informes/informes-filters";
+import { serializarInformeItem } from "@/lib/informes/lista";
 
 const PAGE_SIZE = 20;
 
@@ -24,6 +23,7 @@ export default async function InformesPage({
 }: {
   searchParams: Promise<{
     clienteId?: string;
+    q?: string;
     from?: string;
     to?: string;
     estado?: string;
@@ -36,6 +36,7 @@ export default async function InformesPage({
   const params = await searchParams;
 
   const clienteId = params.clienteId || undefined;
+  const q = params.q || undefined;
   const from = parseDate(params.from);
   const to = parseDate(params.to);
   const page = Math.max(1, Number(params.page) || 1);
@@ -48,60 +49,20 @@ export default async function InformesPage({
       ? params.estado
       : undefined;
 
-  const [{ items, total }, clientesPage] = await Promise.all([
-    listInformesYBorradores(viewer, {
-      clienteId,
-      from,
-      to,
-      estado,
-      offset,
-      limit: PAGE_SIZE,
-    }),
-    listClientes(viewer, { limit: 200 }),
-  ]);
+  const { items, total } = await listInformesYBorradores(viewer, {
+    clienteId,
+    q,
+    from,
+    to,
+    estado,
+    offset,
+    limit: PAGE_SIZE,
+  });
 
-  const serialized = items.map((x) =>
-    x.tipo === "emitido"
-      ? {
-          id: x.informe!.id,
-          tipo: "emitido" as const,
-          numero: x.informe!.numero,
-          titulo: x.informe!.titulo,
-          pdfUrl: x.informe!.pdfUrl,
-          fecha: x.informe!.generatedAt.toISOString(),
-          version: x.informe!.versionActual,
-          deInforme: null,
-          cliente: {
-            id: x.informe!.cliente.id,
-            nombre: nombreCliente(x.informe!.cliente),
-          },
-        }
-      : {
-          id: x.borrador!.id,
-          tipo: "borrador" as const,
-          // El suyo, que es el que va a heredar el informe cuando se genere.
-          numero: x.borrador!.numero,
-          deInforme: x.borrador!.informe?.numero ?? null,
-          titulo: x.borrador!.titulo ?? "Sin título",
-          pdfUrl: null,
-          fecha: x.borrador!.updatedAt.toISOString(),
-          version: 1,
-          cliente: x.borrador!.cliente
-            ? {
-                id: x.borrador!.cliente.id,
-                nombre: nombreCliente(x.borrador!.cliente),
-              }
-            : null,
-        }
-  );
-
-  const clientesOptions = clientesPage.items.map((c) => ({
-    value: c.id,
-    label: nombreCliente(c),
-  }));
+  const serialized = items.map(serializarInformeItem);
 
   return (
-    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
       <PageHeader
         title="Informes"
         actions={[
@@ -115,8 +76,7 @@ export default async function InformesPage({
       />
 
       <InformesFilters
-        clientes={clientesOptions}
-        clienteId={clienteId ?? null}
+        q={params.q ?? null}
         from={params.from ?? null}
         to={params.to ?? null}
         estado={estado ?? null}
@@ -127,6 +87,12 @@ export default async function InformesPage({
         page={page}
         total={total}
         porPagina={PAGE_SIZE}
+        // Los mismos que se usaron para consultar: la tabla los necesita para
+        // armar el `?from=` y para pedir la tanda siguiente, y así no tiene
+        // que leerlos con `useSearchParams()`.
+        filtros={Object.fromEntries(
+          Object.entries(params).filter(([, v]) => typeof v === "string" && v)
+        ) as Record<string, string>}
       />
     </div>
   );

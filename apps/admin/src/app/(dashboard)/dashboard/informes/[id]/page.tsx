@@ -61,7 +61,11 @@ export default async function InformeDetailPage({
     informe.updatedByNombre || nombreDeCuenta(informe.updatedBy) || null;
 
   return (
-    <div className="h-full p-4 md:p-6">
+    // `lg:h-full` y no `h-full`: el alto fijo es lo que permite que en pantalla
+    // grande el PDF y los datos scrolleen cada uno por su lado. En móvil, con
+    // todo en una columna, ese mismo alto aplasta las dos cosas y no deja
+    // scrollear nada — ahí la página fluye y scrollea entera.
+    <div className="p-4 md:p-6 lg:h-full">
       <InformeDetail
         backHref={hrefDeVuelta(from, "/dashboard/informes")}
         informe={{

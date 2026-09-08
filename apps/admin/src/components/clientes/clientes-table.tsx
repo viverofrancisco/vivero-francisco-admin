@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -27,10 +28,14 @@ import {
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
-import { Search, ChevronDown, X } from "lucide-react";
+import { CustomSelect } from "@/components/ui/custom-select";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
+import { Search } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Cliente {
   id: string;
@@ -51,6 +56,20 @@ function fullName(cliente: Cliente): string {
   return nombreCliente(cliente);
 }
 
+/**
+ * El renglón de abajo en la lista de móvil. La empresa va primero cuando el
+ * nombre de arriba es el de la persona —es lo que la tabla muestra en su
+ * propia línea—, y después sector y teléfono, que es con lo que se lo ubica.
+ */
+function resumen(c: Cliente): string {
+  const partes = [
+    nombrePersona(c) && c.empresa ? c.empresa : null,
+    c.sector?.nombre ?? null,
+    c.telefono ?? null,
+  ].filter(Boolean);
+  return partes.length > 0 ? partes.join(" · ") : "Sin datos de contacto";
+}
+
 export function ClientesTable({
   clientes,
   devTools = false,
@@ -65,26 +84,6 @@ export function ClientesTable({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<null | "soft" | "hard">(null);
   const [deleting, setDeleting] = useState(false);
-  const [sectorDropdownOpen, setSectorDropdownOpen] = useState(false);
-  const [sectorSearch, setSectorSearch] = useState("");
-  const sectorDropdownRef = useRef<HTMLDivElement>(null);
-
-  const MAX_VISIBLE_SECTORS = 6;
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        sectorDropdownRef.current &&
-        !sectorDropdownRef.current.contains(e.target as Node)
-      ) {
-        setSectorDropdownOpen(false);
-        setSectorSearch("");
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const sectors = useMemo(() => {
     const map = new Map<string, string>();
     for (const c of clientes) {
@@ -168,131 +167,60 @@ export function ClientesTable({
     }
   };
 
+  // En móvil la lista crece al bajar en vez de paginar. La firma son los
+  // filtros: si cambian, vuelve a la primera tanda.
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtered.length,
+    `${searchQuery}|${sectorFilter ?? ""}`
+  );
+  const enLista = filtered.slice(0, visibles);
+  const aqui = useAca();
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-5">
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre, empresa, telefono o ciudad..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9"
-          />
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
+      <BarraFiltros
+        activos={sectorFilter ? 1 : 0}
+        onLimpiar={() => {
+          setSectorFilter(null);
+          setPage(1);
+        }}
+        busqueda={
+          <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre, empresa, telefono o ciudad..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+            />
+          </div>
+        }
+      >
+        {/* Era un desplegable escrito a mano —con su propio buscador, su tope
+            de seis y su clic-afuera— que hacía lo mismo que `CustomSelect` y,
+            al ser `absolute`, no entraba en el panel de filtros de móvil. */}
         {sectors.length > 0 && (
-          <div ref={sectorDropdownRef} className="relative">
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSectorDropdownOpen(!sectorDropdownOpen)}
-                className="min-w-[160px] justify-between"
-              >
-                <span className="truncate">
-                  {sectorFilter
-                    ? sectors.find((s) => s.id === sectorFilter)?.nombre
-                    : "Todos los sectores"}
-                </span>
-                <ChevronDown className="ml-2 h-3 w-3 shrink-0" />
-              </Button>
-              {sectorFilter && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSectorFilter(null);
-                    setPage(1);
-                  }}
-                  className="rounded p-1 hover:bg-muted"
-                >
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-            {/* z-50 como el resto de los desplegables del portal: con z-10
-                empataba con el encabezado fijo de la tabla —que también es
-                z-10 y viene después en el DOM— y el buscador quedaba pintado
-                por debajo, como una caja vacía. */}
-            {sectorDropdownOpen && (
-              <div className="absolute z-50 mt-1 w-64 rounded-xl border bg-popover shadow-lg">
-                <div className="p-2">
-                  <Input
-                    placeholder="Buscar sector..."
-                    value={sectorSearch}
-                    onChange={(e) => setSectorSearch(e.target.value)}
-                    className="h-8 text-sm"
-                    autoFocus
-                  />
-                </div>
-                <div className="max-h-48 overflow-y-auto">
-                  {!sectorSearch.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSectorFilter(null);
-                        setSectorDropdownOpen(false);
-                        setSectorSearch("");
-                        setPage(1);
-                      }}
-                      className="flex w-full px-3 py-2 text-sm hover:bg-muted text-left text-muted-foreground"
-                    >
-                      Todos los sectores
-                    </button>
-                  )}
-                  {(() => {
-                    const matches = sectorSearch.trim()
-                      ? sectors.filter((s) =>
-                          s.nombre
-                            .toLowerCase()
-                            .includes(sectorSearch.toLowerCase()),
-                        )
-                      : sectors;
-                    const visible = matches.slice(0, MAX_VISIBLE_SECTORS);
-                    const remaining = matches.length - visible.length;
-                    return (
-                      <>
-                        {visible.map((s) => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => {
-                              setSectorFilter(s.id);
-                              setSectorDropdownOpen(false);
-                              setSectorSearch("");
-                              setPage(1);
-                            }}
-                            className={`flex w-full px-3 py-2 text-sm hover:bg-muted text-left ${
-                              sectorFilter === s.id
-                                ? "bg-muted font-semibold"
-                                : ""
-                            }`}
-                          >
-                            {s.nombre}
-                          </button>
-                        ))}
-                        {remaining > 0 && !sectorSearch.trim() && (
-                          <p className="px-3 py-2 text-xs text-muted-foreground">
-                            +{remaining} mas — busca para encontrarlos
-                          </p>
-                        )}
-                        {matches.length === 0 && (
-                          <p className="px-3 py-2 text-sm text-muted-foreground">
-                            Sin resultados
-                          </p>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
+          <div className="w-56">
+            <CustomSelect
+              value={sectorFilter ?? ""}
+              onChange={(v) => {
+                setSectorFilter(v || null);
+                setPage(1);
+              }}
+              options={[
+                { value: "", label: "Todos los sectores" },
+                ...sectors.map((s) => ({ value: s.id, label: s.nombre })),
+              ]}
+              placeholder="Todos los sectores"
+              searchable
+              searchPlaceholder="Buscar sector..."
+            />
           </div>
         )}
-      </div>
+      </BarraFiltros>
 
       {/* Bulk actions bar */}
       {selected.size > 0 && (
@@ -327,7 +255,7 @@ export function ClientesTable({
       {/* Scrollean las filas, no la página: el encabezado y la paginación
           quedan siempre a la vista. El alto sale del contenedor, no de un
           `calc` a ojo que había que reajustar con cada filtro nuevo. */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtered.length === 0 ? (
             <EmptyState message="No se encontraron clientes" />
@@ -411,6 +339,37 @@ export function ClientesTable({
           sustantivo="cliente"
         />
       </div>
+
+      {/* Móvil: una fila por cliente en vez de seis columnas apretadas. Nombre
+          y empresa arriba, y debajo lo que sirve para reconocerlo —sector y
+          teléfono—; el correo y los m² quedan para la ficha, que es donde se
+          los va a buscar. Sin casillas: seleccionar de a varios para
+          archivarlos es trabajo de escritorio. */}
+      <ListaMovil
+        vacia={filtered.length === 0}
+        mensajeVacio="No se encontraron clientes"
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((cliente) => (
+          <Link
+            key={cliente.id}
+            href={`/dashboard/clientes/${cliente.id}?from=${aqui}`}
+            className={FILA_MOVIL}
+          >
+            <InitialsAvatar name={fullName(cliente)} size={40} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-foreground">
+                {fullName(cliente)}
+              </span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                {resumen(cliente)}
+              </span>
+            </span>
+          </Link>
+        ))}
+      </ListaMovil>
 
       {/* Confirmación bulk (archivar / eliminar permanentemente) */}
       <Dialog

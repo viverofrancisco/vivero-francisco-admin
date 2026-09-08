@@ -13,6 +13,7 @@ export default async function VisitasPage({
   searchParams,
 }: {
   searchParams: Promise<{
+    q?: string;
     desde?: string;
     hasta?: string;
     estado?: string;
@@ -57,6 +58,19 @@ export default async function VisitasPage({
   if (filtros.producto && filtros.producto !== "ALL") {
     visitasWhere.productos = { some: { productoId: filtros.producto } };
   }
+  // Buscar por cliente escribiendo, en vez de encontrarlo en el desplegable.
+  // Va contra la base y no sobre lo ya traído: la lista está acotada al mes,
+  // y filtrar en el cliente buscaría solo dentro de ese mes.
+  const texto = filtros.q?.trim();
+  if (texto) {
+    visitasWhere.cliente = {
+      OR: [
+        { nombre: { contains: texto, mode: "insensitive" } },
+        { apellido: { contains: texto, mode: "insensitive" } },
+        { empresa: { contains: texto, mode: "insensitive" } },
+      ],
+    };
+  }
   // Quién la cerró y cuándo. Van juntos porque responden la misma pregunta
   // —"¿qué cerró fulano la semana pasada?"— y las dos condiciones son sobre
   // el mismo par de columnas.
@@ -74,16 +88,12 @@ export default async function VisitasPage({
     visitasWhere.completadaEl = cuando;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const clientesWhere: any = { deletedAt: null };
-
   if (user.role === "PERSONAL_ADMIN") {
     const sectorIds = await getUserSectorIds(user.id);
     visitasWhere.cliente = {
       ...(visitasWhere.cliente ?? {}),
       sectorId: { in: sectorIds },
     };
-    clientesWhere.sectorId = { in: sectorIds };
   } else if (user.role === "PERSONAL") {
     const personal = await prisma.personal.findUnique({
       where: { userId: user.id },
@@ -97,7 +107,7 @@ export default async function VisitasPage({
     }
   }
 
-  const [visitas, clientes, servicios, cerradores] = await Promise.all([
+  const [visitas, servicios, cerradores] = await Promise.all([
     prisma.visita.findMany({
       where: { ...visitasWhere, deletedAt: null },
       orderBy: { fechaProgramada: "asc" },
@@ -106,11 +116,6 @@ export default async function VisitasPage({
         productos: PRODUCTOS_DE_VISITA_SELECT,
         grupo: { select: { id: true, nombre: true } },
       },
-    }),
-    prisma.cliente.findMany({
-      where: clientesWhere,
-      select: { id: true, nombre: true, apellido: true, empresa: true },
-      orderBy: { nombre: "asc" },
     }),
     prisma.producto.findMany({
       where: { deletedAt: null },
@@ -139,20 +144,14 @@ export default async function VisitasPage({
     grupo: v.grupo,
   }));
 
-  const clienteOptions = clientes.map((c) => ({
-    id: c.id,
-    nombre: c.nombre,
-    apellido: c.apellido,
-    empresa: c.empresa,
-  }));
-
   return (
-    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
       <VisitasPageClient
         initialVisitas={serialized}
         initialDesde={desdeStr}
         initialHasta={hastaStr}
         filtros={{
+          q: filtros.q,
           estado: filtros.estado,
           cliente: filtros.cliente,
           producto: filtros.producto,
@@ -165,7 +164,6 @@ export default async function VisitasPage({
           nombre: [u.name, u.apellido].filter(Boolean).join(" ") || "Sin nombre",
         }))}
         userRole={user.role}
-        clientes={clienteOptions}
         productos={servicios}
       />
     </div>

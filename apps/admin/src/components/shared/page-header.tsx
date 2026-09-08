@@ -12,7 +12,7 @@ import { PageHeaderActions, type HeaderAction } from "./page-header-actions";
  */
 interface PageHeaderProps {
   title: string;
-  /** Acciones del encabezado: botones en escritorio, dropdown (⋮) en móvil. */
+  /** Acciones del encabezado: botones en escritorio, dropdown (⋯) en móvil. */
   actions?: HeaderAction[];
 }
 

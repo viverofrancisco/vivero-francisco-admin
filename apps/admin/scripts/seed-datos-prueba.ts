@@ -4,6 +4,12 @@
  *   npx tsx scripts/seed-datos-prueba.ts               # crea
  *   npx tsx scripts/seed-datos-prueba.ts --limpiar     # borra lo que creó
  *   npx tsx scripts/seed-datos-prueba.ts --sin-emitir  # no habla con el SRI
+ *   npx tsx scripts/seed-datos-prueba.ts --catalogo    # solo los productos
+ *   npx tsx scripts/seed-datos-prueba.ts --informes    # solo los informes
+ *
+ * Los dos últimos **se suman** a una base ya sembrada, sin tocar las órdenes
+ * ni las facturas que estén: anotan lo suyo en el mismo manifiesto, así que
+ * `--limpiar` después se lleva todo junto.
  *
  * **No inventa clientes ni personal**: la base ya los tiene y son reales. Lo
  * que falta es movimiento —suscripciones, visitas, órdenes—, y eso es lo que
@@ -57,6 +63,7 @@ interface Manifiesto {
   ordenes: string[];
   /** Solo local: el comprobante que el SRI autorizó sigue existiendo allá. */
   facturas: string[];
+  informes: string[];
 }
 
 const vacio = (host: string): Manifiesto => ({
@@ -72,6 +79,7 @@ const vacio = (host: string): Manifiesto => ({
   mensajes: [],
   ordenes: [],
   facturas: [],
+  informes: [],
 });
 
 /** Host de la base, para no limpiar la equivocada. */
@@ -167,6 +175,52 @@ const PRODUCTOS_NUEVOS = [
   // Queda sin vincular a propósito: así se ve en el portal el estado "no
   // sincronizado" y por qué no se puede vender.
   { nombre: "Sistema de riego por goteo (instalación)", tipo: "SERVICIO", ivaTasa: 15, sinVincular: true },
+
+  // ── Catálogo largo ──────────────────────────────────────────────────
+  // Un vivero real vende plantas y materiales, no solo mano de obra. Además
+  // de que es más parecido a la verdad, un catálogo de dos pantallas es lo
+  // único que muestra si el listado aguanta: con quince filas no se ve la
+  // diferencia entre paginar, cargar de a tandas o traerlo todo de una.
+  { nombre: "Rosal trepador (maceta 5 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Rosal arbustivo (maceta 3 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Buganvilla (maceta 10 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Ixora enana (maceta 3 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Croto variegado (maceta 5 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Helecho cuero (maceta 3 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Palma areca (1,5 m)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Palma botella (2 m)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Ficus benjamina (maceta 15 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Laurel de jardín (maceta 10 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Maní forrajero (bandeja 50 u)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Duranta dorada (maceta 3 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Hibisco (maceta 5 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Veranera enana (maceta 3 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Sansevieria (maceta 2 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Orquídea phalaenopsis", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Césped San Agustín (m²)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Tierra negra (saco 40 kg)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Humus de lombriz (saco 20 kg)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Cascarilla de arroz (saco 50 L)", tipo: "BIEN", ivaTasa: 0 },
+  { nombre: "Piedra chispa blanca (saco 25 kg)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Corteza de pino decorativa (saco 50 L)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Maceta de barro 30 cm", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Maceta de plástico 40 cm", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Jardinera de fibrocemento 80 cm", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Manguera reforzada 1/2\" (rollo 50 m)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Aspersor emergente 4\"", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Gotero autocompensado 4 L/h", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Programador de riego 2 zonas", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Fertilizante NPK 15-15-15 (saco 25 kg)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Insecticida foliar (litro)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Fungicida sistémico (litro)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Tijera de podar profesional", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Guantes de jardinería (par)", tipo: "BIEN", ivaTasa: 15 },
+  { nombre: "Instalación de césped en rollo", tipo: "SERVICIO", ivaTasa: 15 },
+  { nombre: "Corte y perfilado de setos", tipo: "SERVICIO", ivaTasa: 15 },
+  { nombre: "Limpieza y retiro de escombros vegetales", tipo: "SERVICIO", ivaTasa: 15 },
+  { nombre: "Análisis y corrección de suelo", tipo: "SERVICIO", ivaTasa: 15 },
+  { nombre: "Mantenimiento de sistema de riego", tipo: "SERVICIO", ivaTasa: 15 },
+  { nombre: "Tala controlada de árbol", tipo: "SERVICIO", ivaTasa: 15 },
 ] as const;
 
 type VisitaNueva = Prisma.VisitaCreateManyInput;
@@ -186,6 +240,13 @@ const NOTAS_INCOMPLETO = [
   "Se dañó la bordeadora, queda pendiente el filo del césped.",
 ];
 
+const TITULOS_INFORME = [
+  "Informe de mantenimiento",
+  "Informe de trabajos realizados",
+  "Reporte de áreas verdes",
+  "Informe técnico de jardinería",
+];
+
 const MENSAJES = [
   "Buenos días, ¿a qué hora llegan hoy?",
   "Perfecto, los esperamos.",
@@ -200,6 +261,12 @@ async function main() {
   const args = process.argv.slice(2);
   const limpiar = args.includes("--limpiar");
   const sinEmitir = args.includes("--sin-emitir");
+  // Pasos sueltos, para agregarle cosas a una base ya sembrada sin tirar abajo
+  // las órdenes y las facturas que ya están. Son idempotentes: el catálogo
+  // saltea lo que ya existe por nombre y los informes se suman a los que haya.
+  const soloCatalogo = args.includes("--catalogo");
+  const soloInformes = args.includes("--informes");
+  const parcial = soloCatalogo || soloInformes;
   const host = hostDeLaBase();
 
   const { prisma } = await import("@/lib/prisma");
@@ -212,15 +279,27 @@ async function main() {
     return;
   }
 
-  if (existsSync(MANIFIESTO)) {
+  if (existsSync(MANIFIESTO) && !parcial) {
     console.error(
       "Ya hay datos de prueba sembrados (scripts/.datos-prueba.json).\n" +
-        "Corré `--limpiar` antes de volver a sembrar."
+        "Corré `--limpiar` antes de volver a sembrar, o `--catalogo` /\n" +
+        "`--informes` para agregar solo eso sin tocar lo demás."
     );
     process.exit(1);
   }
 
-  const m = vacio(host);
+  // En modo parcial se sigue escribiendo en el manifiesto que ya está, para
+  // que `--limpiar` sepa borrar también lo que se agregue ahora.
+  const m: Manifiesto = existsSync(MANIFIESTO)
+    ? { ...vacio(host), ...JSON.parse(readFileSync(MANIFIESTO, "utf8")) }
+    : vacio(host);
+  if (m.host !== host) {
+    console.error(
+      `El manifiesto se sembró contra ${m.host} y estás apuntando a ${host}.\n` +
+        "No se agrega nada."
+    );
+    process.exit(1);
+  }
   const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
   if (!admin) throw new Error("No hay usuario ADMIN. Corré `npx tsx prisma/seed.ts` primero.");
   const viewer = {
@@ -232,7 +311,9 @@ async function main() {
   };
 
   try {
-    await sembrar(prisma, viewer, m, sinEmitir);
+    if (soloCatalogo) await sembrarCatalogo(prisma, viewer, m);
+    if (soloInformes) await sembrarInformes(prisma, viewer, m);
+    if (!parcial) await sembrar(prisma, viewer, m, sinEmitir);
   } finally {
     // Se guarda pase lo que pase: si falla a la mitad, `--limpiar` igual sabe
     // qué borrar.
@@ -249,6 +330,7 @@ async function main() {
   console.log("  mensajes            ", m.mensajes.length);
   console.log("  órdenes             ", m.ordenes.length);
   console.log("  facturas            ", m.facturas.length);
+  console.log("  informes            ", m.informes.length);
   console.log(`\nmanifiesto: ${MANIFIESTO}`);
   if (m.facturas.length > 0) {
     console.log(
@@ -269,26 +351,7 @@ async function sembrar(
   const hoy = dia(new Date());
 
   // ── 1. Catálogo ───────────────────────────────────────────────────────
-  console.log("catálogo...");
-  for (const p of PRODUCTOS_NUEVOS) {
-    const ya = await prisma.producto.findFirst({
-      where: { nombre: p.nombre, deletedAt: null },
-      select: { id: true },
-    });
-    if (ya) continue;
-    const creado = await prisma.producto.create({
-      data: {
-        nombre: p.nombre,
-        tipo: p.tipo,
-        ivaTasa: p.ivaTasa,
-        descripcion: null,
-        createdById: viewer.id,
-        updatedById: viewer.id,
-      },
-      select: { id: true },
-    });
-    m.productos.push(creado.id);
-  }
+  await sembrarCatalogo(prisma, viewer, m);
 
   const vendibles = await prisma.producto.findMany({
     where: { deletedAt: null },
@@ -723,6 +786,153 @@ async function sembrar(
   }
 
   console.log(`  ${m.ordenes.length} creadas`);
+
+  await sembrarInformes(prisma, viewer, m);
+}
+
+/**
+ * Los productos que faltan del catálogo.
+ *
+ * Salta los que ya están por nombre, así correrlo dos veces no duplica nada
+ * —es lo que permite agregarle filas al catálogo sin resembrar todo.
+ */
+async function sembrarCatalogo(
+  prisma: PrismaClient,
+  viewer: Viewer,
+  m: Manifiesto
+) {
+  console.log("catálogo...");
+  let nuevos = 0;
+  for (const p of PRODUCTOS_NUEVOS) {
+    const ya = await prisma.producto.findFirst({
+      where: { nombre: p.nombre, deletedAt: null },
+      select: { id: true },
+    });
+    if (ya) continue;
+    const creado = await prisma.producto.create({
+      data: {
+        nombre: p.nombre,
+        tipo: p.tipo,
+        ivaTasa: p.ivaTasa,
+        descripcion: null,
+        createdById: viewer.id,
+        updatedById: viewer.id,
+      },
+      select: { id: true },
+    });
+    m.productos.push(creado.id);
+    nuevos++;
+  }
+  console.log(`  ${nuevos} producto(s) nuevo(s)`);
+}
+
+/**
+ * Informes de verdad, con su PDF.
+ *
+ * Van por `generateInforme` y no por `prisma.informe.create` a propósito: el
+ * PDF **es** el documento, así que una fila sin archivo no es un informe a
+ * medias, es una fila rota — la lista la muestra y abrirla da 404. De paso
+ * queda ejercitado el camino completo: render, subida a R2 y la versión 1, que
+ * nace en la misma transacción.
+ *
+ * Las secciones salen de los productos que llevó cada visita, que es lo mismo
+ * que arma el asistente al llegar al paso 3. **Sin fotos**: las visitas de este
+ * script se escriben con Prisma directo y nadie subió nada, así que no hay
+ * `VisitaMedia` de dónde sacarlas. Lo que se ve es la maqueta y el corte de
+ * páginas con texto, no con imágenes.
+ */
+async function sembrarInformes(
+  prisma: PrismaClient,
+  viewer: Viewer,
+  m: Manifiesto
+) {
+  console.log("informes...");
+  const { generateInforme } = await import("@/lib/services/informe.service");
+
+  const visitas = await prisma.visita.findMany({
+    where: { id: { in: m.visitas }, estado: "COMPLETADA" },
+    orderBy: { fechaProgramada: "asc" },
+    select: {
+      id: true,
+      clienteId: true,
+      fechaProgramada: true,
+      productos: {
+        orderBy: { posicion: "asc" },
+        select: {
+          producto: { select: { id: true, nombre: true, descripcion: true } },
+        },
+      },
+    },
+  });
+
+  // Un informe agrupa las visitas de un cliente, que es como se arman: "lo que
+  // hicimos este mes en tal jardín".
+  const porCliente = new Map<string, typeof visitas>();
+  for (const v of visitas) {
+    if (v.productos.length === 0) continue;
+    const ya = porCliente.get(v.clienteId);
+    if (ya) ya.push(v);
+    else porCliente.set(v.clienteId, [v]);
+  }
+
+  const firmantesGuardados = await prisma.firmante.findMany({
+    orderBy: [{ isDefault: "desc" }, { orden: "asc" }],
+    take: 2,
+    select: { nombre: true, cedula: true },
+  });
+  const firmantes =
+    firmantesGuardados.length > 0
+      ? firmantesGuardados
+      : [{ nombre: viewer.nombre ?? "Vivero Francisco", cedula: null }];
+
+  let hechos = 0;
+  for (const [clienteId, delCliente] of algunos([...porCliente], 10)) {
+    // Hasta cuatro visitas por informe: más que eso no es un informe mensual.
+    const cubiertas = delCliente.slice(-entre(1, 4));
+
+    // Una sección por producto, sin repetir: dos visitas que hicieron lo mismo
+    // son una sola sección, igual que en el asistente.
+    const porProducto = new Map<string, { nombre: string; descripcion: string | null }>();
+    for (const v of cubiertas) {
+      for (const { producto } of v.productos) {
+        if (!porProducto.has(producto.id)) {
+          porProducto.set(producto.id, {
+            nombre: producto.nombre,
+            descripcion: producto.descripcion,
+          });
+        }
+      }
+    }
+    if (porProducto.size === 0) continue;
+
+    const fin = cubiertas[cubiertas.length - 1].fechaProgramada;
+    try {
+      const { id } = await generateInforme(viewer, {
+        clienteId,
+        titulo: uno(TITULOS_INFORME),
+        fecha: fin.toISOString().slice(0, 10),
+        visitaIds: cubiertas.map((v) => v.id),
+        firmantes,
+        secciones: [...porProducto].map(([productoId, p], i) => ({
+          productoId,
+          titulo: p.nombre,
+          descripcion:
+            p.descripcion ??
+            "Se ejecutaron los trabajos previstos y se dejó el área limpia.",
+          fotos: [],
+          // Uno con salto de página, para que se vea que la opción existe.
+          saltoDePagina: i > 0 && chance(0.3),
+          fotosPorFila: 3 as const,
+        })),
+      });
+      m.informes.push(id);
+      hechos++;
+    } catch (e) {
+      console.log(`    ⚠ ${(e as Error).message.slice(0, 80)}`);
+    }
+  }
+
+  console.log(`  ${hechos} informe(s) con su PDF`);
 }
 
 // ──────────────────────────────────────────────
@@ -750,6 +960,32 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
   // El secuencial no se toca: vive en `SecuencialSri`, que es un contador
   // propio y no se deriva del máximo local. Borrar facturas no lo retrocede, y
   // eso es exactamente lo que queremos — el SRI ya vio esos números.
+  // Antes que nada: `deleteInforme` se lleva el PDF de R2 y el de cada
+  // versión, y `InformeVisita` apunta a visitas que se borran más abajo.
+  if ((m.informes ?? []).length > 0) {
+    const { deleteInforme } = await import("@/lib/services/informe.service");
+    const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+    let n = 0;
+    for (const id of m.informes) {
+      try {
+        await deleteInforme(
+          {
+            id: admin!.id,
+            role: "ADMIN",
+            personalId: null,
+            clienteId: null,
+            nombre: admin!.name ?? null,
+          },
+          id
+        );
+        n++;
+      } catch {
+        // Ya no está: nada que hacer.
+      }
+    }
+    console.log(`  ${"informe".padEnd(22)} ${n}`);
+  }
+
   await borrar("cobro", () =>
     prisma.cobro.deleteMany({ where: { facturaId: { in: m.facturas ?? [] } } })
   );

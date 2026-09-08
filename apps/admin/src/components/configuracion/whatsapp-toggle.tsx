@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface WhatsAppToggleProps {
@@ -36,16 +35,22 @@ export function WhatsAppToggle({ activo: initial }: WhatsAppToggleProps) {
     }
   };
 
+  const etiqueta = activo
+    ? "WhatsApp activo"
+    : "WhatsApp inactivo";
+
+  // Sin el texto al lado: la posición del interruptor ya dice si está prendido,
+  // y el rótulo repetía eso en dos renglones justo al lado del título. El
+  // nombre accesible se queda —un interruptor sin nombre no se puede anunciar—
+  // y en escritorio aparece al pasar el mouse.
   return (
-    <div className="flex items-center gap-3">
-      <Switch
-        checked={activo}
-        onCheckedChange={handleToggle}
-        disabled={saving}
-      />
-      <Label className="text-sm text-muted-foreground cursor-pointer">
-        {activo ? "WhatsApp activo" : "WhatsApp inactivo"}
-      </Label>
-    </div>
+    <Switch
+      checked={activo}
+      onCheckedChange={handleToggle}
+      disabled={saving}
+      aria-label={etiqueta}
+      title={etiqueta}
+      className="flex-none"
+    />
   );
 }

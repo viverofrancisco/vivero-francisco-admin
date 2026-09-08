@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth-helpers";
 import { ServiciosTable } from "@/components/servicios/servicios-table";
 import { ProductosHeader } from "@/components/servicios/boton-nuevo-producto";
 import { textoPlano } from "@/lib/html-seguro";
+import { publicUrlForKey } from "@/lib/s3";
 
 export default async function ServiciosPage() {
   await requireAuth();
@@ -31,6 +32,14 @@ export default async function ServiciosPage() {
         orderBy: { posicion: "asc" },
         select: { manejaInventario: true, stock: true },
       },
+      // Solo la primera: es la miniatura de la lista en móvil, donde cada
+      // producto es una fila con foto. `take: 1` para no traer la galería
+      // entera de cada uno.
+      imagenes: {
+        orderBy: { posicion: "asc" },
+        take: 1,
+        select: { media: { select: { key: true } } },
+      },
     },
   });
 
@@ -40,7 +49,7 @@ export default async function ServiciosPage() {
   });
 
   return (
-    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
       {/* El encabezado es cliente: "Nuevo producto" abre el diálogo que
           pregunta el tipo antes de llevar a la ficha. */}
       <ProductosHeader />
@@ -63,6 +72,9 @@ export default async function ServiciosPage() {
                 .reduce((n, v) => n + v.stock, 0)
             : null,
           variantes: p.variantes.length,
+          imagenUrl: p.imagenes[0]
+            ? publicUrlForKey(p.imagenes[0].media.key)
+            : null,
         }))}
         categorias={categorias}
       />

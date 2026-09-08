@@ -16,12 +16,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { EmptyState } from "@/components/shared/empty-state";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
 import { ArrowLeft, Eye, Search } from "lucide-react";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   nombresProductos,
   resumenProductos,
@@ -116,6 +119,13 @@ export function ClienteVisitasPage({
     pagina * FILAS_POR_PAGINA
   );
 
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtered.length,
+    `${searchQuery}|${estadoFilter ?? ""}`
+  );
+  const enLista = filtered.slice(0, visibles);
+  const aqui = useAca();
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6">
       {/* Header */}
@@ -132,19 +142,27 @@ export function ClienteVisitasPage({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-none flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Buscar por servicio o grupo..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9"
-          />
-        </div>
+      <BarraFiltros
+        activos={estadoFilter ? 1 : 0}
+        onLimpiar={() => {
+          setEstadoFilter(null);
+          setPage(1);
+        }}
+        busqueda={
+          <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Buscar por servicio o grupo..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+            />
+          </div>
+        }
+      >
         <CustomSelect
           value={estadoFilter ?? ""}
           onChange={(v) => {
@@ -161,10 +179,10 @@ export function ClienteVisitasPage({
           placeholder="Todas"
           className="w-44"
         />
-      </div>
+      </BarraFiltros>
 
       {/* Table */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtered.length === 0 ? (
             <EmptyState message="No se encontraron visitas" />
@@ -222,6 +240,44 @@ export function ClienteVisitasPage({
           plural="visitas"
         />
       </div>
+
+      {/* Móvil: el trabajo y su estado arriba, y debajo la fecha con el grupo
+          que la hizo. El cliente no se repite: es su propia ficha. */}
+      <ListaMovil
+        vacia={filtered.length === 0}
+        mensajeVacio="No se encontraron visitas"
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((v) => (
+          <Link
+            key={v.id}
+            href={`/dashboard/visitas/${v.id}?from=${aqui}`}
+            className={FILA_MOVIL}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
+                  {resumenProductos(v)}
+                </span>
+                <Badge
+                  variant={estadoBadgeVariant(v.estado)}
+                  className="flex-none"
+                >
+                  {estadoLabel(v.estado)}
+                </Badge>
+              </span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                <span className="tabular-nums">
+                  {formatDate(v.fechaProgramada)}
+                </span>
+                {v.grupo ? ` · ${v.grupo.nombre}` : ""}
+              </span>
+            </span>
+          </Link>
+        ))}
+      </ListaMovil>
     </div>
   );
 }

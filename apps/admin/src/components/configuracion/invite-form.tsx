@@ -121,9 +121,18 @@ export function InviteForm({ sectores }: InviteFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>
-        <Plus className="mr-2 h-4 w-4" />
-        Invitar Usuario
+      {/* En móvil el ⋯: la etiqueta completa al lado del título obligaba a
+          partir el encabezado en dos renglones. */}
+      <DialogTrigger
+        render={
+          <Button
+            aria-label="Invitar usuario"
+            className="h-9 w-9 p-0 md:w-auto md:px-2.5"
+          />
+        }
+      >
+        <Plus className="h-4 w-4" />
+        <span className="hidden md:ml-2 md:inline">Invitar Usuario</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -20,9 +21,12 @@ import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
-import { Search, Undo2 } from "lucide-react";
+import { Search, Undo2, ImageOff } from "lucide-react";
 import { toast } from "sonner";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import { fecha } from "@/components/ordenes/formato";
 
 interface Servicio {
@@ -44,12 +48,32 @@ interface Servicio {
   /** Total de las variantes que cuentan. `null` = no lleva inventario. */
   stock: number | null;
   variantes: number;
+  /** La primera foto, para la lista de móvil. `null` si no tiene ninguna. */
+  imagenUrl: string | null;
 }
 
 const TIPO_LABEL: Record<string, string> = {
   SERVICIO: "Servicio",
   BIEN: "Bien",
 };
+
+/**
+ * El renglón chico de la fila en móvil: lo que la tabla reparte en columnas,
+ * dicho en una línea.
+ *
+ * El stock va primero porque es lo que se mira, y solo cuando existe: un
+ * servicio no lleva y un bien puede no contarlo, así que un "0" ahí mentiría.
+ */
+function resumen(s: Servicio): string {
+  if (s.archivadoEl) return `Archivado el ${fecha(s.archivadoEl)}`;
+  const partes: string[] = [];
+  if (s.stock !== null) partes.push(`${s.stock} en stock`);
+  partes.push(
+    s.variantes === 1 ? "1 variante" : `${s.variantes} variantes`
+  );
+  partes.push(TIPO_LABEL[s.tipo] ?? s.tipo);
+  return partes.join(" · ");
+}
 
 export function ServiciosTable({
   productos,
@@ -130,18 +154,42 @@ export function ServiciosTable({
     setPage(1);
   };
 
+  /** Cuántos filtros están puestos — la búsqueda no cuenta, se ve sola. */
+  const filtrosPuestos = [tipo, categoria, estado].filter(Boolean).length;
+
+  const limpiarFiltros = () =>
+    cambiar(() => {
+      setTipo("");
+      setCategoria("");
+      setEstado("");
+    });
+
+  // En móvil la lista crece al bajar. La firma incluye la búsqueda: cambiar
+  // cualquier cosa devuelve el listado a la primera tanda.
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtered.length,
+    `${searchQuery}|${tipo}|${categoria}|${estado}`
+  );
+  const enLista = filtered.slice(0, visibles);
+  const aqui = useAca();
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-5">
-      <div className="flex flex-none flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar producto..."
-            value={searchQuery}
-            onChange={(e) => cambiar(() => setSearchQuery(e.target.value))}
-            className="pl-9"
-          />
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
+      <BarraFiltros
+        activos={filtrosPuestos}
+        onLimpiar={limpiarFiltros}
+        busqueda={
+          <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar producto..."
+              value={searchQuery}
+              onChange={(e) => cambiar(() => setSearchQuery(e.target.value))}
+              className="pl-9"
+            />
+          </div>
+        }
+      >
         <div className="w-40">
           <CustomSelect
             value={tipo}
@@ -182,9 +230,9 @@ export function ServiciosTable({
             placeholder="Todo estado"
           />
         </div>
-      </div>
+      </BarraFiltros>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtered.length === 0 ? (
             <EmptyState message="No se encontraron productos" />
@@ -288,6 +336,72 @@ export function ServiciosTable({
           sustantivo="producto"
         />
       </div>
+
+      {/* Móvil: una lista, no una tabla. Cinco columnas en 400 px terminan en
+          texto cortado y en un scroll horizontal; en una fila con foto entra
+          lo mismo y se lee de un vistazo. Y crece al bajar en vez de paginar. */}
+      <ListaMovil
+        vacia={filtered.length === 0}
+        mensajeVacio="No se encontraron productos"
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((servicio) => (
+          <div key={servicio.id} className={FILA_MOVIL + " gap-0 pr-1"}>
+            <Link
+              href={`/dashboard/productos/${servicio.id}?from=${aqui}`}
+              className="flex min-w-0 flex-1 items-center gap-3 py-0.5 pr-2"
+            >
+              <span className="flex h-11 w-11 flex-none items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary">
+                {servicio.imagenUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={servicio.imagenUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <ImageOff className="h-4 w-4 text-muted-foreground" />
+                )}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-foreground">
+                  {servicio.nombre}
+                </span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {resumen(servicio)}
+                </span>
+              </span>
+              <EstadoBadge
+                archivado={servicio.archivadoEl !== null}
+                estado={servicio.estado}
+              />
+            </Link>
+            {/* Fuera del Link: un botón adentro de un enlace no es HTML
+                válido, y el tap se lo llevaría el enlace igual. */}
+            <div className="flex-none">
+              {servicio.archivadoEl ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => restaurar(servicio)}
+                  aria-label="Restaurar"
+                >
+                  <Undo2 className="h-4 w-4" />
+                </Button>
+              ) : (
+                <DeleteDialog
+                  title={`¿Eliminar "${servicio.nombre}"?`}
+                  description="Se archiva y deja de ofrecerse."
+                  onDelete={() => handleDelete(servicio.id)}
+                  onSuccess={() => router.refresh()}
+                />
+              )}
+            </div>
+          </div>
+        ))}
+      </ListaMovil>
     </div>
   );
 }

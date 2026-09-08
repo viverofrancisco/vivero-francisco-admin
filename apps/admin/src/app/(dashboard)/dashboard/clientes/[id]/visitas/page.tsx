@@ -56,7 +56,7 @@ export default async function ClienteVisitasRoute({
   const nombreCompleto = nombreCliente(cliente);
 
   return (
-    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
       <ClienteVisitasPage
         clienteId={cliente.id}
         clienteNombre={nombreCompleto}

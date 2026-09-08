@@ -36,13 +36,8 @@ export default async function NotificacionesPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notificaciones</h1>
-          <p className="text-muted-foreground">
-            Configura las notificaciones por WhatsApp
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">Notificaciones</h1>
         <WhatsAppToggle activo={notificacionConfig.whatsappActivo} />
       </div>
 
@@ -103,11 +98,7 @@ export default async function NotificacionesPage() {
         }}
       />
 
-      {/* History */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Historial de envíos</h2>
-        <NotificacionHistorial />
-      </div>
+      <NotificacionHistorial />
     </div>
   );
 }

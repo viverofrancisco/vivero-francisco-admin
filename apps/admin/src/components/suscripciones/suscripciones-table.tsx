@@ -17,20 +17,19 @@ import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
-import { Loader2, Plus, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import { Loader2, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   PERIODICIDAD_LABEL,
   estadoVariant,
@@ -180,51 +179,61 @@ export function SuscripcionesTable({
     pagina * FILAS_POR_PAGINA,
   );
 
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtradas.length,
+    `${query}|${estado ?? ""}|${pendientes}`
+  );
+  const enLista = filtradas.slice(0, visibles);
+  const aqui = useAca();
+
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Suscripciones</h1>
-          <p className="text-sm text-muted-foreground">
-            Productos recurrentes contratados. Cada período genera una línea de
-            orden.
-          </p>
-        </div>
-        <Link href="/dashboard/suscripciones/nueva?from=/dashboard/suscripciones">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva suscripción
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Suscripciones"
+        actions={[
+          {
+            label: "Nueva suscripción",
+            href: "/dashboard/suscripciones/nueva?from=/dashboard/suscripciones",
+            icon: "plus",
+            primary: true,
+          },
+        ]}
+      />
 
-      {/* El buscador afuera, el resto adentro: es lo que se usa siempre, y
+      {/* En móvil el equivalente mensual va acá, pegado al título: en la fila
+          de acciones se quedaba sin ancho contra el botón de generar órdenes,
+          y es el número que resume la pantalla entera. En escritorio sigue a
+          la derecha de esa fila, donde hay lugar de sobra. */}
+      {verPrecios && mensualizado > 0 && (
+        <p className="-mt-2 text-sm text-muted-foreground md:hidden">
+          Equivalente mensual:{" "}
+          <span className="font-semibold tabular-nums text-foreground">
+            {money(mensualizado)}
+          </span>
+        </p>
+      )}
+
+      {/* El buscador a la vista, el resto adentro: es lo que se usa siempre, y
           cuatro controles en fila ocupaban el ancho de la tabla. */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[220px] flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por cliente o producto..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button variant="outline" size="sm" className="h-9">
-                <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
-                Filtros
-                {filtrosActivos > 0 && (
-                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
-                    {filtrosActivos}
-                  </span>
-                )}
-              </Button>
-            }
-          />
-          <PopoverContent className="w-80 space-y-4">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3">
+        <BarraFiltros
+          escritorio="popover"
+          activos={filtrosActivos}
+          onLimpiar={limpiarFiltros}
+          className="min-w-0 flex-1"
+          busqueda={
+            <div className="relative min-w-0 flex-1 md:min-w-[220px] md:max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por cliente o producto..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          }
+        >
+
             <div className="space-y-1">
               <Label className="text-xs">Estado</Label>
               <CustomSelect
@@ -262,31 +271,37 @@ export function SuscripcionesTable({
             <Button
               variant="ghost"
               size="sm"
-              className="w-full"
+              className="hidden w-full md:inline-flex"
               onClick={limpiarFiltros}
               disabled={filtrosActivos === 0}
             >
               Limpiar filtros
             </Button>
-          </PopoverContent>
-        </Popover>
+        </BarraFiltros>
         {verPrecios && (conPendientes > 0 || pendientes) && (
+          /* En móvil solo el ícono: al lado del buscador y del botón de
+             filtros, la etiqueta se comía el ancho que necesita escribir. En
+             escritorio sigue con texto — crea órdenes borrador de verdad, y un
+             ícono suelto no dice qué va a pasar cuando hay lugar para decirlo. */
           <Button
             variant="outline"
             size="sm"
+            aria-label="Generar órdenes"
+            title="Generar órdenes"
+            className="h-9 w-9 flex-none p-0 md:w-auto md:px-2.5"
             onClick={generarRenovaciones}
             disabled={generando}
           >
             {generando ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <RefreshCw className="h-4 w-4" />
             )}
-            Generar órdenes
+            <span className="hidden md:inline">Generar órdenes</span>
           </Button>
         )}
         {verPrecios && mensualizado > 0 && (
-          <span className="ml-auto text-sm text-muted-foreground">
+          <span className="ml-auto hidden text-sm text-muted-foreground md:inline">
             Equivalente mensual:{" "}
             <span className="font-semibold text-foreground tabular-nums">
               {money(mensualizado)}
@@ -295,7 +310,7 @@ export function SuscripcionesTable({
         )}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtradas.length === 0 ? (
             <EmptyState message="No hay suscripciones que coincidan" />
@@ -379,6 +394,52 @@ export function SuscripcionesTable({
           plural="suscripciones"
         />
       </div>
+
+      {/* Móvil: cliente y estado arriba; debajo, los productos del plan con su
+          período. El precio va al final del renglón y solo si esta persona ve
+          plata — un PERSONAL_ADMIN ve sus planes sin importes, y eso se decide
+          en el servidor, no con CSS. */}
+      <ListaMovil
+        vacia={filtradas.length === 0}
+        mensajeVacio="No hay suscripciones que coincidan"
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((s) => (
+          <Link
+            key={s.id}
+            href={`/dashboard/suscripciones/${s.id}?from=${aqui}`}
+            className={FILA_MOVIL}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-foreground">
+                <span className="tabular-nums">#{s.numero}</span>{" "}
+                {nombreCliente(s.cliente)}
+              </span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                {s.items.map((i) => i.producto.nombre).join(", ")}
+              </span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                {PERIODICIDAD_LABEL[s.periodicidad]}
+                {verPrecios && (
+                  <>
+                    {" · "}
+                    <span className="tabular-nums">
+                      {money(s.totalPeriodo ?? 0)}
+                    </span>
+                  </>
+                )}
+                {" · desde "}
+                <span className="tabular-nums">{fecha(s.fechaInicio)}</span>
+              </span>
+            </span>
+            <Badge variant={estadoVariant[s.estado] ?? "outline"}>
+              {s.estado.charAt(0) + s.estado.slice(1).toLowerCase()}
+            </Badge>
+          </Link>
+        ))}
+      </ListaMovil>
     </>
   );
 }

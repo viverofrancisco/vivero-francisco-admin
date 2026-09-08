@@ -120,7 +120,7 @@ export function InformeDetail({
   }
 
   return (
-    <div className="flex h-full flex-col gap-6">
+    <div className="flex flex-col gap-6 lg:h-full">
       <div className="flex flex-none items-center gap-3">
         <Link href={backHref}>
           <Button variant="ghost" size="icon">
@@ -194,10 +194,10 @@ export function InformeDetail({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-3">
         {/* El PDF es el informe: ocupa la columna grande. */}
-        <div className="flex min-h-0 flex-col lg:col-span-2">
-          <div className="min-h-[60vh] flex-1 overflow-hidden rounded-lg border bg-neutral-200">
+        <div className="flex flex-col lg:col-span-2 lg:min-h-0">
+          <div className="h-[65vh] overflow-hidden rounded-lg border bg-neutral-200 lg:h-auto lg:min-h-[60vh] lg:flex-1">
             <iframe
               src={`${informe.pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
               title={`Informe #${informe.numero}`}
@@ -206,7 +206,7 @@ export function InformeDetail({
           </div>
         </div>
 
-        <div className="space-y-6 overflow-y-auto">
+        <div className="space-y-6 lg:overflow-y-auto">
           <Card>
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Detalles</CardTitle>

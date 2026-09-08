@@ -23,7 +23,7 @@ export function EstadoBadge({
 
   return (
     <span
-      className={`inline-block flex-none rounded-full border px-2 py-0.5 text-xs font-medium ${clases}`}
+      className={`inline-block flex-none rounded-full border px-2 py-0.5 text-[11px] font-medium ${clases}`}
     >
       {texto}
     </span>

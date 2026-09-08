@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import {
   Table,
   TableBody,
@@ -33,21 +34,10 @@ import {
 import { MoreVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useCargaInfinita } from "@/components/shared/scroll-infinito";
+import type { InformeListItem } from "@/lib/informes/lista";
 
-export interface InformeListItem {
-  id: string;
-  /** Un borrador todavía no es un informe: no tiene número ni PDF. */
-  tipo: "emitido" | "borrador";
-  numero: number | null;
-  titulo: string;
-  pdfUrl: string | null;
-  /** Generado, para un informe; última edición, para un borrador. */
-  fecha: string;
-  version: number;
-  /** Si es el borrador de una **edición**, el número del informe que corrige. */
-  deInforme: number | null;
-  cliente: { id: string; nombre: string } | null;
-}
+export type { InformeListItem } from "@/lib/informes/lista";
 
 /**
  * La lista de informes.
@@ -69,14 +59,27 @@ export function InformesTable({
   page,
   total,
   porPagina,
+  filtros,
 }: {
   items: InformeListItem[];
   page: number;
   total: number;
   porPagina: number;
+  /** Lo que hay en la URL ahora mismo, leído por el servidor. */
+  filtros: Record<string, string>;
 }) {
   const router = useRouter();
-  const params = useSearchParams();
+  /**
+   * Los filtros que ya vienen aplicados, como query string.
+   *
+   * Llegan por props y no de `useSearchParams()`: ese hook hace que Next saque
+   * del HTML del servidor todo el subárbol que lo usa, y eso corría los
+   * `useId` de **toda** la página —los de Base UI dejaban de coincidir entre
+   * servidor y cliente, y React tiraba un aviso de hidratación en cada carga.
+   * La página ya los lee para hacer la consulta, así que pasarlos no cuesta
+   * nada y de paso la lista se sigue renderizando en el servidor.
+   */
+  const params = new URLSearchParams(filtros);
   /** El que está por eliminarse, mientras se confirma. */
   const [borrando, setBorrando] = useState<InformeListItem | null>(null);
   const [eliminando, setEliminando] = useState(false);
@@ -113,8 +116,62 @@ export function InformesTable({
     }
   }
 
+  /**
+   * Móvil: la lista crece al bajar en vez de paginar, y acá **sí** hay una
+   * consulta de verdad — esta lista la pagina el servidor, así que la tanda
+   * siguiente se va a buscar con los mismos filtros que trajo la primera.
+   *
+   * `pagina1` es lo que llegó renderizado; lo demás se acumula encima. Cambiar
+   * un filtro cambia esa primera tanda, y eso es lo que reinicia el acumulado
+   * —sin efecto que lo limpie después de pintar.
+   */
+  const [extra, setExtra] = useState<{
+    desde: InformeListItem[];
+    filas: InformeListItem[];
+  }>({ desde: items, filas: [] });
+  const acumulados =
+    extra.desde === items ? [...items, ...extra.filas] : items;
+
+  const cargarMas = async () => {
+    const qs = new URLSearchParams(params.toString());
+    qs.delete("page");
+    qs.set("offset", String(acumulados.length));
+    qs.set("limit", String(porPagina));
+    const res = await fetch(`/api/admin/informes?${qs.toString()}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return;
+    const data: { items: InformeListItem[] } = await res.json();
+    setExtra((e) => ({
+      desde: items,
+      filas: [...(e.desde === items ? e.filas : []), ...data.items],
+    }));
+  };
+
+  const { cargando, centinela } = useCargaInfinita({
+    hayMas: acumulados.length < total,
+    cargarMas,
+  });
+
+  /**
+   * De dónde se viene, para que la flecha de la ficha devuelva esta lista como
+   * estaba. `useAca()` y no `aca()`: este `href` se arma **durante el render**,
+   * y `aca()` mira `window`, que en el servidor no existe — el enlace salía
+   * con `?from=` vacío en el HTML y completo al hidratar.
+   */
+  const aqui = encodeURIComponent(
+    `/dashboard/informes${params.toString() ? `?${params.toString()}` : ""}`
+  );
+
+  /** A dónde lleva la fila: un borrador se retoma, un informe se abre. */
+  const destino = (item: InformeListItem, desde: string) =>
+    item.tipo !== "borrador"
+      ? `/dashboard/informes/${item.id}?from=${desde}`
+      : `/dashboard/informes/nuevo?borrador=${item.id}`;
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+    <>
+    <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
       <div className="min-h-0 flex-1 overflow-hidden">
         {items.length === 0 ? (
           <EmptyState message="No hay informes que coincidan" />
@@ -269,7 +326,7 @@ export function InformesTable({
                             <DropdownMenuItem
                               render={
                                 <Link
-                                  href={`/dashboard/informes/${item.id}/editar?from=${aca()}`}
+                                  href={`/dashboard/informes/${item.id}/editar?from=${aqui}`}
                                 />
                               }
                             >
@@ -351,6 +408,59 @@ export function InformesTable({
         sustantivo="informe"
       />
     </div>
+
+    {/* Móvil: cliente y estado arriba, y debajo el número con cuándo se
+        generó. Las acciones quedan en la ficha — el menú de la fila tiene
+        hasta cinco opciones que dependen de si es borrador o informe. */}
+    <ListaMovil
+      vacia={acumulados.length === 0}
+      mensajeVacio="No hay informes que coincidan"
+      hayMas={acumulados.length < total}
+      cargando={cargando}
+      centinela={centinela}
+    >
+      {acumulados.map((item) => (
+        <Link
+          key={item.id}
+          href={destino(item, aqui)}
+          className={FILA_MOVIL}
+        >
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
+                {item.cliente?.nombre ?? "Sin cliente"}
+              </span>
+              <Badge
+                variant={item.tipo === "borrador" ? "outline" : "secondary"}
+                className={
+                  item.tipo === "borrador"
+                    ? "flex-none border-amber-300 bg-amber-50 text-amber-800"
+                    : "flex-none"
+                }
+              >
+                {item.tipo === "borrador"
+                  ? item.deInforme
+                    ? `Editando #${item.deInforme}`
+                    : "Borrador"
+                  : "Emitido"}
+              </Badge>
+            </span>
+            <span className="block truncate text-xs font-medium text-muted-foreground">
+              <span className="tabular-nums">
+                {item.numero ? `#${item.numero}` : "—"}
+                {item.tipo !== "borrador" && item.version > 1
+                  ? ` · v${item.version}`
+                  : ""}
+              </span>
+              {" · "}
+              <span className="tabular-nums">{generadoEl(item.fecha)}</span>
+            </span>
+          </span>
+        </Link>
+      ))}
+    </ListaMovil>
+
+    </>
   );
 }
 

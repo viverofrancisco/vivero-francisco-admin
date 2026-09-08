@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MoreVertical, Plus, Upload } from "lucide-react";
+import { MoreHorizontal, Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,7 +36,7 @@ function ActionIcon({ name }: { name?: HeaderActionIcon }) {
 
 /**
  * Acciones del encabezado de página. En escritorio se muestran como botones en
- * línea; en móvil se colapsan siempre en un menú desplegable (⋮), incluso si es
+ * línea; en móvil se colapsan siempre en un menú desplegable (⋯), incluso si es
  * una sola acción.
  */
 export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
@@ -77,10 +77,15 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="outline" size="icon" aria-label="Acciones" />
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Acciones"
+                className="h-9 w-9"
+              />
             }
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreHorizontal className="h-4 w-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-44">
             {actions.map((action, i) => (

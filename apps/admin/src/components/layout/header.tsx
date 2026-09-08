@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User } from "lucide-react";
-import { MobileNav } from "./mobile-nav";
-import { GlobalSearch } from "./global-search";
+import Link from "next/link";
+import { Brand } from "./brand";
+import { BuscadorMovil, GlobalSearch } from "./global-search";
 import { useCambiosPendientes } from "@/components/shared/cambios-pendientes";
 import { Loader2 } from "lucide-react";
 
@@ -34,8 +35,24 @@ export function Header({ branding }: BrandingProps) {
     .slice(0, 2);
 
   return (
-    <header className="relative z-30 flex h-20 items-center gap-3 border-b bg-card/80 px-4 backdrop-blur-md md:px-6">
-      <MobileNav branding={branding} />
+    <header className="relative z-30 flex h-16 flex-none items-center gap-3 border-b bg-card/80 px-4 backdrop-blur-md md:h-20 md:px-6">
+      {/* En escritorio el logo vive arriba del sidebar; en móvil no hay
+          sidebar, así que va acá — y compacto, porque el ancho lo comparte
+          con el buscador. */}
+      {!cambios && (
+        <Link
+          href="/dashboard"
+          className="flex-none md:hidden"
+          aria-label="Inicio"
+        >
+          <Brand
+            logoUrl={branding.logoUrl}
+            nombre={branding.nombre}
+            markSize={34}
+            compacto
+          />
+        </Link>
+      )}
 
       {/* Con cambios sin guardar, el buscador se va y queda esto: buscar otra
           cosa mientras hay algo a medio escribir no es lo que alguien está por
@@ -70,8 +87,11 @@ export function Header({ branding }: BrandingProps) {
         </div>
       ) : (
         <>
-          <GlobalSearch className="w-full max-w-md" />
+          {/* En móvil el campo no cabe: el ancho lo comparte con el logo y el
+              avatar. Ahí va un ícono que abre la búsqueda a pantalla completa. */}
+          <GlobalSearch className="hidden w-full max-w-md md:block" />
           <div className="flex-1" />
+          <BuscadorMovil />
         </>
       )}
 

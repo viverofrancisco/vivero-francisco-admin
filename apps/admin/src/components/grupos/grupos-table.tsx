@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
@@ -10,8 +11,10 @@ import {
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import { Search, ChevronRight } from "lucide-react";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Grupo {
   id: string;
@@ -55,11 +58,20 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
     if (!res.ok) throw new Error("Error al eliminar");
   };
 
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtered.length,
+    searchQuery
+  );
+  const enLista = filtered.slice(0, visibles);
+  const aqui = useAca();
+
   return (
-    <div className="space-y-5">
+    // Columna con alto propio en móvil, para que scrollee la lista y no la
+    // página; en escritorio, el bloque de tarjetas de siempre.
+    <div className="flex min-h-0 flex-1 flex-col gap-3 md:block md:flex-none md:space-y-5">
       {/* Search */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="flex flex-none flex-wrap items-center gap-3 [&_input]:h-9">
+        <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar grupo..."
@@ -73,11 +85,15 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
         </div>
       </div>
 
-      {/* Cards */}
+      {/* Tarjetas: solo en escritorio. En una columna de 400 px cada una
+          ocupa media pantalla y hay que scrollear tres veces para ver cuatro
+          grupos, así que ahí van como lista. */}
       {filtered.length === 0 ? (
-        <EmptyState message="No se encontraron grupos" />
+        <div className="hidden md:block">
+          <EmptyState message="No se encontraron grupos" />
+        </div>
       ) : (
-        <>
+        <div className="hidden md:block md:space-y-5">
           <div className="grid gap-4 lg:grid-cols-2">
             {paginated.map((grupo, idx) => {
               const miembros = grupo.miembros ?? [];
@@ -158,8 +174,55 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
             sustantivo="grupo"
             plural="grupos"
           />
-        </>
+        </div>
       )}
+
+      {/* Móvil: nombre y descripción, y a la derecha cuántas visitas lleva.
+          Los avatares de los miembros quedan para la ficha —cuatro caras de
+          32 px al lado del nombre lo dejan sin ancho— pero cuántos son sí se
+          dice, que es el dato que distingue una cuadrilla de otra. */}
+      <ListaMovil
+        vacia={filtered.length === 0}
+        mensajeVacio="No se encontraron grupos"
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((grupo, idx) => {
+          const miembros = grupo.miembros ?? [];
+          return (
+            <Link
+              key={grupo.id}
+              href={`/dashboard/grupos/${grupo.id}?from=${aqui}`}
+              className={FILA_MOVIL}
+            >
+              <span
+                className={`h-10 w-1.5 flex-none rounded-md ${
+                  barColors[idx % barColors.length]
+                }`}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold text-foreground">
+                  {grupo.nombre}
+                </span>
+                <span className="block truncate text-xs font-medium text-muted-foreground">
+                  {miembros.length}{" "}
+                  {miembros.length === 1 ? "miembro" : "miembros"}
+                  {grupo.descripcion ? ` · ${grupo.descripcion}` : ""}
+                </span>
+              </span>
+              <span className="flex-none text-right">
+                <span className="block text-sm font-bold tabular-nums text-foreground">
+                  {grupo._count?.visitas ?? 0}
+                </span>
+                <span className="block text-[11px] font-semibold text-muted-foreground">
+                  visitas
+                </span>
+              </span>
+            </Link>
+          );
+        })}
+      </ListaMovil>
     </div>
   );
 }

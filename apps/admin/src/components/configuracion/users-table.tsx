@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 
 interface UserData {
   id: string;
@@ -165,7 +167,10 @@ export function UsersTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <>
+      {/* La tabla, solo en escritorio: cinco columnas en 400 px dejan el
+          correo cortado y el rol fuera de pantalla. */}
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card md:block">
       <Table>
         <TableHeader>
           <TableRow>
@@ -369,6 +374,69 @@ export function UsersTable({
           })}
         </TableBody>
       </Table>
+      </div>
+
+      {/* Móvil: nombre y rol arriba, correo abajo, y las etiquetas de estado
+          —revocado, invitación pendiente, enlace enviado— donde estaban, que
+          es lo que explica por qué alguien no puede entrar. Las acciones
+          quedan en la ficha: el ⋯ de cada fila, con siete opciones que
+          dependen del estado, no es algo para resolver con el pulgar. */}
+      <ListaMovil
+        vacia={users.length === 0}
+        mensajeVacio="No hay usuarios"
+        hayMas={false}
+        centinela={{ current: null }}
+      >
+        {users.map((user) => {
+          const meta = roleMeta(user.role);
+          const name =
+            [user.name, user.apellido].filter(Boolean).join(" ") || "—";
+          return (
+            <Link
+              key={user.id}
+              href={`/dashboard/configuracion/usuarios/${user.id}`}
+              className={FILA_MOVIL}
+            >
+              <InitialsAvatar name={name} size={40} />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
+                    {name}
+                  </span>
+                  <span
+                    className={`flex-none rounded-full px-2 py-0.5 text-[11px] font-bold ${meta.className}`}
+                  >
+                    {meta.label}
+                  </span>
+                </span>
+                <span className="block truncate text-xs font-medium text-muted-foreground">
+                  {user.email}
+                </span>
+                {(user.revocado ||
+                  !user.tieneContrasena ||
+                  user.enlacePendiente) && (
+                  <span className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {user.revocado ? (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
+                        Acceso revocado
+                      </span>
+                    ) : !user.tieneContrasena ? (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">
+                        Invitación pendiente
+                      </span>
+                    ) : null}
+                    {user.enlacePendiente ? (
+                      <span className="rounded-full border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        Enlace enviado
+                      </span>
+                    ) : null}
+                  </span>
+                )}
+              </span>
+            </Link>
+          );
+        })}
+      </ListaMovil>
 
       <Dialog open={enlace !== null} onOpenChange={(v) => !v && setEnlace(null)}>
         <DialogContent className="sm:max-w-xl">
@@ -389,6 +457,6 @@ export function UsersTable({
           ) : null}
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

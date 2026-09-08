@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import {
+  ArrowLeft,
   CalendarDays,
   DollarSign,
   FileText,
@@ -25,16 +27,25 @@ const typeMeta: Record<SearchType, { label: string; icon: typeof Users }> = {
   informe: { label: "Informe", icon: FileText },
 };
 
-const PREVIEW = 5;
+/** Cuántos resultados entran antes de "Ver todos". */
+const PREVIEW_ESCRITORIO = 5;
+/** En móvil hay una pantalla entera, así que caben más. */
+const PREVIEW_MOVIL = 12;
 
-export function GlobalSearch({ className }: { className?: string }) {
-  const router = useRouter();
+const MIN_LETRAS = 2;
+
+/**
+ * La consulta: el texto con un respiro y lo que devolvió el servidor.
+ *
+ * Vive acá y no en cada buscador porque son dos —el de escritorio y el de
+ * móvil— y la lógica es la misma; duplicarla es duplicar el debounce y el
+ * cancelado.
+ */
+function useBusqueda(preview: number) {
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [result, setResult] = useState<GlobalSearchResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query.trim()), 220);
@@ -42,12 +53,12 @@ export function GlobalSearch({ className }: { className?: string }) {
   }, [query]);
 
   useEffect(() => {
-    // Below the min length the dropdown is hidden, so stale results never
-    // show; we simply skip fetching (no state write needed here).
-    if (debounced.length < 2) return;
+    // Debajo del mínimo la lista está oculta, así que no se muestran
+    // resultados viejos; simplemente no consultamos.
+    if (debounced.length < MIN_LETRAS) return;
     let cancelled = false;
-    // Defer the loading flag to a microtask so it isn't a synchronous
-    // setState during the effect body.
+    // El flag de carga va a un microtask para no ser un setState síncrono
+    // dentro del cuerpo del efecto.
     Promise.resolve().then(() => {
       if (!cancelled) setLoading(true);
     });
@@ -67,6 +78,110 @@ export function GlobalSearch({ className }: { className?: string }) {
     };
   }, [debounced]);
 
+  const items: SearchResultItem[] = result
+    ? [
+        ...result.clientes.items,
+        ...result.visitas.items,
+        ...result.ordenes.items,
+        ...result.suscripciones.items,
+        ...result.informes.items,
+      ].slice(0, preview)
+    : [];
+
+  return { query, setQuery, debounced, result, loading, items };
+}
+
+/** Las filas y el pie de "ver todos" — lo único que comparten los dos modos. */
+function ListaResultados({
+  items,
+  total,
+  loading,
+  consulta,
+  onSelect,
+  onVerTodos,
+}: {
+  items: SearchResultItem[];
+  total: number;
+  loading: boolean;
+  consulta: string;
+  onSelect: (href: string) => void;
+  onVerTodos: () => void;
+}) {
+  if (loading && items.length === 0) {
+    return (
+      <div className="p-4 text-center text-sm text-muted-foreground">
+        Buscando…
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="p-4 text-center text-sm text-muted-foreground">
+        Sin resultados para “{consulta}”.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {items.map((item, i) => {
+        const Icon = typeMeta[item.type].icon;
+        return (
+          <button
+            key={`${item.type}-${item.id}`}
+            type="button"
+            onClick={() => onSelect(item.href)}
+            className={cn(
+              "flex w-full items-center gap-3 px-3 py-3 text-left hover:bg-secondary/60",
+              // Una línea entre resultado y resultado. Cada fila tiene hasta
+              // tres renglones —título, subtítulo y detalle— y sin separador
+              // no se ve dónde termina una visita y empieza la siguiente.
+              // Va arriba y no abajo para no duplicar la del pie.
+              i > 0 && "border-t border-border"
+            )}
+          >
+            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-secondary text-green-700">
+              <Icon className="h-[17px] w-[17px]" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-foreground">
+                {item.title}
+              </span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                {item.subtitle}
+              </span>
+              {item.detalle && (
+                <span className="block truncate text-xs font-medium text-muted-foreground">
+                  {item.detalle}
+                </span>
+              )}
+            </span>
+            <span className="flex-none text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+              {typeMeta[item.type].label}
+            </span>
+          </button>
+        );
+      })}
+      <button
+        type="button"
+        onClick={onVerTodos}
+        className="block w-full border-t border-border bg-card px-3 py-3 text-center text-[13px] font-bold text-primary hover:bg-secondary/60"
+      >
+        Ver todos los resultados ({total})
+      </button>
+    </>
+  );
+}
+
+/** El buscador del header en escritorio: campo siempre visible y desplegable. */
+export function GlobalSearch({ className }: { className?: string }) {
+  const router = useRouter();
+  const { query, setQuery, debounced, result, loading, items } =
+    useBusqueda(PREVIEW_ESCRITORIO);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -77,18 +192,8 @@ export function GlobalSearch({ className }: { className?: string }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const items: SearchResultItem[] = result
-    ? [
-        ...result.clientes.items,
-        ...result.visitas.items,
-        ...result.ordenes.items,
-        ...result.suscripciones.items,
-        ...result.informes.items,
-      ].slice(0, PREVIEW)
-    : [];
-
   const goToResults = () => {
-    if (debounced.length < 2) return;
+    if (debounced.length < MIN_LETRAS) return;
     setOpen(false);
     router.push(`/dashboard/buscar?q=${encodeURIComponent(debounced)}`);
   };
@@ -119,62 +224,124 @@ export function GlobalSearch({ className }: { className?: string }) {
         />
       </div>
 
-      {open && debounced.length >= 2 && (
+      {open && debounced.length >= MIN_LETRAS && (
         <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
-          {loading && items.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              Buscando…
-            </div>
-          ) : items.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              Sin resultados para “{debounced}”.
-            </div>
-          ) : (
-            <>
-              <div className="max-h-[360px] overflow-y-auto py-1">
-                {items.map((item) => {
-                  const Icon = typeMeta[item.type].icon;
-                  return (
-                    <button
-                      key={`${item.type}-${item.id}`}
-                      type="button"
-                      onClick={() => select(item.href)}
-                      className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-secondary/60"
-                    >
-                      <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-secondary text-green-700">
-                        <Icon className="h-[17px] w-[17px]" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold text-foreground">
-                          {item.title}
-                        </span>
-                        <span className="block truncate text-xs font-medium text-muted-foreground">
-                          {item.subtitle}
-                        </span>
-                        {item.detalle && (
-                          <span className="block truncate text-xs font-medium text-muted-foreground">
-                            {item.detalle}
-                          </span>
-                        )}
-                      </span>
-                      <span className="flex-none text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                        {typeMeta[item.type].label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                type="button"
-                onClick={goToResults}
-                className="block w-full border-t border-border bg-card px-3 py-2.5 text-center text-[13px] font-bold text-primary hover:bg-secondary/60"
-              >
-                Ver todos los resultados ({result?.total ?? 0})
-              </button>
-            </>
-          )}
+          <div className="max-h-[360px] overflow-y-auto">
+            <ListaResultados
+              items={items}
+              total={result?.total ?? 0}
+              loading={loading}
+              consulta={debounced}
+              onSelect={select}
+              onVerTodos={goToResults}
+            />
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * El buscador en móvil: un ícono en el header que abre la búsqueda a pantalla
+ * completa.
+ *
+ * El campo inline no cabía —el ancho lo comparte con el logo y el avatar, y
+ * queda un input de ~130 px— y encima el desplegable de resultados tapaba
+ * media pantalla contra el teclado. Abierto entero, el teclado empuja la lista
+ * y no hay nada más con qué competir.
+ */
+export function BuscadorMovil({ className }: { className?: string }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const { query, setQuery, debounced, result, loading, items } =
+    useBusqueda(PREVIEW_MOVIL);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const cerrar = () => setOpen(false);
+
+  const goToResults = () => {
+    if (debounced.length < MIN_LETRAS) return;
+    cerrar();
+    router.push(`/dashboard/buscar?q=${encodeURIComponent(debounced)}`);
+  };
+
+  const select = (href: string) => {
+    cerrar();
+    setQuery("");
+    router.push(href);
+  };
+
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <DialogPrimitive.Trigger
+        className={cn(
+          "flex h-10 w-10 flex-none items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden",
+          className
+        )}
+        aria-label="Buscar"
+      >
+        <Search className="h-5 w-5" />
+      </DialogPrimitive.Trigger>
+
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Popup
+          // El foco va al campo, no al popup: se abre para escribir, y una
+          // pantalla de búsqueda sin teclado obliga a un toque de más.
+          initialFocus={inputRef}
+          className="fixed inset-0 z-50 flex h-dvh w-screen flex-col bg-background outline-none data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 md:hidden"
+        >
+          <DialogPrimitive.Title className="sr-only">
+            Buscar
+          </DialogPrimitive.Title>
+
+          <div className="flex h-16 flex-none items-center gap-2 border-b border-border px-2">
+            <DialogPrimitive.Close
+              className="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              aria-label="Cerrar búsqueda"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </DialogPrimitive.Close>
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") goToResults();
+              }}
+              placeholder="Buscar..."
+              // El teléfono ofrece autocorregir y mayúscula inicial, y las dos
+              // cosas arruinan un apellido o un número de orden.
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="search"
+              type="search"
+              className="h-11 min-w-0 flex-1 bg-transparent pr-2 text-base font-medium text-foreground outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {debounced.length < MIN_LETRAS ? (
+              <div className="px-6 py-10 text-center text-sm text-muted-foreground">
+                Escribe al menos {MIN_LETRAS} letras.
+                <span className="mt-1 block text-xs">
+                  Clientes, visitas, órdenes, suscripciones e informes.
+                </span>
+              </div>
+            ) : (
+              <ListaResultados
+                items={items}
+                total={result?.total ?? 0}
+                loading={loading}
+                consulta={debounced}
+                onSelect={select}
+                onVerTodos={goToResults}
+              />
+            )}
+          </div>
+        </DialogPrimitive.Popup>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

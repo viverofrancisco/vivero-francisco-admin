@@ -120,6 +120,8 @@ export async function listInformesYBorradores(
   viewer: Viewer,
   options: {
     clienteId?: string;
+    /** Texto libre: nombre del cliente o título del informe. */
+    q?: string;
     from?: Date;
     to?: Date;
     estado?: EstadoInformeFiltro;
@@ -132,6 +134,12 @@ export async function listInformesYBorradores(
   const limit = Math.min(Math.max(options.limit ?? 30, 1), 100);
   const offset = Math.max(0, options.offset ?? 0);
   const { clienteId, from, estado } = options;
+  // El buscador reemplaza al desplegable de clientes: se escribe el nombre en
+  // vez de encontrarlo en una lista de doscientos. Va contra la base y no
+  // sobre la página traída, porque la lista está paginada y filtrar acá
+  // buscaría solo dentro de los veinte que se están viendo.
+  const texto = options.q?.trim();
+  const like = texto ? `%${texto}%` : null;
   // `to` inclusive del día entero.
   const to = options.to
     ? new Date(new Date(options.to).setUTCDate(options.to.getUTCDate() + 1))
@@ -143,17 +151,27 @@ export async function listInformesYBorradores(
     WITH todo AS (
       SELECT i."id", 'emitido' AS tipo, i."generatedAt" AS fecha
       FROM "Informe" i
+      JOIN "Cliente" ci ON ci."id" = i."clienteId"
       WHERE (${clienteId}::text IS NULL OR i."clienteId" = ${clienteId})
         AND (${from}::timestamp IS NULL OR i."generatedAt" >= ${from})
         AND (${to}::timestamp IS NULL OR i."generatedAt" < ${to})
         AND (${estado}::text IS NULL OR ${estado} = 'emitido')
+        AND (${like}::text IS NULL
+             OR concat_ws(' ', ci."nombre", ci."apellido", ci."empresa") ILIKE ${like}
+             OR i."titulo" ILIKE ${like})
       UNION ALL
+      -- LEFT JOIN: un borrador puede no tener cliente todavía, y esconderlo
+      -- del listado lo dejaría sin manera de retomarse.
       SELECT b."id", 'borrador' AS tipo, b."updatedAt" AS fecha
       FROM "InformeBorrador" b
+      LEFT JOIN "Cliente" cb ON cb."id" = b."clienteId"
       WHERE (${clienteId}::text IS NULL OR b."clienteId" = ${clienteId})
         AND (${from}::timestamp IS NULL OR b."updatedAt" >= ${from})
         AND (${to}::timestamp IS NULL OR b."updatedAt" < ${to})
         AND (${estado}::text IS NULL OR ${estado} = 'borrador')
+        AND (${like}::text IS NULL
+             OR concat_ws(' ', cb."nombre", cb."apellido", cb."empresa") ILIKE ${like}
+             OR b."titulo" ILIKE ${like})
     )
     SELECT "id", tipo, fecha, COUNT(*) OVER () AS total
     FROM todo

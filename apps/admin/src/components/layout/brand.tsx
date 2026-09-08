@@ -53,6 +53,7 @@ export function Brand({
   className,
   markSize = 36,
   subtitle = true,
+  compacto = false,
 }: {
   logoUrl: string | null;
   nombre: string | null;
@@ -60,6 +61,12 @@ export function Brand({
   markSize?: number;
   /** Show the "Paisajismo & Mantenimiento" subtitle under the wordmark. */
   subtitle?: boolean;
+  /**
+   * Versión para el header móvil, donde el ancho se comparte con el buscador:
+   * el logo subido se achica y, si no hay ninguno, va la marca sola — el
+   * wordmark ahí entra truncado, que se lee peor que no ponerlo.
+   */
+  compacto?: boolean;
 }) {
   if (logoUrl) {
     return (
@@ -67,9 +74,18 @@ export function Brand({
       <img
         src={logoUrl}
         alt={nombre ?? "Empresa"}
-        className={className ?? "h-14 max-w-[220px] object-contain"}
+        className={
+          className ??
+          (compacto
+            ? "h-9 max-w-[120px] object-contain"
+            : "h-14 max-w-[220px] object-contain")
+        }
       />
     );
+  }
+
+  if (compacto) {
+    return <LogoMark size={markSize} className={className} />;
   }
 
   return (

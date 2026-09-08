@@ -12,17 +12,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { nombreCliente } from "@vivero/shared";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   money,
   fecha,
@@ -101,33 +104,43 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
     pagina * FILAS_POR_PAGINA,
   );
 
+  // En móvil la lista crece al bajar en lugar de paginar.
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtradas.length,
+    `${busqueda}|${estado}`
+  );
+  const enLista = filtradas.slice(0, visibles);
+  const aqui = useAca();
+
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Órdenes</h1>
-          <p className="text-sm text-muted-foreground">
-            Lo vendido: suscripciones y trabajos únicos, listos para facturar.
-          </p>
-        </div>
-        <Link href="/dashboard/ordenes/nueva">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva orden
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Órdenes"
+        actions={[
+          {
+            label: "Nueva orden",
+            href: "/dashboard/ordenes/nueva",
+            icon: "plus",
+            primary: true,
+          },
+        ]}
+      />
 
-      <div className="flex flex-none flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por cliente o número..."
-            value={busqueda}
-            onChange={(e) => cambiar(() => setBusqueda(e.target.value))}
-            className="pl-9"
-          />
-        </div>
+      <BarraFiltros
+        activos={estado ? 1 : 0}
+        onLimpiar={() => cambiar(() => setEstado(""))}
+        busqueda={
+          <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por cliente o número..."
+              value={busqueda}
+              onChange={(e) => cambiar(() => setBusqueda(e.target.value))}
+              className="pl-9"
+            />
+          </div>
+        }
+      >
         <div className="w-48">
           <CustomSelect
             value={estado}
@@ -136,9 +149,9 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
             placeholder="Todas"
           />
         </div>
-      </div>
+      </BarraFiltros>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtradas.length === 0 ? (
             <EmptyState
@@ -206,6 +219,46 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
           plural="órdenes"
         />
       </div>
+
+      {/* Móvil: número y cliente arriba, fecha y total abajo, y el estado del
+          cobro a la derecha — que es lo que se viene a mirar. Cinco columnas
+          en 400 px dejan el total pegado al borde y la fecha partida. */}
+      <ListaMovil
+        vacia={filtradas.length === 0}
+        mensajeVacio={
+          ordenes.length === 0
+            ? "Todavía no hay órdenes"
+            : "Ninguna orden coincide con los filtros"
+        }
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((o) => (
+          <Link
+            key={o.id}
+            href={`/dashboard/ordenes/${o.id}?from=${aqui}`}
+            className={FILA_MOVIL}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-foreground">
+                <span className="tabular-nums">#{o.numero}</span>{" "}
+                {nombreCliente(o.cliente)}
+              </span>
+              <span className="block truncate text-xs font-medium tabular-nums text-muted-foreground">
+                {fecha(o.fecha)} · {money(o.total)}
+              </span>
+            </span>
+            {o.estado === "ANULADA" ? (
+              <Badge variant="destructive">Anulada</Badge>
+            ) : (
+              <Badge variant={cobroVariant[estadoCobro(o.total, o.saldo)]}>
+                {cobroLabel[estadoCobro(o.total, o.saldo)]}
+              </Badge>
+            )}
+          </Link>
+        ))}
+      </ListaMovil>
     </>
   );
 }

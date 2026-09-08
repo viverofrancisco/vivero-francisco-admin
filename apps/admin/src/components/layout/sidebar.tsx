@@ -8,7 +8,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   Users,
-  Wrench,
+  Tag,
   UserCheck,
   UsersRound,
   CalendarDays,
@@ -56,7 +56,7 @@ const mainItems: NavItem[] = [
   {
     label: "Productos",
     href: "/dashboard/productos",
-    icon: Wrench,
+    icon: Tag,
     roles: ["ADMIN", "STAFF"],
     children: [{ label: "Categorías", href: "/dashboard/productos/categorias" }],
   },
@@ -138,12 +138,19 @@ function seccionAbierta(pathname: string, items: NavItem[]): string | null {
 
 interface BrandingProps {
   branding: { logoUrl: string | null; nombre: string | null };
+  /**
+   * De quién es la sesión, según el servidor.
+   *
+   * No sale de `useSession()`: ese hook no tiene el rol en el primer render
+   * del cliente, así que el menú se dibujaba más corto de lo que mandó el
+   * servidor y se corrían los `useId` de todo lo que viene después.
+   */
+  role: UserRole;
 }
 
-export function Sidebar({ branding }: BrandingProps) {
+export function Sidebar({ branding, role }: BrandingProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const role = session?.user?.role;
 
   const visible = (items: NavItem[]) =>
     items.filter((item) => !item.roles || (role && item.roles.includes(role)));
@@ -212,7 +219,7 @@ export function Sidebar({ branding }: BrandingProps) {
     "Usuario";
 
   return (
-    <aside className="hidden h-screen min-h-0 bg-sidebar md:flex md:w-64 md:flex-col md:border-r">
+    <aside className="hidden h-dvh min-h-0 bg-sidebar md:flex md:w-64 md:flex-col md:border-r">
       <div className="flex h-20 flex-none items-center border-b px-5">
         <Brand
           logoUrl={branding.logoUrl}

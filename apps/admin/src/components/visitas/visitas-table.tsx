@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -12,11 +13,13 @@ import {
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { nombreCliente } from "@vivero/shared";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import {
   resumenProductos,
   type ProductoDeVisita,
@@ -59,9 +62,18 @@ export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
     pagina * FILAS_POR_PAGINA,
   );
 
+  // En móvil la lista crece al bajar. Los filtros de esta pantalla los aplica
+  // el servidor, así que la firma es la lista que llegó.
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    visitas.length,
+    visitas.map((v) => v.id).join(",")
+  );
+  const enLista = visitas.slice(0, visibles);
+  const aqui = useAca();
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-5">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           <Table containerClassName="h-full overflow-y-auto">
             <TableHeader sticky>
@@ -125,6 +137,44 @@ export function VisitasTable({ visitas }: { visitas: VisitaRow[] }) {
           sustantivo="visita"
         />
       </div>
+
+      {/* Móvil: cliente y estado arriba, y debajo el trabajo con su fecha.
+          Seis columnas en 400 px dejan el servicio en dos letras, que es
+          justamente lo que distingue una visita de otra del mismo cliente. */}
+      <ListaMovil
+        vacia={visitas.length === 0}
+        mensajeVacio="No se encontraron visitas"
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((v) => {
+          const nombre = nombreCliente(v.cliente);
+          return (
+            <Link
+              key={v.id}
+              href={`/dashboard/visitas/${v.id}?from=${aqui}`}
+              className={FILA_MOVIL}
+            >
+              <InitialsAvatar name={nombre} size={40} />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
+                    {nombre}
+                  </span>
+                  <StatusBadge estado={v.estado as EstadoVisitaUI} size="sm" />
+                </span>
+                <span className="block truncate text-xs font-medium text-muted-foreground">
+                  {resumenProductos(v)} ·{" "}
+                  <span className="tabular-nums">
+                    {formatDate(v.fechaProgramada)}
+                  </span>
+                </span>
+              </span>
+            </Link>
+          );
+        })}
+      </ListaMovil>
     </div>
   );
 }

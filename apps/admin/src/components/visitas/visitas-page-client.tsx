@@ -1,9 +1,10 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { hoyISOEcuador } from "@/lib/fechas";
 import { useFiltroUrl } from "@/lib/filtros-url";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,14 +13,9 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { VisitasTable } from "@/components/visitas/visitas-table";
 import { VisitasCalendar } from "@/components/visitas/visitas-calendar";
 import { EmptyState } from "@/components/shared/empty-state";
-import { CalendarDays, List, SlidersHorizontal } from "lucide-react";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
+import { CalendarDays, List, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { nombreCliente } from "@vivero/shared";
 import type { ProductoDeVisita } from "@/lib/visita-productos";
 
 const ESTADOS = [
@@ -52,12 +48,6 @@ interface FilterOption {
   nombre: string;
 }
 
-interface ClienteFilterOption {
-  id: string;
-  nombre: string;
-  apellido?: string | null;
-  empresa?: string | null;
-}
 
 interface VisitasPageClientProps {
   initialVisitas: VisitaRow[];
@@ -68,6 +58,7 @@ interface VisitasPageClientProps {
    * acá para que la pantalla no pueda mostrar un filtro que la lista no tiene.
    */
   filtros: {
+    q?: string;
     estado?: string;
     cliente?: string;
     producto?: string;
@@ -78,7 +69,6 @@ interface VisitasPageClientProps {
   /** Quiénes cerraron alguna visita: los únicos por los que tiene sentido filtrar. */
   cerradores: { id: string; nombre: string }[];
   userRole?: string;
-  clientes: ClienteFilterOption[];
   productos: FilterOption[];
 }
 
@@ -89,7 +79,6 @@ export function VisitasPageClient({
   filtros,
   cerradores,
   userRole,
-  clientes,
   productos,
 }: VisitasPageClientProps) {
   const router = useRouter();
@@ -108,7 +97,11 @@ export function VisitasPageClient({
    */
   const desde = initialDesde;
   const hasta = initialHasta;
+  const texto = filtros.q ?? "";
   const estado = filtros.estado ?? "ALL";
+  // Ya no tiene control propio —lo reemplazó el buscador— pero sigue leyéndose
+  // porque un enlace puede traer `?cliente=<id>`. Cuenta como filtro puesto, y
+  // "Limpiar" lo saca; si no, quedaría una lista recortada sin nada que lo diga.
   const clienteId = filtros.cliente ?? "ALL";
   const productoId = filtros.producto ?? "ALL";
   const completadaPor = filtros.completadaPor ?? "ALL";
@@ -153,7 +146,23 @@ export function VisitasPageClient({
 
   const handleEstadoChange = (v: string) => navegar({ estado: v });
 
-  const handleClienteChange = (v: string) => navegar({ cliente: v });
+  // El buscador escribe en su propio estado y recién después navega: la lista
+  // la trae el servidor, así que pedirla en cada tecla es una consulta por
+  // letra.
+  //
+  // El estado recuerda con qué valor de la URL se tecleó, para que cuando la
+  // URL cambie por fuera —volver atrás, limpiar filtros— el campo la siga sin
+  // un efecto que lo reescriba después de pintar.
+  const [busqueda, setBusqueda] = useState({ valor: texto, deUrl: texto });
+  const buscado = busqueda.deUrl === texto ? busqueda.valor : texto;
+  const setBuscado = (v: string) => setBusqueda({ valor: v, deUrl: texto });
+  useEffect(() => {
+    if (buscado === texto) return;
+    const t = setTimeout(() => navegar({ q: buscado }), 300);
+    return () => clearTimeout(t);
+    // `navegar` se rearma en cada render y no aporta como dependencia.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buscado, texto]);
 
   /**
    * Cuántos filtros están puestos, para el contador del botón. El estado no
@@ -176,6 +185,7 @@ export function VisitasPageClient({
   const limpiarFiltros = () => {
     setSoloSinOrden(false);
     navegar({
+      q: "",
       cliente: "ALL",
       producto: "ALL",
       estado: "ALL",
@@ -231,21 +241,24 @@ export function VisitasPageClient({
       {/* Una sola fila de controles: las cinco pastillas de estado más cuatro
           campos ocupaban un cuarto de la pantalla antes de mostrar un dato. */}
       <div className="flex flex-wrap items-center gap-3">
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button variant="outline" size="sm" className="h-9">
-                <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
-                Filtros
-                {filtrosActivos > 0 && (
-                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
-                    {filtrosActivos}
-                  </span>
-                )}
-              </Button>
-            }
-          />
-          <PopoverContent className="w-80 space-y-4">
+        <BarraFiltros
+          escritorio="popover"
+          activos={filtrosActivos}
+          onLimpiar={limpiarFiltros}
+          className="min-w-0 flex-1"
+          busqueda={
+            <div className="relative min-w-0 flex-1 md:min-w-[220px] md:max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por cliente..."
+                value={buscado}
+                onChange={(e) => setBuscado(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          }
+        >
+
             <div className="space-y-1">
               <Label className="text-xs">Estado</Label>
               <CustomSelect
@@ -261,20 +274,6 @@ export function VisitasPageClient({
                 desde={desde}
                 hasta={hasta}
                 onChange={handleRangoChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Cliente</Label>
-              <CustomSelect
-                value={clienteId}
-                onChange={handleClienteChange}
-                options={[
-                  { value: "ALL", label: "Todos" },
-                  ...clientes.map((c) => ({ value: c.id, label: nombreCliente(c) })),
-                ]}
-                placeholder="Todos"
-                searchable
-                searchPlaceholder="Buscar..."
               />
             </div>
             <div className="space-y-1">
@@ -339,23 +338,23 @@ export function VisitasPageClient({
                 </span>
               </span>
             </label>
+            {/* Solo en escritorio: el panel de móvil trae su propio
+                "Limpiar" al pie, y dos seguidos son dos maneras de lo mismo. */}
             <Button
               variant="ghost"
               size="sm"
-              className="w-full"
+              className="hidden w-full md:inline-flex"
               onClick={limpiarFiltros}
               disabled={filtrosActivos === 0}
             >
               Limpiar filtros
             </Button>
-          </PopoverContent>
-        </Popover>
+        </BarraFiltros>
 
-        <span className="text-sm text-muted-foreground">
-          {visibles.length} {visibles.length === 1 ? "visita" : "visitas"}
-        </span>
-
-        <div className="ml-auto inline-flex rounded-lg border bg-card p-0.5">
+        {/* Solo los íconos: una tabla y un calendario se reconocen sin que se
+            los nombre, y el par de etiquetas se comía el ancho que necesita el
+            buscador. El nombre sigue estando para quien no ve el ícono. */}
+        <div className="inline-flex flex-none rounded-lg border bg-card p-0.5">
           {(
             [
               { v: "tabla", label: "Tabla", Icono: List },
@@ -366,14 +365,16 @@ export function VisitasPageClient({
               key={v}
               type="button"
               onClick={() => setVista(v)}
-              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-bold transition-colors ${
+              aria-label={label}
+              aria-pressed={vista === v}
+              title={label}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors ${
                 vista === v
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              <Icono className="h-3.5 w-3.5" />
-              {label}
+              <Icono className="h-4 w-4" />
             </button>
           ))}
         </div>

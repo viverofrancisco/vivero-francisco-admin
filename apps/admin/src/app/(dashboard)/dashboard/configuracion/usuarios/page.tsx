@@ -47,16 +47,12 @@ export default async function UsuariosPage() {
   ]);
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* El botón a la altura del título, como en el resto del portal: en su
-          propia fila dejaba una franja vacía entre el encabezado y la tabla. */}
+    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
+      {/* El botón a la altura del título, como en el resto del portal. En
+          móvil se esconde detrás del ⋯, igual que las demás pantallas: al lado
+          del título no entra sin partirlo en dos renglones. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Usuarios</h1>
-          <p className="text-muted-foreground">
-            Administra los usuarios del sistema
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight">Usuarios</h1>
         <InviteForm sectores={sectores} />
       </div>
 

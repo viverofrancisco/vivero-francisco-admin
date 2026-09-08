@@ -55,15 +55,19 @@ export function StatusBadge({
 }) {
   const meta = statusMeta[estado] ?? statusMeta.COMPLETADA;
   return (
+    // Sin el punto de color que llevaba adelante: el fondo del badge ya es de
+    // ese mismo color, así que decía dos veces lo mismo y le comía ancho a la
+    // etiqueta justo donde menos sobra, en una fila de móvil. `meta.dot` sigue
+    // existiendo porque la bandeja de mensajes lo usa suelto, sobre el avatar,
+    // donde sí es lo único que da el estado.
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-bold whitespace-nowrap",
-        size === "sm" ? "px-2.5 py-1 text-[11.5px]" : "px-3 py-1.5 text-xs",
+        "inline-flex items-center rounded-full font-bold whitespace-nowrap",
+        size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-[11.5px]",
         meta.badge,
         className
       )}
     >
-      <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />
       {meta.label}
     </span>
   );

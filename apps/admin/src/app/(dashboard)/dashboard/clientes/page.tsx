@@ -39,7 +39,7 @@ export default async function ClientesPage() {
     process.env.NODE_ENV !== "production" && user.role === "ADMIN";
 
   return (
-    <div className="flex h-full flex-col gap-6 p-4 md:p-6">
+    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
       <ClientesPageHeader canCreate={canCreate} />
 
       <ClientesTable clientes={clientes} devTools={devTools} />

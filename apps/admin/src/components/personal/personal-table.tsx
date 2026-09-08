@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -14,14 +15,17 @@ import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { StatCards } from "@/components/shared/stat-cards";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import { Search } from "lucide-react";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Personal {
   id: string;
@@ -36,6 +40,20 @@ interface Personal {
 
 function fullName(p: Personal): string {
   return `${p.nombre} ${p.apellido || ""}`.trim();
+}
+
+/**
+ * El renglón de abajo en la lista de móvil: lo que la tabla reparte entre
+ * especialidad, cuadrilla y teléfono, en una línea.
+ */
+function resumen(p: Personal): string {
+  const cuadrillas = crewNames(p);
+  const partes = [
+    p.especialidad ?? (p.tipo ? tipoLabel(p.tipo) : null),
+    cuadrillas !== "—" ? cuadrillas : null,
+    p.telefono,
+  ].filter(Boolean);
+  return partes.length > 0 ? partes.join(" · ") : "Sin datos";
 }
 
 function tipoLabel(tipo: string): string {
@@ -126,14 +144,32 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
     if (!res.ok) throw new Error("Error al eliminar");
   };
 
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtered.length,
+    `${searchQuery}|${estadoFilter ?? ""}|${tipoFilter ?? ""}`
+  );
+  const enLista = filtered.slice(0, visibles);
+  const aqui = useAca();
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-5">
-      {/* Summary strip */}
-      <StatCards stats={stats} />
+    <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
+      {/* Solo en escritorio: cuatro tarjetas apiladas se comían la pantalla
+          entera antes de la primera fila, y quien entra acá viene a buscar a
+          alguien, no a mirar los totales. */}
+      <div className="hidden md:block">
+        <StatCards stats={stats} />
+      </div>
 
       {/* Filters */}
-      <div className="flex flex-none flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <BarraFiltros
+        activos={[estadoFilter, tipoFilter].filter(Boolean).length}
+        onLimpiar={() => {
+          setEstadoFilter(null);
+          setTipoFilter(null);
+          setPage(1);
+        }}
+        busqueda={
+          <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar por nombre, telefono o especialidad..."
@@ -142,9 +178,11 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
               setSearchQuery(e.target.value);
               setPage(1);
             }}
-            className="pl-9"
-          />
-        </div>
+              className="pl-9"
+            />
+          </div>
+        }
+      >
         <CustomSelect
           value={estadoFilter ?? ""}
           onChange={(v) => {
@@ -175,10 +213,10 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
           placeholder="Todos los tipos"
           className="w-44"
         />
-      </div>
+      </BarraFiltros>
 
       {/* Solo las filas scrollean: encabezado y paginación quedan fijos. */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtered.length === 0 ? (
             <EmptyState message="No se encontro personal" />
@@ -275,6 +313,41 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
           plural="personas"
         />
       </div>
+
+      {/* Móvil: nombre y estado arriba; debajo, la especialidad con la
+          cuadrilla y el teléfono, que es con lo que se ubica a alguien. */}
+      <ListaMovil
+        vacia={filtered.length === 0}
+        mensajeVacio="No se encontro personal"
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((p) => (
+          <Link
+            key={p.id}
+            href={`/dashboard/personal/${p.id}?from=${aqui}`}
+            className={FILA_MOVIL}
+          >
+            <InitialsAvatar name={fullName(p)} size={40} />
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
+                  {fullName(p)}
+                </span>
+                {p.estado !== "ACTIVO" && (
+                  <span className="flex-none rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                    Inactivo
+                  </span>
+                )}
+              </span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                {resumen(p)}
+              </span>
+            </span>
+          </Link>
+        ))}
+      </ListaMovil>
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -14,14 +13,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
+import { useScrollInfinito } from "@/components/shared/scroll-infinito";
+import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
 import { money, fecha } from "./formato";
-import { aca, useFiltroUrl } from "@/lib/filtros-url";
+import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface OrdenRow {
   id: string;
@@ -60,7 +62,6 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
     );
   }, [ordenes, busqueda]);
 
-  const total = filtradas.reduce((a, o) => a + o.total, 0);
   const totalPages = Math.max(1, Math.ceil(filtradas.length / FILAS_POR_PAGINA));
   const pagina = Math.min(page, totalPages);
   const paginadas = filtradas.slice(
@@ -68,25 +69,32 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
     pagina * FILAS_POR_PAGINA
   );
 
+  const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
+    filtradas.length,
+    busqueda
+  );
+  const enLista = filtradas.slice(0, visibles);
+  const aqui = useAca();
+
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Borradores</h1>
-          <p className="text-sm text-muted-foreground">
-            Órdenes por revisar. Se pueden editar hasta que se facturan.
-          </p>
-        </div>
-        <Link href="/dashboard/ordenes/nueva">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva orden
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Borradores"
+        actions={[
+          {
+            label: "Nueva orden",
+            href: "/dashboard/ordenes/nueva",
+            icon: "plus",
+            primary: true,
+          },
+        ]}
+      />
 
-      <div className="flex flex-none flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] max-w-sm flex-1">
+      {/* Sin filtros: alcanza con el buscador. El total que iba acá —"Suman
+          $X"— se fue: es la suma de lo que el cron dejó sin revisar, no plata
+          que alguien deba, y al lado del título se leía como si lo fuera. */}
+      <div className="flex flex-none flex-wrap items-center gap-2 [&_input]:h-9 md:gap-3">
+        <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar por cliente o número..."
@@ -98,17 +106,9 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
             className="pl-9"
           />
         </div>
-        {filtradas.length > 0 && (
-          <span className="ml-auto text-sm text-muted-foreground">
-            Suman{" "}
-            <span className="font-semibold text-foreground tabular-nums">
-              {money(total)}
-            </span>
-          </span>
-        )}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card">
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtradas.length === 0 ? (
             <EmptyState message="No hay borradores por revisar." />
@@ -164,6 +164,38 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
           plural="borradores"
         />
       </div>
+
+      {/* Móvil: número y cliente arriba, y debajo la fecha con cuántos
+          productos lleva y el total. */}
+      <ListaMovil
+        vacia={filtradas.length === 0}
+        mensajeVacio="No hay borradores por revisar."
+        hayMas={hayMas}
+        cargando={cargando}
+        centinela={centinela}
+      >
+        {enLista.map((o) => (
+          <Link
+            key={o.id}
+            href={`/dashboard/ordenes/${o.id}?from=${aqui}`}
+            className={FILA_MOVIL}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-foreground">
+                <span className="tabular-nums">#{o.numero}</span>{" "}
+                {nombreCliente(o.cliente)}
+              </span>
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                <span className="tabular-nums">{fecha(o.fecha)}</span> ·{" "}
+                {o.lineas} {o.lineas === 1 ? "producto" : "productos"}
+              </span>
+            </span>
+            <span className="flex-none text-sm font-semibold tabular-nums">
+              {money(o.total)}
+            </span>
+          </Link>
+        ))}
+      </ListaMovil>
     </>
   );
 }

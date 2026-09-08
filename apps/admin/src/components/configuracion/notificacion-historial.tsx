@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
+import { Label } from "@/components/ui/label";
+import { BarraFiltros } from "@/components/shared/barra-filtros";
 import {
   Table,
   TableBody,
@@ -106,63 +108,89 @@ export function NotificacionHistorial() {
     });
   };
 
+  const filtrosPuestos = [
+    filtroTipo,
+    filtroEstado,
+    filtroDesde,
+    filtroHasta,
+  ].filter(Boolean).length;
+
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <div className="w-40">
-          <CustomSelect
-            value={filtroTipo}
-            onChange={(val) => {
-              setFiltroTipo(val);
-              setPage(1);
-            }}
-            options={[
-              { value: "", label: "Todos los tipos" },
-              { value: "CONFIRMACION_VISITA_CLIENTE", label: "Confirmación" },
-              { value: "RECORDATORIO_VISITA_CLIENTE", label: "Recordatorio" },
-              { value: "RESUMEN_DIARIO_ADMIN", label: "Resumen diario" },
-              { value: "ALERTA_VISITA_COMPLETADA", label: "Completada" },
-              { value: "ALERTA_VISITA_INCOMPLETA", label: "Incompleta" },
-              { value: "MENSAJE_ENTRANTE_CLIENTE", label: "Mensaje entrante" },
-            ]}
-          />
-        </div>
-        <div className="w-36">
-          <CustomSelect
-            value={filtroEstado}
-            onChange={(val) => {
-              setFiltroEstado(val);
-              setPage(1);
-            }}
-            options={[
-              { value: "", label: "Todos" },
-              { value: "ENVIADA", label: "Enviada" },
-              { value: "PENDIENTE", label: "Pendiente" },
-              { value: "FALLIDA", label: "Fallida" },
-            ]}
-          />
-        </div>
-        <Input
-          type="date"
-          value={filtroDesde}
-          onChange={(e) => {
-            setFiltroDesde(e.target.value);
+      {/* El botón al lado del título, y los cuatro controles adentro: en fila
+          ocupaban dos renglones enteros arriba de una tabla que es puro
+          historial —se consulta de vez en cuando, no se filtra siempre. */}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Historial de envíos</h2>
+        <BarraFiltros
+          escritorio="popover"
+          activos={filtrosPuestos}
+          onLimpiar={() => {
+            setFiltroTipo("");
+            setFiltroEstado("");
+            setFiltroDesde("");
+            setFiltroHasta("");
             setPage(1);
           }}
-          className="w-36"
-          placeholder="Desde"
-        />
-        <Input
-          type="date"
-          value={filtroHasta}
-          onChange={(e) => {
-            setFiltroHasta(e.target.value);
-            setPage(1);
-          }}
-          className="w-36"
-          placeholder="Hasta"
-        />
+        >
+          <div className="space-y-1">
+            <Label className="text-xs">Tipo</Label>
+            <CustomSelect
+              value={filtroTipo}
+              onChange={(val) => {
+                setFiltroTipo(val);
+                setPage(1);
+              }}
+              options={[
+                { value: "", label: "Todos los tipos" },
+                { value: "CONFIRMACION_VISITA_CLIENTE", label: "Confirmación" },
+                { value: "RECORDATORIO_VISITA_CLIENTE", label: "Recordatorio" },
+                { value: "RESUMEN_DIARIO_ADMIN", label: "Resumen diario" },
+                { value: "ALERTA_VISITA_COMPLETADA", label: "Completada" },
+                { value: "ALERTA_VISITA_INCOMPLETA", label: "Incompleta" },
+                { value: "MENSAJE_ENTRANTE_CLIENTE", label: "Mensaje entrante" },
+              ]}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Estado</Label>
+            <CustomSelect
+              value={filtroEstado}
+              onChange={(val) => {
+                setFiltroEstado(val);
+                setPage(1);
+              }}
+              options={[
+                { value: "", label: "Todos" },
+                { value: "ENVIADA", label: "Enviada" },
+                { value: "PENDIENTE", label: "Pendiente" },
+                { value: "FALLIDA", label: "Fallida" },
+              ]}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Desde</Label>
+            <Input
+              type="date"
+              value={filtroDesde}
+              onChange={(e) => {
+                setFiltroDesde(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Hasta</Label>
+            <Input
+              type="date"
+              value={filtroHasta}
+              onChange={(e) => {
+                setFiltroHasta(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+        </BarraFiltros>
       </div>
 
       {/* Table */}
