@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { MonthYearPicker } from "@/components/ui/month-year-picker";
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
-
-const MESES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
 
 const DIAS_SEMANA = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 
@@ -21,15 +21,29 @@ interface DatePickerProps {
   className?: string;
 }
 
-function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate();
+const diasDelMes = (anio: number, mes: number) =>
+  new Date(anio, mes + 1, 0).getDate();
+
+/** Lunes = 0, para que la grilla arranque en lunes. */
+function primerDia(anio: number, mes: number) {
+  const d = new Date(anio, mes, 1).getDay();
+  return d === 0 ? 6 : d - 1;
 }
 
-function getFirstDayOfMonth(year: number, month: number) {
-  const day = new Date(year, month, 1).getDay();
-  return day === 0 ? 6 : day - 1; // Monday = 0
-}
-
+/**
+ * Un campo de fecha con su calendario.
+ *
+ * **El calendario va en un portal** (`Popover`), no en un `absolute` colgado
+ * del campo. Así estaba antes y se cortaba: cuando abajo no entraba se abría
+ * hacia arriba, y si tampoco entraba arriba, el `overflow` del contenedor que
+ * scrollea le comía la mitad de encima —el encabezado con el mes y las
+ * primeras semanas—, dejando visibles solo los últimos días. Pasaba en
+ * pantallas bajas y no en las altas, así que dependía de con qué monitor se
+ * abriera la misma pantalla. Base UI lo reubica solo para que entre.
+ *
+ * El encabezado es el `MonthYearPicker` de siempre: saltar a otro año son tres
+ * clicks y no veinte.
+ */
 export function DatePicker({
   value,
   onChange,
@@ -38,282 +52,173 @@ export function DatePicker({
   maxDate,
   className,
 }: DatePickerProps) {
-  const [open, setOpen] = useState(false);
-  const [openAbove, setOpenAbove] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [abierto, setAbierto] = useState(false);
 
-  // Calendar navigation state
-  const today = new Date();
-  const initialDate = value ? new Date(value + "T00:00:00") : today;
-  const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
-  const [viewYear, setViewYear] = useState(initialDate.getFullYear());
-  const [showMonthSelect, setShowMonthSelect] = useState(false);
-  const [showYearSelect, setShowYearSelect] = useState(false);
+  const hoy = new Date();
+  const inicial = value ? new Date(value + "T00:00:00") : hoy;
+  const [vista, setVista] = useState({
+    anio: inicial.getFullYear(),
+    mes: inicial.getMonth(),
+  });
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-        setShowMonthSelect(false);
-        setShowYearSelect(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // When value changes externally, sync the view
-  useEffect(() => {
+  // Si la fecha cambia desde afuera, el calendario se para donde corresponde.
+  // Ajuste durante el render y no en un efecto: así no se pinta primero el mes
+  // viejo para corregirlo después.
+  const [ultimoValor, setUltimoValor] = useState(value);
+  if (value !== ultimoValor) {
+    setUltimoValor(value);
     if (value) {
       const d = new Date(value + "T00:00:00");
-      setViewMonth(d.getMonth());
-      setViewYear(d.getFullYear());
+      setVista({ anio: d.getFullYear(), mes: d.getMonth() });
     }
-  }, [value]);
+  }
 
-  const years = useMemo(() => {
-    const current = today.getFullYear();
-    const arr: number[] = [];
-    for (let y = current - 5; y <= current + 5; y++) arr.push(y);
-    return arr;
-  }, []);
+  const { anio, mes } = vista;
+  const total = diasDelMes(anio, mes);
+  const offset = primerDia(anio, mes);
 
-  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
-  const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
+  const deshabilitada = (iso: string) =>
+    (minDate !== undefined && iso < minDate) ||
+    (maxDate !== undefined && iso > maxDate);
 
-  const isDateDisabled = (dateStr: string) => {
-    if (minDate && dateStr < minDate) return true;
-    if (maxDate && dateStr > maxDate) return true;
-    return false;
+  const mover = (delta: number) => {
+    const d = new Date(anio, mes + delta, 1);
+    setVista({ anio: d.getFullYear(), mes: d.getMonth() });
   };
 
-  const handleSelectDay = (day: number) => {
-    const m = String(viewMonth + 1).padStart(2, "0");
-    const d = String(day).padStart(2, "0");
-    const dateStr = `${viewYear}-${m}-${d}`;
-    if (!isDateDisabled(dateStr)) {
-      onChange(dateStr);
-      setOpen(false);
-    }
+  const elegir = (dia: number) => {
+    const iso = `${anio}-${String(mes + 1).padStart(2, "0")}-${String(
+      dia
+    ).padStart(2, "0")}`;
+    if (deshabilitada(iso)) return;
+    onChange(iso);
+    setAbierto(false);
   };
 
-  const handlePrevMonth = () => {
-    if (viewMonth === 0) {
-      setViewMonth(11);
-      setViewYear(viewYear - 1);
-    } else {
-      setViewMonth(viewMonth - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (viewMonth === 11) {
-      setViewMonth(0);
-      setViewYear(viewYear + 1);
-    } else {
-      setViewMonth(viewMonth + 1);
-    }
-  };
-
-  const formatDisplay = (dateStr: string) => {
-    const d = new Date(dateStr + "T00:00:00");
-    return d.toLocaleDateString("es-EC", {
+  const mostrar = (iso: string) =>
+    new Date(iso + "T00:00:00").toLocaleDateString("es-EC", {
       day: "2-digit",
       month: "short",
       year: "numeric",
       timeZone: "UTC",
     });
-  };
 
   return (
-    <div ref={ref} className={cn("relative", className)}>
-      {/* Trigger */}
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => {
-          if (!open && triggerRef.current) {
-            const rect = triggerRef.current.getBoundingClientRect();
-            const spaceBelow = window.innerHeight - rect.bottom;
-            setOpenAbove(spaceBelow < 360);
-          }
-          setOpen(!open);
-        }}
-        className={cn(
-          "flex h-9 w-full items-center justify-between rounded-md border bg-background px-3 py-1 text-sm ring-offset-background transition-colors",
-          "hover:bg-accent hover:text-accent-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          !value && "text-muted-foreground"
-        )}
-      >
-        <span className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          {value ? formatDisplay(value) : placeholder}
-        </span>
-        {value && (
-          <span
-            onClick={(e) => {
-              e.stopPropagation();
-              onChange("");
-              setOpen(false);
-            }}
-            className="rounded p-0.5 hover:bg-gray-200"
+    <Popover open={abierto} onOpenChange={setAbierto}>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className={cn(
+              "flex h-9 w-full items-center justify-between rounded-md border bg-background px-3 py-1 text-sm ring-offset-background transition-colors",
+              "hover:bg-accent hover:text-accent-foreground",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              !value && "text-muted-foreground",
+              className
+            )}
           >
-            <X className="h-3 w-3 text-muted-foreground" />
-          </span>
-        )}
-      </button>
-
-      {/* Dropdown */}
-      {open && (
-        <div className={cn(
-          "absolute z-50 w-72 rounded-md border bg-white p-3 shadow-lg",
-          openAbove ? "bottom-full mb-1" : "top-full mt-1"
-        )}>
-          {/* Header: month/year navigation */}
-          <div className="flex items-center justify-between mb-2">
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              className="rounded p-1 hover:bg-gray-100"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            <div className="flex items-center gap-1">
-              {/* Month selector */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMonthSelect(!showMonthSelect);
-                    setShowYearSelect(false);
-                  }}
-                  className="rounded px-2 py-1 text-sm font-medium hover:bg-gray-100"
-                >
-                  {MESES[viewMonth]}
-                </button>
-                {showMonthSelect && (
-                  <div className="absolute top-full left-0 z-10 mt-1 max-h-48 w-36 overflow-y-auto rounded-md border bg-white shadow-lg">
-                    {MESES.map((m, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          setViewMonth(i);
-                          setShowMonthSelect(false);
-                        }}
-                        className={cn(
-                          "flex w-full px-3 py-1.5 text-sm hover:bg-gray-50 text-left",
-                          viewMonth === i && "bg-primary/10 text-primary font-medium"
-                        )}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Year selector */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowYearSelect(!showYearSelect);
-                    setShowMonthSelect(false);
-                  }}
-                  className="rounded px-2 py-1 text-sm font-medium hover:bg-gray-100"
-                >
-                  {viewYear}
-                </button>
-                {showYearSelect && (
-                  <div className="absolute top-full right-0 z-10 mt-1 max-h-48 w-24 overflow-y-auto rounded-md border bg-white shadow-lg">
-                    {years.map((y) => (
-                      <button
-                        key={y}
-                        type="button"
-                        onClick={() => {
-                          setViewYear(y);
-                          setShowYearSelect(false);
-                        }}
-                        className={cn(
-                          "flex w-full px-3 py-1.5 text-sm hover:bg-gray-50 text-left",
-                          viewYear === y && "bg-primary/10 text-primary font-medium"
-                        )}
-                      >
-                        {y}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              className="rounded p-1 hover:bg-gray-100"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Day headers */}
-          <div className="grid grid-cols-7 gap-0 mb-1">
-            {DIAS_SEMANA.map((d) => (
-              <div
-                key={d}
-                className="text-center text-xs font-medium text-muted-foreground py-1"
+            <span className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
+              {value ? mostrar(value) : placeholder}
+            </span>
+            {value && (
+              <span
+                role="button"
+                aria-label="Borrar la fecha"
+                // El aspa está adentro del disparador, así que su clic tiene
+                // que morir acá o además abre el calendario. También el
+                // `pointerdown`: es con lo que el popover abre.
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange("");
+                  setAbierto(false);
+                }}
+                className="rounded p-0.5 hover:bg-muted"
               >
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Days grid */}
-          <div className="grid grid-cols-7 gap-0">
-            {/* Empty cells for days before the 1st */}
-            {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-8" />
-            ))}
-            {/* Day cells */}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1;
-              const m = String(viewMonth + 1).padStart(2, "0");
-              const d = String(day).padStart(2, "0");
-              const dateStr = `${viewYear}-${m}-${d}`;
-              const isSelected = value === dateStr;
-              const isToday =
-                day === today.getDate() &&
-                viewMonth === today.getMonth() &&
-                viewYear === today.getFullYear();
-              const disabled = isDateDisabled(dateStr);
-
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => handleSelectDay(day)}
-                  className={cn(
-                    "h-8 w-full rounded text-sm transition-colors",
-                    isSelected
-                      ? "bg-primary text-primary-foreground"
-                      : isToday
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "hover:bg-gray-100",
-                    disabled && "text-gray-300 cursor-not-allowed hover:bg-transparent"
-                  )}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
+                <X className="h-3 w-3 text-muted-foreground" />
+              </span>
+            )}
+          </button>
+        }
+      />
+      {/* Con tope de alto: en una pantalla muy baja el calendario entero no
+          entra, y es preferible poder scrollearlo adentro a que se corte. */}
+      <PopoverContent className="max-h-[calc(100dvh-2rem)] w-72 overflow-y-auto p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => mover(-1)}
+            className="rounded p-1 text-muted-foreground hover:bg-muted"
+            aria-label="Mes anterior"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <MonthYearPicker
+            anio={anio}
+            mes={mes}
+            onChange={(a, m) => setVista({ anio: a, mes: m })}
+          />
+          <button
+            type="button"
+            onClick={() => mover(1)}
+            className="rounded p-1 text-muted-foreground hover:bg-muted"
+            aria-label="Mes siguiente"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-      )}
-    </div>
+
+        <div className="mb-1 grid grid-cols-7">
+          {DIAS_SEMANA.map((d) => (
+            <div
+              key={d}
+              className="py-1 text-center text-xs font-medium text-muted-foreground"
+            >
+              {d}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7">
+          {Array.from({ length: offset }).map((_, i) => (
+            <div key={`vacio-${i}`} className="h-8" />
+          ))}
+          {Array.from({ length: total }).map((_, i) => {
+            const dia = i + 1;
+            const iso = `${anio}-${String(mes + 1).padStart(2, "0")}-${String(
+              dia
+            ).padStart(2, "0")}`;
+            const elegida = value === iso;
+            const esHoy =
+              dia === hoy.getDate() &&
+              mes === hoy.getMonth() &&
+              anio === hoy.getFullYear();
+            const sinPermiso = deshabilitada(iso);
+
+            return (
+              <button
+                key={dia}
+                type="button"
+                disabled={sinPermiso}
+                onClick={() => elegir(dia)}
+                className={cn(
+                  "h-8 w-full rounded text-sm transition-colors",
+                  elegida
+                    ? "bg-primary text-primary-foreground"
+                    : esHoy
+                      ? "bg-primary/10 font-medium text-primary"
+                      : "hover:bg-muted",
+                  sinPermiso &&
+                    "cursor-not-allowed text-muted-foreground/40 hover:bg-transparent"
+                )}
+              >
+                {dia}
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
