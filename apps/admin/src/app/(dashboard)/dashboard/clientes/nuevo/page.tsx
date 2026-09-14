@@ -5,7 +5,7 @@ import { ClienteForm } from "@/components/clientes/cliente-form";
 export default async function NuevoClientePage() {
   const user = await requireAuth();
 
-  if (user.role === "PERSONAL_ADMIN" || user.role === "PERSONAL") {
+  if (user.role === "PERSONAL" || user.role === "CLIENTE") {
     redirect("/dashboard/clientes");
   }
 

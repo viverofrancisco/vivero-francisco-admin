@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { viewerFromSession } from "@/lib/auth-helpers";
-import { listServiciosParaInforme } from "@/lib/services/informe.service";
+import { listTareasParaInforme } from "@/lib/services/informe.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 const schema = z.object({
   visitaIds: z.array(z.string().min(1)).min(1).max(200),
 });
 
-/** Servicios cubiertos por las visitas seleccionadas — el origen de las secciones. */
+/** Las tareas que se hicieron en esas visitas — el origen de las secciones. */
 export async function POST(request: Request) {
   const viewer = await viewerFromSession();
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
   try {
-    const items = await listServiciosParaInforme(viewer, parsed.data.visitaIds);
+    const items = await listTareasParaInforme(viewer, parsed.data.visitaIds);
     return NextResponse.json({ items });
   } catch (error) {
     return serviceErrorResponse(error);

@@ -13,8 +13,7 @@ export async function POST(
 ) {
   const userOrResponse = await requireMobileRole(
     request,
-    "ADMIN",
-    "PERSONAL_ADMIN"
+    "ADMIN"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 

@@ -49,7 +49,7 @@ const navItems: NavItem[] = [
     label: "Clientes",
     href: "/dashboard/clientes",
     icon: Users,
-    roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
+    roles: ["ADMIN", "STAFF"],
   },
   {
     label: "Productos",
@@ -58,7 +58,18 @@ const navItems: NavItem[] = [
     roles: ["ADMIN", "STAFF"],
     children: [{ label: "Categorías", href: "/dashboard/productos/categorias" }],
   },
-  { label: "Visitas", href: "/dashboard/visitas", icon: CalendarDays },
+  {
+    label: "Visitas",
+    href: "/dashboard/visitas",
+    icon: CalendarDays,
+    children: [
+      {
+        label: "Tareas",
+        href: "/dashboard/visitas/tareas",
+        roles: ["ADMIN", "STAFF"],
+      },
+    ],
+  },
   { label: "Mensajes", href: "/dashboard/mensajes", icon: MessageSquare },
   {
     label: "Informes",
@@ -74,7 +85,7 @@ const navItems: NavItem[] = [
     label: "Suscripciones",
     href: "/dashboard/suscripciones",
     icon: RefreshCw,
-    roles: ["ADMIN", "STAFF", "PERSONAL_ADMIN"],
+    roles: ["ADMIN", "STAFF"],
   },
   {
     label: "Órdenes",

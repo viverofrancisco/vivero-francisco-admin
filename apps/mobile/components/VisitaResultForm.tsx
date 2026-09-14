@@ -14,22 +14,28 @@ import {
   HelperText,
   IconButton,
   Text,
-  TextInput,
 } from "react-native-paper";
 import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Calendar, type DateData } from "react-native-calendars";
 import { apiRequest, ApiError } from "@/lib/api";
 import type {
   VisitaDetail,
   VisitaMedia,
-  VisitaProducto,
 } from "@/lib/types";
 
-type Mode = "complete" | "incomplete";
+/**
+ * El parte de una persona: sus horas y las tareas que **ella** hizo.
+ *
+ * Reemplaza al viejo formulario de "completar visita". Cerrar la visita pasó a
+ * ser de oficina —decir que el trabajo está terminado es mirar lo que cargaron
+ * todos— así que desde el teléfono lo único que se hace es contar lo propio.
+ *
+ * Tampoco pide la fecha: la visita ya tiene la suya, y qué día se da por hecha
+ * lo decide quien la cierra.
+ */
 
 interface MediaItem {
   uri: string;
@@ -37,15 +43,24 @@ interface MediaItem {
   contentType: string;
   tipo: "imagen" | "video";
   thumbUri?: string;
-  /// Producto de la visita al que corresponde. Opcional.
-  productoId: string | null;
+  /// A qué tarea corresponde. Es lo que hace que caiga sola en su sección del
+  /// informe, así que se pregunta acá: es el único momento en que alguien se
+  /// acuerda de qué era cada foto.
+  tareaId: string | null;
+}
+
+/** Una tarea del catálogo, tal como la devuelve `/api/mobile/tareas`. */
+export interface TareaDeCatalogo {
+  id: string;
+  nombre: string;
+  orden: number;
 }
 
 export interface VisitaFormInitialValues {
-  fechaRealizada?: string | null; // ISO date or YYYY-MM-DD
   horaEntrada?: string | null; // "HH:MM"
   horaSalida?: string | null;
-  text?: string | null;
+  /** Las tareas que esta persona ya tenía cargadas. */
+  tareaIds?: string[];
   existingMedia?: VisitaMedia[];
 }
 
@@ -62,15 +77,16 @@ interface UploadsResponse {
 
 export function VisitaResultForm({
   visitaId,
-  mode,
   initialValues,
-  productos = [],
+  tareas,
+  obligatorias = [],
 }: {
   visitaId: string;
-  mode: Mode;
   initialValues?: VisitaFormInitialValues;
-  /// Servicios que cubre la visita. Con más de uno se pueden etiquetar fotos.
-  productos?: VisitaProducto[];
+  /** El catálogo entero: se marca de acá lo que se hizo. */
+  tareas: TareaDeCatalogo[];
+  /** Las que la visita exige, para ponerlas primero y señalarlas. */
+  obligatorias?: string[];
 }) {
   const router = useRouter();
   const navigation = useNavigation();
@@ -79,17 +95,6 @@ export function VisitaResultForm({
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
-
-  const today = useMemo(() => startOfDay(new Date()), []);
-  const initialFecha = useMemo(
-    () =>
-      initialValues?.fechaRealizada
-        ? startOfDay(new Date(initialValues.fechaRealizada))
-        : today,
-    [initialValues?.fechaRealizada, today]
-  );
-  const [fecha, setFecha] = useState<Date>(initialFecha);
-  const [showCalendar, setShowCalendar] = useState(false);
 
   const [horaEntrada, setHoraEntrada] = useState<Date | null>(
     parseHm(initialValues?.horaEntrada)
@@ -125,13 +130,11 @@ export function VisitaResultForm({
     setPendingTime(null);
   }
 
-  const [text, setText] = useState(initialValues?.text ?? "");
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  // Etiqueta que se aplica a las fotos nuevas. Con un solo servicio no hay
-  // nada que elegir, así que va preseleccionado.
-  const [tagServicioId, setTagServicioId] = useState<string | null>(
-    productos.length === 1 ? productos[0].productoId : null
+  /** Lo que esta persona hizo. Es el estado final: reemplaza lo que tuviera. */
+  const [tareaIds, setTareaIds] = useState<string[]>(
+    initialValues?.tareaIds ?? []
   );
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [existingMedia, setExistingMedia] = useState<VisitaMedia[]>(
     initialValues?.existingMedia ?? []
   );
@@ -144,20 +147,67 @@ export function VisitaResultForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isEdit = (initialValues?.existingMedia?.length ?? 0) > 0
-    || initialValues?.text !== undefined
-    || initialValues?.fechaRealizada !== undefined;
-  const isComplete = mode === "complete";
-  const headerTitle = isEdit
-    ? (isComplete ? "Editar visita" : "Editar visita")
-    : (isComplete ? "Completar visita" : "Marcar incompleta");
-  const submitLabel = isEdit
-    ? "Guardar cambios"
-    : isComplete
-      ? "Marcar completada"
-      : "Marcar incompleta";
-  const textLabel = isComplete ? "Notas (opcional)" : "Motivo";
-  const canSubmit = isComplete ? true : text.trim().length > 0;
+  const isEdit = (initialValues?.tareaIds?.length ?? 0) > 0;
+  const headerTitle = isEdit ? "Editar mi parte" : "¿Qué hiciste?";
+  const submitLabel = isEdit ? "Guardar cambios" : "Guardar mi parte";
+  // Se puede guardar sin marcar nada: hay días en que se fue y no se hizo lo
+  // que estaba previsto, y eso también es información.
+  const canSubmit = true;
+
+  /**
+   * Las obligatorias primero. Es lo que hay que dejar hecho, así que tenerlas
+   * que buscar en una lista de veinte es esconder justo lo que importa.
+   */
+  const enOrden = useMemo(() => {
+    const exigidas = new Set(obligatorias);
+    return [...tareas].sort((a, b) => {
+      const pa = exigidas.has(a.id) ? 0 : 1;
+      const pb = exigidas.has(b.id) ? 0 : 1;
+      return pa - pb || a.orden - b.orden;
+    });
+  }, [tareas, obligatorias]);
+
+  const alternarTarea = (id: string) =>
+    setTareaIds((prev) => {
+      const siguiente = prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : [...prev, id];
+      // El selector sigue a lo marcado: desmarcar la tarea con la que se
+      // estaban etiquetando fotos lo dejaría apuntando a algo que ya no se hizo,
+      // y marcar la primera da una etiqueta por omisión sin pedir nada.
+      if (!etiqueta || !siguiente.includes(etiqueta)) {
+        setEtiqueta(siguiente[0] ?? null);
+      }
+      return siguiente;
+    });
+
+  /**
+   * Con qué tarea entran las fotos nuevas.
+   *
+   * Sale de las que la persona acaba de marcar, no del catálogo entero:
+   * etiquetar una foto con algo que no hizo no tiene sentido, y una lista de
+   * veinte donde solo tres aplican es una lista que nadie usa. Con una sola
+   * marcada va puesta y el selector ni aparece.
+   */
+  const [etiqueta, setEtiqueta] = useState<string | null>(
+    initialValues?.tareaIds?.[0] ?? null
+  );
+  const etiquetables = tareas.filter((t) => tareaIds.includes(t.id));
+  const nombreDeTarea = (id: string | null) =>
+    id ? (tareas.find((t) => t.id === id)?.nombre ?? null) : null;
+
+  /** Rota la etiqueta de una foto ya agregada entre lo marcado y "sin etiqueta". */
+  function rotarEtiqueta(uri: string) {
+    if (etiquetables.length === 0) return;
+    const ids: (string | null)[] = [...etiquetables.map((t) => t.id), null];
+    setMedia((prev) =>
+      prev.map((m) =>
+        m.uri === uri
+          ? { ...m, tareaId: ids[(ids.indexOf(m.tareaId) + 1) % ids.length] }
+          : m
+      )
+    );
+  }
 
   // Generate thumbnails for existing remote videos so they appear with a
   // preview frame instead of the dark placeholder.
@@ -241,7 +291,9 @@ export function VisitaResultForm({
           contentType,
           tipo: isVideo ? "video" : "imagen",
           thumbUri,
-          productoId: tagServicioId,
+          // Entra con la tarea que esté activa en el selector de abajo. Con
+          // una sola marcada no hay nada que elegir y va puesta.
+          tareaId: etiqueta,
         };
       })
     );
@@ -250,32 +302,6 @@ export function VisitaResultForm({
 
   function removeMedia(uri: string) {
     setMedia((prev) => prev.filter((m) => m.uri !== uri));
-  }
-
-  /**
-   * Rota la etiqueta de una foto entre los productos de la visita y "sin
-   * etiqueta". Es la forma más corta de corregir una foto ya agregada.
-   */
-  function cycleTag(uri: string) {
-    if (productos.length === 0) return;
-    const ids: (string | null)[] = [
-      ...productos.map((sv) => sv.productoId),
-      null,
-    ];
-    setMedia((prev) =>
-      prev.map((m) => {
-        if (m.uri !== uri) return m;
-        const idx = ids.indexOf(m.productoId);
-        return { ...m, productoId: ids[(idx + 1) % ids.length] };
-      })
-    );
-  }
-
-  function nombreServicio(id: string | null): string | null {
-    if (!id) return null;
-    return (
-      productos.find((sv) => sv.productoId === id)?.producto.nombre ?? null
-    );
   }
 
   async function uploadAll(): Promise<{ key: string; tipo: "imagen" | "video" }[]> {
@@ -313,7 +339,7 @@ export function VisitaResultForm({
     return presign.uploads.map((u, i) => ({
       key: u.key,
       tipo: u.tipo,
-      productoId: media[i]?.productoId ?? null,
+      tareaId: media[i]?.tareaId ?? null,
     }));
   }
 
@@ -323,20 +349,15 @@ export function VisitaResultForm({
     setError(null);
     try {
       const uploaded = await uploadAll();
-      const fechaRealizada = formatYmd(fecha);
-      const payload = {
-        fechaRealizada,
-        horaEntrada: horaEntrada ? formatHm(horaEntrada) : undefined,
-        horaSalida: horaSalida ? formatHm(horaSalida) : undefined,
-        media: uploaded,
-        ...(isComplete
-          ? { notes: text.trim() || undefined }
-          : { reason: text.trim() }),
-      };
-      await apiRequest<VisitaDetail>(
-        `/api/mobile/visitas/${visitaId}/${isComplete ? "complete" : "incomplete"}`,
-        { method: "POST", body: payload }
-      );
+      await apiRequest<VisitaDetail>(`/api/mobile/visitas/${visitaId}/parte`, {
+        method: "POST",
+        body: {
+          horaEntrada: horaEntrada ? formatHm(horaEntrada) : null,
+          horaSalida: horaSalida ? formatHm(horaSalida) : null,
+          tareaIds,
+          media: uploaded,
+        },
+      });
       router.back();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Error al guardar");
@@ -371,20 +392,6 @@ export function VisitaResultForm({
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          <Section title="Fecha">
-            <Pressable
-              onPress={() => setShowCalendar(true)}
-              style={({ pressed }) => [
-                styles.fieldBox,
-                pressed && styles.fieldBoxPressed,
-              ]}
-            >
-              <Text variant="bodyMedium" style={styles.fieldValue}>
-                {formatLongDate(fecha)}
-              </Text>
-            </Pressable>
-          </Section>
-
           <Section title="Horario">
             <View style={styles.timeRow}>
               <TimePickField
@@ -402,34 +409,57 @@ export function VisitaResultForm({
             </View>
           </Section>
 
-          <Section title={isComplete ? "Notas" : "Motivo"}>
-            <TextInput
-              mode="outlined"
-              value={text}
-              onChangeText={setText}
-              label={textLabel}
-              multiline
-              numberOfLines={4}
-              outlineColor="#e0e0e0"
-              activeOutlineColor="#2e7d32"
-              outlineStyle={{ borderRadius: 12 }}
-              style={styles.textInput}
-            />
+          {/* Lo que hiciste **vos**. Otro puede haber hecho otras cosas en la
+              misma visita y las carga en su propio parte. */}
+          <Section title="Tareas que hiciste">
+            <View style={styles.tareas}>
+              {enOrden.map((t) => {
+                const marcada = tareaIds.includes(t.id);
+                const exigida = obligatorias.includes(t.id);
+                return (
+                  <Pressable
+                    key={t.id}
+                    onPress={() => alternarTarea(t.id)}
+                    style={[styles.tarea, marcada && styles.tareaMarcada]}
+                  >
+                    <View
+                      style={[styles.casilla, marcada && styles.casillaMarcada]}
+                    >
+                      {marcada ? <Text style={styles.tilde}>✓</Text> : null}
+                    </View>
+                    <Text
+                      style={[
+                        styles.tareaTexto,
+                        marcada && styles.tareaTextoMarcada,
+                      ]}
+                    >
+                      {t.nombre}
+                    </Text>
+                    {exigida ? (
+                      <Text style={styles.obligatoria}>Obligatoria</Text>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </View>
           </Section>
 
           <Section title="Imágenes y videos">
-            {productos.length > 1 ? (
+            {/* Con qué tarea entran las fotos nuevas. Solo entre las que se
+                acaban de marcar: etiquetar una foto con algo que no se hizo no
+                tiene sentido. Con una sola no hay nada que elegir. */}
+            {etiquetables.length > 1 ? (
               <View style={styles.tagPicker}>
                 <Text style={styles.tagPickerLabel}>
-                  Etiquetar fotos nuevas como:
+                  Las fotos nuevas son de:
                 </Text>
                 <View style={styles.tagChips}>
-                  {productos.map((sv) => {
-                    const activo = tagServicioId === sv.productoId;
+                  {etiquetables.map((t) => {
+                    const activo = etiqueta === t.id;
                     return (
                       <Pressable
-                        key={sv.productoId}
-                        onPress={() => setTagServicioId(sv.productoId)}
+                        key={t.id}
+                        onPress={() => setEtiqueta(t.id)}
                         style={[styles.tagChip, activo && styles.tagChipActive]}
                       >
                         <Text
@@ -438,22 +468,22 @@ export function VisitaResultForm({
                             activo && styles.tagChipTextActive,
                           ]}
                         >
-                          {sv.producto.nombre}
+                          {t.nombre}
                         </Text>
                       </Pressable>
                     );
                   })}
                   <Pressable
-                    onPress={() => setTagServicioId(null)}
+                    onPress={() => setEtiqueta(null)}
                     style={[
                       styles.tagChip,
-                      tagServicioId === null && styles.tagChipActive,
+                      etiqueta === null && styles.tagChipActive,
                     ]}
                   >
                     <Text
                       style={[
                         styles.tagChipText,
-                        tagServicioId === null && styles.tagChipTextActive,
+                        etiqueta === null && styles.tagChipTextActive,
                       ]}
                     >
                       Sin etiqueta
@@ -461,8 +491,8 @@ export function VisitaResultForm({
                   </Pressable>
                 </View>
                 <Text style={styles.tagPickerHint}>
-                  Es opcional. Sirve para que el informe arme cada sección con
-                  sus fotos. Toca la etiqueta de una foto para cambiarla.
+                  Así cada foto cae sola en su sección del informe. Toca la
+                  etiqueta de una foto para cambiarla.
                 </Text>
               </View>
             ) : null}
@@ -501,9 +531,7 @@ export function VisitaResultForm({
                   </View>
                 );
               })}
-              {media.map((m) => {
-                const tag = nombreServicio(m.productoId);
-                return (
+              {media.map((m) => (
                 <View key={m.uri} style={styles.mediaItem}>
                   {m.tipo === "imagen" ? (
                     <Image source={{ uri: m.uri }} style={styles.mediaThumb} />
@@ -529,20 +557,19 @@ export function VisitaResultForm({
                   >
                     <Text style={styles.mediaRemoveX}>×</Text>
                   </Pressable>
-                  {productos.length > 1 ? (
+                  {etiquetables.length > 1 ? (
                     <Pressable
-                      onPress={() => cycleTag(m.uri)}
+                      onPress={() => rotarEtiqueta(m.uri)}
                       style={styles.mediaTag}
                       hitSlop={4}
                     >
                       <Text style={styles.mediaTagText} numberOfLines={1}>
-                        {tag ?? "Sin etiqueta"}
+                        {nombreDeTarea(m.tareaId) ?? "Sin etiqueta"}
                       </Text>
                     </Pressable>
                   ) : null}
                 </View>
-                );
-              })}
+              ))}
               {existingMedia.length + media.length < 20 ? (
                 <Pressable
                   onPress={pickMedia}
@@ -571,7 +598,7 @@ export function VisitaResultForm({
             onPress={submit}
             loading={submitting}
             disabled={submitting || !canSubmit}
-            buttonColor={isComplete ? "#2e7d32" : "#c62828"}
+            buttonColor="#2e7d32"
             textColor="#fff"
             style={styles.primaryBtn}
             contentStyle={styles.primaryBtnContent}
@@ -581,43 +608,6 @@ export function VisitaResultForm({
           </Button>
         </View>
       </View>
-
-      {/* Date modal */}
-      <Modal
-        visible={showCalendar}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowCalendar(false)}
-      >
-        <Pressable
-          style={styles.modalBackdrop}
-          onPress={() => setShowCalendar(false)}
-        >
-          <Pressable
-            style={styles.modalCard}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <Calendar
-              current={formatYmd(fecha)}
-              onDayPress={(d: DateData) => {
-                const next = new Date(d.year, d.month - 1, d.day);
-                setFecha(next);
-                setShowCalendar(false);
-              }}
-              markedDates={{
-                [formatYmd(fecha)]: {
-                  selected: true,
-                  selectedColor: "#2e7d32",
-                },
-              }}
-              theme={{
-                todayTextColor: "#2e7d32",
-                arrowColor: "#2e7d32",
-              }}
-            />
-          </Pressable>
-        </Pressable>
-      </Modal>
 
       {/* Time picker — Android shows a native dialog; iOS renders inline so
           we wrap it in a bottom-sheet Modal to float it above the footer. */}
@@ -730,12 +720,6 @@ function Section({
   );
 }
 
-function startOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
 function parseHm(value: string | null | undefined): Date | null {
   if (!value) return null;
   const [h, m] = value.split(":").map((n) => parseInt(n, 10));
@@ -755,21 +739,8 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-function formatYmd(d: Date): string {
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-}
-
 function formatHm(d: Date): string {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-}
-
-function formatLongDate(d: Date): string {
-  return d.toLocaleDateString("es-EC", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 }
 
 function guessContentType(name: string, isVideo: boolean): string {
@@ -900,6 +871,58 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     marginLeft: 2,
+  },
+  tareas: {
+    gap: 8,
+  },
+  tarea: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
+  },
+  tareaMarcada: {
+    borderColor: "#2e7d32",
+    backgroundColor: "#f1f8f2",
+  },
+  casilla: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "#bdbdbd",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  casillaMarcada: {
+    borderColor: "#2e7d32",
+    backgroundColor: "#2e7d32",
+  },
+  tilde: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 16,
+  },
+  tareaTexto: {
+    flex: 1,
+    fontSize: 15,
+    color: "#212121",
+  },
+  tareaTextoMarcada: {
+    fontWeight: "600",
+  },
+  obligatoria: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#b26a00",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
   },
   tagPicker: {
     marginBottom: 12,

@@ -37,8 +37,8 @@ export async function POST(request: Request) {
 
   try {
     const resultado = await softDeleteVisitas(
-      parsed.data.ids,
-      viewerFromSession(user)
+      viewerFromSession(user),
+      parsed.data.ids
     );
     return NextResponse.json(resultado);
   } catch (error) {

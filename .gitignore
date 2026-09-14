@@ -21,6 +21,7 @@ coverage/
 
 # Manifiesto del seed de datos de prueba: apunta a una base concreta.
 apps/admin/scripts/.datos-prueba.json
+apps/admin/scripts/.visita-con-fotos.json
 
 # Claude Code local files (ignore everything under .claude EXCEPT the committed docs)
 .claude/*

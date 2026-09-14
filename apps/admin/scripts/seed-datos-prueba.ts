@@ -556,23 +556,59 @@ async function sembrar(
   const creadas = await prisma.visita.createManyAndReturn({ data: visitas });
   m.visitas.push(...creadas.map((v) => v.id));
 
-  await prisma.visitaProducto.createMany({
-    data: creadas.flatMap((v) => {
-      const clave = `${v.clienteId}|${v.fechaProgramada.toISOString().slice(0, 10)}`;
-      return (productosDe.get(clave) ?? []).map((productoId, posicion) => {
-        const item = cubre.get(`${v.clienteId}|${productoId}`) ?? null;
-        return {
-          visitaId: v.id,
-          productoId,
-          // Una de cada seis cubiertas se deja fuera del plan a propósito, que
-          // es lo que hace quien agenda un trabajo extra acordado por fuera.
-          // Sin esto no habría en la base ninguna visita con ese estado.
-          suscripcionItemId: item && chance(0.83) ? item : null,
-          posicion,
-        };
-      });
-    }),
+  // Lo que la visita exige. Solo en algunas: la mayoría no exige nada, y una
+  // base donde todas exigen tres tareas no se parece a la realidad.
+  const tareasVivas = await prisma.tarea.findMany({
+    where: { deletedAt: null },
+    select: { id: true },
+    orderBy: { orden: "asc" },
   });
+  if (tareasVivas.length > 0) {
+    await prisma.visitaTareaObligatoria.createMany({
+      data: creadas.flatMap((v) =>
+        chance(0.4)
+          ? algunos(tareasVivas, entre(1, 3)).map((t) => ({
+              visitaId: v.id,
+              tareaId: t.id,
+            }))
+          : []
+      ),
+      skipDuplicates: true,
+    });
+  }
+
+  // Los partes: qué hizo cada uno. Es lo que en producción carga cada jardinero
+  // desde su teléfono, y sin esto las visitas cerradas no dicen qué se hizo.
+  if (tareasVivas.length > 0) {
+    const asignaciones = await prisma.visitaPersonal.findMany({
+      where: {
+        visitaId: { in: creadas.map((v) => v.id) },
+        removedAt: null,
+        visita: { estado: { in: ["COMPLETADA", "INCOMPLETA"] } },
+      },
+      select: { id: true },
+    });
+    for (const a of asignaciones) {
+      // Uno de cada ocho no carga nada: es el caso que la oficina tiene que
+      // poder ver ("falta que cargue") y que sin esto no existiría en la base.
+      if (chance(0.12)) continue;
+      await prisma.visitaPersonalTarea.createMany({
+        data: algunos(tareasVivas, entre(1, 4)).map((t) => ({
+          visitaPersonalId: a.id,
+          tareaId: t.id,
+        })),
+        skipDuplicates: true,
+      });
+      await prisma.visitaPersonal.update({
+        where: { id: a.id },
+        data: {
+          horaEntrada: `${String(entre(7, 10)).padStart(2, "0")}:${uno(["00", "15", "30", "45"])}`,
+          horaSalida: `${String(entre(12, 17)).padStart(2, "0")}:${uno(["00", "15", "30", "45"])}`,
+          registradoEl: new Date(),
+        },
+      });
+    }
+  }
 
   // El personal del grupo queda asignado, como cuando se agenda desde el portal.
   const porGrupo = new Map(grupos.map((g) => [g.id, g.miembros.map((x) => x.personalId)]));
@@ -603,12 +639,9 @@ async function sembrar(
 
   // ── 7. Órdenes ────────────────────────────────────────────────────────
   console.log("órdenes...");
-  const {
-    generarOrden,
-    generarBorradoresDeVisitas,
-    actualizarOrden,
-    getOrden,
-  } = await import("@/lib/services/orden.service");
+  const { generarOrden, actualizarOrden, getOrden } = await import(
+    "@/lib/services/orden.service"
+  );
   const { facturarOrden } = await import("@/lib/services/factura.service");
   const { registrarCobroPropio } = await import("@/lib/services/cobro.service");
 
@@ -697,17 +730,9 @@ async function sembrar(
     return factura.facturaId;
   }
 
-  // Las visitas se escriben con Prisma directo, así que `completeVisita` nunca
-  // corrió y sus borradores no existen. Esto los arma igual que el cron: es el
-  // mismo camino que sigue el portal en producción.
-  const deVisitas = await generarBorradoresDeVisitas();
-  for (const c of deVisitas.creadas) m.ordenes.push(c.ordenId);
-  console.log(`  ${deVisitas.creadas.length} borrador(es) de visitas completadas`);
-
   for (const c of algunos(conFacturacion, 16)) {
     try {
-      // Una orden por suscripción y otra con las visitas sueltas: mezclarlas
-      // está prohibido, así que esto devuelve varias.
+      // Una orden por suscripción: cada plan es un acuerdo aparte.
       const creadas = await generarOrden(viewer, {
         clienteId: c.id,
         desde: masMeses(hoy, -6),
@@ -729,7 +754,6 @@ async function sembrar(
               precioUnitario: Number(l.precioUnitario) || entre(45, 260),
               ivaTasa: Number(l.ivaTasa),
               productoId: l.productoId,
-              visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
               suscripcionItemId: l.suscripcionItemId,
               periodoInicio: l.periodoInicio,
               periodoFin: l.periodoFin,
@@ -756,35 +780,6 @@ async function sembrar(
       if (!msg.includes("pendiente")) console.log(`    ⚠ ${c.nombre}: ${msg}`);
     }
   }
-  // Los borradores que salieron de visitas quedan en $0. Se le pone precio a
-  // buena parte y se factura, para que el portal muestre las cuatro etapas
-  // —borrador, sin cobrar, cobrado en parte, cobrado— y no una fila de ceros.
-  if (puedeEmitir) {
-    for (const { ordenId } of deVisitas.creadas) {
-      if (chance(0.45)) continue; // se queda en borrador, en $0
-      try {
-        const o = await getOrden(viewer, ordenId);
-        await actualizarOrden(viewer, ordenId, {
-          lineas: o.lineas.map((l) => ({
-            descripcion: l.descripcion,
-            cantidad: Number(l.cantidad),
-            precioUnitario: Number(l.precioUnitario) || entre(45, 260),
-            ivaTasa: Number(l.ivaTasa),
-            productoId: l.productoId,
-            visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
-            suscripcionItemId: l.suscripcionItemId,
-            periodoInicio: l.periodoInicio,
-            periodoFin: l.periodoFin,
-          })),
-        });
-        const facturaId = await emitirComoEnLaVida(ordenId);
-        if (facturaId) m.facturas.push(facturaId);
-      } catch (e) {
-        console.log(`    ⚠ ${(e as Error).message.slice(0, 70)}`);
-      }
-    }
-  }
-
   console.log(`  ${m.ordenes.length} creadas`);
 
   await sembrarInformes(prisma, viewer, m);
@@ -856,10 +851,14 @@ async function sembrarInformes(
       id: true,
       clienteId: true,
       fechaProgramada: true,
-      productos: {
-        orderBy: { posicion: "asc" },
+      personal: {
+        where: { removedAt: null },
         select: {
-          producto: { select: { id: true, nombre: true, descripcion: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, descripcion: true } },
+            },
+          },
         },
       },
     },
@@ -869,7 +868,7 @@ async function sembrarInformes(
   // hicimos este mes en tal jardín".
   const porCliente = new Map<string, typeof visitas>();
   for (const v of visitas) {
-    if (v.productos.length === 0) continue;
+    if (v.personal.every((p) => p.tareas.length === 0)) continue;
     const ya = porCliente.get(v.clienteId);
     if (ya) ya.push(v);
     else porCliente.set(v.clienteId, [v]);
@@ -890,16 +889,18 @@ async function sembrarInformes(
     // Hasta cuatro visitas por informe: más que eso no es un informe mensual.
     const cubiertas = delCliente.slice(-entre(1, 4));
 
-    // Una sección por producto, sin repetir: dos visitas que hicieron lo mismo
-    // son una sola sección, igual que en el asistente.
+    // Una sección por tarea hecha, sin repetir: dos visitas que hicieron lo
+    // mismo son una sola sección, igual que en el asistente.
     const porProducto = new Map<string, { nombre: string; descripcion: string | null }>();
     for (const v of cubiertas) {
-      for (const { producto } of v.productos) {
-        if (!porProducto.has(producto.id)) {
-          porProducto.set(producto.id, {
-            nombre: producto.nombre,
-            descripcion: producto.descripcion,
-          });
+      for (const p of v.personal) {
+        for (const { tarea } of p.tareas) {
+          if (!porProducto.has(tarea.id)) {
+            porProducto.set(tarea.id, {
+              nombre: tarea.nombre,
+              descripcion: tarea.descripcion,
+            });
+          }
         }
       }
     }
@@ -1002,8 +1003,10 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
   await borrar("visitaPersonal", () =>
     prisma.visitaPersonal.deleteMany({ where: { visitaId: { in: m.visitas } } })
   );
-  await borrar("visitaProducto", () =>
-    prisma.visitaProducto.deleteMany({ where: { visitaId: { in: m.visitas } } })
+  await borrar("visitaTareaObligatoria", () =>
+    prisma.visitaTareaObligatoria.deleteMany({
+      where: { visitaId: { in: m.visitas } },
+    })
   );
   // Una orden ajena al manifiesto puede haberse enganchado a una visita del
   // seed —el cron de borradores corre solo, y alguien pudo armar una a mano—.

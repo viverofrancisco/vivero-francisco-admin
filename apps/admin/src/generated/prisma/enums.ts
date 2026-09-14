@@ -12,7 +12,6 @@
 export const UserRole = {
   ADMIN: 'ADMIN',
   STAFF: 'STAFF',
-  PERSONAL_ADMIN: 'PERSONAL_ADMIN',
   PERSONAL: 'PERSONAL',
   CLIENTE: 'CLIENTE'
 } as const
@@ -65,6 +64,7 @@ export type EstadoServicio = (typeof EstadoServicio)[keyof typeof EstadoServicio
 
 export const EstadoVisita = {
   PROGRAMADA: 'PROGRAMADA',
+  EN_CURSO: 'EN_CURSO',
   COMPLETADA: 'COMPLETADA',
   INCOMPLETA: 'INCOMPLETA',
   CANCELADA: 'CANCELADA'
@@ -114,6 +114,15 @@ export const MotivoMovimiento = {
 } as const
 
 export type MotivoMovimiento = (typeof MotivoMovimiento)[keyof typeof MotivoMovimiento]
+
+
+export const OrdenTareas = {
+  PERSONALIZADO: 'PERSONALIZADO',
+  ALFABETICO_AZ: 'ALFABETICO_AZ',
+  ALFABETICO_ZA: 'ALFABETICO_ZA'
+} as const
+
+export type OrdenTareas = (typeof OrdenTareas)[keyof typeof OrdenTareas]
 
 
 export const AmbienteSri = {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, getUserSectorIds } from "@/lib/auth-helpers";
+import { getCurrentUser } from "@/lib/auth-helpers";
 import { sectorSchema } from "@/lib/validations/sector";
 
 export async function GET() {
@@ -9,29 +9,17 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  if (user.role === "PERSONAL_ADMIN") {
-    const sectorIds = await getUserSectorIds(user.id);
-    const sectores = await prisma.sector.findMany({
-      where: { id: { in: sectorIds }, deletedAt: null },
-      orderBy: { nombre: "asc" },
-      include: { _count: { select: { clientes: true } } },
-    });
-    return NextResponse.json(sectores);
-  }
-
-  if (user.role === "PERSONAL") {
+  // Los sectores agrupan clientes, y quién los mira es la oficina. Tenían
+  // además administradores —el rol que acotaba a un capataz a los suyos— y eso
+  // se fue con el rol: hoy un sector es solo una etiqueta geográfica.
+  if (user.role === "PERSONAL" || user.role === "CLIENTE") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
   const sectores = await prisma.sector.findMany({
     where: { deletedAt: null },
     orderBy: { nombre: "asc" },
-    include: {
-      _count: { select: { clientes: true } },
-      admins: {
-        include: { user: { select: { id: true, name: true, email: true } } },
-      },
-    },
+    include: { _count: { select: { clientes: true } } },
   });
 
   return NextResponse.json(sectores);

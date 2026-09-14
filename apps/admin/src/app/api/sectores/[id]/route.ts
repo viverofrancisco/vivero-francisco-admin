@@ -22,9 +22,6 @@ export async function GET(
         select: { id: true, nombre: true, ciudad: true },
         orderBy: { nombre: "asc" },
       },
-      admins: {
-        include: { user: { select: { id: true, name: true, email: true } } },
-      },
     },
   });
 

@@ -7,7 +7,6 @@ import { useBusquedaEnUrl, useFiltroUrl } from "@/lib/filtros-url";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { PageHeader } from "@/components/shared/page-header";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { VisitasTable } from "@/components/visitas/visitas-table";
@@ -16,7 +15,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { BarraFiltros } from "@/components/shared/barra-filtros";
 import { CalendarDays, List, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ProductoDeVisita } from "@/lib/visita-productos";
+import type { VisitaConTareas } from "@/lib/visita-tareas";
 
 const ESTADOS = [
   { value: "ALL", label: "Todos" },
@@ -39,7 +38,7 @@ interface VisitaRow {
     apellido?: string | null;
     empresa?: string | null;
   };
-  productos: ProductoDeVisita[];
+  tareas: VisitaConTareas;
   grupo: { id: string; nombre: string } | null;
 }
 
@@ -61,7 +60,7 @@ interface VisitasPageClientProps {
     q?: string;
     estado?: string;
     cliente?: string;
-    producto?: string;
+    tarea?: string;
     completadaPor?: string;
     completadaDesde?: string;
     completadaHasta?: string;
@@ -69,7 +68,7 @@ interface VisitasPageClientProps {
   /** Quiénes cerraron alguna visita: los únicos por los que tiene sentido filtrar. */
   cerradores: { id: string; nombre: string }[];
   userRole?: string;
-  productos: FilterOption[];
+  tareas: FilterOption[];
 }
 
 export function VisitasPageClient({
@@ -79,7 +78,7 @@ export function VisitasPageClient({
   filtros,
   cerradores,
   userRole,
-  productos,
+  tareas,
 }: VisitasPageClientProps) {
   const router = useRouter();
   const [navegando, startTransition] = useTransition();
@@ -103,7 +102,7 @@ export function VisitasPageClient({
   // porque un enlace puede traer `?cliente=<id>`. Cuenta como filtro puesto, y
   // "Limpiar" lo saca; si no, quedaría una lista recortada sin nada que lo diga.
   const clienteId = filtros.cliente ?? "ALL";
-  const productoId = filtros.producto ?? "ALL";
+  const tareaId = filtros.tarea ?? "ALL";
   const completadaPor = filtros.completadaPor ?? "ALL";
   const completadaDesde = filtros.completadaDesde ?? "";
   const completadaHasta = filtros.completadaHasta ?? "";
@@ -128,7 +127,6 @@ export function VisitasPageClient({
    * Estos dos no tocan la consulta: filtran y dibujan lo que ya llegó. Les
    * alcanza con la URL a secas, sin pedirle nada al servidor.
    */
-  const [soloSinOrden, setSoloSinOrden] = useFiltroUrl("sinOrden", false);
   /**
    * Modo selección de móvil. Vive acá y no en la tabla porque se prende desde
    * el menú del encabezado, que es la única barra de herramientas del teléfono.
@@ -171,19 +169,17 @@ export function VisitasPageClient({
    */
   const filtrosActivos =
     (clienteId !== "ALL" ? 1 : 0) +
-    (productoId !== "ALL" ? 1 : 0) +
+    (tareaId !== "ALL" ? 1 : 0) +
     (estado !== "ALL" ? 1 : 0) +
-    (soloSinOrden ? 1 : 0) +
     (desde || hasta ? 1 : 0) +
     (completadaPor !== "ALL" ? 1 : 0) +
     (completadaDesde || completadaHasta ? 1 : 0);
 
   const limpiarFiltros = () => {
-    setSoloSinOrden(false);
     navegar({
       q: "",
       cliente: "ALL",
-      producto: "ALL",
+      tarea: "ALL",
       estado: "ALL",
       desde: "",
       hasta: "",
@@ -193,14 +189,9 @@ export function VisitasPageClient({
     });
   };
 
-  /** Le queda trabajo suelto que todavía no entró en ninguna orden. */
-  const sinOrden = (v: VisitaRow) =>
-    v.estado !== "CANCELADA" &&
-    v.productos.some((p) => !p.suscripcionItemId && !p.ordenLineaOrigen);
+  const visibles = visitas;
 
-  const visibles = soloSinOrden ? visitas.filter(sinOrden) : visitas;
-
-  const handleServicioChange = (v: string) => navegar({ producto: v });
+  const handleTareaChange = (v: string) => navegar({ tarea: v });
 
   /**
    * El mes que muestra el calendario sale del filtro de fechas, y navegarlo
@@ -285,13 +276,13 @@ export function VisitasPageClient({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Servicio</Label>
+              <Label className="text-xs">Tarea</Label>
               <CustomSelect
-                value={productoId}
-                onChange={handleServicioChange}
+                value={tareaId}
+                onChange={handleTareaChange}
                 options={[
                   { value: "ALL", label: "Todos" },
-                  ...productos.map((s) => ({ value: s.id, label: s.nombre })),
+                  ...tareas.map((t) => ({ value: t.id, label: t.nombre })),
                 ]}
                 placeholder="Todos"
                 searchable
@@ -331,21 +322,6 @@ export function VisitasPageClient({
                 </div>
               </>
             )}
-            {/* Lo que falta cobrar de trabajo suelto. Lo cubierto por un plan
-                no cuenta: no se factura aparte. */}
-            <label className="flex cursor-pointer items-start gap-2 rounded-md border p-2.5">
-              <Checkbox
-                checked={soloSinOrden}
-                onCheckedChange={(v) => setSoloSinOrden(v === true)}
-                className="mt-0.5"
-              />
-              <span className="text-sm">
-                Sin orden
-                <span className="block text-xs text-muted-foreground">
-                  Con trabajo suelto todavía sin facturar
-                </span>
-              </span>
-            </label>
             {/* Solo en escritorio: el panel de móvil trae su propio
                 "Limpiar" al pie, y dos seguidos son dos maneras de lo mismo. */}
             <Button

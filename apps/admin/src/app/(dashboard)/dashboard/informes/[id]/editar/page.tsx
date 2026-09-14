@@ -33,9 +33,9 @@ export default async function EditarInformePage({
   const informe = await getInforme(viewer, id).catch(() => null);
   if (!informe) notFound();
 
-  const catalogo = await prisma.producto.findMany({
+  const catalogo = await prisma.tarea.findMany({
     where: { deletedAt: null },
-    orderBy: { nombre: "asc" },
+    orderBy: [{ orden: "asc" }, { nombre: "asc" }],
     select: { id: true, nombre: true, descripcion: true },
   });
   const defaults = await listDefaultFirmantes();
@@ -83,7 +83,7 @@ export default async function EditarInformePage({
       .filter((f) => f.nombre)
       .map((f) => ({ nombre: f.nombre!, cedula: f.cedula ?? null })),
     secciones: informe.secciones.map((sec) => ({
-      productoId: sec.productoId,
+      tareaId: sec.tareaId,
       titulo: sec.titulo,
       descripcion: sec.descripcion ?? "",
       saltoDePagina: sec.saltoDePagina,

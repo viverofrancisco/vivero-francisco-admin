@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { listaProductos } from "@/lib/visita-productos";
+import { listaTareas } from "@/lib/visita-tareas";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { TipoNotificacion, DestinatarioTipo } from "@/generated/prisma/client";
 import { createMetaProvider } from "./meta-provider";
@@ -185,9 +185,19 @@ export async function enviarConfirmacionVisita(visitaId: string) {
     where: { id: visitaId },
     include: {
       cliente: true,
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: { producto: { select: { nombre: true } } },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+      personal: {
+        where: { removedAt: null },
+        select: {
+          personal: { select: { nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
+        },
       },
     },
   });
@@ -201,7 +211,7 @@ export async function enviarConfirmacionVisita(visitaId: string) {
   const vars = {
     ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: listaProductos(visita),
+    servicio: listaTareas(visita),
     direccion: cliente.direccion || "",
   };
 
@@ -234,9 +244,19 @@ export async function enviarRecordatorioCliente(visitaId: string) {
     where: { id: visitaId },
     include: {
       cliente: true,
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: { producto: { select: { nombre: true } } },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+      personal: {
+        where: { removedAt: null },
+        select: {
+          personal: { select: { nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
+        },
       },
     },
   });
@@ -260,7 +280,7 @@ export async function enviarRecordatorioCliente(visitaId: string) {
   const vars = {
     ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: listaProductos(visita),
+    servicio: listaTareas(visita),
     direccion: cliente.direccion || "",
   };
 
@@ -293,9 +313,19 @@ export async function enviarAlertaVisitaCompletada(visitaId: string) {
     where: { id: visitaId },
     include: {
       cliente: { select: { nombre: true, apellido: true, empresa: true } },
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: { producto: { select: { nombre: true } } },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+      personal: {
+        where: { removedAt: null },
+        select: {
+          personal: { select: { nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
+        },
       },
     },
   });
@@ -305,7 +335,7 @@ export async function enviarAlertaVisitaCompletada(visitaId: string) {
   const vars = {
     ...nombreVarsCliente(visita.cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: listaProductos(visita),
+    servicio: listaTareas(visita),
     estado: visita.estado,
     horaEntrada: visita.horaEntrada || "N/A",
     horaSalida: visita.horaSalida || "N/A",
@@ -351,9 +381,19 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
     where: { id: visitaId },
     include: {
       cliente: { select: { nombre: true, apellido: true, empresa: true } },
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: { producto: { select: { nombre: true } } },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+      personal: {
+        where: { removedAt: null },
+        select: {
+          personal: { select: { nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
+        },
       },
     },
   });
@@ -363,7 +403,7 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
   const vars = {
     ...nombreVarsCliente(visita.cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
-    servicio: listaProductos(visita),
+    servicio: listaTareas(visita),
     estado: visita.estado,
     motivo: visita.notasIncompleto || "Sin detalle",
   };
@@ -421,9 +461,19 @@ export async function enviarResumenDiarioAdmin() {
     },
     include: {
       cliente: { select: { nombre: true, apellido: true, empresa: true, direccion: true } },
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: { producto: { select: { nombre: true } } },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+      personal: {
+        where: { removedAt: null },
+        select: {
+          personal: { select: { nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
+        },
       },
       grupo: { select: { nombre: true } },
     },
@@ -435,7 +485,7 @@ export async function enviarResumenDiarioAdmin() {
   const listaVisitas = visitas
     .map((v, i) => {
       const c = v.cliente;
-      return `${i + 1}. ${nombreCliente(c)} - ${listaProductos(v)}${c.direccion ? ` (${c.direccion})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
+      return `${i + 1}. ${nombreCliente(c)} - ${listaTareas(v)}${c.direccion ? ` (${c.direccion})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
     })
     .join("\n");
 

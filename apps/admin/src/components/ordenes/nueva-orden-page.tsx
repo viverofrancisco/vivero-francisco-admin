@@ -25,9 +25,8 @@ import {
 } from "@/components/ordenes/selector-variante";
 import {
   SelectorVisitas,
+  type VisitaVinculable,
   origenDeLinea,
-  rearmarPorVisitas,
-  visitasDePendientes,
   nuevoUid,
   type LineaEditable,
   type Pendiente,
@@ -36,6 +35,7 @@ import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCatalogo } from "./use-catalogo";
 import { nombreCliente } from "@vivero/shared";
+import { tareasHechas } from "@/lib/visita-tareas";
 import { money, fecha } from "./formato";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
 
@@ -75,7 +75,6 @@ function lineaBase(): Omit<Linea, "descripcion" | "productoId"> {
     precioUnitario: "",
     ivaTasa: "0",
     varianteId: null,
-    visitaProductoIds: [],
     suscripcionItemId: null,
     periodoInicio: null,
     periodoFin: null,
@@ -90,7 +89,6 @@ function lineaDesde(p: Pendiente): Linea {
     precioUnitario: String(Number(p.precio)),
     ivaTasa: String(Number(p.ivaTasa)),
     productoId: p.productoId,
-    visitaProductoIds: p.visitaProductoId ? [p.visitaProductoId] : [],
     suscripcionItemId: p.suscripcionItemId ?? null,
     periodoInicio: p.periodoInicio ?? null,
     periodoFin: p.periodoFin ?? null,
@@ -99,7 +97,7 @@ function lineaDesde(p: Pendiente): Linea {
 
 /** Clave estable de un pendiente, para no ofrecer dos veces lo mismo. */
 function clavePendiente(p: Pendiente): string {
-  return p.visitaProductoId ?? `${p.suscripcionItemId}:${p.periodoInicio}`;
+  return `${p.suscripcionItemId}:${p.periodoInicio}`;
 }
 
 function importes(l: Linea) {
@@ -115,7 +113,7 @@ export function NuevaOrdenPage({
   clienteInicial,
   pendientesIniciales,
   suscritosIniciales,
-  preseleccion,
+  visitasIniciales,
   desdeVisita,
 }: {
   clientes: Cliente[];
@@ -131,14 +129,10 @@ export function NuevaOrdenPage({
    */
   pendientesIniciales?: Pendiente[];
   suscritosIniciales?: string[];
-  /**
-   * `visitaProductoId`s que entran ya cargados como líneas. Es lo que permite
-   * "facturar esta visita" desde su ficha: se llega con el trabajo puesto y
-   * solo queda ponerle precio o sumarle algo más.
-   */
-  preseleccion?: string[];
+  /** Las visitas del cliente preseleccionado, para poder marcarlas. */
+  visitasIniciales?: VisitaVinculable[];
   /** De qué visita se llegó, para decirlo en pantalla. */
-  desdeVisita?: { id: string; fecha: string } | null;
+  desdeVisita?: { id: string; numero: number; fecha: string } | null;
 }) {
   const router = useRouter();
   const [clienteId, setClienteId] = useState(clienteInicial ?? "");
@@ -155,11 +149,10 @@ export function NuevaOrdenPage({
    */
   const catalogo = useCatalogo(productos, hayMasProductos);
 
-  const [lineas, setLineas] = useState<Linea[]>(() =>
-    (pendientesIniciales ?? [])
-      .filter((p) => p.visitaProductoId && preseleccion?.includes(p.visitaProductoId))
-      .map(lineaDesde)
-  );
+  // Arranca vacía **aunque se llegue desde una visita**: lo que se hizo ahí
+  // son tareas, y una tarea no tiene precio. Qué se le cobra al cliente por ese
+  // trabajo lo decide quien arma la orden.
+  const [lineas, setLineas] = useState<Linea[]>([]);
   /**
    * Productos que este cliente ya tiene en un plan. Se pueden agregar igual
    * —sería un extra sobre lo que el plan cubre—, pero se avisa, porque agregar
@@ -169,29 +162,22 @@ export function NuevaOrdenPage({
   const [suscritos, setSuscritos] = useState<string[]>(suscritosIniciales ?? []);
 
   /**
-   * Se llegó desde una visita: la orden **es** de esa visita.
-   *
-   * Cambia dos cosas. Sus productos no se pueden sacar —una visita se factura
-   * completa y el servidor rechazaría la orden a medias, así que ofrecer el
-   * tacho es ofrecer un botón que falla—, y el panel de pendientes desaparece:
-   * quien entró por acá viene a cobrar esta visita, no a revisar todo lo que el
-   * cliente debe. Lo que sí se puede es sumar productos del catálogo.
-   */
-  /**
-   * De qué visitas es esta orden. Vacío = de ninguna todavía.
+   * De qué visitas es esta orden. Vacío = de ninguna.
    *
    * **Pueden ser varias**: cobrarle a alguien el mes entero en una sola orden
    * es lo normal. Se llega con una puesta al entrar desde la ficha de una
-   * visita, y las demás se marcan acá. En todos los casos manda lo mismo: los
-   * productos de cada visita entran completos —una visita se factura entera— y
-   * no se sacan de a uno.
+   * visita, y las demás se marcan acá. Es traza, no plata: marcar una no carga
+   * ninguna línea.
    */
   const [visitaIds, setVisitaIds] = useState<string[]>(
-    desdeVisita && (preseleccion?.length ?? 0) > 0 ? [desdeVisita.id] : []
+    desdeVisita ? [desdeVisita.id] : []
   );
   /** Se entró desde la visita: sacarla sería no ser esa orden. */
-  const bloqueada = desdeVisita != null && (preseleccion?.length ?? 0) > 0;
-  const fijada = (l: Linea) => l.visitaProductoIds.length > 0;
+  const bloqueada = desdeVisita != null;
+  /** Las visitas del cliente, para poder marcarlas. Se cargan con el cliente. */
+  const [visitas, setVisitas] = useState<VisitaVinculable[]>(
+    visitasIniciales ?? []
+  );
   const nombreDelCliente = (() => {
     const c = clientes.find((x) => x.id === clienteId);
     return c ? nombreCliente(c) : "El cliente";
@@ -223,19 +209,56 @@ export function NuevaOrdenPage({
     }
   }
 
+  /**
+   * Las visitas del cliente, para poder decir de cuáles es la orden.
+   *
+   * Se piden aparte de lo pendiente porque ya no son lo mismo: una visita no
+   * deja nada por facturar —lo que se hace ahí son tareas— así que la lista es
+   * "sus visitas", no "sus visitas con trabajo sin cobrar".
+   */
+  async function cargarVisitas(id: string) {
+    try {
+      const res = await fetch(`/api/visitas?clienteId=${id}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const items: {
+        id: string;
+        numero: number;
+        fechaProgramada: string;
+        estado: string;
+        tareasObligatorias: { tarea: { id: string; nombre: string; orden: number } }[];
+        personal: {
+          personal: { nombre: string; apellido: string | null };
+          tareas: { tarea: { id: string; nombre: string; orden: number } }[];
+        }[];
+      }[] = await res.json();
+      setVisitas(
+        items
+          .filter((v) => v.estado !== "CANCELADA")
+          .map((v) => ({
+            id: v.id,
+            numero: v.numero,
+            fecha: v.fechaProgramada,
+            tareas: tareasHechas(v).map((t) => t.nombre),
+          }))
+      );
+    } catch {
+      // Sin visitas la orden se arma igual: es traza, no un requisito.
+    }
+  }
+
   const seleccionarCliente = async (id: string) => {
     setClienteId(id);
     // Las líneas que venían de pendientes eran de otro cliente: no valen más.
-    setLineas((prev) =>
-      prev.filter(
-        (l) => l.visitaProductoIds.length === 0 && !l.suscripcionItemId
-      )
-    );
+    setLineas((prev) => prev.filter((l) => !l.suscripcionItemId));
+    setVisitaIds([]);
     setPendientes([]);
     setSuscritos([]);
     setDatoFacturacionId(null);
+    setVisitas([]);
     if (!id) return;
-    await cargarPendientes(id);
+    await Promise.all([cargarPendientes(id), cargarVisitas(id)]);
   };
 
   const agregarProducto = (productoId: string) => {
@@ -267,30 +290,16 @@ export function NuevaOrdenPage({
   // Lo que ya está en la orden no vuelve a ofrecerse. La misma clave que usa
   // el índice único de OrdenLinea, así que coincide con lo que rechaza la BD.
   const yaEnLaOrden = new Set(
-    lineas.flatMap((l) => [
-      ...l.visitaProductoIds,
-      ...(l.suscripcionItemId
-        ? [`${l.suscripcionItemId}:${l.periodoInicio}`]
-        : []),
-    ])
+    lineas.flatMap((l) =>
+      l.suscripcionItemId ? [`${l.suscripcionItemId}:${l.periodoInicio}`] : []
+    )
   );
   const pendientesDisponibles = pendientes.filter(
     (p) => !yaEnLaOrden.has(clavePendiente(p))
   );
 
-  /**
-   * Lo pendiente que **no** entra por el selector de visita.
-   *
-   * El trabajo de visitas se carga eligiendo la visita, que trae sus productos
-   * enteros —una visita se factura completa—, así que listarlos también acá,
-   * producto por producto y con su propio botón, era la misma acción escrita
-   * dos veces y una lista larguísima: cuatro filas por visita, veinte por
-   * cliente. Lo que sí necesita una puerta propia son los períodos de plan, que
-   * no tienen selector.
-   */
-  const periodosPendientes = pendientesDisponibles.filter(
-    (p) => p.tipo === "suscripcion"
-  );
+  /** Lo único pendiente que existe: los períodos de plan. */
+  const periodosPendientes = pendientesDisponibles;
 
   /**
    * Un período, no un producto suelto.
@@ -319,96 +328,65 @@ export function NuevaOrdenPage({
         return mapa;
       }, new Map<string, { clave: string; muestra: Pendiente; productos: string[]; total: number }>())
       .values(),
-  ].sort((a, b) =>
-    (a.muestra.periodoInicio ?? "").localeCompare(b.muestra.periodoInicio ?? "")
-  );
+  ].sort((a, b) => a.muestra.periodoInicio.localeCompare(b.muestra.periodoInicio));
 
   /**
-   * Las visitas del cliente que todavía no están facturadas, para elegir una.
+   * Una orden es de un plan **o** de unas visitas, nunca de las dos.
    *
-   * Salen de lo mismo que el panel de pendientes: una visita aparece acá
-   * mientras le quede algún producto sin línea de orden. Las que ya se
-   * facturaron no están, que es justo lo que se pidió.
+   * El servicio lo rechaza y acá se avisa antes: agregar un período con visitas
+   * marcadas, o marcar una visita con un período cargado, es armar una orden
+   * cuyo total no se puede explicar sin abrirla.
    */
-  const visitasPendientes = visitasDePendientes(pendientes);
+  const tienePeriodo = lineas.some((l) => l.suscripcionItemId);
 
-  /**
-   * Qué origen tiene ya esta orden. Una orden no mezcla períodos de plan con
-   * trabajo de visitas —el servicio lo rechaza— así que el primero que entra
-   * define de qué es. Lo agregado a mano no cuenta: es el extra de cualquiera.
-   */
-  const origen: "PLAN" | "VISITAS" | null = lineas.some(
-    (l) => l.suscripcionItemId
-  )
-    ? "PLAN"
-    : lineas.some((l) => l.visitaProductoIds.length > 0)
-      ? "VISITAS"
-      : null;
-
-  const chocaConElOrigen = (p: Pendiente) =>
-    origen !== null &&
-    origen !== (p.tipo === "suscripcion" ? "PLAN" : "VISITAS");
-
-  /**
-   * Qué otros pendientes tienen que entrar con este.
-   *
-   * Una visita se factura completa y un período de un plan también: agregar uno
-   * arrastra a sus hermanos. Es la misma regla que valida el servidor, pero acá
-   * se cumple sola en vez de rebotar recién al guardar.
-   */
-  const grupoDe = (p: Pendiente) =>
-    pendientesDisponibles.filter((otro) =>
-      p.tipo === "visita"
-        ? otro.tipo === "visita" && otro.visitaId === p.visitaId
-        : otro.tipo === "suscripcion" &&
-          otro.suscripcionId === p.suscripcionId &&
-          otro.periodoInicio === p.periodoInicio
-    );
-
-  /**
-   * Marcar o desmarcar una visita, y con eso cargar o sacar su trabajo.
-   *
-   * No es una etiqueta: es cargar el trabajo. La cabecera de la orden se deduce
-   * en el servidor de la procedencia de las líneas, así que una asignación que
-   * no las traiga sería una que no queda registrada en ningún lado.
-   *
-   * **El mismo producto de dos visitas es una sola línea.** Dos visitas con
-   * "Control de plagas" son dos trabajos distintos —cada uno se factura una
-   * sola vez— pero un solo producto, y tenerlo dos veces en la orden no le dice
-   * nada a nadie y duplica la decisión de precio. Se junta en una línea con la
-   * cantidad sumada y las dos procedencias.
-   */
   const cambiarVisitas = (ids: string[]) => {
+    if (ids.length > 0 && tienePeriodo) {
+      toast.error(
+        "Esta orden cubre un período de suscripción. Las visitas van en otra."
+      );
+      return;
+    }
     setVisitaIds(ids);
-    setLineas((prev) => rearmarPorVisitas(prev, ids, pendientes));
   };
 
+  /**
+   * Qué otros pendientes tienen que entrar con este: un período de un plan se
+   * factura completo, así que agregar uno arrastra a sus hermanos. Es la misma
+   * regla que valida el servidor, pero acá se cumple sola en vez de rebotar
+   * recién al guardar.
+   */
+  const grupoDe = (p: Pendiente) =>
+    pendientesDisponibles.filter(
+      (otro) =>
+        otro.suscripcionId === p.suscripcionId &&
+        otro.periodoInicio === p.periodoInicio
+    );
 
   const agregarPendiente = (p: Pendiente) => {
-    if (chocaConElOrigen(p)) {
+    if (visitaIds.length > 0) {
       toast.error(
-        origen === "PLAN"
-          ? "Esta orden es de una suscripción. El trabajo de visitas va en otra."
-          : "Esta orden es de visitas. Los períodos de suscripción van en otra."
+        "Esta orden es por unas visitas. Los períodos de suscripción van en otra."
       );
       return;
     }
     const grupo = grupoDe(p);
     setLineas((prev) => [...prev, ...grupo.map(lineaDesde)]);
     if (grupo.length > 1) {
-      toast.info(
-        p.tipo === "visita"
-          ? `Se agregó la visita completa (${grupo.length} productos)`
-          : `Se agregó el período completo (${grupo.length} productos)`
-      );
+      toast.info(`Se agregó el período completo (${grupo.length} productos)`);
     }
   };
 
-  /** Solo lo que combina con lo que ya hay: agregar todo no rompe la regla. */
-  const agregarTodosLosPeriodos = () =>
-    periodosPendientes
-      .filter((p) => !chocaConElOrigen(p))
-      .forEach((p) => setLineas((prev) => [...prev, lineaDesde(p)]));
+  const agregarTodosLosPeriodos = () => {
+    if (visitaIds.length > 0) {
+      toast.error(
+        "Esta orden es por unas visitas. Los períodos de suscripción van en otra."
+      );
+      return;
+    }
+    periodosPendientes.forEach((p) =>
+      setLineas((prev) => [...prev, lineaDesde(p)])
+    );
+  };
 
   const actualizar = (uid: string, patch: Partial<Linea>) =>
     setLineas((prev) =>
@@ -474,7 +452,6 @@ export function NuevaOrdenPage({
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
             varianteId: l.varianteId,
-            visitaProductoIds: l.visitaProductoIds,
             suscripcionItemId: l.suscripcionItemId,
             periodoInicio: l.periodoInicio,
             periodoFin: l.periodoFin,
@@ -598,7 +575,7 @@ export function NuevaOrdenPage({
                               </span>
                             )}
                           </div>
-                          {!fijada(l) && (
+                          {true && (
                             <Button
                               variant="ghost"
                               size="icon"
@@ -756,17 +733,16 @@ export function NuevaOrdenPage({
 
               Lista con casillas y no un desplegable: se eligen **varias**, y
               hay que ver de un vistazo cuáles están marcadas. */}
-          {clienteId &&
-            (visitasPendientes.length > 0 || visitaIds.length > 0) && (
-              <SelectorVisitas
-                visitas={visitasPendientes}
-                marcadas={visitaIds}
-                onCambiar={cambiarVisitas}
-                fija={bloqueada ? desdeVisita?.id : null}
-                deshabilitado={origen === "PLAN"}
-                motivoDeshabilitado="Esta orden es de un período de suscripción. El trabajo de una visita va en otra orden."
-              />
-            )}
+          {clienteId && (visitas.length > 0 || visitaIds.length > 0) && (
+            <SelectorVisitas
+              visitas={visitas}
+              marcadas={visitaIds}
+              onCambiar={cambiarVisitas}
+              fija={bloqueada ? desdeVisita?.id : null}
+              deshabilitado={tienePeriodo}
+              motivoDeshabilitado="Esta orden cubre un período de suscripción. Las visitas van en otra orden."
+            />
+          )}
 
           {/* ── Períodos de suscripción por facturar ─────────────── */}
           {clienteId &&
@@ -799,23 +775,16 @@ export function NuevaOrdenPage({
                     {periodosAgrupados.map((g) => (
                       <div
                         key={g.clave}
-                        className={`flex items-center justify-between gap-3 py-2.5 ${
-                          chocaConElOrigen(g.muestra) ? "opacity-50" : ""
-                        }`}
+                        className="flex items-center justify-between gap-3 py-2.5"
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium">
-                            {fecha(g.muestra.periodoInicio!)} →{" "}
-                            {fecha(g.muestra.periodoFin!)}
+                            {fecha(g.muestra.periodoInicio)} →{" "}
+                            {fecha(g.muestra.periodoFin)}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
                             {g.productos.join(", ")}
                           </p>
-                          {chocaConElOrigen(g.muestra) && (
-                            <p className="text-xs text-amber-700">
-                              Va en otra orden: esta es de visitas.
-                            </p>
-                          )}
                         </div>
                         <div className="flex flex-none items-center gap-3">
                           <span className="font-semibold tabular-nums">
@@ -825,7 +794,6 @@ export function NuevaOrdenPage({
                             variant="outline"
                             size="sm"
                             onClick={() => agregarPendiente(g.muestra)}
-                            disabled={chocaConElOrigen(g.muestra)}
                           >
                             Agregar
                           </Button>

@@ -5,17 +5,32 @@
 
 import type { EstadoVisita } from "@vivero/shared";
 
-/** Uno de los productos que cubre una visita. */
-export interface VisitaProducto {
-  productoId: string;
-  /// Item de suscripción que lo cubre, o null si es un trabajo suelto.
-  suscripcionItemId: string | null;
-  producto: {
+/** Una tarea, tal como viaja en el JSON de una visita. */
+export interface TareaDeVisita {
+  id: string;
+  nombre: string;
+  orden: number;
+}
+
+/**
+ * Lo que una persona registró de su paso por la visita.
+ *
+ * Es el reemplazo de los productos: una visita ya no lleva un listado de lo que
+ * se va a hacer, sino lo que **cada uno** hizo, cargado al terminar.
+ */
+export interface ParteDeVisita {
+  personalId: string;
+  personal: {
     id: string;
     nombre: string;
-    descripcion: string | null;
-    tipo: string;
+    apellido: string | null;
+    tipo?: string;
   };
+  horaEntrada: string | null;
+  horaSalida: string | null;
+  /** `null` = todavía no cargó su parte. */
+  registradoEl: string | null;
+  tareas: { tarea: TareaDeVisita }[];
 }
 
 export interface VisitaSummary {
@@ -23,30 +38,37 @@ export interface VisitaSummary {
   fechaProgramada: string;
   horaEntrada: string | null;
   estado: EstadoVisita;
-  /// Una visita puede cubrir varios servicios del mismo cliente.
-  productos: VisitaProducto[];
+  /// Lo que la visita exige que se haga.
+  tareasObligatorias: { tarea: TareaDeVisita }[];
+  /// Quiénes van, y qué registró cada uno.
+  personal: ParteDeVisita[];
 }
 
-/** Nombres de los servicios de una visita, en el orden guardado. */
-export function nombresProductos(v: { productos: VisitaProducto[] }): string[] {
-  return v.productos.map((vs) => vs.producto.nombre);
+type ConTareas = Pick<VisitaSummary, "tareasObligatorias" | "personal">;
+
+/** Lo que se hizo: la unión de lo que cargó cada uno, sin repetir. */
+export function tareasHechas(v: ConTareas): TareaDeVisita[] {
+  const porId = new Map<string, TareaDeVisita>();
+  for (const p of v.personal) {
+    for (const { tarea } of p.tareas) porId.set(tarea.id, tarea);
+  }
+  return [...porId.values()].sort((a, b) => a.orden - b.orden);
 }
 
-/** Todos los servicios en una línea. */
-export function listaProductos(v: { productos: VisitaProducto[] }): string {
-  const nombres = nombresProductos(v);
-  return nombres.length > 0 ? nombres.join(", ") : "Sin servicio";
+/** Todo en una línea. Sin nada cargado, lo que se pidió. */
+export function listaTareas(v: ConTareas): string {
+  const hechas = tareasHechas(v).map((t) => t.nombre);
+  if (hechas.length > 0) return hechas.join(", ");
+  const pedidas = v.tareasObligatorias.map((o) => o.tarea.nombre);
+  return pedidas.length > 0 ? pedidas.join(", ") : "Sin tareas registradas";
 }
 
-/** Servicios resumidos para espacios cortos: "A, B +2". */
-export function resumenProductos(
-  v: { productos: VisitaProducto[] },
-  max = 2
-): string {
-  const nombres = nombresProductos(v);
-  if (nombres.length === 0) return "Sin servicio";
-  if (nombres.length <= max) return nombres.join(", ");
-  return `${nombres.slice(0, max).join(", ")} +${nombres.length - max}`;
+/** Resumido para espacios cortos: "A, B +2". */
+export function resumenTareas(v: ConTareas, max = 2): string {
+  const texto = listaTareas(v);
+  const partes = texto.split(", ");
+  if (partes.length <= max) return texto;
+  return `${partes.slice(0, max).join(", ")} +${partes.length - max}`;
 }
 
 export interface ChatMediaItem {
@@ -128,8 +150,8 @@ export interface VisitaMedia {
   url: string;
   tipo: string; // "imagen" | "video"
   createdAt: string;
-  /// Producto de la visita al que se etiquetó la foto, si tiene.
-  productoId: string | null;
+  /// La tarea con la que se etiquetó la foto al subirla, si tiene.
+  tareaId: string | null;
 }
 
 export interface VisitaDetail extends VisitaSummary {
@@ -148,15 +170,6 @@ export interface VisitaDetail extends VisitaSummary {
     ciudad: string | null;
     sector: { id: string; nombre: string } | null;
   };
-  personal: {
-    personalId: string;
-    personal: {
-      id: string;
-      nombre: string;
-      apellido: string | null;
-      tipo: string;
-    };
-  }[];
   grupo: { id: string; nombre: string } | null;
   media: VisitaMedia[];
 }

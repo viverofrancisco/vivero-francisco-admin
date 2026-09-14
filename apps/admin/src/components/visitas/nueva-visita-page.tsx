@@ -25,16 +25,11 @@ import {
 import { ArrowLeft, Loader2, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
-import { PERIODICIDAD_SUFIJO } from "@/components/suscripciones/formato";
-import { SelectorProductos } from "@/components/visitas/selector-productos";
+import { SelectorTareas } from "@/components/visitas/selector-tareas";
 
-/** Un producto que ya cubre una suscripción activa del cliente. */
-
-interface ProductoCatalogo {
+interface TareaCatalogo {
   id: string;
   nombre: string;
-  tipo: string;
-  ivaTasa: number | null;
 }
 
 interface SuscripcionOpcion {
@@ -66,7 +61,7 @@ interface PersonalOption {
 
 interface Props {
   clientes: Cliente[];
-  catalogo: ProductoCatalogo[];
+  tareas: TareaCatalogo[];
   grupos: Grupo[];
   personalList: PersonalOption[];
   /** Preseleccionado al venir desde una suscripción. */
@@ -84,16 +79,18 @@ const fechaCorta = (iso: string) =>
  * Alta de visitas.
  *
  * Todo se ve de una: no hay pasos ni campos que aparezcan al elegir cliente.
- * Agendar es una sola decisión con cuatro partes —qué, cuándo, a quién, con
- * quién— y encadenarlas obligaba a empezar de cero cada vez que se cambiaba la
- * primera.
+ * Agendar es una sola decisión —cuándo, a quién y con quién— y encadenarlas
+ * obligaba a empezar de cero cada vez que se cambiaba la primera.
  *
- * La visita **no lleva precio**: lo que un plan no cubra se cotiza al facturar.
+ * **No se eligen productos.** Lo que se hace en una visita son tareas, y las
+ * marca cada jardinero al terminar; acá lo único que se decide sobre el trabajo
+ * es si alguna tarea es **obligatoria**, que es la pregunta que la oficina se
+ * va a hacer después: "¿hicieron lo que había que hacer?".
  */
 export function NuevaVisitaPage({
   clientes,
   suscripcionInicial,
-  catalogo,
+  tareas,
   grupos,
   personalList,
 }: Props) {
@@ -108,7 +105,7 @@ export function NuevaVisitaPage({
         c.suscripciones.some((s) => s.id === suscripcionInicial)
       )?.id ?? ""
   );
-  const [productoIds, setProductoIds] = useState<string[]>([]);
+  const [tareaIds, setTareaIds] = useState<string[]>([]);
   const [fechas, setFechas] = useState<string[]>([]);
   const [grupoId, setGrupoId] = useState("");
   const [personalIds, setPersonalIds] = useState<string[]>([]);
@@ -127,48 +124,17 @@ export function NuevaVisitaPage({
 
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
   const planes = cliente?.suscripciones ?? [];
-  const plan = planes.find((s) => s.id === suscripcionId) ?? null;
-  /** Lo que el plan elegido cubre, para marcarlo en la lista. */
-  const cubiertos = new Map(
-    (plan?.productos ?? []).map((p) => [p.productoId, p])
-  );
 
   // El orden del catálogo manda, así la lista no salta al elegir.
-  const elegidos = catalogo.filter((p) => productoIds.includes(p.id));
+  const elegidas = tareas.filter((t) => tareaIds.includes(t.id));
 
   const elegirCliente = (id: string) => {
     setClienteId(id);
-    elegirPlan("");
+    setSuscripcionId("");
   };
 
-  /**
-   * Elegir el plan **carga su trabajo**, igual que marcar una visita al armar
-   * una orden.
-   *
-   * Antes el plan era solo una etiqueta y había que agregar sus productos a
-   * mano; si se olvidaba uno, la visita decía ser del plan y cubría menos de lo
-   * que el plan incluye. Ahora entran solos y no se sacan de a uno: para
-   * quitarlos se suelta el plan.
-   */
-  const elegirPlan = (id: string) => {
-    const antes = new Set(
-      (planes.find((s) => s.id === suscripcionId)?.productos ?? []).map(
-        (p) => p.productoId
-      )
-    );
-    const ahora = (planes.find((s) => s.id === id)?.productos ?? []).map(
-      (p) => p.productoId
-    );
-    setSuscripcionId(id);
-    setProductoIds((prev) => [
-      // Lo agregado a mano se queda; lo del plan anterior se va con él.
-      ...prev.filter((x) => !antes.has(x) && !ahora.includes(x)),
-      ...ahora,
-    ]);
-  };
-
-  const alternarProducto = (id: string) =>
-    setProductoIds((prev) =>
+  const alternarTarea = (id: string) =>
+    setTareaIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
 
@@ -187,8 +153,7 @@ export function NuevaVisitaPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clienteId,
-          productos: productoIds.map((productoId) => ({ productoId })),
-          // De qué plan es. El servidor deduce qué productos cubre.
+          tareasObligatoriasIds: tareaIds,
           suscripcionId: suscripcionId || null,
           fechas,
           grupoId: grupoId || undefined,
@@ -220,8 +185,8 @@ export function NuevaVisitaPage({
         <div className="flex-1">
           <h1 className="text-2xl font-bold">Nueva visita</h1>
           <p className="text-sm text-muted-foreground">
-            Una visita por fecha elegida. El precio de lo que no cubra un plan se
-            define al facturar.
+            Una visita por fecha elegida. Lo que se hizo lo marca cada jardinero
+            al terminar.
           </p>
         </div>
         <div className="flex flex-none items-center gap-2">
@@ -232,12 +197,7 @@ export function NuevaVisitaPage({
           </Link>
           <Button
             onClick={() => setConfirmar(true)}
-            disabled={
-              loading ||
-              !clienteId ||
-              elegidos.length === 0 ||
-              fechas.length === 0
-            }
+            disabled={loading || !clienteId || fechas.length === 0}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {fechas.length > 1
@@ -252,51 +212,44 @@ export function NuevaVisitaPage({
         <div className="space-y-6 lg:col-span-2">
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Productos</CardTitle>
+              <CardTitle className="text-base">Tareas obligatorias</CardTitle>
               <CardAction>
                 <span className="text-xs text-muted-foreground">
-                  {elegidos.length}{" "}
-                  {elegidos.length === 1 ? "elegido" : "elegidos"}
+                  {elegidas.length}
                 </span>
               </CardAction>
             </CardHeader>
             <CardContent className="space-y-3">
-              {elegidos.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Lo que esta visita tiene que dejar hecho. Es opcional: no impide
+                hacer otras cosas ni frena nada, pero la visita va a mostrar
+                cuáles quedaron sin cubrir.
+              </p>
+              {elegidas.length === 0 ? (
                 <p className="rounded-md border border-dashed py-6 text-center text-sm text-muted-foreground">
-                  Todavía no agregaste ningún producto.
+                  Sin tareas obligatorias.
                 </p>
               ) : (
                 <div className="divide-y rounded-md border">
-                  {elegidos.map((p) => {
-                    return (
-                      <div
-                        key={p.id}
-                        className="flex items-center gap-3 px-3 py-2.5"
+                  {elegidas.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center gap-3 px-3 py-2.5"
+                    >
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                        {t.nombre}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 flex-none"
+                        onClick={() => alternarTarea(t.id)}
+                        aria-label={`Quitar ${t.nombre}`}
                       >
-                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                          {p.nombre}
-                        </span>
-                        {/* Lo que trae el plan no se saca de a uno: la forma de
-                            quitarlo es soltar el plan, porque la visita cubre
-                            lo que el plan incluye o no es de ese plan. */}
-                        {cubiertos.has(p.id) ? (
-                          <span className="flex-none text-xs text-muted-foreground">
-                            Del plan
-                          </span>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 flex-none"
-                            onClick={() => alternarProducto(p.id)}
-                            aria-label={`Quitar ${p.nombre}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })}
+                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -306,7 +259,7 @@ export function NuevaVisitaPage({
                 onClick={() => setEligiendo(true)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Agregar productos
+                Agregar tareas
               </Button>
             </CardContent>
           </Card>
@@ -397,7 +350,7 @@ export function NuevaVisitaPage({
               <CardContent>
                 <CustomSelect
                   value={suscripcionId}
-                  onChange={elegirPlan}
+                  onChange={setSuscripcionId}
                   options={planes.map((sus) => ({
                     value: sus.id,
                     label: `Suscripción #${sus.numero}`,
@@ -451,18 +404,13 @@ export function NuevaVisitaPage({
         </div>
       </div>
 
-      <SelectorProductos
+      <SelectorTareas
         open={eligiendo}
         onOpenChange={setEligiendo}
-        catalogo={catalogo}
-        seleccionados={productoIds}
-        etiqueta={(id) => {
-          const c = cubiertos.get(id);
-          return c ? etiquetaCobertura(c, plan?.periodicidad ?? "") : null;
-        }}
-        // Lo del plan entra y sale con el plan, no desde acá.
-        fijos={(id) => cubiertos.has(id)}
-        onToggle={alternarProducto}
+        catalogo={tareas}
+        seleccionados={tareaIds}
+        titulo="Tareas obligatorias"
+        onToggle={alternarTarea}
       />
 
       {/* Se crean N visitas de una sola vez y deshacerlo es borrarlas una por
@@ -481,21 +429,18 @@ export function NuevaVisitaPage({
               <Fila etiqueta="Cliente">
                 {cliente ? nombreCliente(cliente) : "—"}
               </Fila>
-              <Fila etiqueta="Productos">
-                <span className="space-y-0.5">
-                  {elegidos.map((p) => (
-                    <span key={p.id} className="block">
-                      {p.nombre}
-                      <span className="text-xs text-muted-foreground">
-                        {" "}
-                        ·{" "}
-                        {cubiertos.has(p.id)
-                          ? "cubierto por el plan"
-                          : "se cobra aparte"}
+              <Fila etiqueta="Obligatorias">
+                {elegidas.length === 0 ? (
+                  "Ninguna"
+                ) : (
+                  <span className="space-y-0.5">
+                    {elegidas.map((t) => (
+                      <span key={t.id} className="block">
+                        {t.nombre}
                       </span>
-                    </span>
-                  ))}
-                </span>
+                    ))}
+                  </span>
+                )}
               </Fila>
               <Fila etiqueta="Fechas">
                 {[...fechas].sort().map(fechaCorta).join(", ")}
@@ -544,14 +489,4 @@ function Fila({
       <dd className="min-w-0 flex-1 break-words">{children}</dd>
     </div>
   );
-}
-
-/** "4/trimestre incluidas" — lo que dice el contrato, no un tope. */
-function etiquetaCobertura(
-  c: { visitasPorPeriodo: number | null },
-  periodicidad: string
-): string {
-  if (!c.visitasPorPeriodo) return "Incluido en el plan";
-  const sufijo = PERIODICIDAD_SUFIJO[periodicidad] ?? "";
-  return `${c.visitasPorPeriodo}${sufijo} incluidas`;
 }

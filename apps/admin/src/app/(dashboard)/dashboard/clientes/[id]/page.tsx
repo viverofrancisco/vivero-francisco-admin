@@ -4,7 +4,7 @@ import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
 import { isAdminRole } from "@/lib/services/viewer";
 import { listarOrdenes } from "@/lib/services/orden.service";
 import { ClienteDetailTabs } from "@/components/clientes/cliente-detail-tabs";
-import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
+import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 
 export default async function EditarClientePage({
   params,
@@ -45,7 +45,7 @@ export default async function EditarClientePage({
         estado: true,
         notas: true,
         cliente: { select: { id: true, nombre: true, apellido: true } },
-        productos: PRODUCTOS_DE_VISITA_SELECT,
+        ...TAREAS_DE_VISITA_INCLUDE,
         grupo: { select: { id: true, nombre: true } },
       },
     }),
@@ -85,7 +85,10 @@ export default async function EditarClientePage({
     estado: v.estado,
     notas: v.notas,
     cliente: v.cliente,
-    productos: v.productos,
+    tareas: {
+      tareasObligatorias: v.tareasObligatorias,
+      personal: v.personal,
+    },
     grupo: v.grupo,
   }));
 

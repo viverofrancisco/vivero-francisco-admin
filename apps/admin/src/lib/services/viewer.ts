@@ -21,5 +21,5 @@ export function isAdminRole(role: UserRole): boolean {
 }
 
 export function isPersonalRole(role: UserRole): boolean {
-  return role === "PERSONAL" || role === "PERSONAL_ADMIN";
+  return role === "PERSONAL";
 }

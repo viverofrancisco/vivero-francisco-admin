@@ -3,7 +3,7 @@ import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { ClienteVisitasPage } from "@/components/clientes/cliente-visitas-page";
-import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
+import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 
 export default async function ClienteVisitasRoute({
   params,
@@ -37,7 +37,7 @@ export default async function ClienteVisitasRoute({
       estado: true,
       notas: true,
       cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
-      productos: PRODUCTOS_DE_VISITA_SELECT,
+      ...TAREAS_DE_VISITA_INCLUDE,
       grupo: { select: { id: true, nombre: true } },
     },
   });
@@ -49,7 +49,10 @@ export default async function ClienteVisitasRoute({
     estado: v.estado,
     notas: v.notas,
     cliente: v.cliente,
-    productos: v.productos,
+    tareas: {
+      tareasObligatorias: v.tareasObligatorias,
+      personal: v.personal,
+    },
     grupo: v.grupo,
   }));
 

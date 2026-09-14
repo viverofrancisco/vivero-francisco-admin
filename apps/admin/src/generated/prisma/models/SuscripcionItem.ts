@@ -236,7 +236,6 @@ export type SuscripcionItemWhereInput = {
   visitasPorPeriodo?: Prisma.IntNullableFilter<"SuscripcionItem"> | number | null
   suscripcion?: Prisma.XOR<Prisma.SuscripcionScalarRelationFilter, Prisma.SuscripcionWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
-  visitaProductos?: Prisma.VisitaProductoListRelationFilter
   ordenLineas?: Prisma.OrdenLineaListRelationFilter
 }
 
@@ -249,7 +248,6 @@ export type SuscripcionItemOrderByWithRelationInput = {
   visitasPorPeriodo?: Prisma.SortOrderInput | Prisma.SortOrder
   suscripcion?: Prisma.SuscripcionOrderByWithRelationInput
   producto?: Prisma.ProductoOrderByWithRelationInput
-  visitaProductos?: Prisma.VisitaProductoOrderByRelationAggregateInput
   ordenLineas?: Prisma.OrdenLineaOrderByRelationAggregateInput
 }
 
@@ -266,7 +264,6 @@ export type SuscripcionItemWhereUniqueInput = Prisma.AtLeast<{
   visitasPorPeriodo?: Prisma.IntNullableFilter<"SuscripcionItem"> | number | null
   suscripcion?: Prisma.XOR<Prisma.SuscripcionScalarRelationFilter, Prisma.SuscripcionWhereInput>
   producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
-  visitaProductos?: Prisma.VisitaProductoListRelationFilter
   ordenLineas?: Prisma.OrdenLineaListRelationFilter
 }, "id" | "suscripcionId_productoId">
 
@@ -303,7 +300,6 @@ export type SuscripcionItemCreateInput = {
   visitasPorPeriodo?: number | null
   suscripcion: Prisma.SuscripcionCreateNestedOneWithoutItemsInput
   producto: Prisma.ProductoCreateNestedOneWithoutSuscripcionItemsInput
-  visitaProductos?: Prisma.VisitaProductoCreateNestedManyWithoutSuscripcionItemInput
   ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionItemInput
 }
 
@@ -314,7 +310,6 @@ export type SuscripcionItemUncheckedCreateInput = {
   precio: runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutSuscripcionItemInput
   ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionItemInput
 }
 
@@ -325,7 +320,6 @@ export type SuscripcionItemUpdateInput = {
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   suscripcion?: Prisma.SuscripcionUpdateOneRequiredWithoutItemsNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutSuscripcionItemsNestedInput
-  visitaProductos?: Prisma.VisitaProductoUpdateManyWithoutSuscripcionItemNestedInput
   ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionItemNestedInput
 }
 
@@ -336,7 +330,6 @@ export type SuscripcionItemUncheckedUpdateInput = {
   precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutSuscripcionItemNestedInput
   ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionItemNestedInput
 }
 
@@ -508,22 +501,6 @@ export type SuscripcionItemUncheckedUpdateManyWithoutSuscripcionNestedInput = {
   deleteMany?: Prisma.SuscripcionItemScalarWhereInput | Prisma.SuscripcionItemScalarWhereInput[]
 }
 
-export type SuscripcionItemCreateNestedOneWithoutVisitaProductosInput = {
-  create?: Prisma.XOR<Prisma.SuscripcionItemCreateWithoutVisitaProductosInput, Prisma.SuscripcionItemUncheckedCreateWithoutVisitaProductosInput>
-  connectOrCreate?: Prisma.SuscripcionItemCreateOrConnectWithoutVisitaProductosInput
-  connect?: Prisma.SuscripcionItemWhereUniqueInput
-}
-
-export type SuscripcionItemUpdateOneWithoutVisitaProductosNestedInput = {
-  create?: Prisma.XOR<Prisma.SuscripcionItemCreateWithoutVisitaProductosInput, Prisma.SuscripcionItemUncheckedCreateWithoutVisitaProductosInput>
-  connectOrCreate?: Prisma.SuscripcionItemCreateOrConnectWithoutVisitaProductosInput
-  upsert?: Prisma.SuscripcionItemUpsertWithoutVisitaProductosInput
-  disconnect?: Prisma.SuscripcionItemWhereInput | boolean
-  delete?: Prisma.SuscripcionItemWhereInput | boolean
-  connect?: Prisma.SuscripcionItemWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SuscripcionItemUpdateToOneWithWhereWithoutVisitaProductosInput, Prisma.SuscripcionItemUpdateWithoutVisitaProductosInput>, Prisma.SuscripcionItemUncheckedUpdateWithoutVisitaProductosInput>
-}
-
 export type SuscripcionItemCreateNestedOneWithoutOrdenLineasInput = {
   create?: Prisma.XOR<Prisma.SuscripcionItemCreateWithoutOrdenLineasInput, Prisma.SuscripcionItemUncheckedCreateWithoutOrdenLineasInput>
   connectOrCreate?: Prisma.SuscripcionItemCreateOrConnectWithoutOrdenLineasInput
@@ -546,7 +523,6 @@ export type SuscripcionItemCreateWithoutProductoInput = {
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: number | null
   suscripcion: Prisma.SuscripcionCreateNestedOneWithoutItemsInput
-  visitaProductos?: Prisma.VisitaProductoCreateNestedManyWithoutSuscripcionItemInput
   ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionItemInput
 }
 
@@ -556,7 +532,6 @@ export type SuscripcionItemUncheckedCreateWithoutProductoInput = {
   precio: runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutSuscripcionItemInput
   ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionItemInput
 }
 
@@ -604,7 +579,6 @@ export type SuscripcionItemCreateWithoutSuscripcionInput = {
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: number | null
   producto: Prisma.ProductoCreateNestedOneWithoutSuscripcionItemsInput
-  visitaProductos?: Prisma.VisitaProductoCreateNestedManyWithoutSuscripcionItemInput
   ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionItemInput
 }
 
@@ -614,7 +588,6 @@ export type SuscripcionItemUncheckedCreateWithoutSuscripcionInput = {
   precio: runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutSuscripcionItemInput
   ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionItemInput
 }
 
@@ -644,62 +617,6 @@ export type SuscripcionItemUpdateManyWithWhereWithoutSuscripcionInput = {
   data: Prisma.XOR<Prisma.SuscripcionItemUpdateManyMutationInput, Prisma.SuscripcionItemUncheckedUpdateManyWithoutSuscripcionInput>
 }
 
-export type SuscripcionItemCreateWithoutVisitaProductosInput = {
-  id?: string
-  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
-  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  visitasPorPeriodo?: number | null
-  suscripcion: Prisma.SuscripcionCreateNestedOneWithoutItemsInput
-  producto: Prisma.ProductoCreateNestedOneWithoutSuscripcionItemsInput
-  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionItemInput
-}
-
-export type SuscripcionItemUncheckedCreateWithoutVisitaProductosInput = {
-  id?: string
-  suscripcionId: string
-  productoId: string
-  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
-  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  visitasPorPeriodo?: number | null
-  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionItemInput
-}
-
-export type SuscripcionItemCreateOrConnectWithoutVisitaProductosInput = {
-  where: Prisma.SuscripcionItemWhereUniqueInput
-  create: Prisma.XOR<Prisma.SuscripcionItemCreateWithoutVisitaProductosInput, Prisma.SuscripcionItemUncheckedCreateWithoutVisitaProductosInput>
-}
-
-export type SuscripcionItemUpsertWithoutVisitaProductosInput = {
-  update: Prisma.XOR<Prisma.SuscripcionItemUpdateWithoutVisitaProductosInput, Prisma.SuscripcionItemUncheckedUpdateWithoutVisitaProductosInput>
-  create: Prisma.XOR<Prisma.SuscripcionItemCreateWithoutVisitaProductosInput, Prisma.SuscripcionItemUncheckedCreateWithoutVisitaProductosInput>
-  where?: Prisma.SuscripcionItemWhereInput
-}
-
-export type SuscripcionItemUpdateToOneWithWhereWithoutVisitaProductosInput = {
-  where?: Prisma.SuscripcionItemWhereInput
-  data: Prisma.XOR<Prisma.SuscripcionItemUpdateWithoutVisitaProductosInput, Prisma.SuscripcionItemUncheckedUpdateWithoutVisitaProductosInput>
-}
-
-export type SuscripcionItemUpdateWithoutVisitaProductosInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  suscripcion?: Prisma.SuscripcionUpdateOneRequiredWithoutItemsNestedInput
-  producto?: Prisma.ProductoUpdateOneRequiredWithoutSuscripcionItemsNestedInput
-  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionItemNestedInput
-}
-
-export type SuscripcionItemUncheckedUpdateWithoutVisitaProductosInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  suscripcionId?: Prisma.StringFieldUpdateOperationsInput | string
-  productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionItemNestedInput
-}
-
 export type SuscripcionItemCreateWithoutOrdenLineasInput = {
   id?: string
   precio: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -707,7 +624,6 @@ export type SuscripcionItemCreateWithoutOrdenLineasInput = {
   visitasPorPeriodo?: number | null
   suscripcion: Prisma.SuscripcionCreateNestedOneWithoutItemsInput
   producto: Prisma.ProductoCreateNestedOneWithoutSuscripcionItemsInput
-  visitaProductos?: Prisma.VisitaProductoCreateNestedManyWithoutSuscripcionItemInput
 }
 
 export type SuscripcionItemUncheckedCreateWithoutOrdenLineasInput = {
@@ -717,7 +633,6 @@ export type SuscripcionItemUncheckedCreateWithoutOrdenLineasInput = {
   precio: runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedCreateNestedManyWithoutSuscripcionItemInput
 }
 
 export type SuscripcionItemCreateOrConnectWithoutOrdenLineasInput = {
@@ -743,7 +658,6 @@ export type SuscripcionItemUpdateWithoutOrdenLineasInput = {
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   suscripcion?: Prisma.SuscripcionUpdateOneRequiredWithoutItemsNestedInput
   producto?: Prisma.ProductoUpdateOneRequiredWithoutSuscripcionItemsNestedInput
-  visitaProductos?: Prisma.VisitaProductoUpdateManyWithoutSuscripcionItemNestedInput
 }
 
 export type SuscripcionItemUncheckedUpdateWithoutOrdenLineasInput = {
@@ -753,7 +667,6 @@ export type SuscripcionItemUncheckedUpdateWithoutOrdenLineasInput = {
   precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutSuscripcionItemNestedInput
 }
 
 export type SuscripcionItemCreateManyProductoInput = {
@@ -770,7 +683,6 @@ export type SuscripcionItemUpdateWithoutProductoInput = {
   ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   suscripcion?: Prisma.SuscripcionUpdateOneRequiredWithoutItemsNestedInput
-  visitaProductos?: Prisma.VisitaProductoUpdateManyWithoutSuscripcionItemNestedInput
   ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionItemNestedInput
 }
 
@@ -780,7 +692,6 @@ export type SuscripcionItemUncheckedUpdateWithoutProductoInput = {
   precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutSuscripcionItemNestedInput
   ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionItemNestedInput
 }
 
@@ -806,7 +717,6 @@ export type SuscripcionItemUpdateWithoutSuscripcionInput = {
   ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   producto?: Prisma.ProductoUpdateOneRequiredWithoutSuscripcionItemsNestedInput
-  visitaProductos?: Prisma.VisitaProductoUpdateManyWithoutSuscripcionItemNestedInput
   ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionItemNestedInput
 }
 
@@ -816,7 +726,6 @@ export type SuscripcionItemUncheckedUpdateWithoutSuscripcionInput = {
   precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   visitasPorPeriodo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  visitaProductos?: Prisma.VisitaProductoUncheckedUpdateManyWithoutSuscripcionItemNestedInput
   ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionItemNestedInput
 }
 
@@ -834,12 +743,10 @@ export type SuscripcionItemUncheckedUpdateManyWithoutSuscripcionInput = {
  */
 
 export type SuscripcionItemCountOutputType = {
-  visitaProductos: number
   ordenLineas: number
 }
 
 export type SuscripcionItemCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  visitaProductos?: boolean | SuscripcionItemCountOutputTypeCountVisitaProductosArgs
   ordenLineas?: boolean | SuscripcionItemCountOutputTypeCountOrdenLineasArgs
 }
 
@@ -851,13 +758,6 @@ export type SuscripcionItemCountOutputTypeDefaultArgs<ExtArgs extends runtime.Ty
    * Select specific fields to fetch from the SuscripcionItemCountOutputType
    */
   select?: Prisma.SuscripcionItemCountOutputTypeSelect<ExtArgs> | null
-}
-
-/**
- * SuscripcionItemCountOutputType without action
- */
-export type SuscripcionItemCountOutputTypeCountVisitaProductosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.VisitaProductoWhereInput
 }
 
 /**
@@ -877,7 +777,6 @@ export type SuscripcionItemSelect<ExtArgs extends runtime.Types.Extensions.Inter
   visitasPorPeriodo?: boolean
   suscripcion?: boolean | Prisma.SuscripcionDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  visitaProductos?: boolean | Prisma.SuscripcionItem$visitaProductosArgs<ExtArgs>
   ordenLineas?: boolean | Prisma.SuscripcionItem$ordenLineasArgs<ExtArgs>
   _count?: boolean | Prisma.SuscripcionItemCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["suscripcionItem"]>
@@ -917,7 +816,6 @@ export type SuscripcionItemOmit<ExtArgs extends runtime.Types.Extensions.Interna
 export type SuscripcionItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   suscripcion?: boolean | Prisma.SuscripcionDefaultArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
-  visitaProductos?: boolean | Prisma.SuscripcionItem$visitaProductosArgs<ExtArgs>
   ordenLineas?: boolean | Prisma.SuscripcionItem$ordenLineasArgs<ExtArgs>
   _count?: boolean | Prisma.SuscripcionItemCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -935,7 +833,6 @@ export type $SuscripcionItemPayload<ExtArgs extends runtime.Types.Extensions.Int
   objects: {
     suscripcion: Prisma.$SuscripcionPayload<ExtArgs>
     producto: Prisma.$ProductoPayload<ExtArgs>
-    visitaProductos: Prisma.$VisitaProductoPayload<ExtArgs>[]
     ordenLineas: Prisma.$OrdenLineaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1345,7 +1242,6 @@ export interface Prisma__SuscripcionItemClient<T, Null = never, ExtArgs extends 
   readonly [Symbol.toStringTag]: "PrismaPromise"
   suscripcion<T extends Prisma.SuscripcionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SuscripcionDefaultArgs<ExtArgs>>): Prisma.Prisma__SuscripcionClient<runtime.Types.Result.GetResult<Prisma.$SuscripcionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   producto<T extends Prisma.ProductoDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductoDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  visitaProductos<T extends Prisma.SuscripcionItem$visitaProductosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SuscripcionItem$visitaProductosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaProductoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ordenLineas<T extends Prisma.SuscripcionItem$ordenLineasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SuscripcionItem$ordenLineasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenLineaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1780,30 +1676,6 @@ export type SuscripcionItemDeleteManyArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many SuscripcionItems to delete.
    */
   limit?: number
-}
-
-/**
- * SuscripcionItem.visitaProductos
- */
-export type SuscripcionItem$visitaProductosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the VisitaProducto
-   */
-  select?: Prisma.VisitaProductoSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the VisitaProducto
-   */
-  omit?: Prisma.VisitaProductoOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.VisitaProductoInclude<ExtArgs> | null
-  where?: Prisma.VisitaProductoWhereInput
-  orderBy?: Prisma.VisitaProductoOrderByWithRelationInput | Prisma.VisitaProductoOrderByWithRelationInput[]
-  cursor?: Prisma.VisitaProductoWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.VisitaProductoScalarFieldEnum | Prisma.VisitaProductoScalarFieldEnum[]
 }
 
 /**

@@ -56,9 +56,7 @@ import {
 } from "./orden-lineas-editor";
 import {
   SelectorVisitas,
-  rearmarPorVisitas,
-  visitasDePendientes,
-  type Pendiente,
+  type VisitaVinculable,
 } from "./selector-visitas";
 import {
   Dialog,
@@ -135,10 +133,6 @@ interface OrdenData {
     productoId: string;
     /** Qué variante se vende. Solo en un bien. */
     varianteId: string | null;
-    /** Qué trabajos paga la línea. Varios si el producto se hizo en más visitas. */
-    visitaProductoIds: string[];
-    /** De qué visitas salió, ya resueltas para poder linkearlas. */
-    visitas: { id: string; numero: number; fecha: string }[];
     suscripcionItemId: string | null;
     /** De qué plan salió, cuando salió de un período. */
     suscripcionId?: string | null;
@@ -202,7 +196,7 @@ export function OrdenDetail({
   productos,
   hayMasProductos = false,
   clientes,
-  pendientes = [],
+  visitasDelCliente = [],
   backHref = "/dashboard/ordenes",
 }: {
   orden: OrdenData;
@@ -217,7 +211,8 @@ export function OrdenDetail({
    * Trabajo del cliente que el editor puede marcar, **incluido el de esta
    * orden**: es lo que permite desmarcar sus propias visitas.
    */
-  pendientes?: Pendiente[];
+  /** Las visitas del cliente, para poder marcar de cuáles es la orden. */
+  visitasDelCliente?: VisitaVinculable[];
 }) {
   const router = useRouter();
   const [cargando, setCargando] = useState<string | null>(null);
@@ -321,26 +316,22 @@ export function OrdenDetail({
       lineas: orden.lineas.filter((l) => l.periodoInicio),
     },
     {
-      clave: "visitas",
-      titulo: "Trabajo de visitas",
-      lineas: orden.lineas.filter(
-        (l) => !l.periodoInicio && l.visitaProductoIds.length > 0
-      ),
-    },
-    {
       clave: "extra",
       titulo: "Agregado a mano",
-      lineas: orden.lineas.filter(
-        (l) => !l.periodoInicio && l.visitaProductoIds.length === 0
-      ),
+      lineas: orden.lineas.filter((l) => !l.periodoInicio),
     },
   ].filter((g) => g.lineas.length > 0);
   const hayVariosOrigenes = grupos.length > 1;
 
-  /** Las líneas cuyo trabajo se libera al anular, para poder mostrarlas. */
-  const lineasEnlazadas = orden.lineas.filter(
-    (l) => l.visitaProductoIds.length > 0 || l.suscripcionItemId
-  );
+  /**
+   * Las líneas cuyo período se libera al anular, para poder mostrarlas.
+   *
+   * Solo los planes: `[suscripcionItemId, periodoInicio]` es único en toda la
+   * tabla sin mirar el estado de la orden, así que un período pegado a una
+   * orden anulada no se podría volver a facturar nunca. Las visitas marcadas
+   * son traza y no reservan nada.
+   */
+  const lineasEnlazadas = orden.lineas.filter((l) => l.suscripcionItemId);
 
   /**
    * Cobrar con la factura emitida va derecho contra ella.
@@ -374,7 +365,6 @@ export function OrdenDetail({
         ivaTasa: String(l.ivaTasa),
         productoId: l.productoId,
         varianteId: l.varianteId,
-        visitaProductoIds: l.visitaProductoIds,
         suscripcionItemId: l.suscripcionItemId,
         periodoInicio: l.periodoInicio,
         periodoFin: l.periodoFin,
@@ -385,11 +375,13 @@ export function OrdenDetail({
     setEditando(true);
   };
 
-  /** Marcar o desmarcar visitas: es cargar o sacar su trabajo. */
-  const cambiarVisitas = (ids: string[]) => {
-    setVisitasEdit(ids);
-    setLineasEdit(rearmarPorVisitas(lineasEdit, ids, pendientes));
-  };
+  /**
+   * Marcar o desmarcar visitas: **es una etiqueta**, no carga líneas.
+   *
+   * Antes marcar cargaba el trabajo de la visita. Eso se terminó con los
+   * productos de la visita: lo que se hace ahí son tareas, que no se venden.
+   */
+  const cambiarVisitas = (ids: string[]) => setVisitasEdit(ids);
 
   const guardarEdicion = async (lineas: LineaEditable[]) => {
     const notas = notasEdit;
@@ -407,7 +399,6 @@ export function OrdenDetail({
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
             varianteId: l.varianteId,
-            visitaProductoIds: l.visitaProductoIds,
             suscripcionItemId: l.suscripcionItemId,
             periodoInicio: l.periodoInicio,
             periodoFin: l.periodoFin,
@@ -782,26 +773,10 @@ export function OrdenDetail({
                           )}
                           {" · "}
                         </>
-                      ) : l.visitas.length > 0 ? (
-                        <>
-                          {/* Varias cuando el mismo producto se hizo en más de
-                              una visita: es una sola línea, y hay que poder ir
-                              a cada una. Sin contarlas al lado: los links ya
-                              son dos. */}
-                          {l.visitas.map((v, i) => (
-                            <span key={v.id}>
-                              {i > 0 && ", "}
-                              <Link
-                                href={`/dashboard/visitas/${v.id}?from=/dashboard/ordenes/${orden.id}`}
-                                className="text-primary hover:underline"
-                              >
-                                #{v.numero}
-                              </Link>
-                            </span>
-                          ))}
-                          {" · "}
-                        </>
                       ) : (
+                        // De qué visitas es la orden se dice una vez, en su
+                        // propia tarjeta: ninguna línea sale de una visita, así
+                        // que repetirlo por línea sería decir algo que no es.
                         ""
                       )}
                       {`IVA ${l.ivaTasa}%`}
@@ -838,18 +813,17 @@ export function OrdenDetail({
         {/* De qué es la orden. Antes solo se veía línea por línea, y una
             orden con un producto suelto agregado a mano no decía en ningún
             lado que igual era la de esa visita o la de ese plan. */}
-        {/* Editando, esta card **es** el selector: marcar una visita carga su
-            trabajo. Es la única forma de sacar lo de una visita, porque una
-            visita se factura completa y sus productos no se quitan de a uno.
-            No hay una segunda lista arriba: sería la misma cosa dos veces. */}
+        {/* Editando, esta card **es** el selector: dice de qué visitas es la
+            orden. No carga líneas — los productos que se cobran se eligen
+            arriba. */}
         {editando && !orden.suscripcion && (
           <div className="mt-6">
             <SelectorVisitas
-              visitas={visitasDePendientes(pendientes)}
+              visitas={visitasDelCliente}
               marcadas={visitasEdit}
               onCambiar={cambiarVisitas}
               deshabilitado={lineasEdit.some((l) => l.suscripcionItemId)}
-              motivoDeshabilitado="Esta orden es de un período de suscripción. El trabajo de una visita va en otra orden."
+              motivoDeshabilitado="Esta orden cubre un período de suscripción. Las visitas van en otra orden."
             />
           </div>
         )}

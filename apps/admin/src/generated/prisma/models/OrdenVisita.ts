@@ -17,14 +17,14 @@ import type * as Prisma from "../internal/prismaNamespace"
  * De qué visitas es una orden.
  * 
  * Es una lista y no una columna porque **una orden puede cubrir varias
- * visitas**: es normal cobrar el mes entero de alguien de una vez. Lo mantiene
- * el servidor desde la procedencia de las líneas, así que no se recibe de
- * afuera — una asignación que no trajera trabajo sería una que no queda
- * registrada en ningún lado.
+ * visitas**: es normal cobrar el mes entero de alguien de una vez.
  * 
- * Existe además de `OrdenLineaOrigen` porque contesta otra pregunta: aquélla
- * dice de dónde sale cada peso, ésta "¿de qué es esta orden?", que es la que
- * se hace primero y la que obligaba a recorrer las líneas.
+ * **Se elige, ya no se deduce.** Antes salía de la procedencia de las líneas,
+ * porque cada línea decía de qué trabajo de qué visita venía. Eso se terminó
+ * cuando la visita dejó de llevar productos: lo que se hace en una visita son
+ * tareas, y una tarea no tiene precio. Así que hoy esto es lo que alguien
+ * marcó —"esta orden es por estas visitas"— y sirve para ir de una a la otra,
+ * no para explicar de dónde sale cada peso.
  */
 export type OrdenVisitaModel = runtime.Types.Result.DefaultSelection<Prisma.$OrdenVisitaPayload>
 

@@ -26,10 +26,10 @@ import {
 import { ArrowLeft, Eye, Search } from "lucide-react";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import {
-  nombresProductos,
-  resumenProductos,
-  type ProductoDeVisita,
-} from "@/lib/visita-productos";
+  resumenTareas,
+  tareasHechas,
+  type VisitaConTareas,
+} from "@/lib/visita-tareas";
 
 interface VisitaRow {
   id: string;
@@ -43,7 +43,7 @@ interface VisitaRow {
     apellido?: string | null;
     empresa: string | null;
   };
-  productos: ProductoDeVisita[];
+  tareas: VisitaConTareas;
   grupo: { id: string; nombre: string } | null;
 }
 
@@ -105,7 +105,9 @@ export function ClienteVisitasPage({
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (v) =>
-          nombresProductos(v).some((n) => n.toLowerCase().includes(q)) ||
+          tareasHechas(v.tareas).some((t) =>
+            t.nombre.toLowerCase().includes(q)
+          ) ||
           (v.grupo?.nombre.toLowerCase().includes(q) ?? false)
       );
     }
@@ -204,7 +206,7 @@ export function ClienteVisitasPage({
                       {formatDate(v.fechaProgramada)}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {resumenProductos(v)}
+                      {resumenTareas(v.tareas)}
                     </TableCell>
                     <TableCell>{v.grupo?.nombre ?? "—"}</TableCell>
                     <TableCell>
@@ -259,7 +261,7 @@ export function ClienteVisitasPage({
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
-                  {resumenProductos(v)}
+                  {resumenTareas(v.tareas)}
                 </span>
                 <Badge
                   variant={estadoBadgeVariant(v.estado)}

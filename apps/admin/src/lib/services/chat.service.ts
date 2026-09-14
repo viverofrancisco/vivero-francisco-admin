@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { resumenProductos } from "@/lib/visita-productos";
+import { resumenTareas } from "@/lib/visita-tareas";
 import { nombreCliente } from "@vivero/shared";
 import { ForbiddenError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
@@ -277,9 +277,17 @@ const INBOX_INCLUDE = {
       sectorId: true,
     },
   },
-  productos: {
-    orderBy: { posicion: "asc" },
-    include: { producto: { select: { id: true, nombre: true } } },
+  tareasObligatorias: {
+    select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+  },
+  personal: {
+    where: { removedAt: null },
+    select: {
+      personal: { select: { nombre: true, apellido: true } },
+      tareas: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+    },
   },
 } as const;
 
@@ -309,22 +317,6 @@ async function visibleVisitaIdsForViewer(viewer: Viewer): Promise<string[] | "al
       where: {
         deletedAt: null,
         clienteId: viewer.clienteId,
-      },
-      select: { id: true },
-    });
-    return visitas.map((v) => v.id);
-  }
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectorAdmins = await prisma.sectorAdmin.findMany({
-      where: { userId: viewer.id },
-      select: { sectorId: true },
-    });
-    const sectorIds = sectorAdmins.map((s) => s.sectorId);
-    if (sectorIds.length === 0) return [];
-    const visitas = await prisma.visita.findMany({
-      where: {
-        deletedAt: null,
-        cliente: { sectorId: { in: sectorIds } },
       },
       select: { id: true },
     });
@@ -402,7 +394,7 @@ export async function listInbox(
         visitaId: v.id,
         fechaProgramada: v.fechaProgramada,
         estado: v.estado,
-        servicioNombre: resumenProductos(v),
+        servicioNombre: resumenTareas(v),
         clienteNombre: nombreCliente(cliente),
         lastMessage: last
           ? {
@@ -572,7 +564,7 @@ export async function searchInbox(
     results.push({
       resultId: `name-${v.id}`,
       visitaId: v.id,
-      servicioNombre: resumenProductos(v),
+      servicioNombre: resumenTareas(v),
       clienteNombre: clienteName,
       fechaProgramada: v.fechaProgramada,
       estado: v.estado,
@@ -592,7 +584,7 @@ export async function searchInbox(
     results.push({
       resultId: `message-${m.id}`,
       visitaId: m.visitaId,
-      servicioNombre: resumenProductos(m.visita),
+      servicioNombre: resumenTareas(m.visita),
       clienteNombre: clienteName,
       fechaProgramada: m.visita.fechaProgramada,
       estado: m.visita.estado,

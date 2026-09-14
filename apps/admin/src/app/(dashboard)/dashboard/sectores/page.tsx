@@ -10,9 +10,6 @@ export default async function SectoresPage() {
     orderBy: { nombre: "asc" },
     include: {
       _count: { select: { clientes: true } },
-      admins: {
-        include: { user: { select: { id: true, name: true, email: true } } },
-      },
     },
   });
 

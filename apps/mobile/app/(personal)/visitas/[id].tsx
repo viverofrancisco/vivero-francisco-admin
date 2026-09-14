@@ -17,15 +17,14 @@ import * as VideoThumbnails from "expo-video-thumbnails";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type { VisitaDetail, VisitaMedia } from "@/lib/types";
-import { listaProductos } from "@/lib/types";
+import { listaTareas } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth-store";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 
 export default function PersonalVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const role = useAuthStore((s) => s.user?.role);
-  const canMutate = role === "ADMIN" || role === "PERSONAL_ADMIN";
+  const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const [visita, setVisita] = useState<VisitaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +71,7 @@ export default function PersonalVisitaScreen() {
     load();
   }, [load]);
 
-  // Refresh after returning from completar/incompleta screens.
+  // Al volver de cargar el parte, se recarga para mostrarlo.
   useFocusEffect(
     useCallback(() => {
       load();
@@ -98,11 +97,14 @@ export default function PersonalVisitaScreen() {
     );
   }
 
-  // Cancelled visitas are read-only; everything else can be edited or
-  // re-classified by personal_admin/admin.
-  const canAct = visita.estado !== "CANCELADA" && canMutate;
-  const isEdit =
-    visita.estado === "COMPLETADA" || visita.estado === "INCOMPLETA";
+  // Una cancelada es de solo lectura; en cualquier otra se puede cargar el
+  // parte propio. **No se cierra desde acá**: decir que el trabajo está
+  // terminado es mirar lo que cargaron todos, y eso se hace desde el portal.
+  const canAct = visita.estado !== "CANCELADA";
+  /** Ya cargó lo suyo: el botón dice "editar" en vez de "cargar". */
+  const yaCargo = (visita.personal ?? []).some(
+    (p) => p.personalId === personalId && p.registradoEl !== null
+  );
   const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
 
@@ -131,7 +133,7 @@ export default function PersonalVisitaScreen() {
             {nombreCliente(cliente)}
           </Text>
           <Text variant="bodyMedium" style={styles.heroSubtitle}>
-            {listaProductos(visita)}
+            {listaTareas(visita)}
           </Text>
         </View>
 
@@ -236,48 +238,17 @@ export default function PersonalVisitaScreen() {
       {/* Sticky actions */}
       <View style={styles.footer}>
         {canAct ? (
-          isEdit ? (
-            <Button
-              mode="contained"
-              onPress={() =>
-                router.push(
-                  visita.estado === "INCOMPLETA"
-                    ? `/(personal)/visitas/incompleta/${visita.id}`
-                    : `/(personal)/visitas/completar/${visita.id}`
-                )
-              }
-              style={styles.primaryBtn}
-              contentStyle={styles.primaryBtnContent}
-              labelStyle={styles.primaryBtnLabel}
-            >
-              Editar visita
-            </Button>
-          ) : (
-            <>
-              <Button
-                mode="contained"
-                onPress={() =>
-                  router.push(`/(personal)/visitas/completar/${visita.id}`)
-                }
-                style={styles.primaryBtn}
-                contentStyle={styles.primaryBtnContent}
-                labelStyle={styles.primaryBtnLabel}
-              >
-                Marcar completada
-              </Button>
-              <Button
-                mode="text"
-                onPress={() =>
-                  router.push(`/(personal)/visitas/incompleta/${visita.id}`)
-                }
-                textColor="#b00020"
-                labelStyle={styles.secondaryBtnLabel}
-                style={styles.secondaryBtn}
-              >
-                Marcar incompleta
-              </Button>
-            </>
-          )
+          <Button
+            mode="contained"
+            onPress={() =>
+              router.push(`/(personal)/visitas/completar/${visita.id}`)
+            }
+            style={styles.primaryBtn}
+            contentStyle={styles.primaryBtnContent}
+            labelStyle={styles.primaryBtnLabel}
+          >
+            {yaCargo ? "Editar mi parte" : "Cargar lo que hice"}
+          </Button>
         ) : null}
         <Button
           mode="outlined"

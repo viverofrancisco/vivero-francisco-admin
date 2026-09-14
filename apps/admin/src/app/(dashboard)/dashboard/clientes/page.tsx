@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
+import { requireAuth } from "@/lib/auth-helpers";
 import { ClientesTable } from "@/components/clientes/clientes-table";
 import { ClientesPageHeader } from "@/components/clientes/clientes-page-header";
 
@@ -14,10 +14,6 @@ export default async function ClientesPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {};
 
-  if (user.role === "PERSONAL_ADMIN") {
-    const sectorIds = await getUserSectorIds(user.id);
-    where.sectorId = { in: sectorIds };
-  }
 
   const clientes = await prisma.cliente.findMany({
     where: { ...where, deletedAt: null },

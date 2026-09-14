@@ -60,8 +60,8 @@ const confirmSchema = z.object({
     z.object({
       key: z.string().min(1),
       tipo: z.string().min(1),
-      // Servicio de la visita al que corresponde la foto. Opcional.
-      productoId: z.string().min(1).nullable().optional(),
+      // A qué tarea corresponde la foto. Opcional.
+      tareaId: z.string().min(1).nullable().optional(),
     })
   ),
 });
@@ -89,13 +89,17 @@ export async function PUT(
     );
   }
 
-  // Solo aceptamos etiquetas de servicios que realmente cubre esta visita.
-  const serviciosDeVisita = await prisma.visitaProducto.findMany({
-    where: { visitaId: id },
-    select: { productoId: true },
-  });
+  // La etiqueta puede ser **cualquier tarea viva**, no solo una de las que se
+  // cargaron en la visita: en el campo se fotografía lo que aparece —un
+  // problema de riego durante una poda— y restringirla dejaba esas fotos sin
+  // clasificar. El informe arma secciones con cualquier tarea.
   const permitidos = new Set(
-    serviciosDeVisita.map((vs) => vs.productoId)
+    (
+      await prisma.tarea.findMany({
+        where: { deletedAt: null },
+        select: { id: true },
+      })
+    ).map((t) => t.id)
   );
 
   const media = await prisma.visitaMedia.createManyAndReturn({
@@ -104,8 +108,7 @@ export async function PUT(
       key: f.key,
       url: publicUrlForKey(f.key),
       tipo: f.tipo,
-      productoId:
-        f.productoId && permitidos.has(f.productoId) ? f.productoId : null,
+      tareaId: f.tareaId && permitidos.has(f.tareaId) ? f.tareaId : null,
     })),
   });
 

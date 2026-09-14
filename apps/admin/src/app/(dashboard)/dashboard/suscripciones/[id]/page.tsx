@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { tareasHechas } from "@/lib/visita-tareas";
 import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
 import { isAdminRole } from "@/lib/services/viewer";
 import {
@@ -60,7 +61,10 @@ export default async function SuscripcionRoute({
           fechaProgramada: v.fechaProgramada.toISOString(),
           fechaRealizada: v.fechaRealizada?.toISOString() ?? null,
           estado: v.estado,
-          productos: v.productos,
+          tareas: tareasHechas({
+            tareasObligatorias: v.tareasObligatorias,
+            personal: v.personal,
+          }).map((t) => t.nombre),
         }))}
         ordenes={ordenes.map((o) => ({
           ...o,

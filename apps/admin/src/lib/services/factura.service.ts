@@ -196,14 +196,6 @@ export async function listarFacturas(
       some: { suscripcionItem: { suscripcionId: options.suscripcionId } },
     };
   }
-  // PERSONAL_ADMIN solo ve los clientes de sus sectores.
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectores = await prisma.sectorAdmin.findMany({
-      where: { userId: viewer.id },
-      select: { sectorId: true },
-    });
-    filtrosOrden.cliente = { sectorId: { in: sectores.map((s) => s.sectorId) } };
-  }
   if (Object.keys(filtrosOrden).length > 0) where.orden = filtrosOrden;
 
   const limit = Math.min(Math.max(options.limit ?? 50, 1), 200);
@@ -865,14 +857,8 @@ export async function anularOrdenCompleta(
     );
   }
 
-  const enlazado = orden.lineas.filter(
-    (l) => l.origenes.length > 0 || l.suscripcionItemId
-  );
-  if (enlazado.length > 0 && !opciones.liberarTrabajo) {
-    throw new ConflictError(
-      `Esta orden tiene ${enlazado.length} ${enlazado.length === 1 ? "línea enlazada" : "líneas enlazadas"} a una visita o a una suscripción. Hay que desenlazarlas antes de anular, o vuelven a quedar sin poder facturarse.`
-    );
-  }
-
+  // Lo enlazado —períodos de plan y visitas marcadas— lo revisa `anularOrden`,
+  // que es donde se libera. Tenerlo repetido acá con otra forma era la manera
+  // de que las dos comprobaciones se separaran sin que nadie se enterara.
   return anularOrden(viewer, ordenId, opciones);
 }

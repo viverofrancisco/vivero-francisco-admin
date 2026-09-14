@@ -101,7 +101,7 @@ export function SuscripcionDetail({
     fechaProgramada: string;
     fechaRealizada: string | null;
     estado: string;
-    productos: string[];
+    tareas: string[];
   }[];
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref: string;
@@ -427,7 +427,9 @@ export function SuscripcionDetail({
                             </span>
                           </span>
                           <span className="block truncate text-xs text-muted-foreground">
-                            {v.productos.join(", ")}
+                            {v.tareas.length > 0
+                              ? v.tareas.join(", ")
+                              : "Sin tareas registradas"}
                             {v.fechaRealizada &&
                               ` · realizada ${fecha(v.fechaRealizada)}`}
                           </span>

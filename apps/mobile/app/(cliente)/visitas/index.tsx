@@ -10,7 +10,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { apiRequest } from "@/lib/api";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
-import { resumenProductos } from "@/lib/types";
+import { resumenTareas } from "@/lib/types";
 
 type Group = "Hoy" | "Mañana" | "Esta semana" | "Más adelante" | "Historial";
 
@@ -126,7 +126,7 @@ function VisitaRow({
       />
       <View style={styles.rowText}>
         <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
-          {resumenProductos(v)}
+          {resumenTareas(v)}
         </Text>
         <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
           {estadoLabel(v.estado)}

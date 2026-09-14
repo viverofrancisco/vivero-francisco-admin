@@ -50,7 +50,6 @@ function lineaBase(): Omit<LineaEditable, "descripcion" | "productoId"> {
     precioUnitario: "",
     ivaTasa: "0",
     varianteId: null,
-    visitaProductoIds: [],
     suscripcionItemId: null,
     periodoInicio: null,
     periodoFin: null,
@@ -202,11 +201,10 @@ export function OrdenLineasEditor({
                       </span>
                     )}
                   </div>
-                {/* Solo lo agregado a mano se saca de a uno. Lo que viene
-                    de una visita se saca **desmarcando la visita**: una visita
-                    se factura completa, así que quitarle un producto dejaría
-                    una orden que el servidor rechaza al guardar. */}
-                {l.visitaProductoIds.length === 0 && !l.suscripcionItemId && (
+                {/* Lo que viene de un período de plan se saca desmarcando el
+                    período: se factura completo, así que quitarle un producto
+                    dejaría una orden que el servidor rechaza al guardar. */}
+                {!l.suscripcionItemId && (
                   <Button
                     type="button"
                     variant="ghost"

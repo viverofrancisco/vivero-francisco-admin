@@ -43,9 +43,19 @@ export async function GET(request: Request) {
             id: true,
             fechaProgramada: true,
             cliente: { select: { nombre: true, apellido: true, empresa: true } },
-            productos: {
-              orderBy: { posicion: "asc" },
-              select: { producto: { select: { nombre: true } } },
+            tareasObligatorias: {
+              select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+            },
+            personal: {
+              where: { removedAt: null },
+              select: {
+                personal: { select: { nombre: true, apellido: true } },
+                tareas: {
+                  select: {
+                    tarea: { select: { id: true, nombre: true, orden: true } },
+                  },
+                },
+              },
             },
           },
         },

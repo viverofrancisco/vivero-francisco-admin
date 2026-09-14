@@ -16,12 +16,12 @@ export default async function NuevoInformePage({
   await requireStaff();
   await requireAuth();
   const defaults = await listDefaultFirmantes();
-  // Todo el catálogo activo: una sección puede ser de algo que no se hizo en
-  // estas visitas —material entregado, un extra— y hasta ahora solo se podía
-  // elegir entre los productos de las visitas o escribir el título a mano.
-  const catalogo = await prisma.producto.findMany({
+  // Todo el catálogo de tareas: una sección puede ser de algo que nadie cargó
+  // en estas visitas —se olvidaron de marcarlo, o es un extra que se quiere
+  // contar aparte— y si no habría que escribir el título a mano.
+  const catalogo = await prisma.tarea.findMany({
     where: { deletedAt: null },
-    orderBy: { nombre: "asc" },
+    orderBy: [{ orden: "asc" }, { nombre: "asc" }],
     select: { id: true, nombre: true, descripcion: true },
   });
   const defaultFirmantes = defaults.map((f) => ({

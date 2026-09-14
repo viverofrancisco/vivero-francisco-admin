@@ -17,7 +17,7 @@ import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 
 function ensureCanWrite(viewer: Viewer): void {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
 }

@@ -17,8 +17,7 @@ export async function GET(
   const userOrResponse = await requireMobileRole(
     request,
     "ADMIN",
-    "STAFF",
-    "PERSONAL_ADMIN"
+    "STAFF"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 

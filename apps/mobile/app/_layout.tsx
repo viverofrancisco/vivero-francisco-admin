@@ -88,16 +88,11 @@ function useAuthGate() {
 
     if (user.role === "CLIENTE" && !inCliente) {
       router.replace("/(cliente)/visitas");
-    } else if (
-      (user.role === "ADMIN" ||
-        user.role === "STAFF" ||
-        user.role === "PERSONAL_ADMIN") &&
-      !inPersonal
-    ) {
+    } else if (!inPersonal) {
+      // Todo el resto —oficina y jardineros— entra por acá. **El jardinero
+      // ahora sí usa la app**: es donde carga lo que hizo en cada visita, que
+      // es el motivo por el que cada uno tiene su cuenta.
       router.replace("/(personal)/visitas");
-    } else if (user.role === "PERSONAL") {
-      // PERSONAL doesn't log in to mobile (no UI for them in v1).
-      router.replace("/(auth)/admin-redirect");
     }
   }, [hydrated, user, segments, router]);
 }

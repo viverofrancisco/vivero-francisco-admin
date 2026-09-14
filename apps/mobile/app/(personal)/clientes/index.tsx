@@ -21,7 +21,7 @@ import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
 export default function ClientesListScreen() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
-  const canCreate = role === "ADMIN" || role === "PERSONAL_ADMIN";
+  const canCreate = role === "ADMIN" || role === "STAFF";
   const [items, setItems] = useState<ClienteListItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);

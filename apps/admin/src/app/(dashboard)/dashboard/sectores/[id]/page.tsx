@@ -16,7 +16,7 @@ export default async function SectorDetailPage({
   const { from } = await searchParams;
   const backHref = hrefDeVuelta(from, "/dashboard/sectores");
 
-  const [sector, allClientes, personalAdmins] = await Promise.all([
+  const [sector, allClientes] = await Promise.all([
     prisma.sector.findUnique({
       where: { id, deletedAt: null },
       include: {
@@ -24,9 +24,6 @@ export default async function SectorDetailPage({
           where: { deletedAt: null },
           select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true },
           orderBy: { nombre: "asc" },
-        },
-        admins: {
-          include: { user: { select: { id: true, name: true, email: true } } },
         },
       },
     }),
@@ -47,11 +44,6 @@ export default async function SectorDetailPage({
       },
       orderBy: { nombre: "asc" },
     }),
-    prisma.user.findMany({
-      where: { role: "PERSONAL_ADMIN" },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: "asc" },
-    }),
   ]);
 
   if (!sector) {
@@ -66,7 +58,6 @@ export default async function SectorDetailPage({
         ...c,
         sectorActual: s?.nombre ?? null,
       }))}
-      personalAdmins={personalAdmins}
     />
   );
 }

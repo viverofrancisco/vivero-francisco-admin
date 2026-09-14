@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { viewerFromSession } from "@/lib/auth-helpers";
 import {
   listarPendientes,
-  VISITAS_SIN_TOPE,
 } from "@/lib/services/orden.service";
 import { productosSuscritos } from "@/lib/services/suscripcion.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
@@ -36,10 +35,7 @@ export async function GET(request: Request) {
         viewer,
         parsed.data.clienteId,
         parsed.data.desde ? new Date(parsed.data.desde) : DESDE_SIEMPRE,
-        parsed.data.hasta ? new Date(parsed.data.hasta) : finDelMesActual(),
-        // Las visitas no se cortan en el mes: se le puede asignar a la orden
-        // una que está agendada para más adelante.
-        VISITAS_SIN_TOPE
+        parsed.data.hasta ? new Date(parsed.data.hasta) : finDelMesActual()
       ),
       // Van juntos porque el editor los necesita a la vez: qué falta cobrar y
       // qué no se puede agregar a mano por estar ya en un plan.

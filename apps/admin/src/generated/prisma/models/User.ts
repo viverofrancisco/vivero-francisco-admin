@@ -250,10 +250,12 @@ export type UserWhereInput = {
   visitasUpdated?: Prisma.VisitaListRelationFilter
   visitasCompletadas?: Prisma.VisitaListRelationFilter
   visitasEliminadas?: Prisma.VisitaListRelationFilter
+  tareasCreated?: Prisma.TareaListRelationFilter
+  tareasUpdated?: Prisma.TareaListRelationFilter
+  tareasEliminadas?: Prisma.TareaListRelationFilter
   visitaPersonalAdded?: Prisma.VisitaPersonalListRelationFilter
   visitaPersonalRemoved?: Prisma.VisitaPersonalListRelationFilter
   personal?: Prisma.XOR<Prisma.PersonalNullableScalarRelationFilter, Prisma.PersonalWhereInput> | null
-  sectorAdmins?: Prisma.SectorAdminListRelationFilter
   cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
   pushTokens?: Prisma.PushTokenListRelationFilter
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
@@ -303,10 +305,12 @@ export type UserOrderByWithRelationInput = {
   visitasUpdated?: Prisma.VisitaOrderByRelationAggregateInput
   visitasCompletadas?: Prisma.VisitaOrderByRelationAggregateInput
   visitasEliminadas?: Prisma.VisitaOrderByRelationAggregateInput
+  tareasCreated?: Prisma.TareaOrderByRelationAggregateInput
+  tareasUpdated?: Prisma.TareaOrderByRelationAggregateInput
+  tareasEliminadas?: Prisma.TareaOrderByRelationAggregateInput
   visitaPersonalAdded?: Prisma.VisitaPersonalOrderByRelationAggregateInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalOrderByRelationAggregateInput
   personal?: Prisma.PersonalOrderByWithRelationInput
-  sectorAdmins?: Prisma.SectorAdminOrderByRelationAggregateInput
   cliente?: Prisma.ClienteOrderByWithRelationInput
   pushTokens?: Prisma.PushTokenOrderByRelationAggregateInput
   refreshTokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
@@ -359,10 +363,12 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   visitasUpdated?: Prisma.VisitaListRelationFilter
   visitasCompletadas?: Prisma.VisitaListRelationFilter
   visitasEliminadas?: Prisma.VisitaListRelationFilter
+  tareasCreated?: Prisma.TareaListRelationFilter
+  tareasUpdated?: Prisma.TareaListRelationFilter
+  tareasEliminadas?: Prisma.TareaListRelationFilter
   visitaPersonalAdded?: Prisma.VisitaPersonalListRelationFilter
   visitaPersonalRemoved?: Prisma.VisitaPersonalListRelationFilter
   personal?: Prisma.XOR<Prisma.PersonalNullableScalarRelationFilter, Prisma.PersonalWhereInput> | null
-  sectorAdmins?: Prisma.SectorAdminListRelationFilter
   cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
   pushTokens?: Prisma.PushTokenListRelationFilter
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
@@ -446,10 +452,12 @@ export type UserCreateInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -499,10 +507,12 @@ export type UserUncheckedCreateInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -552,10 +562,12 @@ export type UserUpdateInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -605,10 +617,12 @@ export type UserUncheckedUpdateInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -980,6 +994,54 @@ export type UserUpdateOneWithoutGruposUpdatedNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutGruposUpdatedInput, Prisma.UserUpdateWithoutGruposUpdatedInput>, Prisma.UserUncheckedUpdateWithoutGruposUpdatedInput>
 }
 
+export type UserCreateNestedOneWithoutTareasCreatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTareasCreatedInput, Prisma.UserUncheckedCreateWithoutTareasCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTareasCreatedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutTareasUpdatedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTareasUpdatedInput, Prisma.UserUncheckedCreateWithoutTareasUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTareasUpdatedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutTareasEliminadasInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTareasEliminadasInput, Prisma.UserUncheckedCreateWithoutTareasEliminadasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTareasEliminadasInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutTareasCreatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTareasCreatedInput, Prisma.UserUncheckedCreateWithoutTareasCreatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTareasCreatedInput
+  upsert?: Prisma.UserUpsertWithoutTareasCreatedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTareasCreatedInput, Prisma.UserUpdateWithoutTareasCreatedInput>, Prisma.UserUncheckedUpdateWithoutTareasCreatedInput>
+}
+
+export type UserUpdateOneWithoutTareasUpdatedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTareasUpdatedInput, Prisma.UserUncheckedCreateWithoutTareasUpdatedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTareasUpdatedInput
+  upsert?: Prisma.UserUpsertWithoutTareasUpdatedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTareasUpdatedInput, Prisma.UserUpdateWithoutTareasUpdatedInput>, Prisma.UserUncheckedUpdateWithoutTareasUpdatedInput>
+}
+
+export type UserUpdateOneWithoutTareasEliminadasNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTareasEliminadasInput, Prisma.UserUncheckedCreateWithoutTareasEliminadasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTareasEliminadasInput
+  upsert?: Prisma.UserUpsertWithoutTareasEliminadasInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTareasEliminadasInput, Prisma.UserUpdateWithoutTareasEliminadasInput>, Prisma.UserUncheckedUpdateWithoutTareasEliminadasInput>
+}
+
 export type UserCreateNestedOneWithoutVisitasCreatedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutVisitasCreatedInput, Prisma.UserUncheckedCreateWithoutVisitasCreatedInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitasCreatedInput
@@ -1102,20 +1164,6 @@ export type UserUpdateOneRequiredWithoutVisitaChatReadsNestedInput = {
   upsert?: Prisma.UserUpsertWithoutVisitaChatReadsInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitaChatReadsInput, Prisma.UserUpdateWithoutVisitaChatReadsInput>, Prisma.UserUncheckedUpdateWithoutVisitaChatReadsInput>
-}
-
-export type UserCreateNestedOneWithoutSectorAdminsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSectorAdminsInput, Prisma.UserUncheckedCreateWithoutSectorAdminsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSectorAdminsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutSectorAdminsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSectorAdminsInput, Prisma.UserUncheckedCreateWithoutSectorAdminsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSectorAdminsInput
-  upsert?: Prisma.UserUpsertWithoutSectorAdminsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSectorAdminsInput, Prisma.UserUpdateWithoutSectorAdminsInput>, Prisma.UserUncheckedUpdateWithoutSectorAdminsInput>
 }
 
 export type UserCreateNestedOneWithoutPushTokensInput = {
@@ -1367,10 +1415,12 @@ export type UserCreateWithoutAccountsInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1419,10 +1469,12 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -1487,10 +1539,12 @@ export type UserUpdateWithoutAccountsInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1539,10 +1593,12 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -1591,10 +1647,12 @@ export type UserCreateWithoutSessionsInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1643,10 +1701,12 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -1711,10 +1771,12 @@ export type UserUpdateWithoutSessionsInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -1763,10 +1825,12 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -1815,10 +1879,12 @@ export type UserCreateWithoutClientesCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1867,10 +1933,12 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -1924,10 +1992,12 @@ export type UserCreateWithoutClientesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -1976,10 +2046,12 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -2034,10 +2106,12 @@ export type UserCreateWithoutClienteInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
@@ -2086,10 +2160,12 @@ export type UserUncheckedCreateWithoutClienteInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
@@ -2153,10 +2229,12 @@ export type UserUpdateWithoutClientesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -2205,10 +2283,12 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -2268,10 +2348,12 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -2320,10 +2402,12 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -2384,10 +2468,12 @@ export type UserUpdateWithoutClienteInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
@@ -2436,10 +2522,12 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
@@ -2487,10 +2575,12 @@ export type UserCreateWithoutProductosCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -2539,10 +2629,12 @@ export type UserUncheckedCreateWithoutProductosCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -2596,10 +2688,12 @@ export type UserCreateWithoutProductosUpdatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -2648,10 +2742,12 @@ export type UserUncheckedCreateWithoutProductosUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -2716,10 +2812,12 @@ export type UserUpdateWithoutProductosCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -2768,10 +2866,12 @@ export type UserUncheckedUpdateWithoutProductosCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -2831,10 +2931,12 @@ export type UserUpdateWithoutProductosUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -2883,10 +2985,12 @@ export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -2935,10 +3039,12 @@ export type UserCreateWithoutMediaInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -2987,10 +3093,12 @@ export type UserUncheckedCreateWithoutMediaInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -3055,10 +3163,12 @@ export type UserUpdateWithoutMediaInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -3107,10 +3217,12 @@ export type UserUncheckedUpdateWithoutMediaInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -3159,10 +3271,12 @@ export type UserCreateWithoutMovimientosInventarioInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -3211,10 +3325,12 @@ export type UserUncheckedCreateWithoutMovimientosInventarioInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -3279,10 +3395,12 @@ export type UserUpdateWithoutMovimientosInventarioInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -3331,10 +3449,12 @@ export type UserUncheckedUpdateWithoutMovimientosInventarioInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -3383,10 +3503,12 @@ export type UserCreateWithoutSuscripcionesCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -3435,10 +3557,12 @@ export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -3492,10 +3616,12 @@ export type UserCreateWithoutSuscripcionesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -3544,10 +3670,12 @@ export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -3612,10 +3740,12 @@ export type UserUpdateWithoutSuscripcionesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -3664,10 +3794,12 @@ export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -3727,10 +3859,12 @@ export type UserUpdateWithoutSuscripcionesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -3779,10 +3913,12 @@ export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -3831,10 +3967,12 @@ export type UserCreateWithoutPersonalCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -3883,10 +4021,12 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -3940,10 +4080,12 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -3992,10 +4134,12 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -4050,9 +4194,11 @@ export type UserCreateWithoutPersonalInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -4102,9 +4248,11 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -4169,10 +4317,12 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -4221,10 +4371,12 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -4284,10 +4436,12 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -4336,10 +4490,12 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -4400,9 +4556,11 @@ export type UserUpdateWithoutPersonalInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -4452,9 +4610,11 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -4503,10 +4663,12 @@ export type UserCreateWithoutGruposCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -4555,10 +4717,12 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -4612,10 +4776,12 @@ export type UserCreateWithoutGruposUpdatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -4664,10 +4830,12 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -4732,10 +4900,12 @@ export type UserUpdateWithoutGruposCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -4784,10 +4954,12 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -4847,10 +5019,12 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -4899,10 +5073,708 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserCreateWithoutTareasCreatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutTareasCreatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutTareasCreatedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTareasCreatedInput, Prisma.UserUncheckedCreateWithoutTareasCreatedInput>
+}
+
+export type UserCreateWithoutTareasUpdatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutTareasUpdatedInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutTareasUpdatedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTareasUpdatedInput, Prisma.UserUncheckedCreateWithoutTareasUpdatedInput>
+}
+
+export type UserCreateWithoutTareasEliminadasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutTareasEliminadasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutTareasEliminadasInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTareasEliminadasInput, Prisma.UserUncheckedCreateWithoutTareasEliminadasInput>
+}
+
+export type UserUpsertWithoutTareasCreatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTareasCreatedInput, Prisma.UserUncheckedUpdateWithoutTareasCreatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTareasCreatedInput, Prisma.UserUncheckedCreateWithoutTareasCreatedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTareasCreatedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTareasCreatedInput, Prisma.UserUncheckedUpdateWithoutTareasCreatedInput>
+}
+
+export type UserUpdateWithoutTareasCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTareasCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUpsertWithoutTareasUpdatedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTareasUpdatedInput, Prisma.UserUncheckedUpdateWithoutTareasUpdatedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTareasUpdatedInput, Prisma.UserUncheckedCreateWithoutTareasUpdatedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTareasUpdatedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTareasUpdatedInput, Prisma.UserUncheckedUpdateWithoutTareasUpdatedInput>
+}
+
+export type UserUpdateWithoutTareasUpdatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTareasUpdatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUpsertWithoutTareasEliminadasInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTareasEliminadasInput, Prisma.UserUncheckedUpdateWithoutTareasEliminadasInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTareasEliminadasInput, Prisma.UserUncheckedCreateWithoutTareasEliminadasInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTareasEliminadasInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTareasEliminadasInput, Prisma.UserUncheckedUpdateWithoutTareasEliminadasInput>
+}
+
+export type UserUpdateWithoutTareasEliminadasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
+  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTareasEliminadasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -4951,10 +5823,12 @@ export type UserCreateWithoutVisitasCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -5003,10 +5877,12 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -5060,10 +5936,12 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -5112,10 +5990,12 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -5169,10 +6049,12 @@ export type UserCreateWithoutVisitasCompletadasInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -5221,10 +6103,12 @@ export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -5278,10 +6162,12 @@ export type UserCreateWithoutVisitasEliminadasInput = {
   visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -5330,10 +6216,12 @@ export type UserUncheckedCreateWithoutVisitasEliminadasInput = {
   visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -5398,10 +6286,12 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -5450,10 +6340,12 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -5513,10 +6405,12 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -5565,10 +6459,12 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -5628,10 +6524,12 @@ export type UserUpdateWithoutVisitasCompletadasInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -5680,10 +6578,12 @@ export type UserUncheckedUpdateWithoutVisitasCompletadasInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -5743,10 +6643,12 @@ export type UserUpdateWithoutVisitasEliminadasInput = {
   visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -5795,10 +6697,12 @@ export type UserUncheckedUpdateWithoutVisitasEliminadasInput = {
   visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -5848,9 +6752,11 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -5900,9 +6806,11 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -5957,9 +6865,11 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -6009,9 +6919,11 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -6077,9 +6989,11 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -6129,9 +7043,11 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -6192,9 +7108,11 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -6244,9 +7162,11 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -6296,10 +7216,12 @@ export type UserCreateWithoutVisitaMessagesInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -6348,10 +7270,12 @@ export type UserUncheckedCreateWithoutVisitaMessagesInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -6416,10 +7340,12 @@ export type UserUpdateWithoutVisitaMessagesInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -6468,10 +7394,12 @@ export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -6520,10 +7448,12 @@ export type UserCreateWithoutVisitaChatReadsInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -6572,10 +7502,12 @@ export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -6640,10 +7572,12 @@ export type UserUpdateWithoutVisitaChatReadsInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -6692,230 +7626,9 @@ export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
-  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
-  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
-  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
-  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
-  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
-  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
-  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
-}
-
-export type UserCreateWithoutSectorAdminsInput = {
-  id?: string
-  name?: string | null
-  apellido?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  password?: string | null
-  role?: $Enums.UserRole
-  accesoRevocadoEl?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
-  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
-  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
-  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
-  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
-  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
-  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
-  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
-  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
-  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
-  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
-  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
-  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
-  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
-  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
-  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
-  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
-  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
-  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
-  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
-  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
-  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
-  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
-  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
-  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
-  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
-}
-
-export type UserUncheckedCreateWithoutSectorAdminsInput = {
-  id?: string
-  name?: string | null
-  apellido?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  password?: string | null
-  role?: $Enums.UserRole
-  accesoRevocadoEl?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
-  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
-  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
-  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
-  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
-  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
-  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
-  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
-  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
-  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
-  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
-  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
-  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
-  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
-  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
-  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
-  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
-  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
-  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
-  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
-  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
-  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
-  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
-}
-
-export type UserCreateOrConnectWithoutSectorAdminsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutSectorAdminsInput, Prisma.UserUncheckedCreateWithoutSectorAdminsInput>
-}
-
-export type UserUpsertWithoutSectorAdminsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutSectorAdminsInput, Prisma.UserUncheckedUpdateWithoutSectorAdminsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutSectorAdminsInput, Prisma.UserUncheckedCreateWithoutSectorAdminsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutSectorAdminsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutSectorAdminsInput, Prisma.UserUncheckedUpdateWithoutSectorAdminsInput>
-}
-
-export type UserUpdateWithoutSectorAdminsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
-  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
-  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
-  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
-  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
-  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
-  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
-  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
-  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
-  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
-  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
-  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
-  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
-  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
-  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
-  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
-  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
-  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
-  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
-  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
-  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
-  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
-  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
-  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
-  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
-}
-
-export type UserUncheckedUpdateWithoutSectorAdminsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
-  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
-  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
-  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
-  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
-  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
-  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
-  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
-  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
-  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
-  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
-  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
-  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
-  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
-  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
@@ -6923,7 +7636,6 @@ export type UserUncheckedUpdateWithoutSectorAdminsInput = {
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -6968,10 +7680,12 @@ export type UserCreateWithoutPushTokensInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
@@ -7020,10 +7734,12 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
@@ -7088,10 +7804,12 @@ export type UserUpdateWithoutPushTokensInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
@@ -7140,10 +7858,12 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
@@ -7192,10 +7912,12 @@ export type UserCreateWithoutRefreshTokensInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
@@ -7244,10 +7966,12 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
@@ -7312,10 +8036,12 @@ export type UserUpdateWithoutRefreshTokensInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
@@ -7364,10 +8090,12 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
@@ -7416,10 +8144,12 @@ export type UserCreateWithoutClienteImportsInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -7468,10 +8198,12 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -7536,10 +8268,12 @@ export type UserUpdateWithoutClienteImportsInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -7588,10 +8322,12 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -7639,10 +8375,12 @@ export type UserCreateWithoutSetPasswordTokensInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -7691,10 +8429,12 @@ export type UserUncheckedCreateWithoutSetPasswordTokensInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -7759,10 +8499,12 @@ export type UserUpdateWithoutSetPasswordTokensInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -7811,10 +8553,12 @@ export type UserUncheckedUpdateWithoutSetPasswordTokensInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -7864,10 +8608,12 @@ export type UserCreateWithoutInformesGeneradosInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -7916,10 +8662,12 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -7973,10 +8721,12 @@ export type UserCreateWithoutInformesActualizadosInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -8025,10 +8775,12 @@ export type UserUncheckedCreateWithoutInformesActualizadosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -8093,10 +8845,12 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -8145,10 +8899,12 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -8208,10 +8964,12 @@ export type UserUpdateWithoutInformesActualizadosInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -8260,10 +9018,12 @@ export type UserUncheckedUpdateWithoutInformesActualizadosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -8312,10 +9072,12 @@ export type UserCreateWithoutInformeVersionesInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -8364,10 +9126,12 @@ export type UserUncheckedCreateWithoutInformeVersionesInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -8432,10 +9196,12 @@ export type UserUpdateWithoutInformeVersionesInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -8484,10 +9250,12 @@ export type UserUncheckedUpdateWithoutInformeVersionesInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -8536,10 +9304,12 @@ export type UserCreateWithoutInformeBorradoresCreadosInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -8588,10 +9358,12 @@ export type UserUncheckedCreateWithoutInformeBorradoresCreadosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -8645,10 +9417,12 @@ export type UserCreateWithoutInformeBorradoresActualizadosInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -8697,10 +9471,12 @@ export type UserUncheckedCreateWithoutInformeBorradoresActualizadosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -8765,10 +9541,12 @@ export type UserUpdateWithoutInformeBorradoresCreadosInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -8817,10 +9595,12 @@ export type UserUncheckedUpdateWithoutInformeBorradoresCreadosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -8880,10 +9660,12 @@ export type UserUpdateWithoutInformeBorradoresActualizadosInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -8932,10 +9714,12 @@ export type UserUncheckedUpdateWithoutInformeBorradoresActualizadosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -8984,10 +9768,12 @@ export type UserCreateWithoutOrdenesCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -9036,10 +9822,12 @@ export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -9093,10 +9881,12 @@ export type UserCreateWithoutOrdenesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -9145,10 +9935,12 @@ export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -9213,10 +10005,12 @@ export type UserUpdateWithoutOrdenesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -9265,10 +10059,12 @@ export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -9328,10 +10124,12 @@ export type UserUpdateWithoutOrdenesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -9380,10 +10178,12 @@ export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -9432,10 +10232,12 @@ export type UserCreateWithoutDatosFacturacionCreatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -9484,10 +10286,12 @@ export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -9541,10 +10345,12 @@ export type UserCreateWithoutDatosFacturacionUpdatedInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -9593,10 +10399,12 @@ export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -9661,10 +10469,12 @@ export type UserUpdateWithoutDatosFacturacionCreatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -9713,10 +10523,12 @@ export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -9776,10 +10588,12 @@ export type UserUpdateWithoutDatosFacturacionUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -9828,10 +10642,12 @@ export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -9879,10 +10695,12 @@ export type UserCreateWithoutCobrosRegistradosInput = {
   visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -9931,10 +10749,12 @@ export type UserUncheckedCreateWithoutCobrosRegistradosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
   visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
   visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -9999,10 +10819,12 @@ export type UserUpdateWithoutCobrosRegistradosInput = {
   visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -10051,10 +10873,12 @@ export type UserUncheckedUpdateWithoutCobrosRegistradosInput = {
   visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
   visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
   visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  sectorAdmins?: Prisma.SectorAdminUncheckedUpdateManyWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -10098,9 +10922,11 @@ export type UserCountOutputType = {
   visitasUpdated: number
   visitasCompletadas: number
   visitasEliminadas: number
+  tareasCreated: number
+  tareasUpdated: number
+  tareasEliminadas: number
   visitaPersonalAdded: number
   visitaPersonalRemoved: number
-  sectorAdmins: number
   pushTokens: number
   refreshTokens: number
   visitaMessages: number
@@ -10138,9 +10964,11 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   visitasUpdated?: boolean | UserCountOutputTypeCountVisitasUpdatedArgs
   visitasCompletadas?: boolean | UserCountOutputTypeCountVisitasCompletadasArgs
   visitasEliminadas?: boolean | UserCountOutputTypeCountVisitasEliminadasArgs
+  tareasCreated?: boolean | UserCountOutputTypeCountTareasCreatedArgs
+  tareasUpdated?: boolean | UserCountOutputTypeCountTareasUpdatedArgs
+  tareasEliminadas?: boolean | UserCountOutputTypeCountTareasEliminadasArgs
   visitaPersonalAdded?: boolean | UserCountOutputTypeCountVisitaPersonalAddedArgs
   visitaPersonalRemoved?: boolean | UserCountOutputTypeCountVisitaPersonalRemovedArgs
-  sectorAdmins?: boolean | UserCountOutputTypeCountSectorAdminsArgs
   pushTokens?: boolean | UserCountOutputTypeCountPushTokensArgs
   refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
   visitaMessages?: boolean | UserCountOutputTypeCountVisitaMessagesArgs
@@ -10310,6 +11138,27 @@ export type UserCountOutputTypeCountVisitasEliminadasArgs<ExtArgs extends runtim
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountTareasCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TareaWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTareasUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TareaWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTareasEliminadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TareaWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountVisitaPersonalAddedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.VisitaPersonalWhereInput
 }
@@ -10319,13 +11168,6 @@ export type UserCountOutputTypeCountVisitaPersonalAddedArgs<ExtArgs extends runt
  */
 export type UserCountOutputTypeCountVisitaPersonalRemovedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.VisitaPersonalWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountSectorAdminsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.SectorAdminWhereInput
 }
 
 /**
@@ -10459,10 +11301,12 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   visitasUpdated?: boolean | Prisma.User$visitasUpdatedArgs<ExtArgs>
   visitasCompletadas?: boolean | Prisma.User$visitasCompletadasArgs<ExtArgs>
   visitasEliminadas?: boolean | Prisma.User$visitasEliminadasArgs<ExtArgs>
+  tareasCreated?: boolean | Prisma.User$tareasCreatedArgs<ExtArgs>
+  tareasUpdated?: boolean | Prisma.User$tareasUpdatedArgs<ExtArgs>
+  tareasEliminadas?: boolean | Prisma.User$tareasEliminadasArgs<ExtArgs>
   visitaPersonalAdded?: boolean | Prisma.User$visitaPersonalAddedArgs<ExtArgs>
   visitaPersonalRemoved?: boolean | Prisma.User$visitaPersonalRemovedArgs<ExtArgs>
   personal?: boolean | Prisma.User$personalArgs<ExtArgs>
-  sectorAdmins?: boolean | Prisma.User$sectorAdminsArgs<ExtArgs>
   cliente?: boolean | Prisma.User$clienteArgs<ExtArgs>
   pushTokens?: boolean | Prisma.User$pushTokensArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
@@ -10545,10 +11389,12 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   visitasUpdated?: boolean | Prisma.User$visitasUpdatedArgs<ExtArgs>
   visitasCompletadas?: boolean | Prisma.User$visitasCompletadasArgs<ExtArgs>
   visitasEliminadas?: boolean | Prisma.User$visitasEliminadasArgs<ExtArgs>
+  tareasCreated?: boolean | Prisma.User$tareasCreatedArgs<ExtArgs>
+  tareasUpdated?: boolean | Prisma.User$tareasUpdatedArgs<ExtArgs>
+  tareasEliminadas?: boolean | Prisma.User$tareasEliminadasArgs<ExtArgs>
   visitaPersonalAdded?: boolean | Prisma.User$visitaPersonalAddedArgs<ExtArgs>
   visitaPersonalRemoved?: boolean | Prisma.User$visitaPersonalRemovedArgs<ExtArgs>
   personal?: boolean | Prisma.User$personalArgs<ExtArgs>
-  sectorAdmins?: boolean | Prisma.User$sectorAdminsArgs<ExtArgs>
   cliente?: boolean | Prisma.User$clienteArgs<ExtArgs>
   pushTokens?: boolean | Prisma.User$pushTokensArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
@@ -10595,10 +11441,12 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     visitasUpdated: Prisma.$VisitaPayload<ExtArgs>[]
     visitasCompletadas: Prisma.$VisitaPayload<ExtArgs>[]
     visitasEliminadas: Prisma.$VisitaPayload<ExtArgs>[]
+    tareasCreated: Prisma.$TareaPayload<ExtArgs>[]
+    tareasUpdated: Prisma.$TareaPayload<ExtArgs>[]
+    tareasEliminadas: Prisma.$TareaPayload<ExtArgs>[]
     visitaPersonalAdded: Prisma.$VisitaPersonalPayload<ExtArgs>[]
     visitaPersonalRemoved: Prisma.$VisitaPersonalPayload<ExtArgs>[]
     personal: Prisma.$PersonalPayload<ExtArgs> | null
-    sectorAdmins: Prisma.$SectorAdminPayload<ExtArgs>[]
     cliente: Prisma.$ClientePayload<ExtArgs> | null
     pushTokens: Prisma.$PushTokenPayload<ExtArgs>[]
     refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
@@ -11050,10 +11898,12 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   visitasUpdated<T extends Prisma.User$visitasUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitasCompletadas<T extends Prisma.User$visitasCompletadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasCompletadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitasEliminadas<T extends Prisma.User$visitasEliminadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitasEliminadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  tareasCreated<T extends Prisma.User$tareasCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$tareasCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TareaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  tareasUpdated<T extends Prisma.User$tareasUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$tareasUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TareaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  tareasEliminadas<T extends Prisma.User$tareasEliminadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$tareasEliminadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TareaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitaPersonalAdded<T extends Prisma.User$visitaPersonalAddedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaPersonalAddedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitaPersonalRemoved<T extends Prisma.User$visitaPersonalRemovedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaPersonalRemovedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   personal<T extends Prisma.User$personalArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$personalArgs<ExtArgs>>): Prisma.Prisma__PersonalClient<runtime.Types.Result.GetResult<Prisma.$PersonalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  sectorAdmins<T extends Prisma.User$sectorAdminsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sectorAdminsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SectorAdminPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cliente<T extends Prisma.User$clienteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clienteArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   pushTokens<T extends Prisma.User$pushTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pushTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11982,6 +12832,78 @@ export type User$visitasEliminadasArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
+ * User.tareasCreated
+ */
+export type User$tareasCreatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Tarea
+   */
+  select?: Prisma.TareaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Tarea
+   */
+  omit?: Prisma.TareaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TareaInclude<ExtArgs> | null
+  where?: Prisma.TareaWhereInput
+  orderBy?: Prisma.TareaOrderByWithRelationInput | Prisma.TareaOrderByWithRelationInput[]
+  cursor?: Prisma.TareaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TareaScalarFieldEnum | Prisma.TareaScalarFieldEnum[]
+}
+
+/**
+ * User.tareasUpdated
+ */
+export type User$tareasUpdatedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Tarea
+   */
+  select?: Prisma.TareaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Tarea
+   */
+  omit?: Prisma.TareaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TareaInclude<ExtArgs> | null
+  where?: Prisma.TareaWhereInput
+  orderBy?: Prisma.TareaOrderByWithRelationInput | Prisma.TareaOrderByWithRelationInput[]
+  cursor?: Prisma.TareaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TareaScalarFieldEnum | Prisma.TareaScalarFieldEnum[]
+}
+
+/**
+ * User.tareasEliminadas
+ */
+export type User$tareasEliminadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Tarea
+   */
+  select?: Prisma.TareaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Tarea
+   */
+  omit?: Prisma.TareaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TareaInclude<ExtArgs> | null
+  where?: Prisma.TareaWhereInput
+  orderBy?: Prisma.TareaOrderByWithRelationInput | Prisma.TareaOrderByWithRelationInput[]
+  cursor?: Prisma.TareaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TareaScalarFieldEnum | Prisma.TareaScalarFieldEnum[]
+}
+
+/**
  * User.visitaPersonalAdded
  */
 export type User$visitaPersonalAddedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -12046,30 +12968,6 @@ export type User$personalArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.PersonalInclude<ExtArgs> | null
   where?: Prisma.PersonalWhereInput
-}
-
-/**
- * User.sectorAdmins
- */
-export type User$sectorAdminsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the SectorAdmin
-   */
-  select?: Prisma.SectorAdminSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the SectorAdmin
-   */
-  omit?: Prisma.SectorAdminOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SectorAdminInclude<ExtArgs> | null
-  where?: Prisma.SectorAdminWhereInput
-  orderBy?: Prisma.SectorAdminOrderByWithRelationInput | Prisma.SectorAdminOrderByWithRelationInput[]
-  cursor?: Prisma.SectorAdminWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.SectorAdminScalarFieldEnum | Prisma.SectorAdminScalarFieldEnum[]
 }
 
 /**

@@ -31,11 +31,6 @@ export async function GET(
       email: true,
       role: true,
       createdAt: true,
-      sectorAdmins: {
-        select: {
-          sector: { select: { id: true, nombre: true } },
-        },
-      },
     },
   });
 
@@ -104,18 +99,6 @@ export async function PUT(
         createdAt: true,
       },
     });
-
-    if (data.sectorIds !== undefined) {
-      await tx.sectorAdmin.deleteMany({ where: { userId: id } });
-      if (data.sectorIds.length > 0) {
-        await tx.sectorAdmin.createMany({
-          data: data.sectorIds.map((sectorId) => ({
-            sectorId,
-            userId: id,
-          })),
-        });
-      }
-    }
 
     return updatedUser;
   });

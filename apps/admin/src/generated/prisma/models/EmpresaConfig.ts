@@ -30,6 +30,7 @@ export type EmpresaConfigMinAggregateOutputType = {
   logoKey: string | null
   logoUrl: string | null
   updatedAt: Date | null
+  tareasOrden: $Enums.OrdenTareas | null
 }
 
 export type EmpresaConfigMaxAggregateOutputType = {
@@ -38,6 +39,7 @@ export type EmpresaConfigMaxAggregateOutputType = {
   logoKey: string | null
   logoUrl: string | null
   updatedAt: Date | null
+  tareasOrden: $Enums.OrdenTareas | null
 }
 
 export type EmpresaConfigCountAggregateOutputType = {
@@ -46,6 +48,7 @@ export type EmpresaConfigCountAggregateOutputType = {
   logoKey: number
   logoUrl: number
   updatedAt: number
+  tareasOrden: number
   _all: number
 }
 
@@ -56,6 +59,7 @@ export type EmpresaConfigMinAggregateInputType = {
   logoKey?: true
   logoUrl?: true
   updatedAt?: true
+  tareasOrden?: true
 }
 
 export type EmpresaConfigMaxAggregateInputType = {
@@ -64,6 +68,7 @@ export type EmpresaConfigMaxAggregateInputType = {
   logoKey?: true
   logoUrl?: true
   updatedAt?: true
+  tareasOrden?: true
 }
 
 export type EmpresaConfigCountAggregateInputType = {
@@ -72,6 +77,7 @@ export type EmpresaConfigCountAggregateInputType = {
   logoKey?: true
   logoUrl?: true
   updatedAt?: true
+  tareasOrden?: true
   _all?: true
 }
 
@@ -153,6 +159,7 @@ export type EmpresaConfigGroupByOutputType = {
   logoKey: string | null
   logoUrl: string | null
   updatedAt: Date
+  tareasOrden: $Enums.OrdenTareas
   _count: EmpresaConfigCountAggregateOutputType | null
   _min: EmpresaConfigMinAggregateOutputType | null
   _max: EmpresaConfigMaxAggregateOutputType | null
@@ -182,6 +189,7 @@ export type EmpresaConfigWhereInput = {
   logoKey?: Prisma.StringNullableFilter<"EmpresaConfig"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"EmpresaConfig"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"EmpresaConfig"> | Date | string
+  tareasOrden?: Prisma.EnumOrdenTareasFilter<"EmpresaConfig"> | $Enums.OrdenTareas
 }
 
 export type EmpresaConfigOrderByWithRelationInput = {
@@ -190,6 +198,7 @@ export type EmpresaConfigOrderByWithRelationInput = {
   logoKey?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  tareasOrden?: Prisma.SortOrder
 }
 
 export type EmpresaConfigWhereUniqueInput = Prisma.AtLeast<{
@@ -201,6 +210,7 @@ export type EmpresaConfigWhereUniqueInput = Prisma.AtLeast<{
   logoKey?: Prisma.StringNullableFilter<"EmpresaConfig"> | string | null
   logoUrl?: Prisma.StringNullableFilter<"EmpresaConfig"> | string | null
   updatedAt?: Prisma.DateTimeFilter<"EmpresaConfig"> | Date | string
+  tareasOrden?: Prisma.EnumOrdenTareasFilter<"EmpresaConfig"> | $Enums.OrdenTareas
 }, "id">
 
 export type EmpresaConfigOrderByWithAggregationInput = {
@@ -209,6 +219,7 @@ export type EmpresaConfigOrderByWithAggregationInput = {
   logoKey?: Prisma.SortOrderInput | Prisma.SortOrder
   logoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  tareasOrden?: Prisma.SortOrder
   _count?: Prisma.EmpresaConfigCountOrderByAggregateInput
   _max?: Prisma.EmpresaConfigMaxOrderByAggregateInput
   _min?: Prisma.EmpresaConfigMinOrderByAggregateInput
@@ -223,6 +234,7 @@ export type EmpresaConfigScalarWhereWithAggregatesInput = {
   logoKey?: Prisma.StringNullableWithAggregatesFilter<"EmpresaConfig"> | string | null
   logoUrl?: Prisma.StringNullableWithAggregatesFilter<"EmpresaConfig"> | string | null
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EmpresaConfig"> | Date | string
+  tareasOrden?: Prisma.EnumOrdenTareasWithAggregatesFilter<"EmpresaConfig"> | $Enums.OrdenTareas
 }
 
 export type EmpresaConfigCreateInput = {
@@ -231,6 +243,7 @@ export type EmpresaConfigCreateInput = {
   logoKey?: string | null
   logoUrl?: string | null
   updatedAt?: Date | string
+  tareasOrden?: $Enums.OrdenTareas
 }
 
 export type EmpresaConfigUncheckedCreateInput = {
@@ -239,6 +252,7 @@ export type EmpresaConfigUncheckedCreateInput = {
   logoKey?: string | null
   logoUrl?: string | null
   updatedAt?: Date | string
+  tareasOrden?: $Enums.OrdenTareas
 }
 
 export type EmpresaConfigUpdateInput = {
@@ -247,6 +261,7 @@ export type EmpresaConfigUpdateInput = {
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tareasOrden?: Prisma.EnumOrdenTareasFieldUpdateOperationsInput | $Enums.OrdenTareas
 }
 
 export type EmpresaConfigUncheckedUpdateInput = {
@@ -255,6 +270,7 @@ export type EmpresaConfigUncheckedUpdateInput = {
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tareasOrden?: Prisma.EnumOrdenTareasFieldUpdateOperationsInput | $Enums.OrdenTareas
 }
 
 export type EmpresaConfigCreateManyInput = {
@@ -263,6 +279,7 @@ export type EmpresaConfigCreateManyInput = {
   logoKey?: string | null
   logoUrl?: string | null
   updatedAt?: Date | string
+  tareasOrden?: $Enums.OrdenTareas
 }
 
 export type EmpresaConfigUpdateManyMutationInput = {
@@ -271,6 +288,7 @@ export type EmpresaConfigUpdateManyMutationInput = {
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tareasOrden?: Prisma.EnumOrdenTareasFieldUpdateOperationsInput | $Enums.OrdenTareas
 }
 
 export type EmpresaConfigUncheckedUpdateManyInput = {
@@ -279,6 +297,7 @@ export type EmpresaConfigUncheckedUpdateManyInput = {
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tareasOrden?: Prisma.EnumOrdenTareasFieldUpdateOperationsInput | $Enums.OrdenTareas
 }
 
 export type EmpresaConfigCountOrderByAggregateInput = {
@@ -287,6 +306,7 @@ export type EmpresaConfigCountOrderByAggregateInput = {
   logoKey?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  tareasOrden?: Prisma.SortOrder
 }
 
 export type EmpresaConfigMaxOrderByAggregateInput = {
@@ -295,6 +315,7 @@ export type EmpresaConfigMaxOrderByAggregateInput = {
   logoKey?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  tareasOrden?: Prisma.SortOrder
 }
 
 export type EmpresaConfigMinOrderByAggregateInput = {
@@ -303,6 +324,11 @@ export type EmpresaConfigMinOrderByAggregateInput = {
   logoKey?: Prisma.SortOrder
   logoUrl?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  tareasOrden?: Prisma.SortOrder
+}
+
+export type EnumOrdenTareasFieldUpdateOperationsInput = {
+  set?: $Enums.OrdenTareas
 }
 
 
@@ -313,6 +339,7 @@ export type EmpresaConfigSelect<ExtArgs extends runtime.Types.Extensions.Interna
   logoKey?: boolean
   logoUrl?: boolean
   updatedAt?: boolean
+  tareasOrden?: boolean
 }, ExtArgs["result"]["empresaConfig"]>
 
 export type EmpresaConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -321,6 +348,7 @@ export type EmpresaConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   logoKey?: boolean
   logoUrl?: boolean
   updatedAt?: boolean
+  tareasOrden?: boolean
 }, ExtArgs["result"]["empresaConfig"]>
 
 export type EmpresaConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -329,6 +357,7 @@ export type EmpresaConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   logoKey?: boolean
   logoUrl?: boolean
   updatedAt?: boolean
+  tareasOrden?: boolean
 }, ExtArgs["result"]["empresaConfig"]>
 
 export type EmpresaConfigSelectScalar = {
@@ -337,9 +366,10 @@ export type EmpresaConfigSelectScalar = {
   logoKey?: boolean
   logoUrl?: boolean
   updatedAt?: boolean
+  tareasOrden?: boolean
 }
 
-export type EmpresaConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "logoKey" | "logoUrl" | "updatedAt", ExtArgs["result"]["empresaConfig"]>
+export type EmpresaConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "logoKey" | "logoUrl" | "updatedAt" | "tareasOrden", ExtArgs["result"]["empresaConfig"]>
 
 export type $EmpresaConfigPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EmpresaConfig"
@@ -350,6 +380,11 @@ export type $EmpresaConfigPayload<ExtArgs extends runtime.Types.Extensions.Inter
     logoKey: string | null
     logoUrl: string | null
     updatedAt: Date
+    /**
+     * Ver `OrdenTareas`. Arranca en personalizado porque el catálogo se siembra
+     * en el orden en que se trabaja un jardín, que no es el alfabético.
+     */
+    tareasOrden: $Enums.OrdenTareas
   }, ExtArgs["result"]["empresaConfig"]>
   composites: {}
 }
@@ -778,6 +813,7 @@ export interface EmpresaConfigFieldRefs {
   readonly logoKey: Prisma.FieldRef<"EmpresaConfig", 'String'>
   readonly logoUrl: Prisma.FieldRef<"EmpresaConfig", 'String'>
   readonly updatedAt: Prisma.FieldRef<"EmpresaConfig", 'DateTime'>
+  readonly tareasOrden: Prisma.FieldRef<"EmpresaConfig", 'OrdenTareas'>
 }
     
 

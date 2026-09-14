@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, getUserSectorIds, isReadOnly } from "@/lib/auth-helpers";
+import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
 import { clienteSchema } from "@/lib/validations/cliente";
 
 export async function GET() {
@@ -13,15 +13,8 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const where: Record<string, unknown> = {};
-
-  if (user.role === "PERSONAL_ADMIN") {
-    const sectorIds = await getUserSectorIds(user.id);
-    where.sectorId = { in: sectorIds };
-  }
-
   const clientes = await prisma.cliente.findMany({
-    where: { ...where, deletedAt: null },
+    where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: {
       sector: { select: { id: true, nombre: true } },
@@ -37,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  if (isReadOnly(user.role) || user.role === "PERSONAL_ADMIN") {
+  if (isReadOnly(user.role)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 

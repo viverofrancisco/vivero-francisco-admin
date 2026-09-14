@@ -9,7 +9,7 @@ import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 const etiquetaSchema = z.object({
   /** `null` la deja sin etiqueta, que es un estado válido. */
-  productoId: z.string().min(1).nullable(),
+  tareaId: z.string().min(1).nullable(),
 });
 
 /** Cambiar de qué producto es el archivo. */
@@ -25,7 +25,7 @@ export async function PATCH(
   }
   try {
     return NextResponse.json(
-      await etiquetarVisitaMedia(id, mediaId, parsed.data.productoId, viewer)
+      await etiquetarVisitaMedia(id, mediaId, parsed.data.tareaId, viewer)
     );
   } catch (error) {
     return serviceErrorResponse(error);

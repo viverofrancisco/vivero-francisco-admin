@@ -14,7 +14,7 @@ export default async function EditarVisitaRoute({
   // PERSONAL es solo lectura: no debería llegar ni por URL escrita a mano.
   if (user.role === "PERSONAL") notFound();
 
-  const [visita, catalogo, grupos, personalList] = await Promise.all([
+  const [visita, tareas, grupos, personalList] = await Promise.all([
     prisma.visita.findUnique({
       where: { id, deletedAt: null },
       select: {
@@ -36,21 +36,14 @@ export default async function EditarVisitaRoute({
             sector: { select: { nombre: true } },
           },
         },
-        productos: {
-          orderBy: { posicion: "asc" },
-          select: {
-            productoId: true,
-            suscripcionItemId: true,
-            producto: { select: { nombre: true } },
-          },
-        },
+        tareasObligatorias: { select: { tareaId: true } },
         personal: { where: { removedAt: null }, select: { personalId: true } },
       },
     }),
-    prisma.producto.findMany({
+    prisma.tarea.findMany({
       where: { deletedAt: null },
       select: { id: true, nombre: true },
-      orderBy: { nombre: "asc" },
+      orderBy: [{ orden: "asc" }, { nombre: "asc" }],
     }),
     prisma.grupo.findMany({
       where: { deletedAt: null },
@@ -100,15 +93,12 @@ export default async function EditarVisitaRoute({
         estado: visita.estado,
         notas: visita.notas,
         cliente: visita.cliente,
-        productos: visita.productos.map((p) => ({
-          productoId: p.productoId,
-          nombre: p.producto.nombre,
-        })),
+        tareasObligatoriasIds: visita.tareasObligatorias.map((t) => t.tareaId),
         suscripcionId: visita.suscripcionId,
         grupoId: visita.grupoId,
         personalIds: visita.personal.map((p) => p.personalId),
       }}
-      catalogo={catalogo}
+      tareas={tareas}
       planes={planes.map((s) => ({
         id: s.id,
         numero: s.numero,

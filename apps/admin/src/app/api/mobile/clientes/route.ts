@@ -14,8 +14,7 @@ export async function GET(request: Request) {
   const userOrResponse = await requireMobileRole(
     request,
     "ADMIN",
-    "STAFF",
-    "PERSONAL_ADMIN"
+    "STAFF"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
@@ -38,11 +37,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  // PERSONAL_ADMIN can create within their sectors; STAFF is read-only.
   const userOrResponse = await requireMobileRole(
     request,
-    "ADMIN",
-    "PERSONAL_ADMIN"
+    "ADMIN"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 

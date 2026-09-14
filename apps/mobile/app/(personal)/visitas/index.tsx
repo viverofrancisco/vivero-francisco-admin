@@ -12,7 +12,7 @@ import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
-import { resumenProductos } from "@/lib/types";
+import { resumenTareas } from "@/lib/types";
 
 type Group = "Hoy" | "Mañana" | "Esta semana" | "Más adelante";
 
@@ -24,7 +24,7 @@ interface Section {
 export default function PersonalVisitasListScreen() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
-  const canCreate = role === "ADMIN" || role === "PERSONAL_ADMIN";
+  const canCreate = role === "ADMIN" || role === "STAFF";
   const [items, setItems] = useState<VisitaDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -122,7 +122,7 @@ function VisitaRow({
 }) {
   const cliente = v.cliente;
   const sector = cliente.sector?.nombre;
-  const subtitleParts = [resumenProductos(v), sector].filter(
+  const subtitleParts = [resumenTareas(v), sector].filter(
     Boolean
   );
   const isCompleted = v.estado !== "PROGRAMADA";

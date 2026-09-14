@@ -18,7 +18,6 @@ export async function GET(request: Request) {
     request,
     "ADMIN",
     "STAFF",
-    "PERSONAL_ADMIN",
     "CLIENTE"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
@@ -54,8 +53,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const userOrResponse = await requireMobileRole(
     request,
-    "ADMIN",
-    "PERSONAL_ADMIN"
+    "ADMIN"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
@@ -74,7 +72,7 @@ export async function POST(request: Request) {
       viewerFromMobileUser(userOrResponse),
       {
         clienteId: parsed.data.clienteId,
-        productos: parsed.data.productos,
+        tareasObligatoriasIds: parsed.data.tareasObligatoriasIds,
         fechas: parsed.data.fechas.map((f) => new Date(f)),
         grupoId: parsed.data.grupoId ?? null,
         notas: parsed.data.notas ?? null,

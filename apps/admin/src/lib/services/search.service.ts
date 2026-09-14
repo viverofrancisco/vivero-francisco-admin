@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { listaProductos } from "@/lib/visita-productos";
+import { listaTareas } from "@/lib/visita-tareas";
 import { nombreCliente } from "@vivero/shared";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Viewer } from "./viewer";
@@ -54,19 +54,11 @@ function fmtDate(d: Date): string {
   });
 }
 
-async function sectorIdsFor(viewer: Viewer): Promise<string[]> {
-  const rows = await prisma.sectorAdmin.findMany({
-    where: { userId: viewer.id },
-    select: { sectorId: true },
-  });
-  return rows.map((r) => r.sectorId);
-}
-
 /**
  * Cross-entity search over clientes, visitas, órdenes, suscripciones and
  * informes, scoped to what the viewer is allowed to see (ADMIN/STAFF:
- * everything; PERSONAL_ADMIN: their sectors; PERSONAL: only their own visitas,
- * and no money at all).
+ * everything; PERSONAL: only the visitas they are assigned to, and no money at
+ * all).
  *
  * Números: cada tabla tiene su propia secuencia, así que "12" puede ser una
  * visita, una orden y una suscripción a la vez y se devuelven las tres.
@@ -108,9 +100,7 @@ export async function globalSearch(
   const take = Math.min(Math.max(perType, 1), 50);
 
   const staff = isAdminRole(viewer.role); // ADMIN | STAFF
-  const personalAdmin = viewer.role === "PERSONAL_ADMIN";
   const personal = viewer.role === "PERSONAL";
-  const sectorIds = personalAdmin ? await sectorIdsFor(viewer) : [];
 
   const insensitive = { mode: "insensitive" as const };
   // Una sola regla para todos los buscadores de clientes: cada palabra en
@@ -119,12 +109,11 @@ export async function globalSearch(
   const clienteNameMatch = (): Prisma.ClienteWhereInput =>
     filtroClientePorTexto(term) ?? {};
 
-  // ── Clientes (staff + sector-scoped personal_admin) ──
+  // ── Clientes: solo la oficina ──
   let clienteWhere: Prisma.ClienteWhereInput | null = null;
-  if ((staff || personalAdmin) && !soloNumero) {
+  if (staff && !soloNumero) {
     clienteWhere = {
       deletedAt: null,
-      ...(personalAdmin ? { sectorId: { in: sectorIds } } : {}),
       OR: [clienteNameMatch(), { telefono: { contains: term } }],
     };
   }
@@ -137,31 +126,27 @@ export async function globalSearch(
       : [
           ...(numero !== null ? [{ numero }] : []),
           { cliente: clienteNameMatch() },
+          // Por lo que se hizo: la tarea que alguien cargó en esa visita.
           {
-            productos: {
+            personal: {
               some: {
-                producto: { nombre: { contains: term, ...insensitive } },
+                removedAt: null,
+                tareas: {
+                  some: {
+                    tarea: { nombre: { contains: term, ...insensitive } },
+                  },
+                },
               },
             },
           },
         ],
   };
-  if (personalAdmin) {
-    visitaWhere.cliente = { sectorId: { in: sectorIds } };
-  }
-  if (personal && viewer.personalId) {
-    visitaWhere.AND = [
-      {
-        OR: [
-          { grupo: { miembros: { some: { personalId: viewer.personalId } } } },
-          {
-            personal: {
-              some: { personalId: viewer.personalId, removedAt: null },
-            },
-          },
-        ],
-      },
-    ];
+  // El jardinero busca dentro de las visitas donde estuvo asignado, que son
+  // las únicas que puede abrir.
+  if (personal) {
+    visitaWhere.personal = viewer.personalId
+      ? { some: { personalId: viewer.personalId, removedAt: null } }
+      : { some: { personalId: "ninguno" } };
   }
 
   /**
@@ -171,19 +156,14 @@ export async function globalSearch(
    * visitas, y devolverle además sus doce órdenes tapa lo que sí pidió. Su
    * ficha ya las lista. `PERSONAL` no las ve, como el resto de la plata.
    */
-  const porNumero = numero !== null && (staff || personalAdmin);
-  // Las órdenes son plata: solo la oficina. Encontrar una que después no se
-  // puede abrir es peor que no encontrarla.
+  // Las órdenes y los planes son plata: solo la oficina. Encontrar algo que
+  // después no se puede abrir es peor que no encontrarlo.
   const ordenWhere: Prisma.OrdenWhereInput | null =
     numero !== null && staff ? { numero } : null;
-  const suscripcionWhere: Prisma.SuscripcionWhereInput | null = porNumero
-    ? {
-        numero,
-        ...(personalAdmin ? { cliente: { sectorId: { in: sectorIds } } } : {}),
-      }
-    : null;
+  const suscripcionWhere: Prisma.SuscripcionWhereInput | null =
+    numero !== null && staff ? { numero } : null;
 
-  // ── Informes (solo staff: el admin de sector no los ve) ──
+  // ── Informes: solo la oficina ──
   let informeWhere: Prisma.InformeWhereInput | null = null;
   if (staff) {
     informeWhere = soloNumero
@@ -233,9 +213,19 @@ export async function globalSearch(
         estado: true,
         fechaProgramada: true,
         cliente: { select: { nombre: true, apellido: true, empresa: true } },
-        productos: {
-          orderBy: { posicion: "asc" },
-          select: { producto: { select: { nombre: true } } },
+        tareasObligatorias: {
+          select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+        },
+        personal: {
+          where: { removedAt: null },
+          select: {
+            personal: { select: { nombre: true, apellido: true } },
+            tareas: {
+              select: {
+                tarea: { select: { id: true, nombre: true, orden: true } },
+              },
+            },
+          },
         },
       },
       orderBy: { fechaProgramada: "desc" },
@@ -308,7 +298,7 @@ export async function globalSearch(
       // El número solo: es lo que se dice en voz alta y lo que se buscó.
       title: `Visita #${v.numero}`,
       subtitle: `${nombreCliente(v.cliente)} · ${fmtDate(v.fechaProgramada)}`,
-      detalle: listaProductos(v),
+      detalle: listaTareas(v),
       href: `/dashboard/visitas/${v.id}`,
       estado: v.estado,
     })),

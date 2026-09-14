@@ -12,10 +12,7 @@ import {
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
 import { nombreCliente } from "@vivero/shared";
-import {
-  listaProductos,
-  type ProductoDeVisita,
-} from "@/lib/visita-productos";
+import { listaTareas, type VisitaConTareas } from "@/lib/visita-tareas";
 
 interface VisitaInfoData {
   id: string;
@@ -36,7 +33,7 @@ interface VisitaInfoData {
     ciudad: string | null;
     sector: { nombre: string } | null;
   };
-  productos: ProductoDeVisita[];
+  tareas: VisitaConTareas;
   personal: {
     personal: {
       id: string;
@@ -71,7 +68,7 @@ export function VisitaInfoSidebar({ visita }: { visita: VisitaInfoData }) {
             {estadoLabel(visita.estado)}
           </Badge>
           <p className="text-base font-semibold">
-            {listaProductos(visita)}
+            {listaTareas(visita.tareas)}
           </p>
         </div>
 

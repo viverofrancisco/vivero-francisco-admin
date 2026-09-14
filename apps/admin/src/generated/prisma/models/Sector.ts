@@ -183,7 +183,6 @@ export type SectorWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Sector"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Sector"> | Date | string | null
   clientes?: Prisma.ClienteListRelationFilter
-  admins?: Prisma.SectorAdminListRelationFilter
 }
 
 export type SectorOrderByWithRelationInput = {
@@ -193,7 +192,6 @@ export type SectorOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   clientes?: Prisma.ClienteOrderByRelationAggregateInput
-  admins?: Prisma.SectorAdminOrderByRelationAggregateInput
 }
 
 export type SectorWhereUniqueInput = Prisma.AtLeast<{
@@ -206,7 +204,6 @@ export type SectorWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Sector"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Sector"> | Date | string | null
   clientes?: Prisma.ClienteListRelationFilter
-  admins?: Prisma.SectorAdminListRelationFilter
 }, "id" | "nombre">
 
 export type SectorOrderByWithAggregationInput = {
@@ -238,7 +235,6 @@ export type SectorCreateInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   clientes?: Prisma.ClienteCreateNestedManyWithoutSectorInput
-  admins?: Prisma.SectorAdminCreateNestedManyWithoutSectorInput
 }
 
 export type SectorUncheckedCreateInput = {
@@ -248,7 +244,6 @@ export type SectorUncheckedCreateInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   clientes?: Prisma.ClienteUncheckedCreateNestedManyWithoutSectorInput
-  admins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutSectorInput
 }
 
 export type SectorUpdateInput = {
@@ -258,7 +253,6 @@ export type SectorUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   clientes?: Prisma.ClienteUpdateManyWithoutSectorNestedInput
-  admins?: Prisma.SectorAdminUpdateManyWithoutSectorNestedInput
 }
 
 export type SectorUncheckedUpdateInput = {
@@ -268,7 +262,6 @@ export type SectorUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   clientes?: Prisma.ClienteUncheckedUpdateManyWithoutSectorNestedInput
-  admins?: Prisma.SectorAdminUncheckedUpdateManyWithoutSectorNestedInput
 }
 
 export type SectorCreateManyInput = {
@@ -324,11 +317,6 @@ export type SectorMinOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
 }
 
-export type SectorScalarRelationFilter = {
-  is?: Prisma.SectorWhereInput
-  isNot?: Prisma.SectorWhereInput
-}
-
 export type SectorCreateNestedOneWithoutClientesInput = {
   create?: Prisma.XOR<Prisma.SectorCreateWithoutClientesInput, Prisma.SectorUncheckedCreateWithoutClientesInput>
   connectOrCreate?: Prisma.SectorCreateOrConnectWithoutClientesInput
@@ -345,27 +333,12 @@ export type SectorUpdateOneWithoutClientesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SectorUpdateToOneWithWhereWithoutClientesInput, Prisma.SectorUpdateWithoutClientesInput>, Prisma.SectorUncheckedUpdateWithoutClientesInput>
 }
 
-export type SectorCreateNestedOneWithoutAdminsInput = {
-  create?: Prisma.XOR<Prisma.SectorCreateWithoutAdminsInput, Prisma.SectorUncheckedCreateWithoutAdminsInput>
-  connectOrCreate?: Prisma.SectorCreateOrConnectWithoutAdminsInput
-  connect?: Prisma.SectorWhereUniqueInput
-}
-
-export type SectorUpdateOneRequiredWithoutAdminsNestedInput = {
-  create?: Prisma.XOR<Prisma.SectorCreateWithoutAdminsInput, Prisma.SectorUncheckedCreateWithoutAdminsInput>
-  connectOrCreate?: Prisma.SectorCreateOrConnectWithoutAdminsInput
-  upsert?: Prisma.SectorUpsertWithoutAdminsInput
-  connect?: Prisma.SectorWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SectorUpdateToOneWithWhereWithoutAdminsInput, Prisma.SectorUpdateWithoutAdminsInput>, Prisma.SectorUncheckedUpdateWithoutAdminsInput>
-}
-
 export type SectorCreateWithoutClientesInput = {
   id?: string
   nombre: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  admins?: Prisma.SectorAdminCreateNestedManyWithoutSectorInput
 }
 
 export type SectorUncheckedCreateWithoutClientesInput = {
@@ -374,7 +347,6 @@ export type SectorUncheckedCreateWithoutClientesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  admins?: Prisma.SectorAdminUncheckedCreateNestedManyWithoutSectorInput
 }
 
 export type SectorCreateOrConnectWithoutClientesInput = {
@@ -399,7 +371,6 @@ export type SectorUpdateWithoutClientesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  admins?: Prisma.SectorAdminUpdateManyWithoutSectorNestedInput
 }
 
 export type SectorUncheckedUpdateWithoutClientesInput = {
@@ -408,59 +379,6 @@ export type SectorUncheckedUpdateWithoutClientesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  admins?: Prisma.SectorAdminUncheckedUpdateManyWithoutSectorNestedInput
-}
-
-export type SectorCreateWithoutAdminsInput = {
-  id?: string
-  nombre: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  clientes?: Prisma.ClienteCreateNestedManyWithoutSectorInput
-}
-
-export type SectorUncheckedCreateWithoutAdminsInput = {
-  id?: string
-  nombre: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  clientes?: Prisma.ClienteUncheckedCreateNestedManyWithoutSectorInput
-}
-
-export type SectorCreateOrConnectWithoutAdminsInput = {
-  where: Prisma.SectorWhereUniqueInput
-  create: Prisma.XOR<Prisma.SectorCreateWithoutAdminsInput, Prisma.SectorUncheckedCreateWithoutAdminsInput>
-}
-
-export type SectorUpsertWithoutAdminsInput = {
-  update: Prisma.XOR<Prisma.SectorUpdateWithoutAdminsInput, Prisma.SectorUncheckedUpdateWithoutAdminsInput>
-  create: Prisma.XOR<Prisma.SectorCreateWithoutAdminsInput, Prisma.SectorUncheckedCreateWithoutAdminsInput>
-  where?: Prisma.SectorWhereInput
-}
-
-export type SectorUpdateToOneWithWhereWithoutAdminsInput = {
-  where?: Prisma.SectorWhereInput
-  data: Prisma.XOR<Prisma.SectorUpdateWithoutAdminsInput, Prisma.SectorUncheckedUpdateWithoutAdminsInput>
-}
-
-export type SectorUpdateWithoutAdminsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clientes?: Prisma.ClienteUpdateManyWithoutSectorNestedInput
-}
-
-export type SectorUncheckedUpdateWithoutAdminsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  clientes?: Prisma.ClienteUncheckedUpdateManyWithoutSectorNestedInput
 }
 
 
@@ -470,12 +388,10 @@ export type SectorUncheckedUpdateWithoutAdminsInput = {
 
 export type SectorCountOutputType = {
   clientes: number
-  admins: number
 }
 
 export type SectorCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   clientes?: boolean | SectorCountOutputTypeCountClientesArgs
-  admins?: boolean | SectorCountOutputTypeCountAdminsArgs
 }
 
 /**
@@ -495,13 +411,6 @@ export type SectorCountOutputTypeCountClientesArgs<ExtArgs extends runtime.Types
   where?: Prisma.ClienteWhereInput
 }
 
-/**
- * SectorCountOutputType without action
- */
-export type SectorCountOutputTypeCountAdminsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.SectorAdminWhereInput
-}
-
 
 export type SectorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -510,7 +419,6 @@ export type SectorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   updatedAt?: boolean
   deletedAt?: boolean
   clientes?: boolean | Prisma.Sector$clientesArgs<ExtArgs>
-  admins?: boolean | Prisma.Sector$adminsArgs<ExtArgs>
   _count?: boolean | Prisma.SectorCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["sector"]>
 
@@ -541,7 +449,6 @@ export type SectorSelectScalar = {
 export type SectorOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["sector"]>
 export type SectorInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   clientes?: boolean | Prisma.Sector$clientesArgs<ExtArgs>
-  admins?: boolean | Prisma.Sector$adminsArgs<ExtArgs>
   _count?: boolean | Prisma.SectorCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SectorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -551,7 +458,6 @@ export type $SectorPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Sector"
   objects: {
     clientes: Prisma.$ClientePayload<ExtArgs>[]
-    admins: Prisma.$SectorAdminPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -954,7 +860,6 @@ readonly fields: SectorFieldRefs;
 export interface Prisma__SectorClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   clientes<T extends Prisma.Sector$clientesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Sector$clientesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  admins<T extends Prisma.Sector$adminsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Sector$adminsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SectorAdminPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1403,30 +1308,6 @@ export type Sector$clientesArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.ClienteScalarFieldEnum | Prisma.ClienteScalarFieldEnum[]
-}
-
-/**
- * Sector.admins
- */
-export type Sector$adminsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the SectorAdmin
-   */
-  select?: Prisma.SectorAdminSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the SectorAdmin
-   */
-  omit?: Prisma.SectorAdminOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SectorAdminInclude<ExtArgs> | null
-  where?: Prisma.SectorAdminWhereInput
-  orderBy?: Prisma.SectorAdminOrderByWithRelationInput | Prisma.SectorAdminOrderByWithRelationInput[]
-  cursor?: Prisma.SectorAdminWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.SectorAdminScalarFieldEnum | Prisma.SectorAdminScalarFieldEnum[]
 }
 
 /**

@@ -521,6 +521,23 @@ export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonFilter<$PrismaModel>
 }
 
+export type EnumOrdenTareasFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrdenTareas | Prisma.EnumOrdenTareasFieldRefInput<$PrismaModel>
+  in?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrdenTareasFilter<$PrismaModel> | $Enums.OrdenTareas
+}
+
+export type EnumOrdenTareasWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrdenTareas | Prisma.EnumOrdenTareasFieldRefInput<$PrismaModel>
+  in?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrdenTareasWithAggregatesFilter<$PrismaModel> | $Enums.OrdenTareas
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOrdenTareasFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOrdenTareasFilter<$PrismaModel>
+}
+
 export type EnumAmbienteSriFilter<$PrismaModel = never> = {
   equals?: $Enums.AmbienteSri | Prisma.EnumAmbienteSriFieldRefInput<$PrismaModel>
   in?: $Enums.AmbienteSri[] | Prisma.ListEnumAmbienteSriFieldRefInput<$PrismaModel>
@@ -1205,6 +1222,23 @@ export type NestedJsonFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumOrdenTareasFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrdenTareas | Prisma.EnumOrdenTareasFieldRefInput<$PrismaModel>
+  in?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrdenTareasFilter<$PrismaModel> | $Enums.OrdenTareas
+}
+
+export type NestedEnumOrdenTareasWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrdenTareas | Prisma.EnumOrdenTareasFieldRefInput<$PrismaModel>
+  in?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrdenTareasWithAggregatesFilter<$PrismaModel> | $Enums.OrdenTareas
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOrdenTareasFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOrdenTareasFilter<$PrismaModel>
 }
 
 export type NestedEnumAmbienteSriFilter<$PrismaModel = never> = {

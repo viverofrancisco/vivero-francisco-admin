@@ -7,16 +7,19 @@ import {
   viewerFromMobileUser,
 } from "@/lib/mobile/route-helpers";
 
+/**
+ * Dar la visita por terminada. **Es de oficina**, también desde el teléfono.
+ *
+ * Lo que hace el jardinero es cargar su parte (`/parte`): sus horas y las
+ * tareas que él hizo. Decir que el trabajo está terminado es mirar lo que
+ * cargaron todos y qué falta de lo que se exigía, y eso lo decide quien lleva
+ * la agenda.
+ */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // STAFF is intentionally read-only on mobile (per the v1 plan).
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN",
-    "PERSONAL_ADMIN"
-  );
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const parsed = completeVisitaSchema.safeParse(
@@ -32,13 +35,10 @@ export async function POST(
       id,
       viewerFromMobileUser(userOrResponse),
       {
-        notes: parsed.data.notes,
+        notas: parsed.data.notas,
         fechaRealizada: parsed.data.fechaRealizada
           ? new Date(parsed.data.fechaRealizada)
           : undefined,
-        horaEntrada: parsed.data.horaEntrada,
-        horaSalida: parsed.data.horaSalida,
-        media: parsed.data.media,
       }
     );
     return NextResponse.json(visita);

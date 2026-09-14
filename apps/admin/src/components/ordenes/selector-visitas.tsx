@@ -8,21 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { fecha } from "./formato";
 
-/** Un trabajo pendiente tal como lo devuelve `/api/ordenes/pendientes`. */
+/**
+ * Un período de suscripción por facturar, tal como lo devuelve
+ * `/api/ordenes/pendientes`.
+ *
+ * **Las visitas ya no entran acá.** Salían cuando la visita llevaba productos;
+ * hoy lleva tareas, que no tienen precio, así que una visita no deja nada
+ * "pendiente de facturar". Marcarla en una orden es decir de qué es la orden,
+ * no cargarle trabajo.
+ */
 export interface Pendiente {
-  tipo: "visita" | "suscripcion";
-  visitaProductoId?: string;
-  visitaId?: string;
-  visitaNumero?: number;
-  fecha?: string;
-  suscripcionItemId?: string;
-  suscripcionId?: string;
+  tipo: "suscripcion";
+  suscripcionItemId: string;
+  suscripcionId: string;
   productoId: string;
   descripcion: string;
   precio: string;
   ivaTasa: string;
-  periodoInicio?: string;
-  periodoFin?: string;
+  periodoInicio: string;
+  periodoFin: string;
 }
 
 /**
@@ -46,12 +50,6 @@ export interface LineaEditable {
    * existe es ruido.
    */
   varianteId: string | null;
-  /**
-   * Qué trabajos de visita paga la línea. **Varios** cuando el mismo producto
-   * se hizo en más de una visita: eso es una sola línea, porque es un solo
-   * producto.
-   */
-  visitaProductoIds: string[];
   suscripcionItemId: string | null;
   periodoInicio: string | null;
   periodoFin: string | null;
@@ -65,111 +63,26 @@ export function origenDeLinea(l: LineaEditable): string | null {
   if (l.periodoInicio && l.periodoFin) {
     return `Suscripción · ${fecha(l.periodoInicio)} → ${fecha(l.periodoFin)}`;
   }
-  if (l.visitaProductoIds.length > 1) {
-    return `Trabajo de ${l.visitaProductoIds.length} visitas`;
-  }
-  if (l.visitaProductoIds.length === 1) return "Trabajo de una visita";
   return null;
 }
 
-/** Las visitas del cliente con trabajo por cobrar, cada una con lo que incluye. */
-export interface VisitaPendiente {
+/** Una visita del cliente que la orden puede decir que cubre. */
+export interface VisitaVinculable {
   id: string;
   numero: number;
   fecha: string;
-  productos: string[];
-}
-
-export function visitasDePendientes(pendientes: Pendiente[]): VisitaPendiente[] {
-  const mapa = new Map<string, VisitaPendiente>();
-  for (const p of pendientes) {
-    if (p.tipo !== "visita" || !p.visitaId) continue;
-    const actual = mapa.get(p.visitaId);
-    if (actual) actual.productos.push(p.descripcion);
-    else
-      mapa.set(p.visitaId, {
-        id: p.visitaId,
-        numero: p.visitaNumero!,
-        fecha: p.fecha!,
-        productos: [p.descripcion],
-      });
-  }
-  return [...mapa.values()].sort((a, b) => b.fecha.localeCompare(a.fecha));
-}
-
-/**
- * Rearma las líneas que salen de visitas, según cuáles estén marcadas.
- *
- * **El mismo producto de dos visitas es una sola línea.** Dos visitas con
- * "control de plagas" son dos trabajos distintos —cada uno se factura una sola
- * vez— pero un solo producto, y tenerlo dos veces en la orden no le dice nada a
- * nadie y duplica la decisión de precio. Se junta con la cantidad sumada y las
- * dos procedencias.
- *
- * Lo agregado a mano y lo que viene de un plan se quedan como están. Lo de
- * visitas se rearma entero —es lo que permite juntar por producto— pero
- * conserva el precio, el IVA y la cantidad que ya se hubieran tipeado para ese
- * producto: marcar una segunda visita no puede borrar lo que alguien escribió.
- */
-export function rearmarPorVisitas(
-  actuales: LineaEditable[],
-  visitaIds: string[],
-  pendientes: Pendiente[]
-): LineaEditable[] {
-  const aMano = actuales.filter(
-    (l) => l.visitaProductoIds.length === 0 && !l.suscripcionItemId
-  );
-  const dePlan = actuales.filter((l) => l.suscripcionItemId);
-  const previas = new Map(
-    actuales
-      .filter((l) => l.visitaProductoIds.length > 0)
-      .map((l) => [l.productoId, l])
-  );
-
-  const elegidas = new Set(visitaIds);
-  const porProducto = new Map<string, LineaEditable>();
-  for (const p of pendientes) {
-    if (p.tipo !== "visita" || !p.visitaId || !elegidas.has(p.visitaId)) continue;
-    const actual = porProducto.get(p.productoId);
-    if (actual) {
-      actual.visitaProductoIds = [
-        ...actual.visitaProductoIds,
-        p.visitaProductoId!,
-      ];
-      // La cantidad sigue al número de trabajos mientras nadie la haya tocado.
-      if (!previas.has(p.productoId)) {
-        actual.cantidad = String(actual.visitaProductoIds.length);
-      }
-      continue;
-    }
-    const previa = previas.get(p.productoId);
-    porProducto.set(p.productoId, {
-      uid: previa?.uid ?? nuevoUid(),
-      descripcion: p.descripcion,
-      cantidad: previa?.cantidad ?? "1",
-      precioUnitario: previa?.precioUnitario ?? String(Number(p.precio)),
-      ivaTasa: previa?.ivaTasa ?? String(Number(p.ivaTasa)),
-      productoId: p.productoId,
-      // La variante no viene del pendiente: la elige quien arma la orden, y
-      // con una sola la completa el servidor.
-      varianteId: previa?.varianteId ?? null,
-      visitaProductoIds: [p.visitaProductoId!],
-      suscripcionItemId: null,
-      periodoInicio: null,
-      periodoFin: null,
-    });
-  }
-
-  return [...porProducto.values(), ...dePlan, ...aMano];
+  /** Lo que se hizo en ella, para reconocerla en la lista. */
+  tareas: string[];
 }
 
 /**
  * De qué visitas es la orden.
  *
- * Marcar no es ponerle una etiqueta: **es cargar el trabajo**. La cabecera de
- * la orden se deduce en el servidor de la procedencia de las líneas, así que
- * marcar sin traer el trabajo sería una asignación que no queda registrada en
- * ningún lado.
+ * **Marcar es ponerle una etiqueta, y nada más.** Antes marcar *cargaba el
+ * trabajo*: la visita llevaba productos y de ahí salían líneas con precio por
+ * poner. Hoy lo que se hace en una visita son tareas, que no se venden, así que
+ * los productos que se le cobran al cliente se eligen a mano y esto solo deja
+ * dicho por qué existe la orden — y permite ir de una a la otra.
  *
  * Lista con casillas y no un desplegable porque se eligen **varias** —cobrarle
  * a alguien el mes entero en una orden es lo normal— y hay que ver de un
@@ -184,7 +97,7 @@ export function SelectorVisitas({
   deshabilitado,
   motivoDeshabilitado,
 }: {
-  visitas: VisitaPendiente[];
+  visitas: VisitaVinculable[];
   marcadas: string[];
   /**
    * Recibe la selección **entera**, no un id: "marcar todas" cambia muchas de
@@ -199,10 +112,10 @@ export function SelectorVisitas({
 
   const q = busqueda.trim().toLowerCase();
   /**
-   * Busca por número, por fecha y por producto, todo en el mismo campo.
+   * Busca por número, por fecha y por tarea, todo en el mismo campo.
    *
    * Son las tres cosas que se ven en cada fila, y con un solo campo no hay que
-   * decidir de antemano por cuál se está buscando: "327", "may" y "desmalezado"
+   * decidir de antemano por cuál se está buscando: "327", "may" y "poda"
    * llegan al mismo lugar.
    */
   const visibles = q
@@ -210,7 +123,7 @@ export function SelectorVisitas({
         (v) =>
           String(v.numero).includes(q) ||
           fecha(v.fecha).toLowerCase().includes(q) ||
-          v.productos.some((p) => p.toLowerCase().includes(q))
+          v.tareas.some((t) => t.toLowerCase().includes(q))
       )
     : visitas;
 
@@ -257,9 +170,9 @@ export function SelectorVisitas({
             {/* Arriba de la lista: explica cómo funciona lo que se está por
                 hacer, y abajo llegaba después de haberlo hecho. */}
             <p className="text-xs text-muted-foreground">
-              Solo las visitas con trabajo sin facturar. Al marcar una entran
-              todos sus productos —una visita se factura completa— y el mismo
-              producto de varias queda en una sola línea.
+              Deja dicho por qué existe esta orden y permite ir de una a la
+              otra. No carga productos: lo que se le cobra al cliente se elige
+              abajo.
             </p>
 
             {/* Con una sola visita no hay nada que buscar ni que marcar en
@@ -321,7 +234,9 @@ export function SelectorVisitas({
                           Visita #{v.numero} · {fecha(v.fecha)}
                         </span>
                         <span className="block truncate text-xs text-muted-foreground">
-                          {v.productos.join(", ")}
+                          {v.tareas.length > 0
+                            ? v.tareas.join(", ")
+                            : "Sin tareas registradas"}
                         </span>
                       </span>
                     </label>

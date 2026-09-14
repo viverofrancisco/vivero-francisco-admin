@@ -42,13 +42,11 @@ export async function getClienteProfile(viewer: Viewer) {
       id: true,
       fechaProgramada: true,
       horaEntrada: true,
-      productos: {
-        orderBy: { posicion: "asc" },
-        select: {
-          producto: {
-            select: { id: true, nombre: true, tipo: true },
-          },
-        },
+      // Lo que se va a hacer, en la medida en que se sabe: las tareas exigidas.
+      // Lo que se hizo de verdad solo existe después, cuando cada jardinero
+      // carga su parte.
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true } } },
       },
     },
   });
@@ -72,19 +70,7 @@ const CLIENTE_LIST_SELECT = {
 
 async function buildClienteWhereForStaff(viewer: Viewer) {
   if (isAdminRole(viewer.role)) return { deletedAt: null };
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectorIds = await getSectorIdsForUser(viewer.id);
-    return { deletedAt: null, sectorId: { in: sectorIds } };
-  }
   throw new ForbiddenError();
-}
-
-async function getSectorIdsForUser(userId: string): Promise<string[]> {
-  const assignments = await prisma.sectorAdmin.findMany({
-    where: { userId },
-    select: { sectorId: true },
-  });
-  return assignments.map((a) => a.sectorId);
 }
 
 export interface ListClientesFilters {
@@ -193,24 +179,8 @@ export interface CreateClientePayload {
 }
 
 function ensureCanWrite(viewer: Viewer) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
-  }
-}
-
-async function ensureSectorAllowed(
-  viewer: Viewer,
-  sectorId: string | null | undefined
-) {
-  if (viewer.role !== "PERSONAL_ADMIN") return;
-  if (!sectorId) {
-    throw new ForbiddenError(
-      "Debes asignar un sector al que tengas acceso."
-    );
-  }
-  const sectorIds = await getSectorIdsForUser(viewer.id);
-  if (!sectorIds.includes(sectorId)) {
-    throw new ForbiddenError("No tienes acceso a ese sector.");
   }
 }
 
@@ -228,7 +198,6 @@ export async function createCliente(
   payload: CreateClientePayload
 ) {
   ensureCanWrite(viewer);
-  await ensureSectorAllowed(viewer, payload.sectorId);
 
   if (!payload.nombre?.trim() && !payload.empresa?.trim()) {
     throw new ValidationError("Se requiere un nombre o una empresa.");
@@ -390,11 +359,6 @@ export async function updateCliente(
   // Make sure the viewer can already see this cliente (sector check).
   await getClienteForStaff(clienteId, viewer);
 
-  // If the update changes sector, validate against viewer's sectors.
-  if (payload.sectorId !== undefined) {
-    await ensureSectorAllowed(viewer, payload.sectorId);
-  }
-
   try {
     return await prisma.cliente.update({
       where: { id: clienteId },
@@ -435,8 +399,7 @@ export async function deleteCliente(viewer: Viewer, clienteId: string) {
   });
 }
 
-/** Soft delete en lote (archivar). Solo afecta clientes activos que el viewer
- * puede ver (scoping por sector para PERSONAL_ADMIN). */
+/** Soft delete en lote (archivar). Solo afecta clientes activos. */
 export async function bulkSoftDeleteClientes(
   viewer: Viewer,
   ids: string[]

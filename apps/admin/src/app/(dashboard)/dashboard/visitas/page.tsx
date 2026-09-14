@@ -4,9 +4,9 @@ import {
   filtroClientePorTexto,
   numeroBuscado,
 } from "@/lib/services/busqueda";
-import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
+import { requireAuth } from "@/lib/auth-helpers";
 import { VisitasPageClient } from "@/components/visitas/visitas-page-client";
-import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
+import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 
 /**
  * Los filtros de la lista viajan en la URL —para que volver desde una visita
@@ -23,7 +23,7 @@ export default async function VisitasPage({
     hasta?: string;
     estado?: string;
     cliente?: string;
-    producto?: string;
+    tarea?: string;
     completadaPor?: string;
     completadaDesde?: string;
     completadaHasta?: string;
@@ -60,8 +60,12 @@ export default async function VisitasPage({
   if (filtros.cliente && filtros.cliente !== "ALL") {
     visitasWhere.clienteId = filtros.cliente;
   }
-  if (filtros.producto && filtros.producto !== "ALL") {
-    visitasWhere.productos = { some: { productoId: filtros.producto } };
+  // "Las visitas donde se podó" es dónde **alguien cargó** esa tarea: lo que se
+  // busca es trabajo hecho, no lo que se exigía.
+  if (filtros.tarea && filtros.tarea !== "ALL") {
+    visitasWhere.personal = {
+      some: { removedAt: null, tareas: { some: { tareaId: filtros.tarea } } },
+    };
   }
   // Buscar por cliente escribiendo, en vez de encontrarlo en el desplegable.
   // Va contra la base y no sobre lo ya traído: la lista está acotada al mes,
@@ -104,39 +108,33 @@ export default async function VisitasPage({
     visitasWhere.completadaEl = cuando;
   }
 
-  if (user.role === "PERSONAL_ADMIN") {
-    const sectorIds = await getUserSectorIds(user.id);
-    visitasWhere.cliente = {
-      ...(visitasWhere.cliente ?? {}),
-      sectorId: { in: sectorIds },
-    };
-  } else if (user.role === "PERSONAL") {
+  // El jardinero ve las visitas **donde está asignado**. Antes también veía las
+  // de su grupo, porque el grupo era quien iba; ahora la asignación es la que
+  // dice quién fue, y es la misma lista que tiene que abrir para cargar lo suyo.
+  if (user.role === "PERSONAL") {
     const personal = await prisma.personal.findUnique({
       where: { userId: user.id },
       select: { id: true },
     });
-    if (personal) {
-      visitasWhere.OR = [
-        { grupo: { miembros: { some: { personalId: personal.id } } } },
-        { personal: { some: { personalId: personal.id, removedAt: null } } },
-      ];
-    }
+    visitasWhere.personal = personal
+      ? { some: { personalId: personal.id, removedAt: null } }
+      : { some: { personalId: "ninguno" } };
   }
 
-  const [visitas, servicios, cerradores] = await Promise.all([
+  const [visitas, tareas, cerradores] = await Promise.all([
     prisma.visita.findMany({
       where: { ...visitasWhere, deletedAt: null },
       orderBy: { fechaProgramada: "asc" },
       include: {
         cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
-        productos: PRODUCTOS_DE_VISITA_SELECT,
+        ...TAREAS_DE_VISITA_INCLUDE,
         grupo: { select: { id: true, nombre: true } },
       },
     }),
-    prisma.producto.findMany({
+    prisma.tarea.findMany({
       where: { deletedAt: null },
       select: { id: true, nombre: true },
-      orderBy: { nombre: "asc" },
+      orderBy: [{ orden: "asc" }, { nombre: "asc" }],
     }),
     // Solo quienes de verdad cerraron alguna: un desplegable con todo el
     // personal obliga a adivinar cuál de esos nombres da resultados.
@@ -156,7 +154,10 @@ export default async function VisitasPage({
     completadaEl: v.completadaEl?.toISOString() ?? null,
     notas: v.notas,
     cliente: v.cliente,
-    productos: v.productos,
+    tareas: {
+      tareasObligatorias: v.tareasObligatorias,
+      personal: v.personal,
+    },
     grupo: v.grupo,
   }));
 
@@ -170,7 +171,7 @@ export default async function VisitasPage({
           q: filtros.q,
           estado: filtros.estado,
           cliente: filtros.cliente,
-          producto: filtros.producto,
+          tarea: filtros.tarea,
           completadaPor: filtros.completadaPor,
           completadaDesde: filtros.completadaDesde,
           completadaHasta: filtros.completadaHasta,
@@ -180,7 +181,7 @@ export default async function VisitasPage({
           nombre: [u.name, u.apellido].filter(Boolean).join(" ") || "Sin nombre",
         }))}
         userRole={user.role}
-        productos={servicios}
+        tareas={tareas}
       />
     </div>
   );

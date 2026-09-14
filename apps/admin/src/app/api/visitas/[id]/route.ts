@@ -37,13 +37,8 @@ export async function GET(
           sector: true,
         },
       },
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: {
-          producto: {
-                select: { id: true, nombre: true, descripcion: true, tipo: true },
-          },
-        },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
       },
       grupo: {
         select: {
@@ -56,7 +51,20 @@ export async function GET(
       },
       personal: {
         where: { removedAt: null },
-        include: { personal: { select: { id: true, nombre: true, apellido: true } } },
+        orderBy: { addedAt: "asc" },
+        select: {
+          id: true,
+          personalId: true,
+          horaEntrada: true,
+          horaSalida: true,
+          registradoEl: true,
+          personal: { select: { id: true, nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
+        },
       },
       media: {
         select: { id: true, url: true, tipo: true },
@@ -100,7 +108,7 @@ export async function PUT(
   try {
     // Un solo parseo y las dos escrituras: antes el esquema de personal se
     // probaba primero y, como Zod ignora las claves de más, un PUT completo
-    // entraba por esa rama y descartaba fecha, productos y notas en silencio.
+    // entraba por esa rama y descartaba fecha, tareas y notas en silencio.
     if (personalIds !== undefined) {
       await updateVisitaPersonal(id, viewer, personalIds);
     }
@@ -108,23 +116,17 @@ export async function PUT(
     const {
       fechaProgramada,
       fechaRealizada,
-      horaEntrada,
-      horaSalida,
       grupoId,
       notas,
-      productoIds,
-      productos,
+      tareasObligatoriasIds,
       suscripcionId,
     } = generalResult.data;
     const soloPersonal =
       fechaProgramada === undefined &&
       fechaRealizada === undefined &&
-      horaEntrada === undefined &&
-      horaSalida === undefined &&
       grupoId === undefined &&
       notas === undefined &&
-      productoIds === undefined &&
-      productos === undefined &&
+      tareasObligatoriasIds === undefined &&
       suscripcionId === undefined;
     if (soloPersonal) return NextResponse.json({ success: true });
 
@@ -140,12 +142,11 @@ export async function PUT(
               : null,
           }
         : {}),
-      ...(horaEntrada !== undefined ? { horaEntrada: horaEntrada || null } : {}),
-      ...(horaSalida !== undefined ? { horaSalida: horaSalida || null } : {}),
       ...(grupoId !== undefined ? { grupoId: grupoId || null } : {}),
       ...(notas !== undefined ? { notas: notas || null } : {}),
-      ...(productoIds !== undefined ? { productoIds } : {}),
-      ...(productos !== undefined ? { productos } : {}),
+      ...(tareasObligatoriasIds !== undefined
+        ? { tareasObligatoriasIds }
+        : {}),
       ...(suscripcionId !== undefined ? { suscripcionId } : {}),
     });
     return NextResponse.json(visita);

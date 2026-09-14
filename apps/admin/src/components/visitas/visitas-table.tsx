@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -34,9 +33,10 @@ import {
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import {
-  resumenProductos,
-  type ProductoDeVisita,
-} from "@/lib/visita-productos";
+  ACCION_BARRA_MOVIL,
+  BarraSeleccionMovil,
+} from "@/components/shared/barra-seleccion-movil";
+import { resumenTareas, type VisitaConTareas } from "@/lib/visita-tareas";
 
 interface VisitaRow {
   id: string;
@@ -51,7 +51,7 @@ interface VisitaRow {
     apellido?: string | null;
     empresa?: string | null;
   };
-  productos: ProductoDeVisita[];
+  tareas: VisitaConTareas;
   grupo: { id: string; nombre: string } | null;
 }
 
@@ -305,7 +305,7 @@ export function VisitasTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {resumenProductos(v)}
+                      {resumenTareas(v.tareas)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {v.grupo?.nombre ?? "—"}
@@ -372,7 +372,7 @@ export function VisitasTable({
                   <StatusBadge estado={v.estado as EstadoVisitaUI} size="sm" />
                 </span>
                 <span className="block truncate text-xs font-medium text-muted-foreground">
-                  {resumenProductos(v)} ·{" "}
+                  {resumenTareas(v.tareas)} ·{" "}
                   <span className="tabular-nums">
                     {formatDate(v.fechaProgramada)}
                   </span>
@@ -411,38 +411,20 @@ export function VisitasTable({
         {seleccionando && <div className="h-16" aria-hidden />}
       </ListaMovil>
 
-      {/* La barra de acciones de móvil: flota arriba del nav, como el pie de
-          selección de Shopify. Aparece con el modo prendido aunque no haya
-          nada marcado —es lo que dice que el modo está prendido, y cómo se
-          sale—. Por ahora la única acción es eliminar; cuando haya más, van
-          en un "⋯" al lado. */}
       {seleccionando && (
-        <div className="fixed inset-x-3 bottom-[calc(4rem+env(safe-area-inset-bottom)+0.75rem)] z-40 md:hidden">
-          <div className="flex items-center gap-2 rounded-2xl bg-foreground p-2 text-background shadow-lg">
-            <button
-              type="button"
-              onClick={salirDeSeleccion}
-              className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm font-semibold hover:bg-background/10"
-            >
-              <X className="h-4 w-4" />
-              <span className="tabular-nums">{elegidas.length}</span>
-              <span className="sr-only">Salir de la selección</span>
-            </button>
-            <span className="flex-1" />
-            {/* Claro sobre la barra oscura, no rojo: la variante `destructive`
-                de la casa es un fondo al 10% pensado para una tarjeta clara y
-                acá desaparecía. Rojo tampoco hace falta —para eso está la
-                confirmación—; lo que faltaba era contraste. */}
-            <Button
-              size="sm"
-              disabled={elegidas.length === 0}
-              onClick={() => setConfirmando(true)}
-              className="bg-background/15 text-background hover:bg-background/25 disabled:opacity-45"
-            >
-              Eliminar
-            </Button>
-          </div>
-        </div>
+        <BarraSeleccionMovil
+          cuantas={elegidas.length}
+          onSalir={salirDeSeleccion}
+        >
+          <Button
+            size="sm"
+            disabled={elegidas.length === 0}
+            onClick={() => setConfirmando(true)}
+            className={ACCION_BARRA_MOVIL}
+          >
+            Eliminar
+          </Button>
+        </BarraSeleccionMovil>
       )}
 
       <Dialog

@@ -24,10 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import type {
-  ServicioListItem,
-  ServiciosListResponse,
   ClienteListItem,
-  ClienteStaffDetail,
   ClientesListResponse,
   GrupoOption,
   GruposListResponse,
@@ -36,6 +33,13 @@ import type {
 } from "@/lib/types";
 
 type Step = 0 | 1 | 2 | 3 | 4;
+
+/** Una tarea del catálogo, tal como la devuelve `/api/mobile/tareas`. */
+interface TareaDelCatalogo {
+  id: string;
+  nombre: string;
+  orden: number;
+}
 const STEP_LABELS = ["Cliente", "Servicios", "Fechas", "Personal", "Revisar"];
 
 export default function CrearVisitaScreen() {
@@ -60,16 +64,10 @@ export default function CrearVisitaScreen() {
   const [selectedClienteId, setSelectedClienteId] = useState<string | null>(
     null
   );
-  const [clienteDetail, setClienteDetail] = useState<ClienteStaffDetail | null>(
-    null
-  );
-  const [loadingDetail, setLoadingDetail] = useState(false);
+  /** Las tareas que esta visita va a exigir. Opcional: la mayoría no exige. */
   const [selectedProductoIds, setSelectedProductoIds] = useState<string[]>([]);
   // Precio de cada trabajo suelto elegido, por productoId.
-  const [preciosSueltos, setPreciosSueltos] = useState<
-    Record<string, { precio: string; ivaTasa: string }>
-  >({});
-  const [catalogo, setCatalogo] = useState<ServicioListItem[]>([]);
+  const [catalogo, setCatalogo] = useState<TareaDelCatalogo[]>([]);
   const [fechas, setFechas] = useState<string[]>([]);
   const [grupoId, setGrupoId] = useState<string | null>(null);
   const [selectedPersonalIds, setSelectedPersonalIds] = useState<string[]>([]);
@@ -89,68 +87,27 @@ export default function CrearVisitaScreen() {
       apiRequest<PersonalListResponse>("/api/mobile/personal").then((r) =>
         setPersonal(r.items)
       ),
-      // Catálogo completo: permite agendar un servicio que el cliente todavía
-      // no tiene suscrito, sin pasar antes por otra pantalla.
-      apiRequest<ServiciosListResponse>("/api/mobile/servicios", {
-        query: { limit: 200 },
-      }).then((r) => setCatalogo(r.items)),
+      // El catálogo de tareas, para poder exigir alguna. Va completo: exigir
+      // una tarea no depende de qué tenga contratado el cliente.
+      apiRequest<{ items: TareaDelCatalogo[] }>("/api/mobile/tareas").then((r) =>
+        setCatalogo(r.items)
+      ),
     ])
       .catch(() => {})
       .finally(() => setLoadingRefs(false));
   }, []);
 
-  useEffect(() => {
-    if (!selectedClienteId) {
-      setClienteDetail(null);
-      setSelectedProductoIds([]);
-      setPreciosSueltos({});
-      return;
-    }
-    setLoadingDetail(true);
-    apiRequest<ClienteStaffDetail>(`/api/mobile/clientes/${selectedClienteId}`)
-      .then((c) => {
-        setClienteDetail(c);
-        const cubiertos = c.suscripciones
-          .filter((s) => s.estado === "ACTIVO")
-          .flatMap((s) => s.items);
-        // Con un solo producto suscrito no hay nada que elegir: se preselecciona.
-        setSelectedProductoIds(
-          cubiertos.length === 1 ? [cubiertos[0].producto.id] : []
-        );
-        setPreciosSueltos({});
-      })
-      .catch(() => setClienteDetail(null))
-      .finally(() => setLoadingDetail(false));
-  }, [selectedClienteId]);
-
   const selectedCliente = clientes.find((c) => c.id === selectedClienteId);
 
-  // Lo que ya cubre una suscripción activa: se elige sin pedir precio, porque
-  // el precio vive en la suscripción.
-  const cubiertoPorProductoId = new Map(
-    (clienteDetail?.suscripciones ?? [])
-      .filter((s) => s.estado === "ACTIVO")
-      .flatMap((s) => s.items)
-      .map((i) => [i.producto.id, i] as const)
-  );
-
-  // Todo el catálogo: desde que la visita no lleva precio, no hay motivo para
-  // restringir qué se le puede agendar a quién. Lo que cubre un plan se marca
-  // como tal; el resto queda pendiente de facturar.
   const catalogoDisponible = catalogo;
   const selectedServicios = catalogoDisponible.filter((sv) =>
     selectedProductoIds.includes(sv.id)
   );
   const totalServicios = selectedServicios.length;
 
-  // Sin precios: agendar no cotiza. Lo suelto se cobra al armar la orden.
-  const resumenProductosElegidos = selectedServicios.map((sv) =>
-    cubiertoPorProductoId.has(sv.id)
-      ? `${sv.nombre} (cubierto por la suscripción)`
-      : `${sv.nombre} (se factura aparte)`
-  );
+  const resumenTareasElegidos = selectedServicios.map((sv) => sv.nombre);
 
-  function toggleServicio(sv: ServicioListItem) {
+  function toggleServicio(sv: TareaDelCatalogo) {
     setSelectedProductoIds((prev) =>
       prev.includes(sv.id) ? prev.filter((x) => x !== sv.id) : [...prev, sv.id]
     );
@@ -183,25 +140,15 @@ export default function CrearVisitaScreen() {
 
   async function submit() {
     setError(null);
-    if (totalServicios === 0 || fechas.length === 0) return;
+    // Exigir tareas es opcional; lo que no puede faltar es una fecha.
+    if (fechas.length === 0) return;
     setSubmitting(true);
     try {
       await apiRequest("/api/mobile/visitas", {
         method: "POST",
         body: {
           clienteId: selectedClienteId,
-          // El servidor enlaza solo lo que cubre una suscripción activa; el
-          // precio que va acá es el del trabajo suelto.
-          productos: selectedServicios.map((sv) => {
-            const cubierto = cubiertoPorProductoId.has(sv.id);
-            const d = preciosSueltos[sv.id];
-            return {
-              productoId: sv.id,
-              precio: cubierto ? null : Number(d?.precio ?? 0),
-              ivaTasa:
-                cubierto || !d?.ivaTasa.trim() ? null : Number(d.ivaTasa),
-            };
-          }),
+          tareasObligatoriasIds: selectedProductoIds,
           fechas,
           grupoId: grupoId || null,
           personalIds: selectedPersonalIds,
@@ -266,10 +213,9 @@ export default function CrearVisitaScreen() {
           )}
           {step === 1 && (
             <ServicioStep
-              loading={loadingDetail}
+              loading={loadingRefs}
               catalogoDisponible={catalogoDisponible}
               selectedIds={selectedProductoIds}
-              cubiertoPorProductoId={cubiertoPorProductoId}
               onToggle={toggleServicio}
             />
           )}
@@ -312,7 +258,7 @@ export default function CrearVisitaScreen() {
           {step === 4 && (
             <RevisarStep
               cliente={selectedCliente}
-              servicio={resumenProductosElegidos}
+              servicio={resumenTareasElegidos}
               fechas={fechas}
               personal={selectedPersonal}
               notas={notas}
@@ -456,62 +402,48 @@ function ServicioStep({
   loading,
   catalogoDisponible,
   selectedIds,
-  cubiertoPorProductoId,
   onToggle,
 }: {
   loading: boolean;
-  catalogoDisponible: ServicioListItem[];
+  catalogoDisponible: TareaDelCatalogo[];
   selectedIds: string[];
-  cubiertoPorProductoId: Map<
-    string,
-    ClienteStaffDetail["suscripciones"][number]["items"][number]
-  >;
-  onToggle: (sv: ServicioListItem) => void;
+  onToggle: (sv: TareaDelCatalogo) => void;
 }) {
   return (
     <View>
       <Text variant="headlineSmall" style={styles.title}>
-        Selecciona los servicios
+        Tareas obligatorias
       </Text>
       <Text variant="bodyMedium" style={styles.subtitle}>
-        Una visita puede cubrir varios servicios
+        Lo que esta visita tiene que dejar hecho. Es opcional: no frena nada,
+        pero después se ve cuáles quedaron sin cubrir.
       </Text>
 
       {loading ? (
         <ActivityIndicator />
       ) : catalogoDisponible.length === 0 ? (
-        <Text style={styles.empty}>
-          No hay productos en el catálogo.
-        </Text>
+        <Text style={styles.empty}>No hay tareas en el catálogo.</Text>
       ) : (
         <View style={styles.list}>
           {catalogoDisponible.map((sv) => {
-            const cubierto = cubiertoPorProductoId.get(sv.id);
             const selected = selectedIds.includes(sv.id);
             return (
-              <View key={sv.id}>
-                <Pressable
-                  onPress={() => onToggle(sv)}
-                  style={[styles.row, selected && styles.rowSelected]}
-                >
-                  <View style={styles.rowText}>
-                    <Text variant="bodyLarge" style={styles.rowTitle}>
-                      {sv.nombre}
-                    </Text>
-                    <Text variant="bodySmall" style={styles.muted}>
-                      {cubierto
-                        ? `Suscripción · $ ${Number(cubierto.precio).toFixed(2)}`
-                        : "Trabajo suelto"}
-                    </Text>
+              <Pressable
+                key={sv.id}
+                onPress={() => onToggle(sv)}
+                style={[styles.row, selected && styles.rowSelected]}
+              >
+                <View style={styles.rowText}>
+                  <Text variant="bodyLarge" style={styles.rowTitle}>
+                    {sv.nombre}
+                  </Text>
+                </View>
+                {selected ? (
+                  <View style={styles.checkmark}>
+                    <Text style={styles.checkmarkIcon}>✓</Text>
                   </View>
-                  {selected ? (
-                    <View style={styles.checkmark}>
-                      <Text style={styles.checkmarkIcon}>✓</Text>
-                    </View>
-                  ) : null}
-                </Pressable>
-
-              </View>
+                ) : null}
+              </Pressable>
             );
           })}
         </View>

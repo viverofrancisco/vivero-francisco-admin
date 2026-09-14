@@ -112,6 +112,9 @@ Ejemplos en el repo que vale la pena mirar antes de escribir una:
 | `20260822150000_visitas_por_periodo` | `RENAME COLUMN` + conversión de unidad: el valor era mensual y pasa a ser por período, así que se multiplica por los meses del ciclo |
 | `20260822160000_periodicidad_solo_en_suscripcion` | `DROP COLUMN` de un campo que nada leía, con el motivo escrito arriba |
 | `20260823160000_producto_sin_modalidad` | `DROP COLUMN` + `DROP TYPE`: la etiqueta global se reemplaza por una pregunta por cliente, y el SQL explica dónde |
+| `20260914160957_tareas_de_visita` | Tabla nueva + índice único **parcial** escrito a mano + catálogo inicial sembrado desde la propia migración |
+| `20260914180000_visita_por_tareas` | Sacar un valor de un `enum` (recrear el tipo, con el `UPDATE` **antes**), agregar otro (`ADD VALUE`), tres `DROP TABLE` y un backfill que salva el dato antes de borrar la tabla que lo tenía |
+| `20260914200000_fotos_y_secciones_por_tarea` | Cambiar a qué tabla apunta una FK: columna nueva al lado, backfill por nombre —sin tildes, con `translate`— y recién después borrar la vieja |
 
 ### Índices que Prisma no sabe expresar
 
@@ -119,6 +122,46 @@ Un índice único parcial (`WHERE ... IS NULL`) o un `CHECK` hay que escribirlos
 mano en el `migration.sql`. Prisma no los conoce, así que **el próximo
 `migrate dev` va a querer borrarlos**: hay que sacar esa línea del SQL generado
 antes de aplicarlo.
+
+Es lo que hace falta para **"único entre los vivos"**, que es lo que casi
+siempre se quiere en una tabla con soft delete: eliminar "Poda de palmas" y
+volver a crearla con ese nombre tiene que funcionar, y un `@@unique` común lo
+impide para siempre. En `Tarea`:
+
+```sql
+CREATE UNIQUE INDEX "Tarea_nombre_vivas_key"
+  ON "Tarea" ("nombre")
+  WHERE "deletedAt" IS NULL;
+```
+
+Del lado del servicio, el choque se atrapa por el `P2002` que tira la base, no
+con un `findFirst` previo: entre la consulta y el `create` hay lugar para que
+otra pestaña gane la carrera.
+
+### Sembrar datos desde la migración
+
+Cuando una tabla nueva necesita arrancar con contenido —un catálogo fijo, no
+datos de prueba— el `INSERT` va **en la propia migración**. El build corre
+`prisma migrate deploy` antes de `next build`, así que las filas están en
+producción el mismo minuto que la pantalla que las usa, sin que nadie tenga que
+acordarse de correr un script después del deploy.
+
+Idempotente **por la clave de negocio**, no por id, para que no duplique lo que
+alguien ya creó a mano:
+
+```sql
+INSERT INTO "Tarea" ("id", "nombre", "orden", "createdAt", "updatedAt")
+SELECT gen_random_uuid()::text, v.nombre, v.orden, NOW(), NOW()
+FROM (VALUES ('Poda de setos', 20), ...) AS v(nombre, orden)
+WHERE NOT EXISTS (
+  SELECT 1 FROM "Tarea" t WHERE t."nombre" = v.nombre AND t."deletedAt" IS NULL
+);
+```
+
+El id sale de `gen_random_uuid()` y no es un cuid: `@default(cuid())` solo corre
+del lado de Prisma, y para una clave primaria de texto da igual. Al lado conviene
+dejar el script equivalente (`scripts/seed-tareas.ts`) para volver a sembrar en
+desarrollo.
 
 ## Verificar contra datos reales
 
@@ -152,7 +195,13 @@ Dos reglas para estos scripts:
 ## Convenciones del esquema
 
 - **Soft delete** (`deletedAt`) en Cliente, Producto, Personal, Grupo, Visita,
-  Sector. Toda consulta de negocio filtra `deletedAt: null`.
+  Sector y Tarea. Toda consulta de negocio filtra `deletedAt: null`.
+- **Sacar un valor de un `enum`** obliga a recrear el tipo entero: renombrar el
+  viejo, crear el nuevo, `ALTER COLUMN ... USING`, devolver el `DEFAULT` y
+  soltar el viejo. El `UPDATE` que mueve las filas al valor que se queda va
+  **antes** de todo eso, mientras el valor viejo todavía existe. Agregar uno, en
+  cambio, es un `ALTER TYPE ... ADD VALUE` y basta (PG 12+ lo acepta dentro de
+  una transacción mientras el valor nuevo no se use en la misma).
 - **Auditoría** `createdById` / `updatedById` con `onDelete: SetNull` en casi
   todos los modelos. Al agregar un modelo con auditoría hay que sumar las
   relaciones inversas en `User` o Prisma no valida.

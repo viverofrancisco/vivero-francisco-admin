@@ -3,12 +3,11 @@ import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
-  ServiceError,
   ValidationError,
 } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
-import type { EstadoVisita } from "@/generated/prisma/client";
+import type { EstadoVisita, Prisma } from "@/generated/prisma/client";
 import {
   enviarAlertaVisitaCompletada,
   enviarAlertaVisitaIncompleta,
@@ -20,114 +19,68 @@ import {
   pushConfirmacionVisita,
 } from "@/lib/push/triggers";
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
+import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 import { randomUUID } from "crypto";
 
-export interface VisitaMediaInput {
-  key: string;
-  tipo: "imagen" | "video";
-  /// Producto de la visita al que corresponde la foto. Opcional.
-  productoId?: string | null;
-}
+/**
+ * Una visita: quién va, a dónde y qué día.
+ *
+ * **No lleva plata y ya no lleva productos.** Lo que se hace en ella son
+ * tareas, que carga cada jardinero al terminar marcándolas de un catálogo
+ * cerrado (ver `tarea.service.ts`). Antes la visita llevaba productos del
+ * catálogo y de ahí salía un borrador de orden al completarla; eso se terminó,
+ * porque una tarea no tiene precio. Cobrar es armar una orden, y esa orden
+ * puede decir de qué visitas es (`OrdenVisita`) sin que ninguna línea venga de
+ * un renglón de la visita.
+ *
+ * **Cerrarla es de oficina.** Cada asignado registra *lo suyo* —sus horas y sus
+ * tareas—, la visita pasa sola a `EN_CURSO` con el primer registro, y un
+ * `ADMIN`/`STAFF` la da por `COMPLETADA` o `INCOMPLETA` mirando lo que
+ * cargaron. No se cierra sola al registrar el último: puede faltar alguien que
+ * nunca cargue, y la oficina es quien decide si eso igual está terminado.
+ */
 
-export interface RequestUploadFile {
-  fileName: string;
-  contentType: string;
-}
+// ──────────────────────────────────────────────
+// Quién ve qué
+// ──────────────────────────────────────────────
 
-export interface UploadDescriptor {
-  key: string;
-  uploadUrl: string;
-  tipo: "imagen" | "video";
-  contentType: string;
-}
-
-export async function removeVisitaMedia(
-  visitaId: string,
-  mediaId: string,
-  viewer: Viewer
-) {
-  if (viewer.role !== "PERSONAL_ADMIN" && !isAdminRole(viewer.role)) {
-    throw new ForbiddenError();
-  }
-  // Authorization: the viewer must be allowed to see this visita.
-  await getVisitaForViewer(visitaId, viewer);
-
-  const media = await prisma.visitaMedia.findFirst({
-    where: { id: mediaId, visitaId },
-    select: { id: true },
-  });
-  if (!media) throw new NotFoundError("Archivo no encontrado");
-
-  await prisma.visitaMedia.delete({ where: { id: mediaId } });
+/** Lo mínimo para decidir si alguien puede ver una visita. */
+interface VisitaParaPermiso {
+  cliente: { userId: string | null };
+  personal: { personalId: string }[];
 }
 
 /**
- * Cambiar a qué producto corresponde un archivo.
+ * `ADMIN`/`STAFF` ven todo; el cliente, lo suyo; el jardinero, **solo las
+ * visitas donde está asignado**.
  *
- * No tiene que ser de la visita. En el campo se fotografía lo que aparece —un
- * problema de riego durante una poda, material que se dejó— y obligar a que la
- * etiqueta saliera de los productos agendados dejaba esas fotos sin clasificar.
- * El informe ya arma secciones con cualquier producto del catálogo.
- *
- * Sí tiene que existir y estar activo: una etiqueta a un producto borrado no
- * agrupa nada y no se puede volver a elegir.
+ * Antes el jardinero no veía ninguna —reportaba su capataz— y el capataz veía
+ * las de sus sectores. Con una cuenta por persona, el corte es la asignación:
+ * es la misma lista que tiene que abrir para cargar lo que hizo.
  */
-export async function etiquetarVisitaMedia(
-  visitaId: string,
-  mediaId: string,
-  productoId: string | null,
-  viewer: Viewer
-) {
-  if (viewer.role !== "PERSONAL_ADMIN" && !isAdminRole(viewer.role)) {
+function ensureViewerCanSeeVisita(
+  viewer: Viewer,
+  visita: VisitaParaPermiso
+): void {
+  if (isAdminRole(viewer.role)) return;
+  if (viewer.role === "CLIENTE") {
+    if (visita.cliente.userId === viewer.id) return;
     throw new ForbiddenError();
   }
-  await getVisitaForViewer(visitaId, viewer);
-
-  const media = await prisma.visitaMedia.findFirst({
-    where: { id: mediaId, visitaId },
-    select: { id: true },
-  });
-  if (!media) throw new NotFoundError("Archivo no encontrado");
-
-  if (productoId) {
-    const producto = await prisma.producto.findFirst({
-      where: { id: productoId, deletedAt: null },
-      select: { id: true },
-    });
-    if (!producto) throw new ValidationError("Ese producto no existe");
+  if (viewer.role === "PERSONAL") {
+    if (
+      viewer.personalId &&
+      visita.personal.some((p) => p.personalId === viewer.personalId)
+    ) {
+      return;
+    }
+    throw new ForbiddenError();
   }
-
-  return prisma.visitaMedia.update({
-    where: { id: mediaId },
-    data: { productoId },
-    select: { id: true, productoId: true },
-  });
+  throw new ForbiddenError();
 }
 
-export async function requestVisitaMediaUploads(
-  visitaId: string,
-  viewer: Viewer,
-  files: RequestUploadFile[]
-): Promise<UploadDescriptor[]> {
-  if (viewer.role !== "PERSONAL_ADMIN" && !isAdminRole(viewer.role)) {
-    throw new ForbiddenError();
-  }
-  // Authorization: the viewer must be allowed to see this visita.
-  await getVisitaForViewer(visitaId, viewer);
-
-  return Promise.all(
-    files.map(async (f) => {
-      const ext = f.fileName.includes(".")
-        ? f.fileName.split(".").pop()
-        : "";
-      const key = `visitas/${visitaId}/${randomUUID()}${ext ? `.${ext}` : ""}`;
-      const uploadUrl = await getUploadUrl(key, f.contentType);
-      const tipo: "imagen" | "video" = f.contentType.startsWith("video/")
-        ? "video"
-        : "imagen";
-      return { key, uploadUrl, tipo, contentType: f.contentType };
-    })
-  );
+function ensureOficina(viewer: Viewer): void {
+  if (!isAdminRole(viewer.role)) throw new ForbiddenError();
 }
 
 const VISITA_DETAIL_INCLUDE = {
@@ -144,73 +97,10 @@ const VISITA_DETAIL_INCLUDE = {
       sector: { select: { id: true, nombre: true } },
     },
   },
-  // `select`, no `include`: esta forma la leen también CLIENTE y PERSONAL, y
-  // `precio`/`ivaTasa` de VisitaProducto no tienen por qué viajar en el JSON.
-  // Lo que factura lee los montos por su cuenta (ver orden.service.ts).
-  productos: {
-    orderBy: { posicion: "asc" },
-    select: {
-      productoId: true,
-      suscripcionItemId: true,
-      posicion: true,
-      // Misma forma que `PRODUCTOS_DE_VISITA_SELECT`: la lista del portal se
-      // recarga por esta API al filtrar, y si las dos formas no coinciden el
-      // filtro de "sin orden" funciona al cargar y deja de funcionar después.
-      ordenLineaOrigen: {
-        select: {
-          ordenLinea: {
-            select: {
-              ordenId: true,
-              orden: { select: { numero: true, estado: true } },
-            },
-          },
-        },
-      },
-      producto: {
-        select: {
-          id: true,
-          nombre: true,
-          descripcion: true,
-          tipo: true,
-        },
-      },
-    },
-  },
-  personal: {
-    where: { removedAt: null },
-    include: {
-      personal: {
-        select: { id: true, nombre: true, apellido: true, tipo: true },
-      },
-    },
-  },
+  ...TAREAS_DE_VISITA_INCLUDE,
   grupo: { select: { id: true, nombre: true } },
   media: { orderBy: { createdAt: "asc" } },
 } as const;
-
-async function ensureViewerCanSeeVisita(
-  viewer: Viewer,
-  visita: {
-    cliente: {
-      userId: string | null;
-      sector: { id: string; nombre: string } | null;
-    };
-  }
-): Promise<void> {
-  if (isAdminRole(viewer.role)) return;
-  if (viewer.role === "CLIENTE") {
-    if (visita.cliente.userId === viewer.id) return;
-    throw new ForbiddenError();
-  }
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectorId = visita.cliente.sector?.id ?? null;
-    if (!sectorId) throw new ForbiddenError();
-    const sectorIds = await getSectorIdsForUser(viewer.id);
-    if (sectorIds.includes(sectorId)) return;
-    throw new ForbiddenError();
-  }
-  throw new ForbiddenError();
-}
 
 export async function getVisitaForViewer(visitaId: string, viewer: Viewer) {
   const visita = await prisma.visita.findFirst({
@@ -218,7 +108,7 @@ export async function getVisitaForViewer(visitaId: string, viewer: Viewer) {
     include: VISITA_DETAIL_INCLUDE,
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
-  await ensureViewerCanSeeVisita(viewer, visita);
+  ensureViewerCanSeeVisita(viewer, visita);
   return visita;
 }
 
@@ -227,49 +117,34 @@ export interface ListVisitasFilters {
   to?: Date;
   estado?: EstadoVisita;
   clienteId?: string;
-  productoId?: string;
+  /** Visitas donde **alguien hizo** esta tarea. */
+  tareaId?: string;
   cursor?: string;
   limit?: number;
   defaultFromToday?: boolean;
 }
 
-async function buildVisitaWhereForViewer(
-  viewer: Viewer
-): Promise<Record<string, unknown>> {
-  if (isAdminRole(viewer.role)) {
-    return { deletedAt: null };
-  }
-  if (viewer.role === "PERSONAL_ADMIN") {
-    if (!viewer.personalId && !viewer.id) throw new ForbiddenError();
-    const sectorIds = await getSectorIdsForUser(viewer.id);
+function whereParaViewer(viewer: Viewer): Prisma.VisitaWhereInput {
+  if (isAdminRole(viewer.role)) return { deletedAt: null };
+  if (viewer.role === "PERSONAL") {
+    if (!viewer.personalId) throw new ForbiddenError();
     return {
       deletedAt: null,
-      cliente: { sectorId: { in: sectorIds } },
+      personal: { some: { personalId: viewer.personalId, removedAt: null } },
     };
   }
   if (viewer.role === "CLIENTE") {
     if (!viewer.clienteId) throw new ForbiddenError();
-    return {
-      deletedAt: null,
-      clienteId: viewer.clienteId,
-    };
+    return { deletedAt: null, clienteId: viewer.clienteId };
   }
   throw new ForbiddenError();
-}
-
-async function getSectorIdsForUser(userId: string): Promise<string[]> {
-  const assignments = await prisma.sectorAdmin.findMany({
-    where: { userId },
-    select: { sectorId: true },
-  });
-  return assignments.map((a) => a.sectorId);
 }
 
 export async function listVisitas(
   viewer: Viewer,
   filters: ListVisitasFilters = {}
 ) {
-  const where = await buildVisitaWhereForViewer(viewer);
+  const where = whereParaViewer(viewer);
   const limit = Math.min(Math.max(filters.limit ?? 50, 1), 200);
 
   const fechaProgramada: { gte?: Date; lte?: Date } = {};
@@ -284,12 +159,12 @@ export async function listVisitas(
   }
 
   if (filters.estado) where.estado = filters.estado;
-
   if (filters.clienteId) where.clienteId = filters.clienteId;
-  // Una visita matchea el filtro de servicio si CUALQUIERA de sus servicios lo es.
-  if (filters.productoId) {
-    where.productos = {
-      some: { productoId: filters.productoId },
+  // "Las visitas donde se podó" es dónde **alguien** cargó esa tarea, no dónde
+  // se exigía: lo que se busca es trabajo hecho.
+  if (filters.tareaId) {
+    where.personal = {
+      some: { removedAt: null, tareas: { some: { tareaId: filters.tareaId } } },
     };
   }
 
@@ -315,115 +190,397 @@ function startOfToday(): Date {
   return d;
 }
 
+// ──────────────────────────────────────────────
+// Archivos
+// ──────────────────────────────────────────────
+
+export interface VisitaMediaInput {
+  key: string;
+  tipo: "imagen" | "video";
+  /**
+   * A qué tarea corresponde la foto. Opcional, pero es lo que hace que el
+   * informe se arme solo, así que se pide al subir: desde el teléfono, entre
+   * las tareas que esa persona acaba de marcar.
+   */
+  tareaId?: string | null;
+}
+
+export interface RequestUploadFile {
+  fileName: string;
+  contentType: string;
+}
+
+export interface UploadDescriptor {
+  key: string;
+  uploadUrl: string;
+  tipo: "imagen" | "video";
+  contentType: string;
+}
+
+/**
+ * Subir y etiquetar fotos lo puede hacer quien estuvo en el jardín.
+ *
+ * Es el jardinero el que saca las fotos mientras trabaja, así que el permiso es
+ * el mismo que para ver la visita: si la ve, es porque está asignado.
+ */
+async function ensurePuedeTocarArchivos(visitaId: string, viewer: Viewer) {
+  if (viewer.role === "CLIENTE") throw new ForbiddenError();
+  await getVisitaForViewer(visitaId, viewer);
+}
+
+export async function removeVisitaMedia(
+  visitaId: string,
+  mediaId: string,
+  viewer: Viewer
+) {
+  await ensurePuedeTocarArchivos(visitaId, viewer);
+
+  const media = await prisma.visitaMedia.findFirst({
+    where: { id: mediaId, visitaId },
+    select: { id: true },
+  });
+  if (!media) throw new NotFoundError("Archivo no encontrado");
+
+  await prisma.visitaMedia.delete({ where: { id: mediaId } });
+}
+
+/**
+ * Cambiar a qué tarea corresponde un archivo.
+ *
+ * **Cualquier tarea viva, no solo las que se hicieron en la visita.** En el
+ * campo se fotografía lo que aparece —un problema de riego durante una poda— y
+ * exigir que la etiqueta saliera de lo cargado dejaba esas fotos sin clasificar.
+ * El informe arma secciones con cualquier tarea.
+ */
+export async function etiquetarVisitaMedia(
+  visitaId: string,
+  mediaId: string,
+  tareaId: string | null,
+  viewer: Viewer
+) {
+  await ensurePuedeTocarArchivos(visitaId, viewer);
+
+  const media = await prisma.visitaMedia.findFirst({
+    where: { id: mediaId, visitaId },
+    select: { id: true },
+  });
+  if (!media) throw new NotFoundError("Archivo no encontrado");
+
+  if (tareaId) {
+    const tarea = await prisma.tarea.findFirst({
+      where: { id: tareaId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!tarea) throw new ValidationError("Esa tarea no existe");
+  }
+
+  return prisma.visitaMedia.update({
+    where: { id: mediaId },
+    data: { tareaId },
+    select: { id: true, tareaId: true },
+  });
+}
+
+export async function requestVisitaMediaUploads(
+  visitaId: string,
+  viewer: Viewer,
+  files: RequestUploadFile[]
+): Promise<UploadDescriptor[]> {
+  await ensurePuedeTocarArchivos(visitaId, viewer);
+
+  return Promise.all(
+    files.map(async (f) => {
+      const ext = f.fileName.includes(".")
+        ? f.fileName.slice(f.fileName.lastIndexOf("."))
+        : "";
+      const key = `visitas/${visitaId}/${randomUUID()}${ext}`;
+      const uploadUrl = await getUploadUrl(key, f.contentType);
+      return {
+        key,
+        uploadUrl,
+        tipo: f.contentType.startsWith("video/")
+          ? ("video" as const)
+          : ("imagen" as const),
+        contentType: f.contentType,
+      };
+    })
+  );
+}
+
+export async function addVisitaMedia(
+  visitaId: string,
+  viewer: Viewer,
+  media: VisitaMediaInput[]
+) {
+  await ensurePuedeTocarArchivos(visitaId, viewer);
+  if (media.length === 0) return [];
+  await prisma.visitaMedia.createMany({
+    data: media.map((m) => ({
+      visitaId,
+      key: m.key,
+      url: publicUrlForKey(m.key),
+      tipo: m.tipo,
+      tareaId: m.tareaId ?? null,
+    })),
+  });
+  return prisma.visitaMedia.findMany({
+    where: { visitaId },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+// ──────────────────────────────────────────────
+// El parte de cada uno
+// ──────────────────────────────────────────────
+
+export interface ParteDeVisitaPayload {
+  /**
+   * De quién es el parte. Solo la oficina puede mandarlo: un jardinero carga lo
+   * suyo y nada más, así que para él este campo se ignora.
+   */
+  personalId?: string;
+  horaEntrada?: string | null;
+  horaSalida?: string | null;
+  /** Las tareas que **esta persona** hizo. Reemplaza a las que tuviera. */
+  tareaIds: string[];
+  /** Fotos que trae del jardín, si las carga en el mismo gesto. */
+  media?: VisitaMediaInput[];
+}
+
+/**
+ * Las horas de la visita salen de las de su gente.
+ *
+ * La primera entrada y la última salida de los que ya cargaron: es la ventana
+ * en que hubo alguien en el jardín, que es lo que el cliente y las
+ * notificaciones quieren decir por "de tal a tal hora". Los `HH:MM` se comparan
+ * como texto y ordenan bien, así que no hace falta parsearlos.
+ */
+async function recalcularHorasDeVisita(
+  tx: Prisma.TransactionClient,
+  visitaId: string
+) {
+  const partes = await tx.visitaPersonal.findMany({
+    where: { visitaId, removedAt: null, registradoEl: { not: null } },
+    select: { horaEntrada: true, horaSalida: true },
+  });
+  const entradas = partes
+    .map((p) => p.horaEntrada)
+    .filter((h): h is string => !!h);
+  const salidas = partes.map((p) => p.horaSalida).filter((h): h is string => !!h);
+  await tx.visita.update({
+    where: { id: visitaId },
+    data: {
+      horaEntrada: entradas.length ? entradas.sort()[0] : null,
+      horaSalida: salidas.length ? salidas.sort().at(-1)! : null,
+    },
+  });
+}
+
+/**
+ * Registra lo que hizo una persona en una visita.
+ *
+ * Reemplaza sus tareas por completo en vez de sumarlas: el formulario es una
+ * lista de casillas, así que lo que llega **es** el estado final. Sumar dejaría
+ * sin forma de desmarcar algo cargado por error.
+ *
+ * La visita pasa de `PROGRAMADA` a `EN_CURSO` con el primer parte, y no se
+ * cierra sola con el último: cerrarla es de oficina (ver `cerrarVisita`).
+ */
+export async function registrarParte(
+  visitaId: string,
+  viewer: Viewer,
+  payload: ParteDeVisitaPayload
+) {
+  const visita = await getVisitaForViewer(visitaId, viewer);
+  if (visita.estado === "CANCELADA") {
+    throw new ConflictError("Esta visita está cancelada.");
+  }
+
+  // Un jardinero carga lo suyo; la oficina puede cargar por otro para corregir.
+  let personalId: string;
+  if (isAdminRole(viewer.role)) {
+    if (!payload.personalId) {
+      throw new ValidationError("Falta decir de quién es el parte.");
+    }
+    personalId = payload.personalId;
+  } else if (viewer.role === "PERSONAL") {
+    if (!viewer.personalId) throw new ForbiddenError();
+    personalId = viewer.personalId;
+  } else {
+    throw new ForbiddenError();
+  }
+
+  const asignacion = visita.personal.find((p) => p.personalId === personalId);
+  if (!asignacion) {
+    throw new ValidationError("Esa persona no está asignada a esta visita.");
+  }
+
+  const tareaIds = [...new Set(payload.tareaIds)];
+  if (tareaIds.length > 0) {
+    const vivas = await prisma.tarea.count({
+      where: { id: { in: tareaIds }, deletedAt: null },
+    });
+    if (vivas !== tareaIds.length) {
+      throw new ValidationError("Alguna de las tareas ya no existe.");
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.visitaPersonalTarea.deleteMany({
+      where: { visitaPersonalId: asignacion.id },
+    });
+    if (tareaIds.length > 0) {
+      await tx.visitaPersonalTarea.createMany({
+        data: tareaIds.map((tareaId) => ({
+          visitaPersonalId: asignacion.id,
+          tareaId,
+        })),
+      });
+    }
+    await tx.visitaPersonal.update({
+      where: { id: asignacion.id },
+      data: {
+        ...(payload.horaEntrada !== undefined
+          ? { horaEntrada: payload.horaEntrada || null }
+          : {}),
+        ...(payload.horaSalida !== undefined
+          ? { horaSalida: payload.horaSalida || null }
+          : {}),
+        // Se vuelve a sellar al corregir: dice "cuándo quedó registrado esto
+        // que dice acá", no "cuándo lo cargó por primera vez".
+        registradoEl: new Date(),
+      },
+    });
+
+    if (payload.media?.length) {
+      await tx.visitaMedia.createMany({
+        data: payload.media.map((m) => ({
+          visitaId,
+          key: m.key,
+          url: publicUrlForKey(m.key),
+          tipo: m.tipo,
+          tareaId: m.tareaId ?? null,
+        })),
+      });
+    }
+
+    await recalcularHorasDeVisita(tx, visitaId);
+
+    // El primer parte la pone en curso. Si ya está cerrada, corregir un parte
+    // no la reabre: la oficina decidió que estaba terminada y una corrección de
+    // horas no cambia eso.
+    if (visita.estado === "PROGRAMADA") {
+      await tx.visita.update({
+        where: { id: visitaId },
+        data: { estado: "EN_CURSO" },
+      });
+    }
+  });
+
+  return getVisitaForViewer(visitaId, viewer);
+}
+
+/**
+ * Borra el parte de alguien: vuelve a quedar como que no cargó nada.
+ *
+ * Es de oficina, y existe porque un parte cargado en la visita equivocada no se
+ * arregla editándolo —hay que sacarlo— y porque "falta que cargue" tiene que
+ * poder volver a ser verdad.
+ */
+export async function borrarParte(
+  visitaId: string,
+  viewer: Viewer,
+  personalId: string
+) {
+  ensureOficina(viewer);
+  const visita = await getVisitaForViewer(visitaId, viewer);
+  const asignacion = visita.personal.find((p) => p.personalId === personalId);
+  if (!asignacion) throw new NotFoundError("Esa persona no está en la visita.");
+
+  await prisma.$transaction(async (tx) => {
+    await tx.visitaPersonalTarea.deleteMany({
+      where: { visitaPersonalId: asignacion.id },
+    });
+    await tx.visitaPersonal.update({
+      where: { id: asignacion.id },
+      data: { horaEntrada: null, horaSalida: null, registradoEl: null },
+    });
+    await recalcularHorasDeVisita(tx, visitaId);
+  });
+
+  return getVisitaForViewer(visitaId, viewer);
+}
+
+// ──────────────────────────────────────────────
+// Cerrar, cancelar
+// ──────────────────────────────────────────────
+
+export interface CerrarVisitaPayload {
+  notas?: string | null;
+  /** Solo para INCOMPLETA: por qué quedó así. */
+  motivo?: string | null;
+  fechaRealizada?: Date;
+}
+
 export interface CancelVisitaPayload {
   motivo?: string | null;
   fechaRealizada?: Date;
 }
 
-export interface CompleteVisitaPayload {
-  notes?: string | null;
-  fechaRealizada?: Date;
-  horaEntrada?: string | null;
-  horaSalida?: string | null;
-  media?: VisitaMediaInput[];
-}
-
-export interface IncompleteVisitaPayload {
-  reason: string;
-  fechaRealizada?: Date;
-  horaEntrada?: string | null;
-  horaSalida?: string | null;
-  media?: VisitaMediaInput[];
-}
-
-interface TransitionPayload {
+interface TransicionPayload {
   notas?: string | null;
   notasIncompleto?: string | null;
   fechaRealizada?: Date;
-  horaEntrada?: string | null;
-  horaSalida?: string | null;
 }
 
-async function transitionToTerminal(
+async function transicionar(
   visitaId: string,
   viewer: Viewer,
   estado: Extract<EstadoVisita, "COMPLETADA" | "INCOMPLETA" | "CANCELADA">,
-  patch: TransitionPayload = {},
-  media?: VisitaMediaInput[]
+  patch: TransicionPayload = {}
 ) {
   const visita = await prisma.visita.findFirst({
     where: { id: visitaId, deletedAt: null },
-    select: {
-      id: true,
-      estado: true,
-      notas: true,
-      fechaRealizada: true,
-    },
+    select: { id: true, estado: true, notas: true, fechaRealizada: true },
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
 
-  const stateChanged = visita.estado !== estado;
+  const cambioDeEstado = visita.estado !== estado;
 
-  const updated = await prisma.$transaction(async (tx) => {
-    const result = await tx.visita.update({
-      where: { id: visitaId },
-      data: {
-        estado,
-        // Preserve existing fechaRealizada on edit; only stamp "now" when
-        // first transitioning out of PROGRAMADA.
-        fechaRealizada:
-          patch.fechaRealizada ?? visita.fechaRealizada ?? new Date(),
-        ...(patch.horaEntrada !== undefined ? { horaEntrada: patch.horaEntrada } : {}),
-        ...(patch.horaSalida !== undefined ? { horaSalida: patch.horaSalida } : {}),
-        notas: patch.notas ?? visita.notas,
-        notasIncompleto: patch.notasIncompleto ?? null,
-        updatedById: viewer.id,
-        updatedByNombre: viewer.nombre,
-        // Quién la completó se sella **en la transición**, no en cada guardado:
-        // volver a abrir el formulario para corregir una hora no convierte a
-        // quien corrige en quien la completó. Y si sale de COMPLETADA se
-        // limpia, porque ya no hay nadie que la haya completado.
-        ...(estado === "COMPLETADA"
-          ? stateChanged
-            ? {
-                completadaEl: new Date(),
-                completadaPorId: viewer.id,
-                completadaPorNombre: viewer.nombre,
-              }
-            : {}
-          : {
-              completadaEl: null,
-              completadaPorId: null,
-              completadaPorNombre: null,
-            }),
-      },
-    });
-
-    if (media && media.length > 0) {
-      // Solo aceptamos etiquetas de productos que realmente cubre esta visita.
-      const serviciosDeVisita = await tx.visitaProducto.findMany({
-        where: { visitaId },
-        select: { productoId: true },
-      });
-      const permitidos = new Set(serviciosDeVisita.map((vs) => vs.productoId));
-      await tx.visitaMedia.createMany({
-        data: media.map((m) => ({
-          visitaId,
-          key: m.key,
-          url: publicUrlForKey(m.key),
-          tipo: m.tipo,
-          productoId:
-            m.productoId && permitidos.has(m.productoId) ? m.productoId : null,
-        })),
-      });
-    }
-
-    return result;
+  const actualizada = await prisma.visita.update({
+    where: { id: visitaId },
+    data: {
+      estado,
+      // Se conserva al reeditar; solo se sella "hoy" la primera vez que sale de
+      // programada sin que nadie haya dicho qué día se hizo.
+      fechaRealizada:
+        patch.fechaRealizada ?? visita.fechaRealizada ?? new Date(),
+      notas: patch.notas ?? visita.notas,
+      notasIncompleto: patch.notasIncompleto ?? null,
+      updatedById: viewer.id,
+      updatedByNombre: viewer.nombre,
+      // Quién la cerró se sella **en la transición**, no en cada guardado:
+      // volver a abrir el formulario para corregir una fecha no convierte a
+      // quien corrige en quien la cerró. Y si sale de COMPLETADA se limpia,
+      // porque ya no hay nadie que la haya completado.
+      ...(estado === "COMPLETADA"
+        ? cambioDeEstado
+          ? {
+              completadaEl: new Date(),
+              completadaPorId: viewer.id,
+              completadaPorNombre: viewer.nombre,
+            }
+          : {}
+        : {
+            completadaEl: null,
+            completadaPorId: null,
+            completadaPorNombre: null,
+          }),
+    },
   });
 
-  // Only fire side-effects on an actual state change; field-only edits
-  // shouldn't re-notify the cliente.
-  if (stateChanged) {
+  // Solo al cambiar de estado: corregir un campo no vuelve a avisarle al cliente.
+  if (cambioDeEstado) {
     if (estado === "COMPLETADA") {
       enviarAlertaVisitaCompletada(visitaId).catch(console.error);
       pushAlertaCompletada(visitaId).catch(console.error);
@@ -433,431 +590,174 @@ async function transitionToTerminal(
     }
   }
 
-  return updated;
+  return actualizada;
 }
 
+/**
+ * Da la visita por terminada. **Solo oficina.**
+ *
+ * El jardinero registra lo que hizo y nada más: decir que la visita está
+ * terminada es mirar lo que cargaron todos —y lo que falta de las obligatorias—
+ * y eso se hace desde el portal, no desde el jardín. Tampoco se cierra sola con
+ * el último parte: puede quedar alguien que nunca cargue, y que eso igual esté
+ * terminado es una decisión, no una cuenta.
+ */
+export async function completeVisita(
+  visitaId: string,
+  viewer: Viewer,
+  payload: CerrarVisitaPayload = {}
+) {
+  ensureOficina(viewer);
+  const visita = await getVisitaForViewer(visitaId, viewer);
+  if (visita.estado === "CANCELADA") {
+    throw new ConflictError("Esta visita está cancelada.");
+  }
+  return transicionar(visitaId, viewer, "COMPLETADA", {
+    notas: payload.notas?.trim() || null,
+    fechaRealizada: payload.fechaRealizada,
+  });
+}
+
+/** Igual que cerrar, pero diciendo que quedó a medias y por qué. Solo oficina. */
+export async function markVisitaIncomplete(
+  visitaId: string,
+  viewer: Viewer,
+  payload: CerrarVisitaPayload & { motivo: string }
+) {
+  ensureOficina(viewer);
+  const motivo = payload.motivo.trim();
+  if (!motivo) throw new ConflictError("Debes indicar un motivo.");
+  const visita = await getVisitaForViewer(visitaId, viewer);
+  if (visita.estado === "CANCELADA") {
+    throw new ConflictError("Esta visita está cancelada.");
+  }
+  return transicionar(visitaId, viewer, "INCOMPLETA", {
+    notas: payload.notas?.trim() || null,
+    notasIncompleto: motivo,
+    fechaRealizada: payload.fechaRealizada,
+  });
+}
+
+/**
+ * Cancelar es decir que **no se hizo**, y por eso solo vale mientras no haya
+ * empezado: con alguien ya registrando su parte, lo que corresponde es cerrarla
+ * como incompleta, que deja el trabajo hecho a la vista.
+ */
 export async function cancelVisita(
   visitaId: string,
   viewer: Viewer,
   payload: CancelVisitaPayload = {}
 ) {
-  // CLIENTEs cancel their own visit; ADMIN/STAFF can also cancel from the web.
-  if (
-    viewer.role !== "CLIENTE" &&
-    !isAdminRole(viewer.role)
-  ) {
+  if (viewer.role !== "CLIENTE" && !isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
   const visita = await getVisitaForViewer(visitaId, viewer);
   if (visita.estado !== "PROGRAMADA") {
     throw new ConflictError("Esta visita ya no se puede cancelar.");
   }
-  return transitionToTerminal(visitaId, viewer, "CANCELADA", {
+  return transicionar(visitaId, viewer, "CANCELADA", {
     notasIncompleto: payload.motivo?.trim() || null,
     fechaRealizada: payload.fechaRealizada,
   });
 }
 
-/**
- * Deja armado el borrador de orden con lo que la visita dejó por cobrar.
- *
- * Corre al **completar**, no al agendar: recién ahí el trabajo ocurrió, los
- * productos dejaron de moverse y tiene sentido ponerle precio. Una visita
- * agendada todavía se corre, se edita o se cancela.
- *
- * Nace en **BORRADOR y en $0**: la visita no lleva plata —se cotiza al
- * facturar— así que el borrador existe para que alguien le ponga el número, no
- * para cobrarse solo. Es lo mismo que hace el cron con las suscripciones, salvo
- * que ahí el precio ya se conoce.
- *
- * **No puede hacer fallar el completar.** Si el producto no está vinculado con
- * del catálogo, `crearOrden` lo rechaza; la visita se completa igual y el trabajo
- * queda en pendientes, como antes. Terminar una visita en el campo no puede
- * depender de cómo esté el catálogo.
- */
-async function borradorDeVisita(visitaId: string, viewer: Viewer) {
-  const sueltos = await prisma.visitaProducto.findMany({
-    where: { visitaId, suscripcionItemId: null, ordenLineaOrigen: null },
-    orderBy: { posicion: "asc" },
-    select: {
-      id: true,
-      productoId: true,
-      producto: { select: { nombre: true, ivaTasa: true } },
-      visita: { select: { clienteId: true } },
-    },
-  });
-  // Todo cubierto por el plan, o ya facturado: no hay orden que crear.
-  if (sueltos.length === 0) return null;
-
-  const { crearOrden } = await import("./orden.service");
-  return crearOrden(viewer, {
-    clienteId: sueltos[0].visita.clienteId,
-    lineas: sueltos.map((vp) => ({
-      descripcion: vp.producto.nombre,
-      cantidad: 1,
-      // Sin precio: es justamente lo que hay que decidir sobre el borrador.
-      precioUnitario: 0,
-      ivaTasa: Number(vp.producto.ivaTasa ?? 0),
-      productoId: vp.productoId,
-      visitaProductoIds: [vp.id],
-    })),
-  });
-}
-
-/**
- * Pone al día un borrador al que se le sacó una línea.
- *
- * Los totales están guardados en la orden, así que borrar una línea sola los
- * deja mintiendo. Si no quedó ninguna línea, la orden se borra: una orden vacía
- * no representa nada y encima no se puede guardar.
- */
-async function recalcularBorrador(ordenId: string, viewer: Viewer) {
-  const orden = await prisma.orden.findUnique({
-    where: { id: ordenId },
-    select: {
-      estado: true,
-      lineas: {
-        orderBy: { posicion: "asc" },
-        select: {
-          descripcion: true,
-          cantidad: true,
-          precioUnitario: true,
-          ivaTasa: true,
-          productoId: true,
-          origenes: { select: { visitaProductoId: true } },
-          suscripcionItemId: true,
-          periodoInicio: true,
-          periodoFin: true,
-        },
-      },
-    },
-  });
-  if (!orden || orden.estado !== "BORRADOR") return;
-
-  if (orden.lineas.length === 0) {
-    await prisma.orden.delete({ where: { id: ordenId } });
-    return;
-  }
-
-  const { actualizarOrden } = await import("./orden.service");
-  await actualizarOrden(viewer, ordenId, {
-    lineas: orden.lineas.map((l) => ({
-      descripcion: l.descripcion,
-      cantidad: Number(l.cantidad),
-      precioUnitario: Number(l.precioUnitario),
-      ivaTasa: Number(l.ivaTasa),
-      productoId: l.productoId,
-      visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
-      suscripcionItemId: l.suscripcionItemId,
-      periodoInicio: l.periodoInicio,
-      periodoFin: l.periodoFin,
-    })),
-  });
-}
-
-/**
- * Suma a la orden en borrador de la visita lo que se le acabe de agregar.
- *
- * Una visita se factura completa, así que si ya tiene su orden armada y alguien
- * le agrega un producto, ese producto tiene que entrar ahí. Sin esto quedaba
- * fuera y terminaba en una segunda orden por la misma visita, que es justo lo
- * que la regla quiere evitar.
- *
- * **Solo sobre un borrador.** Facturada la orden, el documento ya salió y no se
- * toca: el producto nuevo queda pendiente y se cobra aparte, que es lo honesto.
- * Entra en $0, como todo lo que sale de una visita.
- */
-async function sumarAlBorrador(visitaId: string, viewer: Viewer) {
-  const nuevos = await prisma.visitaProducto.findMany({
-    where: {
-      visitaId,
-      suscripcionItemId: null,
-      ordenLineaOrigen: null,
-      liberadoAt: null,
-    },
-    orderBy: { posicion: "asc" },
-    select: {
-      id: true,
-      productoId: true,
-      producto: { select: { nombre: true, ivaTasa: true } },
-    },
-  });
-  if (nuevos.length === 0) return;
-
-  // La orden de esta visita, si está en borrador. Se llega por su cabecera,
-  // que es justamente para lo que existe.
-  const orden = await prisma.orden.findFirst({
-    where: {
-      estado: "BORRADOR",
-      visitas: { some: { visitaId } },
-    },
-    select: {
-      id: true,
-      lineas: {
-        orderBy: { posicion: "asc" },
-        select: {
-          descripcion: true,
-          cantidad: true,
-          precioUnitario: true,
-          ivaTasa: true,
-          productoId: true,
-          origenes: { select: { visitaProductoId: true } },
-          suscripcionItemId: true,
-          periodoInicio: true,
-          periodoFin: true,
-        },
-      },
-    },
-  });
-  if (!orden) return;
-
-  const { actualizarOrden } = await import("./orden.service");
-  await actualizarOrden(viewer, orden.id, {
-    lineas: [
-      ...orden.lineas.map((l) => ({
-        descripcion: l.descripcion,
-        cantidad: Number(l.cantidad),
-        precioUnitario: Number(l.precioUnitario),
-        ivaTasa: Number(l.ivaTasa),
-        productoId: l.productoId,
-        visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
-        suscripcionItemId: l.suscripcionItemId,
-        periodoInicio: l.periodoInicio,
-        periodoFin: l.periodoFin,
-      })),
-      ...nuevos.map((vp) => ({
-        descripcion: vp.producto.nombre,
-        cantidad: 1,
-        precioUnitario: 0,
-        ivaTasa: Number(vp.producto.ivaTasa ?? 0),
-        productoId: vp.productoId,
-        visitaProductoIds: [vp.id],
-      })),
-    ],
-  });
-}
-
-export async function completeVisita(
-  visitaId: string,
-  viewer: Viewer,
-  payload: CompleteVisitaPayload = {}
-) {
-  if (viewer.role !== "PERSONAL_ADMIN" && !isAdminRole(viewer.role)) {
-    throw new ForbiddenError();
-  }
-  const visita = await getVisitaForViewer(visitaId, viewer);
-  // Allow re-edit from PROGRAMADA, COMPLETADA, or INCOMPLETA. Cancelled
-  // visitas can only be reopened explicitly, not via complete/incomplete.
-  if (visita.estado === "CANCELADA") {
-    throw new ConflictError("Esta visita está cancelada.");
-  }
-  const yaEstabaCompletada = visita.estado === "COMPLETADA";
-  const actualizada = await transitionToTerminal(
-    visitaId,
-    viewer,
-    "COMPLETADA",
-    {
-      notas: payload.notes?.trim() || null,
-      fechaRealizada: payload.fechaRealizada,
-      horaEntrada: payload.horaEntrada,
-      horaSalida: payload.horaSalida,
-    },
-    payload.media
-  );
-
-  // Solo al completarla de verdad: reeditar una visita ya completada no tiene
-  // por qué generar otra orden.
-  if (!yaEstabaCompletada) {
-    try {
-      await borradorDeVisita(visitaId, viewer);
-    } catch (error) {
-      console.error(`No se pudo crear el borrador de la visita ${visitaId}:`, error);
-    }
-  }
-
-  return actualizada;
-}
-
-export async function markVisitaIncomplete(
-  visitaId: string,
-  viewer: Viewer,
-  payload: IncompleteVisitaPayload
-) {
-  if (viewer.role !== "PERSONAL_ADMIN" && !isAdminRole(viewer.role)) {
-    throw new ForbiddenError();
-  }
-  const trimmed = payload.reason.trim();
-  if (!trimmed) {
-    throw new ConflictError("Debes indicar un motivo.");
-  }
-  const visita = await getVisitaForViewer(visitaId, viewer);
-  if (visita.estado === "CANCELADA") {
-    throw new ConflictError("Esta visita está cancelada.");
-  }
-  return transitionToTerminal(
-    visitaId,
-    viewer,
-    "INCOMPLETA",
-    {
-      notasIncompleto: trimmed,
-      fechaRealizada: payload.fechaRealizada,
-      horaEntrada: payload.horaEntrada,
-      horaSalida: payload.horaSalida,
-    },
-    payload.media
-  );
-}
-
 // ──────────────────────────────────────────────
-// Creation, edit, soft-delete
+// Alta, edición, baja
 // ──────────────────────────────────────────────
-
-/**
- * Qué productos de esta selección cubre el plan de la visita.
- *
- * **No es una decisión, es una consulta.** Con la visita ligada a un plan, lo
- * que ese plan cubre es lo que el plan contiene; sin plan, no cubre nada y todo
- * se cobra aparte. Antes esto se elegía producto por producto y era la misma
- * pregunta hecha N veces.
- *
- * Se valida que el plan sea de este cliente: un id de otro no engancha nada.
- */
-async function coberturaDelPlan(
-  suscripcionId: string | null,
-  clienteId: string,
-  productoIds: string[],
-  tx: { suscripcionItem: { findMany: typeof prisma.suscripcionItem.findMany } } = prisma
-): Promise<Map<string, string>> {
-  if (!suscripcionId) return new Map();
-  const items = await tx.suscripcionItem.findMany({
-    where: {
-      productoId: { in: productoIds },
-      suscripcionId,
-      suscripcion: { clienteId },
-    },
-    select: { id: true, productoId: true },
-  });
-  return new Map(items.map((i) => [i.productoId, i.id]));
-}
-
-/**
- * Un producto que cubre la visita. Sin plata: eso se decide al facturar, y sin
- * cobertura: eso sale del plan de la visita (`suscripcionId`), no del producto.
- */
-export interface ProductoDeVisitaInput {
-  productoId: string;
-}
 
 export interface CreateVisitasBatchPayload {
+  clienteId: string;
+  fechas: Date[];
   /**
-   * De qué plan es la visita. `null` o ausente = trabajo aparte.
+   * De qué plan es la visita, si es de alguno. `null` = trabajo aparte.
    *
-   * Lo que ese plan cubra de los productos elegidos se deduce del plan; el
-   * resto queda como trabajo suelto, listo para facturarse.
+   * Ya no arrastra cobertura producto por producto —no hay productos— pero
+   * sigue diciendo a qué plan pertenece el trabajo, que es lo que hace falta
+   * para saber qué visita cuenta contra qué contrato.
    */
   suscripcionId?: string | null;
-  clienteId: string;
-  productos: ProductoDeVisitaInput[];
-  fechas: Date[];
   grupoId?: string | null;
   notas?: string | null;
   personalIds?: string[];
+  /** Lo que esta visita exige que se haga. Opcional. */
+  tareasObligatoriasIds?: string[];
+}
+
+/** Las tareas exigidas tienen que existir y estar vivas. */
+async function validarTareas(ids: string[]): Promise<string[]> {
+  const unicas = [...new Set(ids)];
+  if (unicas.length === 0) return [];
+  const vivas = await prisma.tarea.count({
+    where: { id: { in: unicas }, deletedAt: null },
+  });
+  if (vivas !== unicas.length) {
+    throw new ValidationError("Alguna de las tareas no existe.");
+  }
+  return unicas;
+}
+
+/** Que el plan sea de este cliente: un id de otro no engancha nada. */
+async function validarPlanDelCliente(
+  suscripcionId: string | null | undefined,
+  clienteId: string
+): Promise<string | null> {
+  if (!suscripcionId) return null;
+  const plan = await prisma.suscripcion.findFirst({
+    where: { id: suscripcionId, clienteId },
+    select: { id: true },
+  });
+  if (!plan) throw new ValidationError("Ese plan no es de este cliente.");
+  return plan.id;
 }
 
 export async function createVisitasBatch(
   viewer: Viewer,
   payload: CreateVisitasBatchPayload
 ) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
-    throw new ForbiddenError();
-  }
+  // Agendar es de oficina: al irse el capataz, no quedó nadie en el campo que
+  // arme la agenda de otros.
+  ensureOficina(viewer);
   if (!payload.fechas.length) {
     throw new ValidationError("Selecciona al menos una fecha.");
   }
 
-  // Un mismo producto elegido dos veces colapsa en uno.
-  const porProducto = new Map<string, ProductoDeVisitaInput>();
-  for (const p of payload.productos ?? []) {
-    if (!porProducto.has(p.productoId)) porProducto.set(p.productoId, p);
-  }
-  const seleccion = [...porProducto.values()];
-  if (seleccion.length === 0) {
-    throw new ValidationError("Selecciona al menos un producto.");
-  }
-
   const cliente = await prisma.cliente.findFirst({
     where: { id: payload.clienteId, deletedAt: null },
-    select: { id: true, sectorId: true },
+    select: { id: true },
   });
   if (!cliente) throw new NotFoundError("Cliente no encontrado");
 
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectorIds = await getSectorIdsForUser(viewer.id);
-    if (!cliente.sectorId || !sectorIds.includes(cliente.sectorId)) {
-      throw new ForbiddenError("No tienes acceso a este cliente.");
-    }
-  }
-
-  const productos = await prisma.producto.findMany({
-    where: { id: { in: seleccion.map((p) => p.productoId) }, deletedAt: null },
-    select: { id: true, nombre: true },
-  });
-  if (productos.length !== seleccion.length) {
-    throw new ValidationError("Alguno de los productos no existe.");
-  }
-
-  // Qué planes activos del cliente podrían cubrir estos productos. Enlazarlos o
-  // no lo decide el payload: puede haber plan y aun así querer cobrar aparte un
-  // trabajo que se acordó por fuera.
-  //
-  // Lo que no se acepta es un id de suscripción venido del cliente HTTP: se
-  // manda un booleano y el servidor busca el ítem, para que nadie enganche una
-  // visita al plan de otro.
-  //
-  // `visitasPorPeriodo` no es un tope: se puede agendar de más. Quién decide si
-  // una visita extra se cobra es quien arma la orden, no el que agenda.
-  const itemPorProducto = await coberturaDelPlan(
-    payload.suscripcionId ?? null,
-    cliente.id,
-    seleccion.map((p) => p.productoId)
+  const suscripcionId = await validarPlanDelCliente(
+    payload.suscripcionId,
+    cliente.id
   );
-  const itemElegido = (p: ProductoDeVisitaInput): string | null =>
-    itemPorProducto.get(p.productoId) ?? null;
-
-  const personalIds = payload.personalIds ?? [];
+  const tareaIds = await validarTareas(payload.tareasObligatoriasIds ?? []);
+  const personalIds = [...new Set(payload.personalIds ?? [])];
 
   const visitas = await prisma.$transaction(async (tx) => {
-    // **Una visita por cliente y por día.**
-    //
-    // Antes el choque era por producto: el mismo día con otro producto creaba
-    // una segunda visita. Pero agregarle un servicio a un día que ya está
-    // agendado es editar esa visita, no abrir otra — dos visitas el mismo día
-    // al mismo cliente son dos viajes, dos chats y dos informes para un solo
-    // trabajo. Si de verdad son dos trabajos distintos, van en días distintos.
-    const existing = await visitasDelDia(tx, cliente.id, payload.fechas);
-    if (existing.length > 0) {
-      const detalle = nombrarVisitas(existing);
+    // **Una visita por cliente y por día.** Dos visitas el mismo día al mismo
+    // cliente son dos viajes, dos chats y dos informes para un solo trabajo:
+    // agregarle algo a un día ya agendado es editar esa visita, no abrir otra.
+    // Una cancelada no ocupa el día.
+    const existentes = await visitasDelDia(tx, cliente.id, payload.fechas);
+    if (existentes.length > 0) {
+      const detalle = nombrarVisitas(existentes);
       throw new ConflictError(
-        existing.length === 1
+        existentes.length === 1
           ? `Este cliente ya tiene la visita ${detalle}.`
           : `Este cliente ya tiene visitas esos días: ${detalle}.`
       );
     }
 
-    // Tres consultas, no tres por fecha.
-    //
-    // Un `create` anidado por visita son N viajes de ida y vuelta dentro de la
-    // transacción, y a ~350 ms cada uno contra Neon un lote de 20 pasaba los 5 s
-    // de timeout: la transacción se caía sola y Prisma lo reportaba como una
-    // violación de foreign key, que no dice nada de lo que pasó.
+    // Tres consultas, no tres por fecha: un `create` anidado por visita son N
+    // viajes de ida y vuelta dentro de la transacción, y a ~350 ms cada uno un
+    // lote de 20 pasaba los 5 s de tope contra Neon.
     const creadas = await tx.visita.createManyAndReturn({
       data: payload.fechas.map((fecha) => ({
         clienteId: cliente.id,
         fechaProgramada: fecha,
         grupoId: payload.grupoId || null,
-        // Solo si el plan es de este cliente: `coberturaDelPlan` ya lo validó,
-        // y sin ítems cubiertos guardar el id sería una relación vacía.
-        suscripcionId: itemPorProducto.size > 0 ? payload.suscripcionId : null,
+        suscripcionId,
         notas: payload.notas || null,
         createdById: viewer.id,
         updatedById: viewer.id,
@@ -865,23 +765,20 @@ export async function createVisitasBatch(
       })),
     });
 
-    await tx.visitaProducto.createMany({
-      data: creadas.flatMap((visita) =>
-        seleccion.map((p, idx) => ({
-          visitaId: visita.id,
-          productoId: p.productoId,
-          suscripcionItemId: itemElegido(p),
-          posicion: idx,
-        }))
-      ),
-    });
+    if (tareaIds.length) {
+      await tx.visitaTareaObligatoria.createMany({
+        data: creadas.flatMap((visita) =>
+          tareaIds.map((tareaId) => ({ visitaId: visita.id, tareaId }))
+        ),
+      });
+    }
 
     if (personalIds.length) {
       await tx.visitaPersonal.createMany({
         data: creadas.flatMap((visita) =>
-          personalIds.map((pid) => ({
+          personalIds.map((personalId) => ({
             visitaId: visita.id,
-            personalId: pid,
+            personalId,
             addedById: viewer.id,
           }))
         ),
@@ -899,187 +796,54 @@ export async function createVisitasBatch(
   return visitas;
 }
 
-export async function updateVisitaPersonal(
-  visitaId: string,
-  viewer: Viewer,
-  personalIds: string[]
-) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
-    throw new ForbiddenError();
-  }
-
-  // Sin candado de estado, igual que `updateVisitaInfo`: quién fue a una visita
-  // ya hecha se corrige. Anotar mal la cuadrilla es un error de carga, no un
-  // motivo para dejar el dato equivocado para siempre.
-  const visita = await prisma.visita.findFirst({
-    where: { id: visitaId, deletedAt: null },
-    select: { id: true },
-  });
-  if (!visita) throw new NotFoundError("Visita no encontrada");
-
-  const newIds = new Set(personalIds);
-  // Un id que no existe reventaba con la clave foránea y salía como "Error
-  // interno". Es un dato mal mandado, no una falla nuestra.
-  if (newIds.size > 0) {
-    const existen = await prisma.personal.count({
-      where: { id: { in: [...newIds] }, deletedAt: null },
-    });
-    if (existen !== newIds.size) {
-      throw new ValidationError("Alguien del personal ya no existe.");
-    }
-  }
-
-  const currentPersonal = await prisma.visitaPersonal.findMany({
-    where: { visitaId, removedAt: null },
-  });
-  const currentIds = new Set(currentPersonal.map((p) => p.personalId));
-
-  const toRemove = currentPersonal.filter((p) => !newIds.has(p.personalId));
-  const toAdd = [...newIds].filter((pid) => !currentIds.has(pid));
-
-  await prisma.$transaction([
-    ...toRemove.map((p) =>
-      prisma.visitaPersonal.update({
-        where: { id: p.id },
-        data: { removedAt: new Date(), removedById: viewer.id },
-      })
-    ),
-    ...toAdd.map((pid) =>
-      prisma.visitaPersonal.create({
-        data: { visitaId, personalId: pid, addedById: viewer.id },
-      })
-    ),
-    prisma.visita.update({
-      where: { id: visitaId },
-      data: { updatedById: viewer.id, updatedByNombre: viewer.nombre },
-    }),
-  ]);
-}
-
-/**
- * Edición de una visita ya creada. Solo se toca lo que viene: un PUT parcial no
- * puede borrar el grupo ni las notas por omisión.
- *
- * No mira el estado a propósito. Una visita completada con la fecha o el
- * producto equivocado se corrige; obligar a borrarla y rehacerla perdería sus
- * fotos y su chat.
- */
-/**
- * Las visitas vivas que el cliente ya tiene en esas fechas.
- *
- * **Una visita por cliente y por día.** Agregarle un servicio a un día que ya
- * está agendado es editar esa visita, no abrir otra: dos visitas el mismo día
- * al mismo cliente son dos viajes, dos chats y dos informes para un solo
- * trabajo. Las canceladas no ocupan el día.
- *
- * Lo comparten el alta y la edición —`exceptoId` es la que se está moviendo,
- * que obviamente no choca consigo misma—, porque la regla tiene que valer por
- * las dos puertas: si solo la mira el alta, mover la fecha de una visita deja
- * dos en el mismo día sin que nada se queje.
- */
-async function visitasDelDia(
-  tx: { visita: { findMany: typeof prisma.visita.findMany } },
-  clienteId: string,
-  fechas: Date[],
-  exceptoId?: string
-) {
-  return tx.visita.findMany({
-    where: {
-      clienteId,
-      fechaProgramada: { in: fechas },
-      estado: { not: "CANCELADA" },
-      deletedAt: null,
-      ...(exceptoId ? { id: { not: exceptoId } } : {}),
-    },
-    select: { numero: true, fechaProgramada: true },
-    orderBy: { fechaProgramada: "asc" },
-  });
-}
-
-/** "#12 del 03 sep 2026", que es como se las nombra en voz alta. */
-function nombrarVisitas(
-  visitas: { numero: number; fechaProgramada: Date }[]
-): string {
-  return visitas
-    .map(
-      (v) =>
-        `#${v.numero} del ${v.fechaProgramada.toLocaleDateString("es-EC", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          timeZone: "UTC",
-        })}`
-    )
-    .join(", ");
-}
-
 export interface UpdateVisitaInfoPayload {
-  /** `null` la desvincula del plan y todo su trabajo pasa a cobrarse aparte. */
-  suscripcionId?: string | null;
   fechaProgramada?: Date;
-  /// `null` la borra. La completa el formulario de cierre, pero se corrige acá.
   fechaRealizada?: Date | null;
-  horaEntrada?: string | null;
-  horaSalida?: string | null;
   grupoId?: string | null;
+  suscripcionId?: string | null;
   notas?: string | null;
-  /// Si viene, reemplaza el conjunto de productos de la visita.
-  productoIds?: string[];
-  /// Igual que `productoIds`, pero pudiendo decir qué se descuenta del plan.
-  productos?: ProductoDeVisitaInput[];
+  /** Reemplaza el juego entero de obligatorias. */
+  tareasObligatoriasIds?: string[];
 }
 
+/**
+ * Editar una visita, **en cualquier estado**.
+ *
+ * El estado dice qué pasó con el trabajo, no si la fila está bien: arreglar una
+ * fecha equivocada no debería significar borrar y rehacer, que se llevaría las
+ * fotos, el chat y los partes. Cada campo se aplica solo si vino, así que un
+ * PUT parcial no borra el resto.
+ */
 export async function updateVisitaInfo(
   visitaId: string,
   viewer: Viewer,
   payload: UpdateVisitaInfoPayload
 ) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
-    throw new ForbiddenError();
-  }
+  ensureOficina(viewer);
 
   const visita = await prisma.visita.findFirst({
     where: { id: visitaId, deletedAt: null },
     select: {
       id: true,
       clienteId: true,
-      suscripcionId: true,
       estado: true,
       fechaProgramada: true,
     },
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
 
-  // `productoIds` sigue valiendo (lo usan la app móvil y llamadas viejas);
-  // `productos` es la forma que además dice qué se descuenta del plan.
-  const pedidos: ProductoDeVisitaInput[] | null =
-    payload.productos ??
-    (payload.productoIds?.map((productoId) => ({ productoId })) ?? null);
+  const suscripcionId =
+    payload.suscripcionId !== undefined
+      ? await validarPlanDelCliente(payload.suscripcionId, visita.clienteId)
+      : undefined;
+  const tareaIds =
+    payload.tareasObligatoriasIds !== undefined
+      ? await validarTareas(payload.tareasObligatoriasIds)
+      : undefined;
 
-  let seleccion: ProductoDeVisitaInput[] | null = null;
-  if (pedidos) {
-    const porProducto = new Map<string, ProductoDeVisitaInput>();
-    for (const p of pedidos) {
-      if (!porProducto.has(p.productoId)) porProducto.set(p.productoId, p);
-    }
-    seleccion = [...porProducto.values()];
-    if (seleccion.length === 0) {
-      throw new ValidationError("La visita debe tener al menos un producto.");
-    }
-    const existen = await prisma.producto.count({
-      where: { id: { in: seleccion.map((p) => p.productoId) }, deletedAt: null },
-    });
-    if (existen !== seleccion.length) {
-      throw new ValidationError("Alguno de los productos no existe.");
-    }
-    }
-
-  const productos = seleccion;
-
-  // Mover la fecha también tiene que respetar la visita por día. La regla vivía
-  // solo en el alta, así que se podía dejar dos el mismo día moviendo una —el
-  // camino más fácil de todos, porque nadie sospecha que mover valide menos que
-  // crear—. Una cancelada no ocupa el día, así que moverla no choca con nada.
+  // Mover la fecha también respeta la visita por día. La regla vivía solo en el
+  // alta, así que se podía dejar dos el mismo día moviendo una —el camino más
+  // fácil de todos, porque nadie sospecha que mover valide menos que crear—.
   if (
     payload.fechaProgramada !== undefined &&
     visita.estado !== "CANCELADA" &&
@@ -1098,151 +862,12 @@ export async function updateVisitaInfo(
     }
   }
 
-  /** Borradores a los que se les sacó una línea: hay que recalcularlos. */
-  let ordenesTocadas: string[] = [];
-  const actualizada = await prisma.$transaction(async (tx) => {
-    if (productos) {
-      const ids = productos.map((p) => p.productoId);
-
-      // No se saca de la visita algo que ya se cobró.
-      //
-      // Sin este chequeo, la línea seguía cobrando y perdía en silencio de
-      // dónde venía. El cliente pagaba por un trabajo que la visita ya no dice
-      // que se hizo, y nada quedaba registrado. Para deshacerlo hay que anular
-      // la orden, que es lo que libera la procedencia.
-      const yaCobrados = await tx.visitaProducto.findMany({
-        where: {
-          visitaId,
-          productoId: { notIn: ids },
-          ordenLineaOrigen: { isNot: null },
-        },
-        select: {
-          id: true,
-          producto: { select: { nombre: true } },
-          ordenLineaOrigen: {
-            select: {
-              visitaProductoId: true,
-              ordenLinea: {
-                select: {
-                  id: true,
-                  ordenId: true,
-                  orden: { select: { numero: true, estado: true } },
-                  _count: { select: { origenes: true } },
-                },
-              },
-            },
-          },
-        },
-      });
-      // Un borrador todavía se edita: sacar el producto de la visita también lo
-      // saca de la orden. Confirmada ya salió el documento y no se toca.
-      const enFirme = yaCobrados.filter(
-        (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado !== "BORRADOR"
-      );
-      if (enFirme.length > 0) {
-        const detalle = enFirme
-          .map(
-            (vp) =>
-              `"${vp.producto.nombre}" (orden #${vp.ordenLineaOrigen!.ordenLinea.orden.numero})`
-          )
-          .join(", ");
-        throw new ConflictError(
-          `No se puede quitar de la visita algo que ya está facturado: ${detalle}. Anulá la orden primero.`
-        );
-      }
-      // En un borrador se suelta la procedencia **antes** de borrar el
-      // VisitaProducto, o el `Restrict` de `OrdenLineaOrigen` frena el borrado.
-      //
-      // Y se suelta el origen, no la línea: una línea puede pagar el mismo
-      // producto de **varias** visitas, y borrarla entera se llevaría puesto el
-      // trabajo de las otras. La línea se va solo si se queda sin ninguno.
-      const enBorrador = yaCobrados.filter(
-        (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado === "BORRADOR"
-      );
-      if (enBorrador.length > 0) {
-        await tx.ordenLineaOrigen.deleteMany({
-          where: {
-            visitaProductoId: {
-              in: enBorrador.map((vp) => vp.ordenLineaOrigen!.visitaProductoId),
-            },
-          },
-        });
-        const sueltas = enBorrador
-          .filter((vp) => vp.ordenLineaOrigen!.ordenLinea._count.origenes === 1)
-          .map((vp) => vp.ordenLineaOrigen!.ordenLinea.id);
-        if (sueltas.length > 0) {
-          await tx.ordenLinea.deleteMany({ where: { id: { in: sueltas } } });
-        }
-        ordenesTocadas = [
-          ...new Set(
-            enBorrador.map((vp) => vp.ordenLineaOrigen!.ordenLinea.ordenId)
-          ),
-        ];
-      }
-
-      // Las fotos etiquetadas con un producto que se quita quedan sin etiqueta.
-      await tx.visitaMedia.updateMany({
-        where: { visitaId, productoId: { notIn: ids } },
-        data: { productoId: null },
-      });
-      await tx.visitaProducto.deleteMany({
-        where: { visitaId, productoId: { notIn: ids } },
-      });
-
-      // El plan que queda después de esta edición: el que venga en el payload
-      // si vino, y si no el que ya tenía. `null` explícito la desvincula.
-      const planFinal =
-        payload.suscripcionId !== undefined
-          ? payload.suscripcionId
-          : visita.suscripcionId;
-      const itemPorProducto = await coberturaDelPlan(
-        planFinal,
-        visita.clienteId,
-        ids,
-        tx
-      );
-
-      for (const [idx, p] of productos.entries()) {
-        const item = itemPorProducto.get(p.productoId) ?? null;
-        await tx.visitaProducto.upsert({
-          where: { visitaId_productoId: { visitaId, productoId: p.productoId } },
-          create: {
-            visitaId,
-            productoId: p.productoId,
-            suscripcionItemId: item,
-            posicion: idx,
-          },
-          // El enlace también se actualiza: si no, desmarcar "cubierto" en un
-          // producto que ya estaba en la visita no haría nada.
-          update: { posicion: idx, suscripcionItemId: item },
-        });
-      }
-    }
-    // Cambiar de plan sin tocar los productos igual mueve la cobertura: es
-    // justamente lo que hace "desvincular". Sin esto, `suscripcionId` quedaba
-    // en null y los productos seguían marcados como cubiertos.
-    if (payload.suscripcionId !== undefined && !productos) {
-      const actuales = await tx.visitaProducto.findMany({
-        where: { visitaId },
-        select: {
-          id: true,
-          productoId: true,
-          ordenLineaOrigen: { select: { visitaProductoId: true } },
-        },
-      });
-      const cobertura = await coberturaDelPlan(
-        payload.suscripcionId,
-        visita.clienteId,
-        actuales.map((vp) => vp.productoId),
-        tx
-      );
-      for (const vp of actuales) {
-        // Lo ya facturado no se toca: marcarlo como cubierto lo dejaría
-        // cobrado y cubierto a la vez.
-        if (vp.ordenLineaOrigen) continue;
-        await tx.visitaProducto.update({
-          where: { id: vp.id },
-          data: { suscripcionItemId: cobertura.get(vp.productoId) ?? null },
+  return prisma.$transaction(async (tx) => {
+    if (tareaIds !== undefined) {
+      await tx.visitaTareaObligatoria.deleteMany({ where: { visitaId } });
+      if (tareaIds.length) {
+        await tx.visitaTareaObligatoria.createMany({
+          data: tareaIds.map((tareaId) => ({ visitaId, tareaId })),
         });
       }
     }
@@ -1256,111 +881,153 @@ export async function updateVisitaInfo(
         ...(payload.fechaRealizada !== undefined
           ? { fechaRealizada: payload.fechaRealizada }
           : {}),
-        ...(payload.horaEntrada !== undefined
-          ? { horaEntrada: payload.horaEntrada }
-          : {}),
-        ...(payload.horaSalida !== undefined
-          ? { horaSalida: payload.horaSalida }
-          : {}),
         ...(payload.grupoId !== undefined ? { grupoId: payload.grupoId } : {}),
-        ...(payload.suscripcionId !== undefined
-          ? { suscripcionId: payload.suscripcionId }
-          : {}),
+        ...(suscripcionId !== undefined ? { suscripcionId } : {}),
         ...(payload.notas !== undefined ? { notas: payload.notas } : {}),
         updatedById: viewer.id,
         updatedByNombre: viewer.nombre,
       },
     });
   });
+}
 
-  // Fuera de la transacción: es otra agregación y no debe poder tumbar la
-  // edición de la visita, que es lo que la persona pidió.
-  if (productos) {
-    try {
-      for (const ordenId of ordenesTocadas) {
-        await recalcularBorrador(ordenId, viewer);
-      }
-      await sumarAlBorrador(visitaId, viewer);
-    } catch (error) {
-      console.error(
-        `No se pudo sincronizar el borrador de la visita ${visitaId}:`,
-        error
-      );
+/**
+ * Quién va a la visita.
+ *
+ * Sacar a alguien **no borra su parte**: la asignación se marca con `removedAt`
+ * y sus tareas se quedan colgando de ella. Todo lo que cuenta lo hecho filtra
+ * `removedAt: null`, así que deja de sumar, pero si vuelve a asignarse aparece
+ * otra vez tal como lo había cargado.
+ */
+export async function updateVisitaPersonal(
+  visitaId: string,
+  viewer: Viewer,
+  personalIds: string[]
+) {
+  ensureOficina(viewer);
+
+  const visita = await prisma.visita.findFirst({
+    where: { id: visitaId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!visita) throw new NotFoundError("Visita no encontrada");
+
+  const deseados = [...new Set(personalIds)];
+  if (deseados.length > 0) {
+    const existen = await prisma.personal.count({
+      where: { id: { in: deseados }, deletedAt: null },
+    });
+    if (existen !== deseados.length) {
+      throw new ValidationError("Alguna de las personas no existe.");
     }
   }
 
-  return actualizada;
+  await prisma.$transaction(async (tx) => {
+    const actuales = await tx.visitaPersonal.findMany({
+      where: { visitaId },
+      select: { id: true, personalId: true, removedAt: true },
+    });
+    const vigentes = new Set(
+      actuales.filter((a) => !a.removedAt).map((a) => a.personalId)
+    );
+
+    const sacar = actuales.filter(
+      (a) => !a.removedAt && !deseados.includes(a.personalId)
+    );
+    if (sacar.length > 0) {
+      await tx.visitaPersonal.updateMany({
+        where: { id: { in: sacar.map((a) => a.id) } },
+        data: { removedAt: new Date(), removedById: viewer.id },
+      });
+    }
+
+    for (const personalId of deseados) {
+      if (vigentes.has(personalId)) continue;
+      // Puede existir marcada como sacada de antes: se reactiva en vez de
+      // crearse, o el único `[visitaId, personalId]` lo rechaza.
+      await tx.visitaPersonal.upsert({
+        where: { visitaId_personalId: { visitaId, personalId } },
+        create: { visitaId, personalId, addedById: viewer.id },
+        update: { removedAt: null, removedById: null, addedById: viewer.id },
+      });
+    }
+
+    await recalcularHorasDeVisita(tx, visitaId);
+  });
+
+  return getVisitaForViewer(visitaId, viewer);
+}
+
+/**
+ * Las visitas vivas que ese cliente ya tiene en esos días.
+ *
+ * Compartida entre el alta y la edición: una regla que solo valida al crear es
+ * una que se esquiva editando, que es el camino más fácil de los dos.
+ */
+async function visitasDelDia(
+  tx: Pick<typeof prisma, "visita">,
+  clienteId: string,
+  fechas: Date[],
+  excepto?: string
+) {
+  return tx.visita.findMany({
+    where: {
+      clienteId,
+      deletedAt: null,
+      estado: { not: "CANCELADA" },
+      fechaProgramada: { in: fechas },
+      ...(excepto ? { id: { not: excepto } } : {}),
+    },
+    select: { numero: true, fechaProgramada: true },
+    orderBy: { fechaProgramada: "asc" },
+  });
+}
+
+function nombrarVisitas(
+  visitas: { numero: number; fechaProgramada: Date }[]
+): string {
+  return visitas
+    .map(
+      (v) =>
+        `#${v.numero} (${v.fechaProgramada.toISOString().slice(0, 10)})`
+    )
+    .join(", ");
 }
 
 /**
  * Elimina una visita: se marca, no se borra.
  *
  * La fila se queda —con `deletedAt` y con **quién** la eliminó— porque de ella
- * cuelgan las fotos, el chat y la procedencia de lo que se haya facturado. Lo
- * que desaparece es de las listas: todas las consultas filtran `deletedAt: null`.
+ * cuelgan las fotos, el chat y los partes de quienes fueron. Lo que desaparece
+ * es de las listas: todas las consultas filtran `deletedAt: null`.
  *
- * **Lo facturado en firme no se puede eliminar.** Si algo de la visita está en
- * una orden que ya salió, borrarla dejaría la línea cobrando sin poder decir de
- * dónde vino; hay que anular la orden primero, que es lo que libera el trabajo.
- * Un borrador es otra cosa: todavía se edita, así que se le suelta lo de esta
- * visita igual que cuando se le saca un producto (ver `updateVisitaInfo`), y si
- * se queda sin líneas `recalcularBorrador` lo borra.
- *
- * Los informes que la citan se quedan como están: `InformeVisita` no llega al
- * PDF, es rastro de dónde salió, y el documento ya emitido no cambia.
+ * **Se frena si hay una orden viva que dice ser por esta visita.** El enlace ya
+ * no explica de dónde sale cada peso —eso se terminó con los productos— pero
+ * una orden emitida que cita una visita que no existe es un documento que no se
+ * puede explicar. En un borrador, en cambio, el enlace se suelta y listo: un
+ * borrador todavía se edita.
  */
 export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
-    throw new ForbiddenError();
-  }
+  ensureOficina(viewer);
 
   const visita = await prisma.visita.findFirst({
     where: { id: visitaId, deletedAt: null },
     select: {
       id: true,
-      cliente: {
-        select: {
-          userId: true,
-          sector: { select: { id: true, nombre: true } },
-        },
+      ordenes: {
+        select: { orden: { select: { numero: true, estado: true } } },
       },
     },
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
-  // Un PERSONAL_ADMIN elimina solo en sus sectores. Antes alcanzaba con el rol,
-  // así que podía eliminar la visita de cualquiera sabiendo el id.
-  await ensureViewerCanSeeVisita(viewer, visita);
 
-  const cobrados = await prisma.visitaProducto.findMany({
-    where: { visitaId, ordenLineaOrigen: { isNot: null } },
-    select: {
-      ordenLineaOrigen: {
-        select: {
-          visitaProductoId: true,
-          ordenLinea: {
-            select: {
-              id: true,
-              ordenId: true,
-              orden: { select: { numero: true, estado: true } },
-              _count: { select: { origenes: true } },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  const enFirme = cobrados.filter(
-    (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado !== "BORRADOR"
+  const vivas = visita.ordenes.filter(
+    (ov) => ov.orden.estado === "CONFIRMADA"
   );
-  if (enFirme.length > 0) {
-    const numeros = [
-      ...new Set(
-        enFirme.map((vp) => vp.ordenLineaOrigen!.ordenLinea.orden.numero)
-      ),
-    ];
+  if (vivas.length > 0) {
+    const numeros = [...new Set(vivas.map((ov) => ov.orden.numero))];
     throw new ConflictError(
-      `El trabajo de esta visita ya está facturado en ${
+      `Esta visita está en ${
         numeros.length === 1
           ? `la orden #${numeros[0]}`
           : `las órdenes ${numeros.map((n) => `#${n}`).join(", ")}`
@@ -1368,35 +1035,12 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
     );
   }
 
-  const enBorrador = cobrados.filter(
-    (vp) => vp.ordenLineaOrigen!.ordenLinea.orden.estado === "BORRADOR"
-  );
-
   await prisma.$transaction(async (tx) => {
-    if (enBorrador.length > 0) {
-      await tx.ordenLineaOrigen.deleteMany({
-        where: {
-          visitaProductoId: {
-            in: enBorrador.map((vp) => vp.ordenLineaOrigen!.visitaProductoId),
-          },
-        },
-      });
-      // La línea se va solo si se queda sin ninguna procedencia: una misma
-      // línea puede pagar el mismo producto de varias visitas.
-      const sueltas = enBorrador
-        .filter((vp) => vp.ordenLineaOrigen!.ordenLinea._count.origenes === 1)
-        .map((vp) => vp.ordenLineaOrigen!.ordenLinea.id);
-      if (sueltas.length > 0) {
-        await tx.ordenLinea.deleteMany({ where: { id: { in: sueltas } } });
-      }
-    }
-
-    // La cabecera del borrador tampoco puede seguir diciendo que es de esta
-    // visita. Las órdenes en firme conservan la suya: es su historia.
+    // Un borrador todavía se edita, así que deja de decir que es por esta
+    // visita. Una anulada conserva su enlace: es su historia.
     await tx.ordenVisita.deleteMany({
       where: { visitaId, orden: { estado: "BORRADOR" } },
     });
-
     await tx.visita.update({
       where: { id: visitaId },
       data: {
@@ -1406,22 +1050,6 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
       },
     });
   });
-
-  // Fuera de la transacción, como en `updateVisitaInfo`: es otra agregación y
-  // no debe poder tumbar la eliminación, que es lo que se pidió.
-  const ordenesTocadas = [
-    ...new Set(enBorrador.map((vp) => vp.ordenLineaOrigen!.ordenLinea.ordenId)),
-  ];
-  for (const ordenId of ordenesTocadas) {
-    try {
-      await recalcularBorrador(ordenId, viewer);
-    } catch (error) {
-      console.error(
-        `No se pudo recalcular el borrador ${ordenId} al eliminar la visita ${visitaId}:`,
-        error
-      );
-    }
-  }
 }
 
 export interface ResultadoEliminarVisitas {
@@ -1431,49 +1059,39 @@ export interface ResultadoEliminarVisitas {
 }
 
 /**
- * Elimina varias visitas, y sigue aunque alguna no se pueda.
- *
- * Se eliminan de a una y no con un `updateMany`: cada una tiene que revisar sus
- * órdenes y soltar lo que tenga en borradores. Y una que falle no cancela a las
- * demás —seleccionar diez y que no se borre ninguna porque la séptima está
- * facturada es peor que borrar nueve y decir cuál faltó—, así que el resultado
- * dice cuántas salieron y por qué se quedaron las otras.
+ * Eliminar en lote es **una visita a la vez**: cada una tiene que mirar sus
+ * propias órdenes, y una que no se puede no cancela el resto. La respuesta dice
+ * cuántas fueron y nombra cada una que se quedó, con el motivo.
  */
 export async function softDeleteVisitas(
-  ids: string[],
-  viewer: Viewer
+  viewer: Viewer,
+  ids: string[]
 ): Promise<ResultadoEliminarVisitas> {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
-    throw new ForbiddenError();
-  }
-
-  // El número es lo que la persona ve en pantalla; el id no le dice nada.
+  ensureOficina(viewer);
+  const unicos = [...new Set(ids)];
   const numeros = new Map(
     (
       await prisma.visita.findMany({
-        where: { id: { in: ids } },
+        where: { id: { in: unicos } },
         select: { id: true, numero: true },
       })
     ).map((v) => [v.id, v.numero])
   );
 
-  const resultado: ResultadoEliminarVisitas = { eliminadas: 0, errores: [] };
-  for (const id of ids) {
+  let eliminadas = 0;
+  const errores: ResultadoEliminarVisitas["errores"] = [];
+  for (const id of unicos) {
     try {
       await softDeleteVisita(id, viewer);
-      resultado.eliminadas += 1;
+      eliminadas++;
     } catch (error) {
-      // El mensaje del servicio dice *por qué* —"ya está facturada en la orden
-      // #12"—, que es lo único accionable; un "no se pudo" manda a adivinar.
-      const motivo =
-        error instanceof ServiceError ? error.message : "No se pudo eliminar";
-      if (!(error instanceof ServiceError)) console.error(error);
-      resultado.errores.push({
+      errores.push({
         id,
         numero: numeros.get(id) ?? null,
-        motivo,
+        motivo:
+          error instanceof Error ? error.message : "No se pudo eliminar.",
       });
     }
   }
-  return resultado;
+  return { eliminadas, errores };
 }

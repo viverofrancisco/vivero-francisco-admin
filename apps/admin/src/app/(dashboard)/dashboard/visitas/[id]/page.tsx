@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { VisitaDetail } from "@/components/visitas/visita-detail";
-import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
+import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 
 export default async function VisitaDetailPage({
   params,
@@ -31,7 +31,7 @@ export default async function VisitaDetailPage({
           sector: { select: { nombre: true } },
         },
       },
-      productos: PRODUCTOS_DE_VISITA_SELECT,
+      ...TAREAS_DE_VISITA_INCLUDE,
       grupo: {
         select: {
           id: true,
@@ -41,12 +41,8 @@ export default async function VisitaDetailPage({
           },
         },
       },
-      personal: {
-        where: { removedAt: null },
-        include: { personal: { select: { id: true, nombre: true, apellido: true } } },
-      },
       media: {
-        select: { id: true, url: true, tipo: true, productoId: true },
+        select: { id: true, url: true, tipo: true, tareaId: true },
         orderBy: { createdAt: "asc" as const },
       },
     },
@@ -56,11 +52,12 @@ export default async function VisitaDetailPage({
     notFound();
   }
 
-  // Para etiquetar una foto con algo que no se agendó: en el campo aparece de
-  // todo, y el informe arma secciones con cualquier producto del catálogo.
-  const catalogo = await prisma.producto.findMany({
+  // El catálogo de tareas, para etiquetar las fotos. Va completo: en el campo
+  // se fotografía lo que aparece —un problema de riego durante una poda— y esa
+  // foto igual merece su sección en el informe.
+  const catalogo = await prisma.tarea.findMany({
     where: { deletedAt: null },
-    orderBy: { nombre: "asc" },
+    orderBy: [{ orden: "asc" }, { nombre: "asc" }],
     select: { id: true, nombre: true },
   });
 
@@ -88,9 +85,14 @@ export default async function VisitaDetailPage({
     notasIncompleto: visita.notasIncompleto,
     media: visita.media,
     cliente: visita.cliente,
-    productos: visita.productos,
     grupo: visita.grupo,
-    personal: visita.personal,
+    tareasObligatorias: visita.tareasObligatorias,
+    // Los partes de cada uno, con la fecha como texto para que crucen el
+    // límite servidor→cliente.
+    personal: visita.personal.map((p) => ({
+      ...p,
+      registradoEl: p.registradoEl?.toISOString() ?? null,
+    })),
   };
 
   return (
@@ -100,9 +102,9 @@ export default async function VisitaDetailPage({
         visita={serialized}
         userRole={user.role}
         hasMessages={hasMessages}
-        catalogo={catalogo.map((p) => ({
-          productoId: p.id,
-          nombre: p.nombre,
+        catalogo={catalogo.map((t) => ({
+          tareaId: t.id,
+          nombre: t.nombre,
         }))}
       />
     </div>

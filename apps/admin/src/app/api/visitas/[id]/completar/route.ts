@@ -39,8 +39,6 @@ export async function POST(
   const data = result.data;
   const viewer = viewerFromUser(user);
   const fechaRealizada = new Date(data.fechaRealizada);
-  const horaEntrada = data.horaEntrada || null;
-  const horaSalida = data.horaSalida || null;
 
   try {
     // El personal primero: si el cambio de estado falla, no queda una visita
@@ -52,17 +50,14 @@ export async function POST(
     let updated;
     if (data.estado === "COMPLETADA") {
       updated = await completeVisita(id, viewer, {
-        notes: data.notas || null,
+        notas: data.notas || null,
         fechaRealizada,
-        horaEntrada,
-        horaSalida,
       });
     } else if (data.estado === "INCOMPLETA") {
       updated = await markVisitaIncomplete(id, viewer, {
-        reason: data.notasIncompleto?.trim() || "",
+        motivo: data.notasIncompleto?.trim() || "",
+        notas: data.notas || null,
         fechaRealizada,
-        horaEntrada,
-        horaSalida,
       });
     } else {
       // CANCELADA

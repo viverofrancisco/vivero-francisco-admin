@@ -69,7 +69,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.apellido = user.apellido;
-        if (user.role === "PERSONAL_ADMIN" || user.role === "PERSONAL") {
+        if (user.role === "PERSONAL") {
           const personal = await prisma.personal.findUnique({
             where: { userId: user.id },
             select: { id: true },

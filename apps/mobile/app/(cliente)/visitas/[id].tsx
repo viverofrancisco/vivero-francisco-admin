@@ -11,7 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import { apiRequest, ApiError } from "@/lib/api";
 import type { VisitaDetail, VisitaMedia } from "@/lib/types";
-import { listaProductos } from "@/lib/types";
+import { listaTareas } from "@/lib/types";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 
 export default function ClienteVisitaScreen() {
@@ -106,7 +106,7 @@ export default function ClienteVisitaScreen() {
             </Text>
           </View>
           <Text variant="headlineSmall" style={styles.heroTitle}>
-            {listaProductos(visita)}
+            {listaTareas(visita)}
           </Text>
           <Text variant="bodyMedium" style={styles.heroSubtitle}>
             {formatLongDate(visita.fechaProgramada)}

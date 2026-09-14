@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
-import { listServiciosParaInforme } from "@/lib/services/informe.service";
+import { listTareasParaInforme } from "@/lib/services/informe.service";
 import {
   serviceErrorResponse,
   viewerFromMobileUser,
@@ -11,7 +11,7 @@ const schema = z.object({
   visitaIds: z.array(z.string().min(1)).min(1).max(200),
 });
 
-/** Servicios cubiertos por las visitas seleccionadas — el origen de las secciones. */
+/** Las tareas que se hicieron en esas visitas — el origen de las secciones. */
 export async function POST(request: Request) {
   const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
   try {
-    const items = await listServiciosParaInforme(
+    const items = await listTareasParaInforme(
       viewerFromMobileUser(userOrResponse),
       parsed.data.visitaIds
     );

@@ -22,7 +22,7 @@ const inviteSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
   apellido: z.string().optional(),
   email: z.email("Email inválido"),
-  role: z.enum(["STAFF", "PERSONAL_ADMIN"]),
+  role: z.enum(["STAFF"]),
   sectorIds: z.array(z.string()).optional(),
 });
 
@@ -64,15 +64,6 @@ export async function POST(request: Request) {
         role: data.role,
       },
     });
-
-    if (data.role === "PERSONAL_ADMIN" && data.sectorIds?.length) {
-      await tx.sectorAdmin.createMany({
-        data: data.sectorIds.map((sectorId) => ({
-          sectorId,
-          userId: createdUser.id,
-        })),
-      });
-    }
 
     return createdUser;
   });

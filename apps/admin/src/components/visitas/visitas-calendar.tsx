@@ -18,7 +18,7 @@ import {
   PreviewCardContent,
 } from "@/components/ui/preview-card";
 import { nombreCliente } from "@vivero/shared";
-import { listaProductos, type ProductoDeVisita } from "@/lib/visita-productos";
+import { listaTareas, type VisitaConTareas } from "@/lib/visita-tareas";
 import { useAca } from "@/lib/filtros-url";
 
 interface VisitaEnCalendario {
@@ -33,7 +33,7 @@ interface VisitaEnCalendario {
     apellido?: string | null;
     empresa?: string | null;
   };
-  productos?: ProductoDeVisita[];
+  tareas?: VisitaConTareas;
   grupo?: { id: string; nombre: string } | null;
 }
 
@@ -234,7 +234,7 @@ function DiaCelda({
 function VisitaEnDia({ visita }: { visita: VisitaEnCalendario }) {
   const meta =
     statusMeta[visita.estado as EstadoVisitaUI] ?? statusMeta.COMPLETADA;
-  const productos = visita.productos ?? [];
+  const hechas = visita.tareas ? listaTareas(visita.tareas) : null;
   /** Para volver al calendario con sus filtros, y no a la lista pelada. */
   const volverA = useAca();
 
@@ -272,10 +272,8 @@ function VisitaEnDia({ visita }: { visita: VisitaEnCalendario }) {
             timeZone: "UTC",
           })}
         </p>
-        {productos.length > 0 && (
-          <p className="text-xs leading-snug">
-            {listaProductos({ productos })}
-          </p>
+        {hechas && (
+          <p className="text-xs leading-snug">{hechas}</p>
         )}
         {visita.grupo && (
           <p className="text-xs text-muted-foreground">{visita.grupo.nombre}</p>

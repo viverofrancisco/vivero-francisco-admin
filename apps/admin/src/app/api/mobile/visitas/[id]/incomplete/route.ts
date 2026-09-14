@@ -7,23 +7,19 @@ import {
   viewerFromMobileUser,
 } from "@/lib/mobile/route-helpers";
 
+/** Cerrarla diciendo que quedó a medias. De oficina, como completarla. */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // STAFF is intentionally read-only on mobile (per the v1 plan).
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN",
-    "PERSONAL_ADMIN"
-  );
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const parsed = incompleteVisitaSchema.safeParse(
     await request.json().catch(() => ({}))
   );
   if (!parsed.success) {
-    return NextResponse.json({ error: "Motivo requerido" }, { status: 400 });
+    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
   const { id } = await params;
@@ -32,13 +28,11 @@ export async function POST(
       id,
       viewerFromMobileUser(userOrResponse),
       {
-        reason: parsed.data.reason,
+        motivo: parsed.data.motivo,
+        notas: parsed.data.notas,
         fechaRealizada: parsed.data.fechaRealizada
           ? new Date(parsed.data.fechaRealizada)
           : undefined,
-        horaEntrada: parsed.data.horaEntrada,
-        horaSalida: parsed.data.horaSalida,
-        media: parsed.data.media,
       }
     );
     return NextResponse.json(visita);

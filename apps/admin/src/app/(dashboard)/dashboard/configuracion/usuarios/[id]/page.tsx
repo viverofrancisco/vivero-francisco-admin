@@ -11,7 +11,7 @@ export default async function UserDetailPage({
   await requireAdmin();
   const { id } = await params;
 
-  const [user, sectores] = await Promise.all([
+  const [user] = await Promise.all([
     prisma.user.findUnique({
       where: { id },
       select: {
@@ -21,17 +21,7 @@ export default async function UserDetailPage({
         email: true,
         role: true,
         createdAt: true,
-        sectorAdmins: {
-          select: {
-            sector: { select: { id: true, nombre: true } },
-          },
-        },
       },
-    }),
-    prisma.sector.findMany({
-      where: { deletedAt: null },
-      select: { id: true, nombre: true },
-      orderBy: { nombre: "asc" },
     }),
   ]);
 
@@ -50,8 +40,6 @@ export default async function UserDetailPage({
           role: user.role,
           createdAt: user.createdAt.toISOString(),
         }}
-        assignedSectors={user.sectorAdmins.map((sa) => sa.sector)}
-        allSectors={sectores}
       />
     </div>
   );

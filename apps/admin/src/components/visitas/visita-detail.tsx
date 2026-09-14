@@ -23,11 +23,13 @@ import {
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import {
   ArrowLeft,
+  Check,
   CheckCircle,
   MessageSquare,
   Pencil,
   Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
@@ -47,9 +49,13 @@ import {
 } from "@/components/suscripciones/formato";
 import { nombreCliente } from "@vivero/shared";
 import {
-  listaProductos,
-  type ProductoDeVisita,
-} from "@/lib/visita-productos";
+  nombrePersonal,
+  obligatoriasSinCubrir,
+  personalSinRegistrar,
+  tareasHechas,
+  type PersonalDeVisita,
+  type TareaDeVisita,
+} from "@/lib/visita-tareas";
 
 interface VisitaDetailData {
   id: string;
@@ -68,7 +74,7 @@ interface VisitaDetailData {
   estado: string;
   notas: string | null;
   notasIncompleto: string | null;
-  media: { id: string; url: string; tipo: string; productoId: string | null }[];
+  media: { id: string; url: string; tipo: string; tareaId: string | null }[];
   cliente: {
     id: string;
     nombre: string;
@@ -77,19 +83,30 @@ interface VisitaDetailData {
     ciudad: string | null;
     sector: { nombre: string } | null;
   };
-  productos: ProductoDeVisita[];
+  tareasObligatorias: { tarea: TareaDeVisita }[];
   grupo: {
     id: string;
     nombre: string;
     miembros: { personal: { id: string; nombre: string; apellido?: string | null } }[];
   } | null;
-  personal: { personal: { id: string; nombre: string; apellido?: string | null } }[];
+  /** Quiénes van, y qué registró cada uno. */
+  personal: PersonalDeVisita[];
+  /** Las órdenes que dicen cubrir esta visita. */
+  ordenes?: { id: string; numero: number; estado: string }[];
+  /** El plan al que pertenece, si es de alguno. */
+  suscripcion?: {
+    id: string;
+    numero: number;
+    periodicidad: string;
+    estado: string;
+    cliente: { nombre: string; apellido: string | null; empresa: string | null };
+  } | null;
 }
 
 
 interface VisitaDetailProps {
-  /** Catálogo activo, para etiquetar una foto con algo que no se agendó. */
-  catalogo?: { productoId: string; nombre: string }[];
+  /** El catálogo de tareas, para etiquetar las fotos. */
+  catalogo?: { tareaId: string; nombre: string }[];
   visita: VisitaDetailData;
   userRole?: string;
   hasMessages?: boolean;
@@ -154,64 +171,16 @@ export function VisitaDetail({
    * `listarPendientes` tampoco la ofrece.
    */
   const facturable = visita.estado !== "CANCELADA";
-  /** Algo que no cubre ningún plan, así que en algún momento va a una orden. */
-  const hayTrabajoSuelto = visita.productos.some((vs) => !vs.suscripcionItemId);
-  const porFacturar = visita.productos.filter(
-    (vs) => !vs.suscripcionItemId && !vs.ordenLineaOrigen
-  );
 
-  /**
-   * Los planes que cubren algo de esta visita, uno por suscripción.
-   *
-   * Ninguno genera orden: lo que se cobra es el **período** del plan, en su
-   * propia orden, que no sabe nada de esta visita. Por eso van en su propia
-   * tarjeta y no como una fila de Órdenes.
-   */
-  const planes = [
-    ...visita.productos
-      .filter((vs) => vs.suscripcionItem)
-      .reduce((mapa, vs) => {
-        const si = vs.suscripcionItem!;
-        const actual = mapa.get(si.suscripcionId);
-        if (actual) actual.productos.push(vs.producto.nombre);
-        else
-          mapa.set(si.suscripcionId, {
-            id: si.suscripcionId,
-            numero: si.suscripcion.numero,
-            cliente: nombreCliente(si.suscripcion.cliente),
-            periodicidad: si.suscripcion.periodicidad,
-            estado: si.suscripcion.estado,
-            productos: [vs.producto.nombre],
-          });
-        return mapa;
-      }, new Map<string, { id: string; numero: number; cliente: string; periodicidad: string; estado: string; productos: string[] }>())
-      .values(),
-  ];
+  /** Lo que se hizo: la unión de lo que cargó cada uno. */
+  const hechas = tareasHechas(visita);
+  /** Lo que se exigía y **nadie** hizo. Es la pregunta de la oficina. */
+  const faltantes = obligatoriasSinCubrir(visita);
+  /** Quiénes todavía no cargaron su parte. */
+  const sinRegistrar = personalSinRegistrar(visita.personal);
 
-  /**
-   * Las órdenes donde cayó el trabajo de esta visita, una fila por orden.
-   *
-   * Dos productos de la misma visita pueden ir en la misma orden, así que se
-   * agrupan: si no, la orden salía repetida.
-   */
-  const ordenes = [
-    ...visita.productos
-      .filter((vs) => vs.ordenLineaOrigen)
-      .reduce((mapa, vs) => {
-        const l = vs.ordenLineaOrigen!.ordenLinea;
-        const actual = mapa.get(l.ordenId);
-        if (actual) actual.productos.push(vs.producto.nombre);
-        else
-          mapa.set(l.ordenId, {
-            id: l.ordenId,
-            numero: l.orden.numero,
-            estado: l.orden.estado,
-            productos: [vs.producto.nombre],
-          });
-        return mapa;
-      }, new Map<string, { id: string; numero: number; estado: string; productos: string[] }>())
-      .values(),
-  ];
+  const plan = visita.suscripcion ?? null;
+  const ordenes = visita.ordenes ?? [];
 
   return (
     <>
@@ -230,15 +199,25 @@ export function VisitaDetail({
                 Visita #{visita.numero}
               </h1>
               <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
+              {sinRegistrar.length > 0 && visita.estado === "EN_CURSO" && (
+                <Badge variant="outline" className="flex-none">
+                  {sinRegistrar.length === 1
+                    ? "Falta 1 parte"
+                    : `Faltan ${sinRegistrar.length} partes`}
+                </Badge>
+              )}
             </div>
             <p className="text-sm text-muted-foreground truncate">
-              {nombreCliente(visita.cliente)} — {listaProductos(visita)}
+              {nombreCliente(visita.cliente)}
+              {hechas.length > 0
+                ? ` — ${hechas.map((t) => t.nombre).join(", ")}`
+                : ""}
             </p>
           </div>
           {canModify && (
             <div className="flex flex-none items-center gap-2">
-              {/* Editable en cualquier estado: corregir la fecha o el producto
-                  de una visita ya hecha no debería obligar a rehacerla. */}
+              {/* Editable en cualquier estado: corregir la fecha de una visita
+                  ya hecha no debería obligar a rehacerla. */}
               <Link href={`/dashboard/visitas/${visita.id}/editar`}>
                 <Button variant="outline">
                   <Pencil className="mr-2 h-4 w-4" />
@@ -273,85 +252,123 @@ export function VisitaDetail({
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-        {/* Qué se hizo, y cómo se cobra cada cosa. Es la pregunta que se
-            responde producto por producto: uno puede estar en el plan y otro
-            cobrarse aparte en la misma visita. */}
+        {/* Qué exigía la visita y qué se hizo. Son dos preguntas distintas:
+            la primera se decide al agendar, la segunda la contesta cada
+            jardinero al terminar, y lo que la oficina mira es la diferencia. */}
         <Card>
           <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Productos y servicios</CardTitle>
+            <CardTitle className="text-base">Tareas</CardTitle>
+            {faltantes.length > 0 && (
+              <CardAction>
+                <Badge variant="destructive" className="flex-none">
+                  {faltantes.length === 1
+                    ? "1 obligatoria sin hacer"
+                    : `${faltantes.length} obligatorias sin hacer`}
+                </Badge>
+              </CardAction>
+            )}
           </CardHeader>
-          <CardContent>
-            <ul className="divide-y">
-              {visita.productos.map((vs) => (
-                // Qué se hizo, y nada más. Ni el plan que lo cubre ni la
-                // orden donde se cobró: las dos cosas tienen su propia tarjeta
-                // más abajo, y repetirlas acá era decirlo dos veces.
-                <li key={vs.productoId} className="py-2.5">
-                  <span className="block truncate text-sm font-medium">
-                    {vs.producto.nombre}
-                  </span>
-                  {vs.producto.descripcion && (
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {vs.producto.descripcion}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+          <CardContent className="space-y-4">
+            {visita.tareasObligatorias.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Obligatorias
+                </p>
+                <ul className="divide-y rounded-md border">
+                  {visita.tareasObligatorias.map(({ tarea }) => {
+                    const hecha = hechas.find((t) => t.id === tarea.id);
+                    return (
+                      <li
+                        key={tarea.id}
+                        className="flex items-center gap-2.5 px-3 py-2"
+                      >
+                        {hecha ? (
+                          <Check className="h-4 w-4 flex-none text-primary" />
+                        ) : (
+                          <X className="h-4 w-4 flex-none text-destructive" />
+                        )}
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                          {tarea.nombre}
+                        </span>
+                        <span className="flex-none text-xs text-muted-foreground">
+                          {hecha ? hecha.porQuienes.join(", ") : "Sin hacer"}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            <div>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Se hizo
+              </p>
+              {hechas.length === 0 ? (
+                <EmptyState
+                  message={
+                    visita.personal.length === 0
+                      ? "Nadie está asignado todavía"
+                      : "Nadie registró lo que hizo todavía"
+                  }
+                />
+              ) : (
+                <ul className="divide-y rounded-md border">
+                  {hechas.map((t) => (
+                    <li key={t.id} className="flex items-center gap-2.5 px-3 py-2">
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                        {t.nombre}
+                      </span>
+                      <span className="flex-none text-xs text-muted-foreground">
+                        {t.porQuienes.join(", ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {planes.length > 0 && (
+        {plan && (
           <Card>
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">
-                {planes.length === 1 ? "Suscripción" : "Suscripciones"}
-              </CardTitle>
+              <CardTitle className="text-base">Suscripción</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-1">
-                {planes.map((p) => (
-                  <li key={p.id}>
-                    <Link
-                      href={`/dashboard/suscripciones/${p.id}?from=/dashboard/visitas/${visita.id}`}
-                      className="flex items-start justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-bold">
-                          Suscripción #{p.numero}
-                        </span>
-                        <span className="block truncate text-xs font-semibold text-muted-foreground">
-                          {p.cliente} ·{" "}
-                          {PERIODICIDAD_LABEL[p.periodicidad] ?? p.periodicidad}
-                        </span>
-                        {/* Qué cubre de **esta** visita: el plan puede tener
-                            más productos que los que se hicieron hoy. */}
-                        <span className="block truncate text-xs text-muted-foreground">
-                          Cubre: {p.productos.join(", ")}
-                        </span>
-                      </span>
-                      <Badge
-                        variant={estadoSuscripcionVariant[p.estado] ?? "outline"}
-                        className="flex-none"
-                      >
-                        {p.estado.charAt(0) + p.estado.slice(1).toLowerCase()}
-                      </Badge>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <Link
+                href={`/dashboard/suscripciones/${plan.id}?from=/dashboard/visitas/${visita.id}`}
+                className="flex items-start justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold">
+                    Suscripción #{plan.numero}
+                  </span>
+                  <span className="block truncate text-xs font-semibold text-muted-foreground">
+                    {nombreCliente(plan.cliente)} ·{" "}
+                    {PERIODICIDAD_LABEL[plan.periodicidad] ?? plan.periodicidad}
+                  </span>
+                </span>
+                <Badge
+                  variant={estadoSuscripcionVariant[plan.estado] ?? "outline"}
+                  className="flex-none"
+                >
+                  {plan.estado.charAt(0) + plan.estado.slice(1).toLowerCase()}
+                </Badge>
+              </Link>
             </CardContent>
           </Card>
         )}
 
-        {/* Solo si hay trabajo suelto. Con todo cubierto por un plan no va a
-            haber ninguna orden nunca —se cobra el período, no la visita— y una
-            tarjeta vacía sugiere que falta algo por hacer. */}
-        {vePlata && hayTrabajoSuelto && (
+        {/* Las órdenes que dicen cubrir esta visita. **Es un enlace, no una
+            explicación de dónde sale cada peso**: la visita dejó de llevar
+            productos, así que ninguna línea viene de acá. Sirve para ir de una
+            a la otra. */}
+        {vePlata && (
         <Card>
           <CardHeader className="border-b py-3">
             <CardTitle className="text-base">Órdenes</CardTitle>
-            {canModify && facturable && porFacturar.length > 0 && (
+            {canModify && facturable && (
               <CardAction>
                 <Link
                   href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
@@ -370,11 +387,7 @@ export function VisitaDetail({
             {ordenes.length === 0 ? (
               <EmptyState
                 message={
-                  !facturable
-                    ? "La visita está cancelada"
-                    : porFacturar.length > 0
-                      ? "Sin órdenes"
-                      : "No hace falta: el plan lo cubre"
+                  facturable ? "Sin órdenes" : "La visita está cancelada"
                 }
               />
             ) : (
@@ -385,12 +398,7 @@ export function VisitaDetail({
                     href={`/dashboard/ordenes/${o.id}?from=/dashboard/visitas/${visita.id}`}
                     className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold">Orden #{o.numero}</p>
-                      <p className="text-xs font-semibold text-muted-foreground">
-                        {o.productos.join(", ")}
-                      </p>
-                    </div>
+                    <p className="text-sm font-bold">Orden #{o.numero}</p>
                     <Badge
                       variant={estadoOrdenVariant[o.estado] ?? "outline"}
                       className="flex-none"
@@ -401,7 +409,6 @@ export function VisitaDetail({
                 ))}
               </div>
             )}
-
           </CardContent>
         </Card>
         )}
@@ -412,11 +419,10 @@ export function VisitaDetail({
         <ArchivosVisita
           visitaId={visita.id}
           archivos={visita.media}
-          productos={visita.productos.map((vp) => ({
-            productoId: vp.productoId,
-            nombre: vp.producto.nombre,
-          }))}
           catalogo={catalogo}
+          // Las tareas que alguien cargó: son de las que va a haber fotos, así
+          // que sus secciones van primero y existen aunque estén vacías.
+          hechas={hechas.map((t) => t.id)}
           puedeEditar={canModify}
         />
 
@@ -544,14 +550,36 @@ export function VisitaDetail({
             {visita.personal.length === 0 ? (
               <p className="text-sm text-muted-foreground">Sin asignar</p>
             ) : (
-              <ul className="space-y-2">
+              <ul className="space-y-3">
+                {/* Cada uno con lo suyo: sus horas y sus tareas. Es el dato que
+                    el modelo viejo —una persona reportando por todo el grupo—
+                    no podía dar. Quien no cargó nada se dice, porque es lo que
+                    la oficina mira antes de cerrar. */}
                 {visita.personal.map((vp) => {
-                  const nombre =
-                    `${vp.personal.nombre} ${vp.personal.apellido || ""}`.trim();
+                  const nombre = nombrePersonal(vp.personal);
+                  const suyas = vp.tareas.map((t) => t.tarea.nombre);
                   return (
-                    <li key={vp.personal.id} className="flex items-center gap-2.5">
+                    <li key={vp.personal.id} className="flex items-start gap-2.5">
                       <InitialsAvatar name={nombre} size={28} />
-                      <span className="min-w-0 truncate text-sm">{nombre}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                            {nombre}
+                          </span>
+                          {vp.horaEntrada || vp.horaSalida ? (
+                            <span className="flex-none text-xs tabular-nums text-muted-foreground">
+                              {vp.horaEntrada ?? "—"} → {vp.horaSalida ?? "—"}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          {vp.registradoEl === null
+                            ? "Todavía no cargó su parte"
+                            : suyas.length > 0
+                              ? suyas.join(", ")
+                              : "No marcó ninguna tarea"}
+                        </span>
+                      </span>
                     </li>
                   );
                 })}

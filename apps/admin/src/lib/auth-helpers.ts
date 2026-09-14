@@ -45,9 +45,9 @@ export async function requireAdmin() {
  * Solo el personal de oficina: ADMIN y STAFF.
  *
  * Es el corte de "esto es plata o es un documento que se le entrega al
- * cliente" —órdenes, facturas, informes—. Un `PERSONAL_ADMIN` lleva el trabajo
- * de campo de sus sectores: sus clientes, sus visitas y sus mensajes, y nada
- * de lo que se factura.
+ * cliente" —órdenes, facturas, informes—, y desde que se fue `PERSONAL_ADMIN`
+ * es además el corte de quién agenda y quién cierra una visita. El `PERSONAL`
+ * ve las visitas donde está asignado y registra lo que hizo en ellas; nada más.
  */
 export async function requireStaff() {
   const user = await requireAuth();
@@ -65,20 +65,19 @@ export async function requireRole(...roles: UserRole[]) {
   return user;
 }
 
-export async function getUserSectorIds(userId: string): Promise<string[]> {
-  const assignments = await prisma.sectorAdmin.findMany({
-    where: { userId },
-    select: { sectorId: true },
-  });
-  return assignments.map((a) => a.sectorId);
-}
-
+/**
+ * Quién no puede escribir **desde el portal web**.
+ *
+ * El jardinero sí escribe, pero solo su parte de una visita, y eso va por su
+ * propia ruta (`registrarParte`), que valida quién es. Todo lo demás del
+ * dashboard —agendar, editar, cerrar— es de oficina.
+ */
 export function isReadOnly(role: UserRole): boolean {
-  return role === "PERSONAL";
+  return role === "PERSONAL" || role === "CLIENTE";
 }
 
 export function isPersonalRole(role: UserRole): boolean {
-  return role === "PERSONAL_ADMIN" || role === "PERSONAL";
+  return role === "PERSONAL";
 }
 
 import type { Viewer } from "@/lib/services/viewer";

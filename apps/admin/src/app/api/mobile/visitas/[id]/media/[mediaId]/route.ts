@@ -12,8 +12,7 @@ export async function DELETE(
 ) {
   const userOrResponse = await requireMobileRole(
     request,
-    "ADMIN",
-    "PERSONAL_ADMIN"
+    "ADMIN"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 

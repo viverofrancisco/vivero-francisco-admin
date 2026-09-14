@@ -16,7 +16,7 @@ export default function ClienteDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
-  const canEdit = role === "ADMIN" || role === "PERSONAL_ADMIN";
+  const canEdit = role === "ADMIN" || role === "STAFF";
   const [data, setData] = useState<ClienteStaffDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

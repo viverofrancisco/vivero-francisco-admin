@@ -24,7 +24,7 @@ import { isAdminRole } from "./viewer";
 import { FACTURA_VIGENTE } from "./factura-vigente";
 
 function ensureCanWrite(viewer: Viewer): void {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
 }
@@ -181,14 +181,11 @@ export async function actualizarSuscripcion(
   return prisma.$transaction(async (tx) => {
     if (items) {
       const ids = items.map((i) => i.productoId);
-      // Las visitas que apuntaban a un ítem que se quita quedan sin cobertura;
-      // el trabajo ya hecho no se borra, solo deja de estar cubierto.
-      await tx.visitaProducto.updateMany({
-        where: {
-          suscripcionItem: { suscripcionId, productoId: { notIn: ids } },
-        },
-        data: { suscripcionItemId: null },
-      });
+      // Sacar un producto del plan ya no toca ninguna visita: la cobertura era
+      // producto por producto (`VisitaProducto.suscripcionItemId`) y eso se fue
+      // con los productos de la visita. Hoy una visita pertenece a un plan
+      // entero (`Visita.suscripcionId`) o a ninguno, y editar qué incluye el
+      // plan no cambia a qué plan perteneció una visita que ya pasó.
       await tx.suscripcionItem.deleteMany({
         where: { suscripcionId, productoId: { notIn: ids } },
       });
@@ -262,7 +259,7 @@ export async function listarSuscripciones(
   viewer: Viewer,
   options: ListarSuscripcionesOptions = {}
 ) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
 
@@ -271,16 +268,6 @@ export async function listarSuscripciones(
   if (options.estado) where.estado = options.estado;
   else if (!options.incluirCanceladas) where.estado = { not: "CANCELADO" };
 
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectores = await prisma.sectorAdmin.findMany({
-      where: { userId: viewer.id },
-      select: { sectorId: true },
-    });
-    where.cliente = {
-      deletedAt: null,
-      sectorId: { in: sectores.map((sec) => sec.sectorId) },
-    };
-  }
 
   return prisma.suscripcion.findMany({
     where,
@@ -354,57 +341,49 @@ export async function ordenesDeSuscripcion(viewer: Viewer, suscripcionId: string
 }
 
 /**
- * Las visitas en las que esta suscripción cubrió algo.
+ * Las visitas de este plan.
  *
- * La relación no es directa: va por `VisitaProducto.suscripcionItemId`, que es
- * lo que marca "esto lo paga el plan". Una visita con dos productos, uno
- * cubierto y otro no, aparece igual —cubrió algo— y por eso se lista qué
- * producto de la visita fue el cubierto.
+ * Ahora es una relación directa —`Visita.suscripcionId`— y eso la vuelve una
+ * consulta a secas. Antes había que dar la vuelta por
+ * `VisitaProducto.suscripcionItemId`, que marcaba "este producto de esta visita
+ * lo paga el plan", y una visita aparecía por haber cubierto *algo*; con eso
+ * había que decir además **qué** producto había sido el cubierto. Sin productos
+ * en la visita esa pregunta ya no existe: la visita es del plan, o no lo es.
  */
 export async function visitasDeSuscripcion(viewer: Viewer, suscripcionId: string) {
-  const suscripcion = await getSuscripcion(viewer, suscripcionId);
-  const itemIds = suscripcion.items.map((i) => i.id);
-  if (itemIds.length === 0) return [];
+  // Valida que el viewer pueda ver el plan.
+  await getSuscripcion(viewer, suscripcionId);
 
-  const productos = await prisma.visitaProducto.findMany({
-    where: { suscripcionItemId: { in: itemIds }, visita: { deletedAt: null } },
+  return prisma.visita.findMany({
+    where: { suscripcionId, deletedAt: null },
     select: {
-      producto: { select: { nombre: true } },
-      visita: {
+      id: true,
+      numero: true,
+      fechaProgramada: true,
+      fechaRealizada: true,
+      estado: true,
+      // Lo que se hizo, para que la fila diga algo más que una fecha.
+      personal: {
+        where: { removedAt: null },
         select: {
-          id: true,
-          numero: true,
-          fechaProgramada: true,
-          fechaRealizada: true,
-          estado: true,
+          personal: { select: { nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
         },
       },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
     },
-    orderBy: { visita: { fechaProgramada: "desc" } },
+    orderBy: { fechaProgramada: "desc" },
   });
-
-  // Una visita puede cubrir dos productos del mismo plan: es una sola fila.
-  const porVisita = new Map<
-    string,
-    {
-      id: string;
-      numero: number;
-      fechaProgramada: Date;
-      fechaRealizada: Date | null;
-      estado: string;
-      productos: string[];
-    }
-  >();
-  for (const vp of productos) {
-    const actual = porVisita.get(vp.visita.id);
-    if (actual) actual.productos.push(vp.producto.nombre);
-    else porVisita.set(vp.visita.id, { ...vp.visita, productos: [vp.producto.nombre] });
-  }
-  return [...porVisita.values()];
 }
 
 export async function getSuscripcion(viewer: Viewer, id: string) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
   const s = await prisma.suscripcion.findUnique({
@@ -421,16 +400,6 @@ export async function getSuscripcion(viewer: Viewer, id: string) {
     },
   });
   if (!s) throw new NotFoundError("Suscripción no encontrada");
-  if (viewer.role === "PERSONAL_ADMIN") {
-    const sectores = await prisma.sectorAdmin.findMany({
-      where: { userId: viewer.id },
-      select: { sectorId: true },
-    });
-    const ids = sectores.map((sec) => sec.sectorId);
-    if (!s.cliente.sectorId || !ids.includes(s.cliente.sectorId)) {
-      throw new ForbiddenError();
-    }
-  }
   return s;
 }
 
@@ -465,7 +434,7 @@ export async function productosSuscribibles(
   exceptoSuscripcionId?: string,
   opciones: { search?: string; offset?: number; limit?: number } = {}
 ) {
-  if (!isAdminRole(viewer.role) && viewer.role !== "PERSONAL_ADMIN") {
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
   const limit = Math.min(Math.max(opciones.limit ?? 20, 1), 100);

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
+import { requireAuth } from "@/lib/auth-helpers";
 import { NuevaVisitaPage } from "@/components/visitas/nueva-visita-page";
 
 export default async function NuevaVisitaRoute({
@@ -7,7 +7,7 @@ export default async function NuevaVisitaRoute({
 }: {
   searchParams: Promise<{ suscripcion?: string }>;
 }) {
-  const user = await requireAuth();
+  await requireAuth();
   // Llegar desde una suscripción deja el plan puesto: "nueva visita de este
   // plan" es una sola acción, no elegir cliente y plan de nuevo.
   const { suscripcion } = await searchParams;
@@ -15,12 +15,8 @@ export default async function NuevaVisitaRoute({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clientesWhere: any = {};
 
-  if (user.role === "PERSONAL_ADMIN") {
-    const sectorIds = await getUserSectorIds(user.id);
-    clientesWhere.sectorId = { in: sectorIds };
-  }
 
-  const [clientes, catalogo, grupos, personalList] = await Promise.all([
+  const [clientes, tareas, grupos, personalList] = await Promise.all([
     prisma.cliente.findMany({
       where: { ...clientesWhere, deletedAt: null },
       orderBy: { nombre: "asc" },
@@ -46,12 +42,12 @@ export default async function NuevaVisitaRoute({
         },
       },
     }),
-    // Catálogo completo: permite agendar un servicio que el cliente no tiene
-    // suscrito, sin pasar antes por otra pantalla.
-    prisma.producto.findMany({
+    // El catálogo de tareas, para poder exigir alguna. Va completo: exigir una
+    // tarea no depende de qué tenga contratado el cliente.
+    prisma.tarea.findMany({
       where: { deletedAt: null },
-      orderBy: { nombre: "asc" },
-      select: { id: true, nombre: true, tipo: true, ivaTasa: true },
+      orderBy: [{ orden: "asc" }, { nombre: "asc" }],
+      select: { id: true, nombre: true },
     }),
     prisma.grupo.findMany({
       where: { deletedAt: null },
@@ -90,13 +86,6 @@ export default async function NuevaVisitaRoute({
     })),
   }));
 
-  const catalogoSerialized = catalogo.map((s) => ({
-    id: s.id,
-    nombre: s.nombre,
-    tipo: s.tipo,
-    ivaTasa: s.ivaTasa != null ? Number(s.ivaTasa) : null,
-  }));
-
   const gruposSerialized = grupos.map((g) => ({
     id: g.id,
     nombre: g.nombre,
@@ -107,7 +96,7 @@ export default async function NuevaVisitaRoute({
     <NuevaVisitaPage
       suscripcionInicial={suscripcion}
       clientes={clientesSerialized}
-      catalogo={catalogoSerialized}
+      tareas={tareas}
       grupos={gruposSerialized}
       personalList={personalList}
     />

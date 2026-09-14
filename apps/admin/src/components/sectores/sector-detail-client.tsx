@@ -36,15 +36,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Loader2, Pencil, Plus, Search, X } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { aca, useFiltroUrl } from "@/lib/filtros-url";
-
-interface AdminUser {
-  id: string;
-  name: string | null;
-  email: string;
-}
 
 interface ClienteRow {
   id: string;
@@ -58,7 +52,6 @@ interface SectorData {
   id: string;
   nombre: string;
   clientes: ClienteRow[];
-  admins: { user: AdminUser }[];
 }
 
 /** Un cliente que se puede sumar, y de dónde saldría. */
@@ -73,15 +66,12 @@ interface SectorDetailClientProps {
   sector: SectorData;
   /** Todos los clientes que hoy no están en este sector. */
   candidatos: Candidato[];
-  personalAdmins: AdminUser[];
 }
 
-const nombreAdmin = (a: AdminUser) => a.name ?? a.email;
 
 export function SectorDetailClient({
   sector,
   candidatos,
-  personalAdmins,
   backHref = "/dashboard/sectores",
 }: SectorDetailClientProps) {
   const router = useRouter();
@@ -94,9 +84,7 @@ export function SectorDetailClient({
   /** Los tildados, para sacarlos del sector de a varios. */
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
   const [agregando, setAgregando] = useState(false);
-  const [agregandoAdmin, setAgregandoAdmin] = useState(false);
   /** Quién se está agregando o quitando, para mostrar el spinner en su fila. */
-  const [adminEnCurso, setAdminEnCurso] = useState<string | null>(null);
   const [trabajando, setTrabajando] = useState(false);
 
   const filtrados = useMemo(() => {
@@ -208,29 +196,6 @@ export function SectorDetailClient({
     }
   }
 
-  async function cambiarAdmin(userId: string, agregar: boolean) {
-    setAdminEnCurso(userId);
-    try {
-      const res = await fetch(`/api/sectores/${sector.id}/admins`, {
-        method: agregar ? "POST" : "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error);
-      toast.success(agregar ? "Admin asignado" : "Admin removido");
-      setAgregandoAdmin(false);
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error");
-    } finally {
-      setAdminEnCurso(null);
-    }
-  }
-
-  const asignados = sector.admins.map((a) => a.user.id);
-  const adminsDisponibles = personalAdmins.filter(
-    (a) => !asignados.includes(a.id)
-  );
 
   return (
     <div className="flex h-full flex-col gap-6 p-4 md:p-6">
@@ -242,8 +207,7 @@ export function SectorDetailClient({
           <h1 className="truncate text-2xl font-bold">{sector.nombre}</h1>
           <p className="text-sm text-muted-foreground">
             {sector.clientes.length} cliente
-            {sector.clientes.length !== 1 && "s"} · {sector.admins.length} admin
-            {sector.admins.length !== 1 && "s"}
+            {sector.clientes.length !== 1 && "s"}
           </p>
         </div>
       </div>
@@ -424,63 +388,6 @@ export function SectorDetailClient({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Admins del sector</CardTitle>
-              <CardAction>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAgregandoAdmin(true)}
-                  disabled={adminsDisponibles.length === 0}
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  Agregar
-                </Button>
-              </CardAction>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {sector.admins.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nadie administra este sector todavía.
-                </p>
-              ) : (
-                <ul className="divide-y">
-                  {sector.admins.map(({ user }) => (
-                    <li
-                      key={user.id}
-                      className="flex items-center gap-2.5 py-2 first:pt-0 last:pb-0"
-                    >
-                      <InitialsAvatar name={nombreAdmin(user)} size={32} />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">
-                          {nombreAdmin(user)}
-                        </div>
-                        <div className="truncate text-xs text-muted-foreground">
-                          {user.email}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={adminEnCurso === user.id}
-                        aria-label={`Quitar a ${nombreAdmin(user)}`}
-                        title="Quitar del sector"
-                        onClick={() => cambiarAdmin(user.id, false)}
-                      >
-                        {adminEnCurso === user.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <X className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-            </CardContent>
-          </Card>
         </div>
       </div>
 
@@ -525,13 +432,6 @@ export function SectorDetailClient({
         onAgregar={agregarClientes}
       />
 
-      <AgregarAdminDialog
-        abierto={agregandoAdmin}
-        onCerrar={() => setAgregandoAdmin(false)}
-        disponibles={adminsDisponibles}
-        enCurso={adminEnCurso}
-        onAgregar={(id) => cambiarAdmin(id, true)}
-      />
     </div>
   );
 }
@@ -643,114 +543,6 @@ function AgregarClientesDialog({
               : elegidos.size > 0
                 ? `Agregar ${elegidos.size}`
                 : "Agregar"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/**
- * Elegir a quién le toca administrar este sector.
- *
- * Un clic por persona: la fila muestra su propio spinner mientras se guarda,
- * porque el que hace falta ver es *ese* y no un cartel general. Solo aparecen
- * los que tienen rol de admin de sector y todavía no están acá.
- */
-function AgregarAdminDialog({
-  abierto,
-  onCerrar,
-  disponibles,
-  enCurso,
-  onAgregar,
-}: {
-  abierto: boolean;
-  onCerrar: () => void;
-  disponibles: AdminUser[];
-  /** El id que se está guardando ahora, o null. */
-  enCurso: string | null;
-  onAgregar: (userId: string) => void;
-}) {
-  const [busqueda, setBusqueda] = useState("");
-
-  const visibles = useMemo(() => {
-    const q = busqueda.trim().toLowerCase();
-    if (!q) return disponibles;
-    return disponibles.filter(
-      (a) =>
-        nombreAdmin(a).toLowerCase().includes(q) ||
-        a.email.toLowerCase().includes(q)
-    );
-  }, [disponibles, busqueda]);
-
-  function cerrar() {
-    setBusqueda("");
-    onCerrar();
-  }
-
-  return (
-    <Dialog open={abierto} onOpenChange={(v) => !v && cerrar()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Agregar un admin al sector</DialogTitle>
-          <DialogDescription>
-            Solo se listan los usuarios con rol de admin de sector.
-          </DialogDescription>
-        </DialogHeader>
-
-        {disponibles.length > 6 && (
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nombre o correo..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        )}
-
-        <div className="max-h-72 min-h-[6rem] overflow-y-auto rounded-md border">
-          {visibles.length === 0 ? (
-            <p className="p-4 text-center text-sm text-muted-foreground">
-              {disponibles.length === 0
-                ? "Ya están todos asignados a este sector."
-                : "Nadie coincide."}
-            </p>
-          ) : (
-            <ul className="divide-y">
-              {visibles.map((a) => (
-                <li key={a.id}>
-                  <button
-                    type="button"
-                    disabled={enCurso !== null}
-                    onClick={() => onAgregar(a.id)}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-muted/50 disabled:opacity-60"
-                  >
-                    <InitialsAvatar name={nombreAdmin(a)} size={32} />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
-                        {nombreAdmin(a)}
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {a.email}
-                      </div>
-                    </div>
-                    {enCurso === a.id ? (
-                      <Loader2 className="h-4 w-4 flex-none animate-spin text-muted-foreground" />
-                    ) : (
-                      <Plus className="h-4 w-4 flex-none text-muted-foreground" />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={cerrar} disabled={enCurso !== null}>
-            Cerrar
           </Button>
         </DialogFooter>
       </DialogContent>

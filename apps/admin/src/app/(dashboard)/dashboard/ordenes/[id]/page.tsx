@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getUserSectorIds, viewerFromSession, requireStaff } from "@/lib/auth-helpers";
+import {
+  TAREAS_DE_VISITA_INCLUDE,
+  tareasHechas,
+} from "@/lib/visita-tareas";
+import { viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import {
   getOrden,
-  listarPendientes,
-  VISITAS_SIN_TOPE,
 } from "@/lib/services/orden.service";
-import { hoyEnEcuador } from "@/lib/fechas";
 import { NotFoundError } from "@/lib/services/errors";
 import { productosVendibles } from "@/lib/services/variantes-vendibles";
 import { OrdenDetail } from "@/components/ordenes/orden-detail";
@@ -26,8 +27,6 @@ export default async function OrdenRoute({
   const backHref =
     from && from.startsWith("/dashboard/") ? from : "/dashboard/ordenes";
 
-  const hoy = hoyEnEcuador();
-
   let orden;
   try {
     orden = await getOrden(viewer, id);
@@ -40,12 +39,7 @@ export default async function OrdenRoute({
   const clientes =
     orden.estado === "BORRADOR"
       ? await prisma.cliente.findMany({
-          where: {
-            deletedAt: null,
-            ...(viewer.role === "PERSONAL_ADMIN"
-              ? { sectorId: { in: await getUserSectorIds(viewer.id) } }
-              : {}),
-          },
+          where: { deletedAt: null },
           orderBy: { nombre: "asc" },
           select: { id: true, nombre: true, apellido: true, empresa: true },
         })
@@ -56,22 +50,25 @@ export default async function OrdenRoute({
     where: { clienteId: orden.cliente.id, archivado: false },
   });
 
-  // El trabajo que el editor puede marcar y desmarcar: lo pendiente del cliente
-  // **más lo que esta orden ya cubre**, que si no desaparecería de la lista.
-  // Las visitas no se cortan por fecha; los períodos de plan sí (fin de mes).
-  const finDeMes = new Date(
-    Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + 1, 0)
-  );
-  const pendientes =
+  // Las visitas del cliente, para poder decir de cuáles es la orden. Es traza:
+  // marcar una no carga ninguna línea.
+  const visitasDelCliente =
     orden.estado === "BORRADOR"
-      ? await listarPendientes(
-          viewer,
-          orden.cliente.id,
-          new Date(Date.UTC(2000, 0, 1)),
-          finDeMes,
-          VISITAS_SIN_TOPE,
-          orden.id
-        )
+      ? await prisma.visita.findMany({
+          where: {
+            clienteId: orden.cliente.id,
+            deletedAt: null,
+            estado: { not: "CANCELADA" },
+          },
+          select: {
+            id: true,
+            numero: true,
+            fechaProgramada: true,
+            ...TAREAS_DE_VISITA_INCLUDE,
+          },
+          orderBy: { fechaProgramada: "desc" },
+          take: 60,
+        })
       : [];
 
   // El catálogo solo hace falta para editar el borrador. Viene con sus
@@ -121,15 +118,8 @@ export default async function OrdenRoute({
             periodoFin: l.periodoFin?.toISOString() ?? null,
             productoId: l.productoId,
             varianteId: l.varianteId,
-            visitaProductoIds: l.origenes.map((o) => o.visitaProductoId),
             suscripcionItemId: l.suscripcionItemId,
             suscripcionId: l.suscripcionItem?.suscripcionId ?? null,
-            /** De qué visitas sale la línea. Varias si el mismo producto se hizo en más de una. */
-            visitas: l.origenes.map((o) => ({
-              id: o.visitaProducto.visita.id,
-              numero: o.visitaProducto.visita.numero,
-              fecha: o.visitaProducto.visita.fechaProgramada.toISOString(),
-            })),
           })),
           facturas: orden.facturas.map((f) => ({
             id: f.id,
@@ -167,31 +157,12 @@ export default async function OrdenRoute({
         clientes={clientes}
         productos={productos.items}
         hayMasProductos={productos.hayMas}
-        pendientes={pendientes.map((p) =>
-          p.tipo === "visita"
-            ? {
-                tipo: "visita" as const,
-                productoId: p.productoId,
-                descripcion: p.descripcion,
-                precio: String(p.precio),
-                ivaTasa: String(p.ivaTasa),
-                visitaProductoId: p.visitaProductoId,
-                visitaId: p.visitaId,
-                visitaNumero: p.visitaNumero,
-                fecha: p.fecha.toISOString(),
-              }
-            : {
-                tipo: "suscripcion" as const,
-                productoId: p.productoId,
-                descripcion: p.descripcion,
-                precio: String(p.precio),
-                ivaTasa: String(p.ivaTasa),
-                suscripcionItemId: p.suscripcionItemId,
-                suscripcionId: p.suscripcionId,
-                periodoInicio: p.periodoInicio.toISOString(),
-                periodoFin: p.periodoFin.toISOString(),
-              }
-        )}
+        visitasDelCliente={visitasDelCliente.map((v) => ({
+          id: v.id,
+          numero: v.numero,
+          fecha: v.fechaProgramada.toISOString(),
+          tareas: tareasHechas(v).map((t) => t.nombre),
+        }))}
       />
     </div>
   );

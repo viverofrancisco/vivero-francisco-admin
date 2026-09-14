@@ -53,13 +53,10 @@ function ensureAdmin(viewer: Viewer) {
 }
 
 function ensureCanReadServicios(viewer: Viewer) {
-  // Reading the catalog is broader: ADMIN/STAFF + PERSONAL_ADMIN need it
-  // for the asignar-servicio flow even though only ADMIN sees the dedicated
-  // Servicios tab in mobile.
-  if (
-    !isAdminRole(viewer.role) &&
-    viewer.role !== "PERSONAL_ADMIN"
-  ) {
+  // El catálogo es de oficina. Lo leía además el capataz, para asignarle un
+  // servicio a un cliente; ese rol ya no existe, y el jardinero no tiene por
+  // qué ver lo que se vende: lo que él marca son tareas.
+  if (!isAdminRole(viewer.role)) {
     throw new ForbiddenError();
   }
 }

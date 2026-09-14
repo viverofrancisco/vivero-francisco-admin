@@ -70,16 +70,17 @@ export const ModelName = {
   SuscripcionItem: 'SuscripcionItem',
   Personal: 'Personal',
   Grupo: 'Grupo',
+  Tarea: 'Tarea',
   Visita: 'Visita',
-  VisitaProducto: 'VisitaProducto',
   VisitaPersonal: 'VisitaPersonal',
+  VisitaPersonalTarea: 'VisitaPersonalTarea',
+  VisitaTareaObligatoria: 'VisitaTareaObligatoria',
   VisitaMedia: 'VisitaMedia',
   VisitaMessage: 'VisitaMessage',
   VisitaMessageMedia: 'VisitaMessageMedia',
   VisitaChatRead: 'VisitaChatRead',
   GrupoMiembro: 'GrupoMiembro',
   Sector: 'Sector',
-  SectorAdmin: 'SectorAdmin',
   NotificacionConfig: 'NotificacionConfig',
   NotificacionPlantilla: 'NotificacionPlantilla',
   NotificacionLog: 'NotificacionLog',
@@ -101,7 +102,6 @@ export const ModelName = {
   Orden: 'Orden',
   OrdenVisita: 'OrdenVisita',
   OrdenLinea: 'OrdenLinea',
-  OrdenLineaOrigen: 'OrdenLineaOrigen',
   DatoFacturacion: 'DatoFacturacion',
   Factura: 'Factura',
   Cobro: 'Cobro',
@@ -396,6 +396,23 @@ export const GrupoScalarFieldEnum = {
 export type GrupoScalarFieldEnum = (typeof GrupoScalarFieldEnum)[keyof typeof GrupoScalarFieldEnum]
 
 
+export const TareaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  orden: 'orden',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  deletedById: 'deletedById',
+  deletedByNombre: 'deletedByNombre'
+} as const
+
+export type TareaScalarFieldEnum = (typeof TareaScalarFieldEnum)[keyof typeof TareaScalarFieldEnum]
+
+
 export const VisitaScalarFieldEnum = {
   id: 'id',
   numero: 'numero',
@@ -425,18 +442,6 @@ export const VisitaScalarFieldEnum = {
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]
 
 
-export const VisitaProductoScalarFieldEnum = {
-  id: 'id',
-  visitaId: 'visitaId',
-  productoId: 'productoId',
-  suscripcionItemId: 'suscripcionItemId',
-  posicion: 'posicion',
-  liberadoAt: 'liberadoAt'
-} as const
-
-export type VisitaProductoScalarFieldEnum = (typeof VisitaProductoScalarFieldEnum)[keyof typeof VisitaProductoScalarFieldEnum]
-
-
 export const VisitaPersonalScalarFieldEnum = {
   id: 'id',
   visitaId: 'visitaId',
@@ -444,10 +449,29 @@ export const VisitaPersonalScalarFieldEnum = {
   addedAt: 'addedAt',
   addedById: 'addedById',
   removedAt: 'removedAt',
-  removedById: 'removedById'
+  removedById: 'removedById',
+  horaEntrada: 'horaEntrada',
+  horaSalida: 'horaSalida',
+  registradoEl: 'registradoEl'
 } as const
 
 export type VisitaPersonalScalarFieldEnum = (typeof VisitaPersonalScalarFieldEnum)[keyof typeof VisitaPersonalScalarFieldEnum]
+
+
+export const VisitaPersonalTareaScalarFieldEnum = {
+  visitaPersonalId: 'visitaPersonalId',
+  tareaId: 'tareaId'
+} as const
+
+export type VisitaPersonalTareaScalarFieldEnum = (typeof VisitaPersonalTareaScalarFieldEnum)[keyof typeof VisitaPersonalTareaScalarFieldEnum]
+
+
+export const VisitaTareaObligatoriaScalarFieldEnum = {
+  visitaId: 'visitaId',
+  tareaId: 'tareaId'
+} as const
+
+export type VisitaTareaObligatoriaScalarFieldEnum = (typeof VisitaTareaObligatoriaScalarFieldEnum)[keyof typeof VisitaTareaObligatoriaScalarFieldEnum]
 
 
 export const VisitaMediaScalarFieldEnum = {
@@ -457,7 +481,7 @@ export const VisitaMediaScalarFieldEnum = {
   url: 'url',
   tipo: 'tipo',
   createdAt: 'createdAt',
-  productoId: 'productoId'
+  tareaId: 'tareaId'
 } as const
 
 export type VisitaMediaScalarFieldEnum = (typeof VisitaMediaScalarFieldEnum)[keyof typeof VisitaMediaScalarFieldEnum]
@@ -513,15 +537,6 @@ export const SectorScalarFieldEnum = {
 } as const
 
 export type SectorScalarFieldEnum = (typeof SectorScalarFieldEnum)[keyof typeof SectorScalarFieldEnum]
-
-
-export const SectorAdminScalarFieldEnum = {
-  id: 'id',
-  sectorId: 'sectorId',
-  userId: 'userId'
-} as const
-
-export type SectorAdminScalarFieldEnum = (typeof SectorAdminScalarFieldEnum)[keyof typeof SectorAdminScalarFieldEnum]
 
 
 export const NotificacionConfigScalarFieldEnum = {
@@ -727,7 +742,7 @@ export type InformeVisitaScalarFieldEnum = (typeof InformeVisitaScalarFieldEnum)
 export const InformeSeccionScalarFieldEnum = {
   id: 'id',
   informeId: 'informeId',
-  productoId: 'productoId',
+  tareaId: 'tareaId',
   titulo: 'titulo',
   descripcion: 'descripcion',
   orden: 'orden',
@@ -756,7 +771,8 @@ export const EmpresaConfigScalarFieldEnum = {
   nombre: 'nombre',
   logoKey: 'logoKey',
   logoUrl: 'logoUrl',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  tareasOrden: 'tareasOrden'
 } as const
 
 export type EmpresaConfigScalarFieldEnum = (typeof EmpresaConfigScalarFieldEnum)[keyof typeof EmpresaConfigScalarFieldEnum]
@@ -861,14 +877,6 @@ export const OrdenLineaScalarFieldEnum = {
 } as const
 
 export type OrdenLineaScalarFieldEnum = (typeof OrdenLineaScalarFieldEnum)[keyof typeof OrdenLineaScalarFieldEnum]
-
-
-export const OrdenLineaOrigenScalarFieldEnum = {
-  ordenLineaId: 'ordenLineaId',
-  visitaProductoId: 'visitaProductoId'
-} as const
-
-export type OrdenLineaOrigenScalarFieldEnum = (typeof OrdenLineaOrigenScalarFieldEnum)[keyof typeof OrdenLineaOrigenScalarFieldEnum]
 
 
 export const DatoFacturacionScalarFieldEnum = {

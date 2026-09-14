@@ -14,7 +14,17 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model VisitaPersonal
+ * Quién está asignado a una visita y **qué registró de su paso por ella**.
  * 
+ * Era solo la asignación: quién tenía que ir. Ahora es además el parte de cada
+ * uno, porque cerrar una visita dejó de ser un acto único. Cada jardinero
+ * entra, pone su hora de entrada, su hora de salida y las tareas que **él**
+ * hizo; el de al lado hace lo mismo con las suyas. Antes reportaba uno solo
+ * por todo el grupo y no quedaba registro de quién había hecho qué.
+ * 
+ * Las horas están acá y no en la visita porque no todos llegan y se van
+ * juntos. `Visita.horaEntrada`/`horaSalida` siguen existiendo y se recalculan
+ * a partir de estas: la primera entrada y la última salida.
  */
 export type VisitaPersonalModel = runtime.Types.Result.DefaultSelection<Prisma.$VisitaPersonalPayload>
 
@@ -32,6 +42,9 @@ export type VisitaPersonalMinAggregateOutputType = {
   addedById: string | null
   removedAt: Date | null
   removedById: string | null
+  horaEntrada: string | null
+  horaSalida: string | null
+  registradoEl: Date | null
 }
 
 export type VisitaPersonalMaxAggregateOutputType = {
@@ -42,6 +55,9 @@ export type VisitaPersonalMaxAggregateOutputType = {
   addedById: string | null
   removedAt: Date | null
   removedById: string | null
+  horaEntrada: string | null
+  horaSalida: string | null
+  registradoEl: Date | null
 }
 
 export type VisitaPersonalCountAggregateOutputType = {
@@ -52,6 +68,9 @@ export type VisitaPersonalCountAggregateOutputType = {
   addedById: number
   removedAt: number
   removedById: number
+  horaEntrada: number
+  horaSalida: number
+  registradoEl: number
   _all: number
 }
 
@@ -64,6 +83,9 @@ export type VisitaPersonalMinAggregateInputType = {
   addedById?: true
   removedAt?: true
   removedById?: true
+  horaEntrada?: true
+  horaSalida?: true
+  registradoEl?: true
 }
 
 export type VisitaPersonalMaxAggregateInputType = {
@@ -74,6 +96,9 @@ export type VisitaPersonalMaxAggregateInputType = {
   addedById?: true
   removedAt?: true
   removedById?: true
+  horaEntrada?: true
+  horaSalida?: true
+  registradoEl?: true
 }
 
 export type VisitaPersonalCountAggregateInputType = {
@@ -84,6 +109,9 @@ export type VisitaPersonalCountAggregateInputType = {
   addedById?: true
   removedAt?: true
   removedById?: true
+  horaEntrada?: true
+  horaSalida?: true
+  registradoEl?: true
   _all?: true
 }
 
@@ -167,6 +195,9 @@ export type VisitaPersonalGroupByOutputType = {
   addedById: string | null
   removedAt: Date | null
   removedById: string | null
+  horaEntrada: string | null
+  horaSalida: string | null
+  registradoEl: Date | null
   _count: VisitaPersonalCountAggregateOutputType | null
   _min: VisitaPersonalMinAggregateOutputType | null
   _max: VisitaPersonalMaxAggregateOutputType | null
@@ -198,10 +229,14 @@ export type VisitaPersonalWhereInput = {
   addedById?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
   removedAt?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
   removedById?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  horaEntrada?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  horaSalida?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  registradoEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   personal?: Prisma.XOR<Prisma.PersonalScalarRelationFilter, Prisma.PersonalWhereInput>
   addedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   removedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  tareas?: Prisma.VisitaPersonalTareaListRelationFilter
 }
 
 export type VisitaPersonalOrderByWithRelationInput = {
@@ -212,10 +247,14 @@ export type VisitaPersonalOrderByWithRelationInput = {
   addedById?: Prisma.SortOrderInput | Prisma.SortOrder
   removedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   removedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  horaEntrada?: Prisma.SortOrderInput | Prisma.SortOrder
+  horaSalida?: Prisma.SortOrderInput | Prisma.SortOrder
+  registradoEl?: Prisma.SortOrderInput | Prisma.SortOrder
   visita?: Prisma.VisitaOrderByWithRelationInput
   personal?: Prisma.PersonalOrderByWithRelationInput
   addedBy?: Prisma.UserOrderByWithRelationInput
   removedBy?: Prisma.UserOrderByWithRelationInput
+  tareas?: Prisma.VisitaPersonalTareaOrderByRelationAggregateInput
 }
 
 export type VisitaPersonalWhereUniqueInput = Prisma.AtLeast<{
@@ -230,10 +269,14 @@ export type VisitaPersonalWhereUniqueInput = Prisma.AtLeast<{
   addedById?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
   removedAt?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
   removedById?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  horaEntrada?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  horaSalida?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  registradoEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   personal?: Prisma.XOR<Prisma.PersonalScalarRelationFilter, Prisma.PersonalWhereInput>
   addedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   removedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  tareas?: Prisma.VisitaPersonalTareaListRelationFilter
 }, "id" | "visitaId_personalId">
 
 export type VisitaPersonalOrderByWithAggregationInput = {
@@ -244,6 +287,9 @@ export type VisitaPersonalOrderByWithAggregationInput = {
   addedById?: Prisma.SortOrderInput | Prisma.SortOrder
   removedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   removedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  horaEntrada?: Prisma.SortOrderInput | Prisma.SortOrder
+  horaSalida?: Prisma.SortOrderInput | Prisma.SortOrder
+  registradoEl?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.VisitaPersonalCountOrderByAggregateInput
   _max?: Prisma.VisitaPersonalMaxOrderByAggregateInput
   _min?: Prisma.VisitaPersonalMinOrderByAggregateInput
@@ -260,16 +306,23 @@ export type VisitaPersonalScalarWhereWithAggregatesInput = {
   addedById?: Prisma.StringNullableWithAggregatesFilter<"VisitaPersonal"> | string | null
   removedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"VisitaPersonal"> | Date | string | null
   removedById?: Prisma.StringNullableWithAggregatesFilter<"VisitaPersonal"> | string | null
+  horaEntrada?: Prisma.StringNullableWithAggregatesFilter<"VisitaPersonal"> | string | null
+  horaSalida?: Prisma.StringNullableWithAggregatesFilter<"VisitaPersonal"> | string | null
+  registradoEl?: Prisma.DateTimeNullableWithAggregatesFilter<"VisitaPersonal"> | Date | string | null
 }
 
 export type VisitaPersonalCreateInput = {
   id?: string
   addedAt?: Date | string
   removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
   addedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalAddedInput
   removedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalRemovedInput
+  tareas?: Prisma.VisitaPersonalTareaCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalUncheckedCreateInput = {
@@ -280,16 +333,24 @@ export type VisitaPersonalUncheckedCreateInput = {
   addedById?: string | null
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
   addedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalAddedNestedInput
   removedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalRemovedNestedInput
+  tareas?: Prisma.VisitaPersonalTareaUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateInput = {
@@ -300,6 +361,10 @@ export type VisitaPersonalUncheckedUpdateInput = {
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalCreateManyInput = {
@@ -310,12 +375,18 @@ export type VisitaPersonalCreateManyInput = {
   addedById?: string | null
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
 }
 
 export type VisitaPersonalUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaPersonalUncheckedUpdateManyInput = {
@@ -326,6 +397,9 @@ export type VisitaPersonalUncheckedUpdateManyInput = {
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaPersonalListRelationFilter = {
@@ -351,6 +425,9 @@ export type VisitaPersonalCountOrderByAggregateInput = {
   addedById?: Prisma.SortOrder
   removedAt?: Prisma.SortOrder
   removedById?: Prisma.SortOrder
+  horaEntrada?: Prisma.SortOrder
+  horaSalida?: Prisma.SortOrder
+  registradoEl?: Prisma.SortOrder
 }
 
 export type VisitaPersonalMaxOrderByAggregateInput = {
@@ -361,6 +438,9 @@ export type VisitaPersonalMaxOrderByAggregateInput = {
   addedById?: Prisma.SortOrder
   removedAt?: Prisma.SortOrder
   removedById?: Prisma.SortOrder
+  horaEntrada?: Prisma.SortOrder
+  horaSalida?: Prisma.SortOrder
+  registradoEl?: Prisma.SortOrder
 }
 
 export type VisitaPersonalMinOrderByAggregateInput = {
@@ -371,6 +451,14 @@ export type VisitaPersonalMinOrderByAggregateInput = {
   addedById?: Prisma.SortOrder
   removedAt?: Prisma.SortOrder
   removedById?: Prisma.SortOrder
+  horaEntrada?: Prisma.SortOrder
+  horaSalida?: Prisma.SortOrder
+  registradoEl?: Prisma.SortOrder
+}
+
+export type VisitaPersonalScalarRelationFilter = {
+  is?: Prisma.VisitaPersonalWhereInput
+  isNot?: Prisma.VisitaPersonalWhereInput
 }
 
 export type VisitaPersonalCreateNestedManyWithoutAddedByInput = {
@@ -541,13 +629,31 @@ export type VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput = {
   deleteMany?: Prisma.VisitaPersonalScalarWhereInput | Prisma.VisitaPersonalScalarWhereInput[]
 }
 
+export type VisitaPersonalCreateNestedOneWithoutTareasInput = {
+  create?: Prisma.XOR<Prisma.VisitaPersonalCreateWithoutTareasInput, Prisma.VisitaPersonalUncheckedCreateWithoutTareasInput>
+  connectOrCreate?: Prisma.VisitaPersonalCreateOrConnectWithoutTareasInput
+  connect?: Prisma.VisitaPersonalWhereUniqueInput
+}
+
+export type VisitaPersonalUpdateOneRequiredWithoutTareasNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitaPersonalCreateWithoutTareasInput, Prisma.VisitaPersonalUncheckedCreateWithoutTareasInput>
+  connectOrCreate?: Prisma.VisitaPersonalCreateOrConnectWithoutTareasInput
+  upsert?: Prisma.VisitaPersonalUpsertWithoutTareasInput
+  connect?: Prisma.VisitaPersonalWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VisitaPersonalUpdateToOneWithWhereWithoutTareasInput, Prisma.VisitaPersonalUpdateWithoutTareasInput>, Prisma.VisitaPersonalUncheckedUpdateWithoutTareasInput>
+}
+
 export type VisitaPersonalCreateWithoutAddedByInput = {
   id?: string
   addedAt?: Date | string
   removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
   removedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalRemovedInput
+  tareas?: Prisma.VisitaPersonalTareaCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalUncheckedCreateWithoutAddedByInput = {
@@ -557,6 +663,10 @@ export type VisitaPersonalUncheckedCreateWithoutAddedByInput = {
   addedAt?: Date | string
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalCreateOrConnectWithoutAddedByInput = {
@@ -573,9 +683,13 @@ export type VisitaPersonalCreateWithoutRemovedByInput = {
   id?: string
   addedAt?: Date | string
   removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
   addedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalAddedInput
+  tareas?: Prisma.VisitaPersonalTareaCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalUncheckedCreateWithoutRemovedByInput = {
@@ -585,6 +699,10 @@ export type VisitaPersonalUncheckedCreateWithoutRemovedByInput = {
   addedAt?: Date | string
   addedById?: string | null
   removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalCreateOrConnectWithoutRemovedByInput = {
@@ -624,6 +742,9 @@ export type VisitaPersonalScalarWhereInput = {
   addedById?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
   removedAt?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
   removedById?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  horaEntrada?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  horaSalida?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  registradoEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
 }
 
 export type VisitaPersonalUpsertWithWhereUniqueWithoutRemovedByInput = {
@@ -646,9 +767,13 @@ export type VisitaPersonalCreateWithoutPersonalInput = {
   id?: string
   addedAt?: Date | string
   removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   addedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalAddedInput
   removedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalRemovedInput
+  tareas?: Prisma.VisitaPersonalTareaCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalUncheckedCreateWithoutPersonalInput = {
@@ -658,6 +783,10 @@ export type VisitaPersonalUncheckedCreateWithoutPersonalInput = {
   addedById?: string | null
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalCreateOrConnectWithoutPersonalInput = {
@@ -690,9 +819,13 @@ export type VisitaPersonalCreateWithoutVisitaInput = {
   id?: string
   addedAt?: Date | string
   removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
   addedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalAddedInput
   removedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalRemovedInput
+  tareas?: Prisma.VisitaPersonalTareaCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalUncheckedCreateWithoutVisitaInput = {
@@ -702,6 +835,10 @@ export type VisitaPersonalUncheckedCreateWithoutVisitaInput = {
   addedById?: string | null
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
 
 export type VisitaPersonalCreateOrConnectWithoutVisitaInput = {
@@ -730,6 +867,74 @@ export type VisitaPersonalUpdateManyWithWhereWithoutVisitaInput = {
   data: Prisma.XOR<Prisma.VisitaPersonalUpdateManyMutationInput, Prisma.VisitaPersonalUncheckedUpdateManyWithoutVisitaInput>
 }
 
+export type VisitaPersonalCreateWithoutTareasInput = {
+  id?: string
+  addedAt?: Date | string
+  removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
+  visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
+  personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
+  addedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalAddedInput
+  removedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalRemovedInput
+}
+
+export type VisitaPersonalUncheckedCreateWithoutTareasInput = {
+  id?: string
+  visitaId: string
+  personalId: string
+  addedAt?: Date | string
+  addedById?: string | null
+  removedAt?: Date | string | null
+  removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
+}
+
+export type VisitaPersonalCreateOrConnectWithoutTareasInput = {
+  where: Prisma.VisitaPersonalWhereUniqueInput
+  create: Prisma.XOR<Prisma.VisitaPersonalCreateWithoutTareasInput, Prisma.VisitaPersonalUncheckedCreateWithoutTareasInput>
+}
+
+export type VisitaPersonalUpsertWithoutTareasInput = {
+  update: Prisma.XOR<Prisma.VisitaPersonalUpdateWithoutTareasInput, Prisma.VisitaPersonalUncheckedUpdateWithoutTareasInput>
+  create: Prisma.XOR<Prisma.VisitaPersonalCreateWithoutTareasInput, Prisma.VisitaPersonalUncheckedCreateWithoutTareasInput>
+  where?: Prisma.VisitaPersonalWhereInput
+}
+
+export type VisitaPersonalUpdateToOneWithWhereWithoutTareasInput = {
+  where?: Prisma.VisitaPersonalWhereInput
+  data: Prisma.XOR<Prisma.VisitaPersonalUpdateWithoutTareasInput, Prisma.VisitaPersonalUncheckedUpdateWithoutTareasInput>
+}
+
+export type VisitaPersonalUpdateWithoutTareasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
+  personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
+  addedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalAddedNestedInput
+  removedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalRemovedNestedInput
+}
+
+export type VisitaPersonalUncheckedUpdateWithoutTareasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  visitaId?: Prisma.StringFieldUpdateOperationsInput | string
+  personalId?: Prisma.StringFieldUpdateOperationsInput | string
+  addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
 export type VisitaPersonalCreateManyAddedByInput = {
   id?: string
   visitaId: string
@@ -737,6 +942,9 @@ export type VisitaPersonalCreateManyAddedByInput = {
   addedAt?: Date | string
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
 }
 
 export type VisitaPersonalCreateManyRemovedByInput = {
@@ -746,15 +954,22 @@ export type VisitaPersonalCreateManyRemovedByInput = {
   addedAt?: Date | string
   addedById?: string | null
   removedAt?: Date | string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
 }
 
 export type VisitaPersonalUpdateWithoutAddedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
   removedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalRemovedNestedInput
+  tareas?: Prisma.VisitaPersonalTareaUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateWithoutAddedByInput = {
@@ -764,6 +979,10 @@ export type VisitaPersonalUncheckedUpdateWithoutAddedByInput = {
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateManyWithoutAddedByInput = {
@@ -773,15 +992,22 @@ export type VisitaPersonalUncheckedUpdateManyWithoutAddedByInput = {
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaPersonalUpdateWithoutRemovedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
   addedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalAddedNestedInput
+  tareas?: Prisma.VisitaPersonalTareaUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateWithoutRemovedByInput = {
@@ -791,6 +1017,10 @@ export type VisitaPersonalUncheckedUpdateWithoutRemovedByInput = {
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateManyWithoutRemovedByInput = {
@@ -800,6 +1030,9 @@ export type VisitaPersonalUncheckedUpdateManyWithoutRemovedByInput = {
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaPersonalCreateManyPersonalInput = {
@@ -809,15 +1042,22 @@ export type VisitaPersonalCreateManyPersonalInput = {
   addedById?: string | null
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
 }
 
 export type VisitaPersonalUpdateWithoutPersonalInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   addedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalAddedNestedInput
   removedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalRemovedNestedInput
+  tareas?: Prisma.VisitaPersonalTareaUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateWithoutPersonalInput = {
@@ -827,6 +1067,10 @@ export type VisitaPersonalUncheckedUpdateWithoutPersonalInput = {
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateManyWithoutPersonalInput = {
@@ -836,6 +1080,9 @@ export type VisitaPersonalUncheckedUpdateManyWithoutPersonalInput = {
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type VisitaPersonalCreateManyVisitaInput = {
@@ -845,15 +1092,22 @@ export type VisitaPersonalCreateManyVisitaInput = {
   addedById?: string | null
   removedAt?: Date | string | null
   removedById?: string | null
+  horaEntrada?: string | null
+  horaSalida?: string | null
+  registradoEl?: Date | string | null
 }
 
 export type VisitaPersonalUpdateWithoutVisitaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
   addedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalAddedNestedInput
   removedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalRemovedNestedInput
+  tareas?: Prisma.VisitaPersonalTareaUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateWithoutVisitaInput = {
@@ -863,6 +1117,10 @@ export type VisitaPersonalUncheckedUpdateWithoutVisitaInput = {
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
 
 export type VisitaPersonalUncheckedUpdateManyWithoutVisitaInput = {
@@ -872,8 +1130,40 @@ export type VisitaPersonalUncheckedUpdateManyWithoutVisitaInput = {
   addedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   removedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   removedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaEntrada?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  horaSalida?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
+
+/**
+ * Count Type VisitaPersonalCountOutputType
+ */
+
+export type VisitaPersonalCountOutputType = {
+  tareas: number
+}
+
+export type VisitaPersonalCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  tareas?: boolean | VisitaPersonalCountOutputTypeCountTareasArgs
+}
+
+/**
+ * VisitaPersonalCountOutputType without action
+ */
+export type VisitaPersonalCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VisitaPersonalCountOutputType
+   */
+  select?: Prisma.VisitaPersonalCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * VisitaPersonalCountOutputType without action
+ */
+export type VisitaPersonalCountOutputTypeCountTareasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VisitaPersonalTareaWhereInput
+}
 
 
 export type VisitaPersonalSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -884,10 +1174,15 @@ export type VisitaPersonalSelect<ExtArgs extends runtime.Types.Extensions.Intern
   addedById?: boolean
   removedAt?: boolean
   removedById?: boolean
+  horaEntrada?: boolean
+  horaSalida?: boolean
+  registradoEl?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
   addedBy?: boolean | Prisma.VisitaPersonal$addedByArgs<ExtArgs>
   removedBy?: boolean | Prisma.VisitaPersonal$removedByArgs<ExtArgs>
+  tareas?: boolean | Prisma.VisitaPersonal$tareasArgs<ExtArgs>
+  _count?: boolean | Prisma.VisitaPersonalCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["visitaPersonal"]>
 
 export type VisitaPersonalSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -898,6 +1193,9 @@ export type VisitaPersonalSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   addedById?: boolean
   removedAt?: boolean
   removedById?: boolean
+  horaEntrada?: boolean
+  horaSalida?: boolean
+  registradoEl?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
   addedBy?: boolean | Prisma.VisitaPersonal$addedByArgs<ExtArgs>
@@ -912,6 +1210,9 @@ export type VisitaPersonalSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   addedById?: boolean
   removedAt?: boolean
   removedById?: boolean
+  horaEntrada?: boolean
+  horaSalida?: boolean
+  registradoEl?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
   addedBy?: boolean | Prisma.VisitaPersonal$addedByArgs<ExtArgs>
@@ -926,14 +1227,19 @@ export type VisitaPersonalSelectScalar = {
   addedById?: boolean
   removedAt?: boolean
   removedById?: boolean
+  horaEntrada?: boolean
+  horaSalida?: boolean
+  registradoEl?: boolean
 }
 
-export type VisitaPersonalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "personalId" | "addedAt" | "addedById" | "removedAt" | "removedById", ExtArgs["result"]["visitaPersonal"]>
+export type VisitaPersonalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "personalId" | "addedAt" | "addedById" | "removedAt" | "removedById" | "horaEntrada" | "horaSalida" | "registradoEl", ExtArgs["result"]["visitaPersonal"]>
 export type VisitaPersonalInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
   addedBy?: boolean | Prisma.VisitaPersonal$addedByArgs<ExtArgs>
   removedBy?: boolean | Prisma.VisitaPersonal$removedByArgs<ExtArgs>
+  tareas?: boolean | Prisma.VisitaPersonal$tareasArgs<ExtArgs>
+  _count?: boolean | Prisma.VisitaPersonalCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VisitaPersonalIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
@@ -955,6 +1261,10 @@ export type $VisitaPersonalPayload<ExtArgs extends runtime.Types.Extensions.Inte
     personal: Prisma.$PersonalPayload<ExtArgs>
     addedBy: Prisma.$UserPayload<ExtArgs> | null
     removedBy: Prisma.$UserPayload<ExtArgs> | null
+    /**
+     * Lo que hizo. Ver `VisitaPersonalTarea`.
+     */
+    tareas: Prisma.$VisitaPersonalTareaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -964,6 +1274,19 @@ export type $VisitaPersonalPayload<ExtArgs extends runtime.Types.Extensions.Inte
     addedById: string | null
     removedAt: Date | null
     removedById: string | null
+    /**
+     * Su turno en esta visita. Texto "HH:MM", como en la visita.
+     */
+    horaEntrada: string | null
+    horaSalida: string | null
+    /**
+     * Cuándo cargó su parte. `null` = todavía no la cargó, que es lo que la
+     * visita muestra como "falta" y lo que impide darla por cerrada sola.
+     * 
+     * Se sella al guardar y se vuelve a sellar al corregir: es "cuándo quedó
+     * registrado esto que dice acá", no "cuándo lo cargó por primera vez".
+     */
+    registradoEl: Date | null
   }, ExtArgs["result"]["visitaPersonal"]>
   composites: {}
 }
@@ -1362,6 +1685,7 @@ export interface Prisma__VisitaPersonalClient<T, Null = never, ExtArgs extends r
   personal<T extends Prisma.PersonalDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PersonalDefaultArgs<ExtArgs>>): Prisma.Prisma__PersonalClient<runtime.Types.Result.GetResult<Prisma.$PersonalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   addedBy<T extends Prisma.VisitaPersonal$addedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaPersonal$addedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   removedBy<T extends Prisma.VisitaPersonal$removedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaPersonal$removedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  tareas<T extends Prisma.VisitaPersonal$tareasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VisitaPersonal$tareasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPersonalTareaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1398,6 +1722,9 @@ export interface VisitaPersonalFieldRefs {
   readonly addedById: Prisma.FieldRef<"VisitaPersonal", 'String'>
   readonly removedAt: Prisma.FieldRef<"VisitaPersonal", 'DateTime'>
   readonly removedById: Prisma.FieldRef<"VisitaPersonal", 'String'>
+  readonly horaEntrada: Prisma.FieldRef<"VisitaPersonal", 'String'>
+  readonly horaSalida: Prisma.FieldRef<"VisitaPersonal", 'String'>
+  readonly registradoEl: Prisma.FieldRef<"VisitaPersonal", 'DateTime'>
 }
     
 
@@ -1834,6 +2161,30 @@ export type VisitaPersonal$removedByArgs<ExtArgs extends runtime.Types.Extension
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * VisitaPersonal.tareas
+ */
+export type VisitaPersonal$tareasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VisitaPersonalTarea
+   */
+  select?: Prisma.VisitaPersonalTareaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VisitaPersonalTarea
+   */
+  omit?: Prisma.VisitaPersonalTareaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VisitaPersonalTareaInclude<ExtArgs> | null
+  where?: Prisma.VisitaPersonalTareaWhereInput
+  orderBy?: Prisma.VisitaPersonalTareaOrderByWithRelationInput | Prisma.VisitaPersonalTareaOrderByWithRelationInput[]
+  cursor?: Prisma.VisitaPersonalTareaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VisitaPersonalTareaScalarFieldEnum | Prisma.VisitaPersonalTareaScalarFieldEnum[]
 }
 
 /**

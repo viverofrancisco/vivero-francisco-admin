@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
+import { requireAuth } from "@/lib/auth-helpers";
 import { NuevaSuscripcionPage } from "@/components/suscripciones/nueva-suscripcion-page";
 
 export default async function NuevaSuscripcionRoute({
@@ -11,12 +11,9 @@ export default async function NuevaSuscripcionRoute({
   // Solo rutas internas del dashboard: evita un open redirect.
   const backHref =
     from && from.startsWith("/dashboard/") ? from : "/dashboard/suscripciones";
-  const user = await requireAuth();
+  await requireAuth();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { deletedAt: null };
-  if (user.role === "PERSONAL_ADMIN") {
-    where.sectorId = { in: await getUserSectorIds(user.id) };
-  }
   const clientes = await prisma.cliente.findMany({
     where,
     orderBy: { nombre: "asc" },

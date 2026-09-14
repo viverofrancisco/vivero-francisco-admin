@@ -7,10 +7,7 @@ import { Button } from "@/components/ui/button";
 import { VisitaChatPanel } from "@/components/visitas/visita-chat-panel";
 import { VisitaInfoSidebar } from "@/components/mensajes/visita-info-sidebar";
 import { nombreCliente } from "@vivero/shared";
-import {
-  listaProductos,
-  PRODUCTOS_DE_VISITA_SELECT,
-} from "@/lib/visita-productos";
+import { listaTareas, TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 
 export default async function VisitaChatPage({
   params,
@@ -38,15 +35,7 @@ export default async function VisitaChatPage({
           sector: { select: { nombre: true } },
         },
       },
-      productos: PRODUCTOS_DE_VISITA_SELECT,
-      personal: {
-        where: { removedAt: null },
-        include: {
-          personal: {
-            select: { id: true, nombre: true, apellido: true, tipo: true },
-          },
-        },
-      },
+      ...TAREAS_DE_VISITA_INCLUDE,
       media: {
         select: { id: true, url: true, tipo: true },
         orderBy: { createdAt: "asc" },
@@ -70,7 +59,7 @@ export default async function VisitaChatPage({
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold">{clienteName}</h1>
           <p className="truncate text-sm text-muted-foreground">
-            {listaProductos(visita)}
+            {listaTareas(visita)}
           </p>
         </div>
       </div>
@@ -83,7 +72,15 @@ export default async function VisitaChatPage({
           fillHeight
         />
         <div className="hidden lg:block min-h-0">
-          <VisitaInfoSidebar visita={visita} />
+          <VisitaInfoSidebar
+            visita={{
+              ...visita,
+              tareas: {
+                tareasObligatorias: visita.tareasObligatorias,
+                personal: visita.personal,
+              },
+            }}
+          />
         </div>
       </div>
     </div>

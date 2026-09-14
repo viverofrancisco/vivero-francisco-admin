@@ -17,8 +17,7 @@ export async function GET(
   const userOrResponse = await requireMobileRole(
     request,
     "ADMIN",
-    "STAFF",
-    "PERSONAL_ADMIN"
+    "STAFF"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
@@ -40,8 +39,7 @@ export async function PUT(
 ) {
   const userOrResponse = await requireMobileRole(
     request,
-    "ADMIN",
-    "PERSONAL_ADMIN"
+    "ADMIN"
   );
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 

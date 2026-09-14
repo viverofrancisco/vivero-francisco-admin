@@ -43,9 +43,25 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  /**
+   * En el teléfono ocupa la pantalla entera en vez de flotar en el medio.
+   *
+   * Para **formularios**, no para confirmaciones. Un cuadro centrado con un
+   * campo de texto adentro pelea con el teclado: el teclado ocupa media
+   * pantalla, el cuadro se corre para no quedar tapado y el botón de guardar
+   * termina fuera de vista. A pantalla completa el formulario scrollea por
+   * dentro y sus botones se quedan donde están, que es lo que hacen las apps
+   * del sistema. Una confirmación de dos renglones, en cambio, se lee mejor
+   * centrada.
+   *
+   * Pasa a ser `flex` en columna: el contenido tiene que poder declarar qué
+   * parte scrollea (`min-h-0 flex-1`) y cuál se queda fija.
+   */
+  pantallaCompletaEnMovil = false,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
+  pantallaCompletaEnMovil?: boolean
 }) {
   return (
     <DialogPortal>
@@ -54,6 +70,11 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-background p-4 text-sm ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // `h-dvh` y no `h-screen`: en el teléfono `100vh` cuenta la barra de
+          // direcciones aunque esté a la vista, así que el pie queda debajo del
+          // borde hasta que alguien scrollea.
+          pantallaCompletaEnMovil &&
+            "max-md:inset-0 max-md:flex max-md:h-dvh max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:flex-col max-md:rounded-none max-md:pb-[calc(1rem+env(safe-area-inset-bottom))]",
           className
         )}
         {...props}

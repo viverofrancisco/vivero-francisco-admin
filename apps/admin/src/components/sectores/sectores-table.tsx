@@ -19,32 +19,19 @@ import {
   TablePagination,
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
-import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import { MapPin, Search } from "lucide-react";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
-interface AdminUser {
-  id: string;
-  name: string | null;
-  email: string;
-}
-
 interface SectorRow {
   id: string;
   nombre: string;
   _count: { clientes: number };
-  admins: { user: AdminUser }[];
 }
 
 interface SectoresTableProps {
   sectores: SectorRow[];
-}
-
-/** Cómo se llama un admin: su nombre, y si no lo tiene, su correo. */
-function nombreAdmin(admin: AdminUser): string {
-  return admin.name ?? admin.email;
 }
 
 export function SectoresTable({ sectores }: SectoresTableProps) {
@@ -110,14 +97,11 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
                 <TableRow>
                   <TableHead>Sector</TableHead>
                   <TableHead className="text-right">Clientes</TableHead>
-                  <TableHead>Administrador</TableHead>
                   <TableHead className="w-16 text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.map((s) => {
-                  const admin = s.admins[0]?.user;
-                  const otros = s.admins.length - 1;
                   return (
                     <TableRow
                       key={s.id}
@@ -136,25 +120,6 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {s._count.clientes}
-                      </TableCell>
-                      <TableCell>
-                        {admin ? (
-                          <div className="flex items-center gap-2.5">
-                            <InitialsAvatar name={nombreAdmin(admin)} size={28} />
-                            <span className="truncate">
-                              {nombreAdmin(admin)}
-                              {otros > 0 ? (
-                                <span className="text-muted-foreground">
-                                  {` +${otros}`}
-                                </span>
-                              ) : null}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">
-                            Sin administrador
-                          </span>
-                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div
@@ -203,10 +168,7 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
         cargando={cargando}
         centinela={centinela}
       >
-        {enLista.map((s) => {
-          const admin = s.admins[0]?.user;
-          const otros = s.admins.length - 1;
-          return (
+        {enLista.map((s) => (
             <Link
               key={s.id}
               href={`/dashboard/sectores/${s.id}?from=${aqui}`}
@@ -222,15 +184,10 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
                 <span className="block truncate text-xs font-medium text-muted-foreground">
                   {s._count.clientes}{" "}
                   {s._count.clientes === 1 ? "cliente" : "clientes"}
-                  {" · "}
-                  {admin
-                    ? `${nombreAdmin(admin)}${otros > 0 ? ` +${otros}` : ""}`
-                    : "Sin administrador"}
                 </span>
               </span>
             </Link>
-          );
-        })}
+        ))}
       </ListaMovil>
     </div>
   );

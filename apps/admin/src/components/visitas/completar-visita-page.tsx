@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
-import { TimePicker } from "@/components/ui/time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { PersonalSelector } from "@/components/grupos/personal-selector";
@@ -27,7 +26,13 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { nombreCliente } from "@vivero/shared";
 import { hoyISOEcuador } from "@/lib/fechas";
-import type { ProductoDeVisita } from "@/lib/visita-productos";
+import {
+  obligatoriasSinCubrir,
+  personalSinRegistrar,
+  tareasHechas,
+  type PersonalDeVisita,
+  type TareaDeVisita,
+} from "@/lib/visita-tareas";
 
 interface VisitaData {
   id: string;
@@ -39,9 +44,9 @@ interface VisitaData {
     apellido?: string | null;
     empresa?: string | null;
   };
-  productos: ProductoDeVisita[];
-  /** Quiénes estaban asignados al agendar. */
-  personalIds: string[];
+  tareasObligatorias: { tarea: TareaDeVisita }[];
+  /** Los partes cargados, para mirar antes de cerrar. */
+  personal: PersonalDeVisita[];
 }
 
 const fechaLarga = (iso: string) =>
@@ -54,11 +59,15 @@ const fechaLarga = (iso: string) =>
   });
 
 /**
- * Cerrar una visita: qué pasó y cuándo.
+ * Cerrar una visita: darla por terminada, o no.
  *
- * Solo eso. Las fotos se suben desde la ficha de la visita, mientras el
- * trabajo pasa, y no acá al final: quien está en el jardín va cargando lo que
- * lleva, y juntar todo para el momento de cerrarla era pedirle que se acuerde.
+ * **Es de oficina.** El trabajo lo carga cada jardinero en su parte —sus horas
+ * y las tareas que él hizo— y eso pasa mientras la visita ocurre. Lo que se
+ * decide acá es si con eso alcanza: por eso la pantalla muestra lo cargado y lo
+ * que falta, y no vuelve a pedir horas ni tareas.
+ *
+ * Las fotos se suben desde la ficha, mientras el trabajo pasa: juntarlas para
+ * el momento de cerrar era pedirle a alguien que se acuerde.
  */
 export function CompletarVisitaPage({
   visita,
@@ -77,7 +86,13 @@ export function CompletarVisitaPage({
    * intención: el día del trabajo cambia quién pudo ir, y este es el momento
    * en que alguien lo sabe.
    */
-  const [personalIds, setPersonalIds] = useState(visita.personalIds);
+  const [personalIds, setPersonalIds] = useState(
+    visita.personal.map((p) => p.personalId)
+  );
+
+  const hechas = tareasHechas(visita);
+  const faltantes = obligatoriasSinCubrir(visita);
+  const sinRegistrar = personalSinRegistrar(visita.personal);
 
   const {
     register,
@@ -91,8 +106,6 @@ export function CompletarVisitaPage({
     defaultValues: {
       estado: "COMPLETADA",
       fechaRealizada: hoyISOEcuador(),
-      horaEntrada: "",
-      horaSalida: "",
       notas: "",
       notasIncompleto: "",
     },
@@ -185,7 +198,7 @@ export function CompletarVisitaPage({
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 sm:col-span-2">
                   <Label className="text-xs">Fecha realizada *</Label>
                   <Controller
                     name="fechaRealizada"
@@ -202,32 +215,6 @@ export function CompletarVisitaPage({
                       {errors.fechaRealizada.message}
                     </p>
                   )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Hora entrada</Label>
-                  <Controller
-                    name="horaEntrada"
-                    control={control}
-                    render={({ field }) => (
-                      <TimePicker
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Hora salida</Label>
-                  <Controller
-                    name="horaSalida"
-                    control={control}
-                    render={({ field }) => (
-                      <TimePicker
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
                 </div>
               </div>
 
@@ -276,21 +263,51 @@ export function CompletarVisitaPage({
         </div>
 
         <div className="space-y-6">
-        {/* Qué se fue a hacer, para tenerlo delante al escribir las notas. */}
+        {/* Lo que hay que mirar antes de decir que está terminada: qué se
+            cargó, qué se exigía y no está, y quién no cargó nada. */}
         <Card>
           <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Productos de la visita</CardTitle>
+            <CardTitle className="text-base">Lo que se registró</CardTitle>
           </CardHeader>
-          <CardContent>
-            {visita.productos.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                La visita no tiene productos.
+          <CardContent className="space-y-3 text-sm">
+            {faltantes.length > 0 && (
+              <p className="rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs">
+                Sin hacer, y eran obligatorias:{" "}
+                <span className="font-semibold">
+                  {faltantes.map((t) => t.nombre).join(", ")}
+                </span>
+              </p>
+            )}
+            {sinRegistrar.length > 0 && (
+              <p className="rounded-md border bg-muted/40 p-2.5 text-xs">
+                Todavía no cargaron su parte:{" "}
+                <span className="font-semibold">
+                  {sinRegistrar
+                    .map((p) =>
+                      [p.personal.nombre, p.personal.apellido]
+                        .filter(Boolean)
+                        .join(" ")
+                    )
+                    .join(", ")}
+                </span>
+                . Se puede cerrar igual — quién decide que está terminada es
+                quien mira, no la cuenta.
+              </p>
+            )}
+            {hechas.length === 0 ? (
+              <p className="text-muted-foreground">
+                Nadie registró tareas todavía.
               </p>
             ) : (
-              <ul className="divide-y text-sm">
-                {visita.productos.map((p) => (
-                  <li key={p.productoId} className="truncate py-2 font-medium">
-                    {p.producto.nombre}
+              <ul className="divide-y">
+                {hechas.map((t) => (
+                  <li key={t.id} className="flex items-center gap-2 py-2">
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                      {t.nombre}
+                    </span>
+                    <span className="flex-none text-xs text-muted-foreground">
+                      {t.porQuienes.join(", ")}
+                    </span>
                   </li>
                 ))}
               </ul>

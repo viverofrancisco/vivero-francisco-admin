@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth, getUserSectorIds, viewerFromUser, requireStaff } from "@/lib/auth-helpers";
+import { requireAuth, viewerFromUser, requireStaff } from "@/lib/auth-helpers";
 import {
   listarPendientes,
-  VISITAS_SIN_TOPE,
 } from "@/lib/services/orden.service";
 import { productosSuscritos } from "@/lib/services/suscripcion.service";
 import { productosVendibles } from "@/lib/services/variantes-vendibles";
@@ -19,9 +18,6 @@ export default async function NuevaOrdenRoute({
   const viewer = viewerFromUser(user);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = { deletedAt: null };
-  if (user.role === "PERSONAL_ADMIN") {
-    where.sectorId = { in: await getUserSectorIds(user.id) };
-  }
   const [clientes, primeraTanda] = await Promise.all([
     prisma.cliente.findMany({
       where,
@@ -35,13 +31,15 @@ export default async function NuevaOrdenRoute({
   // Con cliente en la URL se resuelven acá: la pantalla llega completa.
   const visible = clientes.some((c) => c.id === clienteInicial);
 
-  // Viniendo de una visita, su trabajo entra ya cargado.
+  // Viniendo de una visita, la orden queda marcada como suya. **No trae
+  // líneas**: lo que se hizo en una visita son tareas, y una tarea no tiene
+  // precio; los productos que se le cobran al cliente se eligen acá.
   const laVisita = visita
-    ? await prisma.visitaProducto.findMany({
-        where: { visitaId: visita, visita: { clienteId: clienteInicial } },
-        select: { id: true, visita: { select: { fechaProgramada: true } } },
+    ? await prisma.visita.findFirst({
+        where: { id: visita, clienteId: clienteInicial, deletedAt: null },
+        select: { id: true, numero: true, fechaProgramada: true },
       })
-    : [];
+    : null;
 
   const finDeMes = new Date(
     Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 0)
@@ -50,28 +48,15 @@ export default async function NuevaOrdenRoute({
   const [pendientes, suscritos] =
     clienteInicial && visible
       ? await Promise.all([
-          // Los períodos de suscripción se cortan en el mes; las visitas no,
-          // porque son las que se le asignan a la orden y muchas están
-          // agendadas para más adelante.
           listarPendientes(
             viewer,
             clienteInicial,
             new Date(Date.UTC(2000, 0, 1)),
-            finDeMes,
-            VISITAS_SIN_TOPE
+            finDeMes
           ),
           productosSuscritos(clienteInicial),
         ])
       : [[], []];
-
-  // Los ids no se toman de la URL a ciegas: se preselecciona solo lo que ya
-  // salió de `listarPendientes`, que filtra por cliente y por viewer.
-  const pendienteIds = new Set(
-    pendientes.flatMap((p) => (p.tipo === "visita" ? [p.visitaProductoId] : []))
-  );
-  const preseleccion = laVisita
-    .map((vp) => vp.id)
-    .filter((id) => pendienteIds.has(id));
 
   return (
     <NuevaOrdenPage
@@ -80,42 +65,27 @@ export default async function NuevaOrdenRoute({
       hayMasProductos={primeraTanda.hayMas}
       clienteInicial={visible ? clienteInicial : undefined}
       suscritosIniciales={suscritos}
-      preseleccion={preseleccion}
       desdeVisita={
-        visita && laVisita.length > 0
+        laVisita
           ? {
-              id: visita,
-              fecha: laVisita[0].visita.fechaProgramada.toISOString(),
+              id: laVisita.id,
+              numero: laVisita.numero,
+              fecha: laVisita.fechaProgramada.toISOString(),
             }
           : null
       }
-      pendientesIniciales={pendientes.map((p) =>
-        p.tipo === "visita"
-          ? {
-              tipo: "visita" as const,
-              productoId: p.productoId,
-              descripcion: p.descripcion,
-              precio: String(p.precio),
-              ivaTasa: String(p.ivaTasa),
-              visitaProductoId: p.visitaProductoId,
-              // Para poder agregar la visita entera de una: se factura completa.
-              visitaId: p.visitaId,
-              visitaNumero: p.visitaNumero,
-              fecha: p.fecha.toISOString(),
-            }
-          : {
-              tipo: "suscripcion" as const,
-              productoId: p.productoId,
-              descripcion: p.descripcion,
-              precio: String(p.precio),
-              ivaTasa: String(p.ivaTasa),
-              suscripcionItemId: p.suscripcionItemId,
-              // Un período se factura completo: hace falta saber de qué plan es.
-              suscripcionId: p.suscripcionId,
-              periodoInicio: p.periodoInicio.toISOString(),
-              periodoFin: p.periodoFin.toISOString(),
-            }
-      )}
+      pendientesIniciales={pendientes.map((p) => ({
+        tipo: "suscripcion" as const,
+        productoId: p.productoId,
+        descripcion: p.descripcion,
+        precio: String(p.precio),
+        ivaTasa: String(p.ivaTasa),
+        suscripcionItemId: p.suscripcionItemId,
+        // Un período se factura completo: hace falta saber de qué plan es.
+        suscripcionId: p.suscripcionId,
+        periodoInicio: p.periodoInicio.toISOString(),
+        periodoFin: p.periodoFin.toISOString(),
+      }))}
     />
   );
 }

@@ -76,8 +76,8 @@ interface MediaPoolItem {
   url: string;
   visitaId: string;
   visitaFecha: string;
-  /// Servicio de la visita con el que se etiquetó la foto, si lo tiene.
-  productoId: string | null;
+  /// La tarea con la que se etiquetó la foto al subirla, si la tiene.
+  tareaId: string | null;
 }
 
 /** Con qué viaja una foto que se arrastra para reordenarla. */
@@ -87,15 +87,15 @@ const TIPO_FOTO = "application/x-foto";
 const PERSONALIZADA = "__personalizada__";
 
 /** Un producto del catálogo, para armar una sección con cualquiera. */
-interface ProductoCatalogo {
+interface TareaCatalogo {
   id: string;
   nombre: string;
   descripcion: string | null;
 }
 
-/** Servicio cubierto por las visitas seleccionadas. Origen de cada sección. */
-interface ServicioParaSeccion {
-  productoId: string;
+/** Una tarea hecha en las visitas elegidas. Origen de cada sección. */
+interface TareaParaSeccion {
+  tareaId: string;
   nombre: string;
   descripcion: string | null;
   visitasCount: number;
@@ -115,8 +115,8 @@ interface SeccionFotoDraft {
 
 interface SeccionDraft {
   tempId: string;
-  /// Servicio que origina la sección. Null = sección personalizada.
-  productoId: string | null;
+  /// Tarea que origina la sección. Null = sección escrita a mano.
+  tareaId: string | null;
   titulo: string;
   descripcion: string;
   fotos: SeccionFotoDraft[];
@@ -284,7 +284,7 @@ export interface EstadoInicialInforme {
   visitaIds: string[];
   firmantes: Array<{ nombre: string; cedula: string | null }>;
   secciones: Array<{
-    productoId: string | null;
+    tareaId: string | null;
     titulo: string;
     descripcion: string;
     saltoDePagina: boolean;
@@ -301,7 +301,7 @@ export interface EstadoInicialInforme {
 function seccionesDesde(estado: EstadoInicialInforme): SeccionDraft[] {
   return estado.secciones.map((sec, i) => ({
     tempId: `inicial-${i}`,
-    productoId: sec.productoId,
+    tareaId: sec.tareaId,
     titulo: sec.titulo,
     descripcion: sec.descripcion,
     saltoDePagina: sec.saltoDePagina,
@@ -333,7 +333,7 @@ export function InformeWizard({
 }: {
   defaultFirmantes?: Array<{ nombre: string; cedula: string | null }>;
   /** Todo el catálogo activo, para secciones de algo que no se visitó. */
-  catalogo?: ProductoCatalogo[];
+  catalogo?: TareaCatalogo[];
   /** Con qué arranca: un borrador retomado o un informe que se edita. */
   inicial?: EstadoInicialInforme;
   /** El borrador del que salió, para pisarlo al guardar y borrarlo al generar. */
@@ -361,7 +361,7 @@ export function InformeWizard({
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [serviciosDisponibles, setServiciosDisponibles] = useState<
-    ServicioParaSeccion[]
+    TareaParaSeccion[]
   >([]);
   const [firmantesCatalog, setFirmantesCatalog] = useState<SavedFirmante[]>([]);
   const [clienteId, setClienteId] = useState<string | null>(
@@ -537,7 +537,7 @@ export function InformeWizard({
    */
   const autogeneradas = useRef(inicial != null);
 
-  // Los servicios que cubren las visitas seleccionadas son el catálogo de
+  // Las tareas hechas en las visitas seleccionadas son el catálogo de
   // secciones: título = nombre del servicio, descripción = la del servicio.
   useEffect(() => {
     if (step !== 2) return;
@@ -547,7 +547,7 @@ export function InformeWizard({
       return;
     }
     /**
-     * Las fotos se piden acá de nuevo, junto con los servicios.
+     * Las fotos se piden acá de nuevo, junto con las tareas.
      *
      * El paso 2 ya las trae, pero pasar rápido de un paso al otro dejaba las
      * secciones armadas y vacías: se generaban con el pool todavía en camino.
@@ -567,7 +567,7 @@ export function InformeWizard({
     ])
       .then(
         ([servicios, media]: [
-          { items: ServicioParaSeccion[] },
+          { items: TareaParaSeccion[] },
           { items: MediaPoolItem[] },
         ]) => {
           const items = servicios.items ?? [];
@@ -593,12 +593,12 @@ export function InformeWizard({
             const usadas = new Set<string>();
             return items.map((sv) => {
               const fotos = fotosDelPool.filter(
-                (m) => m.productoId === sv.productoId && !usadas.has(m.id),
+                (m) => m.tareaId === sv.tareaId && !usadas.has(m.id),
               );
               fotos.forEach((m) => usadas.add(m.id));
               return {
-                tempId: `auto-${sv.productoId}`,
-                productoId: sv.productoId,
+                tempId: `auto-${sv.tareaId}`,
+                tareaId: sv.tareaId,
                 titulo: sv.nombre,
                 descripcion: sv.descripcion ?? "",
                 fotos: fotos.map(fotoDeVisita),
@@ -736,7 +736,7 @@ export function InformeWizard({
       fecha,
       firmantes: validFirmantes,
       secciones: secciones.map((s) => ({
-        productoId: s.productoId,
+        tareaId: s.tareaId,
         titulo: s.titulo,
         descripcion: s.descripcion || null,
         saltoDePagina: s.saltoDePagina,
@@ -809,7 +809,7 @@ export function InformeWizard({
               .filter((f) => f.nombre.trim())
               .map((f) => ({ nombre: f.nombre.trim(), cedula: f.cedula.trim() || null })),
             secciones: secciones.map((sec) => ({
-              productoId: sec.productoId,
+              tareaId: sec.tareaId,
               titulo: sec.titulo,
               descripcion: sec.descripcion,
               saltoDePagina: sec.saltoDePagina,
@@ -1967,8 +1967,8 @@ function Step3Secciones({
   pool: MediaPoolItem[];
   secciones: SeccionDraft[];
   onSeccionesChange: (s: SeccionDraft[]) => void;
-  productos: ServicioParaSeccion[];
-  catalogo: ProductoCatalogo[];
+  productos: TareaParaSeccion[];
+  catalogo: TareaCatalogo[];
   clienteId: string | null;
   allPool: MediaPoolItem[];
   addPhotosFor: string | null;
@@ -2020,18 +2020,18 @@ function Step3Secciones({
    * servicio y la sección arranca con las fotos que se etiquetaron con él.
    * Sin servicio, queda una sección personalizada vacía.
    */
-  function addSeccion(servicio: ServicioParaSeccion | null) {
+  function addSeccion(servicio: TareaParaSeccion | null) {
     const fotosDelServicio = servicio
       ? allPool
           .filter(
             (m) =>
-              m.productoId === servicio.productoId && !assignedIds.has(m.id),
+              m.tareaId === servicio.tareaId && !assignedIds.has(m.id),
           )
           .map(fotoDeVisita)
       : [];
     const draft: SeccionDraft = {
       tempId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      productoId: servicio?.productoId ?? null,
+      tareaId: servicio?.tareaId ?? null,
       titulo: servicio?.nombre ?? "",
       descripcion: servicio?.descripcion ?? "",
       fotos: fotosDelServicio,
@@ -2044,23 +2044,23 @@ function Step3Secciones({
    * Qué se puede convertir en sección: lo de las visitas primero, después el
    * resto del catálogo, y la personalizada al final.
    *
-   * Lo que ya tiene sección queda en gris: dos secciones del mismo producto
+   * Lo que ya tiene sección queda en gris: dos secciones de la misma tarea
    * salen iguales en el PDF y no hay forma de distinguirlas después.
    */
   const opcionesDeSeccion = useMemo(() => {
-    const deVisitas = new Set(productos.map((p) => p.productoId));
-    const usado = (productoId: string) =>
-      secciones.some((sec) => sec.productoId === productoId);
+    const deVisitas = new Set(productos.map((p) => p.tareaId));
+    const usado = (tareaId: string) =>
+      secciones.some((sec) => sec.tareaId === tareaId);
     const delCatalogo = catalogo.filter((p) => !deVisitas.has(p.id));
     return [
       ...(productos.length > 0
         ? [
             { encabezado: "De estas visitas" },
             ...productos.map((sv) => ({
-              value: sv.productoId,
+              value: sv.tareaId,
               label: sv.nombre,
-              disabled: usado(sv.productoId),
-              hint: usado(sv.productoId)
+              disabled: usado(sv.tareaId),
+              hint: usado(sv.tareaId)
                 ? "Ya tiene sección"
                 : sv.fotosCount > 0
                   ? `${sv.fotosCount} foto${sv.fotosCount === 1 ? "" : "s"}`
@@ -2070,7 +2070,7 @@ function Step3Secciones({
         : []),
       ...(delCatalogo.length > 0
         ? [
-            { encabezado: "Resto del catálogo" },
+            { encabezado: "Otras tareas" },
             ...delCatalogo.map((p) => ({
               value: p.id,
               label: p.nombre,
@@ -2088,12 +2088,12 @@ function Step3Secciones({
   function agregarDesdeCatalogo(value: string) {
     if (!value) return;
     if (value === PERSONALIZADA) return addSeccion(null);
-    const deVisita = productos.find((p) => p.productoId === value);
+    const deVisita = productos.find((p) => p.tareaId === value);
     if (deVisita) return addSeccion(deVisita);
     const delCatalogo = catalogo.find((p) => p.id === value);
     if (!delCatalogo) return;
     addSeccion({
-      productoId: delCatalogo.id,
+      tareaId: delCatalogo.id,
       nombre: delCatalogo.nombre,
       descripcion: delCatalogo.descripcion,
       visitasCount: 0,

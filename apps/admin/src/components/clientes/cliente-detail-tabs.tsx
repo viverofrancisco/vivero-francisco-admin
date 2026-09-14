@@ -43,10 +43,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
-import {
-  resumenProductos,
-  type ProductoDeVisita,
-} from "@/lib/visita-productos";
+import { resumenTareas, type VisitaConTareas } from "@/lib/visita-tareas";
 import {
   Plus,
   ArrowLeft,
@@ -82,7 +79,7 @@ interface VisitaRow {
   estado: string;
   notas: string | null;
   cliente: { id: string; nombre: string; apellido?: string | null };
-  productos: ProductoDeVisita[];
+  tareas: VisitaConTareas;
   grupo: { id: string; nombre: string } | null;
 }
 
@@ -503,7 +500,7 @@ export function ClienteDetailTabs({
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold truncate">
-                            {resumenProductos(v)}
+                            {resumenTareas(v.tareas)}
                           </p>
                           <p className="text-xs font-semibold text-muted-foreground">
                             {formatDate(v.fechaProgramada)}

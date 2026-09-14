@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { nombreCliente } from "@vivero/shared";
-import { listaProductos } from "@/lib/visita-productos";
+import { listaTareas } from "@/lib/visita-tareas";
 import { sendPushToUser, sendPushToUsers } from "./expo";
 
 function formatFechaCorta(date: Date): string {
@@ -18,12 +18,45 @@ async function getVisitaForPush(visitaId: string) {
       cliente: {
         select: { userId: true, nombre: true, apellido: true, empresa: true },
       },
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: { producto: { select: { nombre: true } } },
+      // Lo hecho sale de lo que cargó cada jardinero, más lo que se exigía:
+      // una visita recién confirmada todavía no tiene nada hecho, y ahí lo que
+      // se anuncia son las tareas que se pidieron.
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+      personal: {
+        where: { removedAt: null },
+        select: {
+          registradoEl: true,
+          personal: { select: { id: true, nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
+          },
+        },
       },
     },
   });
+}
+
+/**
+ * Qué anunciar de una visita: lo que se hizo si ya hay partes cargados, y si no
+ * lo que se pidió. Una visita recién confirmada no tiene tareas hechas todavía,
+ * y "Sin tareas registradas" no le dice nada al cliente.
+ */
+function tareasParaAvisar(visita: {
+  tareasObligatorias: { tarea: { id: string; nombre: string; orden: number } }[];
+  personal: {
+    registradoEl: Date | null;
+    personal: { id: string; nombre: string; apellido: string | null };
+    tareas: { tarea: { id: string; nombre: string; orden: number } }[];
+  }[];
+}): string {
+  const hechas = listaTareas(visita);
+  if (visita.personal.some((p) => p.tareas.length > 0)) return hechas;
+  const pedidas = visita.tareasObligatorias.map((o) => o.tarea.nombre);
+  return pedidas.length > 0 ? pedidas.join(", ") : "Mantenimiento de jardín";
 }
 
 async function getAdminUserIds(): Promise<string[]> {
@@ -41,7 +74,7 @@ export async function pushConfirmacionVisita(visitaId: string): Promise<void> {
 
   await sendPushToUser(userId, {
     title: "Visita confirmada",
-    body: `${listaProductos(visita)} — ${formatFechaCorta(visita.fechaProgramada)}`,
+    body: `${tareasParaAvisar(visita)} — ${formatFechaCorta(visita.fechaProgramada)}`,
     data: { type: "visita_confirmada", visitaId },
   });
 }
@@ -53,7 +86,7 @@ export async function pushRecordatorioCliente(visitaId: string): Promise<void> {
 
   await sendPushToUser(userId, {
     title: "Recordatorio de visita",
-    body: `Mañana: ${listaProductos(visita)}`,
+    body: `Mañana: ${tareasParaAvisar(visita)}`,
     data: { type: "visita_recordatorio", visitaId },
   });
 }
@@ -67,7 +100,7 @@ export async function pushAlertaCompletada(visitaId: string): Promise<void> {
 
   await sendPushToUsers(admins, {
     title: "Visita completada",
-    body: `${nombreCliente(visita.cliente)} — ${listaProductos(visita)}`,
+    body: `${nombreCliente(visita.cliente)} — ${tareasParaAvisar(visita)}`,
     data: { type: "visita_completada", visitaId },
   });
 }
@@ -81,7 +114,7 @@ export async function pushAlertaIncompleta(visitaId: string): Promise<void> {
 
   await sendPushToUsers(admins, {
     title: `Visita ${visita.estado.toLowerCase()}`,
-    body: `${nombreCliente(visita.cliente)} — ${listaProductos(visita)}`,
+    body: `${nombreCliente(visita.cliente)} — ${tareasParaAvisar(visita)}`,
     data: { type: "visita_incompleta", visitaId },
   });
 }
@@ -89,15 +122,6 @@ export async function pushAlertaIncompleta(visitaId: string): Promise<void> {
 // ──────────────────────────────────────────────
 // Chat de visita
 // ──────────────────────────────────────────────
-
-async function getSectorAdminUserIds(sectorId: string | null): Promise<string[]> {
-  if (!sectorId) return [];
-  const rows = await prisma.sectorAdmin.findMany({
-    where: { sectorId },
-    select: { userId: true },
-  });
-  return rows.map((r) => r.userId);
-}
 
 export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
   const message = await prisma.visitaMessage.findUnique({
@@ -153,14 +177,11 @@ export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
   // Recipients: the "other side" only.
   let recipientIds: string[] = [];
   if (isClienteAuthor) {
-    // Notify all ADMIN/STAFF + PERSONAL_ADMINs of the cliente's sector.
-    const [adminIds, sectorAdminIds] = await Promise.all([
-      getAdminUserIds(),
-      getSectorAdminUserIds(cliente.sectorId),
-    ]);
-    recipientIds = [...new Set([...adminIds, ...sectorAdminIds])];
+    // Escribe el cliente: le avisa a la oficina. Antes se sumaban los capataces
+    // del sector del cliente; ese rol ya no existe.
+    recipientIds = await getAdminUserIds();
   } else {
-    // Author is admin/personal_admin/staff → notify the cliente only.
+    // Escribe la oficina: le avisa al cliente y a nadie más.
     if (cliente.userId) recipientIds = [cliente.userId];
   }
 

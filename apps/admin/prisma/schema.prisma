@@ -51,10 +51,17 @@ model VerificationToken {
 // Enums
 // ──────────────────────────────────────────────
 
+/// Quién es quien entra.
+///
+/// `PERSONAL` es el jardinero, y **cada uno tiene su cuenta**: ve las visitas
+/// donde está asignado y registra en ellas lo que hizo él. Existía además un
+/// `PERSONAL_ADMIN` —un capataz que manejaba las visitas de todo su grupo y las
+/// cerraba por los demás— y se fue al dejar de haber una sola persona que
+/// reporta por el equipo: si cada uno marca sus tareas y sus horas, no hay nada
+/// que delegar. Agendar pasó a ser de oficina (`ADMIN`/`STAFF`).
 enum UserRole {
   ADMIN
   STAFF
-  PERSONAL_ADMIN
   PERSONAL
   CLIENTE
 }
@@ -112,8 +119,18 @@ enum EstadoServicio {
   CANCELADO
 }
 
+/// En qué anda una visita.
+///
+/// `EN_CURSO` es la que ya tiene a alguien registrando lo suyo pero todavía no
+/// se cerró. Hace falta porque cerrar dejó de ser un acto único: cada jardinero
+/// carga sus horas y sus tareas cuando termina, y quién dice que la visita está
+/// terminada es la oficina, mirando lo que cargaron. Sin este estado, una
+/// visita con dos de tres registros se veía igual que una que nadie tocó.
+///
+/// `COMPLETADA` e `INCOMPLETA` las pone **solo `ADMIN`/`STAFF`**, a mano.
 enum EstadoVisita {
   PROGRAMADA
+  EN_CURSO
   COMPLETADA
   INCOMPLETA
   CANCELADA
@@ -172,42 +189,44 @@ model User {
   setPasswordTokens SetPasswordToken[]
 
   // Audit relations
-  clientesCreated         Cliente[]              @relation("ClienteCreatedBy")
-  clientesUpdated         Cliente[]              @relation("ClienteUpdatedBy")
-  media                   Media[]                @relation("MediaCreatedBy")
-  productosCreated        Producto[]             @relation("ProductoCreatedBy")
-  productosUpdated        Producto[]             @relation("ProductoUpdatedBy")
-  movimientosInventario   MovimientoInventario[] @relation("MovimientoCreatedBy")
-  cobrosRegistrados       Cobro[]                @relation("CobroCreatedBy")
-  personalCreated         Personal[]             @relation("JardineroCreatedBy")
-  personalUpdated         Personal[]             @relation("JardineroUpdatedBy")
-  gruposCreated           Grupo[]                @relation("GrupoCreatedBy")
-  gruposUpdated           Grupo[]                @relation("GrupoUpdatedBy")
-  suscripcionesCreated    Suscripcion[]          @relation("SuscripcionCreatedBy")
-  suscripcionesUpdated    Suscripcion[]          @relation("SuscripcionUpdatedBy")
-  visitasCreated          Visita[]               @relation("VisitaCreatedBy")
-  visitasUpdated          Visita[]               @relation("VisitaUpdatedBy")
-  visitasCompletadas      Visita[]               @relation("VisitaCompletadaPor")
-  visitasEliminadas       Visita[]               @relation("VisitaDeletedBy")
-  visitaPersonalAdded     VisitaPersonal[]       @relation("VisitaPersonalAddedBy")
-  visitaPersonalRemoved   VisitaPersonal[]       @relation("VisitaPersonalRemovedBy")
-  personal                Personal?
-  sectorAdmins            SectorAdmin[]
-  cliente                 Cliente?
-  pushTokens              PushToken[]
-  refreshTokens           RefreshToken[]
-  visitaMessages          VisitaMessage[]
-  visitaChatReads         VisitaChatRead[]
-  informesGenerados       Informe[]              @relation("InformeGeneratedBy")
-  informesActualizados    Informe[]              @relation("InformeUpdatedBy")
-  informeVersiones        InformeVersion[]       @relation("InformeVersionGeneratedBy")
-  informeBorradoresCreados     InformeBorrador[] @relation("InformeBorradorCreatedBy")
-  informeBorradoresActualizados InformeBorrador[] @relation("InformeBorradorUpdatedBy")
-  clienteImports          ClienteImport[]        @relation("ClienteImportCreatedBy")
-  ordenesCreated          Orden[]                @relation("OrdenCreatedBy")
-  ordenesUpdated          Orden[]                @relation("OrdenUpdatedBy")
-  datosFacturacionCreated DatoFacturacion[]      @relation("DatoFacturacionCreatedBy")
-  datosFacturacionUpdated DatoFacturacion[]      @relation("DatoFacturacionUpdatedBy")
+  clientesCreated               Cliente[]              @relation("ClienteCreatedBy")
+  clientesUpdated               Cliente[]              @relation("ClienteUpdatedBy")
+  media                         Media[]                @relation("MediaCreatedBy")
+  productosCreated              Producto[]             @relation("ProductoCreatedBy")
+  productosUpdated              Producto[]             @relation("ProductoUpdatedBy")
+  movimientosInventario         MovimientoInventario[] @relation("MovimientoCreatedBy")
+  cobrosRegistrados             Cobro[]                @relation("CobroCreatedBy")
+  personalCreated               Personal[]             @relation("JardineroCreatedBy")
+  personalUpdated               Personal[]             @relation("JardineroUpdatedBy")
+  gruposCreated                 Grupo[]                @relation("GrupoCreatedBy")
+  gruposUpdated                 Grupo[]                @relation("GrupoUpdatedBy")
+  suscripcionesCreated          Suscripcion[]          @relation("SuscripcionCreatedBy")
+  suscripcionesUpdated          Suscripcion[]          @relation("SuscripcionUpdatedBy")
+  visitasCreated                Visita[]               @relation("VisitaCreatedBy")
+  visitasUpdated                Visita[]               @relation("VisitaUpdatedBy")
+  visitasCompletadas            Visita[]               @relation("VisitaCompletadaPor")
+  visitasEliminadas             Visita[]               @relation("VisitaDeletedBy")
+  tareasCreated                 Tarea[]                @relation("TareaCreatedBy")
+  tareasUpdated                 Tarea[]                @relation("TareaUpdatedBy")
+  tareasEliminadas              Tarea[]                @relation("TareaDeletedBy")
+  visitaPersonalAdded           VisitaPersonal[]       @relation("VisitaPersonalAddedBy")
+  visitaPersonalRemoved         VisitaPersonal[]       @relation("VisitaPersonalRemovedBy")
+  personal                      Personal?
+  cliente                       Cliente?
+  pushTokens                    PushToken[]
+  refreshTokens                 RefreshToken[]
+  visitaMessages                VisitaMessage[]
+  visitaChatReads               VisitaChatRead[]
+  informesGenerados             Informe[]              @relation("InformeGeneratedBy")
+  informesActualizados          Informe[]              @relation("InformeUpdatedBy")
+  informeVersiones              InformeVersion[]       @relation("InformeVersionGeneratedBy")
+  informeBorradoresCreados      InformeBorrador[]      @relation("InformeBorradorCreatedBy")
+  informeBorradoresActualizados InformeBorrador[]      @relation("InformeBorradorUpdatedBy")
+  clienteImports                ClienteImport[]        @relation("ClienteImportCreatedBy")
+  ordenesCreated                Orden[]                @relation("OrdenCreatedBy")
+  ordenesUpdated                Orden[]                @relation("OrdenUpdatedBy")
+  datosFacturacionCreated       DatoFacturacion[]      @relation("DatoFacturacionCreatedBy")
+  datosFacturacionUpdated       DatoFacturacion[]      @relation("DatoFacturacionUpdatedBy")
 }
 
 model Cliente {
@@ -282,9 +301,6 @@ model Producto {
   updatedBy   User?   @relation("ProductoUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   suscripcionItems SuscripcionItem[]
-  visitaProductos  VisitaProducto[]
-  visitaMedia      VisitaMedia[]
-  informeSecciones InformeSeccion[]
   ordenLineas      OrdenLinea[]
   facturaLineas    FacturaLinea[]
 
@@ -617,10 +633,9 @@ model SuscripcionItem {
   /// del trimestre. Es informativo — no es un tope, se puede agendar de más.
   visitasPorPeriodo Int?
 
-  suscripcion     Suscripcion      @relation(fields: [suscripcionId], references: [id], onDelete: Cascade)
-  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
-  visitaProductos VisitaProducto[]
-  ordenLineas     OrdenLinea[]
+  suscripcion Suscripcion  @relation(fields: [suscripcionId], references: [id], onDelete: Cascade)
+  producto    Producto     @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  ordenLineas OrdenLinea[]
 
   @@unique([suscripcionId, productoId])
   @@index([productoId])
@@ -665,6 +680,65 @@ model Grupo {
 
   miembros GrupoMiembro[]
   visitas  Visita[]
+}
+
+/// Una tarea de jardinería: lo que se hace en una visita.
+///
+/// **No es un producto y no lleva plata.** Un producto es lo que se le vende al
+/// cliente —un plan de mantenimiento, una siembra cotizada—; una tarea es el
+/// trabajo concreto que el jardinero hace en el jardín y después marca como
+/// hecho. "Poda de setos" no se factura: se factura el plan que la incluye.
+/// Por eso acá no hay precio, ni IVA, ni variantes, ni stock.
+///
+/// El catálogo lo mantiene el admin y es corto y estable: las mismas quince o
+/// veinte tareas se repiten en cada visita del año. De ahí que se elijan de una
+/// lista cerrada en vez de escribirse a mano — texto libre da "poda de setos",
+/// "Poda setos" y "podar los setos" para una sola cosa, y con eso no se puede
+/// ni agrupar las fotos del informe ni contestar "¿se hizo o no se hizo?".
+///
+/// **Se elimina en blando, siempre.** Una tarea eliminada sigue nombrando el
+/// trabajo de todas las visitas donde se hizo, y esas visitas ya se imprimieron
+/// en informes que el cliente tiene guardados. Lo que la eliminación hace es
+/// sacarla de las listas donde se elige; lo que ya pasó no se toca.
+model Tarea {
+  id          String    @id @default(cuid())
+  nombre      String
+  /// Para qué es, si el nombre no alcanza. Es lo que se propone como
+  /// descripción de la sección cuando el informe agrupa fotos por tarea.
+  descripcion String?   @db.Text
+  /// En qué lugar de la lista va. De a diez, como los firmantes: así se mete
+  /// una tarea entre dos sin renumerar el resto.
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  /// Eliminada: deja de ofrecerse, pero sigue nombrando lo que ya se hizo.
+  deletedAt   DateTime?
+
+  createdById     String?
+  updatedById     String?
+  deletedById     String?
+  /// Cómo se llamaba quien la eliminó, congelado. Mismo motivo que en `Visita`:
+  /// el id se queda sin dueño si la cuenta se borra, y un cambio de apellido no
+  /// tiene por qué reescribir lo que pasó.
+  deletedByNombre String?
+
+  createdBy User? @relation("TareaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User? @relation("TareaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedBy User? @relation("TareaDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  /// Dónde se exige y dónde se hizo. Son las dos que impiden borrarla de
+  /// verdad, y el motivo por el que eliminarla es siempre en blando.
+  exigidaEn VisitaTareaObligatoria[]
+  hechaEn   VisitaPersonalTarea[]
+  /// Las fotos etiquetadas con ella, y las secciones de informe que origina.
+  fotos     VisitaMedia[]
+  secciones InformeSeccion[]
+
+  /// El nombre es único **entre las vivas**: eliminar "Poda de palmas" tiene que
+  /// dejar crear una nueva con ese nombre, y las dos conviven sin chocar. Es un
+  /// índice único parcial, escrito a mano en la migración porque Prisma no sabe
+  /// expresarlo — ver el comentario ahí antes de tocar esto.
+  @@index([deletedAt, orden])
 }
 
 model Visita {
@@ -733,21 +807,21 @@ model Visita {
   deletedById         String?
   deletedByNombre     String?
 
-  cliente        Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  productos      VisitaProducto[]
-  grupo          Grupo?            @relation(fields: [grupoId], references: [id], onDelete: SetNull)
-  createdBy      User?             @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy      User?             @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  completadaPor  User?             @relation("VisitaCompletadaPor", fields: [completadaPorId], references: [id], onDelete: SetNull)
-  deletedBy      User?             @relation("VisitaDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
-  media          VisitaMedia[]
-  personal       VisitaPersonal[]
-  notificaciones NotificacionLog[]
-  messages       VisitaMessage[]
-  chatReads      VisitaChatRead[]
-  informes       InformeVisita[]
-  ordenes        OrdenVisita[]
-  suscripcion    Suscripcion?      @relation(fields: [suscripcionId], references: [id], onDelete: SetNull)
+  cliente            Cliente                  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  tareasObligatorias VisitaTareaObligatoria[]
+  grupo              Grupo?                   @relation(fields: [grupoId], references: [id], onDelete: SetNull)
+  createdBy          User?                    @relation("VisitaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy          User?                    @relation("VisitaUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  completadaPor      User?                    @relation("VisitaCompletadaPor", fields: [completadaPorId], references: [id], onDelete: SetNull)
+  deletedBy          User?                    @relation("VisitaDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+  media              VisitaMedia[]
+  personal           VisitaPersonal[]
+  notificaciones     NotificacionLog[]
+  messages           VisitaMessage[]
+  chatReads          VisitaChatRead[]
+  informes           InformeVisita[]
+  ordenes            OrdenVisita[]
+  suscripcion        Suscripcion?             @relation(fields: [suscripcionId], references: [id], onDelete: SetNull)
 
   @@index([clienteId])
   @@index([suscripcionId])
@@ -756,46 +830,17 @@ model Visita {
   @@index([completadaEl])
 }
 
-/// Una visita puede cubrir varios servicios contratados del mismo cliente.
-/// Un producto cubierto por una visita. Una visita puede cubrir varios.
+/// Quién está asignado a una visita y **qué registró de su paso por ella**.
 ///
-/// **No lleva plata.** El precio de un trabajo se decide al facturarlo, en la
-/// orden, igual que todo el resto del dinero del sistema. Acá solo vive el
-/// hecho: qué se hizo y si estaba cubierto por un plan.
-model VisitaProducto {
-  id                String    @id @default(cuid())
-  visitaId          String
-  /// Qué se hizo. Siempre presente, venga de una suscripción o sea trabajo suelto.
-  productoId        String
-  /// Puesto = el plan lo cubre y no se cobra aparte. Null = trabajo suelto, se
-  /// factura creando una orden. No es plata: es cobertura.
-  suscripcionItemId String?
-  /// En qué lugar de la lista va, nada más. Se llamaba `orden` y se leía como
-  /// "a qué orden pertenece", que es justo lo que **no** es: eso vive en
-  /// `OrdenLinea.visitaProductoId`. `OrdenLinea` ya usaba `posicion` para lo
-  /// mismo.
-  posicion          Int       @default(0)
-  /// Cuándo se soltó de una orden anulada.
-  ///
-  /// Anular libera la procedencia, así que el trabajo vuelve a "pendiente" y no
-  /// queda ni rastro de que alguna vez estuvo facturado. Sin esta marca, el
-  /// proceso que arma borradores lo volvería a agarrar y pisaría la decisión de
-  /// no cobrarlo. Facturarlo a mano sigue siendo posible: esto solo frena a los
-  /// automatismos.
-  liberadoAt        DateTime?
-
-  visita           Visita            @relation(fields: [visitaId], references: [id], onDelete: Cascade)
-  producto         Producto          @relation(fields: [productoId], references: [id], onDelete: Restrict)
-  suscripcionItem  SuscripcionItem?  @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
-  /// Dónde se cobró, si ya se cobró. El id es único en `OrdenLineaOrigen`, así
-  /// que esto es a lo sumo uno: un trabajo se factura una sola vez.
-  ordenLineaOrigen OrdenLineaOrigen?
-
-  @@unique([visitaId, productoId])
-  @@index([productoId])
-  @@index([suscripcionItemId])
-}
-
+/// Era solo la asignación: quién tenía que ir. Ahora es además el parte de cada
+/// uno, porque cerrar una visita dejó de ser un acto único. Cada jardinero
+/// entra, pone su hora de entrada, su hora de salida y las tareas que **él**
+/// hizo; el de al lado hace lo mismo con las suyas. Antes reportaba uno solo
+/// por todo el grupo y no quedaba registro de quién había hecho qué.
+///
+/// Las horas están acá y no en la visita porque no todos llegan y se van
+/// juntos. `Visita.horaEntrada`/`horaSalida` siguen existiendo y se recalculan
+/// a partir de estas: la primera entrada y la última salida.
 model VisitaPersonal {
   id          String    @id @default(cuid())
   visitaId    String
@@ -805,12 +850,64 @@ model VisitaPersonal {
   removedAt   DateTime?
   removedById String?
 
-  visita    Visita   @relation(fields: [visitaId], references: [id], onDelete: Cascade)
-  personal  Personal @relation(fields: [personalId], references: [id], onDelete: Cascade)
-  addedBy   User?    @relation("VisitaPersonalAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
-  removedBy User?    @relation("VisitaPersonalRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+  /// Su turno en esta visita. Texto "HH:MM", como en la visita.
+  horaEntrada  String?
+  horaSalida   String?
+  /// Cuándo cargó su parte. `null` = todavía no la cargó, que es lo que la
+  /// visita muestra como "falta" y lo que impide darla por cerrada sola.
+  ///
+  /// Se sella al guardar y se vuelve a sellar al corregir: es "cuándo quedó
+  /// registrado esto que dice acá", no "cuándo lo cargó por primera vez".
+  registradoEl DateTime?
+
+  visita    Visita                @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  personal  Personal              @relation(fields: [personalId], references: [id], onDelete: Cascade)
+  addedBy   User?                 @relation("VisitaPersonalAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+  removedBy User?                 @relation("VisitaPersonalRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+  /// Lo que hizo. Ver `VisitaPersonalTarea`.
+  tareas    VisitaPersonalTarea[]
 
   @@unique([visitaId, personalId])
+}
+
+/// Qué tareas hizo **esta persona** en **esta visita**.
+///
+/// Cuelga de `VisitaPersonal` y no de la visita a propósito: la pregunta que
+/// hay que poder contestar es "¿quién hizo el control de maleza?", y una tabla
+/// colgada de la visita solo contesta "¿se hizo?". Lo que la visita hizo en
+/// total es la unión de estas, y se calcula.
+model VisitaPersonalTarea {
+  visitaPersonalId String
+  tareaId          String
+
+  visitaPersonal VisitaPersonal @relation(fields: [visitaPersonalId], references: [id], onDelete: Cascade)
+  /// `Restrict`: una tarea que alguien ya hizo no se borra de verdad. Igual no
+  /// llega a pasar —`Tarea` se elimina en blando— pero si algún día alguien
+  /// limpia la tabla a mano, que se entere acá y no perdiendo el registro.
+  tarea          Tarea          @relation(fields: [tareaId], references: [id], onDelete: Restrict)
+
+  @@id([visitaPersonalId, tareaId])
+  @@index([tareaId])
+}
+
+/// Una tarea que la visita **exige** que se haga.
+///
+/// Se marcan al agendar y son la pregunta que la oficina se hace al revisar:
+/// "¿hicieron lo que había que hacer?". No bloquean nada —nadie puede impedir
+/// desde una pantalla que un jardinero no pode un seto— pero la visita muestra
+/// cuáles quedaron sin cubrir, y ese es el dato que hacía falta.
+///
+/// "Cubierta" es que **alguien** la haya hecho: se cruza contra la unión de las
+/// `VisitaPersonalTarea` de la visita, no contra una persona en particular.
+model VisitaTareaObligatoria {
+  visitaId String
+  tareaId  String
+
+  visita Visita @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  tarea  Tarea  @relation(fields: [tareaId], references: [id], onDelete: Restrict)
+
+  @@id([visitaId, tareaId])
+  @@index([tareaId])
 }
 
 model VisitaMedia {
@@ -821,15 +918,29 @@ model VisitaMedia {
   tipo      String
   createdAt DateTime @default(now())
 
-  /// Etiqueta opcional: a cuál de los productos de la visita corresponde la foto.
-  productoId String?
+  /// A qué **tarea** corresponde la foto. Opcional.
+  ///
+  /// Era un producto del catálogo, de cuando la visita llevaba productos. Una
+  /// foto de un jardín muestra un trabajo —el seto podado, la maleza sacada—,
+  /// no algo que se vende, así que la etiqueta natural es la tarea. Y es lo que
+  /// hace que el informe se arme solo: las secciones salen de las tareas que se
+  /// hicieron, y cada foto ya sabe a cuál va.
+  ///
+  /// Se etiqueta **al subir**, desde el teléfono, eligiendo entre las tareas que
+  /// esa persona acaba de marcar: es el único momento en que alguien recuerda de
+  /// qué era cada foto.
+  ///
+  /// `SetNull` y no `Restrict`: eliminar una tarea es en blando, así que esto no
+  /// llega a dispararse; si algún día se borra en duro, la foto se queda sin
+  /// clasificar en vez de bloquear el borrado.
+  tareaId String?
 
   visita       Visita               @relation(fields: [visitaId], references: [id], onDelete: Cascade)
-  producto     Producto?            @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  tarea        Tarea?               @relation(fields: [tareaId], references: [id], onDelete: SetNull)
   informeFotos InformeSeccionFoto[]
 
   @@index([visitaId])
-  @@index([productoId])
+  @@index([tareaId])
 }
 
 model VisitaMessage {
@@ -891,18 +1002,6 @@ model Sector {
   deletedAt DateTime?
 
   clientes Cliente[]
-  admins   SectorAdmin[]
-}
-
-model SectorAdmin {
-  id       String @id @default(cuid())
-  sectorId String
-  userId   String
-
-  sector Sector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([sectorId, userId])
 }
 
 // ──────────────────────────────────────────────
@@ -1069,18 +1168,18 @@ model SetPasswordToken {
 // ──────────────────────────────────────────────
 
 model Informe {
-  id            String    @id @default(cuid())
-  clienteId     String
+  id                String    @id @default(cuid())
+  clienteId         String
   /// Correlativo corto, para nombrarlo en voz alta. Como el de visitas y
   /// órdenes: cada tabla tiene su propia secuencia y eso está bien, porque
   /// nunca se muestra un número sin decir de qué es.
-  numero        Int       @unique @default(autoincrement())
+  numero            Int       @unique @default(autoincrement())
   /// Cómo se llama el informe en las listas y en el buscador.
   ///
   /// Es texto plano y sale de la primera línea del encabezado: lo que se
   /// imprime vive en `encabezado`, que puede tener formato y varias líneas, y
   /// eso no se puede mostrar en una fila de tabla.
-  titulo        String
+  titulo            String
   /// El encabezado impreso, tal como se escribió, en HTML.
   ///
   /// Antes eran dos cosas: `titulo` y una segunda línea —"ACTIVIDADES
@@ -1093,7 +1192,7 @@ model Informe {
   /// Null en los informes anteriores a esto: el PDF los sigue armando como
   /// antes, con `titulo` y la línea generada, así que regenerar uno viejo no le
   /// cambia el aspecto.
-  encabezado    String?   @db.Text
+  encabezado        String?   @db.Text
   /// La fecha que **sale impresa** en el PDF, y solo eso.
   ///
   /// Va aparte de `generatedAt` porque son dos hechos distintos: cuándo se
@@ -1101,18 +1200,18 @@ model Informe {
   /// generar el 2 de septiembre y tiene que decir agosto; y regenerarlo para
   /// corregir una foto no puede cambiarle la fecha al documento que el cliente
   /// ya tiene. `generatedAt` sigue siendo el instante real, para auditoría.
-  fecha         DateTime  @db.Date
-  fechaDesde    DateTime?
-  fechaHasta    DateTime?
-  pdfKey        String
-  pdfUrl        String
+  fecha             DateTime  @db.Date
+  fechaDesde        DateTime?
+  fechaHasta        DateTime?
+  pdfKey            String
+  pdfUrl            String
   // Per-informe signers: [{ nombre: string, cedula?: string }]. 1 to 3.
-  firmantes     Json      @default("[]")
-  generatedById String
+  firmantes         Json      @default("[]")
+  generatedById     String
   /// Nombre de quien lo creó, congelado. El id sirve para filtrar; el texto es
   /// lo que pasó, y sobrevive a que la cuenta se renombre o se borre.
   generatedByNombre String?
-  generatedAt   DateTime  @default(now())
+  generatedAt       DateTime  @default(now())
 
   /// Quién y cuándo lo tocó por última vez. Nulo mientras nadie lo editó: eso
   /// dice "sigue como se creó", que es distinto de "lo actualizó quien lo hizo".
@@ -1123,9 +1222,9 @@ model Informe {
   /// En qué versión va. Arranca en 1 y sube con cada edición.
   versionActual Int @default(1)
 
-  cliente     Cliente          @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  generatedBy User             @relation("InformeGeneratedBy", fields: [generatedById], references: [id], onDelete: Restrict)
-  updatedBy   User?            @relation("InformeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  cliente     Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  generatedBy User              @relation("InformeGeneratedBy", fields: [generatedById], references: [id], onDelete: Restrict)
+  updatedBy   User?             @relation("InformeUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   visitas     InformeVisita[]
   secciones   InformeSeccion[]
   versiones   InformeVersion[]
@@ -1241,8 +1340,12 @@ model InformeVisita {
 model InformeSeccion {
   id          String  @id @default(cuid())
   informeId   String
-  /// Producto que origina la sección. Null = sección personalizada.
-  productoId  String?
+  /// Tarea que origina la sección. Null = sección escrita a mano.
+  ///
+  /// El wizard arma una sección por tarea hecha en las visitas elegidas; esto
+  /// es lo que dice de cuál salió, para poder reabrirla y para agrupar sus
+  /// fotos. Antes era un producto, de cuando eso era lo que la visita llevaba.
+  tareaId     String?
   titulo      String
   descripcion String? @db.Text
   orden       Int
@@ -1252,14 +1355,14 @@ model InformeSeccion {
   /// Cuántas fotos por fila: 2 (grandes), 3 (por defecto) o 4 (chicas). Es la
   /// palanca de densidad — pocas fotos grandes llenan la hoja, muchas chicas la
   /// dejan corta.
-  fotosPorFila Int @default(3)
+  fotosPorFila  Int     @default(3)
 
-  informe  Informe              @relation(fields: [informeId], references: [id], onDelete: Cascade)
-  producto Producto?            @relation(fields: [productoId], references: [id], onDelete: SetNull)
-  fotos    InformeSeccionFoto[]
+  informe Informe              @relation(fields: [informeId], references: [id], onDelete: Cascade)
+  tarea   Tarea?               @relation(fields: [tareaId], references: [id], onDelete: SetNull)
+  fotos   InformeSeccionFoto[]
 
   @@index([informeId])
-  @@index([productoId])
+  @@index([tareaId])
 }
 
 /// Una foto de una sección: puede venir de una visita (visitaMediaId) o haber
@@ -1294,12 +1397,29 @@ model InformeSeccionFoto {
   @@index([mediaId])
 }
 
+/// Cómo se ordena el catálogo de tareas.
+///
+/// **Se guarda y manda en todos lados**, no es una vista de la pantalla del
+/// admin: es el orden en que el jardinero ve las casillas al cerrar una visita.
+/// Ordenar alfabéticamente y que el celular del jardinero siguiera mostrando
+/// otra cosa sería tener dos listas.
+enum OrdenTareas {
+  /// El que alguien acomodó arrastrando. Es `Tarea.orden`.
+  PERSONALIZADO
+  ALFABETICO_AZ
+  ALFABETICO_ZA
+}
+
 model EmpresaConfig {
   id        String   @id @default("default")
   nombre    String?
   logoKey   String?
   logoUrl   String?
   updatedAt DateTime @updatedAt
+
+  /// Ver `OrdenTareas`. Arranca en personalizado porque el catálogo se siembra
+  /// en el orden en que se trabaja un jardín, que no es el alfabético.
+  tareasOrden OrdenTareas @default(PERSONALIZADO)
 }
 
 /// A nombre de quién se emite un comprobante electrónico ante el SRI.
@@ -1473,14 +1593,14 @@ model Orden {
 /// De qué visitas es una orden.
 ///
 /// Es una lista y no una columna porque **una orden puede cubrir varias
-/// visitas**: es normal cobrar el mes entero de alguien de una vez. Lo mantiene
-/// el servidor desde la procedencia de las líneas, así que no se recibe de
-/// afuera — una asignación que no trajera trabajo sería una que no queda
-/// registrada en ningún lado.
+/// visitas**: es normal cobrar el mes entero de alguien de una vez.
 ///
-/// Existe además de `OrdenLineaOrigen` porque contesta otra pregunta: aquélla
-/// dice de dónde sale cada peso, ésta "¿de qué es esta orden?", que es la que
-/// se hace primero y la que obligaba a recorrer las líneas.
+/// **Se elige, ya no se deduce.** Antes salía de la procedencia de las líneas,
+/// porque cada línea decía de qué trabajo de qué visita venía. Eso se terminó
+/// cuando la visita dejó de llevar productos: lo que se hace en una visita son
+/// tareas, y una tarea no tiene precio. Así que hoy esto es lo que alguien
+/// marcó —"esta orden es por estas visitas"— y sirve para ir de una a la otra,
+/// no para explicar de dónde sale cada peso.
 model OrdenVisita {
   ordenId  String
   visitaId String
@@ -1527,46 +1647,21 @@ model OrdenLinea {
   periodoInicio     DateTime? @db.Date
   periodoFin        DateTime? @db.Date
 
-  orden           Orden              @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Cascade)
   /// `Restrict` y no `SetNull`: un producto que ya se vendió no se puede
   /// borrar. Perder el vínculo dejaría la línea fuera de todo reporte y la
   /// factura sin con qué reconciliarse.
-  producto        Producto           @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
   /// `Restrict` por lo mismo que el producto: una variante ya vendida no se
   /// borra. Eso hace, de paso, que sacar un eje avise en vez de romper.
-  variante        Variante           @relation(fields: [varianteId], references: [id], onDelete: Restrict)
-  suscripcionItem SuscripcionItem?   @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
-  /// De qué trabajos de visita sale esta línea. Pueden ser varios.
-  origenes        OrdenLineaOrigen[]
+  variante        Variante         @relation(fields: [varianteId], references: [id], onDelete: Restrict)
+  suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
 
   /// Impide facturar dos veces el mismo período de la misma suscripción.
   @@unique([suscripcionItemId, periodoInicio])
   @@index([ordenId, posicion])
   @@index([productoId])
   @@index([varianteId])
-}
-
-/// Qué trabajo de qué visita paga una línea de orden.
-///
-/// Era una columna única en `OrdenLinea`, y eso obligaba a una línea por
-/// visita: el mismo producto hecho en dos visitas salía dos veces en la misma
-/// orden, lo que no le dice nada a nadie —es el mismo producto— y encima
-/// duplicaba la decisión de precio. Ahora una línea junta los dos trabajos.
-///
-/// `visitaProductoId` sigue siendo **único en toda la tabla**: eso es lo que
-/// impide cobrar el mismo trabajo dos veces, y no depende de ninguna
-/// validación de aplicación.
-model OrdenLineaOrigen {
-  ordenLineaId     String
-  visitaProductoId String @unique
-
-  ordenLinea     OrdenLinea     @relation(fields: [ordenLineaId], references: [id], onDelete: Cascade)
-  /// `Restrict`: el trabajo facturado no se borra. Como `VisitaProducto`
-  /// cascadea desde `Visita`, esto también protege a la visita entera.
-  visitaProducto VisitaProducto @relation(fields: [visitaProductoId], references: [id], onDelete: Restrict)
-
-  @@id([ordenLineaId, visitaProductoId])
-  @@index([ordenLineaId])
 }
 
 enum EstadoFactura {
@@ -1782,11 +1877,11 @@ model FacturaLinea {
   /// `codigoPrincipal`, y es de dónde se descontó el stock.
   varianteId String
 
-  factura  Factura   @relation(fields: [facturaId], references: [id], onDelete: Cascade)
-  variante Variante  @relation(fields: [varianteId], references: [id], onDelete: Restrict)
+  factura  Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  variante Variante @relation(fields: [varianteId], references: [id], onDelete: Restrict)
   /// `Restrict` como en `OrdenLinea`: un producto ya facturado no se borra, o
   /// la factura se queda sin con qué reconciliarse.
-  producto Producto  @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
 
   @@index([facturaId, posicion])
   @@index([productoId])

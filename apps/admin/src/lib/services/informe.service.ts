@@ -24,7 +24,7 @@ import {
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { getVisitaForViewer } from "./visita.service";
-import { resumenProductos } from "@/lib/visita-productos";
+import { resumenTareas } from "@/lib/visita-tareas";
 import { renderInformePDF } from "@/lib/informes/render";
 import { LADO_FINAL, bajarFotos, bajarLogo } from "@/lib/informes/fotos";
 import {
@@ -330,7 +330,7 @@ export async function contenidoDeVersionParaEditar(
   if (!c || !Array.isArray(c.secciones)) return null;
 
   const secciones = c.secciones as Array<{
-    productoId?: string | null;
+    tareaId?: string | null;
     titulo?: string;
     descripcion?: string | null;
     saltoDePagina?: boolean;
@@ -366,7 +366,7 @@ export async function contenidoDeVersionParaEditar(
 
   let perdidas = 0;
   const resueltas = secciones.map((sec) => ({
-    productoId: sec.productoId ?? null,
+    tareaId: sec.tareaId ?? null,
     titulo: sec.titulo ?? "",
     descripcion: sec.descripcion ?? "",
     saltoDePagina: sec.saltoDePagina ?? false,
@@ -445,11 +445,17 @@ export async function listVisitasParaInforme(
   const visitas = await prisma.visita.findMany({
     where,
     include: {
-      productos: {
-        orderBy: { posicion: "asc" },
-        include: {
-          producto: {
-                select: { id: true, nombre: true, descripcion: true },
+      tareasObligatorias: {
+        select: { tarea: { select: { id: true, nombre: true, orden: true } } },
+      },
+      personal: {
+        where: { removedAt: null },
+        select: {
+          personal: { select: { nombre: true, apellido: true } },
+          tareas: {
+            select: {
+              tarea: { select: { id: true, nombre: true, orden: true } },
+            },
           },
         },
       },
@@ -463,11 +469,7 @@ export async function listVisitasParaInforme(
     fechaProgramada: v.fechaProgramada,
     fechaRealizada: v.fechaRealizada,
     estado: v.estado,
-    productos: v.productos.map((vs) => ({
-      productoId: vs.producto.id,
-      nombre: vs.producto.nombre,
-    })),
-    servicioNombre: resumenProductos(v),
+    servicioNombre: resumenTareas(v),
     fotosCount: v._count.media,
   }));
 }
@@ -476,71 +478,118 @@ export async function listVisitasParaInforme(
 // Wizard paso 2 — servicios disponibles para armar secciones
 // ──────────────────────────────────────────────
 
-export interface ServicioParaSeccion {
-  productoId: string;
+export interface TareaParaSeccion {
+  tareaId: string;
   nombre: string;
   descripcion: string | null;
-  /// Cuántas de las visitas seleccionadas incluyen este servicio.
+  /// En cuántas de las visitas elegidas se hizo.
   visitasCount: number;
-  /// Fotos de las visitas seleccionadas etiquetadas con este servicio.
+  /// Cuántas fotos ya vienen etiquetadas con ella.
   fotosCount: number;
 }
 
 /**
- * Union de los servicios cubiertos por las visitas seleccionadas. Cada uno se
- * ofrece como sección: el título sale del nombre del servicio y la descripción
- * de la descripción del servicio.
+ * Las tareas que se hicieron en esas visitas: una sección por cada una.
+ *
+ * **Sale de lo que la gente cargó**, no de un catálogo ni de lo que se exigía:
+ * el informe cuenta lo que se hizo. El título de la sección es el nombre de la
+ * tarea y su texto, la descripción de la tarea — por eso el catálogo de tareas
+ * tiene ese campo.
+ *
+ * Se suman además las tareas que **solo aparecen como etiqueta de una foto**:
+ * en el campo se fotografía lo que aparece —un problema de riego durante una
+ * poda— y esa foto tiene que tener una sección donde caer, aunque nadie haya
+ * marcado esa tarea como hecha.
+ *
+ * Antes esto salía de los productos que cubría la visita, y después —mientras
+ * duró la transición— de con qué estaban etiquetadas las fotos. Las dos eran
+ * aproximaciones a esta.
  */
-export async function listServiciosParaInforme(
+export async function listTareasParaInforme(
   viewer: Viewer,
   visitaIds: string[]
-): Promise<ServicioParaSeccion[]> {
+): Promise<TareaParaSeccion[]> {
   ensureInformes(viewer);
   if (visitaIds.length === 0) return [];
   // Verifica que el viewer pueda ver cada visita.
   await Promise.all(visitaIds.map((id) => getVisitaForViewer(id, viewer)));
 
-  const [rows, fotos] = await Promise.all([
-    prisma.visitaProducto.findMany({
-      where: { visitaId: { in: visitaIds } },
-      include: {
-        producto: {
-              select: { id: true, nombre: true, descripcion: true },
+  const [hechas, fotos] = await Promise.all([
+    prisma.visitaPersonalTarea.findMany({
+      where: {
+        visitaPersonal: { visitaId: { in: visitaIds }, removedAt: null },
+      },
+      select: {
+        tareaId: true,
+        visitaPersonal: { select: { visitaId: true } },
+        tarea: {
+          select: { id: true, nombre: true, descripcion: true, orden: true },
         },
       },
-      orderBy: { posicion: "asc" },
     }),
     prisma.visitaMedia.groupBy({
-      by: ["productoId"],
+      by: ["tareaId"],
       where: {
         visitaId: { in: visitaIds },
         tipo: "imagen",
-        productoId: { not: null },
+        tareaId: { not: null },
       },
       _count: { _all: true },
     }),
   ]);
 
-  const fotosPorServicio = new Map(
-    fotos.map((f) => [f.productoId, f._count._all])
+  const fotosPorTarea = new Map(
+    fotos.map((f) => [f.tareaId!, f._count._all])
   );
 
-  const porServicio = new Map<string, ServicioParaSeccion>();
-  for (const row of rows) {
-    const existente = porServicio.get(row.productoId);
-    if (existente) {
-      existente.visitasCount += 1;
-      continue;
+  const porTarea = new Map<string, TareaParaSeccion & { orden: number }>();
+  const visitasPorTarea = new Map<string, Set<string>>();
+  for (const h of hechas) {
+    const visitas = visitasPorTarea.get(h.tareaId) ?? new Set<string>();
+    visitas.add(h.visitaPersonal.visitaId);
+    visitasPorTarea.set(h.tareaId, visitas);
+    if (!porTarea.has(h.tareaId)) {
+      porTarea.set(h.tareaId, {
+        tareaId: h.tarea.id,
+        nombre: h.tarea.nombre,
+        descripcion: h.tarea.descripcion,
+        orden: h.tarea.orden,
+        visitasCount: 0,
+        fotosCount: fotosPorTarea.get(h.tareaId) ?? 0,
+      });
     }
-    porServicio.set(row.productoId, {
-      productoId: row.producto.id,
-      nombre: row.producto.nombre,
-      descripcion: row.producto.descripcion,
-      visitasCount: 1,
-      fotosCount: fotosPorServicio.get(row.productoId) ?? 0,
-    });
   }
-  return [...porServicio.values()];
+
+  // Las que solo aparecen etiquetando una foto.
+  const soloEnFotos = [...fotosPorTarea.keys()].filter((id) => !porTarea.has(id));
+  if (soloEnFotos.length > 0) {
+    const extra = await prisma.tarea.findMany({
+      where: { id: { in: soloEnFotos } },
+      select: { id: true, nombre: true, descripcion: true, orden: true },
+    });
+    for (const t of extra) {
+      porTarea.set(t.id, {
+        tareaId: t.id,
+        nombre: t.nombre,
+        descripcion: t.descripcion,
+        orden: t.orden,
+        visitasCount: 0,
+        fotosCount: fotosPorTarea.get(t.id) ?? 0,
+      });
+    }
+  }
+
+  // En el orden del catálogo: es el orden en que se trabaja un jardín, y por
+  // lo tanto el orden en que se cuenta.
+  return [...porTarea.values()]
+    .sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre, "es"))
+    .map((t) => ({
+      tareaId: t.tareaId,
+      nombre: t.nombre,
+      descripcion: t.descripcion,
+      visitasCount: visitasPorTarea.get(t.tareaId)?.size ?? 0,
+      fotosCount: t.fotosCount,
+    }));
 }
 
 // ──────────────────────────────────────────────
@@ -575,7 +624,7 @@ export async function getMediaPoolDeVisitas(
     visitaId: m.visitaId,
     visitaFecha: m.visita.fechaProgramada,
     // Permite que el wizard prellene cada sección con sus fotos etiquetadas.
-    productoId: m.productoId,
+    tareaId: m.tareaId,
   }));
 }
 
@@ -687,7 +736,7 @@ export interface InformeGeneratePayload {
   firmantes: InformeFirmanteInput[]; // 1 to 3
   secciones: Array<{
     /// Servicio que origina la sección. Null = sección personalizada.
-    productoId?: string | null;
+    tareaId?: string | null;
     titulo: string;
     descripcion?: string | null;
     fotos: InformeSeccionFotoInput[];
@@ -746,22 +795,22 @@ async function armarDatosDelInforme(
     }
   }
 
-  // Las secciones basadas en un servicio tienen que apuntar a un servicio del
-  // cliente; las personalizadas van sin servicio.
+  // Una sección que dice venir de una tarea tiene que apuntar a una que exista;
+  // las escritas a mano van sin tarea.
   const seccionServicioIds = [
     ...new Set(
       payload.secciones
-        .map((sec) => sec.productoId)
+        .map((sec) => sec.tareaId)
         .filter((id): id is string => Boolean(id))
     ),
   ];
   if (seccionServicioIds.length > 0) {
-    const validos = await prisma.producto.count({
+    const validos = await prisma.tarea.count({
       where: { id: { in: seccionServicioIds }, deletedAt: null },
     });
     if (validos !== seccionServicioIds.length) {
       throw new ValidationError(
-        "Alguna sección apunta a un producto que no existe."
+        "Alguna sección apunta a una tarea que no existe."
       );
     }
   }
@@ -1093,7 +1142,7 @@ function canonico(v: unknown): unknown {
 /** Las secciones tal como se guardan, iguales al crear y al editar. */
 function seccionesParaGuardar(
   secciones: Array<{
-    productoId?: string | null;
+    tareaId?: string | null;
     titulo: string;
     descripcion?: string | null;
     saltoDePagina?: boolean;
@@ -1102,7 +1151,7 @@ function seccionesParaGuardar(
   }>
 ) {
   return secciones.map((sec, idx) => ({
-    productoId: sec.productoId ?? null,
+    tareaId: sec.tareaId ?? null,
     titulo: sec.titulo,
     descripcion: sec.descripcion?.trim() || null,
     orden: idx * 10,
@@ -1472,7 +1521,7 @@ export async function getInforme(viewer: Viewer, id: string) {
       secciones: {
         orderBy: { orden: "asc" },
         include: {
-          producto: { select: { id: true, nombre: true } },
+          tarea: { select: { id: true, nombre: true } },
           fotos: { orderBy: { orden: "asc" } },
         },
       },

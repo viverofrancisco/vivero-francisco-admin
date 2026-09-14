@@ -39,11 +39,11 @@ export interface ArchivoDeVisita {
   url: string;
   tipo: string;
   /** De qué producto de la visita es. `null` = sin etiqueta. */
-  productoId: string | null;
+  tareaId: string | null;
 }
 
-interface ProductoOpcion {
-  productoId: string;
+interface TareaOpcion {
+  tareaId: string;
   nombre: string;
 }
 
@@ -54,7 +54,7 @@ const SIN_ETIQUETA = "__sin_etiqueta__";
 const TIPO_ARRASTRE = "application/x-visita-media";
 
 /**
- * Los archivos de una visita: subir, mover entre productos y borrar.
+ * Los archivos de una visita: subir, mover entre tareas y borrar.
  *
  * Vive en la ficha de la visita y cada cambio sale solo. Las fotos se sacan
  * **mientras** se hace el trabajo: quien está en el jardín sube lo que lleva y
@@ -62,27 +62,35 @@ const TIPO_ARRASTRE = "application/x-visita-media";
  * *Guardar cambios* en otra pantalla.
  *
  * **La etiqueta se dice con el lugar, no con un campo.** Hay una sección por
- * producto y se agrega dentro de la que corresponde; mover una foto es
- * mandarla a otra sección. Antes cada foto llevaba su propio desplegable con
- * el nombre del producto repetido debajo del encabezado que ya lo decía, más
- * un tercer selector arriba que fijaba con qué etiqueta entraban las nuevas:
- * tres controles para una sola idea.
+ * etiqueta y se agrega dentro de la que corresponde; mover una foto es mandarla
+ * a otra sección. Antes cada foto llevaba su propio desplegable con el nombre
+ * del producto repetido debajo del encabezado que ya lo decía, más un tercer
+ * selector arriba que fijaba con qué etiqueta entraban las nuevas: tres
+ * controles para una sola idea.
+ *
+ * **La etiqueta es una tarea**, no un producto: una foto de un jardín muestra
+ * un trabajo, no algo que se vende. Y es lo que hace que el informe se arme
+ * solo — sus secciones salen de las tareas hechas, y cada foto ya sabe a cuál
+ * va.
  */
 export function ArchivosVisita({
   visitaId,
   archivos,
-  productos,
   catalogo,
+  hechas = [],
   puedeEditar,
 }: {
   visitaId: string;
   archivos: ArchivoDeVisita[];
-  productos: ProductoOpcion[];
   /**
-   * Todo el catálogo activo. Una foto puede ser de algo que no se agendó —un
-   * problema de riego durante una poda— y esa etiqueta igual sirve al informe.
+   * El catálogo de tareas. Las que **se hicieron en esta visita** van primero:
+   * son las de las que va a haber fotos. El resto sigue disponible, porque en
+   * el campo se fotografía lo que aparece —un problema de riego durante una
+   * poda— y esa foto igual merece su sección en el informe.
    */
-  catalogo: ProductoOpcion[];
+  catalogo: TareaOpcion[];
+  /** Las que alguien cargó como hechas, para ponerlas arriba. */
+  hechas?: string[];
   /** `PERSONAL` mira pero no toca, igual que con el resto de la visita. */
   puedeEditar: boolean;
 }) {
@@ -99,54 +107,41 @@ export function ArchivosVisita({
   /** A qué sección van los archivos que se están eligiendo. */
   const destinoRef = useRef<string | null>(null);
 
-  const deLaVisita = new Set(productos.map((p) => p.productoId));
-  const nombreDe = new Map(
-    [...catalogo, ...productos].map((p) => [p.productoId, p.nombre])
+  const nombreDe = new Map(catalogo.map((p) => [p.tareaId, p.nombre]));
+  const sueltos = archivos.filter((a) => !a.tareaId);
+  const seHizo = new Set(hechas);
+  /** Con qué está etiquetada alguna foto, aunque nadie la haya cargado. */
+  const conFotos = new Set(
+    archivos.map((a) => a.tareaId).filter((id): id is string => !!id)
   );
-  const sueltos = archivos.filter((a) => !a.productoId);
-  /** Etiquetados con algo que no se agendó: cada uno arma su propia sección. */
-  const deOtros = [
-    ...new Set(
-      archivos
-        .map((a) => a.productoId)
-        .filter((id): id is string => !!id && !deLaVisita.has(id))
-    ),
-  ];
 
   /**
-   * Una sección por producto de la visita —aunque no tenga fotos, porque es
-   * donde se agregan—, después los de afuera que sí tengan, y siempre la de
-   * sin etiquetar: es a donde se arrastra una foto para sacarle la etiqueta, y
-   * una sección que no existe no puede recibir nada.
+   * Una sección por tarea hecha —aunque no tenga fotos todavía, porque es donde
+   * se agregan—, después las que solo aparecen etiquetando alguna, y siempre la
+   * de sin etiquetar: es a donde se arrastra una foto para sacarle la etiqueta,
+   * y una sección que no existe no puede recibir nada.
    */
+  const claves = [
+    ...catalogo.filter((t) => seHizo.has(t.tareaId)).map((t) => t.tareaId),
+    ...[...conFotos].filter((id) => !seHizo.has(id)),
+  ];
   const grupos = [
-    ...productos.map((p) => ({
-      clave: p.productoId,
-      titulo: p.nombre,
-      archivos: archivos.filter((a) => a.productoId === p.productoId),
-    })),
-    ...deOtros.map((id) => ({
+    ...claves.map((id) => ({
       clave: id,
-      titulo: nombreDe.get(id) ?? "Otro producto",
-      archivos: archivos.filter((a) => a.productoId === id),
+      titulo: nombreDe.get(id) ?? "Otra tarea",
+      archivos: archivos.filter((a) => a.tareaId === id),
     })),
     { clave: SIN_ETIQUETA, titulo: "Sin etiquetar", archivos: sueltos },
   ].filter((g) => puedeEditar || g.archivos.length > 0);
 
-  /** Los destinos posibles, con lo de la visita primero. */
+  /** Las de la visita primero, igual que los grupos. */
   const destinos = [
-    ...productos.map((p) => ({
-      value: p.productoId,
-      label: p.nombre,
-      hint: "De la visita",
-    })),
     ...catalogo
-      .filter((p) => !deLaVisita.has(p.productoId))
-      .map((p) => ({
-        value: p.productoId,
-        label: p.nombre,
-        hint: "Del catálogo",
-      })),
+      .filter((t) => seHizo.has(t.tareaId))
+      .map((t) => ({ value: t.tareaId, label: t.nombre, hint: "De la visita" })),
+    ...catalogo
+      .filter((t) => !seHizo.has(t.tareaId))
+      .map((t) => ({ value: t.tareaId, label: t.nombre })),
     { value: SIN_ETIQUETA, label: "Sin etiquetar" },
   ];
 
@@ -204,7 +199,7 @@ export function ArchivosVisita({
           files: uploads.map((u: { key: string; tipo: string }) => ({
             key: u.key,
             tipo: u.tipo,
-            productoId: destino === SIN_ETIQUETA ? null : destino,
+            tareaId: destino === SIN_ETIQUETA ? null : destino,
           })),
         }),
       });
@@ -231,7 +226,7 @@ export function ArchivosVisita({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productoId: destino === SIN_ETIQUETA ? null : destino,
+          tareaId: destino === SIN_ETIQUETA ? null : destino,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
@@ -299,7 +294,7 @@ export function ArchivosVisita({
   /** En qué sección está hoy un archivo, para no moverlo a la misma. */
   function grupoDe(mediaId: string) {
     const a = archivos.find((x) => x.id === mediaId);
-    return a?.productoId ?? SIN_ETIQUETA;
+    return a?.tareaId ?? SIN_ETIQUETA;
   }
 
   // Sin permiso y sin archivos no hay nada que mostrar.
@@ -443,12 +438,6 @@ export function ArchivosVisita({
           </div>
         ))}
 
-        {puedeEditar && productos.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            La visita no tiene productos, así que no hay dónde clasificar los
-            archivos.
-          </p>
-        )}
       </CardContent>
 
       <Dialog
@@ -464,7 +453,7 @@ export function ArchivosVisita({
               A qué producto o servicio corresponde.
             </p>
             <CustomSelect
-              value={moviendo?.productoId ?? SIN_ETIQUETA}
+              value={moviendo?.tareaId ?? SIN_ETIQUETA}
               onChange={(v) => {
                 const archivo = moviendo;
                 setMoviendo(null);

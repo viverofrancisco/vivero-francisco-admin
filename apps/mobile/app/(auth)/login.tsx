@@ -32,12 +32,14 @@ export default function LoginScreen() {
       );
       await setSession(res, res.user);
       registerForPushNotifications().catch(() => {});
-      const role = res.user.role;
-      const target =
-        role === "ADMIN" || role === "STAFF" || role === "PERSONAL_ADMIN"
-          ? "/(personal)/visitas"
-          : "/(auth)/admin-redirect";
-      router.replace(target);
+      // Oficina y jardineros van al mismo lugar: la lista de visitas. Lo que
+      // cambia es qué ven —el jardinero, solo las suyas— y eso lo decide el
+      // servidor, no esta pantalla.
+      router.replace(
+        res.user.role === "CLIENTE"
+          ? "/(cliente)/visitas"
+          : "/(personal)/visitas"
+      );
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No pudimos iniciar sesión");
     } finally {

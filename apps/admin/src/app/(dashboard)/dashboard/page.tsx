@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth, getUserSectorIds } from "@/lib/auth-helpers";
+import { requireAuth } from "@/lib/auth-helpers";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import {
@@ -11,10 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
-import {
-  resumenProductos,
-  PRODUCTOS_DE_VISITA_SELECT,
-} from "@/lib/visita-productos";
+import { resumenTareas, TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -138,21 +135,22 @@ export default async function DashboardPage() {
   const finDia = new Date(anio, mes, dia + 1);
 
   const isAdmin = user.role === "ADMIN" || user.role === "STAFF";
-  const isPersonalAdmin = user.role === "PERSONAL_ADMIN";
   const isPersonal = user.role === "PERSONAL";
 
-  // Role-based visit scope (no date filter — applied per query below).
+  // Qué visitas ve cada uno (sin filtro de fecha: eso lo pone cada consulta).
+  //
+  // El jardinero ve **las que tiene asignadas**, no las de su grupo: el grupo
+  // dice con quién suele trabajar, la asignación dice a dónde fue. Eran lo
+  // mismo cuando reportaba el capataz por todos; ahora cada uno carga lo suyo y
+  // lo que importa es dónde estuvo él.
   let scope: Prisma.VisitaWhereInput = {};
-  if (isPersonalAdmin) {
-    const sectorIds = await getUserSectorIds(user.id);
-    scope = { cliente: { sectorId: { in: sectorIds } } };
-  } else if (isPersonal) {
+  if (isPersonal) {
     const personal = await prisma.personal.findUnique({
       where: { userId: user.id },
       select: { id: true },
     });
     scope = personal
-      ? { grupo: { miembros: { some: { personalId: personal.id } } } }
+      ? { personal: { some: { personalId: personal.id, removedAt: null } } }
       : { id: "none" };
   }
 
@@ -167,10 +165,6 @@ export default async function DashboardPage() {
     fechaProgramada: { gte: inicioDia, lt: finDia },
   };
 
-  const sectorIdsForCount = isPersonalAdmin
-    ? await getUserSectorIds(user.id)
-    : [];
-
   const [
     clientesCount,
     serviciosCount,
@@ -183,11 +177,7 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     isAdmin
       ? prisma.cliente.count({ where: { deletedAt: null } })
-      : isPersonalAdmin
-        ? prisma.cliente.count({
-            where: { sectorId: { in: sectorIdsForCount }, deletedAt: null },
-          })
-        : Promise.resolve(0),
+      : Promise.resolve(0),
     isAdmin
       ? prisma.producto.count({ where: { deletedAt: null } })
       : Promise.resolve(0),
@@ -202,7 +192,7 @@ export default async function DashboardPage() {
       where: diaFilter,
       include: {
         cliente: { include: { sector: { select: { nombre: true } } } },
-        productos: PRODUCTOS_DE_VISITA_SELECT,
+        ...TAREAS_DE_VISITA_INCLUDE,
         grupo: { select: { nombre: true } },
       },
       orderBy: [{ horaEntrada: "asc" }, { createdAt: "asc" }],
@@ -252,19 +242,15 @@ export default async function DashboardPage() {
           Bienvenido, {userName}
         </h1>
         <p className="text-sm font-medium text-muted-foreground">
-          {isAdmin
-            ? "Resumen general del vivero"
-            : isPersonalAdmin
-              ? "Resumen de tus sectores"
-              : "Tus próximas visitas"}
+          {isAdmin ? "Resumen general del vivero" : "Tus próximas visitas"}
         </p>
       </div>
 
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {(isAdmin || isPersonalAdmin) && (
+        {isAdmin && (
           <StatCard
-            label={isPersonalAdmin ? "Clientes en tus sectores" : "Clientes activos"}
+            label="Clientes activos"
             value={clientesCount}
             icon={Users}
             iconClass="bg-info/12 text-info"
@@ -344,7 +330,7 @@ export default async function DashboardPage() {
                         {nombre}
                       </div>
                       <div className="truncate text-[12.5px] font-semibold text-muted-foreground">
-                        {resumenProductos(v)}
+                        {resumenTareas(v)}
                       </div>
                     </div>
                     <span className="hidden text-[13px] font-semibold text-muted-foreground sm:block">
@@ -386,7 +372,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {(isAdmin || isPersonalAdmin) && (
+          {isAdmin && (
             <div className="rounded-2xl border border-border bg-card p-5">
               <div className="mb-3.5 text-[15px] font-extrabold text-foreground">
                 Cuadrillas en campo

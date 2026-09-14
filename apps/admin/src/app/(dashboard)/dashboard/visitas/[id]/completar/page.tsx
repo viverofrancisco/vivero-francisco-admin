@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { hrefDeVuelta } from "@/lib/navegacion";
-import { PRODUCTOS_DE_VISITA_SELECT } from "@/lib/visita-productos";
+import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 import { CompletarVisitaPage } from "@/components/visitas/completar-visita-page";
 
 export default async function CompletarVisitaRoute({
@@ -16,8 +16,9 @@ export default async function CompletarVisitaRoute({
   const { id } = await params;
   const { from } = await searchParams;
 
-  // PERSONAL es solo lectura: no debería llegar ni por URL escrita a mano.
-  if (user.role === "PERSONAL") notFound();
+  // Cerrar una visita es de oficina: el jardinero carga su parte desde la ficha
+  // y nada más. No debería llegar acá ni escribiendo la URL.
+  if (user.role !== "ADMIN" && user.role !== "STAFF") notFound();
 
   const [visita, personalList] = await Promise.all([
     prisma.visita.findUnique({
@@ -30,10 +31,7 @@ export default async function CompletarVisitaRoute({
         cliente: {
           select: { nombre: true, apellido: true, empresa: true },
         },
-        productos: PRODUCTOS_DE_VISITA_SELECT,
-        // Quién estaba asignado al agendar: el punto de partida para
-        // corregir quién fue de verdad.
-        personal: { where: { removedAt: null }, select: { personalId: true } },
+        ...TAREAS_DE_VISITA_INCLUDE,
       },
     }),
     prisma.personal.findMany({
@@ -54,8 +52,11 @@ export default async function CompletarVisitaRoute({
         estado: visita.estado,
         fechaProgramada: visita.fechaProgramada.toISOString().split("T")[0],
         cliente: visita.cliente,
-        productos: visita.productos,
-        personalIds: visita.personal.map((p) => p.personalId),
+        tareasObligatorias: visita.tareasObligatorias,
+        personal: visita.personal.map((p) => ({
+          ...p,
+          registradoEl: p.registradoEl?.toISOString() ?? null,
+        })),
       }}
       personalList={personalList}
     />

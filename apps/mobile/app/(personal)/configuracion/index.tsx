@@ -8,7 +8,6 @@ import { useBranding } from "@/lib/branding";
 const ROLE_LABEL: Record<string, string> = {
   ADMIN: "Administrador",
   STAFF: "Staff",
-  PERSONAL_ADMIN: "Supervisor",
   PERSONAL: "Personal",
   CLIENTE: "Cliente",
 };

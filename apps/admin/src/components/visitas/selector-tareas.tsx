@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Check, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
-export interface ProductoElegible {
+export interface TareaElegible {
   id: string;
   nombre: string;
 }
@@ -20,33 +19,26 @@ export interface ProductoElegible {
 const POR_PAGINA = 8;
 
 /**
- * Elegir productos en un popup, no en un dropdown.
+ * Elegir tareas en un popup, no en un dropdown.
  *
  * Lo elegido **sigue en la lista**, marcado: un catálogo que se acorta a medida
  * que se elige obliga a recordar qué se sacó, y desmarcar se vuelve imposible
  * sin cerrar. Va paginado porque el catálogo crece y una lista larga dentro de
  * un modal se navega peor que ocho filas con flechas.
  */
-export function SelectorProductos({
+export function SelectorTareas({
   open,
   onOpenChange,
   catalogo,
   seleccionados,
-  etiqueta,
-  fijos,
+  titulo = "Agregar tareas",
   onToggle,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  catalogo: ProductoElegible[];
+  catalogo: TareaElegible[];
   seleccionados: string[];
-  /** Etiqueta opcional por producto: qué cubre el plan del cliente. */
-  etiqueta?: (id: string) => string | null;
-  /**
-   * Productos que no se pueden destildar acá. Son los que trae el plan
-   * elegido: la forma de sacarlos es soltar el plan, no de a uno.
-   */
-  fijos?: (id: string) => boolean;
+  titulo?: string;
   onToggle: (id: string) => void;
 }) {
   const [busqueda, setBusqueda] = useState("");
@@ -70,7 +62,7 @@ export function SelectorProductos({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Agregar productos</DialogTitle>
+          <DialogTitle>{titulo}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="relative">
@@ -81,32 +73,27 @@ export function SelectorProductos({
                 setBusqueda(e.target.value);
                 setPagina(0);
               }}
-              placeholder="Buscar producto..."
+              placeholder="Buscar tarea..."
               className="pl-9"
             />
           </div>
 
           {visibles.length === 0 ? (
             <p className="rounded-md border border-dashed py-8 text-center text-sm text-muted-foreground">
-              Ningún producto coincide con{" "}
+              Ninguna tarea coincide con{" "}
               <span className="font-medium">{busqueda.trim()}</span>.
             </p>
           ) : (
             <div className="divide-y rounded-md border">
               {visibles.map((p) => {
                 const elegido = seleccionados.includes(p.id);
-                const nota = etiqueta?.(p.id) ?? null;
-                const fijo = fijos?.(p.id) ?? false;
                 return (
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => !fijo && onToggle(p.id)}
+                    onClick={() => onToggle(p.id)}
                     aria-pressed={elegido}
-                    disabled={fijo}
-                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-left ${
-                      fijo ? "opacity-60" : "hover:bg-accent/50"
-                    }`}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50"
                   >
                     <span
                       className={`flex h-4 w-4 flex-none items-center justify-center rounded border ${
@@ -120,11 +107,6 @@ export function SelectorProductos({
                     <span className="min-w-0 flex-1 truncate text-sm">
                       {p.nombre}
                     </span>
-                    {nota && (
-                      <Badge variant="secondary" className="flex-none text-xs">
-                        {nota}
-                      </Badge>
-                    )}
                   </button>
                 );
               })}

@@ -15,16 +15,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
-import { TimePicker } from "@/components/ui/time-picker";
 import { PersonalSelector } from "@/components/grupos/personal-selector";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
 import {
-  SelectorProductos,
-  type ProductoElegible,
-} from "@/components/visitas/selector-productos";
+  SelectorTareas,
+  type TareaElegible,
+} from "@/components/visitas/selector-tareas";
 
 interface VisitaEditable {
   id: string;
@@ -41,7 +40,7 @@ interface VisitaEditable {
     empresa?: string | null;
     sector: { nombre: string } | null;
   };
-  productos: { productoId: string; nombre: string }[];
+  tareasObligatoriasIds: string[];
   /** De qué plan es hoy la visita, si es de alguno. */
   suscripcionId: string | null;
   grupoId: string | null;
@@ -92,13 +91,13 @@ interface PlanOpcion {
 
 export function EditarVisitaPage({
   visita,
-  catalogo,
+  tareas,
   planes,
   grupos,
   personalList,
 }: {
   visita: VisitaEditable;
-  catalogo: ProductoElegible[];
+  tareas: TareaElegible[];
   /** Los planes del cliente, más el que la visita ya tenga. */
   planes: PlanOpcion[];
   grupos: Grupo[];
@@ -110,11 +109,7 @@ export function EditarVisitaPage({
 
   const [fecha, setFecha] = useState(visita.fechaProgramada);
   const [realizada, setRealizada] = useState(visita.fechaRealizada ?? "");
-  const [entrada, setEntrada] = useState(visita.horaEntrada ?? "");
-  const [salida, setSalida] = useState(visita.horaSalida ?? "");
-  const [productoIds, setProductoIds] = useState(
-    visita.productos.map((p) => p.productoId)
-  );
+  const [tareaIds, setTareaIds] = useState(visita.tareasObligatoriasIds);
   /** De qué plan es. Vacío la desvincula: todo pasa a cobrarse aparte. */
   const [suscripcionId, setSuscripcionId] = useState(
     visita.suscripcionId ?? ""
@@ -123,10 +118,10 @@ export function EditarVisitaPage({
   const [personalIds, setPersonalIds] = useState(visita.personalIds);
   const [notas, setNotas] = useState(visita.notas ?? "");
 
-  const elegidos = catalogo.filter((p) => productoIds.includes(p.id));
+  const elegidas = tareas.filter((t) => tareaIds.includes(t.id));
 
-  const alternarProducto = (id: string) =>
-    setProductoIds((prev) =>
+  const alternarTarea = (id: string) =>
+    setTareaIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
 
@@ -137,10 +132,6 @@ export function EditarVisitaPage({
   };
 
   const guardar = async () => {
-    if (productoIds.length === 0) {
-      toast.error("La visita necesita al menos un producto");
-      return;
-    }
     setGuardando(true);
     try {
       const res = await fetch(`/api/visitas/${visita.id}`, {
@@ -149,9 +140,7 @@ export function EditarVisitaPage({
         body: JSON.stringify({
           fechaProgramada: fecha,
           fechaRealizada: realizada || null,
-          horaEntrada: entrada || null,
-          horaSalida: salida || null,
-          productos: productoIds.map((productoId) => ({ productoId })),
+          tareasObligatoriasIds: tareaIds,
           // `null` la desvincula del plan y todo pasa a cobrarse aparte.
           suscripcionId: suscripcionId || null,
           grupoId: grupoId || null,
@@ -199,10 +188,7 @@ export function EditarVisitaPage({
               Cancelar
             </Button>
           </Link>
-          <Button
-            onClick={guardar}
-            disabled={guardando || !elegidos.length}
-          >
+          <Button onClick={guardar} disabled={guardando}>
             {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Guardar cambios
           </Button>
@@ -214,35 +200,38 @@ export function EditarVisitaPage({
         <div className="space-y-6 lg:col-span-2">
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Productos</CardTitle>
+              <CardTitle className="text-base">Tareas obligatorias</CardTitle>
               <CardAction>
                 <span className="text-xs text-muted-foreground">
-                  {elegidos.length}{" "}
-                  {elegidos.length === 1 ? "elegido" : "elegidos"}
+                  {elegidas.length}
                 </span>
               </CardAction>
             </CardHeader>
             <CardContent className="space-y-3">
-              {elegidos.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Lo que esta visita tiene que dejar hecho. No frena nada: la
+                visita muestra cuáles quedaron sin cubrir.
+              </p>
+              {elegidas.length === 0 ? (
                 <p className="rounded-md border border-dashed py-6 text-center text-sm text-muted-foreground">
-                  La visita quedó sin productos.
+                  Sin tareas obligatorias.
                 </p>
               ) : (
                 <div className="divide-y rounded-md border">
-                  {elegidos.map((p) => (
+                  {elegidas.map((t) => (
                     <div
-                      key={p.id}
+                      key={t.id}
                       className="flex items-center gap-3 px-3 py-2.5"
                     >
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                        {p.nombre}
+                        {t.nombre}
                       </span>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 flex-none"
-                        onClick={() => alternarProducto(p.id)}
-                        aria-label={`Quitar ${p.nombre}`}
+                        onClick={() => alternarTarea(t.id)}
+                        aria-label={`Quitar ${t.nombre}`}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
@@ -257,7 +246,7 @@ export function EditarVisitaPage({
                 onClick={() => setEligiendo(true)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Agregar productos
+                Agregar tareas
               </Button>
             </CardContent>
           </Card>
@@ -351,16 +340,10 @@ export function EditarVisitaPage({
                     : "Todavía no se hizo."}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Hora de entrada</Label>
-                  <TimePicker value={entrada} onChange={setEntrada} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Hora de salida</Label>
-                  <TimePicker value={salida} onChange={setSalida} />
-                </div>
-              </div>
+              {/* Las horas no se editan acá: salen de los partes de cada uno
+                  —la primera entrada y la última salida— así que ponerlas a
+                  mano las pisaría con el próximo parte. Corregir una hora es
+                  corregir el parte de quien la cargó. */}
             </CardContent>
           </Card>
 
@@ -399,12 +382,13 @@ export function EditarVisitaPage({
         </div>
       </div>
 
-      <SelectorProductos
+      <SelectorTareas
         open={eligiendo}
         onOpenChange={setEligiendo}
-        catalogo={catalogo}
-        seleccionados={productoIds}
-        onToggle={alternarProducto}
+        catalogo={tareas}
+        seleccionados={tareaIds}
+        titulo="Tareas obligatorias"
+        onToggle={alternarTarea}
       />
     </div>
   );

@@ -174,25 +174,70 @@ export type Personal = Prisma.PersonalModel
  */
 export type Grupo = Prisma.GrupoModel
 /**
+ * Model Tarea
+ * Una tarea de jardinería: lo que se hace en una visita.
+ * 
+ * **No es un producto y no lleva plata.** Un producto es lo que se le vende al
+ * cliente —un plan de mantenimiento, una siembra cotizada—; una tarea es el
+ * trabajo concreto que el jardinero hace en el jardín y después marca como
+ * hecho. "Poda de setos" no se factura: se factura el plan que la incluye.
+ * Por eso acá no hay precio, ni IVA, ni variantes, ni stock.
+ * 
+ * El catálogo lo mantiene el admin y es corto y estable: las mismas quince o
+ * veinte tareas se repiten en cada visita del año. De ahí que se elijan de una
+ * lista cerrada en vez de escribirse a mano — texto libre da "poda de setos",
+ * "Poda setos" y "podar los setos" para una sola cosa, y con eso no se puede
+ * ni agrupar las fotos del informe ni contestar "¿se hizo o no se hizo?".
+ * 
+ * **Se elimina en blando, siempre.** Una tarea eliminada sigue nombrando el
+ * trabajo de todas las visitas donde se hizo, y esas visitas ya se imprimieron
+ * en informes que el cliente tiene guardados. Lo que la eliminación hace es
+ * sacarla de las listas donde se elige; lo que ya pasó no se toca.
+ */
+export type Tarea = Prisma.TareaModel
+/**
  * Model Visita
  * 
  */
 export type Visita = Prisma.VisitaModel
 /**
- * Model VisitaProducto
- * Una visita puede cubrir varios servicios contratados del mismo cliente.
- * Un producto cubierto por una visita. Una visita puede cubrir varios.
- * 
- * **No lleva plata.** El precio de un trabajo se decide al facturarlo, en la
- * orden, igual que todo el resto del dinero del sistema. Acá solo vive el
- * hecho: qué se hizo y si estaba cubierto por un plan.
- */
-export type VisitaProducto = Prisma.VisitaProductoModel
-/**
  * Model VisitaPersonal
+ * Quién está asignado a una visita y **qué registró de su paso por ella**.
  * 
+ * Era solo la asignación: quién tenía que ir. Ahora es además el parte de cada
+ * uno, porque cerrar una visita dejó de ser un acto único. Cada jardinero
+ * entra, pone su hora de entrada, su hora de salida y las tareas que **él**
+ * hizo; el de al lado hace lo mismo con las suyas. Antes reportaba uno solo
+ * por todo el grupo y no quedaba registro de quién había hecho qué.
+ * 
+ * Las horas están acá y no en la visita porque no todos llegan y se van
+ * juntos. `Visita.horaEntrada`/`horaSalida` siguen existiendo y se recalculan
+ * a partir de estas: la primera entrada y la última salida.
  */
 export type VisitaPersonal = Prisma.VisitaPersonalModel
+/**
+ * Model VisitaPersonalTarea
+ * Qué tareas hizo **esta persona** en **esta visita**.
+ * 
+ * Cuelga de `VisitaPersonal` y no de la visita a propósito: la pregunta que
+ * hay que poder contestar es "¿quién hizo el control de maleza?", y una tabla
+ * colgada de la visita solo contesta "¿se hizo?". Lo que la visita hizo en
+ * total es la unión de estas, y se calcula.
+ */
+export type VisitaPersonalTarea = Prisma.VisitaPersonalTareaModel
+/**
+ * Model VisitaTareaObligatoria
+ * Una tarea que la visita **exige** que se haga.
+ * 
+ * Se marcan al agendar y son la pregunta que la oficina se hace al revisar:
+ * "¿hicieron lo que había que hacer?". No bloquean nada —nadie puede impedir
+ * desde una pantalla que un jardinero no pode un seto— pero la visita muestra
+ * cuáles quedaron sin cubrir, y ese es el dato que hacía falta.
+ * 
+ * "Cubierta" es que **alguien** la haya hecho: se cruza contra la unión de las
+ * `VisitaPersonalTarea` de la visita, no contra una persona en particular.
+ */
+export type VisitaTareaObligatoria = Prisma.VisitaTareaObligatoriaModel
 /**
  * Model VisitaMedia
  * 
@@ -223,11 +268,6 @@ export type GrupoMiembro = Prisma.GrupoMiembroModel
  * 
  */
 export type Sector = Prisma.SectorModel
-/**
- * Model SectorAdmin
- * 
- */
-export type SectorAdmin = Prisma.SectorAdminModel
 /**
  * Model NotificacionConfig
  * 
@@ -380,14 +420,14 @@ export type Orden = Prisma.OrdenModel
  * De qué visitas es una orden.
  * 
  * Es una lista y no una columna porque **una orden puede cubrir varias
- * visitas**: es normal cobrar el mes entero de alguien de una vez. Lo mantiene
- * el servidor desde la procedencia de las líneas, así que no se recibe de
- * afuera — una asignación que no trajera trabajo sería una que no queda
- * registrada en ningún lado.
+ * visitas**: es normal cobrar el mes entero de alguien de una vez.
  * 
- * Existe además de `OrdenLineaOrigen` porque contesta otra pregunta: aquélla
- * dice de dónde sale cada peso, ésta "¿de qué es esta orden?", que es la que
- * se hace primero y la que obligaba a recorrer las líneas.
+ * **Se elige, ya no se deduce.** Antes salía de la procedencia de las líneas,
+ * porque cada línea decía de qué trabajo de qué visita venía. Eso se terminó
+ * cuando la visita dejó de llevar productos: lo que se hace en una visita son
+ * tareas, y una tarea no tiene precio. Así que hoy esto es lo que alguien
+ * marcó —"esta orden es por estas visitas"— y sirve para ir de una a la otra,
+ * no para explicar de dónde sale cada peso.
  */
 export type OrdenVisita = Prisma.OrdenVisitaModel
 /**
@@ -395,20 +435,6 @@ export type OrdenVisita = Prisma.OrdenVisitaModel
  * 
  */
 export type OrdenLinea = Prisma.OrdenLineaModel
-/**
- * Model OrdenLineaOrigen
- * Qué trabajo de qué visita paga una línea de orden.
- * 
- * Era una columna única en `OrdenLinea`, y eso obligaba a una línea por
- * visita: el mismo producto hecho en dos visitas salía dos veces en la misma
- * orden, lo que no le dice nada a nadie —es el mismo producto— y encima
- * duplicaba la decisión de precio. Ahora una línea junta los dos trabajos.
- * 
- * `visitaProductoId` sigue siendo **único en toda la tabla**: eso es lo que
- * impide cobrar el mismo trabajo dos veces, y no depende de ninguna
- * validación de aplicación.
- */
-export type OrdenLineaOrigen = Prisma.OrdenLineaOrigenModel
 /**
  * Model DatoFacturacion
  * Los datos con los que se le emite una factura a un cliente.

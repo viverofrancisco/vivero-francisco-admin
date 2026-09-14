@@ -1,9 +1,15 @@
 import { z } from "zod";
 
-// Mirrors prisma's EstadoVisita. Will likely be extended in Phase 2 to track
-// cliente confirmation state — see plan.
+/**
+ * Espejo de `EstadoVisita` en Prisma.
+ *
+ * `EN_CURSO` es la que ya tiene a alguien registrando lo que hizo pero que
+ * nadie dio por terminada. Cerrarla —`COMPLETADA` o `INCOMPLETA`— es de
+ * oficina; el jardinero solo carga su parte.
+ */
 export const estadoVisitaSchema = z.enum([
   "PROGRAMADA",
+  "EN_CURSO",
   "COMPLETADA",
   "INCOMPLETA",
   "CANCELADA",
@@ -17,28 +23,52 @@ export type CancelVisitaBody = z.infer<typeof cancelVisitaSchema>;
 
 // Optional uploaded media keys (after presigned PUT to S3/R2). The server
 // creates VisitaMedia rows from these on completion.
+/**
+ * Una foto o video ya subido, listo para engancharse a la visita.
+ *
+ * `tareaId` es la etiqueta, y se manda **al subir**: desde el teléfono se elige
+ * entre las tareas que esa persona acaba de marcar, que es el único momento en
+ * que alguien recuerda de qué era cada foto. De ahí sale, después, la sección
+ * del informe donde la foto cae sola.
+ */
 const mediaItemSchema = z.object({
   key: z.string().min(1),
   tipo: z.enum(["imagen", "video"]),
-  // Servicio de la visita al que corresponde la foto. Opcional.
-  productoId: z.string().min(1).nullable().optional(),
+  tareaId: z.string().min(1).nullable().optional(),
 });
 
-export const completeVisitaSchema = z.object({
-  notes: z.string().max(2000).optional().nullable(),
-  fechaRealizada: z.string().optional(), // ISO date "YYYY-MM-DD"
+/**
+ * El parte de una persona: sus horas y las tareas que **ella** hizo.
+ *
+ * Es lo que reemplaza a "completar la visita" del lado del jardinero. Cerrarla
+ * pasó a ser de oficina, porque decir que el trabajo está terminado es mirar lo
+ * que cargaron todos y qué falta de lo que se exigía.
+ *
+ * `tareaIds` es el estado final, no un agregado: lo que llega reemplaza lo que
+ * esa persona tuviera cargado, porque el formulario es una lista de casillas y
+ * sin esto no habría forma de desmarcar algo puesto por error.
+ */
+export const parteVisitaSchema = z.object({
+  /** Solo la oficina puede cargar por otro; a un jardinero se le ignora. */
+  personalId: z.string().min(1).optional(),
   horaEntrada: z.string().optional().nullable(), // "HH:MM"
   horaSalida: z.string().optional().nullable(),
+  tareaIds: z.array(z.string().min(1)),
   media: z.array(mediaItemSchema).optional(),
+});
+export type ParteVisitaBody = z.infer<typeof parteVisitaSchema>;
+
+/** Cerrar la visita. Solo ADMIN/STAFF. */
+export const completeVisitaSchema = z.object({
+  notas: z.string().max(2000).optional().nullable(),
+  fechaRealizada: z.string().optional(), // ISO date "YYYY-MM-DD"
 });
 export type CompleteVisitaBody = z.infer<typeof completeVisitaSchema>;
 
 export const incompleteVisitaSchema = z.object({
-  reason: z.string().min(1).max(2000),
+  motivo: z.string().min(1).max(2000),
+  notas: z.string().max(2000).optional().nullable(),
   fechaRealizada: z.string().optional(),
-  horaEntrada: z.string().optional().nullable(),
-  horaSalida: z.string().optional().nullable(),
-  media: z.array(mediaItemSchema).optional(),
 });
 export type IncompleteVisitaBody = z.infer<typeof incompleteVisitaSchema>;
 
@@ -76,23 +106,21 @@ export const requestUploadUrlsSchema = z.object({
 });
 export type RequestUploadUrlsBody = z.infer<typeof requestUploadUrlsSchema>;
 
-/** Sin plata: agendar y cobrar son dos momentos distintos. */
-export const productoDeVisitaSchema = z.object({
-  productoId: z.string().min(1),
-  /**
-   * Si el cliente tiene un plan con este producto, ¿esta visita se descuenta de
-   * él? Por omisión sí — es el caso normal y lo que hacían los clientes viejos
-   * de la API. En `false` la visita queda como trabajo suelto y se cotiza.
-   */
-});
-
+/**
+ * Agendar una visita: cuándo, para quién y con quién.
+ *
+ * **Sin productos.** Llevaba una lista de productos del catálogo, porque de ahí
+ * salía después lo que se le cobraba al cliente; eso se terminó. Lo que se hace
+ * en una visita son tareas, y las carga cada jardinero al terminar. Lo único
+ * que se decide al agendar es si alguna es **obligatoria**.
+ */
 export const createVisitasSchema = z.object({
   clienteId: z.string().min(1),
-  /** Productos que cubre la visita. */
-  productos: z
-    .array(productoDeVisitaSchema)
-    .min(1, "Selecciona al menos un producto"),
   fechas: z.array(z.string().min(1)).min(1, "Selecciona al menos una fecha"),
+  /** Lo que esta visita exige que se haga. Opcional. */
+  tareasObligatoriasIds: z.array(z.string().min(1)).optional(),
+  /** De qué plan es, si es de alguno. */
+  suscripcionId: z.string().nullable().optional(),
   grupoId: z.string().optional().nullable(),
   notas: z.string().trim().max(1000).optional().nullable(),
   personalIds: z.array(z.string()).optional(),
