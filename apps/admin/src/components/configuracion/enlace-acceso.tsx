@@ -55,34 +55,38 @@ export function EnlaceAcceso({
 
   return (
     <div className="space-y-3">
-      <div
-        className={`flex items-start gap-2 rounded-md border px-3 py-2 text-sm ${
-          fallo
-            ? "border-amber-300 bg-amber-50 text-amber-900"
-            : "border-primary/30 bg-primary/5"
-        }`}
-      >
-        {fallo ? (
-          <MailX className="mt-0.5 h-4 w-4 flex-none" />
-        ) : (
-          <Mail className="mt-0.5 h-4 w-4 flex-none text-primary" />
-        )}
-        <p>
-          {!seIntento ? (
-            <>Copia el enlace y envíaselo por donde prefieras.</>
-          ) : datos.correoEnviado ? (
-            <>
-              Le enviamos el enlace a <strong>{correo}</strong>. También se lo
-              puedes enviar por otro medio.
-            </>
+      {/* Solo cuando hubo un correo de por medio: ahí el aviso dice algo que no
+          se ve —si salió, y a qué dirección—. Sin correo decía "copia el
+          enlace" arriba del campo con el enlace y el botón de copiar, que es
+          repetir en un recuadro lo que la pantalla ya está haciendo. */}
+      {seIntento && (
+        <div
+          className={`flex items-start gap-2 rounded-md border px-3 py-2 text-sm ${
+            fallo
+              ? "border-amber-300 bg-amber-50 text-amber-900"
+              : "border-primary/30 bg-primary/5"
+          }`}
+        >
+          {fallo ? (
+            <MailX className="mt-0.5 h-4 w-4 flex-none" />
           ) : (
-            <>
-              No pudimos enviar el correo. Copia el enlace y envíaselo por donde
-              prefieras.
-            </>
+            <Mail className="mt-0.5 h-4 w-4 flex-none text-primary" />
           )}
-        </p>
-      </div>
+          <p>
+            {datos.correoEnviado ? (
+              <>
+                Le enviamos el enlace a <strong>{correo}</strong>. También se lo
+                puedes enviar por otro medio.
+              </>
+            ) : (
+              <>
+                No pudimos enviar el correo. Copia el enlace y envíaselo por
+                donde prefieras.
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <Input
