@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { estadoColor, estadoLabel } from "@/lib/estado-visita";
+import { estadoLabel } from "@/lib/estado-visita";
 import {
   ScrollView,
   StyleSheet,
@@ -21,11 +21,30 @@ import type { VisitaDetail } from "@/lib/types";
 import { listaTareas } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth-store";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
+
+/**
+ * Si la visita es de hoy, comparando por día y no por instante.
+ *
+ * `fechaProgramada` es `@db.Date` y llega como medianoche **UTC**; compararla
+ * con un `Date` local haría que una visita de mañana pareciera de hoy al oeste
+ * de Greenwich. Por eso se comparan las dos como texto `AAAA-MM-DD` en UTC.
+ */
+function mismoDiaQueHoy(fechaProgramada: string): boolean {
+  const hoy = new Date();
+  const hoyUTC = new Date(
+    Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
+  );
+  return fechaProgramada.slice(0, 10) === hoyUTC.toISOString().slice(0, 10);
+}
 
 export default function PersonalVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const [visita, setVisita] = useState<VisitaDetail | null>(null);
   const [catalogo, setCatalogo] = useState<TareaDeCatalogo[]>([]);
@@ -121,10 +140,27 @@ export default function PersonalVisitaScreen() {
    * distinto: llegar, irse, y corregir después.
    */
   const mio = (visita.personal ?? []).find((p) => p.personalId === personalId);
+
+  /**
+   * Marcar entrada solo el día de la visita.
+   *
+   * El servidor no lo exige —una visita del mes pasado se puede cargar, que es
+   * cuando hace falta— pero la app no tiene por qué ofrecerlo: marcar la
+   * entrada de mañana no significa nada, y la de la semana pasada es fechar
+   * hacia atrás algo que dice "estuve acá a esta hora". Si de verdad hay que
+   * arreglar una vieja, lo hace la oficina corrigiendo el instante.
+   *
+   * **La salida no lleva esta regla.** Quien entró sigue pudiendo salir aunque
+   * el día haya cambiado: un turno que cruza la medianoche termina en una fecha
+   * distinta a la de la visita, y esconderle el botón lo dejaría adentro.
+   */
+  const esDeHoy = mismoDiaQueHoy(visita.fechaProgramada);
   const accion = !mio
     ? null
     : !mio.entradaEl
-      ? "Marcar entrada"
+      ? esDeHoy
+        ? "Marcar entrada"
+        : null
       : !mio.salidaEl
         ? "Marcar salida"
         : "Editar mi parte";
@@ -133,35 +169,33 @@ export default function PersonalVisitaScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Hero */}
-        <View style={styles.hero}>
-          <View
-            style={[
-              styles.estadoChip,
-              { backgroundColor: estadoBg(visita.estado) },
-            ]}
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 6 }]}>
+        {/* La flecha a la izquierda del nombre. El estado no está acá: ya se
+            lee en la fila de la lista de donde se vino, y repetirlo arriba de
+            todo gasta la línea más visible de la pantalla en algo que no se
+            hace nada con él. Vive abajo, en Cuándo, junto al resto del
+            historial de la visita. */}
+        <View style={styles.encabezado}>
+          <PressableScale
+            onPress={() => router.back()}
+            hitSlop={8}
+            style={styles.volver}
           >
-            <View
-              style={[
-                styles.estadoDot,
-                { backgroundColor: estadoColor(visita.estado) },
-              ]}
-            />
-            <Text variant="bodySmall" style={styles.estadoLabel}>
-              {estadoLabel(visita.estado)}
+            <Ionicons name="chevron-back" size={24} color={tema.texto} />
+          </PressableScale>
+          <View style={styles.encabezadoTexto}>
+            <Text style={styles.heroTitle} numberOfLines={2}>
+              {nombreCliente(cliente)}
+            </Text>
+            <Text style={styles.heroSubtitle} numberOfLines={1}>
+              {listaTareas(visita)}
             </Text>
           </View>
-          <Text variant="headlineSmall" style={styles.heroTitle}>
-            {nombreCliente(cliente)}
-          </Text>
-          <Text variant="bodyMedium" style={styles.heroSubtitle}>
-            {listaTareas(visita)}
-          </Text>
         </View>
 
         {/* Cuándo */}
         <Section title="Cuándo">
+          <Row label="Estado" value={estadoLabel(visita.estado)} />
           <Row label="Programada" value={formatDate(visita.fechaProgramada)} />
           {visita.fechaRealizada ? (
             <Row
@@ -257,6 +291,11 @@ export default function PersonalVisitaScreen() {
 
       {/* Sticky actions */}
       <View style={styles.footer}>
+        {canAct && !accion && mio && !mio.entradaEl ? (
+          <Text style={styles.soloHoy}>
+            La entrada se marca el día de la visita.
+          </Text>
+        ) : null}
         {canAct && accion ? (
           <Button
             mode="contained"
@@ -345,20 +384,6 @@ function tipoLabel(tipo: string): string {
 
 
 
-function estadoBg(estado: string): string {
-  switch (estado) {
-    case "PROGRAMADA":
-      return "#e8f5e9";
-    case "COMPLETADA":
-      return "#f0f0f0";
-    case "INCOMPLETA":
-      return "#fff3e0";
-    case "CANCELADA":
-      return "#ffebee";
-    default:
-      return "#f4f4f4";
-  }
-}
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
@@ -372,34 +397,37 @@ const styles = StyleSheet.create({
   },
   muted: { color: "#888" },
 
-  hero: {
-    paddingVertical: 8,
-    paddingBottom: 16,
-    gap: 6,
-  },
-  heroTitle: { color: "#111", fontWeight: "700" },
-  heroSubtitle: { color: "#777" },
-
-  estadoChip: {
+  /** La flecha y el nombre en una línea, como pide el sistema de diseño. */
+  encabezado: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
     gap: 6,
-    marginBottom: 4,
+    paddingBottom: 16,
   },
-  estadoDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+  volver: {
+    width: 40,
+    height: 40,
+    marginLeft: -10,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  estadoLabel: {
-    fontWeight: "500",
-    color: "#222",
+  encabezadoTexto: { flex: 1, gap: 2 },
+  heroTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+    color: tema.texto,
   },
+  heroSubtitle: { fontSize: 13.5, fontWeight: "600", color: tema.texto3 },
 
+
+  soloHoy: {
+    textAlign: "center",
+    color: tema.texto3,
+    fontSize: 13,
+    fontWeight: "600",
+    paddingVertical: 14,
+  },
   section: { marginTop: 20, gap: 6 },
   sectionLabel: {
     color: "#888",
