@@ -11,26 +11,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LogIn, LogOut } from "lucide-react";
+import { Smartphone } from "lucide-react";
 import { toast } from "sonner";
-import { ubicacionActual } from "@/lib/ubicacion";
 import type { PersonalDeVisita } from "@/lib/visita-tareas";
 
 /**
- * Marcar mi entrada y mi salida, desde el encabezado de la visita.
+ * Lo que el asignado puede hacer con su parte **desde el portal**.
  *
- * Vive donde la oficina tiene *Editar* y *Completar*, porque es la acción de
- * esta pantalla: tenía una tarjeta propia arriba de todo y ocupaba media
- * pantalla para mostrar dos guiones y un botón. Las horas marcadas se leen en
- * *Detalles*, con el resto de lo que pasó.
+ * Marcar entrada y salida no está acá, y no por falta de ganas: marcar
+ * significa "estuve acá a esta hora", y en el navegador la ubicación que lo
+ * respalda se falsea en tres clics —las DevTools de Chrome traen un override,
+ * sin instalar nada—. Una marca hecha desde la web no dice nada que no diga
+ * escribir la hora a mano, y encima parece que sí. En el teléfono el permiso se
+ * pide en serio, la lectura es mucho mejor y Android delata las de mock.
  *
- * Los dos momentos los **sella el servidor** al apretar, en vez de dos campos
- * donde escribir una hora: eso es lo que convierte el dato en "estuvo ahí a esa
- * hora" y no "alguien dijo que estuvo". Al salir se pregunta qué hizo, porque
- * recién ahí lo sabe.
- *
- * Las fotos no están acá: se suben desde *Archivos*, en cualquier momento,
- * porque se sacan mientras se trabaja.
+ * Así que desde acá se corrige lo que uno marcó —qué tareas hizo, que no tiene
+ * nada que ver con dónde estaba— y las horas se leen en *Detalles*. Las fotos
+ * se suben desde *Archivos*, en cualquier momento.
  */
 export function MiParte({
   visitaId,
@@ -50,9 +47,6 @@ export function MiParte({
     () => new Set(parte.tareas.map((t) => t.tarea.id))
   );
 
-  const entrada = parte.entradaEl;
-  const salida = parte.salidaEl;
-
   const exigidas = new Set(obligatoriasIds);
   /** Las obligatorias primero: al final de una lista de diecisiete se esconden. */
   const tareas = [
@@ -60,38 +54,8 @@ export function MiParte({
     ...catalogo.filter((t) => !exigidas.has(t.tareaId)),
   ];
 
-  async function marcar(tipo: "ENTRADA" | "SALIDA") {
-    setCargando(true);
-    try {
-      // La ubicación se pide antes de mandar y no se exige: si no llega, la
-      // marca sale igual y la oficina ve que vino sin ubicación.
-      const ubicacion = await ubicacionActual();
-      const res = await fetch(`/api/visitas/${visitaId}/marca`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo,
-          ubicacion,
-          ...(tipo === "SALIDA" ? { tareaIds: [...elegidas] } : {}),
-        }),
-      });
-      const datos = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(datos?.error ?? "No pudimos marcar");
-      toast.success(tipo === "ENTRADA" ? "Entrada marcada" : "Salida marcada");
-      if (!ubicacion) {
-        toast.warning("Se marcó sin ubicación: no pudimos obtenerla.");
-      }
-      setAbierto(false);
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pudimos marcar");
-    } finally {
-      setCargando(false);
-    }
-  }
-
-  /** Corregir lo que hizo, después de haber salido. No mueve las marcas. */
-  async function guardarTareas() {
+  /** Corregir lo que hizo. No toca las marcas: la hora a la que llegó ya pasó. */
+  async function guardar() {
     setCargando(true);
     try {
       const res = await fetch(`/api/visitas/${visitaId}/parte`, {
@@ -120,39 +84,34 @@ export function MiParte({
     });
   }
 
+  // Todavía no salió: lo que corresponde es marcar, y eso es del teléfono. Se
+  // dice justo donde estaría el botón, que es donde lo van a buscar.
+  if (!parte.salidaEl) {
+    return (
+      <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+        <Smartphone className="h-4 w-4 flex-none" />
+        {parte.entradaEl ? "Marca tu salida" : "Marca tu entrada"} desde la app
+      </span>
+    );
+  }
+
   return (
     <>
-      {!entrada ? (
-        <Button onClick={() => marcar("ENTRADA")} disabled={cargando}>
-          <LogIn className="mr-2 h-4 w-4" />
-          {cargando ? "Marcando…" : "Marcar entrada"}
-        </Button>
-      ) : !salida ? (
-        <Button onClick={() => setAbierto(true)} disabled={cargando}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Marcar salida
-        </Button>
-      ) : (
-        // Después de salir queda poder corregir lo que marcó: sin esto, una
-        // tarea tildada por error no se arregla desde ningún lado.
-        <Button
-          variant="outline"
-          onClick={() => setAbierto(true)}
-          disabled={cargando}
-        >
-          Editar mi parte
-        </Button>
-      )}
+      <Button
+        variant="outline"
+        onClick={() => setAbierto(true)}
+        disabled={cargando}
+      >
+        Editar mi parte
+      </Button>
 
-      {/* Al salir se pregunta qué hizo: recién ahí lo sabe. Preguntárselo al
-          llegar sería pedirle que adivine. */}
       <Dialog
         open={abierto}
         onOpenChange={(v) => !v && !cargando && setAbierto(false)}
       >
         <DialogContent className="sm:max-w-lg" pantallaCompletaEnMovil>
           <DialogHeader>
-            <DialogTitle>{salida ? "Lo que hice" : "¿Qué hiciste?"}</DialogTitle>
+            <DialogTitle>Lo que hice</DialogTitle>
           </DialogHeader>
 
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
@@ -189,11 +148,8 @@ export function MiParte({
             >
               Cancelar
             </Button>
-            <Button
-              onClick={() => (salida ? guardarTareas() : marcar("SALIDA"))}
-              disabled={cargando}
-            >
-              {cargando ? "Guardando…" : salida ? "Guardar" : "Marcar salida"}
+            <Button onClick={guardar} disabled={cargando}>
+              {cargando ? "Guardando…" : "Guardar"}
             </Button>
           </DialogFooter>
         </DialogContent>

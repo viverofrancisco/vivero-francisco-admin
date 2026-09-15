@@ -266,9 +266,20 @@ whoever enters at 23:50 and leaves at 00:30 has an exit before their entry, and
 the visit's own derived `horaEntrada`/`horaSalida` (still text, still derived —
 now the earliest and latest *marks*, registered or not, because someone who
 clocked in is already in the garden) sorted them wrong. Marking salida is the
-moment the tareas are asked for: that is when they are known. The buttons live
-in the visita's **header**, where the office has *Editar* and *Completar* —
-they are what this screen is for, to the person who opens it. They had a *Mi
+moment the tareas are asked for: that is when they are known. **Marking happens only in the app.** Marking means "I was here at this hour",
+and that is worth exactly what the location backing it is worth — in a browser
+that location is faked in three clicks (Chrome's DevTools ship a location
+override, nothing to install), so a mark made from the web says nothing that
+typing the hour wouldn't, while looking like it does. On the phone the
+permission is asked for real, the reading is far better, and Android exposes
+mock providers. So `POST /api/visitas/[id]/marca` is gone and only the mobile
+route remains; `ensureQuienMarca` refuses anyone who isn't the assigned
+`PERSONAL`, the office included. When someone's phone died, what the office does
+is **correct** the instant through `registrarParte` — a different thing with a
+different name, because "he told me he was there from 8 to 12" is not a mark.
+From the portal the assigned person corrects *what they did* (tareas, which have
+nothing to do with where they stood) and reads their hours in *Detalles*; where
+the button would be, the header says the marking happens in the app. They had a *Mi
 parte* card of their own above everything, which spent half a screen showing two
 dashes and a button; the marks are read in *Detalles* now, as `Entrada` /
 `Salida` followed by their own `Duración` — and for the assigned person those

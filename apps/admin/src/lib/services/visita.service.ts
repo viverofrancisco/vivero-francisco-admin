@@ -481,6 +481,29 @@ function columnasDeUbicacion(
 }
 
 /**
+ * Marcar es del teléfono, y solo de quien marca.
+ *
+ * Marcar significa "estuve acá a esta hora", y eso vale lo que valga la
+ * ubicación que lo acompaña. En el navegador esa ubicación **se falsea en tres
+ * clics** —las DevTools de Chrome traen un override, sin instalar nada— así que
+ * una marca hecha desde la web no dice nada que no diga escribir la hora a
+ * mano, y encima parece que sí. En el teléfono el permiso se pide en serio, la
+ * lectura es mucho mejor y Android delata las de mock (`simulada`).
+ *
+ * Así que la ruta web se fue y esto solo acepta al asignado: la oficina no
+ * marca por nadie. Cuando a alguien se le murió el teléfono, lo que la oficina
+ * hace es **corregir** el instante con `registrarParte`, que es otra cosa y se
+ * llama distinto — "me dijo que estuvo de 8 a 12" no es lo mismo que una marca.
+ */
+function ensureQuienMarca(viewer: Viewer) {
+  if (viewer.role !== "PERSONAL") {
+    throw new ForbiddenError(
+      "Marcar entrada y salida es de quien hace la visita, desde la app."
+    );
+  }
+}
+
+/**
  * Marca la entrada: sella el momento y guarda dónde estaba.
  *
  * El momento es **ahora**, no una hora que alguien escribe: eso es lo que
@@ -499,13 +522,10 @@ function columnasDeUbicacion(
 export async function marcarEntrada(
   visitaId: string,
   viewer: Viewer,
-  opciones: { personalId?: string; ubicacion?: UbicacionDeMarca } = {}
+  opciones: { ubicacion?: UbicacionDeMarca } = {}
 ) {
-  const { visita, asignacion } = await miAsignacion(
-    visitaId,
-    viewer,
-    opciones.personalId
-  );
+  ensureQuienMarca(viewer);
+  const { visita, asignacion } = await miAsignacion(visitaId, viewer);
   if (asignacion.entradaEl) {
     throw new ConflictError("Ya marcaste tu entrada en esta visita.");
   }
@@ -549,17 +569,13 @@ export async function marcarSalida(
   visitaId: string,
   viewer: Viewer,
   payload: {
-    personalId?: string;
     ubicacion?: UbicacionDeMarca;
     tareaIds: string[];
     media?: VisitaMediaInput[];
   }
 ) {
-  const { asignacion } = await miAsignacion(
-    visitaId,
-    viewer,
-    payload.personalId
-  );
+  ensureQuienMarca(viewer);
+  const { asignacion } = await miAsignacion(visitaId, viewer);
   if (!asignacion.entradaEl) {
     throw new ConflictError("Primero marca tu entrada.");
   }

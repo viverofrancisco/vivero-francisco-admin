@@ -84,11 +84,15 @@ export const ubicacionMarcaSchema = z.object({
 export type UbicacionMarcaBody = z.infer<typeof ubicacionMarcaSchema>;
 
 /**
- * Marcar entrada o salida.
+ * Marcar entrada o salida. **Solo desde la app.**
  *
  * El servidor sella el momento: no se manda una hora, porque una hora que manda
  * el cliente es una hora que el cliente elige. Al salir se dice qué se hizo,
  * que es cuando recién se sabe.
+ *
+ * No lleva `personalId`: marca el que marca. La oficina no marca por nadie —lo
+ * que hace cuando a alguien se le murió el teléfono es corregir el instante con
+ * `parteVisitaSchema`, que es otra cosa y se llama distinto.
  *
  * La ubicación no se exige. Falta señal adentro de una pared, con la batería
  * baja o con el teléfono en la camioneta, y negarse a registrar por eso deja a
@@ -97,12 +101,10 @@ export type UbicacionMarcaBody = z.infer<typeof ubicacionMarcaSchema>;
 export const marcaVisitaSchema = z.discriminatedUnion("tipo", [
   z.object({
     tipo: z.literal("ENTRADA"),
-    personalId: z.string().min(1).optional(),
     ubicacion: ubicacionMarcaSchema.optional().nullable(),
   }),
   z.object({
     tipo: z.literal("SALIDA"),
-    personalId: z.string().min(1).optional(),
     ubicacion: ubicacionMarcaSchema.optional().nullable(),
     tareaIds: z.array(z.string().min(1)),
     media: z.array(mediaItemSchema).optional(),

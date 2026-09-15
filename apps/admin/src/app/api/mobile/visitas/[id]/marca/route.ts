@@ -8,14 +8,19 @@ import {
 } from "@/lib/mobile/route-helpers";
 
 /**
- * Marcar entrada o salida desde el teléfono.
+ * Marcar entrada o salida. **Esta es la única ruta que marca.**
+ *
+ * La del portal web se fue: ahí la ubicación se falsea en tres clics con las
+ * DevTools, así que una marca hecha desde el navegador no dice nada que no diga
+ * escribir la hora a mano, y encima parece que sí. Acá el permiso se pide en
+ * serio y Android delata las de mock.
  *
  * El instante lo pone el servidor, no el cliente: una hora que manda el
  * teléfono es una hora que el teléfono elige. Lo que sí viaja es dónde estaba,
  * y eso puede faltar — ver `marcarEntrada` para por qué se registra igual.
  *
- * Sin filtro de rol acá: el servicio decide quién puede y sobre quién. Repetir
- * la regla en la ruta es tener dos lugares donde se puede desincronizar.
+ * Sin filtro de rol acá: el servicio decide quién puede. Repetir la regla en la
+ * ruta es tener dos lugares donde se puede desincronizar.
  */
 export async function POST(
   request: Request,
@@ -41,11 +46,9 @@ export async function POST(
     const visita =
       datos.tipo === "ENTRADA"
         ? await marcarEntrada(id, viewer, {
-            personalId: datos.personalId,
             ubicacion: datos.ubicacion ?? undefined,
           })
         : await marcarSalida(id, viewer, {
-            personalId: datos.personalId,
             ubicacion: datos.ubicacion ?? undefined,
             tareaIds: datos.tareaIds,
             media: datos.media,
