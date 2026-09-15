@@ -2802,7 +2802,7 @@ function PhotoPickerModal({
             miniatura, y pegado al borde del área con scroll quedaba cortado. */}
           <div className="flex-1 overflow-y-auto p-1">
             {pool.length === 0 && subidas.length === 0 ? (
-              <EmptyState text="No quedan fotos de las visitas sin asignar. Podés subir las tuyas." />
+              <EmptyState text="No quedan fotos de las visitas sin asignar. Puedes subir las tuyas." />
             ) : (
               <div className="grid grid-cols-4 gap-2">
                 {subidas.map((f) => (

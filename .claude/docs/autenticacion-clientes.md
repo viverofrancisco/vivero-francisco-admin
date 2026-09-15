@@ -125,22 +125,36 @@ cuando se mandó a la persona equivocada).
 ## Personal de campo: la cuenta nace en su ficha
 
 Un jardinero no se invita desde *Usuarios* —no tiene correo al que mandarle
-nada—: su cuenta se crea desde `/dashboard/personal/[id]`, en la tarjeta
-**Acceso a la app**, que es solo para `ADMIN`. Ahí se elige su `usuario` (se
-propone inicial + apellido, se puede escribir otro) y sale un **enlace** para
-pasarle por donde sea. La contraseña la elige él: acá tampoco nadie elige la de
-otro.
+nada—: **su cuenta nace con su ficha**, en la misma transacción. Era un botón
+aparte en la ficha, y un botón aparte es un paso que alguien se saltea: quedaba
+gente cargada que no podía entrar a la app, y nadie se enteraba hasta que había
+que cargar un parte. Crearla siempre no abre nada —una cuenta sin contraseña no
+entra a ningún lado— y al que no deba entrar se le revoca.
 
-`personal-acceso.service.ts` es todo lo que hace falta:
+El `usuario` se **genera**, no se escribe: inicial del nombre más el primer
+apellido, sin tildes ni eñes (`Fernando Herrera` → `fherrera`). Si ya está
+tomado se numera (`fherrera2`): dos Fernando Herrera en la misma cuadrilla no es
+raro, y el único de la base rechazaría al segundo justo al guardar su ficha,
+donde nadie está pensando en usuarios.
 
-- `crearCuentaPersonal(personalId, usuario)` — crea el `User` (rol `PERSONAL`,
-  sin correo y sin contraseña) y escribe `Personal.userId` **en la misma
-  transacción**: un `User` de rol `PERSONAL` suelto no se ve desde ningún lado
-  del portal —*Usuarios* lista solo la oficina— y quedaría ocupando el usuario.
-  Devuelve el enlace de invitación (7 días).
-- `cambiarUsuarioPersonal(personalId, usuario)` — existe porque el usuario se
-  elige de apuro y se dicta por teléfono; sin esto, un tipeo obligaba a borrar
-  la cuenta y con ella el historial de quién cargó cada parte. No toca la
+La tarjeta **Acceso a la app** de `/dashboard/personal/[id]` (solo `ADMIN`)
+muestra el usuario, si ya eligió contraseña, un botón que genera el **enlace** y
+el de revocar. El enlace **no** se emite al crear la cuenta: quemaría su semana
+de vigencia el día que se carga la ficha, que suele ser antes de que la persona
+empiece.
+
+`personal-acceso.service.ts`:
+
+- `usuarioSugerido(nombre, apellido)` — el usuario que le toca. `usuarioLibre()`
+  le agrega el número si hace falta.
+- `crearCuentaPersonal(tx, personal)` — recibe el `tx` porque va dentro de la
+  transacción de la ficha: un `User` de rol `PERSONAL` suelto no se ve desde
+  ningún lado del portal —*Usuarios* lista solo la oficina— y quedaría ocupando
+  el usuario. No emite enlace.
+- `cambiarUsuarioPersonal(personalId, usuario)` — `PATCH
+  /api/personal/[id]/usuario`. Existe porque el generador a veces se equivoca
+  —un apodo cargado como nombre, o un `fherrera2`— y borrar la cuenta para
+  arreglarlo se llevaría el historial de quién cargó cada parte. No toca la
   contraseña ni los enlaces vivos.
 - `setAccesoPersonal(personalId, revocado)` — el mismo `revocarAcceso()` /
   `restaurarAcceso()` de la oficina, con la ficha de por medio para que la
@@ -170,7 +184,8 @@ si vuelve.
 | Ciclo del token (emitir, leer, consumir) — clientes y usuarios | `apps/admin/src/lib/services/acceso.service.ts` |
 | Servicio de cliente (resolver por teléfono/correo, invitar, login) | `apps/admin/src/lib/services/cliente-invite.service.ts` |
 | Invitar / restablecer usuarios del portal | `apps/admin/src/app/api/users/{invite,[id]/enlace-acceso}/route.ts` |
-| Cuenta del personal de campo (crear, renombrar, revocar) | `apps/admin/src/lib/services/personal-acceso.service.ts` + `apps/admin/src/app/api/personal/[id]/{cuenta,acceso}/route.ts` |
+| Cuenta del personal de campo (generar usuario, renombrar, revocar) | `apps/admin/src/lib/services/personal-acceso.service.ts` + `apps/admin/src/app/api/personal/[id]/{usuario,acceso}/route.ts` |
+| Alta de la ficha, que crea la cuenta | `apps/admin/src/app/api/personal/route.ts` |
 | Tarjeta *Acceso a la app* en la ficha | `apps/admin/src/components/personal/acceso-personal.tsx` |
 | Rutas mobile | `apps/admin/src/app/api/mobile/auth/cliente/{login,request-invite}/route.ts` |
 | Rutas públicas set-password | `apps/admin/src/app/api/auth/set-password/route.ts` |

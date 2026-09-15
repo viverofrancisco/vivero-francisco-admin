@@ -15,14 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { KeyRound, Pencil, ShieldOff, UserPlus } from "lucide-react";
+import { KeyRound, Pencil, ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 import {
   EnlaceAcceso,
   type EnlaceGenerado,
 } from "@/components/configuracion/enlace-acceso";
 
-/** Cómo está el acceso de esta persona. `null` = nunca se le creó cuenta. */
+/** Cómo está el acceso de esta persona. */
 export interface EstadoCuenta {
   userId: string;
   usuario: string | null;
@@ -34,11 +34,14 @@ export interface EstadoCuenta {
 /**
  * El acceso de quien trabaja en el campo.
  *
- * No tiene correo, así que no se lo puede invitar como al resto: se le elige un
- * **usuario** —un nombre corto que se le dicta— y se le pasa un enlace con el
- * que elige su propia contraseña. Por eso todo esto vive acá y no en Usuarios:
- * su nombre, su teléfono y su grupo están en esta ficha, y tener la cuenta en
- * otra pantalla era tener dos lugares para la misma persona.
+ * No tiene correo, así que entra con un **usuario** que se genera solo al crear
+ * su ficha. Lo único que hay que hacer acá es pasarle el enlace con el que
+ * elige su contraseña —nadie elige la de otro— y, si hace falta, cortarle el
+ * acceso.
+ *
+ * Vive en esta ficha y no en Usuarios porque acá están su nombre, su teléfono y
+ * su grupo: una segunda pantalla para la misma persona es como dos pantallas
+ * empiezan a decir cosas distintas.
  */
 export function AccesoPersonal({
   personalId,
@@ -55,62 +58,50 @@ export function AccesoPersonal({
   const router = useRouter();
   const [estado, setEstado] = useState(estadoInicial);
   const [cargando, setCargando] = useState(false);
-
-  /** El diálogo abierto: crear la cuenta, cambiar el usuario, o ninguno. */
-  const [dialogo, setDialogo] = useState<null | "crear" | "usuario">(null);
-  const [usuario, setUsuario] = useState("");
   const [generado, setGenerado] = useState<EnlaceGenerado | null>(null);
+  const [editandoUsuario, setEditandoUsuario] = useState(false);
+  const [usuario, setUsuario] = useState("");
   const [confirmandoRevocar, setConfirmandoRevocar] = useState(false);
 
-  function abrir(cual: "crear" | "usuario") {
-    setUsuario(cual === "usuario" ? (estado?.usuario ?? "") : sugerir(nombre));
-    setGenerado(null);
-    setDialogo(cual);
-  }
-
-  async function pedir(url: string, method: "POST" | "PATCH", body: unknown) {
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const datos = await res.json();
-    if (!res.ok) throw new Error(datos.error ?? "No pudimos completar la acción");
-    return datos;
-  }
-
-  async function crearCuenta() {
+  /** Un enlace nuevo. Anula el anterior, así que también sirve para cortarlo. */
+  async function generarEnlace() {
+    if (!estado) return;
     setCargando(true);
     try {
-      const datos = await pedir(`/api/personal/${personalId}/cuenta`, "POST", {
-        usuario,
+      const res = await fetch(`/api/users/${estado.userId}/enlace-acceso`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // Sin contraseña todavía es la invitación de siempre, que dura una
+          // semana; con contraseña es un restablecimiento, y eso dura una hora.
+          tipo: estado.tieneContrasena ? "restablecer" : "invitacion",
+          enviarCorreo: false,
+        }),
       });
-      setEstado(datos.estado);
-      // El diálogo no se cierra: adentro está el enlace, y es la única vez que
-      // se puede ver.
-      setGenerado({
-        enlace: datos.enlace,
-        expiraEl: datos.expiraEl,
-        correoEnviado: false,
-        correoIntentado: false,
-      });
-      toast.success("Cuenta creada");
+      const datos = await res.json();
+      if (!res.ok) throw new Error(datos.error ?? "No pudimos generar el enlace");
+      setGenerado(datos);
+      setEstado({ ...estado, enlacePendiente: true });
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pudimos crear la cuenta");
+      toast.error(err instanceof Error ? err.message : "No pudimos generarlo");
     } finally {
       setCargando(false);
     }
   }
 
-  async function cambiarUsuario() {
+  async function guardarUsuario() {
     setCargando(true);
     try {
-      const datos = await pedir(`/api/personal/${personalId}/cuenta`, "PATCH", {
-        usuario,
+      const res = await fetch(`/api/personal/${personalId}/usuario`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario }),
       });
+      const datos = await res.json();
+      if (!res.ok) throw new Error(datos.error ?? "No pudimos cambiarlo");
       setEstado(datos.estado);
-      setDialogo(null);
+      setEditandoUsuario(false);
       toast.success("Usuario actualizado");
       router.refresh();
     } catch (err) {
@@ -120,40 +111,18 @@ export function AccesoPersonal({
     }
   }
 
-  /** Un enlace nuevo. Anula el anterior, así que también sirve para cortarlo. */
-  async function generarEnlace() {
-    setCargando(true);
-    try {
-      const res = await fetch(`/api/users/${estado?.userId}/enlace-acceso`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          // Sin contraseña todavía es la invitación de siempre, que dura una
-          // semana; con contraseña es un restablecimiento, y eso dura una hora.
-          tipo: estado?.tieneContrasena ? "restablecer" : "invitacion",
-          enviarCorreo: false,
-        }),
-      });
-      const datos = await res.json();
-      if (!res.ok) throw new Error(datos.error ?? "No pudimos generar el enlace");
-      setGenerado(datos);
-      setDialogo("crear");
-      setEstado((e) => (e ? { ...e, enlacePendiente: true } : e));
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pudimos generarlo");
-    } finally {
-      setCargando(false);
-    }
-  }
-
   async function cambiarAcceso(revocado: boolean) {
     setCargando(true);
     try {
-      const datos = await pedir(`/api/personal/${personalId}/acceso`, "POST", {
-        revocado,
+      const res = await fetch(`/api/personal/${personalId}/acceso`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ revocado }),
       });
+      const datos = await res.json();
+      if (!res.ok) throw new Error(datos.error ?? "No pudimos cambiarlo");
       setEstado(datos.estado);
+      setConfirmandoRevocar(false);
       toast.success(revocado ? "Acceso revocado" : "Acceso restaurado");
       router.refresh();
     } catch (err) {
@@ -169,55 +138,45 @@ export function AccesoPersonal({
         <CardHeader className="border-b">
           <CardTitle>Acceso a la app</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {!estado ? (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Todavía no tiene cuenta. Sin una no puede entrar a la app ni
-                cargar su parte de las visitas.
-              </p>
-              {puedeAdministrar && (
-                <Button className="w-full" onClick={() => abrir("crear")}>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Crear cuenta
-                </Button>
-              )}
-            </>
+            <p className="text-sm text-muted-foreground">No tiene cuenta.</p>
           ) : (
             <>
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Usuario</p>
-                  <p className="truncate font-mono text-sm">{estado.usuario}</p>
+                  <p className="truncate font-mono text-sm font-semibold">
+                    {estado.usuario}
+                  </p>
                 </div>
-                {puedeAdministrar && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex-none"
-                    onClick={() => abrir("usuario")}
-                  >
-                    <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                    Cambiar
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-1.5">
-                {estado.revocado ? (
-                  <Badge variant="destructive">Acceso revocado</Badge>
-                ) : estado.tieneContrasena ? (
-                  <Badge variant="secondary">Activo</Badge>
-                ) : (
-                  <Badge variant="outline">Falta que elija su contraseña</Badge>
-                )}
-                {estado.enlacePendiente && !estado.revocado && (
-                  <Badge variant="outline">Enlace pendiente</Badge>
-                )}
+                <div className="flex flex-none items-center gap-2">
+                  {estado.revocado ? (
+                    <Badge variant="destructive">Revocado</Badge>
+                  ) : estado.tieneContrasena ? (
+                    <Badge variant="secondary">Activo</Badge>
+                  ) : (
+                    <Badge variant="outline">Sin contraseña</Badge>
+                  )}
+                  {puedeAdministrar && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Cambiar usuario"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setUsuario(estado.usuario ?? "");
+                        setEditandoUsuario(true);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {puedeAdministrar && (
-                <div className="space-y-2 pt-1">
+                <div className="space-y-2">
                   <Button
                     variant="outline"
                     className="w-full"
@@ -225,9 +184,7 @@ export function AccesoPersonal({
                     onClick={generarEnlace}
                   >
                     <KeyRound className="mr-2 h-4 w-4" />
-                    {estado.tieneContrasena
-                      ? "Restablecer contraseña"
-                      : "Generar enlace otra vez"}
+                    Generar enlace de contraseña
                   </Button>
 
                   {estado.revocado ? (
@@ -257,80 +214,63 @@ export function AccesoPersonal({
         </CardContent>
       </Card>
 
+      {/* El enlace, apenas se genera. Es la única vez que se puede ver. */}
       <Dialog
-        open={dialogo !== null}
-        onOpenChange={(abierto) => !abierto && setDialogo(null)}
+        open={generado !== null}
+        onOpenChange={(v) => !v && setGenerado(null)}
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {generado
-                ? "Enlace listo"
-                : dialogo === "usuario"
-                  ? "Cambiar usuario"
-                  : "Crear cuenta"}
-            </DialogTitle>
+            <DialogTitle>Enlace para {nombre}</DialogTitle>
           </DialogHeader>
+          {generado && <EnlaceAcceso datos={generado} />}
+          <DialogFooter>
+            <Button onClick={() => setGenerado(null)}>Listo</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-          {generado ? (
-            <div className="space-y-4">
-              <EnlaceAcceso datos={generado} />
-              <div className="flex justify-end">
-                <Button onClick={() => setDialogo(null)}>Listo</Button>
-              </div>
+      <Dialog open={editandoUsuario} onOpenChange={setEditandoUsuario}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cambiar usuario</DialogTitle>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              guardarUsuario();
+            }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="usuario-personal">Usuario</Label>
+              <Input
+                id="usuario-personal"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="font-mono"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Minúsculas, sin espacios ni arroba.
+              </p>
             </div>
-          ) : (
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (dialogo === "usuario") cambiarUsuario();
-                else crearCuenta();
-              }}
-            >
-              <div className="space-y-2">
-                <Label htmlFor="usuario-personal">Usuario</Label>
-                <Input
-                  id="usuario-personal"
-                  value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  className="font-mono"
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Con esto entra a la app. En minúsculas, sin espacios ni
-                  arroba: se lo vas a tener que dictar.
-                </p>
-              </div>
-
-              {dialogo === "crear" && (
-                <p className="text-sm text-muted-foreground">
-                  La contraseña no la elegís vos: al crear la cuenta te damos un
-                  enlace para pasarle, y la elige {nombre}.
-                </p>
-              )}
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDialogo(null)}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={cargando || !usuario.trim()}>
-                  {cargando
-                    ? "Guardando..."
-                    : dialogo === "usuario"
-                      ? "Guardar"
-                      : "Crear cuenta"}
-                </Button>
-              </div>
-            </form>
-          )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditandoUsuario(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={cargando || !usuario.trim()}>
+                {cargando ? "Guardando…" : "Guardar"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -342,10 +282,8 @@ export function AccesoPersonal({
           <DialogHeader>
             <DialogTitle>Revocar el acceso de {nombre}</DialogTitle>
             <DialogDescription>
-              No va a poder entrar a la app hasta que se lo devuelvas, y los
-              enlaces que le hayas mandado dejan de servir. La cuenta queda: su
-              nombre sigue firmando los partes y las visitas que cargó, y su
-              contraseña no se toca, así que devolvérselo es un clic.
+              No va a poder entrar a la app hasta que se lo devuelvas. Su cuenta
+              y su historial quedan como están.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -359,10 +297,7 @@ export function AccesoPersonal({
             <Button
               variant="destructive"
               disabled={cargando}
-              onClick={async () => {
-                await cambiarAcceso(true);
-                setConfirmandoRevocar(false);
-              }}
+              onClick={() => cambiarAcceso(true)}
             >
               {cargando ? "Revocando…" : "Revocar acceso"}
             </Button>
@@ -371,23 +306,4 @@ export function AccesoPersonal({
       </Dialog>
     </>
   );
-}
-
-/**
- * Un usuario para empezar: inicial del nombre + apellido.
- *
- * Es solo una propuesta —se puede escribir otro— pero evita la pausa de
- * inventarlo, que es cuando salen los usuarios con mayúsculas y tildes.
- */
-function sugerir(nombre: string): string {
-  const partes = nombre
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, "")
-    .split(/\s+/)
-    .filter(Boolean);
-  if (partes.length === 0) return "";
-  if (partes.length === 1) return partes[0].slice(0, 30);
-  return `${partes[0][0]}${partes[partes.length - 1]}`.slice(0, 30);
 }

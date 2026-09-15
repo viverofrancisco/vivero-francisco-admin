@@ -1027,7 +1027,7 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
         ajenas
           .map((o) => `  #${o.numero} · ${o.estado} · $${o.total}`)
           .join("\n") +
-        `\n\nBorralas o desenganchalas de su visita y volvé a correr --limpiar.`
+        `\n\nBórralas o desengánchalas de su visita y vuelve a correr --limpiar.`
     );
     process.exit(1);
   }

@@ -69,18 +69,15 @@ export function EnlaceAcceso({
         )}
         <p>
           {!seIntento ? (
-            <>
-              No enviamos ningún correo. Copiá el enlace y mandáselo por donde
-              prefieras.
-            </>
+            <>Copia el enlace y envíaselo por donde prefieras.</>
           ) : datos.correoEnviado ? (
             <>
-              Le enviamos el enlace a <strong>{correo}</strong>. Podés mandárselo
-              también por otro medio.
+              Le enviamos el enlace a <strong>{correo}</strong>. También se lo
+              puedes enviar por otro medio.
             </>
           ) : (
             <>
-              No pudimos enviar el correo. Copiá el enlace y mandáselo por donde
+              No pudimos enviar el correo. Copia el enlace y envíaselo por donde
               prefieras.
             </>
           )}
@@ -107,10 +104,12 @@ export function EnlaceAcceso({
         </Button>
       </div>
 
+      {/* La caducidad y el "no se vuelve a mostrar" son lo único que no se
+          puede averiguar después: el resto —que al abrirlo elige su contraseña—
+          se entiende al abrirlo. */}
       <p className="text-xs text-muted-foreground">
-        Caduca {vencimiento(datos.expiraEl)}. Al abrirlo elige su contraseña y ya
-        puede entrar. Este enlace no se vuelve a mostrar y anula cualquier otro
-        que le hayas mandado antes; si lo perdés, generá uno nuevo.
+        Caduca {vencimiento(datos.expiraEl)}. No se vuelve a mostrar y anula los
+        enlaces anteriores.
       </p>
     </div>
   );

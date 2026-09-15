@@ -354,7 +354,7 @@ export function EmitirFacturaPage({
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Las líneas vienen de la orden. Podés juntarlas en una sola —
+                Las líneas vienen de la orden. Puedes juntarlas en una sola —
                 &quot;servicio de mantenimiento&quot;— mientras el documento siga
                 cuadrando con ella.
               </p>

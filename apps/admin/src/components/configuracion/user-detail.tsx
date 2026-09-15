@@ -189,8 +189,7 @@ export function UserDetail({ user }: Props) {
                   Restablecer contraseña
                 </Button>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Le mandamos un enlace para que elija la suya. Su contraseña
-                  actual sigue sirviendo hasta que lo use.
+                  Le enviamos un enlace para que elija la suya.
                 </p>
               </CardContent>
             </Card>
@@ -214,12 +213,9 @@ export function UserDetail({ user }: Props) {
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Generamos un enlace de un solo uso para que{" "}
-                <strong>{nombreCompleto}</strong> elija su contraseña.
-                {user.email
-                  ? " Se lo mandamos por correo y también lo vas a poder copiar."
-                  : " Lo vas a poder copiar para mandárselo por donde prefieras."}{" "}
-                Anula cualquier otro que le hayas mandado antes.
+                <strong>{nombreCompleto}</strong> elige su contraseña con un
+                enlace de un solo uso.
+                {user.email && " Se lo enviamos por correo."}
               </p>
               <div className="flex justify-end gap-2">
                 <Button

@@ -187,7 +187,7 @@ export async function bajarLogo(
     // que ya no existía.
     console.warn(
       `Logo de la empresa: ${res.status} al bajar ${url}. El informe sale sin ` +
-        `logo; volvé a subirlo en Configuración → Empresa.`
+        `logo; vuelve a subirlo en Configuración → Empresa.`
     );
     return null;
   }

@@ -26,7 +26,7 @@ export async function logoDeLaEmpresa(): Promise<LogoEmpresa | null> {
     if (!res.ok) {
       console.warn(
         `Logo de la empresa: ${res.status} al bajar ${config.logoUrl}. ` +
-          `El comprobante sale sin logo; volvé a subirlo en Configuración → Empresa.`
+          `El comprobante sale sin logo; vuelve a subirlo en Configuración → Empresa.`
       );
       return null;
     }

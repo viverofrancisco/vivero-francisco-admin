@@ -508,7 +508,7 @@ export function NuevaOrdenPage({
               >
                 visita del {fecha(desdeVisita.fecha)}
               </Link>{" "}
-              ya cargado. Podés sumarle más productos antes de guardar.
+              ya cargado. Puedes sumarle más productos antes de guardar.
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">

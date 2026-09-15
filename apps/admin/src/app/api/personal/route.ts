@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { personalSchema } from "@/lib/validations/personal";
+import { crearCuentaPersonal } from "@/lib/services/personal-acceso.service";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -34,19 +35,29 @@ export async function POST(request: Request) {
   }
 
   const data = result.data;
-  const personal = await prisma.personal.create({
-    data: {
-      nombre: data.nombre,
-      apellido: data.apellido || null,
-      telefono: data.telefono || null,
 
-      especialidad: data.especialidad || null,
-      sueldo: data.sueldo || null,
-      estado: data.estado,
-      tipo: data.tipo || null,
-      createdById: user.id,
-      updatedById: user.id,
-    },
+  // La ficha y su cuenta, juntas. Crear la cuenta aparte era un paso que
+  // alguien se salteaba, y quedaba gente cargada que no podía entrar a la app;
+  // nadie se enteraba hasta que había que cargar un parte. Una cuenta sin
+  // contraseña no entra a ningún lado, así que crearla siempre no abre nada: al
+  // que no deba entrar se le revoca el acceso desde su ficha.
+  const personal = await prisma.$transaction(async (tx) => {
+    const creado = await tx.personal.create({
+      data: {
+        nombre: data.nombre,
+        apellido: data.apellido || null,
+        telefono: data.telefono || null,
+
+        especialidad: data.especialidad || null,
+        sueldo: data.sueldo || null,
+        estado: data.estado,
+        tipo: data.tipo || null,
+        createdById: user.id,
+        updatedById: user.id,
+      },
+    });
+    await crearCuentaPersonal(tx, creado);
+    return creado;
   });
 
   return NextResponse.json(personal, { status: 201 });

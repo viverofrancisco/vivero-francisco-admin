@@ -409,7 +409,7 @@ export function VisitaResultForm({
             </View>
           </Section>
 
-          {/* Lo que hiciste **vos**. Otro puede haber hecho otras cosas en la
+          {/* Lo que hiciste **tú**. Otro puede haber hecho otras cosas en la
               misma visita y las carga en su propio parte. */}
           <Section title="Tareas que hiciste">
             <View style={styles.tareas}>
