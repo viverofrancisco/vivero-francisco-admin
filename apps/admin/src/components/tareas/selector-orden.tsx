@@ -21,18 +21,19 @@ import { OPCIONES_ORDEN, type ModoOrden } from "./orden-tareas";
  * al lado del buscador y las opciones se abren en un cajón desde abajo —donde
  * está el pulgar, y con renglones grandes de tocar.
  *
- * Es un solo componente y no dos usos sueltos para que el estado —cuál está
- * elegido, si está deshabilitado— se pase una vez y no pueda desincronizarse
- * entre una pantalla y la otra.
+ * Es un solo componente y no dos usos sueltos para que cuál está elegido se
+ * pase una vez y no pueda desincronizarse entre una pantalla y la otra.
+ *
+ * No tiene estado deshabilitado: con un acomodo a medio guardar la fila entera
+ * se reemplaza por la barra de Cancelar/Guardar, así que este control no está
+ * en pantalla en el único momento en que habría que apagarlo.
  */
 export function SelectorOrden({
   value,
   onChange,
-  disabled = false,
 }: {
   value: ModoOrden;
   onChange: (modo: ModoOrden) => void;
-  disabled?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
 
@@ -51,7 +52,6 @@ export function SelectorOrden({
           onChange={(v) => onChange(v as ModoOrden)}
           options={OPCIONES_ORDEN}
           anchoMinimo={220}
-          disabled={disabled}
         />
       </div>
 
@@ -60,7 +60,6 @@ export function SelectorOrden({
         size="icon"
         className="flex-none md:hidden"
         aria-label="Ordenar"
-        disabled={disabled}
         onClick={() => setAbierto(true)}
       >
         <ArrowDownUp className="h-4 w-4" />

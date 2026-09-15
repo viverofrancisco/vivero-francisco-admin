@@ -285,34 +285,14 @@ export function TareasPageClient({
       </p>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
-        <div className="flex flex-none flex-wrap items-center gap-3">
-          <div className="relative min-w-0 max-w-sm flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar tarea..."
-              value={busqueda}
-              onChange={(e) => {
-                setBusqueda(e.target.value);
-                setPage(1);
-                // Con un filtro puesto no se puede mover nada, así que un
-                // contador de seleccionadas quedaría colgado sin acción.
-                setMarcadas([]);
-                setSeleccionandoMovil(false);
-              }}
-              className="pl-9"
-            />
-          </div>
-          {/* Cambiar de modo con un acomodo a medio hacer lo tiraría a la
-              basura sin avisar. Primero se resuelve la barra de abajo. */}
-          <SelectorOrden
-            value={modo}
-            onChange={cambiarModo}
-            disabled={hayCambios}
-          />
-        </div>
-
+        {/* Con un acomodo a medio hacer, esta fila **se convierte** en la barra
+            de guardado en vez de aparecer una segunda debajo: el buscador ahí no
+            sirve —filtrar apaga el arrastre— y el selector de orden ya está
+            deshabilitado, así que los dos controles que reemplaza son los dos
+            que no se pueden usar. De paso la tabla no se corre hacia abajo justo
+            cuando alguien está apuntando a una fila. */}
         {hayCambios ? (
-          <div className="flex flex-none flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5">
+          <div className="flex flex-none flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2">
             <p className="text-sm font-medium">Orden sin guardar</p>
             <div className="flex items-center gap-2">
               <Button
@@ -331,7 +311,29 @@ export function TareasPageClient({
               </Button>
             </div>
           </div>
-        ) : modo === "PERSONALIZADO" && busqueda.trim() ? (
+        ) : (
+          <div className="flex flex-none flex-wrap items-center gap-3">
+            <div className="relative min-w-0 max-w-sm flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar tarea..."
+                value={busqueda}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                  setPage(1);
+                  // Con un filtro puesto no se puede mover nada, así que un
+                  // contador de seleccionadas quedaría colgado sin acción.
+                  setMarcadas([]);
+                  setSeleccionandoMovil(false);
+                }}
+                className="pl-9"
+              />
+            </div>
+            <SelectorOrden value={modo} onChange={cambiarModo} />
+          </div>
+        )}
+
+        {modo === "PERSONALIZADO" && busqueda.trim() ? (
           <p className="flex-none text-xs text-muted-foreground">
             Limpia la búsqueda para poder reordenar arrastrando.
           </p>
