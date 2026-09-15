@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   FlatList,
   Platform,
@@ -14,7 +15,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
-import { estadoColor, visitaTerminada } from "@/lib/estado-visita";
+import { visitaTerminada } from "@/lib/estado-visita";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
 import { resumenTareas } from "@/lib/types";
 
@@ -96,6 +97,9 @@ export default function PersonalVisitasListScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [abrirPicker, setAbrirPicker] = useState(false);
+  // La pantalla no tiene encabezado, así que el hueco de la barra de estado lo
+  // deja ella.
+  const insets = useSafeAreaInsets();
 
   const load = useCallback(
     async (dia: Date, refrescando = false) => {
@@ -134,7 +138,7 @@ export default function PersonalVisitasListScreen() {
     <View style={styles.container}>
       {/* El selector de día: flechas para moverse de a uno —que es como se usa
           en el campo— y la fecha tocable para saltar lejos. */}
-      <View style={styles.selector}>
+      <View style={[styles.selector, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={() => correr(-1)} hitSlop={10} style={styles.flecha}>
           <Ionicons name="chevron-back" size={22} color="#2e7d32" />
         </Pressable>
@@ -256,9 +260,6 @@ function VisitaRow({
         terminada && styles.rowMuted,
       ]}
     >
-      <View
-        style={[styles.indicator, { backgroundColor: estadoColor(v.estado) }]}
-      />
       <View style={styles.rowText}>
         <View style={styles.rowTop}>
           <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 8,
-    paddingVertical: 10,
+    paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#e6e6e6",
   },
@@ -329,7 +330,6 @@ const styles = StyleSheet.create({
   },
   rowPressed: { backgroundColor: "#eaeaea" },
   rowMuted: { opacity: 0.6 },
-  indicator: { width: 4, alignSelf: "stretch", borderRadius: 2 },
   rowText: { flex: 1, gap: 4 },
   rowTop: { flexDirection: "row", alignItems: "center", gap: 8 },
   rowTitle: { color: "#111", fontWeight: "700", flex: 1 },
