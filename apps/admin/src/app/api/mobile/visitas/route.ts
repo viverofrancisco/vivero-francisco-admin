@@ -3,7 +3,11 @@ import {
   createVisitasSchema,
   visitasListQuerySchema,
 } from "@vivero/shared";
-import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
+import {
+  requireMobileRole,
+  requireMobileUser,
+  isMobileUser,
+} from "@/lib/mobile/auth";
 import {
   createVisitasBatch,
   listVisitas,
@@ -13,13 +17,18 @@ import {
   viewerFromMobileUser,
 } from "@/lib/mobile/route-helpers";
 
+/**
+ * Las visitas de quien pregunta.
+ *
+ * Sin lista de roles: `listVisitas` ya limita por viewer —la oficina las ve
+ * todas, el cliente las suyas, el jardinero **aquellas donde está asignado**—.
+ * Acá había una lista que nombraba ADMIN, STAFF y CLIENTE y se olvidaba de
+ * PERSONAL: resto de cuando reportaba el capataz por todo el grupo. El
+ * jardinero recibía 403 y la app le mostraba "No hay visitas", que es la
+ * peor forma de fallar: parece un dato, no un error.
+ */
 export async function GET(request: Request) {
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN",
-    "STAFF",
-    "CLIENTE"
-  );
+  const userOrResponse = await requireMobileUser(request);
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const url = new URL(request.url);
@@ -34,8 +43,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    // CLIENTEs see their full history (past + future). Staff defaults to
-    // today onward unless they pass an explicit `from` filter.
+    // El cliente ve su historial entero —entra a mirar lo que ya se hizo— y
+    // todos los demás arrancan en hoy, salvo que pidan otra cosa: al jardinero
+    // y a la oficina lo que les importa es lo que viene.
     const isCliente = userOrResponse.role === "CLIENTE";
     const result = await listVisitas(viewerFromMobileUser(userOrResponse), {
       from: parsed.data.from ? new Date(parsed.data.from) : undefined,

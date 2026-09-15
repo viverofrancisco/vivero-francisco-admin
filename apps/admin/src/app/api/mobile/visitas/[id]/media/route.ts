@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requestUploadUrlsSchema } from "@vivero/shared";
-import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
+import { requireMobileUser, isMobileUser } from "@/lib/mobile/auth";
 import { requestVisitaMediaUploads } from "@/lib/services/visita.service";
 import {
   serviceErrorResponse,
@@ -11,10 +11,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN"
-  );
+  // Sin lista de roles: `ensurePuedeTocarArchivos` decide —la oficina y el
+  // jardinero **asignado**, nunca el cliente—. Decía "ADMIN" y nada más, así
+  // que quien está en el jardín no podía subir la foto que acababa de sacar.
+  const userOrResponse = await requireMobileUser(request);
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const parsed = requestUploadUrlsSchema.safeParse(

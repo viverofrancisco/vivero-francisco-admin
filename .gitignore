@@ -13,6 +13,12 @@ build/
 .expo/
 .expo-shared/
 
+# Carpetas nativas que genera `expo prebuild` (lo corre `expo run:ios`).
+# Se regeneran desde app.json, así que versionarlas es tener la configuración
+# dos veces y que una quede vieja.
+apps/mobile/ios/
+apps/mobile/android/
+
 coverage/
 .vercel
 
