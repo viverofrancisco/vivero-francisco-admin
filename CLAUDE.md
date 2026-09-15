@@ -270,9 +270,13 @@ moment the tareas are asked for: that is when they are known. The buttons live
 in the visita's **header**, where the office has *Editar* and *Completar* —
 they are what this screen is for, to the person who opens it. They had a *Mi
 parte* card of their own above everything, which spent half a screen showing two
-dashes and a button; the marks are read in *Detalles* now, as `Mi entrada` /
-`Mi salida`, separate from `Horario`, which is the whole visit's window and
-means something else. Marking twice is
+dashes and a button; the marks are read in *Detalles* now, as `Entrada` /
+`Salida` followed by their own `Duración` — and for the assigned person those
+**replace** `Horario`, which is the whole visit's window (earliest entry, latest
+exit, across everyone) and next to their own hours said almost the same thing
+while meaning something else. The office still sees `Horario`. **The location is
+the office's**: a gardener sees neither his own nor anyone's, because he is not
+reviewing anybody, and it cost a second line on every row. Marking twice is
 refused and correcting is the office's, since the first mark is the one that
 says when they arrived. **Where they were is recorded and never required**:
 `entradaLat/Lng/Precision/Simulada` and the same four for salida, `null` when

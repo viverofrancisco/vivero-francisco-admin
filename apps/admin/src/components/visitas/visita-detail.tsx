@@ -529,38 +529,48 @@ export function VisitaDetail({
                   <span className="text-muted-foreground">Todavía no</span>
                 )}
               </Fila>
-              <Fila etiqueta="Horario">
-                {visita.horaEntrada || visita.horaSalida ? (
-                  `${visita.horaEntrada ?? "—"} a ${visita.horaSalida ?? "—"}`
-                ) : (
-                  <span className="text-muted-foreground">Sin registrar</span>
-                )}
-              </Fila>
-              <Fila etiqueta="Duración">
-                {duracion(visita.horaEntrada, visita.horaSalida) ?? (
-                  <span className="text-muted-foreground">—</span>
-                )}
-              </Fila>
-              {/* Mis marcas, para quien está asignado. Separadas de "Horario",
-                  que es la ventana de **toda** la visita —la primera entrada y
-                  la última salida de todos— y quiere decir otra cosa. */}
-              {miParte && (
+              {/* Quien está asignado ve **sus** marcas y nada más: "Horario"
+                  es la ventana de toda la visita —la primera entrada y la
+                  última salida de todos— y al lado de las suyas decía dos veces
+                  casi lo mismo, con la trampa de que no significan lo mismo.
+                  La oficina ve la ventana, que es la que le importa. */}
+              {miParte ? (
                 <>
-                  <Fila etiqueta="Mi entrada">
+                  <Fila etiqueta="Entrada">
                     <MarcaEnDetalle
                       fecha={miParte.entradaEl}
                       dia={visita.fechaProgramada}
-                      conUbicacion={miParte.entradaLat !== null}
-                      precision={miParte.entradaPrecision}
                     />
                   </Fila>
-                  <Fila etiqueta="Mi salida">
+                  <Fila etiqueta="Salida">
                     <MarcaEnDetalle
                       fecha={miParte.salidaEl}
                       dia={visita.fechaProgramada}
-                      conUbicacion={miParte.salidaLat !== null}
-                      precision={miParte.salidaPrecision}
                     />
+                  </Fila>
+                  {/* Después de la salida, que es de donde sale. Y es **su**
+                      duración, no la de la visita: arriba están sus horas, y
+                      mezclar las dos cosas en filas pegadas es lo que hace que
+                      un número no cierre con el de al lado. */}
+                  <Fila etiqueta="Duración">
+                    {duracionEntre(miParte.entradaEl, miParte.salidaEl) ?? (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </Fila>
+                </>
+              ) : (
+                <>
+                  <Fila etiqueta="Horario">
+                    {visita.horaEntrada || visita.horaSalida ? (
+                      `${visita.horaEntrada ?? "—"} a ${visita.horaSalida ?? "—"}`
+                    ) : (
+                      <span className="text-muted-foreground">Sin registrar</span>
+                    )}
+                  </Fila>
+                  <Fila etiqueta="Duración">
+                    {duracion(visita.horaEntrada, visita.horaSalida) ?? (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </Fila>
                 </>
               )}
@@ -645,13 +655,14 @@ export function VisitaDetail({
                               ? suyas.join(", ")
                               : "No marcó ninguna tarea"}
                         </span>
-                        {/* Qué marca vino sin ubicación. Es la pregunta que la
-                            oficina quería poder hacerse, y la única respuesta
-                            honesta: dónde estaba el teléfono cuando se apretó
-                            el botón. No prueba presencia —en el navegador la
-                            ubicación se falsea en tres clics— pero un "sin
-                            ubicación" repetido es algo que se conversa. */}
-                        <Ubicaciones parte={vp} />
+                        {/* Solo la oficina. Es la pregunta que ella quería
+                            poder hacerse, y la única respuesta honesta: dónde
+                            estaba el teléfono cuando se apretó el botón. No
+                            prueba presencia —en el navegador la ubicación se
+                            falsea en tres clics— pero un "sin ubicación"
+                            repetido es algo que se conversa. Al jardinero no se
+                            le muestra: no es él quien revisa a nadie. */}
+                        {canModify && <Ubicaciones parte={vp} />}
                       </span>
                     </li>
                   );
@@ -780,34 +791,38 @@ function duracion(entrada: string | null, salida: string | null): string | null 
 }
 
 /**
- * Una de mis marcas, en Detalles: la hora y si vino con ubicación.
+ * Una de mis marcas, en Detalles.
  *
- * El "sin ubicación" se dice también acá y no solo en el panel de la oficina,
- * porque es quien marcó el que puede arreglarlo —dar el permiso y volver a
- * marcar la próxima— y si no se le dice nunca se entera.
+ * Solo la hora. Decía además si la marca había salido con ubicación, y eso es
+ * cosa de la oficina: al jardinero no le sirve para nada —no revisa a nadie— y
+ * le agregaba un renglón a cada fila.
  */
 function MarcaEnDetalle({
   fecha,
   dia,
-  conUbicacion,
-  precision,
 }: {
   fecha: string | Date | null;
   dia: string;
-  conUbicacion: boolean;
-  precision: number | null;
 }) {
   if (!fecha) {
     return <span className="text-muted-foreground">Sin marcar</span>;
   }
-  return (
-    <>
-      <span className="block tabular-nums">{horaConDia(fecha, dia)}</span>
-      <span className="block text-xs text-muted-foreground">
-        {conUbicacion
-          ? `Con ubicación${precision !== null ? ` · ±${Math.round(precision)} m` : ""}`
-          : "Sin ubicación"}
-      </span>
-    </>
+  return <span className="tabular-nums">{horaConDia(fecha, dia)}</span>;
+}
+
+/** Cuánto duró entre dos instantes. `null` si falta uno o no da positivo. */
+function duracionEntre(
+  entrada: string | Date | null,
+  salida: string | Date | null
+): string | null {
+  if (!entrada || !salida) return null;
+  const min = Math.round(
+    (new Date(salida).getTime() - new Date(entrada).getTime()) / 60000
   );
+  if (min <= 0) return null;
+  const horas = Math.floor(min / 60);
+  const resto = min % 60;
+  return [horas ? `${horas} h` : null, resto ? `${resto} min` : null]
+    .filter(Boolean)
+    .join(" ");
 }
