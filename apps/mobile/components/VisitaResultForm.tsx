@@ -99,9 +99,11 @@ export function VisitaResultForm({
 
   const headerTitle = modo === "SALIDA" ? "¿Qué hiciste?" : "Mi parte";
   const submitLabel = modo === "SALIDA" ? "Marcar salida" : "Guardar cambios";
-  // Se puede guardar sin marcar nada: hay días en que se fue y no se hizo lo
-  // que estaba previsto, y eso también es información.
-  const canSubmit = true;
+  // Al menos una tarea. Un parte sin ninguna no dice nada —ni para el informe,
+  // que ubica las fotos por tarea, ni para la oficina, que mira qué se cubrió—
+  // y salir sin marcar era el camino más corto, así que era el que se tomaba.
+  // Corregir un parte vacío queda del lado de la oficina, que puede.
+  const canSubmit = tareaIds.length > 0;
 
   /**
    * Las obligatorias primero. Es lo que hay que dejar hecho, así que tenerlas
@@ -258,6 +260,9 @@ export function VisitaResultForm({
         </ScrollView>
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
+          {tareaIds.length === 0 ? (
+            <Text style={styles.pista}>Marca al menos una tarea.</Text>
+          ) : null}
           <Button
             mode="contained"
             onPress={submit}
@@ -416,6 +421,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#eee",
     gap: 4,
   },
+  pista: { color: tema.texto3, fontSize: 13, textAlign: "center" },
   primaryBtn: { borderRadius: 14 },
   primaryBtnContent: { paddingVertical: 8 },
   primaryBtnLabel: {

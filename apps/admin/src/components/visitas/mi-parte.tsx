@@ -141,6 +141,13 @@ export function MiParte({
           </div>
 
           <DialogFooter>
+            {/* Al menos una: un parte sin tareas no dice nada, y el servicio
+                lo rechaza igual (`ensureAlMenosUnaTarea`). */}
+            {elegidas.size === 0 && (
+              <p className="mr-auto self-center text-sm text-muted-foreground">
+                Marca al menos una tarea.
+              </p>
+            )}
             <Button
               variant="outline"
               onClick={() => setAbierto(false)}
@@ -148,7 +155,7 @@ export function MiParte({
             >
               Cancelar
             </Button>
-            <Button onClick={guardar} disabled={cargando}>
+            <Button onClick={guardar} disabled={cargando || elegidas.size === 0}>
               {cargando ? "Guardando…" : "Guardar"}
             </Button>
           </DialogFooter>

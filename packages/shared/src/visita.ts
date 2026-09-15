@@ -98,9 +98,13 @@ export type UbicacionMarcaBody = z.infer<typeof ubicacionMarcaSchema>;
  * para ver si dos compañeros marcaron desde el mismo teléfono, que es lo que
  * pasa cuando uno le presta la cuenta al otro.
  *
- * La ubicación no se exige. Falta señal adentro de una pared, con la batería
- * baja o con el teléfono en la camioneta, y negarse a registrar por eso deja a
- * alguien sin poder anotar el trabajo que sí hizo.
+ * La ubicación no se exige **acá**: falta señal adentro de una pared, con la
+ * batería baja o con el teléfono en la camioneta, y negarse a registrar por eso
+ * deja a alguien sin poder anotar el trabajo que sí hizo. Lo que sí exige la
+ * app es el **permiso**, que es lo único de todo esto que la persona decide.
+ *
+ * Al salir va al menos una tarea: un parte sin ninguna no dice nada, ni para el
+ * informe —que ubica las fotos por tarea— ni para la oficina.
  */
 export const marcaVisitaSchema = z.discriminatedUnion("tipo", [
   z.object({
@@ -112,7 +116,9 @@ export const marcaVisitaSchema = z.discriminatedUnion("tipo", [
     tipo: z.literal("SALIDA"),
     ubicacion: ubicacionMarcaSchema.optional().nullable(),
     dispositivo: z.string().max(64).optional().nullable(),
-    tareaIds: z.array(z.string().min(1)),
+    tareaIds: z
+      .array(z.string().min(1))
+      .min(1, "Marca al menos una tarea de las que hiciste."),
     media: z.array(mediaItemSchema).optional(),
   }),
 ]);

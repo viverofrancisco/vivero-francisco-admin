@@ -655,6 +655,7 @@ export async function marcarSalida(
   }
 
   const tareaIds = await tareasVivas(payload.tareaIds);
+  ensureAlMenosUnaTarea(tareaIds);
 
   await prisma.$transaction(async (tx) => {
     await tx.visitaPersonalTarea.deleteMany({
@@ -691,6 +692,25 @@ export async function marcarSalida(
   });
 
   return getVisitaForViewer(visitaId, viewer);
+}
+
+/**
+ * Un parte lleva al menos una tarea.
+ *
+ * Sin ninguna no dice nada: el informe ubica las fotos por tarea y la oficina
+ * mira qué quedó cubierto, así que un parte vacío es una salida marcada y nada
+ * más. Salir sin marcar era además el camino más corto de la pantalla, que es
+ * el que se termina tomando.
+ *
+ * **Vale para quien carga lo suyo, no para la oficina.** Corregir el parte de
+ * otro incluye poder dejarlo en cero —alguien que llegó y se fue— y esa es la
+ * válvula de escape; es la misma oficina la que después decide si la visita
+ * quedó completa.
+ */
+function ensureAlMenosUnaTarea(tareaIds: string[]) {
+  if (tareaIds.length === 0) {
+    throw new ValidationError("Marca al menos una tarea de las que hiciste.");
+  }
 }
 
 /** Las que siguen existiendo, sin repetir. Una borrada no se puede cargar. */
@@ -754,6 +774,7 @@ export async function registrarParte(
       throw new ValidationError("Alguna de las tareas ya no existe.");
     }
   }
+  if (viewer.role === "PERSONAL") ensureAlMenosUnaTarea(tareaIds);
 
   await prisma.$transaction(async (tx) => {
     await tx.visitaPersonalTarea.deleteMany({

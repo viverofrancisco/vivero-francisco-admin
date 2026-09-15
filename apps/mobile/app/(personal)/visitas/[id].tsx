@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { estadoLabel, estadoPildora } from "@/lib/estado-visita";
+import { estadoLabel } from "@/lib/estado-visita";
 import { Alert, Linking, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -236,10 +236,9 @@ export default function PersonalVisitaScreen() {
     <View style={styles.container}>
       {/* La flecha a la izquierda del nombre, y **fija**: adentro del scroll
           se iba pasando por debajo de la hora y la señal, que están encima de
-          todo, y con ella se iba el modo de volver. Debajo del nombre va el
-          estado, que era una fila más de Cuándo y es lo primero que se
-          pregunta al abrir una visita. Las tareas, que estaban acá en una
-          línea recortada, tienen su propia sección. */}
+          todo, y con ella se iba el modo de volver. Debajo va la tarjeta de
+          datos, sin nada en el medio: las tareas, que estaban acá en una línea
+          recortada, tienen su propia sección más abajo. */}
       <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
         <PressableScale
           onPress={() => router.back()}
@@ -252,27 +251,15 @@ export default function PersonalVisitaScreen() {
           <Text style={styles.heroTitle} numberOfLines={2}>
             {nombreCliente(cliente)}
           </Text>
-          <View
-            style={[
-              styles.pildora,
-              { backgroundColor: estadoPildora(visita.estado).fondo },
-            ]}
-          >
-            <Text
-              style={[
-                styles.pildoraTexto,
-                { color: estadoPildora(visita.estado).color },
-              ]}
-            >
-              {estadoLabel(visita.estado)}
-            </Text>
-          </View>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Cuándo */}
-        <Section title="Cuándo">
+        {/* Sin rótulo: "CUÁNDO" arriba de Estado y Programada no agregaba
+            nada que las propias filas no dijeran, y gastaba la línea que
+            separa el nombre del cliente de sus datos. */}
+        <Section>
+          <Row label="Estado" value={estadoLabel(visita.estado)} />
           <Row label="Programada" value={formatDate(visita.fechaProgramada)} />
           {visita.fechaRealizada ? (
             <Row
@@ -318,8 +305,7 @@ export default function PersonalVisitaScreen() {
             ))
           ) : (
             <Text variant="bodySmall" style={styles.tareasVacio}>
-              Todavía no hay tareas registradas. Cada quien carga las suyas al
-              marcar su salida.
+              Marca tus tareas al marcar la salida.
             </Text>
           )}
         </Section>
@@ -442,15 +428,18 @@ function Section({
   title,
   children,
 }: {
-  title: string;
+  /** Sin título la tarjeta va sola, pegada a lo de arriba. */
+  title?: string;
   children: React.ReactNode;
 }) {
   const items = React.Children.toArray(children).filter(Boolean);
   return (
-    <View style={styles.section}>
-      <Text variant="labelMedium" style={styles.sectionLabel}>
-        {title.toUpperCase()}
-      </Text>
+    <View style={title ? styles.section : styles.sectionPegada}>
+      {title ? (
+        <Text variant="labelMedium" style={styles.sectionLabel}>
+          {title.toUpperCase()}
+        </Text>
+      ) : null}
       <View style={styles.sectionContent}>
         {items.map((child, i) => (
           <View key={i}>
@@ -541,7 +530,7 @@ function tipoLabel(tipo: string): string {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scroll: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32 },
+  scroll: { paddingHorizontal: 16, paddingBottom: 32 },
   center: {
     flex: 1,
     alignItems: "center",
@@ -557,7 +546,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 8,
     backgroundColor: "#fff",
   },
   volver: {
@@ -567,20 +556,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  encabezadoTexto: { flex: 1, gap: 2 },
+  encabezadoTexto: { flex: 1 },
   heroTitle: {
     fontSize: 22,
     fontWeight: "800",
     letterSpacing: -0.4,
     color: tema.texto,
   },
-  pildora: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 999,
-  },
-  pildoraTexto: { fontSize: 12, fontWeight: "700", letterSpacing: 0.1 },
 
 
   soloHoy: {
@@ -591,6 +573,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   section: { marginTop: 20, gap: 6 },
+  sectionPegada: { gap: 6 },
   sectionLabel: {
     color: "#888",
     fontSize: 11,
