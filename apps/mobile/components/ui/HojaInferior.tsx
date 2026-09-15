@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from "react-n
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Extrapolation,
+  LinearTransition,
   interpolate,
   useAnimatedStyle,
   useReducedMotion,
@@ -152,6 +153,11 @@ export function HojaInferior({
         <GestureDetector gesture={pan}>
           <Animated.View
             onLayout={(e) => setAlto(e.nativeEvent.layout.height)}
+            // La hoja cambia de alto cuando su contenido cambia de paso —de la
+            // revisión de fotos a la lista de tareas—. Sin esto pega un salto;
+            // con esto es la misma tarjeta que crece. No afecta la entrada: al
+            // montar no hay layout previo del cual transicionar.
+            layout={reducido ? undefined : LinearTransition.duration(220)}
             style={[
               styles.hoja,
               {

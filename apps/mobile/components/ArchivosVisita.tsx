@@ -46,6 +46,12 @@ import { tema } from "@/lib/tema";
  * una hoja de revisión y se sube recién al apretar *Subir*; eliminar es local
  * hasta que se confirma en su barra. Un solo `PUT` lleva las dos cosas: se
  * sube todo junto o no se sube nada.
+ *
+ * **Y es una sola hoja con pasos**, no una por pantalla. Elegir la tarea abría
+ * otro `HojaInferior`: una se cerraba hacia abajo y la otra subía detrás, medio
+ * segundo de ida y vuelta para tocar un ítem de una lista. Ahora cambia el
+ * contenido y la tarjeta se queda donde está, creciendo o encogiéndose con la
+ * transición de layout.
  */
 
 /** Una foto elegida que todavía no se subió. */
@@ -68,6 +74,25 @@ type Eligiendo =
   | { tipo: "todas" }
   | { tipo: "subida"; media: VisitaMedia };
 
+/**
+ * Qué muestra la hoja. `null` = cerrada.
+ *
+ * Es un solo `HojaInferior` con pasos y no tres hojas: elegir la tarea cerraba
+ * una y abría otra, un ida y vuelta de medio segundo para tocar un ítem de una
+ * lista.
+ */
+type Vista =
+  | { paso: "revision" }
+  | { paso: "foto"; media: VisitaMedia }
+  | { paso: "tareas"; para: Eligiendo };
+
+/** De la lista de tareas se vuelve al paso que la abrió. */
+function volverDe(para: Eligiendo): Vista {
+  return para.tipo === "subida"
+    ? { paso: "foto", media: para.media }
+    : { paso: "revision" };
+}
+
 const HUECO = 8;
 const COLUMNAS = 3;
 
@@ -87,10 +112,8 @@ export function ArchivosVisita({
   onVer: (media: { url: string; tipo: string }) => void;
 }) {
   const [pendientes, setPendientes] = useState<Pendiente[]>([]);
-  const [revisando, setRevisando] = useState(false);
   const [quitadas, setQuitadas] = useState<Set<string>>(new Set());
-  const [abierta, setAbierta] = useState<VisitaMedia | null>(null);
-  const [eligiendo, setEligiendo] = useState<Eligiendo | null>(null);
+  const [vista, setVista] = useState<Vista | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /** El ancho de la grilla, para que las miniaturas llenen la fila. */
@@ -139,7 +162,7 @@ export function ArchivosVisita({
       ...antes,
       ...assets.map((asset) => ({ asset, tareaId: null })),
     ]);
-    setRevisando(true);
+    setVista({ paso: "revision" });
   }
 
   async function tomarFoto() {
@@ -168,7 +191,7 @@ export function ArchivosVisita({
   }
 
   function marcarParaEliminar(media: VisitaMedia) {
-    setAbierta(null);
+    setVista(null);
     setQuitadas((antes) => {
       const ahora = new Set(antes);
       if (ahora.has(media.id)) ahora.delete(media.id);
@@ -181,7 +204,7 @@ export function ArchivosVisita({
   async function guardar() {
     if (pendientes.length === 0 && quitadas.size === 0) return;
     if (sinTarea > 0) {
-      setRevisando(true);
+      setVista({ paso: "revision" });
       setError("Elige la tarea de cada foto antes de guardar.");
       return;
     }
@@ -252,7 +275,7 @@ export function ArchivosVisita({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setPendientes([]);
       setQuitadas(new Set());
-      setRevisando(false);
+      setVista(null);
       onCambio();
     } catch (e) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -263,22 +286,24 @@ export function ArchivosVisita({
   }
 
   async function elegirTarea(tareaId: string) {
-    const quien = eligiendo;
-    setEligiendo(null);
-    if (!quien) return;
+    if (vista?.paso !== "tareas") return;
+    const quien = vista.para;
 
     if (quien.tipo === "todas") {
       setPendientes((antes) => antes.map((p) => ({ ...p, tareaId })));
-      setRevisando(true);
+      setVista({ paso: "revision" });
       return;
     }
     if (quien.tipo === "nueva") {
       setPendientes((antes) =>
         antes.map((p, i) => (i === quien.indice ? { ...p, tareaId } : p))
       );
-      setRevisando(true);
+      setVista({ paso: "revision" });
       return;
     }
+    // Ya subida: la hoja se cierra porque la foto de la que se volvería tiene
+    // la etiqueta vieja hasta que `onCambio` traiga la nueva.
+    setVista(null);
     // Una ya subida se reetiqueta en el momento: no es un cambio que se pueda
     // "cancelar" junto con los otros, porque la foto ya está.
     try {
@@ -293,11 +318,13 @@ export function ArchivosVisita({
   }
 
   const tareaMarcada =
-    eligiendo?.tipo === "subida"
-      ? eligiendo.media.tareaId
-      : eligiendo?.tipo === "nueva"
-        ? (pendientes[eligiendo.indice]?.tareaId ?? null)
-        : null;
+    vista?.paso !== "tareas"
+      ? null
+      : vista.para.tipo === "subida"
+        ? vista.para.media.tareaId
+        : vista.para.tipo === "nueva"
+          ? (pendientes[vista.para.indice]?.tareaId ?? null)
+          : null;
 
   return (
     <View style={styles.contenedor}>
@@ -326,8 +353,11 @@ export function ArchivosVisita({
 
       {/* Cerrar la hoja de revisión no tira lo elegido: un arrastre de más no
           puede costar ocho fotos ya etiquetadas. Queda esta línea para volver. */}
-      {pendientes.length > 0 && !revisando ? (
-        <Pressable onPress={() => setRevisando(true)} style={styles.aviso}>
+      {pendientes.length > 0 && vista === null ? (
+        <Pressable
+          onPress={() => setVista({ paso: "revision" })}
+          style={styles.aviso}
+        >
           <Ionicons name="cloud-upload-outline" size={16} color={tema.verde} />
           <Text style={styles.avisoTexto}>
             {pendientes.length === 1
@@ -369,7 +399,7 @@ export function ArchivosVisita({
                 return (
                   <PressableScale
                     key={m.id}
-                    onPress={() => setAbierta(m)}
+                    onPress={() => setVista({ paso: "foto", media: m })}
                     estiloExterno={{ width: lado, height: lado }}
                     style={[styles.celda, fuera && styles.celdaFuera]}
                   >
@@ -430,119 +460,121 @@ export function ArchivosVisita({
         </View>
       ) : null}
 
-      {/* Revisión de lo recién elegido: cada foto con su tarea antes de subir. */}
-      <HojaInferior visible={revisando} onCerrar={() => setRevisando(false)}>
-        <View style={styles.hojaCabecera}>
-          <Text variant="titleMedium" style={styles.hojaTitulo}>
-            {pendientes.length === 1
-              ? "¿De qué es esta foto?"
-              : `¿De qué son estas ${pendientes.length} fotos?`}
-          </Text>
-          {pendientes.length > 1 ? (
-            <Pressable
-              onPress={() => {
-                setRevisando(false);
-                setEligiendo({ tipo: "todas" });
-              }}
-              hitSlop={8}
-            >
-              <Text style={styles.hojaAccion}>Aplicar a todas</Text>
-            </Pressable>
-          ) : null}
-        </View>
-
-        <ScrollView style={styles.hojaLista}>
-          {pendientes.map((p, i) => (
-            <View key={`${p.asset.uri}-${i}`} style={styles.revision}>
-              <Image
-                source={{ uri: p.asset.uri }}
-                style={styles.revisionFoto}
-              />
-              <Pressable
-                onPress={() => {
-                  setRevisando(false);
-                  setEligiendo({ tipo: "nueva", indice: i });
-                }}
-                style={styles.revisionTarea}
-                hitSlop={6}
-              >
-                <Text
-                  style={[
-                    styles.revisionTexto,
-                    !p.tareaId && styles.revisionFalta,
-                  ]}
-                  numberOfLines={2}
-                >
-                  {nombreDeTarea(p.tareaId) ?? "Elegir tarea"}
-                </Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={16}
-                  color={p.tareaId ? tema.texto3 : tema.ambarTexto}
-                />
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  setPendientes((a) => {
-                    const quedan = a.filter((_, j) => j !== i);
-                    if (quedan.length === 0) setRevisando(false);
-                    return quedan;
-                  });
-                }}
-                hitSlop={10}
-                style={styles.revisionQuitar}
-              >
-                <Ionicons name="close" size={18} color={tema.texto3} />
-              </Pressable>
-            </View>
-          ))}
-        </ScrollView>
-
-        <View style={styles.hojaPie}>
-          <PressableScale
-            onPress={guardar}
-            disabled={guardando || sinTarea > 0 || pendientes.length === 0}
-            style={[
-              styles.subir,
-              (guardando || sinTarea > 0 || pendientes.length === 0) &&
-                styles.subirApagado,
-            ]}
-          >
-            {guardando ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.subirTexto}>
-                {sinTarea > 0
-                  ? sinTarea === 1
-                    ? "Falta 1 tarea"
-                    : `Faltan ${sinTarea} tareas`
-                  : pendientes.length === 1
-                    ? "Subir foto"
-                    : `Subir ${pendientes.length} fotos`}
+      {/*
+        Una sola hoja con pasos, no tres hojas.
+        Elegir la tarea era otro `HojaInferior`: una se cerraba hacia abajo y la
+        otra subía detrás, un ida y vuelta de medio segundo para tocar un ítem
+        de una lista. Adentro de la misma hoja el contenido se cambia y el
+        contenedor se queda donde está, que es lo que el dedo espera cuando
+        acaba de apretar algo que dice "elegir".
+      */}
+      <HojaInferior visible={vista !== null} onCerrar={() => setVista(null)}>
+        {vista?.paso === "revision" ? (
+          <>
+            <View style={styles.hojaCabecera}>
+              <Text variant="titleMedium" style={styles.hojaTitulo}>
+                {pendientes.length === 1
+                  ? "¿De qué es esta foto?"
+                  : `¿De qué son estas ${pendientes.length} fotos?`}
               </Text>
-            )}
-          </PressableScale>
-        </View>
-      </HojaInferior>
+              {pendientes.length > 1 ? (
+                <Pressable
+                  onPress={() => setVista({ paso: "tareas", para: { tipo: "todas" } })}
+                  hitSlop={8}
+                >
+                  <Text style={styles.hojaAccion}>Aplicar a todas</Text>
+                </Pressable>
+              ) : null}
+            </View>
 
-      {/* Una foto ya subida: verla, cambiarle la tarea, eliminarla. */}
-      <HojaInferior visible={abierta !== null} onCerrar={() => setAbierta(null)}>
-        {abierta ? (
+            <ScrollView style={styles.hojaLista}>
+              {pendientes.map((p, i) => (
+                <View key={`${p.asset.uri}-${i}`} style={styles.revision}>
+                  <Image source={{ uri: p.asset.uri }} style={styles.revisionFoto} />
+                  <Pressable
+                    onPress={() =>
+                      setVista({ paso: "tareas", para: { tipo: "nueva", indice: i } })
+                    }
+                    style={styles.revisionTarea}
+                    hitSlop={6}
+                  >
+                    <Text
+                      style={[
+                        styles.revisionTexto,
+                        !p.tareaId && styles.revisionFalta,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {nombreDeTarea(p.tareaId) ?? "Elegir tarea"}
+                    </Text>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={p.tareaId ? tema.texto3 : tema.ambarTexto}
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      setPendientes((a) => {
+                        const quedan = a.filter((_, j) => j !== i);
+                        if (quedan.length === 0) setVista(null);
+                        return quedan;
+                      });
+                    }}
+                    hitSlop={10}
+                    style={styles.revisionQuitar}
+                  >
+                    <Ionicons name="close" size={18} color={tema.texto3} />
+                  </Pressable>
+                </View>
+              ))}
+            </ScrollView>
+
+            <View style={styles.hojaPie}>
+              <PressableScale
+                onPress={guardar}
+                disabled={guardando || sinTarea > 0 || pendientes.length === 0}
+                style={[
+                  styles.subir,
+                  (guardando || sinTarea > 0 || pendientes.length === 0) &&
+                    styles.subirApagado,
+                ]}
+              >
+                {guardando ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.subirTexto}>
+                    {sinTarea > 0
+                      ? sinTarea === 1
+                        ? "Falta 1 tarea"
+                        : `Faltan ${sinTarea} tareas`
+                      : pendientes.length === 1
+                        ? "Subir foto"
+                        : `Subir ${pendientes.length} fotos`}
+                  </Text>
+                )}
+              </PressableScale>
+            </View>
+          </>
+        ) : null}
+
+        {/* Una foto ya subida: verla, cambiarle la tarea, eliminarla. */}
+        {vista?.paso === "foto" ? (
           <View style={styles.hojaFoto}>
             <Pressable
               onPress={() => {
-                const m = abierta;
-                setAbierta(null);
+                const m = vista.media;
+                setVista(null);
                 onVer({ url: m.url, tipo: m.tipo });
               }}
             >
-              {abierta.tipo === "video" ? (
+              {vista.media.tipo === "video" ? (
                 <View style={[styles.vistaPrevia, styles.video]}>
                   <Ionicons name="play" size={34} color="#fff" />
                 </View>
               ) : (
                 <Image
-                  source={{ uri: abierta.url }}
+                  source={{ uri: vista.media.url }}
                   style={styles.vistaPrevia}
                   resizeMode="cover"
                 />
@@ -550,11 +582,12 @@ export function ArchivosVisita({
             </Pressable>
 
             <Pressable
-              onPress={() => {
-                const m = abierta;
-                setAbierta(null);
-                setEligiendo({ tipo: "subida", media: m });
-              }}
+              onPress={() =>
+                setVista({
+                  paso: "tareas",
+                  para: { tipo: "subida", media: vista.media },
+                })
+              }
               style={styles.fila}
             >
               <Ionicons name="pricetag-outline" size={20} color={tema.texto2} />
@@ -563,74 +596,62 @@ export function ArchivosVisita({
                 <Text
                   style={[
                     styles.filaValor,
-                    !abierta.tareaId && styles.revisionFalta,
+                    !vista.media.tareaId && styles.revisionFalta,
                   ]}
                   numberOfLines={1}
                 >
-                  {nombreDeTarea(abierta.tareaId) ?? "Sin tarea"}
+                  {nombreDeTarea(vista.media.tareaId) ?? "Sin tarea"}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
             </Pressable>
 
             <Pressable
-              onPress={() => marcarParaEliminar(abierta)}
+              onPress={() => marcarParaEliminar(vista.media)}
               style={styles.fila}
             >
               <Ionicons name="trash-outline" size={20} color={tema.rojo} />
               <Text style={styles.filaEliminar}>
-                {quitadas.has(abierta.id) ? "No eliminar" : "Eliminar foto"}
+                {quitadas.has(vista.media.id) ? "No eliminar" : "Eliminar foto"}
               </Text>
             </Pressable>
           </View>
         ) : null}
-      </HojaInferior>
 
-      {/* La lista de tareas. Sin opción de dejarla vacía: es obligatoria. */}
-      <HojaInferior
-        visible={eligiendo !== null}
-        onCerrar={() => {
-          const volver = eligiendo?.tipo !== "subida";
-          setEligiendo(null);
-          if (volver) setRevisando(true);
-        }}
-      >
-        <View style={styles.hojaCabecera}>
-          {/* Se llega acá desde la hoja de revisión, así que hace falta cómo
-              volver: arrastrar la hoja también cierra, pero eso hay que
-              saberlo. Etiquetar una foto ya subida no viene de ningún lado, y
-              ahí la flecha no tendría a dónde ir. */}
-          {eligiendo && eligiendo.tipo !== "subida" ? (
-            <PressableScale
-              onPress={() => {
-                setEligiendo(null);
-                setRevisando(true);
-              }}
-              hitSlop={10}
-              style={styles.hojaVolver}
-            >
-              <Ionicons name="chevron-back" size={22} color={tema.texto} />
-            </PressableScale>
-          ) : null}
-          <Text variant="titleMedium" style={styles.hojaTitulo}>
-            {eligiendo?.tipo === "todas" ? "¿De qué son todas?" : "¿De qué es?"}
-          </Text>
-        </View>
-        <ScrollView style={styles.hojaLista}>
-          {catalogo.map((t) => (
-            <PressableScale
-              key={t.id}
-              onPress={() => elegirTarea(t.id)}
-              style={styles.opcion}
-              estiloPresionado={styles.opcionTocada}
-            >
-              <Text style={styles.opcionTexto}>{t.nombre}</Text>
-              {tareaMarcada === t.id ? (
-                <Ionicons name="checkmark" size={18} color={tema.verde} />
-              ) : null}
-            </PressableScale>
-          ))}
-        </ScrollView>
+        {/* La lista de tareas. Sin opción de dejarla vacía: es obligatoria. */}
+        {vista?.paso === "tareas" ? (
+          <>
+            <View style={styles.hojaCabecera}>
+              {/* Volver al paso de donde se vino. Arrastrar la hoja también
+                  cierra, pero eso hay que saberlo. */}
+              <PressableScale
+                onPress={() => setVista(volverDe(vista.para))}
+                hitSlop={10}
+                style={styles.hojaVolver}
+              >
+                <Ionicons name="chevron-back" size={22} color={tema.texto} />
+              </PressableScale>
+              <Text variant="titleMedium" style={styles.hojaTitulo}>
+                {vista.para.tipo === "todas" ? "¿De qué son todas?" : "¿De qué es?"}
+              </Text>
+            </View>
+            <ScrollView style={styles.hojaLista}>
+              {catalogo.map((t) => (
+                <PressableScale
+                  key={t.id}
+                  onPress={() => elegirTarea(t.id)}
+                  style={styles.opcion}
+                  estiloPresionado={styles.opcionTocada}
+                >
+                  <Text style={styles.opcionTexto}>{t.nombre}</Text>
+                  {tareaMarcada === t.id ? (
+                    <Ionicons name="checkmark" size={18} color={tema.verde} />
+                  ) : null}
+                </PressableScale>
+              ))}
+            </ScrollView>
+          </>
+        ) : null}
       </HojaInferior>
     </View>
   );
