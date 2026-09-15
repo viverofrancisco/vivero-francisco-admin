@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { estadoColor, estadoLabel } from "@/lib/estado-visita";
 import {
   Image,
   Pressable,
@@ -328,35 +329,7 @@ function tipoLabel(tipo: string): string {
   }
 }
 
-function estadoLabel(estado: string): string {
-  switch (estado) {
-    case "PROGRAMADA":
-      return "Programada";
-    case "COMPLETADA":
-      return "Completada";
-    case "INCOMPLETA":
-      return "Incompleta";
-    case "CANCELADA":
-      return "Cancelada";
-    default:
-      return estado;
-  }
-}
 
-function estadoColor(estado: string): string {
-  switch (estado) {
-    case "PROGRAMADA":
-      return "#2e7d32";
-    case "COMPLETADA":
-      return "#9e9e9e";
-    case "INCOMPLETA":
-      return "#f57c00";
-    case "CANCELADA":
-      return "#c62828";
-    default:
-      return "#bdbdbd";
-  }
-}
 
 function estadoBg(estado: string): string {
   switch (estado) {

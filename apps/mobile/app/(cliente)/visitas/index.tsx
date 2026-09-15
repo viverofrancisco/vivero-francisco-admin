@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { estadoColor, estadoLabel, visitaTerminada } from "@/lib/estado-visita";
 import {
   FlatList,
   Pressable,
@@ -108,14 +109,14 @@ function VisitaRow({
   showDate: boolean;
   onPress: () => void;
 }) {
-  const isCompleted = v.estado !== "PROGRAMADA";
+  const terminada = visitaTerminada(v.estado);
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
         pressed && styles.rowPressed,
-        isCompleted && styles.rowMuted,
+        terminada && styles.rowMuted,
       ]}
     >
       <View
@@ -148,35 +149,7 @@ function VisitaRow({
   );
 }
 
-function estadoLabel(estado: string): string {
-  switch (estado) {
-    case "PROGRAMADA":
-      return "Programada";
-    case "COMPLETADA":
-      return "Completada";
-    case "INCOMPLETA":
-      return "Incompleta";
-    case "CANCELADA":
-      return "Cancelada";
-    default:
-      return estado;
-  }
-}
 
-function estadoColor(estado: string): string {
-  switch (estado) {
-    case "PROGRAMADA":
-      return "#2e7d32";
-    case "COMPLETADA":
-      return "#9e9e9e";
-    case "INCOMPLETA":
-      return "#f57c00";
-    case "CANCELADA":
-      return "#c62828";
-    default:
-      return "#bdbdbd";
-  }
-}
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);

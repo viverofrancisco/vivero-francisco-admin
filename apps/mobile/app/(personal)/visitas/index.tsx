@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { estadoColor, visitaTerminada } from "@/lib/estado-visita";
 import {
   FlatList,
   Pressable,
@@ -83,7 +84,13 @@ export default function PersonalVisitasListScreen() {
         }
         renderItem={({ item }) => (
           <View style={styles.section}>
-            <Text variant="labelMedium" style={styles.sectionLabel}>
+            <Text
+              variant="labelMedium"
+              style={[
+                styles.sectionLabel,
+                item.label === "Hoy" && styles.sectionLabelHoy,
+              ]}
+            >
               {item.label.toUpperCase()}
             </Text>
             <View style={styles.list}>
@@ -92,6 +99,7 @@ export default function PersonalVisitasListScreen() {
                   key={v.id}
                   visita={v}
                   showDate={item.label === "Esta semana" || item.label === "Más adelante"}
+                  hoy={item.label === "Hoy"}
                   onPress={() => router.push(`/(personal)/visitas/${v.id}`)}
                 />
               ))}
@@ -114,10 +122,13 @@ export default function PersonalVisitasListScreen() {
 function VisitaRow({
   visita: v,
   showDate,
+  hoy = false,
   onPress,
 }: {
   visita: VisitaDetail;
   showDate: boolean;
+  /** Las de hoy resaltan: es el trabajo que hay que hacer, no una más. */
+  hoy?: boolean;
   onPress: () => void;
 }) {
   const cliente = v.cliente;
@@ -125,15 +136,16 @@ function VisitaRow({
   const subtitleParts = [resumenTareas(v), sector].filter(
     Boolean
   );
-  const isCompleted = v.estado !== "PROGRAMADA";
+  const terminada = visitaTerminada(v.estado);
 
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
-        pressed && styles.rowPressed,
-        isCompleted && styles.rowMuted,
+        hoy && styles.rowHoy,
+        pressed && (hoy ? styles.rowHoyPressed : styles.rowPressed),
+        terminada && styles.rowMuted,
       ]}
     >
       <View
@@ -143,7 +155,11 @@ function VisitaRow({
         ]}
       />
       <View style={styles.rowText}>
-        <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
+        <Text
+          variant="bodyLarge"
+          style={[styles.rowTitle, hoy && styles.rowTitleHoy]}
+          numberOfLines={1}
+        >
           {nombreCliente(cliente)}
         </Text>
         <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
@@ -157,7 +173,10 @@ function VisitaRow({
           </Text>
         ) : null}
         {v.horaEntrada ? (
-          <Text variant="bodySmall" style={styles.metaSecondary}>
+          <Text
+            variant="bodySmall"
+            style={hoy ? styles.metaHoy : styles.metaSecondary}
+          >
             {v.horaEntrada}
           </Text>
         ) : null}
@@ -166,20 +185,6 @@ function VisitaRow({
   );
 }
 
-function estadoColor(estado: string): string {
-  switch (estado) {
-    case "PROGRAMADA":
-      return "#2e7d32"; // green
-    case "COMPLETADA":
-      return "#9e9e9e"; // gray
-    case "INCOMPLETA":
-      return "#f57c00"; // amber
-    case "CANCELADA":
-      return "#c62828"; // red
-    default:
-      return "#bdbdbd";
-  }
-}
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso);
@@ -236,6 +241,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     paddingLeft: 4,
   },
+  sectionLabelHoy: { color: "#2e7d32", fontWeight: "700" },
   list: { gap: 6 },
 
   row: {
@@ -246,6 +252,25 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#fafafa",
     gap: 12,
+  },
+  /**
+   * La de hoy, distinta del resto.
+   *
+   * Se perdía entre las otras: mismo fondo, mismo peso, y a veces más apagada.
+   * Es la que se va a tocar, así que se le da fondo verde claro, borde y
+   * título más marcado — sin cambiarle el tamaño, para que la lista no salte.
+   */
+  rowHoy: {
+    backgroundColor: "#eaf4ea",
+    borderWidth: 1,
+    borderColor: "#c3dfc5",
+    // El borde suma 1px de cada lado; se descuenta del padding para que la
+    // fila mida exactamente lo mismo que las demás.
+    paddingVertical: 13,
+    paddingHorizontal: 13,
+  },
+  rowHoyPressed: {
+    backgroundColor: "#d9ecda",
   },
   rowPressed: {
     backgroundColor: "#eaeaea",
@@ -263,6 +288,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   rowTitle: { color: "#111", fontWeight: "500" },
+  rowTitleHoy: { fontWeight: "700" },
   muted: { color: "#888" },
   meta: {
     alignItems: "flex-end",
@@ -274,6 +300,10 @@ const styles = StyleSheet.create({
   },
   metaSecondary: {
     color: "#888",
+  },
+  metaHoy: {
+    color: "#2e7d32",
+    fontWeight: "700",
   },
 
   empty: {
