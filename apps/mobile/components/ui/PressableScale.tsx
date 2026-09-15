@@ -23,12 +23,23 @@ import { movimiento, transicion } from "@/lib/tema";
 export function PressableScale({
   children,
   style,
+  estiloExterno,
   estiloPresionado,
   ...props
 }: Omit<PressableProps, "children" | "style"> & {
   /** Sin la forma de función de `Pressable`: el estado presionado lo lleva esto. */
   children?: React.ReactNode;
+  /** El aspecto: fondo, borde, padding. Va en la vista que se encoge. */
   style?: StyleProp<ViewStyle>;
+  /**
+   * Lo que decide el **espacio** que ocupa: `flex`, `alignSelf`, `width`.
+   *
+   * Va en el `Pressable` de afuera y no en la vista que se encoge, porque el
+   * hijo de un flex es el `Pressable`: un `flex: 1` puesto adentro no reparte
+   * nada y el elemento colapsa a su contenido. Es lo que descentró el título
+   * de la fecha —la vista interna se estiraba, el `Pressable` no—.
+   */
+  estiloExterno?: StyleProp<ViewStyle>;
   /** Lo que además cambia al presionar —un fondo, por ejemplo—. */
   estiloPresionado?: StyleProp<ViewStyle>;
 }) {
@@ -42,6 +53,7 @@ export function PressableScale({
       // persona sí quiso hacer.
       pressRetentionOffset={16}
       {...props}
+      style={estiloExterno}
       onPressIn={(e) => {
         setPresionado(true);
         props.onPressIn?.(e);

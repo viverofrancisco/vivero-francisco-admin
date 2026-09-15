@@ -221,6 +221,7 @@ export function ArchivosVisita({
       <View style={styles.acciones}>
         <PressableScale
           onPress={tomarFoto}
+          estiloExterno={styles.mitad}
           style={styles.accion}
           estiloPresionado={styles.accionTocada}
         >
@@ -229,6 +230,7 @@ export function ArchivosVisita({
         </PressableScale>
         <PressableScale
           onPress={elegirDeGaleria}
+          estiloExterno={styles.mitad}
           style={styles.accion}
           estiloPresionado={styles.accionTocada}
         >
@@ -340,6 +342,7 @@ export function ArchivosVisita({
             <PressableScale
               onPress={cancelar}
               disabled={guardando}
+              estiloExterno={styles.mitad}
               style={styles.cancelar}
               estiloPresionado={styles.cancelarTocado}
             >
@@ -348,6 +351,7 @@ export function ArchivosVisita({
             <PressableScale
               onPress={guardar}
               disabled={guardando || sinTarea > 0}
+              estiloExterno={styles.mitad}
               style={[
                 styles.guardar,
                 (guardando || sinTarea > 0) && styles.guardarApagado,
@@ -396,8 +400,9 @@ const LADO = 104;
 const styles = StyleSheet.create({
   contenedor: { gap: 12 },
   acciones: { flexDirection: "row", gap: 10 },
+  /** Reparte el ancho. Va en el `Pressable`, no en la vista que se encoge. */
+  mitad: { flex: 1 },
   accion: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -456,7 +461,6 @@ const styles = StyleSheet.create({
   resumen: { color: "#2e7d32", fontWeight: "600", fontSize: 13 },
   barraBotones: { flexDirection: "row", gap: 10 },
   cancelar: {
-    flex: 1,
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
@@ -468,7 +472,6 @@ const styles = StyleSheet.create({
   cancelarTocado: { backgroundColor: "#f0f0f0" },
   cancelarTexto: { color: "#444", fontWeight: "600" },
   guardar: {
-    flex: 1,
     height: 44,
     borderRadius: 10,
     backgroundColor: "#2e7d32",

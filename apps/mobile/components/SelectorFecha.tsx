@@ -180,7 +180,7 @@ export function SelectorFecha({
                     <PressableScale
                       key={d.toISOString()}
                       onPress={() => onElegir(d)}
-                      style={styles.celda}
+                      estiloExterno={styles.celda}
                     >
                       <View
                         style={[

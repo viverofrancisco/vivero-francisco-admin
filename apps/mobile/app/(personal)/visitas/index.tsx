@@ -144,7 +144,10 @@ export default function PersonalVisitasListScreen() {
           <Ionicons name="chevron-back" size={22} color={tema.verde} />
         </PressableScale>
 
-        <PressableScale onPress={() => setAbrirPicker(true)} style={styles.fechaBoton}>
+        <PressableScale
+          onPress={() => setAbrirPicker(true)}
+          estiloExterno={styles.fechaBoton}
+        >
           <Text variant="titleMedium" style={styles.fechaTitulo}>
             {titulo(fecha)}
           </Text>
@@ -247,7 +250,12 @@ function VisitaRow({
           pantalla —"¿a qué hora voy?"— y estaba perdida a la derecha del
           nombre, del mismo tamaño que todo lo demás. */}
       <View style={styles.horaColumna}>
-        <Text style={[styles.hora, !v.horaEntrada && styles.horaVacia]}>
+        <Text
+          // Una línea siempre: a 16pt y en negrita, "12:56" no entraba en los
+          // 46pt de la columna y se partía en "12:5" / "6".
+          numberOfLines={1}
+          style={[styles.hora, !v.horaEntrada && styles.horaVacia]}
+        >
           {v.horaEntrada ?? "—"}
         </Text>
       </View>
@@ -296,7 +304,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#e6e6e6",
   },
   flecha: { padding: 10 },
-  fechaBoton: { flex: 1, alignItems: "center" },
+  fechaBoton: { flex: 1, alignItems: "center", justifyContent: "center" },
   fechaTitulo: { color: "#111", fontWeight: "700" },
   fechaSub: { color: "#888", fontSize: 12, marginTop: 1 },
 
@@ -333,7 +341,9 @@ const styles = StyleSheet.create({
   },
   rowPressed: { backgroundColor: tema.superficie },
   rowMuted: { opacity: 0.55 },
-  horaColumna: { width: 46, alignItems: "flex-start" },
+  // Ancho para "12:56" a 16pt en negrita, con aire. Medido, no estimado:
+  // cinco caracteres tabulares a ese tamaño miden ~48pt.
+  horaColumna: { width: 56, alignItems: "flex-start" },
   hora: {
     color: tema.verde,
     fontWeight: "800",
