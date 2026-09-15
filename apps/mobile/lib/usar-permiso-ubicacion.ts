@@ -51,8 +51,11 @@ export function usarPermisoDeUbicacion(activo: boolean) {
 
     if (yaAvisamos.current) return;
     yaAvisamos.current = true;
+    // General a propósito: acá todavía no se está haciendo nada. Detallar para
+    // qué sirve, al abrir la app, es contestar una pregunta que nadie hizo; el
+    // motivo concreto se dice en el momento de marcar, que es cuando importa.
     avisarFaltaUbicacion(
-      "Cuando marcas tu entrada y tu salida guardamos desde dónde lo hiciste.",
+      "La app usa tu ubicación para algunas de sus funciones.",
       true
     );
   }, [activo]);
