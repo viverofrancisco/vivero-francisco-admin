@@ -328,7 +328,14 @@ does **not** close itself when the last person files: someone may never file,
 and deciding that the work is nonetheless finished is a judgement, not a count.
 `tareaIds` replaces that person's set rather than adding to it — the form is a
 list of checkboxes, so what arrives *is* the final state, and adding would leave
-no way to untick something filed by mistake. The visit's own
+no way to untick something filed by mistake — and it carries **at least one**
+(`ensureAlMenosUnaTarea`, plus `.min(1)` on the SALIDA schema and a disabled
+button on both screens). A parte with none says nothing: the informe places its
+photos by tarea and the office reads what got covered, so an empty one is a
+salida stamped and nothing more — and leaving without ticking was the shortest
+path through the screen, which is the one that gets taken. The office is exempt
+when correcting someone else's parte: emptying one is the escape valve, and the
+office is who decides whether the visit is nonetheless finished. The visit's own
 `horaEntrada`/`horaSalida` are **derived**: the earliest entry and the latest
 exit across the filed partes, recomputed on every change, which is why neither
 the edit form nor the close form asks for them. Fixing an hour means fixing the
