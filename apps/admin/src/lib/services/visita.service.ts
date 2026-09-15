@@ -21,6 +21,7 @@ import {
 } from "@/lib/push/triggers";
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
 import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
+import { hoyISOEcuador } from "@/lib/fechas";
 import { randomUUID } from "crypto";
 
 /**
@@ -576,6 +577,72 @@ function ensureQuienMarca(viewer: Viewer) {
 }
 
 /**
+ * La entrada se marca **el día de la visita**.
+ *
+ * La pantalla ya no ofrece el botón fuera de ese día, y eso no alcanza: la app
+ * puede llevar horas abierta mostrando la visita de ayer, y la ruta acepta
+ * cualquier POST venga de donde venga. Sin esto, marcar la entrada de una
+ * visita de la semana pasada es una llamada.
+ *
+ * El día es el de **Ecuador**, no el del servidor, que corre en UTC: entre las
+ * 19:00 y la medianoche de Guayaquil en UTC ya es mañana, y una marca de las
+ * 19:30 se rechazaría sola.
+ *
+ * La salida **no** se controla así, a propósito: exige una entrada —que ya
+ * pasó por acá— y un trabajo que termina a las 00:20 es uno que empezó ayer.
+ * Quien no marcó el día que correspondía no marca después: eso lo corrige la
+ * oficina con `registrarParte`, que es otra cosa y se llama distinto.
+ */
+function ensureEsElDiaDeLaVisita(fechaProgramada: Date) {
+  if (!esElDiaDeHoy(fechaProgramada)) {
+    throw new ConflictError("La entrada se marca el día de la visita.");
+  }
+}
+
+/** `@db.Date` vuelve como medianoche UTC: su ISO recortado es el día guardado. */
+function esElDiaDeHoy(fechaDeCalendario: Date): boolean {
+  return fechaDeCalendario.toISOString().slice(0, 10) === hoyISOEcuador();
+}
+
+/**
+ * Un **instante** cae hoy si cae hoy en Ecuador.
+ *
+ * No es lo mismo que lo de arriba y confundirlos es fácil: una salida marcada a
+ * las 20:00 de Guayaquil es la 01:00 UTC del día siguiente, y recortar su ISO
+ * daría mañana.
+ */
+function esInstanteDeHoy(instante: Date): boolean {
+  return hoyISOEcuador(instante) === hoyISOEcuador();
+}
+
+/**
+ * Las tareas se corrigen **el día de la visita**, no para siempre.
+ *
+ * Un parte es lo que alguien dice haber hecho ese día, y dejarlo abierto para
+ * siempre lo convierte en algo que se acomoda después —cuando la oficina
+ * pregunta, cuando el informe ya salió—. Las fotos sí quedan abiertas: son de
+ * lo que se vio en el jardín, y agregar una el martes no cambia lo que se hizo
+ * el lunes.
+ *
+ * Vale también **el día en que marcó su salida**: quien entró a las 23:50 y
+ * salió a las 00:30 cargó sus tareas recién ahí, y no poder destildar una a los
+ * cinco minutos sería castigarlo por el horario.
+ *
+ * Solo para quien carga lo suyo. La oficina corrige cualquier día: es la que
+ * arregla lo que quedó mal, y para eso no puede tener la puerta cerrada.
+ */
+function ensureSePuedeCorregir(
+  fechaProgramada: Date,
+  salidaEl: Date | null,
+) {
+  if (esElDiaDeHoy(fechaProgramada)) return;
+  if (salidaEl && esInstanteDeHoy(salidaEl)) return;
+  throw new ConflictError(
+    "Las tareas se corrigen el día de la visita. Las fotos no tienen límite.",
+  );
+}
+
+/**
  * Marca la entrada: sella el momento y guarda dónde estaba.
  *
  * El momento es **ahora**, no una hora que alguien escribe: eso es lo que
@@ -598,6 +665,7 @@ export async function marcarEntrada(
 ) {
   ensureQuienMarca(viewer);
   const { visita, asignacion } = await miAsignacion(visitaId, viewer);
+  ensureEsElDiaDeLaVisita(visita.fechaProgramada);
   if (asignacion.entradaEl) {
     throw new ConflictError("Ya marcaste tu entrada en esta visita.");
   }
@@ -774,7 +842,10 @@ export async function registrarParte(
       throw new ValidationError("Alguna de las tareas ya no existe.");
     }
   }
-  if (viewer.role === "PERSONAL") ensureAlMenosUnaTarea(tareaIds);
+  if (viewer.role === "PERSONAL") {
+    ensureAlMenosUnaTarea(tareaIds);
+    ensureSePuedeCorregir(visita.fechaProgramada, asignacion.salidaEl);
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.visitaPersonalTarea.deleteMany({

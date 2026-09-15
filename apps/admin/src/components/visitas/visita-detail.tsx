@@ -249,6 +249,7 @@ export function VisitaDetail({
             <div className="flex flex-none items-center gap-2">
               <MiParte
                 visitaId={visita.id}
+                fechaProgramada={visita.fechaProgramada}
                 parte={miParte}
                 obligatoriasIds={visita.tareasObligatorias.map((o) => o.tarea.id)}
                 catalogo={catalogo}

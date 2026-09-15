@@ -39,3 +39,48 @@ function formatear(d: Date): string {
       .replace(/[\s\u202f\u00a0]*p\.?[\s\u202f\u00a0]*m\.?$/i, " PM")
   );
 }
+
+/**
+ * Un instante completo: `"14 sep, 5:19 PM"`.
+ *
+ * La fecha va **con** la hora en todo lo que es una marca. Una fila que dice
+ * solo "5:26 PM" no distingue haber marcado el día de la visita de haberlo
+ * hecho tres días después: se lee igual, y esa diferencia es justo la que la
+ * oficina necesita ver.
+ */
+export function fechaYHora12(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const dia = d
+    .toLocaleDateString("es-EC", {
+      day: "numeric",
+      month: "short",
+      timeZone: ZONA,
+    })
+    // `es-EC` deja "14 sept" y a veces con punto. Tres letras alcanzan.
+    .replace(/\.$/, "");
+  return `${dia}, ${formatear(d)}`;
+}
+
+/**
+ * El día de hoy en Ecuador, `YYYY-MM-DD`.
+ *
+ * En la zona del vivero y no en la del teléfono: el servidor decide con la de
+ * Ecuador (`hoyISOEcuador`), y si la pantalla usara otra habría botones que se
+ * ofrecen y el servidor rechaza.
+ */
+export function hoyEnEcuador(): string {
+  return diaEnEcuador(new Date());
+}
+
+/**
+ * El día en que cae un **instante**, en Ecuador.
+ *
+ * No es lo mismo que recortar su ISO, y confundirlos es fácil: una salida
+ * marcada a las 20:00 de Guayaquil es la 01:00 UTC del día siguiente. Recortar
+ * sirve para `@db.Date` —que viaja como medianoche UTC—, no para una marca.
+ */
+export function diaEnEcuador(instante: string | Date): string {
+  // `en-CA` da exactamente `YYYY-MM-DD`.
+  return new Date(instante).toLocaleDateString("en-CA", { timeZone: ZONA });
+}

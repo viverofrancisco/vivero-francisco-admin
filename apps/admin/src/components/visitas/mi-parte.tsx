@@ -14,6 +14,25 @@ import {
 import { Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import type { PersonalDeVisita } from "@/lib/visita-tareas";
+import { hoyISOEcuador } from "@/lib/fechas";
+
+/**
+ * El día de la visita, que es una fecha de calendario: `@db.Date` viaja como
+ * medianoche UTC, así que su ISO recortado es el día guardado.
+ */
+function esElDiaDeHoy(fecha: string | Date): boolean {
+  const d = new Date(fecha);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === hoyISOEcuador();
+}
+
+/**
+ * Un **instante**, que es otra cosa: una salida de las 20:00 de Guayaquil es la
+ * 01:00 UTC del día siguiente, y recortar su ISO daría mañana.
+ */
+function esInstanteDeHoy(fecha: string | Date): boolean {
+  const d = new Date(fecha);
+  return !Number.isNaN(d.getTime()) && hoyISOEcuador(d) === hoyISOEcuador();
+}
 
 /**
  * Lo que el asignado puede hacer con su parte **desde el portal**.
@@ -31,11 +50,13 @@ import type { PersonalDeVisita } from "@/lib/visita-tareas";
  */
 export function MiParte({
   visitaId,
+  fechaProgramada,
   parte,
   obligatoriasIds,
   catalogo,
 }: {
   visitaId: string;
+  fechaProgramada: string | Date;
   parte: PersonalDeVisita;
   obligatoriasIds: string[];
   catalogo: { tareaId: string; nombre: string }[];
@@ -84,6 +105,17 @@ export function MiParte({
     });
   }
 
+  /**
+   * Las tareas se corrigen el día de la visita —o el día en que marcó su
+   * salida, que es el mismo turno cuando cruza la medianoche—. El servicio lo
+   * rechaza igual (`ensureSePuedeCorregir`); acá se esconde el botón para no
+   * ofrecer algo que va a fallar. Las fotos no tienen límite: se suben desde
+   * *Archivos*, en cualquier momento.
+   */
+  const sePuedeCorregir =
+    esElDiaDeHoy(fechaProgramada) ||
+    (parte.salidaEl != null && esInstanteDeHoy(parte.salidaEl));
+
   // Todavía no salió: lo que corresponde es marcar, y eso es del teléfono. Se
   // dice justo donde estaría el botón, que es donde lo van a buscar.
   if (!parte.salidaEl) {
@@ -95,6 +127,8 @@ export function MiParte({
     );
   }
 
+  if (!sePuedeCorregir) return null;
+
   return (
     <>
       <Button
@@ -102,7 +136,7 @@ export function MiParte({
         onClick={() => setAbierto(true)}
         disabled={cargando}
       >
-        Editar mi parte
+        Editar tareas
       </Button>
 
       <Dialog

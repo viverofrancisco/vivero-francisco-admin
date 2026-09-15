@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
-import { hora12 } from "@/lib/hora";
+import { diaEnEcuador, fechaYHora12, hoyEnEcuador } from "@/lib/hora";
 import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
 import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
 import { dispositivoId } from "@/lib/dispositivo";
@@ -30,16 +30,13 @@ import * as Haptics from "expo-haptics";
 /**
  * Si la visita es de hoy, comparando por día y no por instante.
  *
- * `fechaProgramada` es `@db.Date` y llega como medianoche **UTC**; compararla
- * con un `Date` local haría que una visita de mañana pareciera de hoy al oeste
- * de Greenwich. Por eso se comparan las dos como texto `AAAA-MM-DD` en UTC.
+ * `fechaProgramada` es `@db.Date` y llega como medianoche **UTC**, así que su
+ * ISO recortado es el día guardado. Del otro lado va el día en **Ecuador**, que
+ * es con el que el servidor decide (`ensureEsElDiaDeLaVisita`): con el día del
+ * teléfono habría botones que esta pantalla ofrece y el servidor rechaza.
  */
 function mismoDiaQueHoy(fechaProgramada: string): boolean {
-  const hoy = new Date();
-  const hoyUTC = new Date(
-    Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
-  );
-  return fechaProgramada.slice(0, 10) === hoyUTC.toISOString().slice(0, 10);
+  return fechaProgramada.slice(0, 10) === hoyEnEcuador();
 }
 
 export default function PersonalVisitaScreen() {
@@ -158,6 +155,15 @@ export default function PersonalVisitaScreen() {
    * distinta a la de la visita, y esconderle el botón lo dejaría adentro.
    */
   const esDeHoy = mismoDiaQueHoy(visita.fechaProgramada);
+  /**
+   * Corregir las tareas dura el día de la visita —o el día en que marcó su
+   * salida, que es el mismo turno cuando cruza la medianoche—. Después, lo
+   * único que sigue abierto son las fotos: son de lo que se vio en el jardín, y
+   * subir una el martes no cambia lo que se hizo el lunes. El servicio lo
+   * rechaza igual (`ensureSePuedeCorregir`); acá el botón no se ofrece.
+   */
+  const puedeCorregir =
+    esDeHoy || (mio?.salidaEl ? diaEnEcuador(mio.salidaEl) === hoyEnEcuador() : false);
   const accion = !mio
     ? null
     : !mio.entradaEl
@@ -166,7 +172,9 @@ export default function PersonalVisitaScreen() {
         : null
       : !mio.salidaEl
         ? "Marcar salida"
-        : "Editar mi parte";
+        : puedeCorregir
+          ? "Editar tareas"
+          : null;
   /**
    * Marcar entrada, desde la ficha.
    *
@@ -222,7 +230,7 @@ export default function PersonalVisitaScreen() {
 
   const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
-  const filasDeTareas = armarFilasDeTareas(visita);
+  const filasDeTareas = armarFilasDeTareas(visita, personalId);
 
   return (
     <View style={styles.container}>
@@ -259,18 +267,23 @@ export default function PersonalVisitaScreen() {
               value={formatDate(visita.fechaRealizada)}
             />
           ) : null}
-          {visita.horaEntrada ? (
+          {/* Con fecha, no solo la hora: "5:26 PM" se lee igual si se marcó
+              el día de la visita o tres días después, y esa diferencia es
+              justo la que hay que poder ver. El instante lo sella el servidor
+              al apretar el botón, así que dice la verdad de cuándo se marcó
+              —no de cuándo se estuvo—. Sin rótulo "Hora de": la fila dice
+              cuándo, que es lo único que una entrada puede decir. */}
+          {primeraMarca(visita, "entradaEl") ? (
             <Row
-              label={
-                visita.estado === "PROGRAMADA"
-                  ? "Hora estimada"
-                  : "Hora de entrada"
-              }
-              value={hora12(visita.horaEntrada)}
+              label="Entrada"
+              value={fechaYHora12(primeraMarca(visita, "entradaEl")!)}
             />
           ) : null}
-          {visita.horaSalida ? (
-            <Row label="Hora de salida" value={hora12(visita.horaSalida)} />
+          {ultimaMarca(visita, "salidaEl") ? (
+            <Row
+              label="Salida"
+              value={fechaYHora12(ultimaMarca(visita, "salidaEl")!)}
+            />
           ) : null}
         </Section>
 
@@ -459,20 +472,54 @@ function Row({ label, value }: { label: string; value: string }) {
 
 
 /**
+ * Las marcas de la visita entera: la primera entrada y la última salida.
+ *
+ * `Visita.horaEntrada` dice lo mismo, pero como texto `"HH:MM"` y sin día — se
+ * deriva de estos mismos instantes justamente para que las listas no tengan
+ * que recorrerlos. Acá hace falta el instante completo.
+ *
+ * Los ISO se ordenan solos: alfabético y cronológico coinciden.
+ */
+function primeraMarca(visita: VisitaDetail, campo: "entradaEl" | "salidaEl") {
+  return marcas(visita, campo)[0] ?? null;
+}
+
+function ultimaMarca(visita: VisitaDetail, campo: "entradaEl" | "salidaEl") {
+  return marcas(visita, campo).at(-1) ?? null;
+}
+
+function marcas(visita: VisitaDetail, campo: "entradaEl" | "salidaEl") {
+  return (visita.personal ?? [])
+    .map((p) => p[campo])
+    .filter((v): v is string => Boolean(v))
+    .sort();
+}
+
+/**
  * Qué se hizo y quién lo hizo, más lo que se pidió y nadie marcó.
  *
  * El nombre de pila alcanza para saber a quién preguntarle; el apellido
  * completo empuja la fila a dos líneas en la mitad de los casos.
+ *
+ * **El propio no se escribe.** Quien mira sabe quién es, y en una visita de uno
+ * solo la columna repetía su nombre en cada fila. Los de los demás sí, que es
+ * para lo que sirve: en una visita de tres, saber quién hizo el desmalezado.
  */
-function armarFilasDeTareas(visita: VisitaDetail) {
+function armarFilasDeTareas(visita: VisitaDetail, yo: string | null) {
   const quienes = new Map<string, string[]>();
   for (const p of visita.personal ?? []) {
+    if (p.personalId === yo) continue;
     for (const { tarea } of p.tareas) {
       const lista = quienes.get(tarea.id) ?? [];
       lista.push(p.personal.nombre.split(" ")[0]);
       quienes.set(tarea.id, lista);
     }
   }
+  // Las hechas se siguen sacando de todos —las propias también son tareas de
+  // la visita—, pero sin nombre al lado.
+  const hechas = new Set(
+    (visita.personal ?? []).flatMap((p) => p.tareas.map((t) => t.tarea.id))
+  );
 
   const filas = tareasHechas(visita).map((t) => ({
     id: t.id,
@@ -482,7 +529,7 @@ function armarFilasDeTareas(visita: VisitaDetail) {
   }));
 
   for (const { tarea } of visita.tareasObligatorias ?? []) {
-    if (quienes.has(tarea.id)) continue;
+    if (hechas.has(tarea.id)) continue;
     filas.push({
       id: tarea.id,
       nombre: tarea.nombre,

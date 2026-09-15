@@ -312,11 +312,24 @@ just fine. `Cliente` has no coordinates yet, so
 there is nothing to compare against: the point is shown and opens in a map, and
 the "3 km away" warning waits for the client's pin. The browser needs HTTPS
 (localhost excepted); the app declares `expo-location` when-in-use only, since
-the reading happens at the press. **Nothing about any of it is tied to
-today's date** — `registrarParte` checks only that the visita isn't `CANCELADA`,
-that the person is assigned (`removedAt: null`) and that the tareas are alive, so
-a visit from last month that nobody filed still gets filed, which is exactly when
-it's needed. It is filed from the app and from the portal: `components/visitas/mi-parte.tsx`
+the reading happens at the press. **Marking is tied to today's date; correcting the
+office's way is not.** `marcarEntrada` refuses a visit that isn't today
+(`ensureEsElDiaDeLaVisita`) — the screen already hid the button, and a screen is
+a suggestion: the app can sit open for hours showing yesterday's visit, and the
+route takes any POST. `marcarSalida` is deliberately free of it: it demands an
+entrada, which already passed that gate, and a shift that ends at 00:20 is one
+that began yesterday. A `PERSONAL` correcting their own tareas gets the same
+window (`ensureSePuedeCorregir`: the visit's day, or the day they marked their
+salida) — a parte left open forever is one that gets tidied up when the office
+asks; the photos stay open, because a photo added on Tuesday doesn't change what
+was done on Monday. The office corrects any day through `registrarParte`, which
+checks only that the visita isn't `CANCELADA`, that the person is assigned
+(`removedAt: null`) and that the tareas are alive, so a visit from last month
+that nobody filed still gets filed, which is exactly when it's needed. Two date
+shapes get confused here and the service keeps them apart: `esElDiaDeHoy` for a
+`@db.Date` (it arrives as midnight UTC, so its trimmed ISO *is* the stored day)
+and `esInstanteDeHoy` for a mark (20:00 in Guayaquil is 01:00 UTC the next day,
+so trimming its ISO would say tomorrow). It is filed from the app and from the portal: `components/visitas/mi-parte.tsx`
 is the card at the top of the visita's own page, shown only to the assigned
 person (the assignment, not the role — a gardener opening another cuadrilla's
 visit sees it and has no parte to file there). The web endpoint existed from the
