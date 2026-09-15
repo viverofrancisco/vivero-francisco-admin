@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { estadoLabel } from "@/lib/estado-visita";
+import { estadoLabel, estadoPildora } from "@/lib/estado-visita";
 import { Alert, Linking, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -14,7 +14,7 @@ import { apiRequest, ApiError } from "@/lib/api";
 import { ArchivosVisita } from "@/components/ArchivosVisita";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import type { VisitaDetail } from "@/lib/types";
-import { listaTareas } from "@/lib/types";
+import { tareasHechas } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth-store";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -230,36 +230,49 @@ export default function PersonalVisitaScreen() {
 
   const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
+  const filasDeTareas = armarFilasDeTareas(visita);
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 6 }]}>
-        {/* La flecha a la izquierda del nombre. El estado no está acá: ya se
-            lee en la fila de la lista de donde se vino, y repetirlo arriba de
-            todo gasta la línea más visible de la pantalla en algo que no se
-            hace nada con él. Vive abajo, en Cuándo, junto al resto del
-            historial de la visita. */}
-        <View style={styles.encabezado}>
-          <PressableScale
-            onPress={() => router.back()}
-            hitSlop={8}
-            style={styles.volver}
+      {/* La flecha a la izquierda del nombre, y **fija**: adentro del scroll
+          se iba pasando por debajo de la hora y la señal, que están encima de
+          todo, y con ella se iba el modo de volver. Debajo del nombre va el
+          estado, que era una fila más de Cuándo y es lo primero que se
+          pregunta al abrir una visita. Las tareas, que estaban acá en una
+          línea recortada, tienen su propia sección. */}
+      <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
+        <PressableScale
+          onPress={() => router.back()}
+          hitSlop={8}
+          style={styles.volver}
+        >
+          <Ionicons name="chevron-back" size={24} color={tema.texto} />
+        </PressableScale>
+        <View style={styles.encabezadoTexto}>
+          <Text style={styles.heroTitle} numberOfLines={2}>
+            {nombreCliente(cliente)}
+          </Text>
+          <View
+            style={[
+              styles.pildora,
+              { backgroundColor: estadoPildora(visita.estado).fondo },
+            ]}
           >
-            <Ionicons name="chevron-back" size={24} color={tema.texto} />
-          </PressableScale>
-          <View style={styles.encabezadoTexto}>
-            <Text style={styles.heroTitle} numberOfLines={2}>
-              {nombreCliente(cliente)}
-            </Text>
-            <Text style={styles.heroSubtitle} numberOfLines={1}>
-              {listaTareas(visita)}
+            <Text
+              style={[
+                styles.pildoraTexto,
+                { color: estadoPildora(visita.estado).color },
+              ]}
+            >
+              {estadoLabel(visita.estado)}
             </Text>
           </View>
         </View>
+      </View>
 
+      <ScrollView contentContainerStyle={styles.scroll}>
         {/* Cuándo */}
         <Section title="Cuándo">
-          <Row label="Estado" value={estadoLabel(visita.estado)} />
           <Row label="Programada" value={formatDate(visita.fechaProgramada)} />
           {visita.fechaRealizada ? (
             <Row
@@ -280,6 +293,35 @@ export default function PersonalVisitaScreen() {
           {visita.horaSalida ? (
             <Row label="Hora de salida" value={hora12(visita.horaSalida)} />
           ) : null}
+        </Section>
+
+        {/* Lo que se registró: la unión de lo que cargó cada uno. Las
+            obligatorias que nadie marcó aparecen igual, en gris: la pregunta
+            que se hace acá es qué falta. */}
+        <Section title="Tareas">
+          {filasDeTareas.length > 0 ? (
+            filasDeTareas.map((f) => (
+              <View key={f.id} style={styles.tareaRow}>
+                <Text
+                  variant="bodyMedium"
+                  style={[
+                    styles.tareaNombre,
+                    f.pendiente && styles.tareaPendiente,
+                  ]}
+                >
+                  {f.nombre}
+                </Text>
+                <Text variant="bodySmall" style={styles.tareaQuien}>
+                  {f.detalle}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text variant="bodySmall" style={styles.tareasVacio}>
+              Todavía no hay tareas registradas. Cada quien carga las suyas al
+              marcar su salida.
+            </Text>
+          )}
         </Section>
 
         {/* Cliente */}
@@ -434,6 +476,41 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 
+/**
+ * Qué se hizo y quién lo hizo, más lo que se pidió y nadie marcó.
+ *
+ * El nombre de pila alcanza para saber a quién preguntarle; el apellido
+ * completo empuja la fila a dos líneas en la mitad de los casos.
+ */
+function armarFilasDeTareas(visita: VisitaDetail) {
+  const quienes = new Map<string, string[]>();
+  for (const p of visita.personal ?? []) {
+    for (const { tarea } of p.tareas) {
+      const lista = quienes.get(tarea.id) ?? [];
+      lista.push(p.personal.nombre.split(" ")[0]);
+      quienes.set(tarea.id, lista);
+    }
+  }
+
+  const filas = tareasHechas(visita).map((t) => ({
+    id: t.id,
+    nombre: t.nombre,
+    detalle: (quienes.get(t.id) ?? []).join(", "),
+    pendiente: false,
+  }));
+
+  for (const { tarea } of visita.tareasObligatorias ?? []) {
+    if (quienes.has(tarea.id)) continue;
+    filas.push({
+      id: tarea.id,
+      nombre: tarea.nombre,
+      detalle: "Pendiente",
+      pendiente: true,
+    });
+  }
+  return filas;
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-EC", {
     weekday: "long",
@@ -463,7 +540,7 @@ function tipoLabel(tipo: string): string {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scroll: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 32 },
+  scroll: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32 },
   center: {
     flex: 1,
     alignItems: "center",
@@ -478,7 +555,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: "#fff",
   },
   volver: {
     width: 40,
@@ -494,7 +573,13 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
     color: tema.texto,
   },
-  heroSubtitle: { fontSize: 13.5, fontWeight: "600", color: tema.texto3 },
+  pildora: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  pildoraTexto: { fontSize: 12, fontWeight: "700", letterSpacing: 0.1 },
 
 
   soloHoy: {
@@ -534,6 +619,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#eaeaea",
     marginHorizontal: 0,
   },
+
+  tareaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 10,
+  },
+  tareaNombre: { color: "#111", flexShrink: 1 },
+  tareaPendiente: { color: "#888" },
+  tareaQuien: { color: "#888", textAlign: "right", flexShrink: 0 },
+  tareasVacio: { color: "#888", paddingVertical: 12, lineHeight: 19 },
 
   personRow: {
     flexDirection: "row",
@@ -598,17 +695,18 @@ const styles = StyleSheet.create({
 
   footer: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingTop: 10,
+    // Poco: abajo está la barra de pestañas, que ya trae su propio margen.
+    paddingBottom: 10,
     backgroundColor: "#fff",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#eee",
     gap: 4,
   },
   primaryBtn: { borderRadius: 14 },
-  primaryBtnContent: { paddingVertical: 8 },
+  primaryBtnContent: { height: 46 },
   primaryBtnLabel: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
     letterSpacing: 0.2,
   },

@@ -196,16 +196,18 @@ export function VisitaResultForm({
             blanco del alto de la barra arriba del título. */}
         <View style={styles.header}>
           <View style={styles.headerRow}>
+            {/* El espaciador a la izquierda y la ✕ a la derecha: el título
+                queda centrado igual, y cerrar cae del lado del pulgar. */}
+            <View style={styles.headerBtn} />
+            <Text variant="titleMedium" style={styles.headerTitle}>
+              {headerTitle}
+            </Text>
             <IconButton
               icon="close"
               size={24}
               onPress={() => router.back()}
               style={styles.headerBtn}
             />
-            <Text variant="titleMedium" style={styles.headerTitle}>
-              {headerTitle}
-            </Text>
-            <View style={styles.headerBtn} />
           </View>
         </View>
 
@@ -215,39 +217,38 @@ export function VisitaResultForm({
           keyboardShouldPersistTaps="handled"
         >
           {/* Lo que hiciste **tú**. Otro puede haber hecho otras cosas en la
-              misma visita y las carga en su propio parte. */}
-          <Section title="Tareas que hiciste">
-            <View style={styles.tareas}>
-              {enOrden.map((t) => {
-                const marcada = tareaIds.includes(t.id);
-                const exigida = obligatorias.includes(t.id);
-                return (
-                  <PressableScale
-                    key={t.id}
-                    onPress={() => alternarTarea(t.id)}
-                    style={[styles.tarea, marcada && styles.tareaMarcada]}
+              misma visita y las carga en su propio parte. Sin rótulo: el
+              título de la pantalla ya pregunta qué hiciste. */}
+          <View style={styles.tareas}>
+            {enOrden.map((t) => {
+              const marcada = tareaIds.includes(t.id);
+              const exigida = obligatorias.includes(t.id);
+              return (
+                <PressableScale
+                  key={t.id}
+                  onPress={() => alternarTarea(t.id)}
+                  style={[styles.tarea, marcada && styles.tareaMarcada]}
+                >
+                  <View
+                    style={[styles.casilla, marcada && styles.casillaMarcada]}
                   >
-                    <View
-                      style={[styles.casilla, marcada && styles.casillaMarcada]}
-                    >
-                      {marcada ? <Text style={styles.tilde}>✓</Text> : null}
-                    </View>
-                    <Text
-                      style={[
-                        styles.tareaTexto,
-                        marcada && styles.tareaTextoMarcada,
-                      ]}
-                    >
-                      {t.nombre}
-                    </Text>
-                    {exigida ? (
-                      <Text style={styles.obligatoria}>Obligatoria</Text>
-                    ) : null}
-                  </PressableScale>
-                );
-              })}
-            </View>
-          </Section>
+                    {marcada ? <Text style={styles.tilde}>✓</Text> : null}
+                  </View>
+                  <Text
+                    style={[
+                      styles.tareaTexto,
+                      marcada && styles.tareaTextoMarcada,
+                    ]}
+                  >
+                    {t.nombre}
+                  </Text>
+                  {exigida ? (
+                    <Text style={styles.obligatoria}>Obligatoria</Text>
+                  ) : null}
+                </PressableScale>
+              );
+            })}
+          </View>
 
           {error ? (
             <HelperText type="error" visible style={styles.error}>
@@ -277,22 +278,6 @@ export function VisitaResultForm({
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={styles.section}>
-      <Text variant="labelMedium" style={styles.sectionLabel}>
-        {title.toUpperCase()}
-      </Text>
-      {children}
-    </View>
-  );
-}
 
 
 
@@ -304,7 +289,10 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32, gap: 20 },
 
   header: {
-    paddingBottom: 12,
+    // La hoja arranca pegada al borde de la pantalla: sin esto el título
+    // toca el filo redondeado del modal.
+    paddingTop: 10,
+    paddingBottom: 10,
     backgroundColor: "#fff",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#eee",
@@ -317,15 +305,6 @@ const styles = StyleSheet.create({
   },
   headerBtn: { margin: 0, width: 40 },
   headerTitle: { color: "#111", fontWeight: "600" },
-
-  section: { gap: 8 },
-  sectionLabel: {
-    color: "#888",
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    paddingLeft: 4,
-  },
 
   fieldBox: {
     backgroundColor: "#fafafa",
