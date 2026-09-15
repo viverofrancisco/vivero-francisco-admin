@@ -5,7 +5,7 @@ import type { UserRole } from "@/generated/prisma/client";
 
 export interface MobileUser {
   id: string;
-  email: string;
+  email: string | null;
   name: string | null;
   apellido: string | null;
   role: UserRole;

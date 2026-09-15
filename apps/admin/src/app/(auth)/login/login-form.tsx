@@ -41,7 +41,7 @@ export function LoginForm({
     setLoading(false);
 
     if (result?.error) {
-      setError("Email o contraseña incorrectos");
+      setError("Usuario o contraseña incorrectos");
     } else {
       router.push("/dashboard");
       router.refresh();
@@ -71,11 +71,16 @@ export function LoginForm({
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Usuario o correo</Label>
+              {/* `type="text"`, no `email`: el navegador rechazaría un usuario
+                  sin arroba antes de que el formulario llegue a enviarse, y
+                  quien trabaja en el jardín no tiene correo. */}
               <Input
                 id="email"
-                type="email"
-                placeholder="tu@email.com"
+                type="text"
+                autoComplete="username"
+                autoCapitalize="none"
+                placeholder="jperez o tu@correo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

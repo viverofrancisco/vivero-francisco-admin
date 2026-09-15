@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
-import bcrypt from "bcryptjs";
 import { z } from "zod/v4";
 
+// Sin `password`: nadie le pone la contraseña a nadie. Para eso está
+// `POST /api/users/[id]/enlace-acceso`, que emite un enlace de un solo uso y
+// deja que la elija su dueño. Mientras esto lo aceptaba, la regla que el resto
+// del portal sostiene tenía una puerta de servicio abierta.
 const updateSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").optional(),
   apellido: z.string().optional(),
   email: z.email("Email inválido").optional(),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
-  sectorIds: z.array(z.string()).optional(),
 });
 
 export async function GET(
@@ -85,7 +86,6 @@ export async function PUT(
     if (data.name !== undefined) updateData.name = data.name;
     if (data.apellido !== undefined) updateData.apellido = data.apellido || null;
     if (data.email !== undefined) updateData.email = data.email;
-    if (data.password) updateData.password = await bcrypt.hash(data.password, 12);
 
     const updatedUser = await tx.user.update({
       where: { id },

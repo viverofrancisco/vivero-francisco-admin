@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { buscarCuentaPorIdentificador } from "@/lib/services/acceso.service";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
@@ -14,17 +15,18 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        // `email` por el nombre del campo de siempre, pero lo que acepta es un
+        // correo **o** un usuario: quien trabaja en el jardín no tiene correo y
+        // entra con un nombre corto que le dictó un administrador.
+        email: { label: "Usuario o correo", type: "text" },
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email y contraseña son requeridos");
+          throw new Error("Usuario y contraseña son requeridos");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        const user = await buscarCuentaPorIdentificador(credentials.email);
 
         if (!user || !user.password) {
           throw new Error("Credenciales inválidas");

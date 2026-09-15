@@ -11,9 +11,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  const { email, password } = parsed.data;
+  // El campo se llama `email` por historia: lo que llega puede ser un correo o
+  // un usuario. Quien trabaja en el jardín no tiene correo.
+  const { email: identificador, password } = parsed.data;
 
-  const limit = await enforceLoginLimit(email);
+  const limit = await enforceLoginLimit(identificador);
   if (limit) {
     return NextResponse.json(
       { error: limit.reason, retryAfter: limit.retryAfterSeconds },
@@ -21,21 +23,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const user = await validateCredentials(email, password);
+  const user = await validateCredentials(identificador, password);
   if (!user) {
     return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
   }
 
+  // Un cliente entra por su propia pantalla, con teléfono o correo y la
+  // contraseña que se puso él mismo; acá no, porque esto resuelve por `User` y
+  // su identidad vive en la ficha del cliente.
   if (user.role === "CLIENTE") {
     return NextResponse.json(
-      { error: "Los clientes deben iniciar sesión con código de WhatsApp." },
-      { status: 403 }
-    );
-  }
-
-  if (user.role === "PERSONAL") {
-    return NextResponse.json(
-      { error: "Esta cuenta no tiene acceso a la app." },
+      { error: "Los clientes inician sesión desde la pantalla de clientes." },
       { status: 403 }
     );
   }

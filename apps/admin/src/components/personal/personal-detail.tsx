@@ -11,6 +11,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PersonalForm } from "@/components/personal/personal-form";
+import {
+  AccesoPersonal,
+  type EstadoCuenta,
+} from "./acceso-personal";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { ArrowLeft, Pencil } from "lucide-react";
 
@@ -36,6 +40,10 @@ interface Props {
   backHref?: string;
   personal: PersonalData;
   grupos: GrupoInfo[];
+  /** Cómo está su acceso a la app, o `null` si nunca se le creó cuenta. */
+  cuenta: EstadoCuenta | null;
+  /** Solo un ADMIN da o quita acceso. Para el resto la tarjeta es informativa. */
+  puedeAdministrarAcceso: boolean;
 }
 
 function formatDate(dateStr: string) {
@@ -49,6 +57,8 @@ function formatDate(dateStr: string) {
 export function PersonalDetail({
   personal,
   grupos,
+  cuenta,
+  puedeAdministrarAcceso,
   backHref = "/dashboard/personal",
 }: Props) {
   const router = useRouter();
@@ -140,8 +150,17 @@ export function PersonalDetail({
             />
           </div>
 
-          {/* Right column - Grupos */}
+          {/* Right column - Acceso y grupos */}
           <div className="space-y-6">
+            {/* Arriba de los grupos: es lo que cambia de estado y lo que
+                alguien viene a buscar cuando abre esta ficha a mano. */}
+            <AccesoPersonal
+              personalId={personal.id}
+              nombre={nombreCompleto}
+              estado={cuenta}
+              puedeAdministrar={puedeAdministrarAcceso}
+            />
+
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Grupos</CardTitle>

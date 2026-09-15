@@ -23,7 +23,6 @@ const inviteSchema = z.object({
   apellido: z.string().optional(),
   email: z.email("Email inválido"),
   role: z.enum(["STAFF"]),
-  sectorIds: z.array(z.string()).optional(),
 });
 
 export async function POST(request: Request) {
@@ -77,7 +76,7 @@ export async function POST(request: Request) {
   let correoEnviado = false;
   try {
     const res = await sendEnlacePortalEmail(
-      newUser.email,
+      data.email,
       [newUser.name, newUser.apellido].filter(Boolean).join(" "),
       enlace.url,
       "invitacion",

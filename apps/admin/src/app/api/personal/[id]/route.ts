@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { revocarAcceso } from "@/lib/services/acceso.service";
 import { personalSchema } from "@/lib/validations/personal";
 
 export async function GET(
@@ -77,7 +78,16 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await prisma.personal.update({ where: { id }, data: { deletedAt: new Date() } });
+    const personal = await prisma.personal.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+      select: { userId: true },
+    });
+    // Archivar a alguien le corta el acceso: su ficha desaparece de las listas
+    // y la app no le muestra nada, pero su cuenta seguía entrando —y con ella
+    // el chat de las visitas—. La cuenta no se borra: su nombre firma los
+    // partes que cargó, y devolverle el acceso es un clic si vuelve.
+    if (personal.userId) await revocarAcceso(personal.userId);
     return NextResponse.json({ message: "Personal archivado" });
   } catch {
     return NextResponse.json({ error: "Personal no encontrado" }, { status: 404 });

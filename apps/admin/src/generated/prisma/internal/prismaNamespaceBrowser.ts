@@ -166,6 +166,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   apellido: 'apellido',
   email: 'email',
+  usuario: 'usuario',
   emailVerified: 'emailVerified',
   image: 'image',
   password: 'password',

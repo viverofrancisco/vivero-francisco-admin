@@ -21,6 +21,7 @@ import {
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import type { EstadoAcceso } from "@/lib/services/personal-acceso.service";
 import { StatCards } from "@/components/shared/stat-cards";
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
@@ -36,7 +37,24 @@ interface Personal {
   tipo: string | null;
   estado: string;
   grupos?: { grupo: { nombre: string } }[];
+  /** Si entra a la app, y si no, por qué no. */
+  acceso: EstadoAcceso;
 }
+
+/**
+ * Cómo se ve cada estado de acceso.
+ *
+ * "Sin cuenta" en gris apagado y no en rojo: la mayoría del personal no
+ * necesita entrar a la app, así que no tener cuenta es normal, no un problema.
+ * El ámbar es para lo que sí espera algo de la oficina —mandarle el enlace otra
+ * vez— y el rojo para lo que alguien decidió.
+ */
+const ACCESO_META: Record<EstadoAcceso, { label: string; className: string }> = {
+  ACTIVO: { label: "Activo", className: "bg-secondary text-green-700" },
+  PENDIENTE: { label: "Pendiente", className: "bg-amber-100 text-amber-800" },
+  REVOCADO: { label: "Revocado", className: "bg-destructive/10 text-destructive" },
+  SIN_CUENTA: { label: "Sin cuenta", className: "text-muted-foreground" },
+};
 
 function fullName(p: Personal): string {
   return `${p.nombre} ${p.apellido || ""}`.trim();
@@ -228,6 +246,7 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                   <TableHead>Especialidad</TableHead>
                   <TableHead>Teléfono</TableHead>
                   <TableHead>Cuadrilla</TableHead>
+                  <TableHead>Acceso</TableHead>
                   <TableHead className="text-right">Estado</TableHead>
                   <TableHead className="w-16 text-right">Acciones</TableHead>
                 </TableRow>
@@ -273,6 +292,13 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {crewNames(p)}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${ACCESO_META[p.acceso].className}`}
+                      >
+                        {ACCESO_META[p.acceso].label}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <span
@@ -338,6 +364,15 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                 {p.estado !== "ACTIVO" && (
                   <span className="flex-none rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
                     Inactivo
+                  </span>
+                )}
+                {/* Solo lo que espera algo: "sin cuenta" es lo normal para la
+                    mayoría y llenaría la lista de etiquetas que no dicen nada. */}
+                {(p.acceso === "PENDIENTE" || p.acceso === "REVOCADO") && (
+                  <span
+                    className={`flex-none rounded-full px-2 py-0.5 text-[11px] font-bold ${ACCESO_META[p.acceso].className}`}
+                  >
+                    {ACCESO_META[p.acceso].label}
                   </span>
                 )}
               </span>

@@ -1,16 +1,14 @@
 import { z } from "zod";
 
-export const userRoleSchema = z.enum([
-  "ADMIN",
-  "STAFF",
-  "PERSONAL_ADMIN",
-  "PERSONAL",
-  "CLIENTE",
-]);
+export const userRoleSchema = z.enum(["ADMIN", "STAFF", "PERSONAL", "CLIENTE"]);
 export type UserRole = z.infer<typeof userRoleSchema>;
 
+// El campo dice `email` por historia, pero acepta un correo **o** un usuario:
+// quien trabaja en el jardín no tiene correo y entra con un nombre corto que le
+// dictó un administrador. Por eso no se valida como dirección — el servidor
+// decide por dónde buscar según tenga arroba o no.
 export const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().min(3).max(120),
   password: z.string().min(1),
 });
 export type LoginBody = z.infer<typeof loginSchema>;

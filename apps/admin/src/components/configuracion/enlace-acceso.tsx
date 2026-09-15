@@ -31,8 +31,12 @@ export function EnlaceAcceso({
   correo,
 }: {
   datos: EnlaceGenerado;
-  /** A qué dirección se intentó enviar, para nombrarla en el mensaje. */
-  correo: string;
+  /**
+   * A qué dirección se intentó enviar, para nombrarla en el mensaje. No la hay
+   * cuando la cuenta no tiene correo —el personal de campo— y ahí el enlace se
+   * copia y se manda por donde sea.
+   */
+  correo?: string;
 }) {
   const [copiado, setCopiado] = useState(false);
   const seIntento = datos.correoIntentado ?? true;

@@ -80,8 +80,10 @@ export async function POST(
   // revocar quería evitar.
   const enlace = await crearEnlaceParaUsuario(user.id, tipo);
 
+  // Sin correo no hay nada que mandar: el personal de campo entra con un
+  // usuario, y su enlace se copia y se manda por WhatsApp.
   let correoEnviado = false;
-  if (enviarCorreo) {
+  if (enviarCorreo && user.email) {
     try {
       const res = await sendEnlacePortalEmail(
         user.email,
@@ -100,6 +102,7 @@ export async function POST(
     enlace: enlace.url,
     expiraEl: enlace.expiraEl.toISOString(),
     correoEnviado,
-    correoIntentado: enviarCorreo,
+    // Sin casilla no se intentó nada, aunque lo hayan pedido.
+    correoIntentado: enviarCorreo && user.email !== null,
   });
 }

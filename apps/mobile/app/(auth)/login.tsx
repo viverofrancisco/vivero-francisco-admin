@@ -66,17 +66,22 @@ export default function LoginScreen() {
             </Text>
           )}
           <Text variant="bodyLarge" style={styles.subtitle}>
-            Inicia sesión con tu correo
+            Inicia sesión con tu usuario o tu correo
           </Text>
 
+          {/* Un solo campo para las dos cosas: la oficina entra con su correo y
+              quien trabaja en el jardín con el usuario que le dictaron, porque
+              no tiene correo. El servidor mira si hay arroba y busca por donde
+              corresponde, así que no hay nada que elegir acá. */}
           <TextInput
             mode="outlined"
-            label="Correo electrónico"
+            label="Usuario o correo"
+            placeholder="jperez o tu@correo.com"
             value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
             autoCapitalize="none"
-            autoComplete="email"
+            autoCorrect={false}
+            autoComplete="username"
             style={styles.input}
           />
           <TextInput

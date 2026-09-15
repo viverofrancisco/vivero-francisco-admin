@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { PageHeader } from "@/components/shared/page-header";
+import { estadoDeAcceso } from "@/lib/services/personal-acceso.service";
 import { PersonalTable } from "@/components/personal/personal-table";
 
 export default async function PersonalPage() {
@@ -11,6 +12,9 @@ export default async function PersonalPage() {
     orderBy: { createdAt: "desc" },
     include: {
       grupos: { select: { grupo: { select: { nombre: true } } } },
+      // Para la columna de acceso. El hash nunca sale de acá: se convierte en
+      // una palabra antes de llegar al cliente.
+      user: { select: { password: true, accesoRevocadoEl: true } },
     },
   });
 
@@ -28,7 +32,17 @@ export default async function PersonalPage() {
         ]}
       />
 
-      <PersonalTable personal={personal} />
+      <PersonalTable
+        personal={personal.map(({ user, ...p }) => ({
+          ...p,
+          acceso: estadoDeAcceso(
+            user && {
+              tieneContrasena: user.password !== null,
+              revocado: user.accesoRevocadoEl !== null,
+            }
+          ),
+        }))}
+      />
     </div>
   );
 }

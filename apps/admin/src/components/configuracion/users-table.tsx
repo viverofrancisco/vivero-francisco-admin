@@ -43,7 +43,7 @@ interface UserData {
   id: string;
   name: string | null;
   apellido: string | null;
-  email: string;
+  email: string | null;
   role: string;
   createdAt: string;
   /** Si ya eligió una contraseña. Si no, su invitación sigue pendiente. */
@@ -54,17 +54,13 @@ interface UserData {
   enlacePendiente: boolean;
 }
 
-/** Role pill style: ADMIN green, sector-admin sky, others neutral. */
+/** Role pill style: ADMIN green, the rest neutral. */
 const roleMeta = (role: string) => {
   switch (role) {
     case "ADMIN":
       return { label: "Administrador", className: "bg-secondary text-green-700" };
     case "STAFF":
       return { label: "Staff", className: "bg-muted text-muted-foreground" };
-    case "PERSONAL_ADMIN":
-      return { label: "Admin de sector", className: "bg-info/12 text-info" };
-    case "PERSONAL":
-      return { label: "Personal", className: "bg-muted text-muted-foreground" };
     default:
       return { label: role, className: "bg-muted text-muted-foreground" };
   }

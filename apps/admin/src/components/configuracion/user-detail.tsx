@@ -10,8 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ArrowLeft, Pencil, KeyRound } from "lucide-react";
 import {
   Dialog,
@@ -21,12 +19,13 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { UserForm } from "./user-form";
+import { EnlaceAcceso, type EnlaceGenerado } from "./enlace-acceso";
 
 interface UserData {
   id: string;
   name: string | null;
   apellido: string | null;
-  email: string;
+  email: string | null;
   role: string;
   createdAt: string;
 }
@@ -41,8 +40,6 @@ const roleBadge = (role: string) => {
       return { label: "Administrador", variant: "default" as const };
     case "STAFF":
       return { label: "Staff", variant: "secondary" as const };
-    case "PERSONAL_ADMIN":
-      return { label: "Personal Admin", variant: "outline" as const };
     case "PERSONAL":
       return { label: "Personal", variant: "outline" as const };
     default:
@@ -62,28 +59,36 @@ export function UserDetail({ user }: Props) {
   const router = useRouter();
   const [cardsEditing, setCardsEditing] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
-  const [resetPassword, setResetPassword] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  /** El enlace recién emitido. Mientras exista, el diálogo lo muestra. */
+  const [generado, setGenerado] = useState<EnlaceGenerado | null>(null);
 
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+  /**
+   * Nadie le pone la contraseña a nadie.
+   *
+   * Acá había un campo para tipearle una contraseña al otro: había que
+   * inventarla, dictarla y confiar en que la cambiara después —cosa que no
+   * pasa—, y hasta entonces era una clave que sabían dos personas. Lo que se
+   * emite es un enlace de un solo uso; la contraseña la elige su dueño.
+   */
+  const pedirEnlace = async () => {
     setResetLoading(true);
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
-        method: "PUT",
+      const res = await fetch(`/api/users/${user.id}/enlace-acceso`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: resetPassword }),
+        body: JSON.stringify({
+          tipo: "restablecer",
+          enviarCorreo: user.email !== null,
+        }),
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Error");
-      }
-      toast.success("Contraseña restablecida");
-      setResetOpen(false);
-      setResetPassword("");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No pudimos generar el enlace");
+      setGenerado(data);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error al restablecer contraseña");
+      toast.error(
+        err instanceof Error ? err.message : "No pudimos generar el enlace"
+      );
     } finally {
       setResetLoading(false);
     }
@@ -153,7 +158,10 @@ export function UserDetail({ user }: Props) {
                 id: user.id,
                 name: user.name,
                 apellido: user.apellido,
-                email: user.email,
+                // La oficina siempre tiene correo —es con lo que se la invitó—;
+                // el `?? ""` es por el tipo, que admite nulo desde que existen
+                // las cuentas de personal, que no se editan acá.
+                email: user.email ?? "",
               }}
               cardsEditing={cardsEditing}
               onEditDone={() => setCardsEditing(false)}
@@ -172,52 +180,61 @@ export function UserDetail({ user }: Props) {
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => setResetOpen(true)}
+                  onClick={() => {
+                    setGenerado(null);
+                    setResetOpen(true);
+                  }}
                 >
                   <KeyRound className="mr-2 h-4 w-4" />
                   Restablecer contraseña
                 </Button>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Le mandamos un enlace para que elija la suya. Su contraseña
+                  actual sigue sirviendo hasta que lo use.
+                </p>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
 
-      {/* Reset password dialog */}
+      {/* Restablecer = emitir un enlace, no elegirle la contraseña. */}
       <Dialog open={resetOpen} onOpenChange={setResetOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Restablecer contraseña</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-password">Nueva contraseña</Label>
-              <Input
-                id="reset-password"
-                type="text"
-                value={resetPassword}
-                onChange={(e) => setResetPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
-                required
-                minLength={6}
-              />
+          {generado ? (
+            <div className="space-y-4">
+              <EnlaceAcceso datos={generado} correo={user.email ?? undefined} />
+              <div className="flex justify-end">
+                <Button onClick={() => setResetOpen(false)}>Listo</Button>
+              </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setResetOpen(false);
-                  setResetPassword("");
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={resetLoading}>
-                {resetLoading ? "Guardando..." : "Restablecer"}
-              </Button>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Generamos un enlace de un solo uso para que{" "}
+                <strong>{nombreCompleto}</strong> elija su contraseña.
+                {user.email
+                  ? " Se lo mandamos por correo y también lo vas a poder copiar."
+                  : " Lo vas a poder copiar para mandárselo por donde prefieras."}{" "}
+                Anula cualquier otro que le hayas mandado antes.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setResetOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={pedirEnlace} disabled={resetLoading}>
+                  {resetLoading ? "Generando..." : "Generar enlace"}
+                </Button>
+              </div>
             </div>
-          </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

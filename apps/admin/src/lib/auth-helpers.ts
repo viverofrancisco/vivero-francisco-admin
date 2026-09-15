@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { buscarCuentaPorIdentificador } from "@/lib/services/acceso.service";
 import type { User, UserRole } from "@/generated/prisma/client";
 
 /**
@@ -113,10 +114,10 @@ export function viewerFromUser(user: {
 }
 
 export async function validateCredentials(
-  email: string,
+  identificador: string,
   password: string
 ): Promise<User | null> {
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await buscarCuentaPorIdentificador(identificador);
   if (!user?.password) return null;
   // Con el acceso revocado la contraseña deja de importar.
   if (user.accesoRevocadoEl) return null;

@@ -269,6 +269,12 @@ export async function establecerContrasena(
       // es un placeholder porque el login resuelve por la ficha del cliente,
       // no por `User.email`, y así no choca con el correo de alguien del
       // personal que sea también cliente.
+      //
+      // Desde que `email` admite nulo se podría dejar vacío, y sigue siendo un
+      // placeholder a propósito: las filas viejas ya lo tienen, y una columna
+      // con dos formas obliga a conocer las dos. Nadie le escribe a esa
+      // dirección —los dos caminos de login rechazan a un CLIENTE antes de
+      // mirarla— y el dominio `.local` no sale a ningún lado.
       const created = await tx.user.create({
         data: {
           role: "CLIENTE",
@@ -336,4 +342,53 @@ export async function restaurarAcceso(userId: string): Promise<void> {
     where: { id: userId },
     data: { accesoRevocadoEl: null },
   });
+}
+
+// ──────────────────────────────────────────────
+// Con qué entra cada uno
+// ──────────────────────────────────────────────
+
+/**
+ * Normaliza un usuario: minúsculas y sin espacios alrededor.
+ *
+ * Se guarda normalizado y se busca normalizado, así "JPerez" y "jperez" no son
+ * dos cuentas distintas. Quien dicta el usuario por teléfono no va a acordarse
+ * de las mayúsculas.
+ */
+export function normalizarUsuario(valor: string): string {
+  return valor.trim().toLowerCase();
+}
+
+/**
+ * Qué puede ser un usuario, y por qué tan poco.
+ *
+ * Se lo dicta un administrador por teléfono o WhatsApp, así que todo lo que no
+ * se pueda deletrear sin dudar sobra: letras, números, punto, guion y guion
+ * bajo. Sin arroba, para que nunca se confunda con un correo ni en la pantalla
+ * de login ni en la cabeza de quien lo escribe.
+ */
+export const USUARIO_REGEX = /^[a-z0-9._-]{3,30}$/;
+
+/** Si algo tiene arroba, es un correo. Es la única señal que hace falta. */
+export function pareceCorreo(identificador: string): boolean {
+  return identificador.includes("@");
+}
+
+/**
+ * Encuentra la cuenta con lo que sea que hayan tipeado.
+ *
+ * Los dos caminos de login —el panel web y la app— preguntan lo mismo, y
+ * preguntarlo por separado ya había hecho que uno aceptara algo que el otro no.
+ * Acá el campo es uno solo: si trae arroba se busca por correo, si no por
+ * usuario.
+ *
+ * Devuelve la fila cruda a propósito: quien llama decide qué hacer con el rol,
+ * con `accesoRevocadoEl` y con la contraseña, que no es lo mismo en los dos
+ * lados.
+ */
+export function buscarCuentaPorIdentificador(identificador: string) {
+  const limpio = identificador.trim();
+  return pareceCorreo(limpio)
+    ? prisma.user.findUnique({ where: { email: limpio.toLowerCase() } })
+    : prisma.user.findUnique({ where: { usuario: normalizarUsuario(limpio) } });
 }

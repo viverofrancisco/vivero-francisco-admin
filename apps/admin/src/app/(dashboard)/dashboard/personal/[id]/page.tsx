@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { hrefDeVuelta } from "@/lib/navegacion";
+import { estadoCuentaPersonal } from "@/lib/services/personal-acceso.service";
 import { PersonalDetail } from "@/components/personal/personal-detail";
 
 export default async function EditarPersonalPage({
@@ -11,7 +12,7 @@ export default async function EditarPersonalPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
-  await requireAuth();
+  const actual = await requireAuth();
   const { id } = await params;
   const { from } = await searchParams;
   const backHref = hrefDeVuelta(from, "/dashboard/personal");
@@ -30,6 +31,8 @@ export default async function EditarPersonalPage({
   if (!personal) {
     notFound();
   }
+
+  const cuenta = await estadoCuentaPersonal(personal.id);
 
   const grupos = personal.grupos.map((g) => ({
     id: g.grupo.id,
@@ -52,6 +55,8 @@ export default async function EditarPersonalPage({
           createdAt: personal.createdAt.toISOString(),
         }}
         grupos={grupos}
+        cuenta={cuenta}
+        puedeAdministrarAcceso={actual.role === "ADMIN"}
       />
     </div>
   );

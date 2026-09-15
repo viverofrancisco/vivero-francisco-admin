@@ -167,7 +167,22 @@ model User {
   id               String    @id @default(cuid())
   name             String?
   apellido         String?
-  email            String    @unique
+  /// El correo, **si tiene**.
+  ///
+  /// Un jardinero no tiene: la mayoría no usa correo, y pedirle uno para
+  /// crearle la cuenta obligaba a inventar direcciones que después nadie lee.
+  /// Por eso esto es opcional y existe `usuario` al lado — uno de los dos
+  /// alcanza para entrar. En Postgres un único admite varios nulos, así que
+  /// muchas cuentas sin correo conviven sin chocar.
+  email            String?   @unique
+  /**
+   * Con qué entra quien no tiene correo. Minúsculas, sin espacios.
+   * Lo elige quien crea la cuenta desde la ficha de Personal y se lo dicta a la
+   * persona; es lo único que hay que recordar, porque la contraseña la elige
+   * ella misma abriendo un enlace. Se compara en minúsculas para que "JPerez" y
+   * "jperez" no sean dos cuentas distintas.
+   */
+  usuario          String?   @unique
   emailVerified    DateTime?
   image            String?
   password         String?
