@@ -120,84 +120,39 @@ export async function pushAlertaIncompleta(visitaId: string): Promise<void> {
 }
 
 // ──────────────────────────────────────────────
-// Chat de visita
+// Calificación de la visita
 // ──────────────────────────────────────────────
 
-export async function pushNuevoMensajeChat(messageId: string): Promise<void> {
-  const message = await prisma.visitaMessage.findUnique({
-    where: { id: messageId },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          apellido: true,
-          role: true,
-          cliente: { select: { nombre: true, apellido: true, empresa: true } },
-        },
-      },
-      media: { select: { id: true, tipo: true } },
-      visita: {
-        include: {
-          cliente: {
-            select: {
-              userId: true,
-              sectorId: true,
-              nombre: true,
-              apellido: true,
-              empresa: true,
-            },
-          },
-        },
-      },
+/**
+ * Le pide al cliente que califique, apenas la visita se cierra.
+ *
+ * Es el momento en que tiene algo que decir y en que se acuerda de lo que vio.
+ * Un día después ya no distingue una poda de la otra, y a la semana no abre el
+ * aviso.
+ *
+ * Reemplaza al aviso de mensaje nuevo del chat, que se fue: pedía que alguien
+ * estuviera del otro lado, y esto pide una sola cosa que se contesta en dos
+ * toques.
+ */
+export async function pushPedirCalificacion(visitaId: string): Promise<void> {
+  const visita = await prisma.visita.findUnique({
+    where: { id: visitaId },
+    select: {
+      estado: true,
+      cliente: { select: { userId: true, nombre: true, apellido: true, empresa: true } },
+      calificacion: { select: { id: true } },
     },
   });
-  if (!message) return;
+  if (!visita) return;
+  // Solo si de verdad terminó, y solo si todavía no calificó: volver a pedirlo
+  // porque alguien corrigió una fecha es la forma de que dejen de abrirlos.
+  if (visita.estado !== "COMPLETADA") return;
+  if (visita.calificacion) return;
+  if (!visita.cliente.userId) return;
 
-  const visita = message.visita;
-  const cliente = visita.cliente;
-
-  const isClienteAuthor = message.author.role === "CLIENTE";
-  const authorName = isClienteAuthor
-    ? nombreCliente(message.author.cliente ?? cliente)
-    : `${message.author.name ?? ""} ${message.author.apellido ?? ""}`.trim() ||
-      "Equipo";
-  const body = message.body ?? "";
-  const truncatedBody =
-    body.length > 100 ? `${body.slice(0, 97)}…` : body;
-  let preview = truncatedBody;
-  if (!body && message.media.length > 0) {
-    const hasVideo = message.media.some((m) => m.tipo === "video");
-    preview = hasVideo ? "📹 Video" : "📷 Imagen";
-  } else if (body && message.media.length > 0) {
-    const hasVideo = message.media.some((m) => m.tipo === "video");
-    preview = `${hasVideo ? "📹" : "📷"} ${truncatedBody}`;
-  }
-
-  // Recipients: the "other side" only.
-  let recipientIds: string[] = [];
-  if (isClienteAuthor) {
-    // Escribe el cliente: le avisa a la oficina. Antes se sumaban los capataces
-    // del sector del cliente; ese rol ya no existe.
-    recipientIds = await getAdminUserIds();
-  } else {
-    // Escribe la oficina: le avisa al cliente y a nadie más.
-    if (cliente.userId) recipientIds = [cliente.userId];
-  }
-
-  // Don't notify the author themselves.
-  recipientIds = recipientIds.filter((id) => id !== message.authorUserId);
-  if (recipientIds.length === 0) return;
-
-  await sendPushToUsers(recipientIds, {
-    title: isClienteAuthor
-      ? `Nuevo mensaje de ${authorName}`
-      : `Vivero Francisco`,
-    body: preview,
-    data: {
-      type: "chat_message",
-      visitaId: visita.id,
-      messageId: message.id,
-    },
+  await sendPushToUsers([visita.cliente.userId], {
+    title: "¿Cómo quedó tu jardín?",
+    body: "Contanos qué te pareció la visita de hoy.",
+    data: { type: "calificar_visita", visitaId },
   });
 }

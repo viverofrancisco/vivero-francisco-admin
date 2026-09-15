@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
-import { CalendarOff, MessagesSquare } from "lucide-react";
+import { CalendarOff } from "lucide-react";
 
 /**
  * El panel de quien trabaja en el campo: una sola pantalla.
@@ -10,8 +10,8 @@ import { CalendarOff, MessagesSquare } from "lucide-react";
  * cumplimiento— y ninguna le servía para nada: el jardinero no decide qué se
  * agenda ni cierra las visitas, así que un porcentaje de cumplimiento le mide
  * algo sobre lo que no puede actuar, y ocupaba la mitad de arriba de la
- * pantalla. Lo que necesita saber al abrir esto es qué le toca hoy, qué viene
- * después, y si alguien le escribió.
+ * pantalla. Lo que necesita saber al abrir esto es qué le toca hoy y qué viene
+ * después.
  */
 
 export interface VisitaDelPanel {
@@ -24,26 +24,16 @@ export interface VisitaDelPanel {
   tareas: string;
 }
 
-export interface ConversacionDelPanel {
-  visitaId: string;
-  cliente: string;
-  ultimo: string;
-  cuando: string;
-  sinLeer: number;
-}
-
 export function PanelJardinero({
   nombre,
   fechaHoy,
   hoy,
   proximas,
-  conversaciones,
 }: {
   nombre: string;
   fechaHoy: string;
   hoy: VisitaDelPanel[];
   proximas: VisitaDelPanel[];
-  conversaciones: ConversacionDelPanel[];
 }) {
   return (
     <div className="space-y-5 p-4 md:p-7">
@@ -80,50 +70,6 @@ export function PanelJardinero({
           />
         ) : (
           <Filas visitas={proximas} />
-        )}
-      </Seccion>
-
-      {/* Con su propio "Ver todas" en vez de una entrada en el menú: acá
-          entran las últimas conversaciones, y la bandeja completa queda a un
-          clic para cuando hay que buscar una vieja. */}
-      <Seccion titulo="Mensajes" verTodasHref="/dashboard/mensajes">
-        {conversaciones.length === 0 ? (
-          <Vacio
-            icono={
-              <MessagesSquare className="h-8 w-8 text-muted-foreground/50" />
-            }
-            titulo="No tienes mensajes"
-          />
-        ) : (
-          <div className="divide-y divide-border/60">
-            {conversaciones.map((c) => (
-              <Link
-                key={c.visitaId}
-                href={`/dashboard/visitas/${c.visitaId}`}
-                className="flex items-center gap-3 px-5 py-3 hover:bg-muted/50"
-              >
-                <InitialsAvatar name={c.cliente} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-bold text-foreground">
-                      {c.cliente}
-                    </span>
-                    <span className="flex-none text-[12px] font-semibold text-muted-foreground">
-                      {c.cuando}
-                    </span>
-                  </div>
-                  <div className="truncate text-[12.5px] font-semibold text-muted-foreground">
-                    {c.ultimo}
-                  </div>
-                </div>
-                {c.sinLeer > 0 && (
-                  <span className="flex-none rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
-                    {c.sinLeer}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
         )}
       </Seccion>
     </div>

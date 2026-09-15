@@ -14,15 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model VisitaTareaObligatoria
- * Una tarea que la visita **exige** que se haga.
  * 
- * Se marcan al agendar y son la pregunta que la oficina se hace al revisar:
- * "¿hicieron lo que había que hacer?". No bloquean nada —nadie puede impedir
- * desde una pantalla que un jardinero no pode un seto— pero la visita muestra
- * cuáles quedaron sin cubrir, y ese es el dato que hacía falta.
- * 
- * "Cubierta" es que **alguien** la haya hecho: se cruza contra la unión de las
- * `VisitaPersonalTarea` de la visita, no contra una persona en particular.
  */
 export type VisitaTareaObligatoriaModel = runtime.Types.Result.DefaultSelection<Prisma.$VisitaTareaObligatoriaPayload>
 

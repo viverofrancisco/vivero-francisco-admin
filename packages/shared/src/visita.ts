@@ -188,3 +188,20 @@ export const visitasListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });
 export type VisitasListQuery = z.infer<typeof visitasListQuerySchema>;
+
+/**
+ * Lo que el cliente dice de una visita terminada.
+ *
+ * Las estrellas son obligatorias porque son la pregunta; el texto y las fotos
+ * no, porque la mayoría no escribe nada y obligarlo sería quedarse sin las
+ * estrellas también.
+ *
+ * Las fotos **reemplazan** a las que hubiera: lo que manda el formulario es el
+ * estado final, y sumar dejaría sin forma de sacar una cargada por error.
+ */
+export const calificacionVisitaSchema = z.object({
+  estrellas: z.number().int().min(1).max(5),
+  comentario: z.string().max(2000).optional().nullable(),
+  fotos: z.array(z.object({ key: z.string().min(1) })).max(10).optional(),
+});
+export type CalificacionVisitaBody = z.infer<typeof calificacionVisitaSchema>;

@@ -59,7 +59,7 @@ interface Manifiesto {
   datosFacturacion: string[];
   suscripciones: string[];
   visitas: string[];
-  mensajes: string[];
+  calificaciones: string[];
   ordenes: string[];
   /** Solo local: el comprobante que el SRI autorizó sigue existiendo allá. */
   facturas: string[];
@@ -76,7 +76,7 @@ const vacio = (host: string): Manifiesto => ({
   datosFacturacion: [],
   suscripciones: [],
   visitas: [],
-  mensajes: [],
+  calificaciones: [],
   ordenes: [],
   facturas: [],
   informes: [],
@@ -254,12 +254,14 @@ const TITULOS_INFORME = [
   "Informe técnico de jardinería",
 ];
 
-const MENSAJES = [
-  "Buenos días, ¿a qué hora llegan hoy?",
-  "Perfecto, los esperamos.",
+/** Lo que escribe un cliente al calificar. Casi siempre poco, o nada. */
+const COMENTARIOS = [
   "Quedó muy bien el jardín, gracias.",
-  "¿Podrían revisar el aspersor de la entrada la próxima?",
-  "Vamos en camino, llegamos en 20 minutos.",
+  "Excelente trabajo, como siempre.",
+  "Dejaron unas ramas en la entrada.",
+  "Muy puntuales.",
+  null,
+  null,
 ];
 
 // ──────────────────────────────────────────────
@@ -334,7 +336,7 @@ async function main() {
   console.log("  datos de facturación", m.datosFacturacion.length);
   console.log("  suscripciones       ", m.suscripciones.length);
   console.log("  visitas             ", m.visitas.length);
-  console.log("  mensajes            ", m.mensajes.length);
+  console.log("  calificaciones      ", m.calificaciones.length);
   console.log("  órdenes             ", m.ordenes.length);
   console.log("  facturas            ", m.facturas.length);
   console.log("  informes            ", m.informes.length);
@@ -633,18 +635,26 @@ async function sembrar(
   }
   console.log(`  ${creadas.length} creadas`);
 
-  // ── 6. Chat de visita ─────────────────────────────────────────────────
-  console.log("mensajes...");
-  for (const v of algunos(creadas, 12)) {
-    for (let i = 0; i < entre(1, 3); i++) {
-      const msg = await prisma.visitaMessage.create({
-        data: { visitaId: v.id, authorUserId: viewer.id, body: uno(MENSAJES) },
-        select: { id: true },
-      });
-      m.mensajes.push(msg.id);
-    }
+  // ── 6. Calificaciones ─────────────────────────────────────────────────
+  //
+  // Solo de visitas completadas, que es cuando el cliente puede calificar, y
+  // no de todas: en la vida real la mayoría no califica, y una lista donde
+  // todas tienen estrellas no muestra el caso que la oficina mira.
+  console.log("calificaciones...");
+  const completadas = creadas.filter((v) => v.estado === "COMPLETADA");
+  for (const v of algunos(completadas, Math.ceil(completadas.length * 0.4))) {
+    const c = await prisma.calificacionVisita.create({
+      data: {
+        visitaId: v.id,
+        // Casi todas buenas, alguna mala: es lo que hace útil el promedio.
+        estrellas: chance(0.15) ? entre(2, 3) : entre(4, 5),
+        comentario: uno(COMENTARIOS),
+      },
+      select: { id: true },
+    });
+    m.calificaciones.push(c.id);
   }
-  console.log(`  ${m.mensajes.length} creados`);
+  console.log(`  ${m.calificaciones.length} creadas`);
 
   // ── 7. Órdenes ────────────────────────────────────────────────────────
   console.log("órdenes...");
@@ -1006,8 +1016,8 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
     prisma.ordenLinea.deleteMany({ where: { ordenId: { in: m.ordenes } } })
   );
   await borrar("orden", () => prisma.orden.deleteMany({ where: { id: { in: m.ordenes } } }));
-  await borrar("visitaMessage", () =>
-    prisma.visitaMessage.deleteMany({ where: { id: { in: m.mensajes } } })
+  await borrar("calificacionVisita", () =>
+    prisma.calificacionVisita.deleteMany({ where: { id: { in: m.calificaciones } } })
   );
   await borrar("visitaPersonal", () =>
     prisma.visitaPersonal.deleteMany({ where: { visitaId: { in: m.visitas } } })

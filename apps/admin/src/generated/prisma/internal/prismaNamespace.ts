@@ -407,11 +407,10 @@ export const ModelName = {
   Visita: 'Visita',
   VisitaPersonal: 'VisitaPersonal',
   VisitaPersonalTarea: 'VisitaPersonalTarea',
+  CalificacionVisita: 'CalificacionVisita',
+  CalificacionVisitaFoto: 'CalificacionVisitaFoto',
   VisitaTareaObligatoria: 'VisitaTareaObligatoria',
   VisitaMedia: 'VisitaMedia',
-  VisitaMessage: 'VisitaMessage',
-  VisitaMessageMedia: 'VisitaMessageMedia',
-  VisitaChatRead: 'VisitaChatRead',
   GrupoMiembro: 'GrupoMiembro',
   Sector: 'Sector',
   NotificacionConfig: 'NotificacionConfig',
@@ -454,7 +453,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "visitaTareaObligatoria" | "visitaMedia" | "visitaMessage" | "visitaMessageMedia" | "visitaChatRead" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2160,6 +2159,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CalificacionVisita: {
+      payload: Prisma.$CalificacionVisitaPayload<ExtArgs>
+      fields: Prisma.CalificacionVisitaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CalificacionVisitaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CalificacionVisitaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>
+        }
+        findFirst: {
+          args: Prisma.CalificacionVisitaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CalificacionVisitaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>
+        }
+        findMany: {
+          args: Prisma.CalificacionVisitaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>[]
+        }
+        create: {
+          args: Prisma.CalificacionVisitaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>
+        }
+        createMany: {
+          args: Prisma.CalificacionVisitaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CalificacionVisitaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>[]
+        }
+        delete: {
+          args: Prisma.CalificacionVisitaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>
+        }
+        update: {
+          args: Prisma.CalificacionVisitaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>
+        }
+        deleteMany: {
+          args: Prisma.CalificacionVisitaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CalificacionVisitaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CalificacionVisitaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>[]
+        }
+        upsert: {
+          args: Prisma.CalificacionVisitaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaPayload>
+        }
+        aggregate: {
+          args: Prisma.CalificacionVisitaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCalificacionVisita>
+        }
+        groupBy: {
+          args: Prisma.CalificacionVisitaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalificacionVisitaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CalificacionVisitaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalificacionVisitaCountAggregateOutputType> | number
+        }
+      }
+    }
+    CalificacionVisitaFoto: {
+      payload: Prisma.$CalificacionVisitaFotoPayload<ExtArgs>
+      fields: Prisma.CalificacionVisitaFotoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CalificacionVisitaFotoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CalificacionVisitaFotoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>
+        }
+        findFirst: {
+          args: Prisma.CalificacionVisitaFotoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CalificacionVisitaFotoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>
+        }
+        findMany: {
+          args: Prisma.CalificacionVisitaFotoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>[]
+        }
+        create: {
+          args: Prisma.CalificacionVisitaFotoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>
+        }
+        createMany: {
+          args: Prisma.CalificacionVisitaFotoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CalificacionVisitaFotoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>[]
+        }
+        delete: {
+          args: Prisma.CalificacionVisitaFotoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>
+        }
+        update: {
+          args: Prisma.CalificacionVisitaFotoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>
+        }
+        deleteMany: {
+          args: Prisma.CalificacionVisitaFotoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CalificacionVisitaFotoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CalificacionVisitaFotoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>[]
+        }
+        upsert: {
+          args: Prisma.CalificacionVisitaFotoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalificacionVisitaFotoPayload>
+        }
+        aggregate: {
+          args: Prisma.CalificacionVisitaFotoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCalificacionVisitaFoto>
+        }
+        groupBy: {
+          args: Prisma.CalificacionVisitaFotoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalificacionVisitaFotoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CalificacionVisitaFotoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalificacionVisitaFotoCountAggregateOutputType> | number
+        }
+      }
+    }
     VisitaTareaObligatoria: {
       payload: Prisma.$VisitaTareaObligatoriaPayload<ExtArgs>
       fields: Prisma.VisitaTareaObligatoriaFieldRefs
@@ -2305,228 +2452,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.VisitaMediaCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.VisitaMediaCountAggregateOutputType> | number
-        }
-      }
-    }
-    VisitaMessage: {
-      payload: Prisma.$VisitaMessagePayload<ExtArgs>
-      fields: Prisma.VisitaMessageFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.VisitaMessageFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.VisitaMessageFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>
-        }
-        findFirst: {
-          args: Prisma.VisitaMessageFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.VisitaMessageFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>
-        }
-        findMany: {
-          args: Prisma.VisitaMessageFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>[]
-        }
-        create: {
-          args: Prisma.VisitaMessageCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>
-        }
-        createMany: {
-          args: Prisma.VisitaMessageCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.VisitaMessageCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>[]
-        }
-        delete: {
-          args: Prisma.VisitaMessageDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>
-        }
-        update: {
-          args: Prisma.VisitaMessageUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>
-        }
-        deleteMany: {
-          args: Prisma.VisitaMessageDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.VisitaMessageUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.VisitaMessageUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>[]
-        }
-        upsert: {
-          args: Prisma.VisitaMessageUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessagePayload>
-        }
-        aggregate: {
-          args: Prisma.VisitaMessageAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateVisitaMessage>
-        }
-        groupBy: {
-          args: Prisma.VisitaMessageGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.VisitaMessageGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.VisitaMessageCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.VisitaMessageCountAggregateOutputType> | number
-        }
-      }
-    }
-    VisitaMessageMedia: {
-      payload: Prisma.$VisitaMessageMediaPayload<ExtArgs>
-      fields: Prisma.VisitaMessageMediaFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.VisitaMessageMediaFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.VisitaMessageMediaFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>
-        }
-        findFirst: {
-          args: Prisma.VisitaMessageMediaFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.VisitaMessageMediaFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>
-        }
-        findMany: {
-          args: Prisma.VisitaMessageMediaFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>[]
-        }
-        create: {
-          args: Prisma.VisitaMessageMediaCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>
-        }
-        createMany: {
-          args: Prisma.VisitaMessageMediaCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.VisitaMessageMediaCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>[]
-        }
-        delete: {
-          args: Prisma.VisitaMessageMediaDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>
-        }
-        update: {
-          args: Prisma.VisitaMessageMediaUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>
-        }
-        deleteMany: {
-          args: Prisma.VisitaMessageMediaDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.VisitaMessageMediaUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.VisitaMessageMediaUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>[]
-        }
-        upsert: {
-          args: Prisma.VisitaMessageMediaUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaMessageMediaPayload>
-        }
-        aggregate: {
-          args: Prisma.VisitaMessageMediaAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateVisitaMessageMedia>
-        }
-        groupBy: {
-          args: Prisma.VisitaMessageMediaGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.VisitaMessageMediaGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.VisitaMessageMediaCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.VisitaMessageMediaCountAggregateOutputType> | number
-        }
-      }
-    }
-    VisitaChatRead: {
-      payload: Prisma.$VisitaChatReadPayload<ExtArgs>
-      fields: Prisma.VisitaChatReadFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.VisitaChatReadFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.VisitaChatReadFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>
-        }
-        findFirst: {
-          args: Prisma.VisitaChatReadFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.VisitaChatReadFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>
-        }
-        findMany: {
-          args: Prisma.VisitaChatReadFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>[]
-        }
-        create: {
-          args: Prisma.VisitaChatReadCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>
-        }
-        createMany: {
-          args: Prisma.VisitaChatReadCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.VisitaChatReadCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>[]
-        }
-        delete: {
-          args: Prisma.VisitaChatReadDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>
-        }
-        update: {
-          args: Prisma.VisitaChatReadUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>
-        }
-        deleteMany: {
-          args: Prisma.VisitaChatReadDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.VisitaChatReadUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.VisitaChatReadUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>[]
-        }
-        upsert: {
-          args: Prisma.VisitaChatReadUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaChatReadPayload>
-        }
-        aggregate: {
-          args: Prisma.VisitaChatReadAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateVisitaChatRead>
-        }
-        groupBy: {
-          args: Prisma.VisitaChatReadGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.VisitaChatReadGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.VisitaChatReadCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.VisitaChatReadCountAggregateOutputType> | number
         }
       }
     }
@@ -4918,6 +4843,29 @@ export const VisitaPersonalTareaScalarFieldEnum = {
 export type VisitaPersonalTareaScalarFieldEnum = (typeof VisitaPersonalTareaScalarFieldEnum)[keyof typeof VisitaPersonalTareaScalarFieldEnum]
 
 
+export const CalificacionVisitaScalarFieldEnum = {
+  id: 'id',
+  visitaId: 'visitaId',
+  estrellas: 'estrellas',
+  comentario: 'comentario',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalificacionVisitaScalarFieldEnum = (typeof CalificacionVisitaScalarFieldEnum)[keyof typeof CalificacionVisitaScalarFieldEnum]
+
+
+export const CalificacionVisitaFotoScalarFieldEnum = {
+  id: 'id',
+  calificacionId: 'calificacionId',
+  key: 'key',
+  url: 'url',
+  createdAt: 'createdAt'
+} as const
+
+export type CalificacionVisitaFotoScalarFieldEnum = (typeof CalificacionVisitaFotoScalarFieldEnum)[keyof typeof CalificacionVisitaFotoScalarFieldEnum]
+
+
 export const VisitaTareaObligatoriaScalarFieldEnum = {
   visitaId: 'visitaId',
   tareaId: 'tareaId'
@@ -4937,38 +4885,6 @@ export const VisitaMediaScalarFieldEnum = {
 } as const
 
 export type VisitaMediaScalarFieldEnum = (typeof VisitaMediaScalarFieldEnum)[keyof typeof VisitaMediaScalarFieldEnum]
-
-
-export const VisitaMessageScalarFieldEnum = {
-  id: 'id',
-  visitaId: 'visitaId',
-  authorUserId: 'authorUserId',
-  body: 'body',
-  createdAt: 'createdAt'
-} as const
-
-export type VisitaMessageScalarFieldEnum = (typeof VisitaMessageScalarFieldEnum)[keyof typeof VisitaMessageScalarFieldEnum]
-
-
-export const VisitaMessageMediaScalarFieldEnum = {
-  id: 'id',
-  messageId: 'messageId',
-  key: 'key',
-  url: 'url',
-  tipo: 'tipo',
-  createdAt: 'createdAt'
-} as const
-
-export type VisitaMessageMediaScalarFieldEnum = (typeof VisitaMessageMediaScalarFieldEnum)[keyof typeof VisitaMessageMediaScalarFieldEnum]
-
-
-export const VisitaChatReadScalarFieldEnum = {
-  visitaId: 'visitaId',
-  userId: 'userId',
-  lastReadAt: 'lastReadAt'
-} as const
-
-export type VisitaChatReadScalarFieldEnum = (typeof VisitaChatReadScalarFieldEnum)[keyof typeof VisitaChatReadScalarFieldEnum]
 
 
 export const GrupoMiembroScalarFieldEnum = {
@@ -5964,11 +5880,10 @@ export type GlobalOmitConfig = {
   visita?: Prisma.VisitaOmit
   visitaPersonal?: Prisma.VisitaPersonalOmit
   visitaPersonalTarea?: Prisma.VisitaPersonalTareaOmit
+  calificacionVisita?: Prisma.CalificacionVisitaOmit
+  calificacionVisitaFoto?: Prisma.CalificacionVisitaFotoOmit
   visitaTareaObligatoria?: Prisma.VisitaTareaObligatoriaOmit
   visitaMedia?: Prisma.VisitaMediaOmit
-  visitaMessage?: Prisma.VisitaMessageOmit
-  visitaMessageMedia?: Prisma.VisitaMessageMediaOmit
-  visitaChatRead?: Prisma.VisitaChatReadOmit
   grupoMiembro?: Prisma.GrupoMiembroOmit
   sector?: Prisma.SectorOmit
   notificacionConfig?: Prisma.NotificacionConfigOmit

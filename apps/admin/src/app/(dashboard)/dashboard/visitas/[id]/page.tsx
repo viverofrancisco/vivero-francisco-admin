@@ -61,11 +61,21 @@ export default async function VisitaDetailPage({
     select: { id: true, nombre: true },
   });
 
-  // Controla el botón "Ver mensajes".
-  const messageCount = await prisma.visitaMessage.count({
-    where: { visitaId: id },
-  });
-  const hasMessages = messageCount > 0;
+  // Solo para la oficina: al jardinero no le llega ni con la visita cargada.
+  // Se pide acá y no dentro del componente porque el componente es de cliente y
+  // no debe poder pedirla él.
+  const esOficina = user.role === "ADMIN" || user.role === "STAFF";
+  const calificacion = esOficina
+    ? await prisma.calificacionVisita.findUnique({
+        where: { visitaId: id },
+        select: {
+          estrellas: true,
+          comentario: true,
+          createdAt: true,
+          fotos: { select: { id: true, url: true }, orderBy: { createdAt: "asc" } },
+        },
+      })
+    : null;
 
   const serialized = {
     id: visita.id,
@@ -92,7 +102,13 @@ export default async function VisitaDetailPage({
     personal: visita.personal.map((p) => ({
       ...p,
       registradoEl: p.registradoEl?.toISOString() ?? null,
+      entradaEl: p.entradaEl?.toISOString() ?? null,
+      salidaEl: p.salidaEl?.toISOString() ?? null,
     })),
+    calificacion: calificacion && {
+      ...calificacion,
+      createdAt: calificacion.createdAt.toISOString(),
+    },
   };
 
   return (
@@ -102,7 +118,6 @@ export default async function VisitaDetailPage({
         visita={serialized}
         userRole={user.role}
         personalId={user.personalId ?? null}
-        hasMessages={hasMessages}
         catalogo={catalogo.map((t) => ({
           tareaId: t.id,
           nombre: t.nombre,

@@ -13,7 +13,6 @@ import {
   UsersRound,
   CalendarDays,
   FileText,
-  MessageSquare,
   Settings,
   MapPin,
   ChevronDown,
@@ -71,15 +70,6 @@ const mainItems: NavItem[] = [
         roles: ["ADMIN", "STAFF"],
       },
     ],
-  },
-  // Fuera del menú del jardinero: su panel ya trae las últimas
-  // conversaciones con un "Ver todas" que lleva acá, y dos entradas que usa
-  // valen más que tres donde una repite lo que ya está en pantalla.
-  {
-    label: "Mensajes",
-    href: "/dashboard/mensajes",
-    icon: MessageSquare,
-    roles: ["ADMIN", "STAFF"],
   },
   {
     label: "Informes",

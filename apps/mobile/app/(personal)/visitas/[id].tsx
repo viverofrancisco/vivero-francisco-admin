@@ -250,16 +250,6 @@ export default function PersonalVisitaScreen() {
             {yaCargo ? "Editar mi parte" : "Cargar lo que hice"}
           </Button>
         ) : null}
-        <Button
-          mode="outlined"
-          icon="message-outline"
-          onPress={() => router.push(`/(personal)/visitas/chat/${visita.id}`)}
-          textColor="#2e7d32"
-          style={styles.chatBtn}
-          labelStyle={styles.chatBtnLabel}
-        >
-          Mensajes
-        </Button>
       </View>
 
       <MediaViewer

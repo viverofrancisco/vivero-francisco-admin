@@ -10,7 +10,6 @@ export default function PersonalVisitasLayout() {
         name="completar/[id]"
         options={{ headerShown: false, presentation: "modal" }}
       />
-      <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

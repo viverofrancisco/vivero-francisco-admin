@@ -17,6 +17,7 @@ import {
   pushAlertaCompletada,
   pushAlertaIncompleta,
   pushConfirmacionVisita,
+  pushPedirCalificacion,
 } from "@/lib/push/triggers";
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
 import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
@@ -855,6 +856,10 @@ async function transicionar(
     if (estado === "COMPLETADA") {
       enviarAlertaVisitaCompletada(visitaId).catch(console.error);
       pushAlertaCompletada(visitaId).catch(console.error);
+      // Y el pedido de calificación, en el momento en que el cliente todavía
+      // se acuerda de lo que vio. Un día después ya no distingue una poda de
+      // la otra, y a la semana no abre el aviso.
+      pushPedirCalificacion(visitaId).catch(console.error);
     } else if (estado === "INCOMPLETA") {
       enviarAlertaVisitaIncompleta(visitaId).catch(console.error);
       pushAlertaIncompleta(visitaId).catch(console.error);

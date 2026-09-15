@@ -74,11 +74,10 @@ export const ModelName = {
   Visita: 'Visita',
   VisitaPersonal: 'VisitaPersonal',
   VisitaPersonalTarea: 'VisitaPersonalTarea',
+  CalificacionVisita: 'CalificacionVisita',
+  CalificacionVisitaFoto: 'CalificacionVisitaFoto',
   VisitaTareaObligatoria: 'VisitaTareaObligatoria',
   VisitaMedia: 'VisitaMedia',
-  VisitaMessage: 'VisitaMessage',
-  VisitaMessageMedia: 'VisitaMessageMedia',
-  VisitaChatRead: 'VisitaChatRead',
   GrupoMiembro: 'GrupoMiembro',
   Sector: 'Sector',
   NotificacionConfig: 'NotificacionConfig',
@@ -475,6 +474,29 @@ export const VisitaPersonalTareaScalarFieldEnum = {
 export type VisitaPersonalTareaScalarFieldEnum = (typeof VisitaPersonalTareaScalarFieldEnum)[keyof typeof VisitaPersonalTareaScalarFieldEnum]
 
 
+export const CalificacionVisitaScalarFieldEnum = {
+  id: 'id',
+  visitaId: 'visitaId',
+  estrellas: 'estrellas',
+  comentario: 'comentario',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalificacionVisitaScalarFieldEnum = (typeof CalificacionVisitaScalarFieldEnum)[keyof typeof CalificacionVisitaScalarFieldEnum]
+
+
+export const CalificacionVisitaFotoScalarFieldEnum = {
+  id: 'id',
+  calificacionId: 'calificacionId',
+  key: 'key',
+  url: 'url',
+  createdAt: 'createdAt'
+} as const
+
+export type CalificacionVisitaFotoScalarFieldEnum = (typeof CalificacionVisitaFotoScalarFieldEnum)[keyof typeof CalificacionVisitaFotoScalarFieldEnum]
+
+
 export const VisitaTareaObligatoriaScalarFieldEnum = {
   visitaId: 'visitaId',
   tareaId: 'tareaId'
@@ -494,38 +516,6 @@ export const VisitaMediaScalarFieldEnum = {
 } as const
 
 export type VisitaMediaScalarFieldEnum = (typeof VisitaMediaScalarFieldEnum)[keyof typeof VisitaMediaScalarFieldEnum]
-
-
-export const VisitaMessageScalarFieldEnum = {
-  id: 'id',
-  visitaId: 'visitaId',
-  authorUserId: 'authorUserId',
-  body: 'body',
-  createdAt: 'createdAt'
-} as const
-
-export type VisitaMessageScalarFieldEnum = (typeof VisitaMessageScalarFieldEnum)[keyof typeof VisitaMessageScalarFieldEnum]
-
-
-export const VisitaMessageMediaScalarFieldEnum = {
-  id: 'id',
-  messageId: 'messageId',
-  key: 'key',
-  url: 'url',
-  tipo: 'tipo',
-  createdAt: 'createdAt'
-} as const
-
-export type VisitaMessageMediaScalarFieldEnum = (typeof VisitaMessageMediaScalarFieldEnum)[keyof typeof VisitaMessageMediaScalarFieldEnum]
-
-
-export const VisitaChatReadScalarFieldEnum = {
-  visitaId: 'visitaId',
-  userId: 'userId',
-  lastReadAt: 'lastReadAt'
-} as const
-
-export type VisitaChatReadScalarFieldEnum = (typeof VisitaChatReadScalarFieldEnum)[keyof typeof VisitaChatReadScalarFieldEnum]
 
 
 export const GrupoMiembroScalarFieldEnum = {

@@ -40,6 +40,10 @@ import { ArchivosVisita } from "@/components/visitas/archivos-visita";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Badge } from "@/components/ui/badge";
 import { horaConDia } from "./formato-marca";
+import {
+  CalificacionVisita,
+  type CalificacionData,
+} from "./calificacion-visita";
 import { Ubicaciones } from "./ubicaciones-marcadas";
 import {
   estadoLabel as estadoOrdenLabel,
@@ -96,6 +100,8 @@ interface VisitaDetailData {
   personal: PersonalDeVisita[];
   /** Las órdenes que dicen cubrir esta visita. */
   ordenes?: { id: string; numero: number; estado: string }[];
+  /** Lo que dijo el cliente. Solo llega si quien mira es de la oficina. */
+  calificacion?: CalificacionData | null;
   /** El plan al que pertenece, si es de alguno. */
   suscripcion?: {
     id: string;
@@ -284,6 +290,12 @@ export function VisitaDetail({
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+        {/* Arriba de las tareas: cuando hay algo que decir, es lo primero que
+            la oficina quiere leer. Cuando no hay, no ocupa nada. */}
+        {visita.calificacion && (
+          <CalificacionVisita calificacion={visita.calificacion} />
+        )}
+
         {/* Qué exigía la visita y qué se hizo. Son dos preguntas distintas:
             la primera se decide al agendar, la segunda la contesta cada
             jardinero al terminar, y lo que la oficina mira es la diferencia. */}

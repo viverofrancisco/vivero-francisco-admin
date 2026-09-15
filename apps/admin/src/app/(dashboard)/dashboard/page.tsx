@@ -12,17 +12,14 @@ import {
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { resumenTareas, TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
-import { viewerFromSession } from "@/lib/auth-helpers";
-import { listInbox } from "@/lib/services/chat.service";
 import { nombreCliente } from "@vivero/shared";
 import {
   PanelJardinero,
   type VisitaDelPanel,
 } from "@/components/dashboard/panel-jardinero";
 
-/** Cuántas visitas futuras y cuántas conversaciones caben antes de cansar. */
+/** Cuántas visitas futuras caben antes de cansar. */
 const PROXIMAS_VISIBLES = 10;
-const CONVERSACIONES_VISIBLES = 5;
 
 const VISITA_DEL_PANEL = {
   cliente: { include: { sector: { select: { nombre: true } } } },
@@ -60,16 +57,6 @@ function aFilaDelPanel(
   };
 }
 
-/** "hace 5 min", "ayer", "12 sep" — lo justo para ubicar un mensaje. */
-function cuando(fecha: Date): string {
-  const minutos = Math.round((Date.now() - fecha.getTime()) / 60000);
-  if (minutos < 1) return "recién";
-  if (minutos < 60) return `hace ${minutos} min`;
-  const horas = Math.round(minutos / 60);
-  if (horas < 24) return `hace ${horas} h`;
-  if (horas < 48) return "ayer";
-  return fecha.toLocaleDateString("es-EC", { day: "2-digit", month: "short" });
-}
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -214,7 +201,7 @@ export default async function DashboardPage() {
     // Y hasta acá llega lo compartido: el jardinero tiene su propia pantalla,
     // así que ni se piden los conteos de la oficina.
     const suyas = { ...scope, deletedAt: null } as const;
-    const [hoy, proximas, bandeja] = await Promise.all([
+    const [hoy, proximas] = await Promise.all([
       prisma.visita.findMany({
         where: { ...suyas, fechaProgramada: { gte: inicioDia, lt: finDia } },
         include: VISITA_DEL_PANEL,
@@ -232,7 +219,6 @@ export default async function DashboardPage() {
         orderBy: [{ fechaProgramada: "asc" }, { horaEntrada: "asc" }],
         take: PROXIMAS_VISIBLES,
       }),
-      listInbox(await viewerFromSession(), { limit: CONVERSACIONES_VISIBLES }),
     ]);
 
     return (
@@ -249,15 +235,6 @@ export default async function DashboardPage() {
         )}
         hoy={hoy.map(aFilaDelPanel)}
         proximas={proximas.map(aFilaDelPanel)}
-        conversaciones={bandeja.items.map((c) => ({
-          visitaId: c.visitaId,
-          cliente: c.clienteNombre,
-          ultimo:
-            c.lastMessage?.body ||
-            (c.lastMessage?.hasMedia ? "Envió una foto" : "Sin mensajes"),
-          cuando: c.lastMessage ? cuando(c.lastMessage.createdAt) : "",
-          sinLeer: c.unreadCount,
-        }))}
       />
     );
   }

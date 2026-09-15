@@ -195,18 +195,22 @@ export default function ClienteVisitaScreen() {
         ) : null}
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Button
-          mode="contained"
-          onPress={() => router.push(`/(cliente)/visitas/chat/${visita.id}`)}
-          icon="message-outline"
-          style={styles.primaryBtn}
-          contentStyle={styles.primaryBtnContent}
-          labelStyle={styles.primaryBtnLabel}
-        >
-          Mensajes
-        </Button>
-      </View>
+      {/* Solo cuando terminó: antes no hay nada que calificar, y en una visita
+          incompleta o cancelada lo que se juzga —el trabajo hecho— no existe. */}
+      {visita.estado === "COMPLETADA" ? (
+        <View style={styles.footer}>
+          <Button
+            mode="contained"
+            onPress={() => router.push(`/(cliente)/visitas/calificar/${visita.id}`)}
+            icon="star-outline"
+            style={styles.primaryBtn}
+            contentStyle={styles.primaryBtnContent}
+            labelStyle={styles.primaryBtnLabel}
+          >
+            Calificar la visita
+          </Button>
+        </View>
+      ) : null}
 
       <MediaViewer
         media={activeMedia}

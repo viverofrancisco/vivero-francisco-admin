@@ -202,7 +202,7 @@ export type VisitaPersonal = Prisma.VisitaPersonalModel
  */
 export type VisitaPersonalTarea = Prisma.VisitaPersonalTareaModel
 /**
- * Model VisitaTareaObligatoria
+ * Model CalificacionVisita
  * Una tarea que la visita **exige** que se haga.
  * 
  * Se marcan al agendar y son la pregunta que la oficina se hace al revisar:
@@ -212,6 +212,29 @@ export type VisitaPersonalTarea = Prisma.VisitaPersonalTareaModel
  * 
  * "Cubierta" es que **alguien** la haya hecho: se cruza contra la unión de las
  * `VisitaPersonalTarea` de la visita, no contra una persona en particular.
+ * *
+ *  * Qué le pareció al cliente.
+ *  * Reemplaza al chat de la visita. El chat pedía que alguien estuviera del otro
+ *  * lado y en la práctica no lo usó nadie; esto pide una sola cosa, en el único
+ *  * momento en que el cliente tiene algo que decir: cuando el trabajo terminó.
+ *  * **Una por visita** —el único lo garantiza— y la puede cambiar quien la
+ *  * escribió: es su opinión, y cambiar de opinión sobre un jardín es normal.
+ *  * La ven **solo `ADMIN` y `STAFF`**. Al jardinero no le llega: una mala
+ *  * calificación se conversa, no se lee sola en un teléfono.
+ */
+export type CalificacionVisita = Prisma.CalificacionVisitaModel
+/**
+ * Model CalificacionVisitaFoto
+ * *
+ *  * Las fotos que sube el cliente con su calificación.
+ *  * Tabla propia y no `VisitaMedia`: esas son las fotos del trabajo, etiquetadas
+ *  * por tarea, y son las que arman el informe. Una foto de queja del cliente
+ *  * terminaría impresa en el documento que se le entrega a él mismo.
+ */
+export type CalificacionVisitaFoto = Prisma.CalificacionVisitaFotoModel
+/**
+ * Model VisitaTareaObligatoria
+ * 
  */
 export type VisitaTareaObligatoria = Prisma.VisitaTareaObligatoriaModel
 /**
@@ -219,21 +242,6 @@ export type VisitaTareaObligatoria = Prisma.VisitaTareaObligatoriaModel
  * 
  */
 export type VisitaMedia = Prisma.VisitaMediaModel
-/**
- * Model VisitaMessage
- * 
- */
-export type VisitaMessage = Prisma.VisitaMessageModel
-/**
- * Model VisitaMessageMedia
- * 
- */
-export type VisitaMessageMedia = Prisma.VisitaMessageMediaModel
-/**
- * Model VisitaChatRead
- * 
- */
-export type VisitaChatRead = Prisma.VisitaChatReadModel
 /**
  * Model GrupoMiembro
  * 

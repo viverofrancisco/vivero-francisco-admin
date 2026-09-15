@@ -267,8 +267,6 @@ export type UserWhereInput = {
   cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
   pushTokens?: Prisma.PushTokenListRelationFilter
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
-  visitaMessages?: Prisma.VisitaMessageListRelationFilter
-  visitaChatReads?: Prisma.VisitaChatReadListRelationFilter
   informesGenerados?: Prisma.InformeListRelationFilter
   informesActualizados?: Prisma.InformeListRelationFilter
   informeVersiones?: Prisma.InformeVersionListRelationFilter
@@ -323,8 +321,6 @@ export type UserOrderByWithRelationInput = {
   cliente?: Prisma.ClienteOrderByWithRelationInput
   pushTokens?: Prisma.PushTokenOrderByRelationAggregateInput
   refreshTokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
-  visitaMessages?: Prisma.VisitaMessageOrderByRelationAggregateInput
-  visitaChatReads?: Prisma.VisitaChatReadOrderByRelationAggregateInput
   informesGenerados?: Prisma.InformeOrderByRelationAggregateInput
   informesActualizados?: Prisma.InformeOrderByRelationAggregateInput
   informeVersiones?: Prisma.InformeVersionOrderByRelationAggregateInput
@@ -382,8 +378,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   cliente?: Prisma.XOR<Prisma.ClienteNullableScalarRelationFilter, Prisma.ClienteWhereInput> | null
   pushTokens?: Prisma.PushTokenListRelationFilter
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
-  visitaMessages?: Prisma.VisitaMessageListRelationFilter
-  visitaChatReads?: Prisma.VisitaChatReadListRelationFilter
   informesGenerados?: Prisma.InformeListRelationFilter
   informesActualizados?: Prisma.InformeListRelationFilter
   informeVersiones?: Prisma.InformeVersionListRelationFilter
@@ -474,8 +468,6 @@ export type UserCreateInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -530,8 +522,6 @@ export type UserUncheckedCreateInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -586,8 +576,6 @@ export type UserUpdateInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -642,8 +630,6 @@ export type UserUncheckedUpdateInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -1160,34 +1146,6 @@ export type UserUpdateOneWithoutVisitaPersonalRemovedNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitaPersonalRemovedInput, Prisma.UserUpdateWithoutVisitaPersonalRemovedInput>, Prisma.UserUncheckedUpdateWithoutVisitaPersonalRemovedInput>
 }
 
-export type UserCreateNestedOneWithoutVisitaMessagesInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitaMessagesInput, Prisma.UserUncheckedCreateWithoutVisitaMessagesInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitaMessagesInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutVisitaMessagesNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitaMessagesInput, Prisma.UserUncheckedCreateWithoutVisitaMessagesInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitaMessagesInput
-  upsert?: Prisma.UserUpsertWithoutVisitaMessagesInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitaMessagesInput, Prisma.UserUpdateWithoutVisitaMessagesInput>, Prisma.UserUncheckedUpdateWithoutVisitaMessagesInput>
-}
-
-export type UserCreateNestedOneWithoutVisitaChatReadsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitaChatReadsInput, Prisma.UserUncheckedCreateWithoutVisitaChatReadsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitaChatReadsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutVisitaChatReadsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitaChatReadsInput, Prisma.UserUncheckedCreateWithoutVisitaChatReadsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitaChatReadsInput
-  upsert?: Prisma.UserUpsertWithoutVisitaChatReadsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitaChatReadsInput, Prisma.UserUpdateWithoutVisitaChatReadsInput>, Prisma.UserUncheckedUpdateWithoutVisitaChatReadsInput>
-}
-
 export type UserCreateNestedOneWithoutPushTokensInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutPushTokensInput, Prisma.UserUncheckedCreateWithoutPushTokensInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutPushTokensInput
@@ -1447,8 +1405,6 @@ export type UserCreateWithoutAccountsInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -1502,8 +1458,6 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -1573,8 +1527,6 @@ export type UserUpdateWithoutAccountsInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -1628,8 +1580,6 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -1683,8 +1633,6 @@ export type UserCreateWithoutSessionsInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -1738,8 +1686,6 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -1809,8 +1755,6 @@ export type UserUpdateWithoutSessionsInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -1864,8 +1808,6 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -1919,8 +1861,6 @@ export type UserCreateWithoutClientesCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -1974,8 +1914,6 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -2034,8 +1972,6 @@ export type UserCreateWithoutClientesUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -2089,8 +2025,6 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -2149,8 +2083,6 @@ export type UserCreateWithoutClienteInput = {
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -2204,8 +2136,6 @@ export type UserUncheckedCreateWithoutClienteInput = {
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -2275,8 +2205,6 @@ export type UserUpdateWithoutClientesCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -2330,8 +2258,6 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -2396,8 +2322,6 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -2451,8 +2375,6 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -2517,8 +2439,6 @@ export type UserUpdateWithoutClienteInput = {
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -2572,8 +2492,6 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -2627,8 +2545,6 @@ export type UserCreateWithoutProductosCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -2682,8 +2598,6 @@ export type UserUncheckedCreateWithoutProductosCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -2742,8 +2656,6 @@ export type UserCreateWithoutProductosUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -2797,8 +2709,6 @@ export type UserUncheckedCreateWithoutProductosUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -2868,8 +2778,6 @@ export type UserUpdateWithoutProductosCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -2923,8 +2831,6 @@ export type UserUncheckedUpdateWithoutProductosCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -2989,8 +2895,6 @@ export type UserUpdateWithoutProductosUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -3044,8 +2948,6 @@ export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -3099,8 +3001,6 @@ export type UserCreateWithoutMediaInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -3154,8 +3054,6 @@ export type UserUncheckedCreateWithoutMediaInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -3225,8 +3123,6 @@ export type UserUpdateWithoutMediaInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -3280,8 +3176,6 @@ export type UserUncheckedUpdateWithoutMediaInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -3335,8 +3229,6 @@ export type UserCreateWithoutMovimientosInventarioInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -3390,8 +3282,6 @@ export type UserUncheckedCreateWithoutMovimientosInventarioInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -3461,8 +3351,6 @@ export type UserUpdateWithoutMovimientosInventarioInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -3516,8 +3404,6 @@ export type UserUncheckedUpdateWithoutMovimientosInventarioInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -3571,8 +3457,6 @@ export type UserCreateWithoutSuscripcionesCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -3626,8 +3510,6 @@ export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -3686,8 +3568,6 @@ export type UserCreateWithoutSuscripcionesUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -3741,8 +3621,6 @@ export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -3812,8 +3690,6 @@ export type UserUpdateWithoutSuscripcionesCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -3867,8 +3743,6 @@ export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -3933,8 +3807,6 @@ export type UserUpdateWithoutSuscripcionesUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -3988,8 +3860,6 @@ export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -4043,8 +3913,6 @@ export type UserCreateWithoutPersonalCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -4098,8 +3966,6 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -4158,8 +4024,6 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -4213,8 +4077,6 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -4273,8 +4135,6 @@ export type UserCreateWithoutPersonalInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -4328,8 +4188,6 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -4399,8 +4257,6 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -4454,8 +4310,6 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -4520,8 +4374,6 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -4575,8 +4427,6 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -4641,8 +4491,6 @@ export type UserUpdateWithoutPersonalInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -4696,8 +4544,6 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -4751,8 +4597,6 @@ export type UserCreateWithoutGruposCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -4806,8 +4650,6 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -4866,8 +4708,6 @@ export type UserCreateWithoutGruposUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -4921,8 +4761,6 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -4992,8 +4830,6 @@ export type UserUpdateWithoutGruposCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -5047,8 +4883,6 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -5113,8 +4947,6 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -5168,8 +5000,6 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -5223,8 +5053,6 @@ export type UserCreateWithoutTareasCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -5278,8 +5106,6 @@ export type UserUncheckedCreateWithoutTareasCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -5338,8 +5164,6 @@ export type UserCreateWithoutTareasUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -5393,8 +5217,6 @@ export type UserUncheckedCreateWithoutTareasUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -5453,8 +5275,6 @@ export type UserCreateWithoutTareasEliminadasInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -5508,8 +5328,6 @@ export type UserUncheckedCreateWithoutTareasEliminadasInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -5579,8 +5397,6 @@ export type UserUpdateWithoutTareasCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -5634,8 +5450,6 @@ export type UserUncheckedUpdateWithoutTareasCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -5700,8 +5514,6 @@ export type UserUpdateWithoutTareasUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -5755,8 +5567,6 @@ export type UserUncheckedUpdateWithoutTareasUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -5821,8 +5631,6 @@ export type UserUpdateWithoutTareasEliminadasInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -5876,8 +5684,6 @@ export type UserUncheckedUpdateWithoutTareasEliminadasInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -5931,8 +5737,6 @@ export type UserCreateWithoutVisitasCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -5986,8 +5790,6 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -6046,8 +5848,6 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -6101,8 +5901,6 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -6161,8 +5959,6 @@ export type UserCreateWithoutVisitasCompletadasInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -6216,8 +6012,6 @@ export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -6276,8 +6070,6 @@ export type UserCreateWithoutVisitasEliminadasInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -6331,8 +6123,6 @@ export type UserUncheckedCreateWithoutVisitasEliminadasInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -6402,8 +6192,6 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -6457,8 +6245,6 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -6523,8 +6309,6 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -6578,8 +6362,6 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -6644,8 +6426,6 @@ export type UserUpdateWithoutVisitasCompletadasInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -6699,8 +6479,6 @@ export type UserUncheckedUpdateWithoutVisitasCompletadasInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -6765,8 +6543,6 @@ export type UserUpdateWithoutVisitasEliminadasInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -6820,8 +6596,6 @@ export type UserUncheckedUpdateWithoutVisitasEliminadasInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -6875,8 +6649,6 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -6930,8 +6702,6 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -6990,8 +6760,6 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -7045,8 +6813,6 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -7116,8 +6882,6 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -7171,8 +6935,6 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -7237,8 +6999,6 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -7292,480 +7052,6 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
-  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
-  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
-  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
-  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
-  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
-}
-
-export type UserCreateWithoutVisitaMessagesInput = {
-  id?: string
-  name?: string | null
-  apellido?: string | null
-  email?: string | null
-  usuario?: string | null
-  emailVerified?: Date | string | null
-  image?: string | null
-  password?: string | null
-  role?: $Enums.UserRole
-  accesoRevocadoEl?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
-  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
-  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
-  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
-  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
-  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
-  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
-  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
-  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
-  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
-  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
-  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
-  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
-  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
-  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
-  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
-  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
-  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
-  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
-  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
-  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
-  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
-  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
-  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
-  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
-  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
-  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
-  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
-  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
-}
-
-export type UserUncheckedCreateWithoutVisitaMessagesInput = {
-  id?: string
-  name?: string | null
-  apellido?: string | null
-  email?: string | null
-  usuario?: string | null
-  emailVerified?: Date | string | null
-  image?: string | null
-  password?: string | null
-  role?: $Enums.UserRole
-  accesoRevocadoEl?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
-  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
-  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
-  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
-  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
-  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
-  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
-  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
-  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
-  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
-  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
-  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
-  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
-  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
-  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
-  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
-  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
-  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
-  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
-  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
-  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
-  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
-  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
-  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
-  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
-  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
-}
-
-export type UserCreateOrConnectWithoutVisitaMessagesInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutVisitaMessagesInput, Prisma.UserUncheckedCreateWithoutVisitaMessagesInput>
-}
-
-export type UserUpsertWithoutVisitaMessagesInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutVisitaMessagesInput, Prisma.UserUncheckedUpdateWithoutVisitaMessagesInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutVisitaMessagesInput, Prisma.UserUncheckedCreateWithoutVisitaMessagesInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutVisitaMessagesInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutVisitaMessagesInput, Prisma.UserUncheckedUpdateWithoutVisitaMessagesInput>
-}
-
-export type UserUpdateWithoutVisitaMessagesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
-  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
-  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
-  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
-  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
-  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
-  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
-  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
-  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
-  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
-  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
-  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
-  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
-  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
-  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
-  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
-  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
-  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
-  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
-  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
-  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
-  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
-  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
-  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
-  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
-  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
-  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
-  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
-}
-
-export type UserUncheckedUpdateWithoutVisitaMessagesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
-  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
-  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
-  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
-  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
-  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
-  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
-  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
-  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
-  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
-  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
-  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
-  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
-  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
-  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
-  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
-  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
-  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
-  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
-  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
-  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
-  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
-  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
-  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
-  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
-  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
-}
-
-export type UserCreateWithoutVisitaChatReadsInput = {
-  id?: string
-  name?: string | null
-  apellido?: string | null
-  email?: string | null
-  usuario?: string | null
-  emailVerified?: Date | string | null
-  image?: string | null
-  password?: string | null
-  role?: $Enums.UserRole
-  accesoRevocadoEl?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
-  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
-  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
-  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
-  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
-  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
-  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
-  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
-  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
-  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
-  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
-  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
-  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
-  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
-  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
-  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
-  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
-  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
-  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
-  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
-  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
-  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
-  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
-  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
-  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
-  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
-  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
-  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
-  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
-  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
-  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
-}
-
-export type UserUncheckedCreateWithoutVisitaChatReadsInput = {
-  id?: string
-  name?: string | null
-  apellido?: string | null
-  email?: string | null
-  usuario?: string | null
-  emailVerified?: Date | string | null
-  image?: string | null
-  password?: string | null
-  role?: $Enums.UserRole
-  accesoRevocadoEl?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
-  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
-  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
-  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
-  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
-  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
-  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
-  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
-  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
-  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
-  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
-  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
-  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
-  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
-  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
-  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
-  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
-  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
-  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
-  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
-  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
-  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
-  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
-  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
-  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
-  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
-  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
-  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
-  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
-}
-
-export type UserCreateOrConnectWithoutVisitaChatReadsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutVisitaChatReadsInput, Prisma.UserUncheckedCreateWithoutVisitaChatReadsInput>
-}
-
-export type UserUpsertWithoutVisitaChatReadsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutVisitaChatReadsInput, Prisma.UserUncheckedUpdateWithoutVisitaChatReadsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutVisitaChatReadsInput, Prisma.UserUncheckedCreateWithoutVisitaChatReadsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutVisitaChatReadsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutVisitaChatReadsInput, Prisma.UserUncheckedUpdateWithoutVisitaChatReadsInput>
-}
-
-export type UserUpdateWithoutVisitaChatReadsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
-  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
-  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
-  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
-  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
-  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
-  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
-  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
-  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
-  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
-  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
-  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
-  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
-  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
-  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
-  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
-  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
-  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
-  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
-  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
-  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
-  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
-  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
-  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
-  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
-  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
-  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
-  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
-  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
-  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
-  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
-  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
-  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
-  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
-}
-
-export type UserUncheckedUpdateWithoutVisitaChatReadsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
-  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
-  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
-  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
-  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
-  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
-  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
-  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
-  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
-  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
-  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
-  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
-  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
-  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
-  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
-  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
-  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
-  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
-  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
-  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
-  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
-  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
-  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
-  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
-  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -7819,8 +7105,6 @@ export type UserCreateWithoutPushTokensInput = {
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -7874,8 +7158,6 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -7945,8 +7227,6 @@ export type UserUpdateWithoutPushTokensInput = {
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -8000,8 +7280,6 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -8055,8 +7333,6 @@ export type UserCreateWithoutRefreshTokensInput = {
   personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -8110,8 +7386,6 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -8181,8 +7455,6 @@ export type UserUpdateWithoutRefreshTokensInput = {
   personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -8236,8 +7508,6 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -8292,8 +7562,6 @@ export type UserCreateWithoutClienteImportsInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -8347,8 +7615,6 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -8418,8 +7684,6 @@ export type UserUpdateWithoutClienteImportsInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -8473,8 +7737,6 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -8527,8 +7789,6 @@ export type UserCreateWithoutSetPasswordTokensInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -8582,8 +7842,6 @@ export type UserUncheckedCreateWithoutSetPasswordTokensInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -8653,8 +7911,6 @@ export type UserUpdateWithoutSetPasswordTokensInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -8708,8 +7964,6 @@ export type UserUncheckedUpdateWithoutSetPasswordTokensInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -8764,8 +8018,6 @@ export type UserCreateWithoutInformesGeneradosInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
   informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
@@ -8819,8 +8071,6 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
   informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
@@ -8879,8 +8129,6 @@ export type UserCreateWithoutInformesActualizadosInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
   informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
@@ -8934,8 +8182,6 @@ export type UserUncheckedCreateWithoutInformesActualizadosInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
   informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
@@ -9005,8 +8251,6 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
   informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
@@ -9060,8 +8304,6 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
   informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -9126,8 +8368,6 @@ export type UserUpdateWithoutInformesActualizadosInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
   informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
@@ -9181,8 +8421,6 @@ export type UserUncheckedUpdateWithoutInformesActualizadosInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
   informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -9236,8 +8474,6 @@ export type UserCreateWithoutInformeVersionesInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
@@ -9291,8 +8527,6 @@ export type UserUncheckedCreateWithoutInformeVersionesInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
@@ -9362,8 +8596,6 @@ export type UserUpdateWithoutInformeVersionesInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
@@ -9417,8 +8649,6 @@ export type UserUncheckedUpdateWithoutInformeVersionesInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -9472,8 +8702,6 @@ export type UserCreateWithoutInformeBorradoresCreadosInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -9527,8 +8755,6 @@ export type UserUncheckedCreateWithoutInformeBorradoresCreadosInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -9587,8 +8813,6 @@ export type UserCreateWithoutInformeBorradoresActualizadosInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -9642,8 +8866,6 @@ export type UserUncheckedCreateWithoutInformeBorradoresActualizadosInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -9713,8 +8935,6 @@ export type UserUpdateWithoutInformeBorradoresCreadosInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -9768,8 +8988,6 @@ export type UserUncheckedUpdateWithoutInformeBorradoresCreadosInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -9834,8 +9052,6 @@ export type UserUpdateWithoutInformeBorradoresActualizadosInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -9889,8 +9105,6 @@ export type UserUncheckedUpdateWithoutInformeBorradoresActualizadosInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -9944,8 +9158,6 @@ export type UserCreateWithoutOrdenesCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -9999,8 +9211,6 @@ export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -10059,8 +9269,6 @@ export type UserCreateWithoutOrdenesUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -10114,8 +9322,6 @@ export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -10185,8 +9391,6 @@ export type UserUpdateWithoutOrdenesCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -10240,8 +9444,6 @@ export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -10306,8 +9508,6 @@ export type UserUpdateWithoutOrdenesUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -10361,8 +9561,6 @@ export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -10416,8 +9614,6 @@ export type UserCreateWithoutDatosFacturacionCreatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -10471,8 +9667,6 @@ export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -10531,8 +9725,6 @@ export type UserCreateWithoutDatosFacturacionUpdatedInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -10586,8 +9778,6 @@ export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -10657,8 +9847,6 @@ export type UserUpdateWithoutDatosFacturacionCreatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -10712,8 +9900,6 @@ export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -10778,8 +9964,6 @@ export type UserUpdateWithoutDatosFacturacionUpdatedInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -10833,8 +10017,6 @@ export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -10887,8 +10069,6 @@ export type UserCreateWithoutCobrosRegistradosInput = {
   cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
@@ -10942,8 +10122,6 @@ export type UserUncheckedCreateWithoutCobrosRegistradosInput = {
   cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
   pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedCreateNestedManyWithoutAuthorInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedCreateNestedManyWithoutUserInput
   informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
   informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
   informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
@@ -11013,8 +10191,6 @@ export type UserUpdateWithoutCobrosRegistradosInput = {
   cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
@@ -11068,8 +10244,6 @@ export type UserUncheckedUpdateWithoutCobrosRegistradosInput = {
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
-  visitaMessages?: Prisma.VisitaMessageUncheckedUpdateManyWithoutAuthorNestedInput
-  visitaChatReads?: Prisma.VisitaChatReadUncheckedUpdateManyWithoutUserNestedInput
   informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
   informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
   informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
@@ -11115,8 +10289,6 @@ export type UserCountOutputType = {
   visitaPersonalRemoved: number
   pushTokens: number
   refreshTokens: number
-  visitaMessages: number
-  visitaChatReads: number
   informesGenerados: number
   informesActualizados: number
   informeVersiones: number
@@ -11157,8 +10329,6 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   visitaPersonalRemoved?: boolean | UserCountOutputTypeCountVisitaPersonalRemovedArgs
   pushTokens?: boolean | UserCountOutputTypeCountPushTokensArgs
   refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
-  visitaMessages?: boolean | UserCountOutputTypeCountVisitaMessagesArgs
-  visitaChatReads?: boolean | UserCountOutputTypeCountVisitaChatReadsArgs
   informesGenerados?: boolean | UserCountOutputTypeCountInformesGeneradosArgs
   informesActualizados?: boolean | UserCountOutputTypeCountInformesActualizadosArgs
   informeVersiones?: boolean | UserCountOutputTypeCountInformeVersionesArgs
@@ -11373,20 +10543,6 @@ export type UserCountOutputTypeCountRefreshTokensArgs<ExtArgs extends runtime.Ty
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountVisitaMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.VisitaMessageWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountVisitaChatReadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.VisitaChatReadWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
 export type UserCountOutputTypeCountInformesGeneradosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InformeWhereInput
 }
@@ -11497,8 +10653,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   cliente?: boolean | Prisma.User$clienteArgs<ExtArgs>
   pushTokens?: boolean | Prisma.User$pushTokensArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
-  visitaMessages?: boolean | Prisma.User$visitaMessagesArgs<ExtArgs>
-  visitaChatReads?: boolean | Prisma.User$visitaChatReadsArgs<ExtArgs>
   informesGenerados?: boolean | Prisma.User$informesGeneradosArgs<ExtArgs>
   informesActualizados?: boolean | Prisma.User$informesActualizadosArgs<ExtArgs>
   informeVersiones?: boolean | Prisma.User$informeVersionesArgs<ExtArgs>
@@ -11588,8 +10742,6 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   cliente?: boolean | Prisma.User$clienteArgs<ExtArgs>
   pushTokens?: boolean | Prisma.User$pushTokensArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
-  visitaMessages?: boolean | Prisma.User$visitaMessagesArgs<ExtArgs>
-  visitaChatReads?: boolean | Prisma.User$visitaChatReadsArgs<ExtArgs>
   informesGenerados?: boolean | Prisma.User$informesGeneradosArgs<ExtArgs>
   informesActualizados?: boolean | Prisma.User$informesActualizadosArgs<ExtArgs>
   informeVersiones?: boolean | Prisma.User$informeVersionesArgs<ExtArgs>
@@ -11640,8 +10792,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     cliente: Prisma.$ClientePayload<ExtArgs> | null
     pushTokens: Prisma.$PushTokenPayload<ExtArgs>[]
     refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
-    visitaMessages: Prisma.$VisitaMessagePayload<ExtArgs>[]
-    visitaChatReads: Prisma.$VisitaChatReadPayload<ExtArgs>[]
     informesGenerados: Prisma.$InformePayload<ExtArgs>[]
     informesActualizados: Prisma.$InformePayload<ExtArgs>[]
     informeVersiones: Prisma.$InformeVersionPayload<ExtArgs>[]
@@ -12115,8 +11265,6 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   cliente<T extends Prisma.User$clienteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clienteArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   pushTokens<T extends Prisma.User$pushTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pushTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  visitaMessages<T extends Prisma.User$visitaMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  visitaChatReads<T extends Prisma.User$visitaChatReadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaChatReadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaChatReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informesGenerados<T extends Prisma.User$informesGeneradosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$informesGeneradosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informesActualizados<T extends Prisma.User$informesActualizadosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$informesActualizadosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informeVersiones<T extends Prisma.User$informeVersionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$informeVersionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -13244,54 +12392,6 @@ export type User$refreshTokensArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.RefreshTokenScalarFieldEnum | Prisma.RefreshTokenScalarFieldEnum[]
-}
-
-/**
- * User.visitaMessages
- */
-export type User$visitaMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the VisitaMessage
-   */
-  select?: Prisma.VisitaMessageSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the VisitaMessage
-   */
-  omit?: Prisma.VisitaMessageOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.VisitaMessageInclude<ExtArgs> | null
-  where?: Prisma.VisitaMessageWhereInput
-  orderBy?: Prisma.VisitaMessageOrderByWithRelationInput | Prisma.VisitaMessageOrderByWithRelationInput[]
-  cursor?: Prisma.VisitaMessageWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.VisitaMessageScalarFieldEnum | Prisma.VisitaMessageScalarFieldEnum[]
-}
-
-/**
- * User.visitaChatReads
- */
-export type User$visitaChatReadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the VisitaChatRead
-   */
-  select?: Prisma.VisitaChatReadSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the VisitaChatRead
-   */
-  omit?: Prisma.VisitaChatReadOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.VisitaChatReadInclude<ExtArgs> | null
-  where?: Prisma.VisitaChatReadWhereInput
-  orderBy?: Prisma.VisitaChatReadOrderByWithRelationInput | Prisma.VisitaChatReadOrderByWithRelationInput[]
-  cursor?: Prisma.VisitaChatReadWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.VisitaChatReadScalarFieldEnum | Prisma.VisitaChatReadScalarFieldEnum[]
 }
 
 /**
