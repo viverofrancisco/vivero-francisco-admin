@@ -14,6 +14,11 @@ export const personalSchema = z.object({
   ]).optional(),
   estado: z.enum(["ACTIVO", "INACTIVO"]).default("ACTIVO"),
   tipo: z.enum(["JARDINERO", "CHOFER", "SUPERVISOR", "MECANICO"]).optional().or(z.literal("")),
+  // Con qué entra a la app. Vive en `User`, no en `Personal`, pero se edita acá
+  // porque es un dato de la persona como su teléfono, y mandarlo a otra
+  // pantalla obligaba a guardar dos veces para corregir un tipeo. El servidor
+  // solo lo aplica si cambió, y solo si quien edita es ADMIN.
+  usuario: z.string().optional().or(z.literal("")),
 });
 
 export type PersonalFormData = z.infer<typeof personalSchema>;

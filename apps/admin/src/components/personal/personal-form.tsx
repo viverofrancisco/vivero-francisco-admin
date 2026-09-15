@@ -23,10 +23,14 @@ interface PersonalFormProps {
     tipo: string | null;
     sueldo: number | null;
     estado: string;
+    /** Con qué entra a la app. Se genera con la ficha; acá se corrige. */
+    usuario?: string | null;
   };
   cards?: boolean;
   cardsEditing?: boolean;
   onEditDone?: () => void;
+  /** Solo un ADMIN cambia el usuario; el resto lo ve y no lo edita. */
+  puedeEditarUsuario?: boolean;
 }
 
 const formatPrice = (price: number) =>
@@ -59,7 +63,13 @@ function InfoRow({ label, value }: { label: string; value: string | null | undef
   );
 }
 
-export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: PersonalFormProps) {
+export function PersonalForm({
+  initialData,
+  cards,
+  cardsEditing,
+  onEditDone,
+  puedeEditarUsuario = false,
+}: PersonalFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
@@ -81,6 +91,7 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
       tipo: (initialData?.tipo as "JARDINERO" | "CHOFER" | "SUPERVISOR" | "MECANICO" | "") ?? "",
       sueldo: initialData?.sueldo ?? ("" as unknown as undefined),
       estado: (initialData?.estado as "ACTIVO" | "INACTIVO") ?? "ACTIVO",
+      usuario: initialData?.usuario ?? "",
     },
   });
 
@@ -96,6 +107,7 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
         tipo: (initialData.tipo as "JARDINERO" | "CHOFER" | "SUPERVISOR" | "MECANICO" | "") ?? "",
         sueldo: initialData.sueldo ?? ("" as unknown as undefined),
         estado: (initialData.estado as "ACTIVO" | "INACTIVO") ?? "ACTIVO",
+        usuario: initialData.usuario ?? "",
       });
     }
     prevEditing.current = cardsEditing;
@@ -115,7 +127,12 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
         body: JSON.stringify(data),
       });
 
-      if (!res.ok) throw new Error("Error al guardar");
+      if (!res.ok) {
+        // El mensaje del servidor importa: "el usuario ya está tomado" dice
+        // qué corregir, y "Error al guardar" manda a adivinar.
+        const datos = await res.json().catch(() => null);
+        throw new Error(datos?.error ?? "Error al guardar");
+      }
 
       toast.success(isEditing ? "Personal actualizado" : "Personal creado");
 
@@ -127,8 +144,8 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
         router.push("/dashboard/personal");
         router.refresh();
       }
-    } catch {
-      toast.error("Error al guardar el personal");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al guardar el personal");
     } finally {
       setLoading(false);
     }
@@ -144,6 +161,11 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
               <CardTitle>Informacion General</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Primero el usuario: es lo que hay que dictarle para que entre,
+                  y lo que alguien viene a buscar cuando llama preguntando. */}
+              {initialData?.usuario && (
+                <InfoRow label="Usuario" value={initialData.usuario} />
+              )}
               <InfoRow label="Nombre" value={initialData?.nombre} />
               <InfoRow label="Apellido" value={initialData?.apellido} />
               <InfoRow label="Telefono" value={initialData?.telefono} />
@@ -172,6 +194,22 @@ export function PersonalForm({ initialData, cards, cardsEditing, onEditDone }: P
               <CardTitle>Informacion General</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {puedeEditarUsuario && initialData?.usuario && (
+                <div className="space-y-2">
+                  <Label htmlFor="usuario">Usuario</Label>
+                  <Input
+                    id="usuario"
+                    className="font-mono"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    {...register("usuario")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Minúsculas, sin espacios ni arroba.
+                  </p>
+                </div>
+              )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="nombre">Nombre *</Label>

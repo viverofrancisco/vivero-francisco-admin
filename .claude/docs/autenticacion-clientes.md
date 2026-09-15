@@ -137,11 +137,16 @@ tomado se numera (`fherrera2`): dos Fernando Herrera en la misma cuadrilla no es
 raro, y el único de la base rechazaría al segundo justo al guardar su ficha,
 donde nadie está pensando en usuarios.
 
-La tarjeta **Acceso a la app** de `/dashboard/personal/[id]` (solo `ADMIN`)
-muestra el usuario, si ya eligió contraseña, un botón que genera el **enlace** y
-el de revocar. El enlace **no** se emite al crear la cuenta: quemaría su semana
-de vigencia el día que se carga la ficha, que suele ser antes de que la persona
-empiece.
+En `/dashboard/personal/[id]` el usuario es la **primera fila de Información
+General**, arriba del nombre: es lo que hay que dictarle para que entre, y lo
+que alguien viene a buscar cuando llama preguntando. Se edita ahí, con el resto
+de la ficha —tenía tarjeta propia y guardado propio, o sea dos guardados para
+corregir un tipeo—. *Restablecer contraseña* y *Revocar acceso* están en el menú
+**Acciones** del encabezado, junto a *Editar*: las tres se usan una vez por
+persona, y una tarjeta o un botón para cada una gastaba una columna entera.
+
+El enlace **no** se emite al crear la cuenta: quemaría su semana de vigencia el
+día que se carga la ficha, que suele ser antes de que la persona empiece.
 
 `personal-acceso.service.ts`:
 
@@ -151,11 +156,13 @@ empiece.
   transacción de la ficha: un `User` de rol `PERSONAL` suelto no se ve desde
   ningún lado del portal —*Usuarios* lista solo la oficina— y quedaría ocupando
   el usuario. No emite enlace.
-- `cambiarUsuarioPersonal(personalId, usuario)` — `PATCH
-  /api/personal/[id]/usuario`. Existe porque el generador a veces se equivoca
-  —un apodo cargado como nombre, o un `fherrera2`— y borrar la cuenta para
-  arreglarlo se llevaría el historial de quién cargó cada parte. No toca la
-  contraseña ni los enlaces vivos.
+- `cambiarUsuarioPersonal(personalId, usuario)` — existe porque el generador a
+  veces se equivoca —un apodo cargado como nombre, o un `fherrera2`— y borrar la
+  cuenta para arreglarlo se llevaría el historial de quién cargó cada parte. No
+  toca la contraseña ni los enlaces vivos. Lo llaman dos caminos: `PATCH
+  /api/personal/[id]/usuario` y el `PUT` de la ficha, que lo aplica **solo si
+  cambió** —guardar la ficha sin tocarlo no tiene por qué pasar por acá— y solo
+  si quien edita es `ADMIN`.
 - `setAccesoPersonal(personalId, revocado)` — el mismo `revocarAcceso()` /
   `restaurarAcceso()` de la oficina, con la ficha de por medio para que la
   pantalla no tenga que saber el id del usuario.

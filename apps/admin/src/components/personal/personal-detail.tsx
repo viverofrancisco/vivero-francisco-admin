@@ -11,12 +11,13 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PersonalForm } from "@/components/personal/personal-form";
+import { AccionesAcceso, type EstadoCuenta } from "./acciones-acceso";
 import {
-  AccesoPersonal,
-  type EstadoCuenta,
-} from "./acceso-personal";
+  VisitasDelPersonal,
+  type VisitaDelPersonal,
+} from "./visitas-del-personal";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface PersonalData {
   id: string;
@@ -42,8 +43,12 @@ interface Props {
   grupos: GrupoInfo[];
   /** Cómo está su acceso a la app, o `null` si nunca se le creó cuenta. */
   cuenta: EstadoCuenta | null;
-  /** Solo un ADMIN da o quita acceso. Para el resto la tarjeta es informativa. */
+  /** Solo un ADMIN da o quita acceso, y solo él puede cambiar el usuario. */
   puedeAdministrarAcceso: boolean;
+  /** Sus visitas, de la más reciente a la más vieja. */
+  visitas: VisitaDelPersonal[];
+  visitasTotal: number;
+  visitasPagina: number;
 }
 
 function formatDate(dateStr: string) {
@@ -59,6 +64,9 @@ export function PersonalDetail({
   grupos,
   cuenta,
   puedeAdministrarAcceso,
+  visitas,
+  visitasTotal,
+  visitasPagina,
   backHref = "/dashboard/personal",
 }: Props) {
   const router = useRouter();
@@ -116,14 +124,13 @@ export function PersonalDetail({
               </Button>
             </div>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCardsEditing(true)}
-            >
-              <Pencil className="mr-1.5 h-3.5 w-3.5" />
-              Editar
-            </Button>
+            <AccionesAcceso
+              personalId={personal.id}
+              nombre={nombreCompleto}
+              estado={cuenta}
+              puedeAdministrar={puedeAdministrarAcceso}
+              onEditar={() => setCardsEditing(true)}
+            />
           )}
         </div>
       </div>
@@ -132,7 +139,7 @@ export function PersonalDetail({
       <div className="px-4 md:px-6 pt-6 pb-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Form */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <PersonalForm
               initialData={{
                 id: personal.id,
@@ -143,24 +150,25 @@ export function PersonalDetail({
                 tipo: personal.tipo,
                 sueldo: personal.sueldo,
                 estado: personal.estado,
+                usuario: cuenta?.usuario ?? null,
               }}
               cards
               cardsEditing={cardsEditing}
               onEditDone={() => setCardsEditing(false)}
+              puedeEditarUsuario={puedeAdministrarAcceso}
+            />
+
+            {/* Debajo de los datos, no al lado: son filas anchas, y en la
+                columna angosta el nombre del cliente se partía en dos. */}
+            <VisitasDelPersonal
+              visitas={visitas}
+              total={visitasTotal}
+              page={visitasPagina}
             />
           </div>
 
-          {/* Right column - Acceso y grupos */}
+          {/* Right column - Grupos */}
           <div className="space-y-6">
-            {/* Arriba de los grupos: es lo que cambia de estado y lo que
-                alguien viene a buscar cuando abre esta ficha a mano. */}
-            <AccesoPersonal
-              personalId={personal.id}
-              nombre={nombreCompleto}
-              estado={cuenta}
-              puedeAdministrar={puedeAdministrarAcceso}
-            />
-
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Grupos</CardTitle>

@@ -4,17 +4,20 @@ import { requireAuth } from "@/lib/auth-helpers";
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { estadoCuentaPersonal } from "@/lib/services/personal-acceso.service";
 import { PersonalDetail } from "@/components/personal/personal-detail";
+import { VISITAS_POR_PAGINA } from "@/components/personal/visitas-del-personal";
+import { nombreCliente } from "@vivero/shared";
 
 export default async function EditarPersonalPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; vpag?: string }>;
 }) {
   const actual = await requireAuth();
   const { id } = await params;
-  const { from } = await searchParams;
+  const { from, vpag } = await searchParams;
+  const pagina = Math.max(1, Number.parseInt(vpag ?? "1", 10) || 1);
   const backHref = hrefDeVuelta(from, "/dashboard/personal");
 
   const personal = await prisma.personal.findUnique({
@@ -33,6 +36,33 @@ export default async function EditarPersonalPage({
   }
 
   const cuenta = await estadoCuentaPersonal(personal.id);
+
+  // Las visitas donde **está asignado**, no las de su grupo: el grupo dice con
+  // quién suele trabajar, la asignación dice dónde fue de verdad. `removedAt`
+  // afuera, o seguirían contando las que le sacaron.
+  const dondeVa = {
+    deletedAt: null,
+    personal: { some: { personalId: personal.id, removedAt: null } },
+  } as const;
+
+  const [visitasTotal, visitas] = await Promise.all([
+    prisma.visita.count({ where: dondeVa }),
+    prisma.visita.findMany({
+      where: dondeVa,
+      orderBy: [{ fechaProgramada: "desc" }, { id: "desc" }],
+      skip: (pagina - 1) * VISITAS_POR_PAGINA,
+      take: VISITAS_POR_PAGINA,
+      select: {
+        id: true,
+        numero: true,
+        fechaProgramada: true,
+        estado: true,
+        cliente: {
+          select: { nombre: true, apellido: true, empresa: true },
+        },
+      },
+    }),
+  ]);
 
   const grupos = personal.grupos.map((g) => ({
     id: g.grupo.id,
@@ -57,6 +87,15 @@ export default async function EditarPersonalPage({
         grupos={grupos}
         cuenta={cuenta}
         puedeAdministrarAcceso={actual.role === "ADMIN"}
+        visitas={visitas.map((v) => ({
+          id: v.id,
+          numero: v.numero,
+          fechaProgramada: v.fechaProgramada.toISOString(),
+          estado: v.estado,
+          cliente: nombreCliente(v.cliente),
+        }))}
+        visitasTotal={visitasTotal}
+        visitasPagina={pagina}
       />
     </div>
   );

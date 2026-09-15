@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { revocarAcceso } from "@/lib/services/acceso.service";
+import { cambiarUsuarioPersonal } from "@/lib/services/personal-acceso.service";
+import { ConflictError, ValidationError } from "@/lib/services/errors";
+import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 import { personalSchema } from "@/lib/validations/personal";
 
 export async function GET(
@@ -59,9 +62,29 @@ export async function PUT(
         tipo: data.tipo || null,
         updatedById: user.id,
       },
+      include: { user: { select: { usuario: true } } },
     });
+
+    // El usuario va en la misma pantalla pero no en la misma tabla, y darlo
+    // solo si **cambió** es lo que evita que guardar la ficha sin tocarlo
+    // devuelva "ya está tomado" contra su propia cuenta. Solo ADMIN: dar o
+    // quitar acceso es suyo, y el resto del formulario no lo es.
+    const pedido = data.usuario?.trim();
+    if (pedido && pedido !== personal.user?.usuario) {
+      if (user.role !== "ADMIN") {
+        return NextResponse.json(
+          { error: "Solo un administrador puede cambiar el usuario" },
+          { status: 403 }
+        );
+      }
+      await cambiarUsuarioPersonal(id, pedido);
+    }
+
     return NextResponse.json(personal);
-  } catch {
+  } catch (error) {
+    if (error instanceof ConflictError || error instanceof ValidationError) {
+      return serviceErrorResponse(error);
+    }
     return NextResponse.json({ error: "Personal no encontrado" }, { status: 404 });
   }
 }
