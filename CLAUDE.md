@@ -485,10 +485,16 @@ during a pruning, and that photo needs somewhere to land. Sections stay editable
 and the picker offers the whole tarea catalog, because a section can be about
 something nobody filed.
 
-**The tag is asked for at upload, on the phone**, choosing among the tareas that
-person just ticked — that is the only moment anyone remembers what each photo
-was of, and it is what lets the wizard place it without asking again. With one
-tarea ticked it is preselected and no picker appears. From the portal,
+**Photos are not part of any form.** On the phone they live in the visita's own
+*Archivos* section — camera or gallery, uploaded the moment they are picked, in
+any state. They used to sit inside the salida form, where they arrived late: the
+photo is taken *while* the work happens, and saving it for the end is asking
+someone to remember. That form now asks one thing, which tareas they did. The
+tag is chosen by tapping the photo, from **the whole live catalogue** and not
+only from what that person ticked: in the field you photograph what shows up — a
+watering problem during a pruning — and restricting the tag to your own tareas
+leaves exactly those photos unclassified, which is what stops the informe from
+placing them. From the portal,
 `ArchivosVisita` groups files by tarea with the visit's own first, untagged last,
 and adding happens *inside* a group, so where you drop it is the tag; there is no
 separate "which tarea" field. Re-tagging accepts **any live tarea**, not only the

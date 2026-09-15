@@ -31,7 +31,7 @@ export type CancelVisitaBody = z.infer<typeof cancelVisitaSchema>;
  * que alguien recuerda de qué era cada foto. De ahí sale, después, la sección
  * del informe donde la foto cae sola.
  */
-const mediaItemSchema = z.object({
+export const mediaItemSchema = z.object({
   key: z.string().min(1),
   tipo: z.enum(["imagen", "video"]),
   tareaId: z.string().min(1).nullable().optional(),

@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { estadoColor, estadoLabel } from "@/lib/estado-visita";
 import {
-  Image,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -17,7 +15,9 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
-import type { VisitaDetail, VisitaMedia } from "@/lib/types";
+import { ArchivosVisita } from "@/components/ArchivosVisita";
+import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
+import type { VisitaDetail } from "@/lib/types";
 import { listaTareas } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth-store";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
@@ -27,6 +27,7 @@ export default function PersonalVisitaScreen() {
   const router = useRouter();
   const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const [visita, setVisita] = useState<VisitaDetail | null>(null);
+  const [catalogo, setCatalogo] = useState<TareaDeCatalogo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [videoThumbs, setVideoThumbs] = useState<Record<string, string>>({});
@@ -59,8 +60,17 @@ export default function PersonalVisitaScreen() {
     if (!id) return;
     setLoading(true);
     try {
-      const v = await apiRequest<VisitaDetail>(`/api/mobile/visitas/${id}`);
+      // El catálogo entero viene con la visita: la etiqueta de una foto puede
+      // ser **cualquier** tarea viva, no solo las que uno marcó. En el campo se
+      // fotografía lo que aparece.
+      const [v, t] = await Promise.all([
+        apiRequest<VisitaDetail>(`/api/mobile/visitas/${id}`),
+        apiRequest<{ items: TareaDeCatalogo[] }>("/api/mobile/tareas").catch(
+          () => ({ items: [] as TareaDeCatalogo[] })
+        ),
+      ]);
       setVisita(v);
+      setCatalogo(t.items);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No pudimos cargar la visita");
     } finally {
@@ -219,24 +229,21 @@ export default function PersonalVisitaScreen() {
           </Section>
         ) : null}
 
-        {/* Archivos */}
-        {visita.media && visita.media.length > 0 ? (
+        {/* Los archivos son de la visita, no de un formulario: se suben en
+            cualquier momento y en cualquier estado, porque la foto se saca
+            mientras se trabaja. Estaban dentro del formulario de salida, donde
+            llegaban tarde. */}
+        {canAct ? (
           <View style={styles.mediaSection}>
             <Text variant="labelMedium" style={styles.sectionLabel}>
               ARCHIVOS
             </Text>
-            <View style={styles.mediaGrid}>
-              {visita.media.map((m) => (
-                <MediaTile
-                  key={m.id}
-                  item={m}
-                  thumbUri={videoThumbs[m.id]}
-                  onPress={() =>
-                    setActiveMedia({ url: m.url, tipo: m.tipo })
-                  }
-                />
-              ))}
-            </View>
+            <ArchivosVisita
+              visitaId={visita.id}
+              archivos={visita.media ?? []}
+              catalogo={catalogo}
+              onCambio={load}
+            />
           </View>
         ) : null}
 
@@ -310,43 +317,6 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MediaTile({
-  item,
-  thumbUri,
-  onPress,
-}: {
-  item: VisitaMedia;
-  thumbUri?: string;
-  onPress: () => void;
-}) {
-  const isVideo = item.tipo === "video";
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.mediaTile,
-        pressed && { opacity: 0.7 },
-      ]}
-    >
-      {isVideo ? (
-        thumbUri ? (
-          <>
-            <Image source={{ uri: thumbUri }} style={styles.mediaTileImage} />
-            <View style={styles.playBadge}>
-              <Text style={styles.playBadgeIcon}>▶</Text>
-            </View>
-          </>
-        ) : (
-          <View style={[styles.mediaTileImage, styles.videoTile]}>
-            <Text style={styles.videoLabel}>▶ Video</Text>
-          </View>
-        )
-      ) : (
-        <Image source={{ uri: item.url }} style={styles.mediaTileImage} />
-      )}
-    </Pressable>
-  );
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-EC", {

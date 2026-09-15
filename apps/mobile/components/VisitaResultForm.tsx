@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,8 +15,6 @@ import {
 } from "react-native-paper";
 import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as ImagePicker from "expo-image-picker";
-import * as VideoThumbnails from "expo-video-thumbnails";
 import { apiRequest, ApiError } from "@/lib/api";
 import { dispositivoId } from "@/lib/dispositivo";
 import type {
@@ -36,17 +33,6 @@ import type {
  * lo decide quien la cierra.
  */
 
-interface MediaItem {
-  uri: string;
-  fileName: string;
-  contentType: string;
-  tipo: "imagen" | "video";
-  thumbUri?: string;
-  /// A qué tarea corresponde. Es lo que hace que caiga sola en su sección del
-  /// informe, así que se pregunta acá: es el único momento en que alguien se
-  /// acuerda de qué era cada foto.
-  tareaId: string | null;
-}
 
 /** Una tarea del catálogo, tal como la devuelve `/api/mobile/tareas`. */
 export interface TareaDeCatalogo {
@@ -62,16 +48,7 @@ export interface VisitaFormInitialValues {
   existingMedia?: VisitaMedia[];
 }
 
-interface UploadDescriptor {
-  key: string;
-  uploadUrl: string;
-  tipo: "imagen" | "video";
-  contentType: string;
-}
 
-interface UploadsResponse {
-  uploads: UploadDescriptor[];
-}
 
 export function VisitaResultForm({
   visitaId,
@@ -117,16 +94,6 @@ export function VisitaResultForm({
   const [tareaIds, setTareaIds] = useState<string[]>(
     initialValues?.tareaIds ?? []
   );
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  const [existingMedia, setExistingMedia] = useState<VisitaMedia[]>(
-    initialValues?.existingMedia ?? []
-  );
-  const [removingMediaIds, setRemovingMediaIds] = useState<Set<string>>(
-    new Set()
-  );
-  const [existingVideoThumbs, setExistingVideoThumbs] = useState<
-    Record<string, string>
-  >({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -150,187 +117,22 @@ export function VisitaResultForm({
   }, [tareas, obligatorias]);
 
   const alternarTarea = (id: string) =>
-    setTareaIds((prev) => {
-      const siguiente = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-      // El selector sigue a lo marcado: desmarcar la tarea con la que se
-      // estaban etiquetando fotos lo dejaría apuntando a algo que ya no se hizo,
-      // y marcar la primera da una etiqueta por omisión sin pedir nada.
-      if (!etiqueta || !siguiente.includes(etiqueta)) {
-        setEtiqueta(siguiente[0] ?? null);
-      }
-      return siguiente;
-    });
-
-  /**
-   * Con qué tarea entran las fotos nuevas.
-   *
-   * Sale de las que la persona acaba de marcar, no del catálogo entero:
-   * etiquetar una foto con algo que no hizo no tiene sentido, y una lista de
-   * veinte donde solo tres aplican es una lista que nadie usa. Con una sola
-   * marcada va puesta y el selector ni aparece.
-   */
-  const [etiqueta, setEtiqueta] = useState<string | null>(
-    initialValues?.tareaIds?.[0] ?? null
-  );
-  const etiquetables = tareas.filter((t) => tareaIds.includes(t.id));
-  const nombreDeTarea = (id: string | null) =>
-    id ? (tareas.find((t) => t.id === id)?.nombre ?? null) : null;
-
-  /** Rota la etiqueta de una foto ya agregada entre lo marcado y "sin etiqueta". */
-  function rotarEtiqueta(uri: string) {
-    if (etiquetables.length === 0) return;
-    const ids: (string | null)[] = [...etiquetables.map((t) => t.id), null];
-    setMedia((prev) =>
-      prev.map((m) =>
-        m.uri === uri
-          ? { ...m, tareaId: ids[(ids.indexOf(m.tareaId) + 1) % ids.length] }
-          : m
-      )
+    setTareaIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
-  }
 
-  // Generate thumbnails for existing remote videos so they appear with a
-  // preview frame instead of the dark placeholder.
-  useEffect(() => {
-    const videos = existingMedia.filter((m) => m.tipo === "video");
-    let cancelled = false;
-    videos.forEach(async (m) => {
-      if (existingVideoThumbs[m.id]) return;
-      try {
-        const thumb = await VideoThumbnails.getThumbnailAsync(m.url, {
-          time: 1000,
-          quality: 0.6,
-        });
-        if (!cancelled) {
-          setExistingVideoThumbs((prev) => ({ ...prev, [m.id]: thumb.uri }));
-        }
-      } catch {
-        // Leave fallback placeholder.
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [existingMedia, existingVideoThumbs]);
 
-  async function removeExisting(media: VisitaMedia) {
-    if (removingMediaIds.has(media.id)) return;
-    setRemovingMediaIds((prev) => new Set(prev).add(media.id));
-    try {
-      await apiRequest<void>(
-        `/api/mobile/visitas/${visitaId}/media/${media.id}`,
-        { method: "DELETE" }
-      );
-      setExistingMedia((prev) => prev.filter((m) => m.id !== media.id));
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No pudimos eliminar el archivo.");
-    } finally {
-      setRemovingMediaIds((prev) => {
-        const next = new Set(prev);
-        next.delete(media.id);
-        return next;
-      });
-    }
-  }
 
-  async function pickMedia() {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      setError("Permite el acceso a tus fotos para subir imágenes o videos.");
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsMultipleSelection: true,
-      quality: 0.85,
-      selectionLimit: 20,
-    });
-    if (result.canceled) return;
-    const additions: MediaItem[] = await Promise.all(
-      result.assets.map(async (a) => {
-        const uri = a.uri;
-        const inferredName =
-          a.fileName ?? uri.split("/").pop() ?? `media-${Date.now()}`;
-        const isVideo = a.type === "video";
-        const contentType = guessContentType(inferredName, isVideo);
-        let thumbUri: string | undefined;
-        if (isVideo) {
-          try {
-            const thumb = await VideoThumbnails.getThumbnailAsync(uri, {
-              time: 1000,
-              quality: 0.6,
-            });
-            thumbUri = thumb.uri;
-          } catch {
-            // Fall back to no thumbnail; render placeholder.
-          }
-        }
-        return {
-          uri,
-          fileName: inferredName,
-          contentType,
-          tipo: isVideo ? "video" : "imagen",
-          thumbUri,
-          // Entra con la tarea que esté activa en el selector de abajo. Con
-          // una sola marcada no hay nada que elegir y va puesta.
-          tareaId: etiqueta,
-        };
-      })
-    );
-    setMedia((prev) => [...prev, ...additions].slice(0, 20));
-  }
 
-  function removeMedia(uri: string) {
-    setMedia((prev) => prev.filter((m) => m.uri !== uri));
-  }
 
-  async function uploadAll(): Promise<{ key: string; tipo: "imagen" | "video" }[]> {
-    if (media.length === 0) return [];
-    const presign = await apiRequest<UploadsResponse>(
-      `/api/mobile/visitas/${visitaId}/media`,
-      {
-        method: "POST",
-        body: {
-          files: media.map((m) => ({
-            fileName: m.fileName,
-            contentType: m.contentType,
-          })),
-        },
-      }
-    );
-    if (presign.uploads.length !== media.length) {
-      throw new Error("Respuesta inválida del servidor de carga.");
-    }
-    await Promise.all(
-      media.map(async (m, i) => {
-        const upload = presign.uploads[i];
-        const fileRes = await fetch(m.uri);
-        const blob = await fileRes.blob();
-        const putRes = await fetch(upload.uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": upload.contentType },
-          body: blob,
-        });
-        if (!putRes.ok) {
-          throw new Error("No pudimos subir uno de los archivos.");
-        }
-      })
-    );
-    return presign.uploads.map((u, i) => ({
-      key: u.key,
-      tipo: u.tipo,
-      tareaId: media[i]?.tareaId ?? null,
-    }));
-  }
+
+
 
   async function submit() {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
-      const uploaded = await uploadAll();
       if (modo === "SALIDA") {
         // Irse es un solo gesto: sella el momento, guarda lo que hizo y sube
         // lo que sacó. La ubicación se lee recién acá —al apretar— y si no
@@ -342,14 +144,13 @@ export function VisitaResultForm({
             ubicacion: ubicacion ? await ubicacion() : null,
             dispositivo: await dispositivoId(),
             tareaIds,
-            media: uploaded,
           },
         });
       } else {
         // Corregir no mueve las marcas: la hora a la que se fue ya pasó.
         await apiRequest<VisitaDetail>(`/api/mobile/visitas/${visitaId}/parte`, {
           method: "POST",
-          body: { tareaIds, media: uploaded },
+          body: { tareaIds },
         });
       }
       router.back();
@@ -366,7 +167,10 @@ export function VisitaResultForm({
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.flex}>
-        <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
+        {/* Sin `insets.top`: la pantalla se presenta como modal, así que ya
+            arranca debajo de la barra de estado y sumarlo dejaba un hueco
+            blanco del alto de la barra arriba del título. */}
+        <View style={styles.header}>
           <View style={styles.headerRow}>
             <IconButton
               icon="close"
@@ -421,147 +225,6 @@ export function VisitaResultForm({
             </View>
           </Section>
 
-          <Section title="Imágenes y videos">
-            {/* Con qué tarea entran las fotos nuevas. Solo entre las que se
-                acaban de marcar: etiquetar una foto con algo que no se hizo no
-                tiene sentido. Con una sola no hay nada que elegir. */}
-            {etiquetables.length > 1 ? (
-              <View style={styles.tagPicker}>
-                <Text style={styles.tagPickerLabel}>
-                  Las fotos nuevas son de:
-                </Text>
-                <View style={styles.tagChips}>
-                  {etiquetables.map((t) => {
-                    const activo = etiqueta === t.id;
-                    return (
-                      <Pressable
-                        key={t.id}
-                        onPress={() => setEtiqueta(t.id)}
-                        style={[styles.tagChip, activo && styles.tagChipActive]}
-                      >
-                        <Text
-                          style={[
-                            styles.tagChipText,
-                            activo && styles.tagChipTextActive,
-                          ]}
-                        >
-                          {t.nombre}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                  <Pressable
-                    onPress={() => setEtiqueta(null)}
-                    style={[
-                      styles.tagChip,
-                      etiqueta === null && styles.tagChipActive,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.tagChipText,
-                        etiqueta === null && styles.tagChipTextActive,
-                      ]}
-                    >
-                      Sin etiqueta
-                    </Text>
-                  </Pressable>
-                </View>
-                <Text style={styles.tagPickerHint}>
-                  Así cada foto cae sola en su sección del informe. Toca la
-                  etiqueta de una foto para cambiarla.
-                </Text>
-              </View>
-            ) : null}
-            <View style={styles.mediaGrid}>
-              {existingMedia.map((m) => {
-                const removing = removingMediaIds.has(m.id);
-                const isVideo = m.tipo === "video";
-                const thumb = isVideo ? existingVideoThumbs[m.id] : undefined;
-                return (
-                  <View
-                    key={m.id}
-                    style={[styles.mediaItem, removing && { opacity: 0.4 }]}
-                  >
-                    {!isVideo ? (
-                      <Image source={{ uri: m.url }} style={styles.mediaThumb} />
-                    ) : thumb ? (
-                      <>
-                        <Image source={{ uri: thumb }} style={styles.mediaThumb} />
-                        <View style={styles.playBadge}>
-                          <Text style={styles.playBadgeIcon}>▶</Text>
-                        </View>
-                      </>
-                    ) : (
-                      <View style={[styles.mediaThumb, styles.videoThumb]}>
-                        <Text style={styles.videoLabel}>Video</Text>
-                      </View>
-                    )}
-                    <Pressable
-                      onPress={() => removeExisting(m)}
-                      style={styles.mediaRemove}
-                      hitSlop={8}
-                      disabled={removing}
-                    >
-                      <Text style={styles.mediaRemoveX}>×</Text>
-                    </Pressable>
-                  </View>
-                );
-              })}
-              {media.map((m) => (
-                <View key={m.uri} style={styles.mediaItem}>
-                  {m.tipo === "imagen" ? (
-                    <Image source={{ uri: m.uri }} style={styles.mediaThumb} />
-                  ) : m.thumbUri ? (
-                    <>
-                      <Image
-                        source={{ uri: m.thumbUri }}
-                        style={styles.mediaThumb}
-                      />
-                      <View style={styles.playBadge}>
-                        <Text style={styles.playBadgeIcon}>▶</Text>
-                      </View>
-                    </>
-                  ) : (
-                    <View style={[styles.mediaThumb, styles.videoThumb]}>
-                      <Text style={styles.videoLabel}>Video</Text>
-                    </View>
-                  )}
-                  <Pressable
-                    onPress={() => removeMedia(m.uri)}
-                    style={styles.mediaRemove}
-                    hitSlop={8}
-                  >
-                    <Text style={styles.mediaRemoveX}>×</Text>
-                  </Pressable>
-                  {etiquetables.length > 1 ? (
-                    <Pressable
-                      onPress={() => rotarEtiqueta(m.uri)}
-                      style={styles.mediaTag}
-                      hitSlop={4}
-                    >
-                      <Text style={styles.mediaTagText} numberOfLines={1}>
-                        {nombreDeTarea(m.tareaId) ?? "Sin etiqueta"}
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              ))}
-              {existingMedia.length + media.length < 20 ? (
-                <Pressable
-                  onPress={pickMedia}
-                  style={({ pressed }) => [
-                    styles.mediaAdd,
-                    pressed && styles.mediaAddPressed,
-                  ]}
-                >
-                  <Text style={styles.mediaAddPlus}>+</Text>
-                  <Text style={styles.mediaAddLabel}>Agregar</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          </Section>
-
           {error ? (
             <HelperText type="error" visible style={styles.error}>
               {error}
@@ -611,18 +274,6 @@ function Section({
 
 
 
-function guessContentType(name: string, isVideo: boolean): string {
-  const ext = name.split(".").pop()?.toLowerCase() ?? "";
-  if (isVideo) {
-    if (ext === "mov") return "video/quicktime";
-    if (ext === "m4v") return "video/x-m4v";
-    return "video/mp4";
-  }
-  if (ext === "png") return "image/png";
-  if (ext === "heic" || ext === "heif") return "image/heic";
-  if (ext === "webp") return "image/webp";
-  return "image/jpeg";
-}
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
@@ -699,47 +350,6 @@ const styles = StyleSheet.create({
     minHeight: 96,
   },
 
-  mediaGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  mediaItem: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    overflow: "hidden",
-    position: "relative",
-    backgroundColor: "#f0f0f0",
-  },
-  mediaThumb: {
-    width: "100%",
-    height: "100%",
-  },
-  videoThumb: {
-    backgroundColor: "#222",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  videoLabel: { color: "#fff", fontWeight: "600" },
-  playBadge: {
-    position: "absolute",
-    left: "50%",
-    top: "50%",
-    width: 32,
-    height: 32,
-    marginLeft: -16,
-    marginTop: -16,
-    borderRadius: 16,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  playBadgeIcon: {
-    color: "#fff",
-    fontSize: 14,
-    marginLeft: 2,
-  },
   tareas: {
     gap: 8,
   },
@@ -792,88 +402,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },
-  tagPicker: {
-    marginBottom: 12,
-    gap: 6,
-  },
-  tagPickerLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#444",
-  },
-  tagChips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  tagChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#fff",
-  },
-  tagChipActive: {
-    borderColor: "#2e7d32",
-    backgroundColor: "#e8f5e9",
-  },
-  tagChipText: {
-    fontSize: 12,
-    color: "#666",
-  },
-  tagChipTextActive: {
-    color: "#2e7d32",
-    fontWeight: "600",
-  },
-  tagPickerHint: {
-    fontSize: 11,
-    color: "#888",
-    lineHeight: 15,
-  },
-  mediaTag: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 4,
-    paddingVertical: 3,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-  },
-  mediaTagText: {
-    color: "#fff",
-    fontSize: 9,
-    textAlign: "center",
-  },
-  mediaRemove: {
-    position: "absolute",
-    top: 4,
-    right: 4,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  mediaRemoveX: { color: "#fff", fontSize: 16, lineHeight: 18 },
-  mediaAdd: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#bbb",
-    backgroundColor: "#fafafa",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-  },
-  mediaAddPressed: { backgroundColor: "#f0f0f0" },
-  mediaAddPlus: { fontSize: 28, color: "#2e7d32", lineHeight: 30 },
-  mediaAddLabel: { color: "#666", fontSize: 12 },
 
   error: { textAlign: "center", marginTop: 4 },
 
