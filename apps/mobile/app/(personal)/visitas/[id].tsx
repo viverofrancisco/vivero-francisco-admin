@@ -323,6 +323,26 @@ export default function PersonalVisitaScreen() {
           ) : null}
         </Section>
 
+        {/* Los archivos son de la visita, no de un formulario: se suben en
+            cualquier momento y en cualquier estado, porque la foto se saca
+            mientras se trabaja. Estaban dentro del formulario de salida, donde
+            llegaban tarde. Van arriba del personal asignado: las fotos se miran
+            y se cargan a cada rato, la lista de quiénes van se lee una vez. */}
+        {canAct ? (
+          <View style={styles.mediaSection}>
+            <Text variant="labelMedium" style={styles.sectionLabel}>
+              ARCHIVOS
+            </Text>
+            <ArchivosVisita
+              visitaId={visita.id}
+              archivos={visita.media ?? []}
+              catalogo={catalogo}
+              onCambio={load}
+              onVer={setActiveMedia}
+            />
+          </View>
+        ) : null}
+
         {/* Personal */}
         {personalAsignado.length > 0 ? (
           <Section title="Personal asignado">
@@ -354,25 +374,6 @@ export default function PersonalVisitaScreen() {
               {visita.notasIncompleto || visita.notas}
             </Text>
           </Section>
-        ) : null}
-
-        {/* Los archivos son de la visita, no de un formulario: se suben en
-            cualquier momento y en cualquier estado, porque la foto se saca
-            mientras se trabaja. Estaban dentro del formulario de salida, donde
-            llegaban tarde. */}
-        {canAct ? (
-          <View style={styles.mediaSection}>
-            <Text variant="labelMedium" style={styles.sectionLabel}>
-              ARCHIVOS
-            </Text>
-            <ArchivosVisita
-              visitaId={visita.id}
-              archivos={visita.media ?? []}
-              catalogo={catalogo}
-              onCambio={load}
-              onVer={setActiveMedia}
-            />
-          </View>
         ) : null}
 
         {error ? (
