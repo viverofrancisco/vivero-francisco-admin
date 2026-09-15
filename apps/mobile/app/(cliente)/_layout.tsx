@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
+import { tema } from "@/lib/tema";
 
 export default function ClienteTabsLayout() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function ClienteTabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#2e7d32",
+        tabBarActiveTintColor: tema.verde,
         headerShown: false,
       }}
     >

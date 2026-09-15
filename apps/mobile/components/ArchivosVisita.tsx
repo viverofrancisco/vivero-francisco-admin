@@ -9,6 +9,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { apiRequest, ApiError } from "@/lib/api";
 import type { VisitaMedia } from "@/lib/types";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
+import { tema } from "@/lib/tema";
 
 /**
  * Las fotos de la visita: las **propias**, en cualquier momento.
@@ -225,7 +226,7 @@ export function ArchivosVisita({
           style={styles.accion}
           estiloPresionado={styles.accionTocada}
         >
-          <Ionicons name="camera-outline" size={20} color="#2e7d32" />
+          <Ionicons name="camera-outline" size={20} color={tema.verde} />
           <Text style={styles.accionTexto}>Tomar foto</Text>
         </PressableScale>
         <PressableScale
@@ -234,7 +235,7 @@ export function ArchivosVisita({
           style={styles.accion}
           estiloPresionado={styles.accionTocada}
         >
-          <Ionicons name="images-outline" size={20} color="#2e7d32" />
+          <Ionicons name="images-outline" size={20} color={tema.verde} />
           <Text style={styles.accionTexto}>Galería</Text>
         </PressableScale>
       </View>
@@ -385,7 +386,7 @@ export function ArchivosVisita({
                 >
                   <Text style={styles.opcionTexto}>{t.nombre}</Text>
                   {tareaMarcada === t.id ? (
-                    <Ionicons name="checkmark" size={18} color="#2e7d32" />
+                    <Ionicons name="checkmark" size={18} color={tema.verde} />
                   ) : null}
                 </PressableScale>
               ))}
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4faf4",
   },
   accionTocada: { backgroundColor: "#e3f1e4" },
-  accionTexto: { color: "#2e7d32", fontWeight: "600" },
+  accionTexto: { color: tema.verde, fontWeight: "600" },
   error: { color: "#b3261e" },
   vacio: { color: "#888" },
 
@@ -423,7 +424,7 @@ const styles = StyleSheet.create({
   /** Marcada para salir: se ve que se va, y se puede deshacer. */
   celdaFuera: { opacity: 0.35 },
   /** Todavía no subida: borde para distinguirla de las que ya están. */
-  celdaNueva: { borderWidth: 2, borderColor: "#2e7d32" },
+  celdaNueva: { borderWidth: 2, borderColor: tema.verde },
   miniatura: { width: "100%", height: "100%", backgroundColor: "#eee" },
   video: { alignItems: "center", justifyContent: "center", backgroundColor: "#444" },
   quitar: {
@@ -458,7 +459,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#c3dfc5",
   },
-  resumen: { color: "#2e7d32", fontWeight: "600", fontSize: 13 },
+  resumen: { color: tema.verde, fontWeight: "600", fontSize: 13 },
   barraBotones: { flexDirection: "row", gap: 10 },
   cancelar: {
     height: 44,
@@ -474,7 +475,7 @@ const styles = StyleSheet.create({
   guardar: {
     height: 44,
     borderRadius: 10,
-    backgroundColor: "#2e7d32",
+    backgroundColor: tema.verde,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -12,6 +12,7 @@ import {
   VisitaResultForm,
   type TareaDeCatalogo,
 } from "@/components/VisitaResultForm";
+import { tema } from "@/lib/tema";
 
 /**
  * Mi paso por esta visita: marcar entrada, y al irse contar qué hice.
@@ -114,7 +115,7 @@ export default function ParteVisitaScreen() {
           onPress={marcarEntrada}
           loading={marcando}
           disabled={marcando}
-          buttonColor="#2e7d32"
+          buttonColor={tema.verde}
           textColor="#fff"
           style={styles.boton}
           contentStyle={styles.botonContenido}

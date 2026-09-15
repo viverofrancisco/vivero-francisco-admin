@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAuthStore } from "@/lib/auth-store";
 import { apiRequest } from "@/lib/api";
 import type { MeResponse } from "@vivero/shared";
+import { tema } from "@/lib/tema";
 
 LocaleConfig.locales.es = {
   monthNames: [
@@ -32,7 +33,7 @@ const theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: "#2e7d32",
+    primary: tema.verde,
     secondary: "#558b2f",
   },
 };

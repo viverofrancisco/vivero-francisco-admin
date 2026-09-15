@@ -16,6 +16,7 @@ import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { useBranding } from "@/lib/branding";
 import type { ClienteProfileResponse } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
 export default function ClienteConfiguracionScreen() {
   const refreshToken = useAuthStore((s) => s.refreshToken);
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   avatarText: {
-    color: "#2e7d32",
+    color: tema.verde,
     fontWeight: "600",
     fontSize: 26,
   },

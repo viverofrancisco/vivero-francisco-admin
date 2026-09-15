@@ -20,8 +20,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { CreateClienteBody } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import type { SectorOption, SectoresListResponse } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
-const PRIMARY = "#2e7d32";
+const PRIMARY = tema.verde;
 
 export interface ClienteFormProps {
   initial?: Partial<CreateClienteBody>;
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: "#2e7d32",
+    backgroundColor: tema.verde,
     alignItems: "center",
     justifyContent: "center",
   },

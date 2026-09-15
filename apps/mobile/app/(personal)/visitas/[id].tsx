@@ -21,6 +21,7 @@ import type { VisitaDetail } from "@/lib/types";
 import { listaTareas } from "@/lib/types";
 import { useAuthStore } from "@/lib/auth-store";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
+import { tema } from "@/lib/tema";
 
 export default function PersonalVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -514,12 +515,12 @@ const styles = StyleSheet.create({
   },
   chatBtn: {
     borderRadius: 14,
-    borderColor: "#2e7d32",
+    borderColor: tema.verde,
     marginTop: 4,
   },
   chatBtnLabel: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#2e7d32",
+    color: tema.verde,
   },
 });

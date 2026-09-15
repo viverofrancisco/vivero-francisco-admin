@@ -3,6 +3,7 @@ import { Tabs, useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/lib/auth-store";
+import { tema } from "@/lib/tema";
 
 export default function PersonalTabsLayout() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function PersonalTabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#2e7d32",
+        tabBarActiveTintColor: tema.verde,
         headerShown: false,
       }}
     >

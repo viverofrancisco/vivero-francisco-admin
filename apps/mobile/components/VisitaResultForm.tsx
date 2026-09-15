@@ -22,6 +22,7 @@ import type {
   VisitaDetail,
   VisitaMedia,
 } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
 /**
  * El parte de una persona: sus horas y las tareas que **ella** hizo.
@@ -243,7 +244,7 @@ export function VisitaResultForm({
             onPress={submit}
             loading={submitting}
             disabled={submitting || !canSubmit}
-            buttonColor="#2e7d32"
+            buttonColor={tema.verde}
             textColor="#fff"
             style={styles.primaryBtn}
             contentStyle={styles.primaryBtnContent}
@@ -370,7 +371,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   tareaMarcada: {
-    borderColor: "#2e7d32",
+    borderColor: tema.verde,
     backgroundColor: "#f1f8f2",
   },
   casilla: {
@@ -383,8 +384,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   casillaMarcada: {
-    borderColor: "#2e7d32",
-    backgroundColor: "#2e7d32",
+    borderColor: tema.verde,
+    backgroundColor: tema.verde,
   },
   tilde: {
     color: "#fff",

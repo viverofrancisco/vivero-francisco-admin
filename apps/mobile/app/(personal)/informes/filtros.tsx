@@ -5,8 +5,9 @@ import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar, type DateData } from "react-native-calendars";
 import { useInformesFilters } from "@/lib/informes-filters-store";
+import { tema } from "@/lib/tema";
 
-const ACCENT = "#2e7d32";
+const ACCENT = tema.verde;
 
 export default function FiltrosScreen() {
   const router = useRouter();
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
     maxWidth: "60%",
   },
   rowValue: { color: "#888", fontSize: 15, flexShrink: 1 },
-  rowValueActive: { color: "#2e7d32", fontWeight: "500" },
+  rowValueActive: { color: tema.verde, fontWeight: "500" },
   calendarWrap: { padding: 8 },
   calendarHeader: {
     flexDirection: "row",

@@ -38,6 +38,7 @@ import type {
   ClienteListItem,
   ClientesListResponse,
 } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
 // ───────── types ─────────
 
@@ -110,7 +111,7 @@ interface FirmanteDraft {
 
 type Step = 0 | 1 | 2 | 3;
 const STEP_LABELS = ["Cliente", "Visitas", "Secciones", "Firmantes"];
-const ACCENT = "#2e7d32";
+const ACCENT = tema.verde;
 
 // ───────── main ─────────
 
@@ -1923,7 +1924,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     textTransform: "uppercase",
   },
-  estadoChipOk: { backgroundColor: "#e8f5e9", color: "#2e7d32" },
+  estadoChipOk: { backgroundColor: "#e8f5e9", color: tema.verde },
   estadoChipPending: { backgroundColor: "#fff3e0", color: "#e65100" },
   fotosCount: { color: "#888", fontSize: 11, marginTop: 4 },
   // Secciones

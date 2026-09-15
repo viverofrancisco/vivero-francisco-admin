@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { tema, transicion } from "@/lib/tema";
+import { tema, tarjeta, transicion } from "@/lib/tema";
 import {
   FlatList,
   RefreshControl,
@@ -16,7 +16,7 @@ import { SelectorFecha } from "@/components/SelectorFecha";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
-import { visitaTerminada } from "@/lib/estado-visita";
+import { estadoPildora, visitaTerminada } from "@/lib/estado-visita";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
 import { resumenTareas } from "@/lib/types";
 
@@ -70,15 +70,18 @@ function titulo(d: Date): string {
   if (mismoDia(d, hoy)) return "Hoy";
   if (mismoDia(d, ayer)) return "Ayer";
   if (mismoDia(d, manana)) return "Mañana";
-  return capitalizar(
-    d.toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long" })
-  );
+  // Los demás: el nombre del día solo. La fecha completa va en el subtítulo.
+  return capitalizar(d.toLocaleDateString("es-EC", { weekday: "long" }));
 }
 
-/** La fecha completa, debajo del título, cuando el título no la dice. */
-function subtitulo(d: Date): string | null {
-  const t = titulo(d);
-  if (t !== "Hoy" && t !== "Ayer" && t !== "Mañana") return null;
+/**
+ * La fecha completa, siempre debajo del título.
+ *
+ * Aunque el título ya diga el día: el sistema pone un subtítulo fijo, y un
+ * bloque que a veces tiene dos renglones y a veces uno hace saltar todo lo que
+ * está abajo al cambiar de día.
+ */
+function subtituloCompleto(d: Date): string {
   return capitalizar(
     d.toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long" })
   );
@@ -133,32 +136,34 @@ export default function PersonalVisitasListScreen() {
   }
 
   const esHoy = mismoDia(fecha, hoyLocal());
-  const bajoTitulo = subtitulo(fecha);
 
   return (
     <View style={styles.container}>
       {/* El selector de día: flechas para moverse de a uno —que es como se usa
           en el campo— y la fecha tocable para saltar lejos. */}
-      <View style={[styles.selector, { paddingTop: insets.top + 8 }]}>
-        <PressableScale onPress={() => correr(-1)} hitSlop={10} style={styles.flecha}>
-          <Ionicons name="chevron-back" size={22} color={tema.verde} />
-        </PressableScale>
-
+      {/* Título grande a la izquierda y controles a la derecha, como el sistema
+          de diseño. El día se elige tocando el título; las flechas mueven de a
+          uno, que es como se usa en el campo. */}
+      <View style={[styles.appBar, { paddingTop: insets.top + 10 }]}>
         <PressableScale
           onPress={() => setAbrirPicker(true)}
-          estiloExterno={styles.fechaBoton}
+          estiloExterno={styles.tituloBloque}
         >
-          <Text variant="titleMedium" style={styles.fechaTitulo}>
-            {titulo(fecha)}
-          </Text>
-          {bajoTitulo ? (
-            <Text style={styles.fechaSub}>{bajoTitulo}</Text>
-          ) : null}
+          <View style={styles.tituloFila}>
+            <Text style={styles.tituloGrande}>{titulo(fecha)}</Text>
+            <Ionicons name="chevron-down" size={18} color={tema.texto3} />
+          </View>
+          <Text style={styles.tituloSub}>{subtituloCompleto(fecha)}</Text>
         </PressableScale>
 
-        <PressableScale onPress={() => correr(1)} hitSlop={10} style={styles.flecha}>
-          <Ionicons name="chevron-forward" size={22} color={tema.verde} />
-        </PressableScale>
+        <View style={styles.flechas}>
+          <PressableScale onPress={() => correr(-1)} style={styles.botonCuadrado}>
+            <Ionicons name="chevron-back" size={20} color={tema.texto} />
+          </PressableScale>
+          <PressableScale onPress={() => correr(1)} style={styles.botonCuadrado}>
+            <Ionicons name="chevron-forward" size={20} color={tema.texto} />
+          </PressableScale>
+        </View>
       </View>
 
       {/* La lista no se desmonta al cambiar de día: se atenúa mientras llega la
@@ -171,6 +176,9 @@ export default function PersonalVisitasListScreen() {
           data={items}
           keyExtractor={(v) => v.id}
           contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            items.length > 0 ? <TarjetaDeRuta visitas={items} /> : null
+          }
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -240,50 +248,90 @@ function VisitaRow({
     .filter(Boolean)
     .join(" · ");
 
+  const pildora = estadoPildora(v.estado);
+
   return (
     <PressableScale
       onPress={onPress}
+      estiloExterno={styles.filaExterna}
       style={[styles.row, terminada && styles.rowMuted]}
       estiloPresionado={styles.rowPressed}
     >
-      {/* La hora arriba, sola y grande: es lo primero que se busca al abrir la
-          pantalla —"¿a qué hora voy?"— y estaba perdida a la derecha del
-          nombre, del mismo tamaño que todo lo demás. */}
-      <View style={styles.horaColumna}>
-        <Text
-          // Una línea siempre: a 16pt y en negrita, "12:56" no entraba en los
-          // 46pt de la columna y se partía en "12:5" / "6".
-          numberOfLines={1}
-          style={[styles.hora, !v.horaEntrada && styles.horaVacia]}
-        >
-          {v.horaEntrada ?? "—"}
-        </Text>
-      </View>
+      {/* La franja del estado, a sangre en el borde. Es la del sistema de
+          diseño: 5pt de alto completo, no la barrita flotante de antes. */}
+      <View style={[styles.franja, { backgroundColor: pildora.punto }]} />
 
       <View style={styles.rowText}>
-        <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
+        {/* Hora y estado en la misma línea: el "cuándo" y el "cómo va". */}
+        <View style={styles.filaSuperior}>
+          <Text style={[styles.hora, !v.horaEntrada && styles.horaVacia]}>
+            {v.horaEntrada ?? "Sin hora"}
+          </Text>
+          <View style={[styles.pildora, { backgroundColor: pildora.fondo }]}>
+            <View style={[styles.punto, { backgroundColor: pildora.punto }]} />
+            <Text style={[styles.pildoraTexto, { color: pildora.color }]}>
+              {pildora.etiqueta}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.rowTitle} numberOfLines={1}>
           {nombreCliente(cliente)}
+        </Text>
+
+        <Text style={styles.servicio} numberOfLines={1}>
+          {resumenTareas(v)}
         </Text>
 
         {direccion ? (
           <View style={styles.linea}>
-            <Ionicons name="location-outline" size={13} color={tema.textoTenue} />
+            <Ionicons name="location-outline" size={14} color={tema.texto3} />
             <Text style={styles.lineaTexto} numberOfLines={1}>
               {direccion}
             </Text>
           </View>
         ) : null}
+      </View>
+    </PressableScale>
+  );
+}
 
-        <View style={styles.linea}>
-          <Ionicons name="leaf-outline" size={13} color={tema.textoTenue} />
-          <Text style={styles.lineaTexto} numberOfLines={1}>
-            {resumenTareas(v)}
+/**
+ * La ruta del día, arriba de la lista.
+ *
+ * Del sistema de diseño. Cuenta visitas **completadas**, que es un estado que
+ * pone la oficina mirando lo que cargó cada uno — no el jardinero. Así que no
+ * mide su desempeño: dice cuántas del día ya se cerraron y cuántas siguen
+ * abiertas.
+ *
+ * Solo con más de una visita: "1 de 1" con una barra en cero es un adorno que
+ * ocupa un tercio de la pantalla para decir lo que la única fila de abajo ya
+ * dice.
+ */
+function TarjetaDeRuta({ visitas }: { visitas: VisitaDetail[] }) {
+  if (visitas.length < 2) return null;
+  const hechas = visitas.filter((v) => v.estado === "COMPLETADA").length;
+  const pct = Math.round((hechas / visitas.length) * 100);
+
+  return (
+    <View style={styles.ruta}>
+      <View style={styles.rutaTop}>
+        <View>
+          <Text style={styles.rutaEtiqueta}>RUTA DEL DÍA</Text>
+          <Text style={styles.rutaNumero}>
+            {hechas}
+            <Text style={styles.rutaDe}> de {visitas.length} visitas</Text>
           </Text>
         </View>
+        <View style={styles.rutaDerecha}>
+          <Text style={styles.rutaPct}>{pct}%</Text>
+          <Text style={styles.rutaPctSub}>completado</Text>
+        </View>
       </View>
-
-      <Ionicons name="chevron-forward" size={18} color="#c4c4c4" />
-    </PressableScale>
+      <View style={styles.rutaBarra}>
+        <View style={[styles.rutaBarraLlena, { width: `${pct}%` }]} />
+      </View>
+    </View>
   );
 }
 
@@ -291,80 +339,113 @@ function VisitaRow({
 const estiloLista = transicion("opacity", 150, { flex: 1 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: tema.fondo },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
 
-  selector: {
+  /** La barra superior: título grande a la izquierda, controles a la derecha. */
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 18,
+    paddingBottom: 14,
+    backgroundColor: tema.superficie,
+    borderBottomWidth: 1,
+    borderBottomColor: tema.linea,
+  },
+  tituloBloque: { flex: 1 },
+  tituloFila: { flexDirection: "row", alignItems: "center", gap: 6 },
+  tituloGrande: {
+    fontSize: 26,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+    color: tema.texto,
+  },
+  tituloSub: { fontSize: 13, fontWeight: "600", color: tema.texto3, marginTop: 3 },
+  flechas: { flexDirection: "row", gap: 8 },
+  /** Los botones cuadrados del sistema: 40pt, esquina 12, borde fino. */
+  botonCuadrado: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: tema.superficie,
+    borderWidth: 1,
+    borderColor: tema.linea,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  listContent: { padding: 18, paddingBottom: 96, gap: 10 },
+
+  /** La tarjeta de ruta, en el verde profundo del sistema. */
+  ruta: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    backgroundColor: tema.verdeProfundo,
+  },
+  rutaTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  rutaEtiqueta: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "rgba(255,255,255,0.75)",
+    letterSpacing: 0.6,
+  },
+  rutaNumero: { fontSize: 30, fontWeight: "800", color: "#fff", letterSpacing: -0.8, marginTop: 4 },
+  rutaDe: { fontSize: 17, fontWeight: "600", color: "rgba(255,255,255,0.7)" },
+  rutaDerecha: { alignItems: "flex-end" },
+  rutaPct: { fontSize: 27, fontWeight: "800", color: "#fff", letterSpacing: -0.5 },
+  rutaPctSub: { fontSize: 12, fontWeight: "600", color: "rgba(255,255,255,0.7)" },
+  rutaBarra: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    marginTop: 14,
+    overflow: "hidden",
+  },
+  rutaBarraLlena: { height: "100%", borderRadius: 999, backgroundColor: "#fff" },
+
+  /** La fila: tarjeta del sistema con la franja de estado a sangre. */
+  filaExterna: { borderRadius: 16 },
+  row: { ...tarjeta, flexDirection: "row", alignItems: "stretch", overflow: "hidden" },
+  rowPressed: { backgroundColor: tema.lienzo },
+  rowMuted: { opacity: 0.7 },
+  franja: { width: 5 },
+  rowText: { flex: 1, padding: 14, paddingLeft: 15, gap: 2, minWidth: 0 },
+  filaSuperior: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 8,
-    paddingBottom: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e6e6e6",
+    gap: 8,
+    marginBottom: 5,
   },
-  flecha: { padding: 10 },
-  fechaBoton: { flex: 1, alignItems: "center", justifyContent: "center" },
-  fechaTitulo: { color: "#111", fontWeight: "700" },
-  fechaSub: { color: "#888", fontSize: 12, marginTop: 1 },
-
-  listContent: { padding: 16, paddingBottom: 96, gap: 10 },
-  /**
-   * La fila, como tarjeta.
-   *
-   * Era un rectángulo gris sobre blanco, con el nombre y tres renglones del
-   * mismo gris apagado: todo pesaba lo mismo, así que nada se leía primero. Lo
-   * que ordena la jerarquía es la hora —a la izquierda, sola, en su propia
-   * columna— porque "¿a qué hora voy?" es la pregunta con la que se abre esta
-   * pantalla.
-   *
-   * Fondo blanco con borde y una sombra corta, en vez de gris sobre blanco: el
-   * gris hacía que la fila pareciera deshabilitada.
-   */
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    backgroundColor: tema.fondo,
-    borderWidth: 1,
-    borderColor: tema.borde,
-    gap: 14,
-    // La sombra es de opacidad baja y radio corto: una tarjeta que flota tres
-    // píxeles, no una que levita.
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  rowPressed: { backgroundColor: tema.superficie },
-  rowMuted: { opacity: 0.55 },
-  // Ancho para "12:56" a 16pt en negrita, con aire. Medido, no estimado:
-  // cinco caracteres tabulares a ese tamaño miden ~48pt.
-  horaColumna: { width: 56, alignItems: "flex-start" },
   hora: {
-    color: tema.verde,
+    fontSize: 17,
     fontWeight: "800",
-    fontSize: 16,
-    // Los números no bailan al cambiar de fila.
+    color: tema.texto,
+    letterSpacing: -0.4,
     fontVariant: ["tabular-nums"],
   },
-  horaVacia: { color: "#c4c4c4", fontWeight: "600" },
-  rowText: { flex: 1, gap: 3 },
-  rowTitle: { color: tema.texto, fontWeight: "700" },
-  linea: { flexDirection: "row", alignItems: "center", gap: 5 },
-  lineaTexto: { color: tema.textoTenue, fontSize: 12.5, flex: 1 },
+  horaVacia: { fontSize: 13, fontWeight: "600", color: tema.texto3, letterSpacing: 0 },
+  pildora: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 3,
+    paddingLeft: 7,
+    paddingRight: 9,
+    borderRadius: 999,
+  },
+  punto: { width: 6, height: 6, borderRadius: 3 },
+  pildoraTexto: { fontSize: 11.5, fontWeight: "700", letterSpacing: -0.1 },
+  rowTitle: { fontSize: 16, fontWeight: "700", color: tema.texto, letterSpacing: -0.2 },
+  servicio: { fontSize: 13.5, fontWeight: "600", color: tema.verde700, marginTop: 1 },
+  linea: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 7 },
+  lineaTexto: { fontSize: 12.5, fontWeight: "600", color: tema.texto3, flex: 1 },
 
   empty: { paddingVertical: 60, alignItems: "center", gap: 8 },
-  emptyTitle: { color: "#444" },
-  emptyBody: { color: "#888", textAlign: "center", paddingHorizontal: 24 },
+  emptyTitle: { color: tema.texto2 },
+  emptyBody: { color: tema.texto3, textAlign: "center", paddingHorizontal: 24 },
 
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    backgroundColor: "#2e7d32",
-  },
+  fab: { position: "absolute", right: 16, bottom: 16, backgroundColor: tema.verde },
 });

@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useInformesFilters } from "@/lib/informes-filters-store";
+import { tema } from "@/lib/tema";
 
 interface ClienteOption {
   id: string;
@@ -111,7 +112,7 @@ export default function FiltrosClienteScreen() {
                   </Text>
                 </View>
                 {cliente === null ? (
-                  <Ionicons name="checkmark" size={20} color="#2e7d32" />
+                  <Ionicons name="checkmark" size={20} color={tema.verde} />
                 ) : null}
               </Pressable>
               <View style={styles.sep} />
@@ -166,7 +167,7 @@ export default function FiltrosClienteScreen() {
                   ) : null}
                 </View>
                 {selected ? (
-                  <Ionicons name="checkmark" size={20} color="#2e7d32" />
+                  <Ionicons name="checkmark" size={20} color={tema.verde} />
                 ) : null}
               </Pressable>
             );
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarAll: { backgroundColor: "#f0f0f0" },
-  avatarText: { color: "#2e7d32", fontWeight: "600", fontSize: 14 },
+  avatarText: { color: tema.verde, fontWeight: "600", fontSize: 14 },
 
   sep: { height: 6 },
 

@@ -17,6 +17,7 @@ import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
 export default function ClientesListScreen() {
   const router = useRouter();
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: {
-    color: "#2e7d32",
+    color: tema.verde,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -217,6 +218,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 16,
-    backgroundColor: "#2e7d32",
+    backgroundColor: tema.verde,
   },
 });

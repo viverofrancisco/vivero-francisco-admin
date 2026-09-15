@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { apiRequest, ApiError } from "@/lib/api";
+import { tema } from "@/lib/tema";
 
 /** Lo que ya dejó, si dejó algo. */
 export interface Calificacion {
@@ -193,10 +194,10 @@ export function CalificarVisita({
       )}
 
       <View style={styles.botonesFoto}>
-        <Button mode="outlined" icon="camera" onPress={tomarFoto} textColor="#2e7d32">
+        <Button mode="outlined" icon="camera" onPress={tomarFoto} textColor={tema.verde}>
           Tomar foto
         </Button>
-        <Button mode="outlined" icon="image" onPress={elegirDeGaleria} textColor="#2e7d32">
+        <Button mode="outlined" icon="image" onPress={elegirDeGaleria} textColor={tema.verde}>
           Galería
         </Button>
       </View>
@@ -212,7 +213,7 @@ export function CalificarVisita({
         onPress={guardar}
         loading={guardando}
         disabled={guardando || estrellas < 1}
-        buttonColor="#2e7d32"
+        buttonColor={tema.verde}
         textColor="#fff"
         style={styles.enviar}
         contentStyle={styles.enviarContenido}

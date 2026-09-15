@@ -7,25 +7,22 @@
  * la barra salía del gris por defecto. Cuatro copias es exactamente por qué
  * ninguna se actualizó.
  *
- * Los colores son los mismos que usa el portal (`status-badge.tsx`): que el
- * mismo estado se vea de dos maneras según la pantalla es peor que no tener
- * color.
+ * Los colores salen del sistema de diseño (`lib/tema.ts`): que el mismo estado
+ * se vea de dos maneras según la pantalla es peor que no tener color.
  */
-
-const ESTADOS: Record<string, { label: string; color: string }> = {
-  PROGRAMADA: { label: "Programada", color: "#2e7d32" },
-  EN_CURSO: { label: "En curso", color: "#49829f" },
-  COMPLETADA: { label: "Completada", color: "#9e9e9e" },
-  INCOMPLETA: { label: "Incompleta", color: "#f57c00" },
-  CANCELADA: { label: "Cancelada", color: "#c62828" },
-};
+import { estadoVisual, tema } from "@/lib/tema";
 
 export function estadoLabel(estado: string): string {
-  return ESTADOS[estado]?.label ?? estado;
+  return estadoVisual[estado]?.etiqueta ?? estado;
 }
 
 export function estadoColor(estado: string): string {
-  return ESTADOS[estado]?.color ?? "#bdbdbd";
+  return estadoVisual[estado]?.punto ?? tema.texto3;
+}
+
+/** El par fondo + texto de la píldora de estado. */
+export function estadoPildora(estado: string) {
+  return estadoVisual[estado] ?? estadoVisual.COMPLETADA;
 }
 
 /**

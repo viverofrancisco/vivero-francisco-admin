@@ -11,6 +11,7 @@ import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteStaffDetail } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
 export default function ClienteDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: {
-    color: "#2e7d32",
+    color: tema.verde,
     fontWeight: "600",
     fontSize: 20,
   },
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
   },
   servicioText: { flex: 1, gap: 2 },
   servicioTitle: { color: "#111", fontWeight: "500" },
-  servicioPrecio: { color: "#2e7d32", fontWeight: "600" },
+  servicioPrecio: { color: tema.verde, fontWeight: "600" },
 
   muted: { color: "#888" },
 });

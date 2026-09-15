@@ -14,6 +14,7 @@ import { apiRequest, ApiError } from "@/lib/api";
 import type { VisitaDetail, VisitaMedia } from "@/lib/types";
 import { listaTareas } from "@/lib/types";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
+import { tema } from "@/lib/tema";
 
 export default function ClienteVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -486,7 +487,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#eee",
   },
-  primaryBtn: { borderRadius: 14, backgroundColor: "#2e7d32" },
+  primaryBtn: { borderRadius: 14, backgroundColor: tema.verde },
   primaryBtnContent: { paddingVertical: 8 },
   primaryBtnLabel: {
     fontSize: 16,

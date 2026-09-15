@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useInformesFilters } from "@/lib/informes-filters-store";
+import { tema } from "@/lib/tema";
 
 interface InformeItem {
   id: string;
@@ -142,11 +143,11 @@ export default function InformesListScreen() {
               onPress={() => router.push("/(personal)/informes/filtros")}
               style={styles.summaryStrip}
             >
-              <Ionicons name="funnel" size={14} color="#2e7d32" />
+              <Ionicons name="funnel" size={14} color={tema.verde} />
               <Text style={styles.summaryText} numberOfLines={1}>
                 {summarize(cliente?.nombre, from, to)}
               </Text>
-              <Ionicons name="chevron-forward" size={14} color="#2e7d32" />
+              <Ionicons name="chevron-forward" size={14} color={tema.verde} />
             </Pressable>
           ) : null}
 
@@ -215,7 +216,7 @@ function InformeRow({
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <View style={styles.rowIcon}>
-        <Ionicons name="document-text-outline" size={20} color="#2e7d32" />
+        <Ionicons name="document-text-outline" size={20} color={tema.verde} />
       </View>
       <View style={styles.rowText}>
         <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={2}>
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 6,
     right: 6,
-    backgroundColor: "#2e7d32",
+    backgroundColor: tema.verde,
     minWidth: 16,
     height: 16,
     borderRadius: 8,
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#cfe5d2",
   },
-  summaryText: { flex: 1, color: "#2e7d32", fontSize: 13, fontWeight: "500" },
+  summaryText: { flex: 1, color: tema.verde, fontSize: 13, fontWeight: "500" },
   listContent: { paddingVertical: 8 },
   empty: { padding: 32, alignItems: "center" },
   emptyTitle: { marginBottom: 4 },
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 16,
-    backgroundColor: "#2e7d32",
+    backgroundColor: tema.verde,
     zIndex: 10,
   },
 });

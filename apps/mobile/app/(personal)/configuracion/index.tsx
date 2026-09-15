@@ -4,6 +4,7 @@ import { Button, Text } from "react-native-paper";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { useBranding } from "@/lib/branding";
+import { tema } from "@/lib/tema";
 
 const ROLE_LABEL: Record<string, string> = {
   ADMIN: "Administrador",
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   avatarText: {
-    color: "#2e7d32",
+    color: tema.verde,
     fontWeight: "600",
     fontSize: 26,
   },

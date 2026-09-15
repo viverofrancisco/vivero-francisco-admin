@@ -15,8 +15,9 @@ import {
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { CreateServicioBody, TipoProducto } from "@vivero/shared";
+import { tema } from "@/lib/tema";
 
-const PRIMARY = "#2e7d32";
+const PRIMARY = tema.verde;
 
 export interface ServicioFormProps {
   initial?: Partial<CreateServicioBody>;

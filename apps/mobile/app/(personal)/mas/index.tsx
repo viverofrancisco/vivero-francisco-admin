@@ -3,6 +3,7 @@ import { Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/lib/auth-store";
+import { tema } from "@/lib/tema";
 
 interface MenuItem {
   label: string;
@@ -54,7 +55,7 @@ export default function MasMenuScreen() {
           ]}
         >
           <View style={styles.rowIcon}>
-            <Ionicons name={item.icon} size={22} color="#2e7d32" />
+            <Ionicons name={item.icon} size={22} color={tema.verde} />
           </View>
           <Text variant="bodyLarge" style={styles.rowLabel}>
             {item.label}

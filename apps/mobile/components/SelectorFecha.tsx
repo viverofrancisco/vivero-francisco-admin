@@ -4,6 +4,7 @@ import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { tema } from "@/lib/tema";
 
 /**
  * Elegir un día, en una hoja que sube desde abajo.
@@ -28,7 +29,7 @@ const MESES = [
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
-const VERDE = "#2e7d32";
+const VERDE = tema.verde;
 
 function mismoDia(a: Date, b: Date): boolean {
   return (

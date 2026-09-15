@@ -31,6 +31,7 @@ import type {
   PersonalListResponse,
   PersonalOption,
 } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
 type Step = 0 | 1 | 2 | 3 | 4;
 
@@ -193,7 +194,7 @@ export default function CrearVisitaScreen() {
           </View>
           <ProgressBar
             progress={(step + 1) / STEP_LABELS.length}
-            color="#2e7d32"
+            color={tema.verde}
             style={styles.progressBar}
           />
         </View>
@@ -473,7 +474,7 @@ function FechasStep({
     const marks: Record<string, { selected: boolean; selectedColor: string }> =
       {};
     for (const d of fechas) {
-      marks[d] = { selected: true, selectedColor: "#2e7d32" };
+      marks[d] = { selected: true, selectedColor: tema.verde };
     }
     return marks;
   }, [fechas]);
@@ -506,13 +507,13 @@ function FechasStep({
           backgroundColor: "#fff",
           calendarBackground: "#fff",
           textSectionTitleColor: "#888",
-          selectedDayBackgroundColor: "#2e7d32",
+          selectedDayBackgroundColor: tema.verde,
           selectedDayTextColor: "#fff",
-          todayTextColor: "#2e7d32",
+          todayTextColor: tema.verde,
           dayTextColor: "#111",
           textDisabledColor: "#ccc",
           monthTextColor: "#111",
-          arrowColor: "#2e7d32",
+          arrowColor: tema.verde,
           textMonthFontWeight: "600",
           textDayFontSize: 15,
           textMonthFontSize: 16,
@@ -837,7 +838,7 @@ function RevisarStep({
           multiline
           numberOfLines={4}
           outlineColor="#e0e0e0"
-          activeOutlineColor="#2e7d32"
+          activeOutlineColor={tema.verde}
           outlineStyle={styles.notasOutline}
           style={styles.notasField}
           contentStyle={styles.notasContent}
@@ -968,7 +969,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#2e7d32",
+    backgroundColor: tema.verde,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 12,

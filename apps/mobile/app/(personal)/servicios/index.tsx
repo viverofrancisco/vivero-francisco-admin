@@ -15,6 +15,7 @@ import {
 import { useRouter } from "expo-router";
 import { apiRequest } from "@/lib/api";
 import type { ServicioListItem, ServiciosListResponse } from "@/lib/types";
+import { tema } from "@/lib/tema";
 
 export default function ServiciosListScreen() {
   const router = useRouter();
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
   avatarRecurrente: { backgroundColor: "#e8f5e9" },
   avatarUnico: { backgroundColor: "#f0f0f0" },
   avatarText: { fontWeight: "600", fontSize: 14 },
-  avatarTextRecurrente: { color: "#2e7d32" },
+  avatarTextRecurrente: { color: tema.verde },
   avatarTextUnico: { color: "#555" },
 
   meta: {
@@ -228,6 +229,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 16,
-    backgroundColor: "#2e7d32",
+    backgroundColor: tema.verde,
   },
 });
