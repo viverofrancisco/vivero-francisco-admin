@@ -895,12 +895,27 @@ model VisitaPersonal {
   salidaLng        Float?
   salidaPrecision  Float?
   salidaSimulada   Boolean?
+
+  /**
+   * Desde qué aparato se marcó. Un identificador de la **instalación** de la
+   * app, no de la persona.
+   * Existe para una sola pregunta: si dos personas de la misma visita marcaron
+   * desde el mismo teléfono. Eso es alguien iniciando sesión con la cuenta de
+   * un compañero para marcarle la entrada, y es lo único de ese engaño que deja
+   * rastro por sí solo — el identificador es por instalación, así que la cuenta
+   * prestada llega con el aparato de quien la usó, no con el suyo.
+   * No bloquea nada y no prueba nada: lo genera el cliente, así que quien sepa
+   * del control puede borrar los datos de la app y volver con otro. Lo que hace
+   * es que el atajo fácil —prestar la contraseña— deje una marca visible.
+   */
+  entradaDispositivo String?
+  salidaDispositivo  String?
   /// Cuándo cargó su parte. `null` = todavía no la cargó, que es lo que la
   /// visita muestra como "falta" y lo que impide darla por cerrada sola.
   ///
   /// Se sella al guardar y se vuelve a sellar al corregir: es "cuándo quedó
   /// registrado esto que dice acá", no "cuándo lo cargó por primera vez".
-  registradoEl     DateTime?
+  registradoEl       DateTime?
 
   visita    Visita                @relation(fields: [visitaId], references: [id], onDelete: Cascade)
   personal  Personal              @relation(fields: [personalId], references: [id], onDelete: Cascade)

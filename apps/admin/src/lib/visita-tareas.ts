@@ -60,8 +60,45 @@ export interface PersonalDeVisita extends ParteMinimo {
   salidaLng: number | null;
   salidaPrecision: number | null;
   salidaSimulada: boolean | null;
+  /** Desde qué instalación de la app se marcó. Ver `entradaDispositivo`. */
+  entradaDispositivo: string | null;
+  salidaDispositivo: string | null;
   /** `null` = todavía no cargó su parte. */
   registradoEl: string | Date | null;
+}
+
+/**
+ * Quiénes marcaron desde el mismo teléfono que otro de la misma visita.
+ *
+ * Es la única señal que deja por sí solo el atajo de prestarle la cuenta a un
+ * compañero: el identificador es de la **instalación** de la app, no de la
+ * cuenta, así que la sesión prestada llega con el aparato de quien la usó. Dos
+ * personas distintas marcando desde el mismo aparato en la misma visita es
+ * exactamente eso.
+ *
+ * No prueba nada —lo genera el cliente, y quien sepa del control borra los
+ * datos de la app y vuelve con otro identificador—; lo que hace es que el
+ * camino fácil deje una marca que la oficina ve.
+ */
+export function marcaronDesdeElMismoAparato(
+  partes: PersonalDeVisita[]
+): Set<string> {
+  /** Aparato → las personas que marcaron desde él. */
+  const porAparato = new Map<string, Set<string>>();
+  for (const p of partes) {
+    for (const aparato of [p.entradaDispositivo, p.salidaDispositivo]) {
+      if (!aparato) continue;
+      const gente = porAparato.get(aparato) ?? new Set<string>();
+      gente.add(p.personalId);
+      porAparato.set(aparato, gente);
+    }
+  }
+
+  const señalados = new Set<string>();
+  for (const gente of porAparato.values()) {
+    if (gente.size > 1) for (const id of gente) señalados.add(id);
+  }
+  return señalados;
 }
 
 /** La ubicación de una de las dos marcas, ya agrupada. */
@@ -184,10 +221,12 @@ export const TAREAS_DE_VISITA_INCLUDE = {
       entradaLng: true,
       entradaPrecision: true,
       entradaSimulada: true,
+      entradaDispositivo: true,
       salidaLat: true,
       salidaLng: true,
       salidaPrecision: true,
       salidaSimulada: true,
+      salidaDispositivo: true,
       registradoEl: true,
       personal: {
         select: { id: true, nombre: true, apellido: true, tipo: true },

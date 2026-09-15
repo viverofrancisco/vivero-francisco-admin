@@ -349,6 +349,13 @@ export interface UbicacionDeMarca {
   simulada?: boolean | null;
 }
 
+/** Lo que acompaña a una marca además de la hora. */
+export interface ContextoDeMarca {
+  ubicacion?: UbicacionDeMarca;
+  /** Identificador de la instalación de la app. Ver `entradaDispositivo`. */
+  dispositivo?: string | null;
+}
+
 export interface ParteDeVisitaPayload {
   /**
    * De quién es el parte. Solo la oficina puede mandarlo: un jardinero carga lo
@@ -467,17 +474,22 @@ async function miAsignacion(
   return { visita, asignacion };
 }
 
-/** Las columnas de ubicación de una marca, listas para escribir. */
-function columnasDeUbicacion(
+/** Lo que rodea a una marca —dónde y desde qué aparato—, listo para escribir. */
+function columnasDeContexto(
   cual: "entrada" | "salida",
-  ubicacion: UbicacionDeMarca | undefined
+  contexto: ContextoDeMarca
 ) {
-  if (!ubicacion) return {};
+  const { ubicacion, dispositivo } = contexto;
   return {
-    [`${cual}Lat`]: ubicacion.lat,
-    [`${cual}Lng`]: ubicacion.lng,
-    [`${cual}Precision`]: ubicacion.precision ?? null,
-    [`${cual}Simulada`]: ubicacion.simulada ?? null,
+    ...(ubicacion
+      ? {
+          [`${cual}Lat`]: ubicacion.lat,
+          [`${cual}Lng`]: ubicacion.lng,
+          [`${cual}Precision`]: ubicacion.precision ?? null,
+          [`${cual}Simulada`]: ubicacion.simulada ?? null,
+        }
+      : {}),
+    [`${cual}Dispositivo`]: dispositivo ?? null,
   };
 }
 
@@ -523,7 +535,7 @@ function ensureQuienMarca(viewer: Viewer) {
 export async function marcarEntrada(
   visitaId: string,
   viewer: Viewer,
-  opciones: { ubicacion?: UbicacionDeMarca } = {}
+  opciones: ContextoDeMarca = {}
 ) {
   ensureQuienMarca(viewer);
   const { visita, asignacion } = await miAsignacion(visitaId, viewer);
@@ -536,7 +548,7 @@ export async function marcarEntrada(
       where: { id: asignacion.id },
       data: {
         entradaEl: new Date(),
-        ...columnasDeUbicacion("entrada", opciones.ubicacion),
+        ...columnasDeContexto("entrada", opciones),
       },
     });
     await recalcularHorasDeVisita(tx, visitaId);
@@ -569,8 +581,7 @@ export async function marcarEntrada(
 export async function marcarSalida(
   visitaId: string,
   viewer: Viewer,
-  payload: {
-    ubicacion?: UbicacionDeMarca;
+  payload: ContextoDeMarca & {
     tareaIds: string[];
     media?: VisitaMediaInput[];
   }
@@ -602,7 +613,7 @@ export async function marcarSalida(
       where: { id: asignacion.id },
       data: {
         salidaEl: new Date(),
-        ...columnasDeUbicacion("salida", payload.ubicacion),
+        ...columnasDeContexto("salida", payload),
         registradoEl: new Date(),
       },
     });
@@ -770,10 +781,12 @@ export async function borrarParte(
         entradaLng: null,
         entradaPrecision: null,
         entradaSimulada: null,
+        entradaDispositivo: null,
         salidaLat: null,
         salidaLng: null,
         salidaPrecision: null,
         salidaSimulada: null,
+        salidaDispositivo: null,
         registradoEl: null,
       },
     });

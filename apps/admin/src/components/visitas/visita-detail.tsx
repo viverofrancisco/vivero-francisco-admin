@@ -25,9 +25,9 @@ import {
   ArrowLeft,
   Check,
   CheckCircle,
-  MessageSquare,
   Pencil,
   Plus,
+  Smartphone,
   Trash2,
   X,
 } from "lucide-react";
@@ -58,6 +58,7 @@ import {
   nombrePersonal,
   obligatoriasSinCubrir,
   personalSinRegistrar,
+  marcaronDesdeElMismoAparato,
   tareasHechas,
   type PersonalDeVisita,
   type TareaDeVisita,
@@ -123,7 +124,6 @@ interface VisitaDetailProps {
    * partes es el suyo — el único que puede cargar.
    */
   personalId?: string | null;
-  hasMessages?: boolean;
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref?: string;
 }
@@ -133,7 +133,6 @@ export function VisitaDetail({
   userRole,
   personalId = null,
   backHref = "/dashboard/visitas",
-  hasMessages = false,
   catalogo = [],
 }: VisitaDetailProps) {
   const router = useRouter();
@@ -193,6 +192,10 @@ export function VisitaDetail({
   const faltantes = obligatoriasSinCubrir(visita);
   /** Quiénes todavía no cargaron su parte. */
   const sinRegistrar = personalSinRegistrar(visita.personal);
+  /** Quiénes marcaron desde el mismo teléfono que otro. Solo la oficina lo ve. */
+  const mismoAparato = canModify
+    ? marcaronDesdeElMismoAparato(visita.personal)
+    : new Set<string>();
 
   /**
    * Mi asignación, si soy del personal y estoy en esta visita.
@@ -675,6 +678,12 @@ export function VisitaDetail({
                             repetido es algo que se conversa. Al jardinero no se
                             le muestra: no es él quien revisa a nadie. */}
                         {canModify && <Ubicaciones parte={vp} />}
+                        {mismoAparato.has(vp.personalId) && (
+                          <span className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-destructive">
+                            <Smartphone className="h-3 w-3 flex-none" />
+                            Marcó desde el mismo teléfono que otra persona
+                          </span>
+                        )}
                       </span>
                     </li>
                   );
@@ -685,27 +694,6 @@ export function VisitaDetail({
         </Card>
         </div>
       </div>
-
-      {hasMessages ? (
-        <Card>
-          <CardContent className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">Mensajes con el cliente</p>
-                <p className="text-xs text-muted-foreground">
-                  Hay una conversación abierta sobre esta visita.
-                </p>
-              </div>
-            </div>
-            <Link href={`/dashboard/mensajes/${visita.id}`}>
-              <Button variant="outline" size="sm">
-                Ver mensajes
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      ) : null}
 
       <MediaViewer
         media={activeMedia}

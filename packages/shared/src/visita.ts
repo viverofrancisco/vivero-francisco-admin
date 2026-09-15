@@ -94,6 +94,10 @@ export type UbicacionMarcaBody = z.infer<typeof ubicacionMarcaSchema>;
  * que hace cuando a alguien se le murió el teléfono es corregir el instante con
  * `parteVisitaSchema`, que es otra cosa y se llama distinto.
  *
+ * `dispositivo` identifica la **instalación** de la app, no a la persona: sirve
+ * para ver si dos compañeros marcaron desde el mismo teléfono, que es lo que
+ * pasa cuando uno le presta la cuenta al otro.
+ *
  * La ubicación no se exige. Falta señal adentro de una pared, con la batería
  * baja o con el teléfono en la camioneta, y negarse a registrar por eso deja a
  * alguien sin poder anotar el trabajo que sí hizo.
@@ -102,10 +106,12 @@ export const marcaVisitaSchema = z.discriminatedUnion("tipo", [
   z.object({
     tipo: z.literal("ENTRADA"),
     ubicacion: ubicacionMarcaSchema.optional().nullable(),
+    dispositivo: z.string().max(64).optional().nullable(),
   }),
   z.object({
     tipo: z.literal("SALIDA"),
     ubicacion: ubicacionMarcaSchema.optional().nullable(),
+    dispositivo: z.string().max(64).optional().nullable(),
     tareaIds: z.array(z.string().min(1)),
     media: z.array(mediaItemSchema).optional(),
   }),

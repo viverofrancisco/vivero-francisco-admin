@@ -296,7 +296,19 @@ someone unable to record work they actually did — the real datum lost chasing 
 fake one — and the signal is spoofable anyway: three clicks in Chrome's
 DevTools, a mock app on Android (which `simulada` exposes, when the OS says so;
 iOS doesn't, so `null` there means "we don't know", not "not faked"). So this is
-evidence the office looks at, not a lock. `Cliente` has no coordinates yet, so
+evidence the office looks at, not a lock. Each mark also carries
+`entradaDispositivo`/`salidaDispositivo`, an id for the app **installation** —
+not the person — answering one question: did two people on the same visita mark
+from the same phone? That is somebody logging in with a coworker's account to
+clock them in, and it is the only part of that trick that leaves a trace by
+itself, precisely because the id belongs to the handset: a borrowed session
+arrives carrying the device of whoever used it. `marcaronDesdeElMismoAparato`
+flags them for the office. It proves nothing — the client generates the id, so
+anyone who knows about the check clears the app's data and comes back with
+another — and it blocks nothing; what it does is make the easy shortcut leave a
+mark. Note what does *not* help here: device biometrics authenticate the phone's
+owner, not the account's, so on a coworker's phone their own face unlocks it
+just fine. `Cliente` has no coordinates yet, so
 there is nothing to compare against: the point is shown and opens in a map, and
 the "3 km away" warning waits for the client's pin. The browser needs HTTPS
 (localhost excepted); the app declares `expo-location` when-in-use only, since

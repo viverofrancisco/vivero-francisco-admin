@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { ubicacionActual } from "@/lib/ubicacion";
+import { dispositivoId } from "@/lib/dispositivo";
 import type { VisitaDetail } from "@/lib/types";
 import {
   VisitaResultForm,
@@ -58,7 +59,13 @@ export default function ParteVisitaScreen() {
       // hay señal, la marca sale igual y la oficina ve que vino sin ubicación.
       await apiRequest<VisitaDetail>(`/api/mobile/visitas/${id}/marca`, {
         method: "POST",
-        body: { tipo: "ENTRADA", ubicacion: await ubicacionActual() },
+        body: {
+          tipo: "ENTRADA",
+          ubicacion: await ubicacionActual(),
+          // Con qué teléfono se marcó: si dos compañeros marcan desde el mismo,
+          // la oficina lo ve. Ver `lib/dispositivo.ts`.
+          dispositivo: await dispositivoId(),
+        },
       });
       await cargar();
     } catch (e) {

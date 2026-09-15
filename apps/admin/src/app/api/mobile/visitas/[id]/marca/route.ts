@@ -47,9 +47,11 @@ export async function POST(
       datos.tipo === "ENTRADA"
         ? await marcarEntrada(id, viewer, {
             ubicacion: datos.ubicacion ?? undefined,
+            dispositivo: datos.dispositivo,
           })
         : await marcarSalida(id, viewer, {
             ubicacion: datos.ubicacion ?? undefined,
+            dispositivo: datos.dispositivo,
             tareaIds: datos.tareaIds,
             media: datos.media,
           });

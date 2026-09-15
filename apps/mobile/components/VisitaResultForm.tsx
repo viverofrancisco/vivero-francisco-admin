@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import { apiRequest, ApiError } from "@/lib/api";
+import { dispositivoId } from "@/lib/dispositivo";
 import type {
   VisitaDetail,
   VisitaMedia,
@@ -339,6 +340,7 @@ export function VisitaResultForm({
           body: {
             tipo: "SALIDA",
             ubicacion: ubicacion ? await ubicacion() : null,
+            dispositivo: await dispositivoId(),
             tareaIds,
             media: uploaded,
           },
