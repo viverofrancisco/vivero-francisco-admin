@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as Haptics from "expo-haptics";
 import { apiRequest, ApiError } from "@/lib/api";
 
 /** Lo que ya dejó, si dejó algo. */
@@ -121,6 +123,7 @@ export function CalificarVisita({
           ].filter((f) => f.key),
         },
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onListo();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No pudimos guardar");
@@ -137,9 +140,14 @@ export function CalificarVisita({
 
       <View style={styles.estrellas}>
         {[1, 2, 3, 4, 5].map((n) => (
-          <Pressable
+          <PressableScale
             key={n}
-            onPress={() => setEstrellas(n)}
+            onPress={() => {
+              // Un valor que pasa un escalón: `selectionAsync`, el mismo que
+              // usa un selector de rueda. Cinco estrellas, cinco detentes.
+              Haptics.selectionAsync();
+              setEstrellas(n);
+            }}
             hitSlop={6}
             accessibilityRole="button"
             accessibilityLabel={`${n} de 5`}
@@ -149,7 +157,7 @@ export function CalificarVisita({
               size={40}
               color={n <= estrellas ? "#f5a623" : "#c7c7c7"}
             />
-          </Pressable>
+          </PressableScale>
         ))}
       </View>
 

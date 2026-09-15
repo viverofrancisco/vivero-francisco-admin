@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { HojaInferior } from "@/components/ui/HojaInferior";
+import { PressableScale } from "@/components/ui/PressableScale";
 
 /**
  * Elegir un día, en una hoja que sube desde abajo.
@@ -11,6 +12,10 @@ import { Ionicons } from "@expo/vector-icons";
  * inglés y en el azul del sistema: quedaba como de otra app. Este usa las
  * mismas convenciones que el portal —semana de lunes a domingo, `Lu Ma Mi…`, el
  * verde de la casa— así que la misma persona ve lo mismo en los dos lados.
+ *
+ * La hoja se arrastra para cerrar (`HojaInferior`). Antes era un `Modal
+ * animationType="slide"` con un agarre dibujado arriba, y el agarre mentía: esa
+ * animación es un tween fijo que no se puede tomar con el dedo.
  *
  * El mes se mueve con flechas y, tocando el nombre, se abre la lista de meses y
  * años: saltar a marzo del año que viene son dos toques y no catorce flechazos.
@@ -60,7 +65,6 @@ export function SelectorFecha({
   onElegir: (d: Date) => void;
   onCerrar: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const [mes, setMes] = useState(valor.getMonth());
   const [anio, setAnio] = useState(valor.getFullYear());
   /** Con el panel abierto se eligen mes y año en vez de un día. */
@@ -85,23 +89,15 @@ export function SelectorFecha({
   /** Cinco años para atrás y dos para adelante: no se agendan visitas en 2040. */
   const anios = Array.from({ length: 8 }, (_, i) => hoy.getFullYear() - 5 + i);
 
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onShow={alMostrar}
-      onRequestClose={onCerrar}
-    >
-      <Pressable style={styles.fondo} onPress={onCerrar}>
-        <Pressable
-          style={[styles.hoja, { paddingBottom: insets.bottom + 16 }]}
-          onPress={(e) => e.stopPropagation()}
-        >
-          <View style={styles.agarre} />
+  // La hoja se monta con el valor actual a la vista.
+  const visibleAntes = useRef(visible);
+  if (visible && !visibleAntes.current) alMostrar();
+  visibleAntes.current = visible;
 
+  return (
+    <HojaInferior visible={visible} onCerrar={onCerrar}>
           <View style={styles.encabezado}>
-            <Pressable
+            <PressableScale
               onPress={() => setEligiendoMes((v) => !v)}
               style={styles.mesBoton}
               hitSlop={6}
@@ -114,16 +110,16 @@ export function SelectorFecha({
                 size={16}
                 color={VERDE}
               />
-            </Pressable>
+            </PressableScale>
 
             {!eligiendoMes ? (
               <View style={styles.flechas}>
-                <Pressable onPress={() => correrMes(-1)} hitSlop={10} style={styles.flecha}>
+                <PressableScale onPress={() => correrMes(-1)} hitSlop={10} style={styles.flecha}>
                   <Ionicons name="chevron-back" size={20} color={VERDE} />
-                </Pressable>
-                <Pressable onPress={() => correrMes(1)} hitSlop={10} style={styles.flecha}>
+                </PressableScale>
+                <PressableScale onPress={() => correrMes(1)} hitSlop={10} style={styles.flecha}>
                   <Ionicons name="chevron-forward" size={20} color={VERDE} />
-                </Pressable>
+                </PressableScale>
               </View>
             ) : null}
           </View>
@@ -181,7 +177,7 @@ export function SelectorFecha({
                   const elegido = mismoDia(d, valor);
                   const esHoy = mismoDia(d, hoy);
                   return (
-                    <Pressable
+                    <PressableScale
                       key={d.toISOString()}
                       onPress={() => onElegir(d)}
                       style={styles.celda}
@@ -203,46 +199,29 @@ export function SelectorFecha({
                           {d.getDate()}
                         </Text>
                       </View>
-                    </Pressable>
+                    </PressableScale>
                   );
                 })}
               </View>
 
               {/* Siempre a mano: es adonde se vuelve casi siempre. */}
-              <Pressable
+              <PressableScale
                 onPress={() =>
                   onElegir(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()))
                 }
-                style={({ pressed }) => [styles.hoyBoton, pressed && styles.hoyTocado]}
+                style={styles.hoyBoton}
+                estiloPresionado={styles.hoyTocado}
               >
                 <Ionicons name="today-outline" size={18} color={VERDE} />
                 <Text style={styles.hoyTexto}>Hoy</Text>
-              </Pressable>
+              </PressableScale>
             </>
           )}
-        </Pressable>
-      </Pressable>
-    </Modal>
+    </HojaInferior>
   );
 }
 
 const styles = StyleSheet.create({
-  fondo: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", justifyContent: "flex-end" },
-  hoja: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 10,
-    paddingHorizontal: 16,
-  },
-  agarre: {
-    alignSelf: "center",
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#ddd",
-    marginBottom: 12,
-  },
   encabezado: {
     flexDirection: "row",
     alignItems: "center",

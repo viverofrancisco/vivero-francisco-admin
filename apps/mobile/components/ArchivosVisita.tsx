@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as Haptics from "expo-haptics";
+import { HojaInferior } from "@/components/ui/HojaInferior";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { apiRequest, ApiError } from "@/lib/api";
 import type { VisitaMedia } from "@/lib/types";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
@@ -168,10 +171,14 @@ export function ArchivosVisita({
         method: "PUT",
         body: { files: subidas, eliminar: [...quitadas] },
       });
+      // Un arrastre que se confirma: golpe liviano, no notificación. Subir
+      // cinco fotos y borrar dos es un compromiso, no un aviso del sistema.
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setNuevas([]);
       setQuitadas(new Set());
       onCambio();
     } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(e instanceof ApiError ? e.message : "No pudimos guardar");
     } finally {
       setGuardando(false);
@@ -212,20 +219,22 @@ export function ArchivosVisita({
   return (
     <View style={styles.contenedor}>
       <View style={styles.acciones}>
-        <Pressable
+        <PressableScale
           onPress={tomarFoto}
-          style={({ pressed }) => [styles.accion, pressed && styles.accionTocada]}
+          style={styles.accion}
+          estiloPresionado={styles.accionTocada}
         >
           <Ionicons name="camera-outline" size={20} color="#2e7d32" />
           <Text style={styles.accionTexto}>Tomar foto</Text>
-        </Pressable>
-        <Pressable
+        </PressableScale>
+        <PressableScale
           onPress={elegirDeGaleria}
-          style={({ pressed }) => [styles.accion, pressed && styles.accionTocada]}
+          style={styles.accion}
+          estiloPresionado={styles.accionTocada}
         >
           <Ionicons name="images-outline" size={20} color="#2e7d32" />
           <Text style={styles.accionTexto}>Galería</Text>
-        </Pressable>
+        </PressableScale>
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -251,7 +260,9 @@ export function ArchivosVisita({
                 <Pressable
                   onPress={() => alternarQuitada(m.id)}
                   style={[styles.quitar, fuera && styles.quitarDeshacer]}
-                  hitSlop={8}
+                  // 24pt de visual + 10 de holgura = 44. El mínimo, y este es
+                  // el botón de borrar una foto con las manos embarradas.
+                  hitSlop={10}
                 >
                   <Ionicons
                     name={fuera ? "arrow-undo" : "close"}
@@ -289,14 +300,14 @@ export function ArchivosVisita({
               <Pressable
                 onPress={() => setNuevas((a) => a.filter((_, j) => j !== i))}
                 style={styles.quitar}
-                hitSlop={8}
+                hitSlop={10}
               >
                 <Ionicons name="close" size={14} color="#fff" />
               </Pressable>
               <Pressable
                 onPress={() => setEligiendo({ tipo: "nueva", indice: i })}
                 style={[styles.etiqueta, !n.tareaId && styles.etiquetaFalta]}
-                hitSlop={4}
+                hitSlop={{ top: 11, bottom: 11, left: 4, right: 4 }}
               >
                 <Text style={styles.etiquetaTexto} numberOfLines={1}>
                   {nombreDeTarea(n.tareaId) ?? "Elegir tarea"}
@@ -326,14 +337,15 @@ export function ArchivosVisita({
               : ""}
           </Text>
           <View style={styles.barraBotones}>
-            <Pressable
+            <PressableScale
               onPress={cancelar}
               disabled={guardando}
-              style={({ pressed }) => [styles.cancelar, pressed && styles.cancelarTocado]}
+              style={styles.cancelar}
+              estiloPresionado={styles.cancelarTocado}
             >
               <Text style={styles.cancelarTexto}>Cancelar</Text>
-            </Pressable>
-            <Pressable
+            </PressableScale>
+            <PressableScale
               onPress={guardar}
               disabled={guardando || sinTarea > 0}
               style={[
@@ -346,40 +358,35 @@ export function ArchivosVisita({
               ) : (
                 <Text style={styles.guardarTexto}>Guardar</Text>
               )}
-            </Pressable>
+            </PressableScale>
           </View>
         </View>
       ) : null}
 
       {/* La lista de tareas. Sin opción de dejarla vacía: es obligatoria. */}
-      <Modal
+      <HojaInferior
         visible={eligiendo !== null}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setEligiendo(null)}
+        onCerrar={() => setEligiendo(null)}
       >
-        <Pressable style={styles.fondo} onPress={() => setEligiendo(null)}>
-          <Pressable style={styles.hoja} onPress={(e) => e.stopPropagation()}>
             <Text variant="titleMedium" style={styles.hojaTitulo}>
               ¿De qué es?
             </Text>
             <ScrollView style={styles.hojaLista}>
               {catalogo.map((t) => (
-                <Pressable
+                <PressableScale
                   key={t.id}
                   onPress={() => elegirTarea(t.id)}
-                  style={({ pressed }) => [styles.opcion, pressed && styles.opcionTocada]}
+                  style={styles.opcion}
+                  estiloPresionado={styles.opcionTocada}
                 >
                   <Text style={styles.opcionTexto}>{t.nombre}</Text>
                   {tareaMarcada === t.id ? (
                     <Ionicons name="checkmark" size={18} color="#2e7d32" />
                   ) : null}
-                </Pressable>
+                </PressableScale>
               ))}
             </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </HojaInferior>
     </View>
   );
 }
@@ -471,15 +478,6 @@ const styles = StyleSheet.create({
   guardarApagado: { backgroundColor: "#bdbdbd" },
   guardarTexto: { color: "#fff", fontWeight: "700" },
 
-  fondo: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", justifyContent: "flex-end" },
-  hoja: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingTop: 16,
-    paddingBottom: 28,
-    maxHeight: "70%",
-  },
   hojaTitulo: { color: "#111", fontWeight: "700", paddingHorizontal: 20, paddingBottom: 8 },
   hojaLista: { paddingHorizontal: 12 },
   opcion: {

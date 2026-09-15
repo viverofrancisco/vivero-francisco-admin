@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated from "react-native-reanimated";
+import { PressableScale } from "@/components/ui/PressableScale";
+import { tema, movimiento } from "@/lib/tema";
 import {
   FlatList,
-  Pressable,
   RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
-import { ActivityIndicator, FAB, Text } from "react-native-paper";
+import { FAB, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SelectorFecha } from "@/components/SelectorFecha";
@@ -138,29 +140,30 @@ export default function PersonalVisitasListScreen() {
       {/* El selector de día: flechas para moverse de a uno —que es como se usa
           en el campo— y la fecha tocable para saltar lejos. */}
       <View style={[styles.selector, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={() => correr(-1)} hitSlop={10} style={styles.flecha}>
-          <Ionicons name="chevron-back" size={22} color="#2e7d32" />
-        </Pressable>
+        <PressableScale onPress={() => correr(-1)} hitSlop={10} style={styles.flecha}>
+          <Ionicons name="chevron-back" size={22} color={tema.verde} />
+        </PressableScale>
 
-        <Pressable onPress={() => setAbrirPicker(true)} style={styles.fechaBoton}>
+        <PressableScale onPress={() => setAbrirPicker(true)} style={styles.fechaBoton}>
           <Text variant="titleMedium" style={styles.fechaTitulo}>
             {titulo(fecha)}
           </Text>
           {bajoTitulo ? (
             <Text style={styles.fechaSub}>{bajoTitulo}</Text>
           ) : null}
-        </Pressable>
+        </PressableScale>
 
-        <Pressable onPress={() => correr(1)} hitSlop={10} style={styles.flecha}>
-          <Ionicons name="chevron-forward" size={22} color="#2e7d32" />
-        </Pressable>
+        <PressableScale onPress={() => correr(1)} hitSlop={10} style={styles.flecha}>
+          <Ionicons name="chevron-forward" size={22} color={tema.verde} />
+        </PressableScale>
       </View>
 
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" />
-        </View>
-      ) : (
+      {/* La lista no se desmonta al cambiar de día: se atenúa mientras llega la
+          nueva. Reemplazarla por un spinner a pantalla completa hacía que
+          moverse un día pareciera que la app se recargaba sola —y el spinner
+          aparecía y desaparecía tan rápido que era un parpadeo, no información.
+          Es el mismo criterio que ya usa el portal en sus listas. */}
+      <Animated.View style={[styles.lista, loading && styles.listaCargando]}>
         <FlatList
           data={items}
           keyExtractor={(v) => v.id}
@@ -191,7 +194,7 @@ export default function PersonalVisitasListScreen() {
             />
           )}
         />
-      )}
+      </Animated.View>
 
       <SelectorFecha
         visible={abrirPicker}
@@ -235,27 +238,28 @@ function VisitaRow({
     .join(" · ");
 
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.row,
-        pressed && styles.rowPressed,
-        terminada && styles.rowMuted,
-      ]}
+      style={[styles.row, terminada && styles.rowMuted]}
+      estiloPresionado={styles.rowPressed}
     >
+      {/* La hora arriba, sola y grande: es lo primero que se busca al abrir la
+          pantalla —"¿a qué hora voy?"— y estaba perdida a la derecha del
+          nombre, del mismo tamaño que todo lo demás. */}
+      <View style={styles.horaColumna}>
+        <Text style={[styles.hora, !v.horaEntrada && styles.horaVacia]}>
+          {v.horaEntrada ?? "—"}
+        </Text>
+      </View>
+
       <View style={styles.rowText}>
-        <View style={styles.rowTop}>
-          <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
-            {nombreCliente(cliente)}
-          </Text>
-          {v.horaEntrada ? (
-            <Text style={styles.hora}>{v.horaEntrada}</Text>
-          ) : null}
-        </View>
+        <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
+          {nombreCliente(cliente)}
+        </Text>
 
         {direccion ? (
           <View style={styles.linea}>
-            <Ionicons name="location-outline" size={13} color="#888" />
+            <Ionicons name="location-outline" size={13} color={tema.textoTenue} />
             <Text style={styles.lineaTexto} numberOfLines={1}>
               {direccion}
             </Text>
@@ -263,21 +267,15 @@ function VisitaRow({
         ) : null}
 
         <View style={styles.linea}>
-          <Ionicons name="leaf-outline" size={13} color="#888" />
+          <Ionicons name="leaf-outline" size={13} color={tema.textoTenue} />
           <Text style={styles.lineaTexto} numberOfLines={1}>
             {resumenTareas(v)}
           </Text>
         </View>
-
-        {cliente.telefono ? (
-          <View style={styles.linea}>
-            <Ionicons name="call-outline" size={13} color="#888" />
-            <Text style={styles.lineaTexto}>{cliente.telefono}</Text>
-          </View>
-        ) : null}
       </View>
+
       <Ionicons name="chevron-forward" size={18} color="#c4c4c4" />
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -299,24 +297,61 @@ const styles = StyleSheet.create({
   fechaTitulo: { color: "#111", fontWeight: "700" },
   fechaSub: { color: "#888", fontSize: 12, marginTop: 1 },
 
+  /** El contenedor de la lista se atenúa mientras llega otro día. */
+  lista: {
+    flex: 1,
+    transitionProperty: "opacity",
+    transitionDuration: "150ms",
+    transitionTimingFunction: movimiento.easeOut,
+  },
+  listaCargando: { opacity: 0.45 },
+
   listContent: { padding: 16, paddingBottom: 96, gap: 10 },
+  /**
+   * La fila, como tarjeta.
+   *
+   * Era un rectángulo gris sobre blanco, con el nombre y tres renglones del
+   * mismo gris apagado: todo pesaba lo mismo, así que nada se leía primero. Lo
+   * que ordena la jerarquía es la hora —a la izquierda, sola, en su propia
+   * columna— porque "¿a qué hora voy?" es la pregunta con la que se abre esta
+   * pantalla.
+   *
+   * Fondo blanco con borde y una sombra corta, en vez de gris sobre blanco: el
+   * gris hacía que la fila pareciera deshabilitada.
+   */
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 14,
-    borderRadius: 12,
-    backgroundColor: "#fafafa",
-    gap: 12,
+    borderRadius: 14,
+    backgroundColor: tema.fondo,
+    borderWidth: 1,
+    borderColor: tema.borde,
+    gap: 14,
+    // La sombra es de opacidad baja y radio corto: una tarjeta que flota tres
+    // píxeles, no una que levita.
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
-  rowPressed: { backgroundColor: "#eaeaea" },
-  rowMuted: { opacity: 0.6 },
-  rowText: { flex: 1, gap: 4 },
-  rowTop: { flexDirection: "row", alignItems: "center", gap: 8 },
-  rowTitle: { color: "#111", fontWeight: "700", flex: 1 },
-  hora: { color: "#2e7d32", fontWeight: "700", fontSize: 13 },
+  rowPressed: { backgroundColor: tema.superficie },
+  rowMuted: { opacity: 0.55 },
+  horaColumna: { width: 46, alignItems: "flex-start" },
+  hora: {
+    color: tema.verde,
+    fontWeight: "800",
+    fontSize: 16,
+    // Los números no bailan al cambiar de fila.
+    fontVariant: ["tabular-nums"],
+  },
+  horaVacia: { color: "#c4c4c4", fontWeight: "600" },
+  rowText: { flex: 1, gap: 3 },
+  rowTitle: { color: tema.texto, fontWeight: "700" },
   linea: { flexDirection: "row", alignItems: "center", gap: 5 },
-  lineaTexto: { color: "#888", fontSize: 12.5, flex: 1 },
+  lineaTexto: { color: tema.textoTenue, fontSize: 12.5, flex: 1 },
 
   empty: { paddingVertical: 60, alignItems: "center", gap: 8 },
   emptyTitle: { color: "#444" },

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { PressableScale } from "@/components/ui/PressableScale";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -17,6 +17,7 @@ import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiRequest, ApiError } from "@/lib/api";
 import { dispositivoId } from "@/lib/dispositivo";
+import * as Haptics from "expo-haptics";
 import type {
   VisitaDetail,
   VisitaMedia,
@@ -153,8 +154,12 @@ export function VisitaResultForm({
           body: { tareaIds },
         });
       }
+      // Sella la hora de salida y guarda lo que hizo. Se iba con un
+      // `router.back()` y ningún acuse de recibo.
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(e instanceof ApiError ? e.message : "Error al guardar");
     } finally {
       setSubmitting(false);
@@ -198,7 +203,7 @@ export function VisitaResultForm({
                 const marcada = tareaIds.includes(t.id);
                 const exigida = obligatorias.includes(t.id);
                 return (
-                  <Pressable
+                  <PressableScale
                     key={t.id}
                     onPress={() => alternarTarea(t.id)}
                     style={[styles.tarea, marcada && styles.tareaMarcada]}
@@ -219,7 +224,7 @@ export function VisitaResultForm({
                     {exigida ? (
                       <Text style={styles.obligatoria}>Obligatoria</Text>
                     ) : null}
-                  </Pressable>
+                  </PressableScale>
                 );
               })}
             </View>

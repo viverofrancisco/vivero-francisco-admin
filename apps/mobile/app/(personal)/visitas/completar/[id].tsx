@@ -6,6 +6,7 @@ import { apiRequest, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { ubicacionActual } from "@/lib/ubicacion";
 import { dispositivoId } from "@/lib/dispositivo";
+import * as Haptics from "expo-haptics";
 import type { VisitaDetail } from "@/lib/types";
 import {
   VisitaResultForm,
@@ -67,8 +68,15 @@ export default function ParteVisitaScreen() {
           dispositivo: await dispositivoId(),
         },
       });
+      // El golpecito en el mismo momento que el dato queda guardado, no cuando
+      // termina de dibujarse: una háptica que llega tarde se lee como una falla,
+      // no como confirmación. Marcar la entrada es la acción que hace que el
+      // registro diga "estuvo ahí a esa hora" — hasta ahora se resolvía en
+      // silencio, con una pantalla que se redibujaba sola.
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await cargar();
     } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(e instanceof ApiError ? e.message : "No pudimos marcar");
     } finally {
       setMarcando(false);
