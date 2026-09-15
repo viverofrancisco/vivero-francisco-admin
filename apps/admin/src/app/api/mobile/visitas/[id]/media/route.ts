@@ -41,7 +41,23 @@ export async function POST(
   }
 }
 
-const confirmarSchema = z.object({ files: z.array(mediaItemSchema).min(1) });
+/**
+ * `tareaId` obligatorio, a diferencia del `mediaItemSchema` general.
+ *
+ * Una foto sin tarea es exactamente la que el informe no puede ubicar: queda en
+ * el montón suelto y alguien la clasifica después, mirándola y tratando de
+ * acordarse de qué era. El único momento en que se sabe la respuesta es cuando
+ * se saca, y ahí es donde la app la pide.
+ *
+ * Que lo exija el servidor y no solo la pantalla es lo que hace que sea una
+ * regla. Lo que **no** cambia es `PATCH`, que sigue aceptando `null`: las fotos
+ * viejas ya vienen sin etiqueta y la oficina tiene que poder moverlas.
+ */
+const confirmarSchema = z.object({
+  files: z
+    .array(mediaItemSchema.extend({ tareaId: z.string().min(1) }))
+    .min(1),
+});
 
 /**
  * Confirma en la base los archivos ya subidos a R2.

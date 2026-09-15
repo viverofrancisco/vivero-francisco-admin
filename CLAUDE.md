@@ -489,9 +489,17 @@ something nobody filed.
 *Archivos* section — camera or gallery, uploaded the moment they are picked, in
 any state. They used to sit inside the salida form, where they arrived late: the
 photo is taken *while* the work happens, and saving it for the end is asking
-someone to remember. That form now asks one thing, which tareas they did. The
-tag is chosen by tapping the photo, from **the whole live catalogue** and not
-only from what that person ticked: in the field you photograph what shows up — a
+someone to remember. That form now asks one thing, which tareas they did. **The tag is
+required, and chosen per photo before anything uploads**: picking from the
+gallery opens a screen listing each file with its own tarea selector, and the
+*Subir* button stays off until none is missing. One tag for the whole batch was
+the obvious shape and the wrong one — a single trip to the gallery brings the
+pruning and the broken sprinkler together, so a batch tag would be a lie half
+the time. The server enforces it too (the mobile confirm route requires
+`tareaId`), because a rule only the screen keeps is a suggestion; `PATCH` still
+accepts `null`, since older photos have no tag and the office has to be able to
+move them. The tag can be **any live tarea** and not only what that person
+ticked: in the field you photograph what shows up — a
 watering problem during a pruning — and restricting the tag to your own tareas
 leaves exactly those photos unclassified, which is what stops the informe from
 placing them. From the portal,
