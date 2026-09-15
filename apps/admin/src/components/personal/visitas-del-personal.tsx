@@ -8,15 +8,6 @@ import { TablePagination } from "@/components/shared/table-pagination";
 import { CalendarOff } from "lucide-react";
 import { useAca } from "@/lib/filtros-url";
 
-/**
- * Cuántas visitas por página.
- *
- * Menos que las 25 de un listado: esto es una tarjeta dentro de una ficha, no
- * la pantalla de visitas. Con 25 el resto de la ficha quedaba abajo del todo, y
- * quien entra acá viene a ver a la persona, no su año completo.
- */
-export const VISITAS_POR_PAGINA = 8;
-
 export interface VisitaDelPersonal {
   id: string;
   numero: number;
@@ -36,10 +27,21 @@ export function VisitasDelPersonal({
   visitas,
   total,
   page,
+  porPagina,
 }: {
   visitas: VisitaDelPersonal[];
   total: number;
   page: number;
+  /**
+   * Lo decide la página, que es la que consulta.
+   *
+   * Estaba acá como constante exportada, y este archivo es `"use client"`:
+   * Next convierte cada export de un módulo cliente en una referencia, así que
+   * el servidor recibía una función donde esperaba un número —`take:
+   * [object Function]`, `skip: NaN`— y TypeScript no lo veía, porque el tipo
+   * declarado seguía diciendo `number`.
+   */
+  porPagina: number;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -97,7 +99,7 @@ export function VisitasDelPersonal({
             total={total}
             onPageChange={irA}
             sustantivo="visita"
-            porPagina={VISITAS_POR_PAGINA}
+            porPagina={porPagina}
           />
         </>
       )}

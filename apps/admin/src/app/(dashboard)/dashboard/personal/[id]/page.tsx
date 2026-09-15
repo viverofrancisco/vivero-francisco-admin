@@ -4,8 +4,16 @@ import { requireAuth } from "@/lib/auth-helpers";
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { estadoCuentaPersonal } from "@/lib/services/personal-acceso.service";
 import { PersonalDetail } from "@/components/personal/personal-detail";
-import { VISITAS_POR_PAGINA } from "@/components/personal/visitas-del-personal";
 import { nombreCliente } from "@vivero/shared";
+
+/**
+ * Cuántas visitas por página.
+ *
+ * Menos que las 25 de un listado: esto es una tarjeta dentro de una ficha, no
+ * la pantalla de visitas. Con 25 el resto de la ficha quedaba abajo del todo, y
+ * quien entra acá viene a ver a la persona, no su año completo.
+ */
+const VISITAS_POR_PAGINA = 8;
 
 export default async function EditarPersonalPage({
   params,
@@ -96,6 +104,7 @@ export default async function EditarPersonalPage({
         }))}
         visitasTotal={visitasTotal}
         visitasPagina={pagina}
+        visitasPorPagina={VISITAS_POR_PAGINA}
       />
     </div>
   );

@@ -49,6 +49,7 @@ interface Props {
   visitas: VisitaDelPersonal[];
   visitasTotal: number;
   visitasPagina: number;
+  visitasPorPagina: number;
 }
 
 function formatDate(dateStr: string) {
@@ -67,6 +68,7 @@ export function PersonalDetail({
   visitas,
   visitasTotal,
   visitasPagina,
+  visitasPorPagina,
   backHref = "/dashboard/personal",
 }: Props) {
   const router = useRouter();
@@ -164,6 +166,7 @@ export function PersonalDetail({
               visitas={visitas}
               total={visitasTotal}
               page={visitasPagina}
+              porPagina={visitasPorPagina}
             />
           </div>
 
