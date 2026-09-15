@@ -367,9 +367,9 @@ export default function PersonalVisitaScreen() {
             llegaban tarde. */}
         {canAct ? (
           <View style={styles.mediaSection}>
-            <Text variant="labelMedium" style={styles.sectionLabel}>
-              ARCHIVOS
-            </Text>
+            {/* El rótulo lo pone el propio componente: cuando hay fotos
+                marcadas para eliminar, esa línea se convierte en la barra de
+                Cancelar / Eliminar. */}
             <ArchivosVisita
               visitaId={visita.id}
               archivos={visita.media ?? []}

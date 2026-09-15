@@ -32,15 +32,21 @@ import { tema } from "@/lib/tema";
  * **La etiqueta no se escribe encima de la foto.** Era una barra de 10 pt
  * quemada sobre el borde inferior: tapaba el tercio que uno mira, recortaba
  * cualquier nombre largo y pintaba de ámbar las que faltaban, un código que
- * nadie enseñó. Ahora las fotos se **agrupan por tarea**, con el nombre como
- * título del grupo: la categoría se ve de lejos, sin leer nada, y "Sin tarea"
- * es un grupo más —el que hay que arreglar— en vez de un color.
+ * nadie enseñó. Después fueron grupos con título, y el título también se
+ * recortaba. Ahora es un **listado**: miniatura a la izquierda, nombre de la
+ * tarea a la derecha y entero, en las líneas que haga falta. Ordenado por
+ * tarea, así las de una misma quedan juntas sin repetir un encabezado.
  *
- * **La foto se toca.** Antes lo único tocable era la etiqueta, y encima de cada
- * miniatura vivía una ✕ permanente: tres fotos, tres botones de borrar
- * mirándote, para algo que se hace de vez en cuando. Tocar la foto abre su
- * hoja —verla grande, cambiarle la tarea, eliminarla—, que es donde esas tres
- * cosas se piden.
+ * **La fila se toca entera.** Antes lo único tocable era la etiqueta, y encima
+ * de cada miniatura vivía una ✕ permanente: tres fotos, tres botones de borrar
+ * mirándote, para algo que se hace de vez en cuando. Tocar la fila abre la hoja
+ * de esa foto —verla grande, cambiarle la tarea, eliminarla—, que es donde esas
+ * tres cosas se piden.
+ *
+ * **La confirmación de borrado es el rótulo de la sección.** Estaba debajo de
+ * las fotos, empujando la lista hacia abajo justo cuando se está apuntando a
+ * una; ahora *ARCHIVOS* se convierte en la barra, como la barra de selección
+ * del portal tapa el encabezado de la tabla.
  *
  * **Nada se guarda hasta confirmar.** Lo que se elige de la galería entra en
  * una hoja de revisión y se sube recién al apretar *Subir*; eliminar es local
@@ -58,14 +64,6 @@ import { tema } from "@/lib/tema";
 interface Pendiente {
   asset: ImagePicker.ImagePickerAsset;
   tareaId: string | null;
-}
-
-/** Las fotos de una tarea, juntas. `tareaId: null` = las que no tienen. */
-interface Grupo {
-  clave: string;
-  tareaId: string | null;
-  nombre: string;
-  items: VisitaMedia[];
 }
 
 /** Qué está eligiendo tarea. */
@@ -93,9 +91,6 @@ function volverDe(para: Eligiendo): Vista {
     : { paso: "revision" };
 }
 
-const HUECO = 8;
-const COLUMNAS = 3;
-
 export function ArchivosVisita({
   visitaId,
   archivos,
@@ -116,44 +111,25 @@ export function ArchivosVisita({
   const [vista, setVista] = useState<Vista | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /** El ancho de la grilla, para que las miniaturas llenen la fila. */
-  const [ancho, setAncho] = useState(0);
-
-  const lado =
-    ancho > 0 ? Math.floor((ancho - HUECO * (COLUMNAS - 1)) / COLUMNAS) : 104;
-
   const nombreDeTarea = (id: string | null) =>
     id ? (catalogo.find((t) => t.id === id)?.nombre ?? "Otra tarea") : null;
 
   const sinTarea = pendientes.filter((p) => p.tareaId === null).length;
 
   /**
-   * Por tarea, en el orden del catálogo —el que eligió la oficina— y las que no
-   * tienen al final, que es donde se las busca para arreglarlas.
+   * En el orden del catálogo —el que eligió la oficina—, con las que no tienen
+   * tarea al final, que es donde se las busca para arreglarlas.
+   *
+   * Es un listado plano y no grupos con encabezado: cada fila lleva su nombre
+   * completo al lado de la miniatura, así que agrupar sería repetir el mismo
+   * texto dos veces. Ordenar por tarea alcanza para que las de una misma queden
+   * juntas.
    */
-  const grupos = useMemo<Grupo[]>(() => {
-    const porTarea = new Map<string, VisitaMedia[]>();
-    for (const m of archivos) {
-      const clave = m.tareaId ?? "";
-      const lista = porTarea.get(clave) ?? [];
-      lista.push(m);
-      porTarea.set(clave, lista);
-    }
+  const enFila = useMemo(() => {
     const posicion = new Map(catalogo.map((t, i) => [t.id, i]));
-    return [...porTarea.entries()]
-      .map(([clave, items]) => ({
-        clave,
-        tareaId: clave || null,
-        nombre: clave
-          ? (catalogo.find((t) => t.id === clave)?.nombre ?? "Otra tarea")
-          : "Sin tarea",
-        items,
-      }))
-      .sort(
-        (a, b) =>
-          (a.tareaId ? (posicion.get(a.tareaId) ?? 9e3) : 9e6) -
-          (b.tareaId ? (posicion.get(b.tareaId) ?? 9e3) : 9e6)
-      );
+    const lugar = (m: VisitaMedia) =>
+      m.tareaId ? (posicion.get(m.tareaId) ?? 9e3) : 9e6;
+    return [...archivos].sort((a, b) => lugar(a) - lugar(b));
   }, [archivos, catalogo]);
 
   function agregar(assets: ImagePicker.ImagePickerAsset[]) {
@@ -328,6 +304,44 @@ export function ArchivosVisita({
 
   return (
     <View style={styles.contenedor}>
+      {/* El rótulo de la sección **es** la barra cuando hay algo marcado: la
+          confirmación vivía debajo de las fotos, donde empujaba la lista justo
+          cuando se está apuntando a una. Es la misma idea que la barra de
+          selección del portal, que tapa el encabezado de la tabla. */}
+      <View style={styles.cabecera}>
+        {quitadas.size > 0 ? (
+          <>
+            <Text style={styles.cabeceraCuenta}>
+              {quitadas.size === 1
+                ? "1 foto para eliminar"
+                : `${quitadas.size} fotos para eliminar`}
+            </Text>
+            <PressableScale
+              onPress={() => setQuitadas(new Set())}
+              disabled={guardando}
+              style={styles.cabeceraBoton}
+              estiloPresionado={styles.cabeceraBotonTocado}
+            >
+              <Text style={styles.cabeceraCancelar}>Cancelar</Text>
+            </PressableScale>
+            <PressableScale
+              onPress={guardar}
+              disabled={guardando}
+              style={styles.cabeceraBoton}
+              estiloPresionado={styles.cabeceraBotonTocado}
+            >
+              {guardando ? (
+                <ActivityIndicator size="small" color={tema.rojo} />
+              ) : (
+                <Text style={styles.cabeceraEliminar}>Eliminar</Text>
+              )}
+            </PressableScale>
+          </>
+        ) : (
+          <Text style={styles.cabeceraTitulo}>ARCHIVOS</Text>
+        )}
+      </View>
+
       <View style={styles.acciones}>
         <PressableScale
           onPress={tomarFoto}
@@ -373,92 +387,51 @@ export function ArchivosVisita({
           Todavía no subiste fotos. Sácalas mientras trabajas.
         </Text>
       ) : (
-        grupos.map((g) => (
-          <View key={g.clave} style={styles.grupo}>
-            <View style={styles.grupoCabecera}>
-              <Text
+        <View style={styles.lista}>
+          {enFila.map((m, i) => {
+            const fuera = quitadas.has(m.id);
+            return (
+              <PressableScale
+                key={m.id}
+                onPress={() => setVista({ paso: "foto", media: m })}
                 style={[
-                  styles.grupoTitulo,
-                  !g.tareaId && styles.grupoTituloFalta,
+                  styles.filaFoto,
+                  i > 0 && styles.filaConLinea,
+                  fuera && styles.filaFuera,
                 ]}
-                numberOfLines={1}
+                estiloPresionado={styles.filaTocada}
               >
-                {g.nombre}
-              </Text>
-              <Text style={styles.grupoCuenta}>{g.items.length}</Text>
-            </View>
-            <View
-              style={styles.grilla}
-              onLayout={(e) => {
-                const w = e.nativeEvent.layout.width;
-                setAncho((antes) => (antes === w ? antes : w));
-              }}
-            >
-              {g.items.map((m) => {
-                const fuera = quitadas.has(m.id);
-                return (
-                  <PressableScale
-                    key={m.id}
-                    onPress={() => setVista({ paso: "foto", media: m })}
-                    estiloExterno={{ width: lado, height: lado }}
-                    style={[styles.celda, fuera && styles.celdaFuera]}
-                  >
-                    {m.tipo === "video" ? (
-                      <View style={[styles.miniatura, styles.video]}>
-                        <Ionicons name="play" size={22} color="#fff" />
-                      </View>
-                    ) : (
-                      <Image
-                        source={{ uri: m.url }}
-                        style={styles.miniatura}
-                      />
-                    )}
-                    {fuera ? (
-                      <View style={styles.marcaFuera}>
-                        <Ionicons name="trash" size={18} color="#fff" />
-                      </View>
-                    ) : null}
-                  </PressableScale>
-                );
-              })}
-            </View>
-          </View>
-        ))
-      )}
-
-      {/* Solo aparece eliminando, así que no compite con nada en el camino
-          normal: subir vive en su hoja. */}
-      {quitadas.size > 0 ? (
-        <View style={styles.barra}>
-          <Text style={styles.barraTexto}>
-            {quitadas.size === 1
-              ? "1 foto por eliminar"
-              : `${quitadas.size} fotos por eliminar`}
-          </Text>
-          <View style={styles.barraBotones}>
-            <PressableScale
-              onPress={() => setQuitadas(new Set())}
-              disabled={guardando}
-              style={styles.barraBoton}
-              estiloPresionado={styles.barraBotonTocado}
-            >
-              <Text style={styles.barraCancelar}>Deshacer</Text>
-            </PressableScale>
-            <PressableScale
-              onPress={guardar}
-              disabled={guardando}
-              style={styles.barraBoton}
-              estiloPresionado={styles.barraBotonTocado}
-            >
-              {guardando ? (
-                <ActivityIndicator size="small" color={tema.rojo} />
-              ) : (
-                <Text style={styles.barraEliminar}>Eliminar</Text>
-              )}
-            </PressableScale>
-          </View>
+                <View style={styles.miniaturaCaja}>
+                  {m.tipo === "video" ? (
+                    <View style={[styles.miniatura, styles.video]}>
+                      <Ionicons name="play" size={18} color="#fff" />
+                    </View>
+                  ) : (
+                    <Image source={{ uri: m.url }} style={styles.miniatura} />
+                  )}
+                  {fuera ? (
+                    <View style={styles.marcaFuera}>
+                      <Ionicons name="trash" size={16} color="#fff" />
+                    </View>
+                  ) : null}
+                </View>
+                {/* Entero: el nombre de la tarea es lo único que dice de qué
+                    es la foto, y recortado a una línea "Deshoje de plantas de
+                    hojas grandes (alocasias, b…" no distingue nada. */}
+                <Text
+                  style={[
+                    styles.filaNombre,
+                    !m.tareaId && styles.revisionFalta,
+                  ]}
+                >
+                  {nombreDeTarea(m.tareaId) ?? "Sin tarea"}
+                </Text>
+                <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+              </PressableScale>
+            );
+          })}
         </View>
-      ) : null}
+      )}
 
       {/*
         Una sola hoja con pasos, no tres hojas.
@@ -690,28 +663,48 @@ const styles = StyleSheet.create({
   avisoTexto: { flex: 1, color: tema.verde, fontWeight: "600", fontSize: 13 },
   avisoAccion: { color: tema.verde, fontWeight: "700", fontSize: 13 },
 
-  grupo: { gap: 8 },
-  grupoCabecera: { flexDirection: "row", alignItems: "center", gap: 8 },
-  grupoTitulo: {
-    flex: 1,
-    color: tema.texto,
-    fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: -0.1,
+  /** El rótulo de la sección, que hace de barra cuando hay algo marcado. */
+  cabecera: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    minHeight: 34,
   },
-  /** Las que no tienen tarea: el grupo que hay que arreglar. */
-  grupoTituloFalta: { color: tema.ambarTexto },
-  grupoCuenta: { color: tema.texto3, fontSize: 13, fontWeight: "600" },
+  cabeceraTitulo: {
+    color: "#888",
+    fontSize: 11,
+    letterSpacing: 0.8,
+    fontWeight: "600",
+    paddingLeft: 4,
+  },
+  cabeceraCuenta: { flex: 1, color: tema.rojo, fontWeight: "700", fontSize: 13 },
+  cabeceraBoton: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  cabeceraBotonTocado: { backgroundColor: "rgba(0,0,0,0.05)" },
+  cabeceraCancelar: { color: tema.texto2, fontWeight: "600" },
+  cabeceraEliminar: { color: tema.rojo, fontWeight: "700" },
 
-  grilla: { flexDirection: "row", flexWrap: "wrap", gap: HUECO },
-  celda: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 10,
-    overflow: "hidden",
+  lista: { backgroundColor: "#fafafa", borderRadius: 12, overflow: "hidden" },
+  filaFoto: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  filaTocada: { backgroundColor: "#f0f0f0" },
+  filaConLinea: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#eaeaea",
   },
   /** Marcada para salir: se ve que se va, y se puede deshacer. */
-  celdaFuera: { opacity: 0.4 },
+  filaFuera: { opacity: 0.45 },
+  filaNombre: { flex: 1, color: tema.texto, fontSize: 15, lineHeight: 20 },
+  miniaturaCaja: {
+    width: 52,
+    height: 52,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
   miniatura: { width: "100%", height: "100%", backgroundColor: "#eee" },
   video: {
     alignItems: "center",
@@ -724,23 +717,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "rgba(200,57,58,0.55)",
   },
-
-  barra: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 8,
-    paddingLeft: 12,
-    paddingRight: 4,
-    borderRadius: 10,
-    backgroundColor: tema.rojo50,
-  },
-  barraTexto: { flex: 1, color: tema.rojo, fontWeight: "600", fontSize: 13 },
-  barraBotones: { flexDirection: "row" },
-  barraBoton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  barraBotonTocado: { backgroundColor: "rgba(0,0,0,0.05)" },
-  barraCancelar: { color: tema.texto2, fontWeight: "600" },
-  barraEliminar: { color: tema.rojo, fontWeight: "700" },
 
   hojaCabecera: {
     flexDirection: "row",
