@@ -596,6 +596,22 @@ export function ArchivosVisita({
         }}
       >
         <View style={styles.hojaCabecera}>
+          {/* Se llega acá desde la hoja de revisión, así que hace falta cómo
+              volver: arrastrar la hoja también cierra, pero eso hay que
+              saberlo. Etiquetar una foto ya subida no viene de ningún lado, y
+              ahí la flecha no tendría a dónde ir. */}
+          {eligiendo && eligiendo.tipo !== "subida" ? (
+            <PressableScale
+              onPress={() => {
+                setEligiendo(null);
+                setRevisando(true);
+              }}
+              hitSlop={10}
+              style={styles.hojaVolver}
+            >
+              <Ionicons name="chevron-back" size={22} color={tema.texto} />
+            </PressableScale>
+          ) : null}
           <Text variant="titleMedium" style={styles.hojaTitulo}>
             {eligiendo?.tipo === "todas" ? "¿De qué son todas?" : "¿De qué es?"}
           </Text>
@@ -714,6 +730,7 @@ const styles = StyleSheet.create({
   },
   hojaTitulo: { flex: 1, color: "#111", fontWeight: "700" },
   hojaAccion: { color: tema.verde, fontWeight: "700", fontSize: 13 },
+  hojaVolver: { marginLeft: -8, padding: 4 },
   hojaLista: { flexShrink: 1, paddingHorizontal: 12 },
   hojaPie: { paddingHorizontal: 20, paddingTop: 10 },
 
