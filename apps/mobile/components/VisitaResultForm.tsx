@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { PressableScale } from "@/components/ui/PressableScale";
 import {
+  Alert,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -17,6 +19,7 @@ import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiRequest, ApiError } from "@/lib/api";
 import { dispositivoId } from "@/lib/dispositivo";
+import type { ResultadoUbicacion } from "@/lib/ubicacion";
 import * as Haptics from "expo-haptics";
 import type {
   VisitaDetail,
@@ -75,12 +78,7 @@ export function VisitaResultForm({
    */
   modo: "SALIDA" | "CORRECCION";
   /** Se lee al apretar, no acá: quien llama decide cuándo pedirla. */
-  ubicacion?: () => Promise<{
-    lat: number;
-    lng: number;
-    precision: number | null;
-    simulada: boolean | null;
-  } | null>;
+  ubicacion?: () => Promise<ResultadoUbicacion>;
 }) {
   const router = useRouter();
   const navigation = useNavigation();
@@ -135,15 +133,35 @@ export function VisitaResultForm({
     setSubmitting(true);
     setError(null);
     try {
+      // Sin permiso no se marca la salida tampoco: es la misma decisión, y
+      // exigirla solo al entrar la volvería opcional en la práctica. Sin señal
+      // sí se marca — ver `ubicacionActual`.
+      const donde = modo === "SALIDA" && ubicacion ? await ubicacion() : null;
+      if (donde?.estado === "sin-permiso") {
+        setSubmitting(false);
+        Alert.alert(
+          "Falta la ubicación",
+          donde.ajustes
+            ? "Para marcar tu salida, activá la ubicación en Ajustes."
+            : "Para marcar tu salida necesitamos saber dónde estás.",
+          donde.ajustes
+            ? [
+                { text: "Cancelar", style: "cancel" },
+                { text: "Abrir Ajustes", onPress: () => Linking.openSettings() },
+              ]
+            : [{ text: "Entendido" }]
+        );
+        return;
+      }
+
       if (modo === "SALIDA") {
         // Irse es un solo gesto: sella el momento, guarda lo que hizo y sube
-        // lo que sacó. La ubicación se lee recién acá —al apretar— y si no
-        // llega se marca igual: ver `marcarSalida` en el servidor.
+        // lo que sacó.
         await apiRequest<VisitaDetail>(`/api/mobile/visitas/${visitaId}/marca`, {
           method: "POST",
           body: {
             tipo: "SALIDA",
-            ubicacion: ubicacion ? await ubicacion() : null,
+            ubicacion: donde?.estado === "ok" ? donde.ubicacion : null,
             dispositivo: await dispositivoId(),
             tareaIds,
           },

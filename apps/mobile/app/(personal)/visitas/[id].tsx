@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { estadoLabel } from "@/lib/estado-visita";
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Alert, Linking, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
   Button,
@@ -180,11 +176,33 @@ export default function PersonalVisitaScreen() {
   async function marcarEntrada() {
     setMarcando(true);
     try {
+      // Sin permiso no se marca. Es lo único de todo esto que la persona
+      // decide, así que es lo único que tiene sentido exigir; sin señal sí se
+      // marca — ver `ubicacionActual`.
+      const donde = await ubicacionActual();
+      if (donde.estado === "sin-permiso") {
+        setMarcando(false);
+        setConfirmandoEntrada(false);
+        Alert.alert(
+          "Falta la ubicación",
+          donde.ajustes
+            ? "Para marcar tu entrada, activá la ubicación en Ajustes. Queda registrado desde dónde marcaste."
+            : "Para marcar tu entrada necesitamos saber dónde estás.",
+          donde.ajustes
+            ? [
+                { text: "Cancelar", style: "cancel" },
+                { text: "Abrir Ajustes", onPress: () => Linking.openSettings() },
+              ]
+            : [{ text: "Entendido" }]
+        );
+        return;
+      }
+
       await apiRequest(`/api/mobile/visitas/${visita!.id}/marca`, {
         method: "POST",
         body: {
           tipo: "ENTRADA",
-          ubicacion: await ubicacionActual(),
+          ubicacion: donde.estado === "ok" ? donde.ubicacion : null,
           dispositivo: await dispositivoId(),
         },
       });
@@ -192,6 +210,14 @@ export default function PersonalVisitaScreen() {
       // dibujarse: una háptica que llega tarde se lee como una falla.
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setConfirmandoEntrada(false);
+      // Sin señal se marcó igual, pero se avisa: quien marcó es el único que
+      // puede salir al patio y volver a intentarlo la próxima.
+      if (donde.estado === "sin-senal") {
+        Alert.alert(
+          "Entrada marcada",
+          "No pudimos obtener tu ubicación, así que quedó registrada sin ella."
+        );
+      }
       await load();
     } catch (e) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
