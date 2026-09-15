@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
+import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
 import Animated, { useReducedMotion } from "react-native-reanimated";
-import { movimiento } from "@/lib/tema";
+import { movimiento, transicion } from "@/lib/tema";
 
 /**
  * Un `Pressable` que se hunde al tocarlo.
@@ -53,9 +53,9 @@ export function PressableScale({
     >
       <Animated.View
         style={[
-          styles.base,
+          estiloBase,
           style,
-          presionado && !reducido && styles.presionado,
+          presionado && !reducido && estiloPresion,
           presionado && estiloPresionado,
         ]}
       >
@@ -65,12 +65,7 @@ export function PressableScale({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    transform: [{ scale: 1 }],
-    transitionProperty: "transform",
-    transitionDuration: `${movimiento.presion.duracion}ms`,
-    transitionTimingFunction: movimiento.easeOut,
-  },
-  presionado: { transform: [{ scale: movimiento.presion.escala }] },
+const estiloBase = transicion("transform", movimiento.presion.duracion, {
+  transform: [{ scale: 1 }],
 });
+const estiloPresion = { transform: [{ scale: movimiento.presion.escala }] };

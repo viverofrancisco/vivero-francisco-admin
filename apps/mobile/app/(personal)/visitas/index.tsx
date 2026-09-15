@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { tema, movimiento } from "@/lib/tema";
+import { tema, transicion } from "@/lib/tema";
 import {
   FlatList,
   RefreshControl,
@@ -163,7 +163,7 @@ export default function PersonalVisitasListScreen() {
           moverse un día pareciera que la app se recargaba sola —y el spinner
           aparecía y desaparecía tan rápido que era un parpadeo, no información.
           Es el mismo criterio que ya usa el portal en sus listas. */}
-      <Animated.View style={[styles.lista, loading && styles.listaCargando]}>
+      <Animated.View style={[estiloLista, loading && { opacity: 0.45 }]}>
         <FlatList
           data={items}
           keyExtractor={(v) => v.id}
@@ -279,6 +279,9 @@ function VisitaRow({
   );
 }
 
+/** El contenedor de la lista se atenúa mientras llega otro día. */
+const estiloLista = transicion("opacity", 150, { flex: 1 });
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
@@ -296,15 +299,6 @@ const styles = StyleSheet.create({
   fechaBoton: { flex: 1, alignItems: "center" },
   fechaTitulo: { color: "#111", fontWeight: "700" },
   fechaSub: { color: "#888", fontSize: 12, marginTop: 1 },
-
-  /** El contenedor de la lista se atenúa mientras llega otro día. */
-  lista: {
-    flex: 1,
-    transitionProperty: "opacity",
-    transitionDuration: "150ms",
-    transitionTimingFunction: movimiento.easeOut,
-  },
-  listaCargando: { opacity: 0.45 },
 
   listContent: { padding: 16, paddingBottom: 96, gap: 10 },
   /**
