@@ -101,10 +101,21 @@ export default function PersonalVisitaScreen() {
   // parte propio. **No se cierra desde acá**: decir que el trabajo está
   // terminado es mirar lo que cargaron todos, y eso se hace desde el portal.
   const canAct = visita.estado !== "CANCELADA";
-  /** Ya cargó lo suyo: el botón dice "editar" en vez de "cargar". */
-  const yaCargo = (visita.personal ?? []).some(
-    (p) => p.personalId === personalId && p.registradoEl !== null
-  );
+  /**
+   * El botón dice el próximo paso, no lo que la pantalla hace.
+   *
+   * Decía "Cargar lo que hice" desde antes de que la entrada y la salida se
+   * marcaran con un botón. Ahora hay tres momentos y cada uno pide algo
+   * distinto: llegar, irse, y corregir después.
+   */
+  const mio = (visita.personal ?? []).find((p) => p.personalId === personalId);
+  const accion = !mio
+    ? null
+    : !mio.entradaEl
+      ? "Marcar entrada"
+      : !mio.salidaEl
+        ? "Marcar salida"
+        : "Editar mi parte";
   const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
 
@@ -237,7 +248,7 @@ export default function PersonalVisitaScreen() {
 
       {/* Sticky actions */}
       <View style={styles.footer}>
-        {canAct ? (
+        {canAct && accion ? (
           <Button
             mode="contained"
             onPress={() =>
@@ -247,7 +258,7 @@ export default function PersonalVisitaScreen() {
             contentStyle={styles.primaryBtnContent}
             labelStyle={styles.primaryBtnLabel}
           >
-            {yaCargo ? "Editar mi parte" : "Cargar lo que hice"}
+            {accion}
           </Button>
         ) : null}
       </View>
