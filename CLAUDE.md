@@ -258,7 +258,16 @@ every peso lives on an `OrdenLinea` without exceptions.
 **Closing a visita is the office's call, and filing a parte is the gardener's.**
 Each assigned person opens the visit and records *their own* part: their
 `horaEntrada`, their `horaSalida` and the tareas **they** did
-(`VisitaPersonal` + `VisitaPersonalTarea`). The first parte moves the visit from
+(`VisitaPersonal` + `VisitaPersonalTarea`). **Nothing about that is tied to
+today's date** — `registrarParte` checks only that the visita isn't `CANCELADA`,
+that the person is assigned (`removedAt: null`) and that the tareas are alive, so
+a visit from last month that nobody filed still gets filed, which is exactly when
+it's needed. It is filed from the app and from the portal: `components/visitas/mi-parte.tsx`
+is the card at the top of the visita's own page, shown only to the assigned
+person (the assignment, not the role — a gardener opening another cuadrilla's
+visit sees it and has no parte to file there). The web endpoint existed from the
+start and nothing called it: the form was only ever built for the phone, so on
+the portal a gardener saw that his parte was missing and had no way in. The first parte moves the visit from
 `PROGRAMADA` to `EN_CURSO` on its own; from there an `ADMIN`/`STAFF` marks it
 `COMPLETADA` or `INCOMPLETA`, looking at what was filed and what is missing. It
 does **not** close itself when the last person files: someone may never file,

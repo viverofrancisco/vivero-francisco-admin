@@ -56,6 +56,7 @@ import {
   type PersonalDeVisita,
   type TareaDeVisita,
 } from "@/lib/visita-tareas";
+import { MiParte } from "./mi-parte";
 
 interface VisitaDetailData {
   id: string;
@@ -105,10 +106,15 @@ interface VisitaDetailData {
 
 
 interface VisitaDetailProps {
-  /** El catálogo de tareas, para etiquetar las fotos. */
+  /** El catálogo de tareas, para etiquetar las fotos y para cargar el parte. */
   catalogo?: { tareaId: string; nombre: string }[];
   visita: VisitaDetailData;
   userRole?: string;
+  /**
+   * Quién está mirando, si es del personal. Con eso la ficha sabe cuál de los
+   * partes es el suyo — el único que puede cargar.
+   */
+  personalId?: string | null;
   hasMessages?: boolean;
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref?: string;
@@ -117,6 +123,7 @@ interface VisitaDetailProps {
 export function VisitaDetail({
   visita,
   userRole,
+  personalId = null,
   backHref = "/dashboard/visitas",
   hasMessages = false,
   catalogo = [],
@@ -178,6 +185,19 @@ export function VisitaDetail({
   const faltantes = obligatoriasSinCubrir(visita);
   /** Quiénes todavía no cargaron su parte. */
   const sinRegistrar = personalSinRegistrar(visita.personal);
+
+  /**
+   * Mi asignación, si soy del personal y estoy en esta visita.
+   *
+   * Lo que habilita el formulario no es el rol sino la asignación: un jardinero
+   * abriendo la visita de otra cuadrilla la ve —el chat, las fotos— pero no
+   * tiene parte que cargar ahí. Una visita cancelada tampoco: el servicio la
+   * rechaza, y ofrecer un botón que va a fallar es peor que no ofrecerlo.
+   */
+  const miParte =
+    userRole === "PERSONAL" && personalId && visita.estado !== "CANCELADA"
+      ? visita.personal.find((p) => p.personalId === personalId)
+      : undefined;
 
   const plan = visita.suscripcion ?? null;
   const ordenes = visita.ordenes ?? [];
@@ -252,6 +272,17 @@ export function VisitaDetail({
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+        {/* Arriba de todo: es lo único que el jardinero viene a hacer acá, y
+            debajo de las tareas quedaba después de leer lo que hizo el resto. */}
+        {miParte && (
+          <MiParte
+            visitaId={visita.id}
+            parte={miParte}
+            obligatoriasIds={visita.tareasObligatorias.map((o) => o.tarea.id)}
+            catalogo={catalogo}
+          />
+        )}
+
         {/* Qué exigía la visita y qué se hizo. Son dos preguntas distintas:
             la primera se decide al agendar, la segunda la contesta cada
             jardinero al terminar, y lo que la oficina mira es la diferencia. */}

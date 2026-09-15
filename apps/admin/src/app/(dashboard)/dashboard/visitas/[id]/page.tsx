@@ -101,6 +101,7 @@ export default async function VisitaDetailPage({
         backHref={backHref}
         visita={serialized}
         userRole={user.role}
+        personalId={user.personalId ?? null}
         hasMessages={hasMessages}
         catalogo={catalogo.map((t) => ({
           tareaId: t.id,
