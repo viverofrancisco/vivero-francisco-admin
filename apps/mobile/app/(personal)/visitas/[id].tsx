@@ -353,7 +353,7 @@ export default function PersonalVisitaScreen() {
       <DialogoConfirmar
         visible={confirmandoEntrada}
         titulo="¿Marcar tu entrada?"
-        detalle={`Se guarda la hora de ahora para ${nombreCliente(cliente)}.`}
+        hora
         confirmar="Marcar entrada"
         cargando={marcando}
         onConfirmar={marcarEntrada}
