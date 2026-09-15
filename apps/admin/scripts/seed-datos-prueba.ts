@@ -109,6 +109,13 @@ function azar(semilla: number) {
 
 const rnd = azar(20260822);
 const entre = (min: number, max: number) => min + Math.floor(rnd() * (max - min + 1));
+
+/** Una hora en punto o cuarto del día de la visita, como instante. */
+const aLaHora = (dia: Date, hora: number): Date => {
+  const d = new Date(dia);
+  d.setHours(hora, entre(0, 3) * 15, 0, 0);
+  return d;
+};
 const uno = <T>(xs: T[]): T => xs[Math.floor(rnd() * xs.length)];
 const chance = (p: number) => rnd() < p;
 
@@ -586,7 +593,7 @@ async function sembrar(
         removedAt: null,
         visita: { estado: { in: ["COMPLETADA", "INCOMPLETA"] } },
       },
-      select: { id: true },
+      select: { id: true, visita: { select: { fechaProgramada: true } } },
     });
     for (const a of asignaciones) {
       // Uno de cada ocho no carga nada: es el caso que la oficina tiene que
@@ -602,8 +609,10 @@ async function sembrar(
       await prisma.visitaPersonal.update({
         where: { id: a.id },
         data: {
-          horaEntrada: `${String(entre(7, 10)).padStart(2, "0")}:${uno(["00", "15", "30", "45"])}`,
-          horaSalida: `${String(entre(12, 17)).padStart(2, "0")}:${uno(["00", "15", "30", "45"])}`,
+          // Instantes del día de la visita, no textos: es lo que sella el
+          // botón de marcar, y lo que la ficha muestra.
+          entradaEl: aLaHora(a.visita.fechaProgramada, entre(7, 10)),
+          salidaEl: aLaHora(a.visita.fechaProgramada, entre(12, 17)),
           registradoEl: new Date(),
         },
       });

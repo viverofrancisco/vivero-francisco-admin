@@ -150,6 +150,14 @@ async function sembrar() {
     return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
   };
 
+  /** Una hora concreta de un día, en ISO: las marcas ahora son instantes. */
+  const aLaHora = (fecha: Date, hm: string) => {
+    const [h, min] = hm.split(":").map(Number);
+    const d = new Date(fecha);
+    d.setHours(h, min, 0, 0);
+    return d.toISOString();
+  };
+
   /** Sube una foto de verdad y la engancha a la visita, con su etiqueta. */
   async function subirFoto(
     visitaId: string,
@@ -192,14 +200,14 @@ async function sembrar() {
 
     await visitaSvc.registrarParte(a.id, viewer, {
       personalId: personal[0].id,
-      horaEntrada: "08:15",
-      horaSalida: "12:30",
+      entradaEl: aLaHora(dia(9), "08:15"),
+      salidaEl: aLaHora(dia(9), "12:30"),
       tareaIds: [compartida.id, sinFotos.id],
     });
     await visitaSvc.registrarParte(a.id, viewer, {
       personalId: personal[1].id,
-      horaEntrada: "08:40",
-      horaSalida: "13:10",
+      entradaEl: aLaHora(dia(9), "08:40"),
+      salidaEl: aLaHora(dia(9), "13:10"),
       tareaIds: [soloEnUna.id],
     });
 
@@ -223,8 +231,8 @@ async function sembrar() {
 
     await visitaSvc.registrarParte(b.id, viewer, {
       personalId: personal[0].id,
-      horaEntrada: "07:50",
-      horaSalida: "11:20",
+      entradaEl: aLaHora(dia(2), "07:50"),
+      salidaEl: aLaHora(dia(2), "11:20"),
       tareaIds: [compartida.id],
     });
 

@@ -39,6 +39,8 @@ import {
 import { ArchivosVisita } from "@/components/visitas/archivos-visita";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Badge } from "@/components/ui/badge";
+import { horaConDia } from "./formato-marca";
+import { Ubicaciones } from "./ubicaciones-marcadas";
 import {
   estadoLabel as estadoOrdenLabel,
   estadoVariant as estadoOrdenVariant,
@@ -454,7 +456,10 @@ export function VisitaDetail({
           // Las tareas que alguien cargó: son de las que va a haber fotos, así
           // que sus secciones van primero y existen aunque estén vacías.
           hechas={hechas.map((t) => t.id)}
-          puedeEditar={canModify}
+          // También el jardinero asignado: las fotos se sacan mientras se
+          // trabaja, y el que está en el jardín es él. `canModify` lo dejaba
+          // afuera junto con agendar y cerrar, que sí son de oficina.
+          puedeEditar={canModify || miParte !== undefined}
         />
 
         <Card>
@@ -597,19 +602,34 @@ export function VisitaDetail({
                           <span className="min-w-0 flex-1 truncate text-sm font-medium">
                             {nombre}
                           </span>
-                          {vp.horaEntrada || vp.horaSalida ? (
+                          {vp.entradaEl || vp.salidaEl ? (
                             <span className="flex-none text-xs tabular-nums text-muted-foreground">
-                              {vp.horaEntrada ?? "—"} → {vp.horaSalida ?? "—"}
+                              {vp.entradaEl
+                                ? horaConDia(vp.entradaEl, visita.fechaProgramada)
+                                : "—"}{" "}
+                              →{" "}
+                              {vp.salidaEl
+                                ? horaConDia(vp.salidaEl, visita.fechaProgramada)
+                                : "—"}
                             </span>
                           ) : null}
                         </span>
                         <span className="block text-xs text-muted-foreground">
                           {vp.registradoEl === null
-                            ? "Todavía no cargó su parte"
+                            ? vp.entradaEl
+                              ? "Marcó entrada, todavía no salió"
+                              : "Todavía no cargó su parte"
                             : suyas.length > 0
                               ? suyas.join(", ")
                               : "No marcó ninguna tarea"}
                         </span>
+                        {/* Qué marca vino sin ubicación. Es la pregunta que la
+                            oficina quería poder hacerse, y la única respuesta
+                            honesta: dónde estaba el teléfono cuando se apretó
+                            el botón. No prueba presencia —en el navegador la
+                            ubicación se falsea en tres clics— pero un "sin
+                            ubicación" repetido es algo que se conversa. */}
+                        <Ubicaciones parte={vp} />
                       </span>
                     </li>
                   );

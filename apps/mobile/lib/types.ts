@@ -26,8 +26,14 @@ export interface ParteDeVisita {
     apellido: string | null;
     tipo?: string;
   };
-  horaEntrada: string | null;
-  horaSalida: string | null;
+  /** Cuándo marcó, en ISO. `null` = todavía no marcó esa punta. */
+  entradaEl: string | null;
+  salidaEl: string | null;
+  /** Dónde estaba al marcar. `null` = sin permiso, o sin señal. */
+  entradaLat: number | null;
+  entradaLng: number | null;
+  salidaLat: number | null;
+  salidaLng: number | null;
   /** `null` = todavía no cargó su parte. */
   registradoEl: string | null;
   tareas: { tarea: TareaDeVisita }[];

@@ -451,8 +451,16 @@ export const VisitaPersonalScalarFieldEnum = {
   addedById: 'addedById',
   removedAt: 'removedAt',
   removedById: 'removedById',
-  horaEntrada: 'horaEntrada',
-  horaSalida: 'horaSalida',
+  entradaEl: 'entradaEl',
+  salidaEl: 'salidaEl',
+  entradaLat: 'entradaLat',
+  entradaLng: 'entradaLng',
+  entradaPrecision: 'entradaPrecision',
+  entradaSimulada: 'entradaSimulada',
+  salidaLat: 'salidaLat',
+  salidaLng: 'salidaLng',
+  salidaPrecision: 'salidaPrecision',
+  salidaSimulada: 'salidaSimulada',
   registradoEl: 'registradoEl'
 } as const
 

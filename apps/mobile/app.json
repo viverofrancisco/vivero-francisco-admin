@@ -38,6 +38,13 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Vivero Francisco registra dónde estás al marcar tu entrada y salida de una visita.",
+          "isAndroidBackgroundLocationEnabled": false
+        }
       ]
     ],
     "experiments": {

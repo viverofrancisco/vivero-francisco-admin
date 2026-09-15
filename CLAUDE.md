@@ -258,7 +258,28 @@ every peso lives on an `OrdenLinea` without exceptions.
 **Closing a visita is the office's call, and filing a parte is the gardener's.**
 Each assigned person opens the visit and records *their own* part: their
 `horaEntrada`, their `horaSalida` and the tareas **they** did
-(`VisitaPersonal` + `VisitaPersonalTarea`). **Nothing about that is tied to
+(`VisitaPersonal` + `VisitaPersonalTarea`). **The two ends are marked, not
+typed**: *Marcar entrada* and *Marcar salida* stamp `entradaEl` / `salidaEl` —
+the instant, decided by the **server**, because an hour the client sends is an
+hour the client picks. They were `"HH:MM"` text; an instant needs a date, or
+whoever enters at 23:50 and leaves at 00:30 has an exit before their entry, and
+the visit's own derived `horaEntrada`/`horaSalida` (still text, still derived —
+now the earliest and latest *marks*, registered or not, because someone who
+clocked in is already in the garden) sorted them wrong. Marking salida is the
+moment the tareas are asked for: that is when they are known. Marking twice is
+refused and correcting is the office's, since the first mark is the one that
+says when they arrived. **Where they were is recorded and never required**:
+`entradaLat/Lng/Precision/Simulada` and the same four for salida, `null` when
+permission was denied or there was no signal. Refusing the mark for that leaves
+someone unable to record work they actually did — the real datum lost chasing a
+fake one — and the signal is spoofable anyway: three clicks in Chrome's
+DevTools, a mock app on Android (which `simulada` exposes, when the OS says so;
+iOS doesn't, so `null` there means "we don't know", not "not faked"). So this is
+evidence the office looks at, not a lock. `Cliente` has no coordinates yet, so
+there is nothing to compare against: the point is shown and opens in a map, and
+the "3 km away" warning waits for the client's pin. The browser needs HTTPS
+(localhost excepted); the app declares `expo-location` when-in-use only, since
+the reading happens at the press. **Nothing about any of it is tied to
 today's date** — `registrarParte` checks only that the visita isn't `CANCELADA`,
 that the person is assigned (`removedAt: null`) and that the tareas are alive, so
 a visit from last month that nobody filed still gets filed, which is exactly when

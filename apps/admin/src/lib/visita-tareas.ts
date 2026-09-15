@@ -34,15 +34,50 @@ export interface VisitaConTareas {
   personal: ParteMinimo[];
 }
 
+/** Dónde estaba alguien al marcar. `null` en todo = no hubo ubicación. */
+export interface UbicacionMarcada {
+  lat: number | null;
+  lng: number | null;
+  /** Radio en metros que informó el dispositivo. ±2000 no dice nada. */
+  precision: number | null;
+  /** Android delata una ubicación de mock. iOS no: ahí es `null`, "no sabemos". */
+  simulada: boolean | null;
+}
+
 /** El parte completo, como lo muestra la ficha de la visita. */
 export interface PersonalDeVisita extends ParteMinimo {
   id: string;
   personalId: string;
   personal: { id: string; nombre: string; apellido: string | null };
-  horaEntrada: string | null;
-  horaSalida: string | null;
+  /** Cuándo marcó. `null` = todavía no marcó esa punta. */
+  entradaEl: string | Date | null;
+  salidaEl: string | Date | null;
+  entradaLat: number | null;
+  entradaLng: number | null;
+  entradaPrecision: number | null;
+  entradaSimulada: boolean | null;
+  salidaLat: number | null;
+  salidaLng: number | null;
+  salidaPrecision: number | null;
+  salidaSimulada: boolean | null;
   /** `null` = todavía no cargó su parte. */
   registradoEl: string | Date | null;
+}
+
+/** La ubicación de una de las dos marcas, ya agrupada. */
+export function ubicacionDe(
+  parte: PersonalDeVisita,
+  cual: "entrada" | "salida"
+): UbicacionMarcada | null {
+  const lat = cual === "entrada" ? parte.entradaLat : parte.salidaLat;
+  const lng = cual === "entrada" ? parte.entradaLng : parte.salidaLng;
+  if (lat === null || lng === null) return null;
+  return {
+    lat,
+    lng,
+    precision: cual === "entrada" ? parte.entradaPrecision : parte.salidaPrecision,
+    simulada: cual === "entrada" ? parte.entradaSimulada : parte.salidaSimulada,
+  };
 }
 
 /** Cómo se nombra a alguien del personal en una línea. */
@@ -143,8 +178,16 @@ export const TAREAS_DE_VISITA_INCLUDE = {
     select: {
       id: true,
       personalId: true,
-      horaEntrada: true,
-      horaSalida: true,
+      entradaEl: true,
+      salidaEl: true,
+      entradaLat: true,
+      entradaLng: true,
+      entradaPrecision: true,
+      entradaSimulada: true,
+      salidaLat: true,
+      salidaLng: true,
+      salidaPrecision: true,
+      salidaSimulada: true,
       registradoEl: true,
       personal: {
         select: { id: true, nombre: true, apellido: true, tipo: true },

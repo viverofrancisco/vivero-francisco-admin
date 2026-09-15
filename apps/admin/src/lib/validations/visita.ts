@@ -82,8 +82,15 @@ export type CompletarVisitaFormData = z.infer<typeof completarVisitaSchema>;
  */
 export const parteVisitaSchema = z.object({
   personalId: z.string().min(1).optional(),
-  horaEntrada: z.string().nullable().optional(),
-  horaSalida: z.string().nullable().optional(),
+  /**
+   * Corrección de los instantes marcados, en ISO.
+   *
+   * Eran `"HH:MM"`. Ahora la entrada y la salida se marcan con un botón que
+   * sella el momento, y esto es lo que la oficina manda cuando hay que
+   * arreglar uno — una corrección de un instante, no una hora suelta.
+   */
+  entradaEl: z.string().datetime().nullable().optional(),
+  salidaEl: z.string().datetime().nullable().optional(),
   tareaIds: z.array(z.string().min(1)),
 });
 

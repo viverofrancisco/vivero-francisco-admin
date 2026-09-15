@@ -51,12 +51,64 @@ const mediaItemSchema = z.object({
 export const parteVisitaSchema = z.object({
   /** Solo la oficina puede cargar por otro; a un jardinero se le ignora. */
   personalId: z.string().min(1).optional(),
-  horaEntrada: z.string().optional().nullable(), // "HH:MM"
-  horaSalida: z.string().optional().nullable(),
+  /**
+   * Corrección de los instantes marcados, en ISO.
+   *
+   * Eran `"HH:MM"`. La entrada y la salida ahora se marcan con un botón que
+   * sella el momento —ver `marcaVisitaSchema`—, y esto es lo que se manda
+   * cuando hay que corregir uno. Un instante y no una hora suelta: quien entra
+   * a las 23:50 y sale a las 00:30 tenía una salida anterior a su entrada.
+   */
+  entradaEl: z.string().optional().nullable(),
+  salidaEl: z.string().optional().nullable(),
   tareaIds: z.array(z.string().min(1)),
   media: z.array(mediaItemSchema).optional(),
 });
 export type ParteVisitaBody = z.infer<typeof parteVisitaSchema>;
+
+/**
+ * Dónde estaba quien marcó. Opcional, y validada igual.
+ *
+ * Una latitud de 200 no existe, y guardarla sería guardar basura que después
+ * nadie sabe leer. `precision` es el radio en metros que informa el
+ * dispositivo; `simulada` sale de Android cuando la ubicación viene de una app
+ * de mock — iOS no lo dice, así que ahí es `null`, que significa "no sabemos"
+ * y no "no simulada".
+ */
+export const ubicacionMarcaSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  precision: z.number().min(0).optional().nullable(),
+  simulada: z.boolean().optional().nullable(),
+});
+export type UbicacionMarcaBody = z.infer<typeof ubicacionMarcaSchema>;
+
+/**
+ * Marcar entrada o salida.
+ *
+ * El servidor sella el momento: no se manda una hora, porque una hora que manda
+ * el cliente es una hora que el cliente elige. Al salir se dice qué se hizo,
+ * que es cuando recién se sabe.
+ *
+ * La ubicación no se exige. Falta señal adentro de una pared, con la batería
+ * baja o con el teléfono en la camioneta, y negarse a registrar por eso deja a
+ * alguien sin poder anotar el trabajo que sí hizo.
+ */
+export const marcaVisitaSchema = z.discriminatedUnion("tipo", [
+  z.object({
+    tipo: z.literal("ENTRADA"),
+    personalId: z.string().min(1).optional(),
+    ubicacion: ubicacionMarcaSchema.optional().nullable(),
+  }),
+  z.object({
+    tipo: z.literal("SALIDA"),
+    personalId: z.string().min(1).optional(),
+    ubicacion: ubicacionMarcaSchema.optional().nullable(),
+    tareaIds: z.array(z.string().min(1)),
+    media: z.array(mediaItemSchema).optional(),
+  }),
+]);
+export type MarcaVisitaBody = z.infer<typeof marcaVisitaSchema>;
 
 /** Cerrar la visita. Solo ADMIN/STAFF. */
 export const completeVisitaSchema = z.object({

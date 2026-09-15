@@ -55,8 +55,8 @@ export async function GET(
         select: {
           id: true,
           personalId: true,
-          horaEntrada: true,
-          horaSalida: true,
+          entradaEl: true,
+          salidaEl: true,
           registradoEl: true,
           personal: { select: { id: true, nombre: true, apellido: true } },
           tareas: {

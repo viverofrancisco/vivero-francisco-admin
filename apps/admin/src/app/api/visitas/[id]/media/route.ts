@@ -1,6 +1,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
+import { prisma as db } from "@/lib/prisma";
+import type { UserRole } from "@/generated/prisma/client";
+
+/**
+ * Quién puede tocar los archivos de esta visita.
+ *
+ * La oficina, y **el jardinero asignado**. `isReadOnly` lo deja afuera porque
+ * en el portal no agenda, no edita y no cierra; pero las fotos se sacan
+ * mientras se trabaja, y el que está en el jardín es él. Lo que lo habilita es
+ * la asignación, no el rol: en la visita de otra cuadrilla sigue siendo de solo
+ * lectura.
+ */
+async function puedeTocarArchivos(
+  user: { id: string; role: UserRole; personalId?: string | null },
+  visitaId: string
+): Promise<boolean> {
+  if (!isReadOnly(user.role)) return true;
+  if (user.role !== "PERSONAL" || !user.personalId) return false;
+  const asignado = await db.visitaPersonal.count({
+    where: { visitaId, personalId: user.personalId, removedAt: null },
+  });
+  return asignado > 0;
+}
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
 import { z } from "zod/v4";
 import { requestUploadUrlsSchema } from "@vivero/shared";
@@ -19,11 +42,10 @@ export async function POST(
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  if (isReadOnly(user.role)) {
+  const { id } = await params;
+  if (!(await puedeTocarArchivos(user, id))) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
-
-  const { id } = await params;
 
   const visita = await prisma.visita.findUnique({ where: { id } });
   if (!visita) {
@@ -74,11 +96,10 @@ export async function PUT(
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  if (isReadOnly(user.role)) {
+  const { id } = await params;
+  if (!(await puedeTocarArchivos(user, id))) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
-
-  const { id } = await params;
   const body = await request.json();
   const result = confirmSchema.safeParse(body);
 

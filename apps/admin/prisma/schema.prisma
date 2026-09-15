@@ -865,15 +865,45 @@ model VisitaPersonal {
   removedAt   DateTime?
   removedById String?
 
-  /// Su turno en esta visita. Texto "HH:MM", como en la visita.
-  horaEntrada  String?
-  horaSalida   String?
+  /**
+   * Cuándo marcó entrada y salida. El instante, no la hora escrita.
+   * Eran texto `"HH:MM"` que alguien tipeaba. Ahora el jardinero aprieta un
+   * botón y se sella el momento, y un momento necesita fecha: quien entra a las
+   * 23:50 y sale a las 00:30 tenía una salida anterior a su entrada. La hora
+   * que se muestra se deriva de acá; la oficina corrige el instante, no un
+   * texto suelto.
+   */
+  entradaEl DateTime?
+  salidaEl  DateTime?
+
+  /**
+   * Dónde estaba al marcar. `null` = no dio permiso, o no había señal.
+   * Se guarda y no se exige: la señal falta adentro de una pared, con la
+   * batería baja o con el teléfono en la camioneta, y bloquear la marca por eso
+   * deja a alguien sin poder registrar el trabajo que sí hizo — se pierde el
+   * dato real por perseguir uno falso. Además se falsea: en el navegador con
+   * tres clics, en Android con una app de mock (que es lo que `simulada`
+   * delata, cuando el sistema lo dice). Así que esto es evidencia para que la
+   * oficina mire, no una cerradura.
+   * `precision` es el radio en metros que informa el dispositivo: una lectura
+   * de ±2000 m no dice nada, y sin ese número parece tan buena como una de ±5.
+   * Todavía no hay contra qué compararla — `Cliente` no tiene coordenadas—, así
+   * que por ahora se registra y se muestra. El pin del sitio viene después.
+   */
+  entradaLat       Float?
+  entradaLng       Float?
+  entradaPrecision Float?
+  entradaSimulada  Boolean?
+  salidaLat        Float?
+  salidaLng        Float?
+  salidaPrecision  Float?
+  salidaSimulada   Boolean?
   /// Cuándo cargó su parte. `null` = todavía no la cargó, que es lo que la
   /// visita muestra como "falta" y lo que impide darla por cerrada sola.
   ///
   /// Se sella al guardar y se vuelve a sellar al corregir: es "cuándo quedó
   /// registrado esto que dice acá", no "cuándo lo cargó por primera vez".
-  registradoEl DateTime?
+  registradoEl     DateTime?
 
   visita    Visita                @relation(fields: [visitaId], references: [id], onDelete: Cascade)
   personal  Personal              @relation(fields: [personalId], references: [id], onDelete: Cascade)

@@ -333,14 +333,30 @@ export async function addVisitaMedia(
 // El parte de cada uno
 // ──────────────────────────────────────────────
 
+/**
+ * Dónde estaba quien marcó. Lo que da el dispositivo, sin interpretar.
+ *
+ * `precision` es el radio en metros que el propio dispositivo informa, y
+ * `simulada` sale de Android cuando la ubicación viene de una app de mock —
+ * iOS no lo dice, así que ahí es `null`, que no significa "no simulada" sino
+ * "no sabemos".
+ */
+export interface UbicacionDeMarca {
+  lat: number;
+  lng: number;
+  precision?: number | null;
+  simulada?: boolean | null;
+}
+
 export interface ParteDeVisitaPayload {
   /**
    * De quién es el parte. Solo la oficina puede mandarlo: un jardinero carga lo
    * suyo y nada más, así que para él este campo se ignora.
    */
   personalId?: string;
-  horaEntrada?: string | null;
-  horaSalida?: string | null;
+  /** Corrección de los instantes marcados. ISO o `Date`. */
+  entradaEl?: string | Date | null;
+  salidaEl?: string | Date | null;
   /** Las tareas que **esta persona** hizo. Reemplaza a las que tuviera. */
   tareaIds: string[];
   /** Fotos que trae del jardín, si las carga en el mismo gesto. */
@@ -350,30 +366,257 @@ export interface ParteDeVisitaPayload {
 /**
  * Las horas de la visita salen de las de su gente.
  *
- * La primera entrada y la última salida de los que ya cargaron: es la ventana
- * en que hubo alguien en el jardín, que es lo que el cliente y las
- * notificaciones quieren decir por "de tal a tal hora". Los `HH:MM` se comparan
- * como texto y ordenan bien, así que no hace falta parsearlos.
+ * La primera entrada y la última salida de los que marcaron: es la ventana en
+ * que hubo alguien en el jardín, que es lo que el cliente y las notificaciones
+ * quieren decir por "de tal a tal hora".
+ *
+ * Mira `entradaEl`/`salidaEl` y no `registradoEl`: alguien que marcó entrada y
+ * todavía está trabajando ya corrió la ventana, aunque su parte no esté
+ * cargado. Antes eran textos `HH:MM` que ordenaban solos; ahora son instantes,
+ * que además ordenan bien cruzando la medianoche.
  */
 async function recalcularHorasDeVisita(
   tx: Prisma.TransactionClient,
   visitaId: string
 ) {
   const partes = await tx.visitaPersonal.findMany({
-    where: { visitaId, removedAt: null, registradoEl: { not: null } },
-    select: { horaEntrada: true, horaSalida: true },
+    where: { visitaId, removedAt: null },
+    select: { entradaEl: true, salidaEl: true },
   });
   const entradas = partes
-    .map((p) => p.horaEntrada)
-    .filter((h): h is string => !!h);
-  const salidas = partes.map((p) => p.horaSalida).filter((h): h is string => !!h);
+    .map((p) => p.entradaEl)
+    .filter((d): d is Date => d !== null)
+    .sort((a, b) => a.getTime() - b.getTime());
+  const salidas = partes
+    .map((p) => p.salidaEl)
+    .filter((d): d is Date => d !== null)
+    .sort((a, b) => a.getTime() - b.getTime());
   await tx.visita.update({
     where: { id: visitaId },
     data: {
-      horaEntrada: entradas.length ? entradas.sort()[0] : null,
-      horaSalida: salidas.length ? salidas.sort().at(-1)! : null,
+      horaEntrada: entradas.length ? horaDe(entradas[0]) : null,
+      horaSalida: salidas.length ? horaDe(salidas.at(-1)!) : null,
     },
   });
+}
+
+/**
+ * La hora de un instante, como la escribiría alguien: `"08:15"`.
+ *
+ * En la zona del servidor, que es la del vivero: `Visita.horaEntrada` existe
+ * para que las listas y las notificaciones digan una hora sin tener que
+ * formatearla cada vez.
+ */
+export function horaDe(fecha: Date): string {
+  return fecha.toLocaleTimeString("es-EC", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: ZONA,
+  });
+}
+
+/** La zona en que trabaja el vivero. Ecuador no tiene horario de verano. */
+const ZONA = "America/Guayaquil";
+
+/** Una fecha que puede venir como ISO, como `Date`, o no venir. */
+function aFecha(valor: string | Date | null | undefined): Date | null {
+  if (!valor) return null;
+  const fecha = valor instanceof Date ? valor : new Date(valor);
+  if (Number.isNaN(fecha.getTime())) {
+    throw new ValidationError("Esa fecha no se entiende.");
+  }
+  return fecha;
+}
+
+/**
+ * Cuál de los partes es el de quien pide, y si tiene derecho a tocarlo.
+ *
+ * El jardinero carga lo suyo; la oficina puede cargar por otro para corregir.
+ * Es la misma pregunta en las tres funciones del parte, y hacerla en tres
+ * lugares es como empiezan a contestarla distinto.
+ */
+async function miAsignacion(
+  visitaId: string,
+  viewer: Viewer,
+  personalIdPedido?: string
+) {
+  const visita = await getVisitaForViewer(visitaId, viewer);
+  if (visita.estado === "CANCELADA") {
+    throw new ConflictError("Esta visita está cancelada.");
+  }
+
+  let personalId: string;
+  if (isAdminRole(viewer.role)) {
+    if (!personalIdPedido) {
+      throw new ValidationError("Falta decir de quién es el parte.");
+    }
+    personalId = personalIdPedido;
+  } else if (viewer.role === "PERSONAL") {
+    if (!viewer.personalId) throw new ForbiddenError();
+    personalId = viewer.personalId;
+  } else {
+    throw new ForbiddenError();
+  }
+
+  const asignacion = visita.personal.find((p) => p.personalId === personalId);
+  if (!asignacion) {
+    throw new ValidationError("Esa persona no está asignada a esta visita.");
+  }
+  return { visita, asignacion };
+}
+
+/** Las columnas de ubicación de una marca, listas para escribir. */
+function columnasDeUbicacion(
+  cual: "entrada" | "salida",
+  ubicacion: UbicacionDeMarca | undefined
+) {
+  if (!ubicacion) return {};
+  return {
+    [`${cual}Lat`]: ubicacion.lat,
+    [`${cual}Lng`]: ubicacion.lng,
+    [`${cual}Precision`]: ubicacion.precision ?? null,
+    [`${cual}Simulada`]: ubicacion.simulada ?? null,
+  };
+}
+
+/**
+ * Marca la entrada: sella el momento y guarda dónde estaba.
+ *
+ * El momento es **ahora**, no una hora que alguien escribe: eso es lo que
+ * convierte el dato en algo que significa "estuvo ahí a esa hora" en vez de
+ * "alguien dijo que estuvo".
+ *
+ * La ubicación es opcional a propósito. Falta señal adentro de una pared, con
+ * la batería baja o con el teléfono en la camioneta, y negarse a registrar por
+ * eso deja a alguien sin poder anotar el trabajo que sí hizo: se pierde el dato
+ * real por perseguir uno falso. La oficina ve cuáles marcas vinieron sin
+ * ubicación, que es la pregunta que se quería responder.
+ *
+ * No se vuelve a marcar: una entrada marcada dos veces reescribiría la primera,
+ * y la primera es la que dice cuándo llegó. Corregirla es de oficina.
+ */
+export async function marcarEntrada(
+  visitaId: string,
+  viewer: Viewer,
+  opciones: { personalId?: string; ubicacion?: UbicacionDeMarca } = {}
+) {
+  const { visita, asignacion } = await miAsignacion(
+    visitaId,
+    viewer,
+    opciones.personalId
+  );
+  if (asignacion.entradaEl) {
+    throw new ConflictError("Ya marcaste tu entrada en esta visita.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.visitaPersonal.update({
+      where: { id: asignacion.id },
+      data: {
+        entradaEl: new Date(),
+        ...columnasDeUbicacion("entrada", opciones.ubicacion),
+      },
+    });
+    await recalcularHorasDeVisita(tx, visitaId);
+    // La primera entrada la pone en curso: alguien está en el jardín. Si ya
+    // estaba cerrada no se reabre — que llegue un marcado tarde no deshace la
+    // decisión de la oficina.
+    if (visita.estado === "PROGRAMADA") {
+      await tx.visita.update({
+        where: { id: visitaId },
+        data: { estado: "EN_CURSO" },
+      });
+    }
+  });
+
+  return getVisitaForViewer(visitaId, viewer);
+}
+
+/**
+ * Marca la salida, y con ella lo que hizo.
+ *
+ * Es el momento en que se pregunta qué tareas hizo: recién ahí las sabe, y
+ * preguntárselo al llegar sería pedirle que adivine. Las fotos pueden ir acá o
+ * haberse subido antes — se suben en cualquier momento, porque se sacan
+ * mientras se trabaja.
+ *
+ * Exige haber marcado entrada: una salida sin entrada no dice nada. Quien se
+ * olvidó marca las dos seguidas, y los instantes dicen la verdad de lo que el
+ * sistema sabe — cuándo se apretó el botón.
+ */
+export async function marcarSalida(
+  visitaId: string,
+  viewer: Viewer,
+  payload: {
+    personalId?: string;
+    ubicacion?: UbicacionDeMarca;
+    tareaIds: string[];
+    media?: VisitaMediaInput[];
+  }
+) {
+  const { asignacion } = await miAsignacion(
+    visitaId,
+    viewer,
+    payload.personalId
+  );
+  if (!asignacion.entradaEl) {
+    throw new ConflictError("Primero marca tu entrada.");
+  }
+  if (asignacion.salidaEl) {
+    throw new ConflictError("Ya marcaste tu salida en esta visita.");
+  }
+
+  const tareaIds = await tareasVivas(payload.tareaIds);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.visitaPersonalTarea.deleteMany({
+      where: { visitaPersonalId: asignacion.id },
+    });
+    if (tareaIds.length > 0) {
+      await tx.visitaPersonalTarea.createMany({
+        data: tareaIds.map((tareaId) => ({
+          visitaPersonalId: asignacion.id,
+          tareaId,
+        })),
+      });
+    }
+    await tx.visitaPersonal.update({
+      where: { id: asignacion.id },
+      data: {
+        salidaEl: new Date(),
+        ...columnasDeUbicacion("salida", payload.ubicacion),
+        registradoEl: new Date(),
+      },
+    });
+    if (payload.media?.length) {
+      await tx.visitaMedia.createMany({
+        data: payload.media.map((m) => ({
+          visitaId,
+          key: m.key,
+          url: publicUrlForKey(m.key),
+          tipo: m.tipo,
+          tareaId: m.tareaId ?? null,
+        })),
+      });
+    }
+    await recalcularHorasDeVisita(tx, visitaId);
+  });
+
+  return getVisitaForViewer(visitaId, viewer);
+}
+
+/** Las que siguen existiendo, sin repetir. Una borrada no se puede cargar. */
+async function tareasVivas(pedidas: string[]): Promise<string[]> {
+  const tareaIds = [...new Set(pedidas)];
+  if (tareaIds.length === 0) return [];
+  const vivas = await prisma.tarea.count({
+    where: { id: { in: tareaIds }, deletedAt: null },
+  });
+  if (vivas !== tareaIds.length) {
+    throw new ValidationError("Alguna de las tareas ya no existe.");
+  }
+  return tareaIds;
 }
 
 /**
@@ -440,11 +683,11 @@ export async function registrarParte(
     await tx.visitaPersonal.update({
       where: { id: asignacion.id },
       data: {
-        ...(payload.horaEntrada !== undefined
-          ? { horaEntrada: payload.horaEntrada || null }
+        ...(payload.entradaEl !== undefined
+          ? { entradaEl: aFecha(payload.entradaEl) }
           : {}),
-        ...(payload.horaSalida !== undefined
-          ? { horaSalida: payload.horaSalida || null }
+        ...(payload.salidaEl !== undefined
+          ? { salidaEl: aFecha(payload.salidaEl) }
           : {}),
         // Se vuelve a sellar al corregir: dice "cuándo quedó registrado esto
         // que dice acá", no "cuándo lo cargó por primera vez".
@@ -503,7 +746,19 @@ export async function borrarParte(
     });
     await tx.visitaPersonal.update({
       where: { id: asignacion.id },
-      data: { horaEntrada: null, horaSalida: null, registradoEl: null },
+      data: {
+        entradaEl: null,
+        salidaEl: null,
+        entradaLat: null,
+        entradaLng: null,
+        entradaPrecision: null,
+        entradaSimulada: null,
+        salidaLat: null,
+        salidaLng: null,
+        salidaPrecision: null,
+        salidaSimulada: null,
+        registradoEl: null,
+      },
     });
     await recalcularHorasDeVisita(tx, visitaId);
   });

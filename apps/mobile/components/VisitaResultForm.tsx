@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -19,7 +18,6 @@ import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import * as VideoThumbnails from "expo-video-thumbnails";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { apiRequest, ApiError } from "@/lib/api";
 import type {
   VisitaDetail,
@@ -57,8 +55,7 @@ export interface TareaDeCatalogo {
 }
 
 export interface VisitaFormInitialValues {
-  horaEntrada?: string | null; // "HH:MM"
-  horaSalida?: string | null;
+
   /** Las tareas que esta persona ya tenía cargadas. */
   tareaIds?: string[];
   existingMedia?: VisitaMedia[];
@@ -80,6 +77,8 @@ export function VisitaResultForm({
   initialValues,
   tareas,
   obligatorias = [],
+  modo,
+  ubicacion,
 }: {
   visitaId: string;
   initialValues?: VisitaFormInitialValues;
@@ -87,6 +86,21 @@ export function VisitaResultForm({
   tareas: TareaDeCatalogo[];
   /** Las que la visita exige, para ponerlas primero y señalarlas. */
   obligatorias?: string[];
+  /**
+   * Qué está pasando al guardar.
+   *
+   * `SALIDA` es el gesto de irse: sella el momento y guarda lo que hizo, todo
+   * junto. `CORRECCION` es volver después a arreglar lo que marcó, y no toca
+   * las marcas — la hora a la que se fue ya pasó.
+   */
+  modo: "SALIDA" | "CORRECCION";
+  /** Se lee al apretar, no acá: quien llama decide cuándo pedirla. */
+  ubicacion?: () => Promise<{
+    lat: number;
+    lng: number;
+    precision: number | null;
+    simulada: boolean | null;
+  } | null>;
 }) {
   const router = useRouter();
   const navigation = useNavigation();
@@ -96,39 +110,7 @@ export function VisitaResultForm({
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  const [horaEntrada, setHoraEntrada] = useState<Date | null>(
-    parseHm(initialValues?.horaEntrada)
-  );
-  const [horaSalida, setHoraSalida] = useState<Date | null>(
-    parseHm(initialValues?.horaSalida)
-  );
-  const [timePicker, setTimePicker] = useState<"entrada" | "salida" | null>(
-    null
-  );
-  // Holds the picker value while the iOS spinner is open. We commit it on
-  // "Listo" so a user can tap Listo without scrolling and still save the
-  // initial time shown in the wheel.
-  const [pendingTime, setPendingTime] = useState<Date | null>(null);
 
-  function openTimePicker(which: "entrada" | "salida") {
-    const current = which === "entrada" ? horaEntrada : horaSalida;
-    setPendingTime(current ?? defaultTime());
-    setTimePicker(which);
-  }
-
-  function commitTimePicker() {
-    if (timePicker && pendingTime) {
-      if (timePicker === "entrada") setHoraEntrada(pendingTime);
-      else setHoraSalida(pendingTime);
-    }
-    setTimePicker(null);
-    setPendingTime(null);
-  }
-
-  function cancelTimePicker() {
-    setTimePicker(null);
-    setPendingTime(null);
-  }
 
   /** Lo que esta persona hizo. Es el estado final: reemplaza lo que tuviera. */
   const [tareaIds, setTareaIds] = useState<string[]>(
@@ -147,9 +129,8 @@ export function VisitaResultForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isEdit = (initialValues?.tareaIds?.length ?? 0) > 0;
-  const headerTitle = isEdit ? "Editar mi parte" : "¿Qué hiciste?";
-  const submitLabel = isEdit ? "Guardar cambios" : "Guardar mi parte";
+  const headerTitle = modo === "SALIDA" ? "¿Qué hiciste?" : "Mi parte";
+  const submitLabel = modo === "SALIDA" ? "Marcar salida" : "Guardar cambios";
   // Se puede guardar sin marcar nada: hay días en que se fue y no se hizo lo
   // que estaba previsto, y eso también es información.
   const canSubmit = true;
@@ -349,15 +330,26 @@ export function VisitaResultForm({
     setError(null);
     try {
       const uploaded = await uploadAll();
-      await apiRequest<VisitaDetail>(`/api/mobile/visitas/${visitaId}/parte`, {
-        method: "POST",
-        body: {
-          horaEntrada: horaEntrada ? formatHm(horaEntrada) : null,
-          horaSalida: horaSalida ? formatHm(horaSalida) : null,
-          tareaIds,
-          media: uploaded,
-        },
-      });
+      if (modo === "SALIDA") {
+        // Irse es un solo gesto: sella el momento, guarda lo que hizo y sube
+        // lo que sacó. La ubicación se lee recién acá —al apretar— y si no
+        // llega se marca igual: ver `marcarSalida` en el servidor.
+        await apiRequest<VisitaDetail>(`/api/mobile/visitas/${visitaId}/marca`, {
+          method: "POST",
+          body: {
+            tipo: "SALIDA",
+            ubicacion: ubicacion ? await ubicacion() : null,
+            tareaIds,
+            media: uploaded,
+          },
+        });
+      } else {
+        // Corregir no mueve las marcas: la hora a la que se fue ya pasó.
+        await apiRequest<VisitaDetail>(`/api/mobile/visitas/${visitaId}/parte`, {
+          method: "POST",
+          body: { tareaIds, media: uploaded },
+        });
+      }
       router.back();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Error al guardar");
@@ -392,23 +384,6 @@ export function VisitaResultForm({
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          <Section title="Horario">
-            <View style={styles.timeRow}>
-              <TimePickField
-                label="Entrada"
-                value={horaEntrada}
-                onPress={() => openTimePicker("entrada")}
-                onClear={() => setHoraEntrada(null)}
-              />
-              <TimePickField
-                label="Salida"
-                value={horaSalida}
-                onPress={() => openTimePicker("salida")}
-                onClear={() => setHoraSalida(null)}
-              />
-            </View>
-          </Section>
-
           {/* Lo que hiciste **tú**. Otro puede haber hecho otras cosas en la
               misma visita y las carga en su propio parte. */}
           <Section title="Tareas que hiciste">
@@ -609,97 +584,7 @@ export function VisitaResultForm({
         </View>
       </View>
 
-      {/* Time picker — Android shows a native dialog; iOS renders inline so
-          we wrap it in a bottom-sheet Modal to float it above the footer. */}
-      {Platform.OS === "ios" ? (
-        <Modal
-          visible={timePicker !== null}
-          transparent
-          animationType="fade"
-          onRequestClose={cancelTimePicker}
-        >
-          <Pressable style={styles.timeBackdrop} onPress={cancelTimePicker}>
-            <Pressable
-              style={styles.timeSheet}
-              onPress={(e) => e.stopPropagation()}
-            >
-              <View style={styles.timeSheetHeader}>
-                <Button
-                  mode="text"
-                  textColor="#2e7d32"
-                  onPress={commitTimePicker}
-                >
-                  Listo
-                </Button>
-              </View>
-              {timePicker !== null ? (
-                <DateTimePicker
-                  mode="time"
-                  display="spinner"
-                  value={pendingTime ?? defaultTime()}
-                  onChange={(_event, selected) => {
-                    if (selected) setPendingTime(selected);
-                  }}
-                />
-              ) : null}
-            </Pressable>
-          </Pressable>
-        </Modal>
-      ) : timePicker !== null ? (
-        <DateTimePicker
-          mode="time"
-          display="default"
-          value={
-            (timePicker === "entrada" ? horaEntrada : horaSalida) ??
-            defaultTime()
-          }
-          onChange={(_event, selected) => {
-            setTimePicker(null);
-            if (selected) {
-              if (timePicker === "entrada") setHoraEntrada(selected);
-              else setHoraSalida(selected);
-            }
-          }}
-        />
-      ) : null}
     </KeyboardAvoidingView>
-  );
-}
-
-function TimePickField({
-  label,
-  value,
-  onPress,
-  onClear,
-}: {
-  label: string;
-  value: Date | null;
-  onPress: () => void;
-  onClear: () => void;
-}) {
-  return (
-    <View style={styles.timeFieldWrap}>
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => [
-          styles.fieldBox,
-          styles.timeField,
-          pressed && styles.fieldBoxPressed,
-        ]}
-      >
-        <Text variant="labelSmall" style={styles.timeFieldLabel}>
-          {label.toUpperCase()}
-        </Text>
-        <Text variant="bodyLarge" style={styles.timeFieldValue}>
-          {value ? formatHm(value) : "—"}
-        </Text>
-      </Pressable>
-      {value ? (
-        <Pressable onPress={onClear} hitSlop={8} style={styles.timeClear}>
-          <Text style={styles.timeClearX}>×</Text>
-        </Pressable>
-      ) : null}
-    </View>
   );
 }
 
@@ -720,28 +605,9 @@ function Section({
   );
 }
 
-function parseHm(value: string | null | undefined): Date | null {
-  if (!value) return null;
-  const [h, m] = value.split(":").map((n) => parseInt(n, 10));
-  if (Number.isNaN(h) || Number.isNaN(m)) return null;
-  const d = new Date();
-  d.setHours(h, m, 0, 0);
-  return d;
-}
 
-function defaultTime(): Date {
-  const d = new Date();
-  d.setSeconds(0, 0);
-  return d;
-}
 
-function pad2(n: number): string {
-  return String(n).padStart(2, "0");
-}
 
-function formatHm(d: Date): string {
-  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-}
 
 function guessContentType(name: string, isVideo: boolean): string {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
