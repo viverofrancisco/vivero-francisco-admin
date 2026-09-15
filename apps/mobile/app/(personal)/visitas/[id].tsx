@@ -24,6 +24,10 @@ import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+import { ubicacionActual } from "@/lib/ubicacion";
+import { dispositivoId } from "@/lib/dispositivo";
+import * as Haptics from "expo-haptics";
 import { tema } from "@/lib/tema";
 
 /**
@@ -45,6 +49,8 @@ export default function PersonalVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [confirmandoEntrada, setConfirmandoEntrada] = useState(false);
+  const [marcando, setMarcando] = useState(false);
   const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const [visita, setVisita] = useState<VisitaDetail | null>(null);
   const [catalogo, setCatalogo] = useState<TareaDeCatalogo[]>([]);
@@ -164,6 +170,37 @@ export default function PersonalVisitaScreen() {
       : !mio.salidaEl
         ? "Marcar salida"
         : "Editar mi parte";
+  /**
+   * Marcar entrada, desde la ficha.
+   *
+   * Era una pantalla completa con un título, un renglón y un botón. Una
+   * pantalla es para algo que se llena; esto es una decisión de sí o no.
+   */
+  async function marcarEntrada() {
+    setMarcando(true);
+    try {
+      await apiRequest(`/api/mobile/visitas/${visita!.id}/marca`, {
+        method: "POST",
+        body: {
+          tipo: "ENTRADA",
+          ubicacion: await ubicacionActual(),
+          dispositivo: await dispositivoId(),
+        },
+      });
+      // En el mismo momento que el dato queda guardado, no cuando termina de
+      // dibujarse: una háptica que llega tarde se lee como una falla.
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setConfirmandoEntrada(false);
+      await load();
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setError(e instanceof ApiError ? e.message : "No pudimos marcar");
+      setConfirmandoEntrada(false);
+    } finally {
+      setMarcando(false);
+    }
+  }
+
   const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
 
@@ -300,7 +337,9 @@ export default function PersonalVisitaScreen() {
           <Button
             mode="contained"
             onPress={() =>
-              router.push(`/(personal)/visitas/completar/${visita.id}`)
+              accion === "Marcar entrada"
+                ? setConfirmandoEntrada(true)
+                : router.push(`/(personal)/visitas/completar/${visita.id}`)
             }
             style={styles.primaryBtn}
             contentStyle={styles.primaryBtnContent}
@@ -310,6 +349,16 @@ export default function PersonalVisitaScreen() {
           </Button>
         ) : null}
       </View>
+
+      <DialogoConfirmar
+        visible={confirmandoEntrada}
+        titulo="¿Marcar tu entrada?"
+        detalle={`Se guarda la hora de ahora para ${nombreCliente(cliente)}.`}
+        confirmar="Marcar entrada"
+        cargando={marcando}
+        onConfirmar={marcarEntrada}
+        onCancelar={() => setConfirmandoEntrada(false)}
+      />
 
       <MediaViewer
         media={activeMedia}
