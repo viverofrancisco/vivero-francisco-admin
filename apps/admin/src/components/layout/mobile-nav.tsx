@@ -70,7 +70,14 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  { label: "Mensajes", href: "/dashboard/mensajes", icon: MessageSquare },
+  // Igual que en el menú de escritorio: el panel del jardinero ya trae las
+  // últimas conversaciones con un "Ver todas" que lleva acá.
+  {
+    label: "Mensajes",
+    href: "/dashboard/mensajes",
+    icon: MessageSquare,
+    roles: ["ADMIN", "STAFF"],
+  },
   {
     label: "Informes",
     href: "/dashboard/informes",

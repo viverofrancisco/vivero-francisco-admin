@@ -311,17 +311,35 @@ export interface InboxItem {
 
 async function visibleVisitaIdsForViewer(viewer: Viewer): Promise<string[] | "all"> {
   if (isAdminRole(viewer.role)) return "all";
+
+  // Cada uno ve las conversaciones de **sus** visitas, y "sus" quiere decir
+  // algo distinto según quién sea: las del cliente son las de su ficha, las del
+  // jardinero son aquellas donde está asignado. El jardinero caía en el
+  // `throw` de abajo —la bandeja le daba 403 mientras el menú se la ofrecía—
+  // porque cuando esto se escribió el chat era cosa de la oficina y del
+  // cliente. Desde que cada uno carga su parte, el chat de la visita es donde
+  // se le avisa que el portón está cerrado.
   if (viewer.role === "CLIENTE") {
     if (!viewer.clienteId) return [];
     const visitas = await prisma.visita.findMany({
+      where: { deletedAt: null, clienteId: viewer.clienteId },
+      select: { id: true },
+    });
+    return visitas.map((v) => v.id);
+  }
+
+  if (viewer.role === "PERSONAL") {
+    if (!viewer.personalId) return [];
+    const visitas = await prisma.visita.findMany({
       where: {
         deletedAt: null,
-        clienteId: viewer.clienteId,
+        personal: { some: { personalId: viewer.personalId, removedAt: null } },
       },
       select: { id: true },
     });
     return visitas.map((v) => v.id);
   }
+
   throw new ForbiddenError();
 }
 
