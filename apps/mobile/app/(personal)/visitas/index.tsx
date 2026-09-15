@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema, tarjeta, transicion } from "@/lib/tema";
+import { hora12 } from "@/lib/hora";
 import {
   FlatList,
   RefreshControl,
@@ -265,7 +266,7 @@ function VisitaRow({
         {/* Hora y estado en la misma línea: el "cuándo" y el "cómo va". */}
         <View style={styles.filaSuperior}>
           <Text style={[styles.hora, !v.horaEntrada && styles.horaVacia]}>
-            {v.horaEntrada ?? "Sin hora"}
+            {v.horaEntrada ? hora12(v.horaEntrada) : "Sin hora"}
           </Text>
           <View style={[styles.pildora, { backgroundColor: pildora.fondo }]}>
             <View style={[styles.punto, { backgroundColor: pildora.punto }]} />

@@ -4,6 +4,7 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
+import { hora12De } from "@/lib/hora";
 
 /**
  * Una confirmación en una hoja de abajo: una pregunta, dos botones.
@@ -42,7 +43,7 @@ export function DialogoConfirmar({
         <PressableScale
           onPress={onConfirmar}
           disabled={cargando}
-          estiloExterno={styles.ancho}
+          estiloExterno={[styles.ancho, styles.separado]}
           style={styles.confirmar}
         >
           {cargando ? (
@@ -87,18 +88,12 @@ function RelojEnVivo({ activo }: { activo: boolean }) {
   }, [activo]);
 
   return (
-    <Text style={styles.hora}>
-      {ahora.toLocaleTimeString("es-EC", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })}
-    </Text>
+    <Text style={styles.hora}>{hora12De(ahora)}</Text>
   );
 }
 
 const styles = StyleSheet.create({
-  cuerpo: { alignItems: "center", gap: 8, paddingTop: 4 },
+  cuerpo: { alignItems: "center", gap: 6, paddingTop: 2 },
   titulo: {
     fontSize: 19,
     fontWeight: "800",
@@ -107,12 +102,14 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   hora: {
-    fontSize: 52,
+    fontSize: 40,
     fontWeight: "800",
     color: tema.verde,
-    letterSpacing: -2,
+    letterSpacing: -1.4,
     fontVariant: ["tabular-nums"],
-    marginVertical: 6,
+    // Sin margen propio: el `gap` del cuerpo ya separa, y sumarle margen dejaba
+    // el número flotando en su propio bloque.
+    marginTop: 2,
   },
   detalle: {
     fontSize: 14,
@@ -121,7 +118,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
-  ancho: { alignSelf: "stretch", marginTop: 8 },
+  ancho: { alignSelf: "stretch" },
+  /** Solo el primario despega del contenido; el secundario va pegado a él. */
+  separado: { marginTop: 14 },
   confirmar: {
     height: 52,
     borderRadius: 14,
@@ -130,6 +129,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   confirmarTexto: { color: "#fff", fontWeight: "800", fontSize: 16 },
-  cancelar: { height: 46, alignItems: "center", justifyContent: "center" },
+  // Pegado al primario: son el mismo par de opciones, y el aire de por medio
+  // lo hacía parecer de otro grupo.
+  cancelar: { height: 42, alignItems: "center", justifyContent: "center" },
   cancelarTexto: { color: tema.texto3, fontWeight: "700", fontSize: 15 },
 });

@@ -154,7 +154,14 @@ export function HojaInferior({
             onLayout={(e) => setAlto(e.nativeEvent.layout.height)}
             style={[
               styles.hoja,
-              { maxHeight: height * maxAlto, paddingBottom: insets.bottom + 16 },
+              {
+                maxHeight: height * maxAlto,
+                // El safe area **y nada más**: `insets.bottom` ya son los ~34pt
+                // del indicador de inicio, y sumarle 16 dejaba medio dedo de
+                // blanco debajo del último botón. En un teléfono sin indicador
+                // el inset es 0, así que ahí sí hace falta un mínimo.
+                paddingBottom: Math.max(insets.bottom, 14),
+              },
               estiloHoja,
             ]}
           >
