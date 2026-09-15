@@ -490,12 +490,25 @@ something nobody filed.
 any state. They used to sit inside the salida form, where they arrived late: the
 photo is taken *while* the work happens, and saving it for the end is asking
 someone to remember. That form now asks one thing, which tareas they did. **The tag is
-required, and chosen per photo before anything uploads**: picking from the
-gallery opens a screen listing each file with its own tarea selector, and the
-*Subir* button stays off until none is missing. One tag for the whole batch was
-the obvious shape and the wrong one — a single trip to the gallery brings the
-pruning and the broken sprinkler together, so a batch tag would be a lie half
-the time. The server enforces it too (the mobile confirm route requires
+required, and chosen per photo before anything uploads**: picking opens a review
+sheet listing each file with its own tarea selector, and the *Subir* button says
+what is missing until nothing is. One tag for the whole batch was the obvious
+shape and the wrong one — a single trip to the gallery brings the pruning and
+the broken sprinkler together, so a batch tag would be a lie half the time —
+but *Aplicar a todas* sits in that sheet, because the other half of the time
+they really are all of one thing and tagging eight one by one is a punishment.
+Closing the sheet keeps the batch (a stray drag must not cost eight tagged
+photos); a line under the buttons offers to reopen it. **The tag is not written
+on the photo**: it was a 10 pt bar burnt over the bottom edge, covering the
+third of the image anyone looks at, truncating any long name and painting the
+untagged ones amber — a code nobody was taught. The grid **groups by tarea**
+instead, the name as the group's heading, so the category reads from across the
+screen and *Sin tarea* is a group to fix rather than a colour. **The photo
+itself is the tap target**: the only tappable thing used to be that label, with
+a permanent ✕ on every thumbnail — three photos, three delete buttons staring
+at you, for something done once in a while. Tapping opens the photo's sheet,
+where the three things one asks of a photo live: see it full screen, change its
+tarea, delete it. The server enforces it too (the mobile confirm route requires
 `tareaId`), because a rule only the screen keeps is a suggestion; `PATCH` still
 accepts `null`, since older photos have no tag and the office has to be able to
 move them. **Each gardener sees and touches only the photos they uploaded**

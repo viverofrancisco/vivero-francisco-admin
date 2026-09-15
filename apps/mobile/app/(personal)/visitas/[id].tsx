@@ -384,6 +384,7 @@ export default function PersonalVisitaScreen() {
               archivos={visita.media ?? []}
               catalogo={catalogo}
               onCambio={load}
+              onVer={setActiveMedia}
             />
           </View>
         ) : null}
