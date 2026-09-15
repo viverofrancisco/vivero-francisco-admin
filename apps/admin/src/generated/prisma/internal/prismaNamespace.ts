@@ -4883,6 +4883,7 @@ export const VisitaMediaScalarFieldEnum = {
   url: 'url',
   tipo: 'tipo',
   createdAt: 'createdAt',
+  subidaPorId: 'subidaPorId',
   tareaId: 'tareaId'
 } as const
 

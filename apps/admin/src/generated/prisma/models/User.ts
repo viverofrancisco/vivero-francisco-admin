@@ -277,6 +277,7 @@ export type UserWhereInput = {
   ordenesUpdated?: Prisma.OrdenListRelationFilter
   datosFacturacionCreated?: Prisma.DatoFacturacionListRelationFilter
   datosFacturacionUpdated?: Prisma.DatoFacturacionListRelationFilter
+  visitaMediaSubidas?: Prisma.VisitaMediaListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -331,6 +332,7 @@ export type UserOrderByWithRelationInput = {
   ordenesUpdated?: Prisma.OrdenOrderByRelationAggregateInput
   datosFacturacionCreated?: Prisma.DatoFacturacionOrderByRelationAggregateInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionOrderByRelationAggregateInput
+  visitaMediaSubidas?: Prisma.VisitaMediaOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -388,6 +390,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   ordenesUpdated?: Prisma.OrdenListRelationFilter
   datosFacturacionCreated?: Prisma.DatoFacturacionListRelationFilter
   datosFacturacionUpdated?: Prisma.DatoFacturacionListRelationFilter
+  visitaMediaSubidas?: Prisma.VisitaMediaListRelationFilter
 }, "id" | "email" | "usuario">
 
 export type UserOrderByWithAggregationInput = {
@@ -478,6 +481,7 @@ export type UserCreateInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -532,6 +536,7 @@ export type UserUncheckedCreateInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUpdateInput = {
@@ -586,6 +591,7 @@ export type UserUpdateInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -640,6 +646,7 @@ export type UserUncheckedUpdateInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1146,6 +1153,22 @@ export type UserUpdateOneWithoutVisitaPersonalRemovedNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitaPersonalRemovedInput, Prisma.UserUpdateWithoutVisitaPersonalRemovedInput>, Prisma.UserUncheckedUpdateWithoutVisitaPersonalRemovedInput>
 }
 
+export type UserCreateNestedOneWithoutVisitaMediaSubidasInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitaMediaSubidasInput, Prisma.UserUncheckedCreateWithoutVisitaMediaSubidasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitaMediaSubidasInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutVisitaMediaSubidasNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutVisitaMediaSubidasInput, Prisma.UserUncheckedCreateWithoutVisitaMediaSubidasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutVisitaMediaSubidasInput
+  upsert?: Prisma.UserUpsertWithoutVisitaMediaSubidasInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVisitaMediaSubidasInput, Prisma.UserUpdateWithoutVisitaMediaSubidasInput>, Prisma.UserUncheckedUpdateWithoutVisitaMediaSubidasInput>
+}
+
 export type UserCreateNestedOneWithoutPushTokensInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutPushTokensInput, Prisma.UserUncheckedCreateWithoutPushTokensInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutPushTokensInput
@@ -1415,6 +1438,7 @@ export type UserCreateWithoutAccountsInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1468,6 +1492,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1537,6 +1562,7 @@ export type UserUpdateWithoutAccountsInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1590,6 +1616,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1643,6 +1670,7 @@ export type UserCreateWithoutSessionsInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1696,6 +1724,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1765,6 +1794,7 @@ export type UserUpdateWithoutSessionsInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1818,6 +1848,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutClientesCreatedInput = {
@@ -1871,6 +1902,7 @@ export type UserCreateWithoutClientesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutClientesCreatedInput = {
@@ -1924,6 +1956,7 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutClientesCreatedInput = {
@@ -1982,6 +2015,7 @@ export type UserCreateWithoutClientesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutClientesUpdatedInput = {
@@ -2035,6 +2069,7 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutClientesUpdatedInput = {
@@ -2093,6 +2128,7 @@ export type UserCreateWithoutClienteInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutClienteInput = {
@@ -2146,6 +2182,7 @@ export type UserUncheckedCreateWithoutClienteInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutClienteInput = {
@@ -2215,6 +2252,7 @@ export type UserUpdateWithoutClientesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientesCreatedInput = {
@@ -2268,6 +2306,7 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutClientesUpdatedInput = {
@@ -2332,6 +2371,7 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
@@ -2385,6 +2425,7 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutClienteInput = {
@@ -2449,6 +2490,7 @@ export type UserUpdateWithoutClienteInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClienteInput = {
@@ -2502,6 +2544,7 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutProductosCreatedInput = {
@@ -2555,6 +2598,7 @@ export type UserCreateWithoutProductosCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutProductosCreatedInput = {
@@ -2608,6 +2652,7 @@ export type UserUncheckedCreateWithoutProductosCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutProductosCreatedInput = {
@@ -2666,6 +2711,7 @@ export type UserCreateWithoutProductosUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutProductosUpdatedInput = {
@@ -2719,6 +2765,7 @@ export type UserUncheckedCreateWithoutProductosUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutProductosUpdatedInput = {
@@ -2788,6 +2835,7 @@ export type UserUpdateWithoutProductosCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProductosCreatedInput = {
@@ -2841,6 +2889,7 @@ export type UserUncheckedUpdateWithoutProductosCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutProductosUpdatedInput = {
@@ -2905,6 +2954,7 @@ export type UserUpdateWithoutProductosUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
@@ -2958,6 +3008,7 @@ export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutMediaInput = {
@@ -3011,6 +3062,7 @@ export type UserCreateWithoutMediaInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutMediaInput = {
@@ -3064,6 +3116,7 @@ export type UserUncheckedCreateWithoutMediaInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutMediaInput = {
@@ -3133,6 +3186,7 @@ export type UserUpdateWithoutMediaInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMediaInput = {
@@ -3186,6 +3240,7 @@ export type UserUncheckedUpdateWithoutMediaInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutMovimientosInventarioInput = {
@@ -3239,6 +3294,7 @@ export type UserCreateWithoutMovimientosInventarioInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutMovimientosInventarioInput = {
@@ -3292,6 +3348,7 @@ export type UserUncheckedCreateWithoutMovimientosInventarioInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutMovimientosInventarioInput = {
@@ -3361,6 +3418,7 @@ export type UserUpdateWithoutMovimientosInventarioInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMovimientosInventarioInput = {
@@ -3414,6 +3472,7 @@ export type UserUncheckedUpdateWithoutMovimientosInventarioInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutSuscripcionesCreatedInput = {
@@ -3467,6 +3526,7 @@ export type UserCreateWithoutSuscripcionesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
@@ -3520,6 +3580,7 @@ export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutSuscripcionesCreatedInput = {
@@ -3578,6 +3639,7 @@ export type UserCreateWithoutSuscripcionesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
@@ -3631,6 +3693,7 @@ export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutSuscripcionesUpdatedInput = {
@@ -3700,6 +3763,7 @@ export type UserUpdateWithoutSuscripcionesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
@@ -3753,6 +3817,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutSuscripcionesUpdatedInput = {
@@ -3817,6 +3882,7 @@ export type UserUpdateWithoutSuscripcionesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
@@ -3870,6 +3936,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutPersonalCreatedInput = {
@@ -3923,6 +3990,7 @@ export type UserCreateWithoutPersonalCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutPersonalCreatedInput = {
@@ -3976,6 +4044,7 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutPersonalCreatedInput = {
@@ -4034,6 +4103,7 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
@@ -4087,6 +4157,7 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutPersonalUpdatedInput = {
@@ -4145,6 +4216,7 @@ export type UserCreateWithoutPersonalInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutPersonalInput = {
@@ -4198,6 +4270,7 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutPersonalInput = {
@@ -4267,6 +4340,7 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
@@ -4320,6 +4394,7 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutPersonalUpdatedInput = {
@@ -4384,6 +4459,7 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
@@ -4437,6 +4513,7 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutPersonalInput = {
@@ -4501,6 +4578,7 @@ export type UserUpdateWithoutPersonalInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalInput = {
@@ -4554,6 +4632,7 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutGruposCreatedInput = {
@@ -4607,6 +4686,7 @@ export type UserCreateWithoutGruposCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutGruposCreatedInput = {
@@ -4660,6 +4740,7 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutGruposCreatedInput = {
@@ -4718,6 +4799,7 @@ export type UserCreateWithoutGruposUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutGruposUpdatedInput = {
@@ -4771,6 +4853,7 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutGruposUpdatedInput = {
@@ -4840,6 +4923,7 @@ export type UserUpdateWithoutGruposCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGruposCreatedInput = {
@@ -4893,6 +4977,7 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutGruposUpdatedInput = {
@@ -4957,6 +5042,7 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
@@ -5010,6 +5096,7 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutTareasCreatedInput = {
@@ -5063,6 +5150,7 @@ export type UserCreateWithoutTareasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutTareasCreatedInput = {
@@ -5116,6 +5204,7 @@ export type UserUncheckedCreateWithoutTareasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutTareasCreatedInput = {
@@ -5174,6 +5263,7 @@ export type UserCreateWithoutTareasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutTareasUpdatedInput = {
@@ -5227,6 +5317,7 @@ export type UserUncheckedCreateWithoutTareasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutTareasUpdatedInput = {
@@ -5285,6 +5376,7 @@ export type UserCreateWithoutTareasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutTareasEliminadasInput = {
@@ -5338,6 +5430,7 @@ export type UserUncheckedCreateWithoutTareasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutTareasEliminadasInput = {
@@ -5407,6 +5500,7 @@ export type UserUpdateWithoutTareasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTareasCreatedInput = {
@@ -5460,6 +5554,7 @@ export type UserUncheckedUpdateWithoutTareasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutTareasUpdatedInput = {
@@ -5524,6 +5619,7 @@ export type UserUpdateWithoutTareasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTareasUpdatedInput = {
@@ -5577,6 +5673,7 @@ export type UserUncheckedUpdateWithoutTareasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutTareasEliminadasInput = {
@@ -5641,6 +5738,7 @@ export type UserUpdateWithoutTareasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTareasEliminadasInput = {
@@ -5694,6 +5792,7 @@ export type UserUncheckedUpdateWithoutTareasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutVisitasCreatedInput = {
@@ -5747,6 +5846,7 @@ export type UserCreateWithoutVisitasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutVisitasCreatedInput = {
@@ -5800,6 +5900,7 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutVisitasCreatedInput = {
@@ -5858,6 +5959,7 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
@@ -5911,6 +6013,7 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutVisitasUpdatedInput = {
@@ -5969,6 +6072,7 @@ export type UserCreateWithoutVisitasCompletadasInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
@@ -6022,6 +6126,7 @@ export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutVisitasCompletadasInput = {
@@ -6080,6 +6185,7 @@ export type UserCreateWithoutVisitasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutVisitasEliminadasInput = {
@@ -6133,6 +6239,7 @@ export type UserUncheckedCreateWithoutVisitasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutVisitasEliminadasInput = {
@@ -6202,6 +6309,7 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
@@ -6255,6 +6363,7 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutVisitasUpdatedInput = {
@@ -6319,6 +6428,7 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
@@ -6372,6 +6482,7 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutVisitasCompletadasInput = {
@@ -6436,6 +6547,7 @@ export type UserUpdateWithoutVisitasCompletadasInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasCompletadasInput = {
@@ -6489,6 +6601,7 @@ export type UserUncheckedUpdateWithoutVisitasCompletadasInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutVisitasEliminadasInput = {
@@ -6553,6 +6666,7 @@ export type UserUpdateWithoutVisitasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitasEliminadasInput = {
@@ -6606,6 +6720,7 @@ export type UserUncheckedUpdateWithoutVisitasEliminadasInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutVisitaPersonalAddedInput = {
@@ -6659,6 +6774,7 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
@@ -6712,6 +6828,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutVisitaPersonalAddedInput = {
@@ -6770,6 +6887,7 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
@@ -6823,6 +6941,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutVisitaPersonalRemovedInput = {
@@ -6892,6 +7011,7 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
@@ -6945,6 +7065,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutVisitaPersonalRemovedInput = {
@@ -7009,6 +7130,7 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
@@ -7048,6 +7170,239 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
   tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
   visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
+}
+
+export type UserCreateWithoutVisitaMediaSubidasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email?: string | null
+  usuario?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutVisitaMediaSubidasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email?: string | null
+  usuario?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutVisitaMediaSubidasInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutVisitaMediaSubidasInput, Prisma.UserUncheckedCreateWithoutVisitaMediaSubidasInput>
+}
+
+export type UserUpsertWithoutVisitaMediaSubidasInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutVisitaMediaSubidasInput, Prisma.UserUncheckedUpdateWithoutVisitaMediaSubidasInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutVisitaMediaSubidasInput, Prisma.UserUncheckedCreateWithoutVisitaMediaSubidasInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutVisitaMediaSubidasInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutVisitaMediaSubidasInput, Prisma.UserUncheckedUpdateWithoutVisitaMediaSubidasInput>
+}
+
+export type UserUpdateWithoutVisitaMediaSubidasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutVisitaMediaSubidasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
   personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
   cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
   pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -7115,6 +7470,7 @@ export type UserCreateWithoutPushTokensInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutPushTokensInput = {
@@ -7168,6 +7524,7 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutPushTokensInput = {
@@ -7237,6 +7594,7 @@ export type UserUpdateWithoutPushTokensInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushTokensInput = {
@@ -7290,6 +7648,7 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutRefreshTokensInput = {
@@ -7343,6 +7702,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -7396,6 +7756,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -7465,6 +7826,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -7518,6 +7880,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutClienteImportsInput = {
@@ -7571,6 +7934,7 @@ export type UserCreateWithoutClienteImportsInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutClienteImportsInput = {
@@ -7624,6 +7988,7 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutClienteImportsInput = {
@@ -7693,6 +8058,7 @@ export type UserUpdateWithoutClienteImportsInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClienteImportsInput = {
@@ -7746,6 +8112,7 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutSetPasswordTokensInput = {
@@ -7799,6 +8166,7 @@ export type UserCreateWithoutSetPasswordTokensInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutSetPasswordTokensInput = {
@@ -7852,6 +8220,7 @@ export type UserUncheckedCreateWithoutSetPasswordTokensInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutSetPasswordTokensInput = {
@@ -7921,6 +8290,7 @@ export type UserUpdateWithoutSetPasswordTokensInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSetPasswordTokensInput = {
@@ -7974,6 +8344,7 @@ export type UserUncheckedUpdateWithoutSetPasswordTokensInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutInformesGeneradosInput = {
@@ -8027,6 +8398,7 @@ export type UserCreateWithoutInformesGeneradosInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutInformesGeneradosInput = {
@@ -8080,6 +8452,7 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutInformesGeneradosInput = {
@@ -8138,6 +8511,7 @@ export type UserCreateWithoutInformesActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutInformesActualizadosInput = {
@@ -8191,6 +8565,7 @@ export type UserUncheckedCreateWithoutInformesActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutInformesActualizadosInput = {
@@ -8260,6 +8635,7 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
@@ -8313,6 +8689,7 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutInformesActualizadosInput = {
@@ -8377,6 +8754,7 @@ export type UserUpdateWithoutInformesActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInformesActualizadosInput = {
@@ -8430,6 +8808,7 @@ export type UserUncheckedUpdateWithoutInformesActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutInformeVersionesInput = {
@@ -8483,6 +8862,7 @@ export type UserCreateWithoutInformeVersionesInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutInformeVersionesInput = {
@@ -8536,6 +8916,7 @@ export type UserUncheckedCreateWithoutInformeVersionesInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutInformeVersionesInput = {
@@ -8605,6 +8986,7 @@ export type UserUpdateWithoutInformeVersionesInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInformeVersionesInput = {
@@ -8658,6 +9040,7 @@ export type UserUncheckedUpdateWithoutInformeVersionesInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutInformeBorradoresCreadosInput = {
@@ -8711,6 +9094,7 @@ export type UserCreateWithoutInformeBorradoresCreadosInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutInformeBorradoresCreadosInput = {
@@ -8764,6 +9148,7 @@ export type UserUncheckedCreateWithoutInformeBorradoresCreadosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutInformeBorradoresCreadosInput = {
@@ -8822,6 +9207,7 @@ export type UserCreateWithoutInformeBorradoresActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutInformeBorradoresActualizadosInput = {
@@ -8875,6 +9261,7 @@ export type UserUncheckedCreateWithoutInformeBorradoresActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutInformeBorradoresActualizadosInput = {
@@ -8944,6 +9331,7 @@ export type UserUpdateWithoutInformeBorradoresCreadosInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInformeBorradoresCreadosInput = {
@@ -8997,6 +9385,7 @@ export type UserUncheckedUpdateWithoutInformeBorradoresCreadosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutInformeBorradoresActualizadosInput = {
@@ -9061,6 +9450,7 @@ export type UserUpdateWithoutInformeBorradoresActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInformeBorradoresActualizadosInput = {
@@ -9114,6 +9504,7 @@ export type UserUncheckedUpdateWithoutInformeBorradoresActualizadosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutOrdenesCreatedInput = {
@@ -9167,6 +9558,7 @@ export type UserCreateWithoutOrdenesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
@@ -9220,6 +9612,7 @@ export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutOrdenesCreatedInput = {
@@ -9278,6 +9671,7 @@ export type UserCreateWithoutOrdenesUpdatedInput = {
   ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
@@ -9331,6 +9725,7 @@ export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
   ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutOrdenesUpdatedInput = {
@@ -9400,6 +9795,7 @@ export type UserUpdateWithoutOrdenesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
@@ -9453,6 +9849,7 @@ export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutOrdenesUpdatedInput = {
@@ -9517,6 +9914,7 @@ export type UserUpdateWithoutOrdenesUpdatedInput = {
   ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
@@ -9570,6 +9968,7 @@ export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
   ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutDatosFacturacionCreatedInput = {
@@ -9623,6 +10022,7 @@ export type UserCreateWithoutDatosFacturacionCreatedInput = {
   ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
@@ -9676,6 +10076,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
   ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutDatosFacturacionCreatedInput = {
@@ -9734,6 +10135,7 @@ export type UserCreateWithoutDatosFacturacionUpdatedInput = {
   ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
@@ -9787,6 +10189,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
   ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutDatosFacturacionUpdatedInput = {
@@ -9856,6 +10259,7 @@ export type UserUpdateWithoutDatosFacturacionCreatedInput = {
   ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
@@ -9909,6 +10313,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
   ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUpsertWithoutDatosFacturacionUpdatedInput = {
@@ -9973,6 +10378,7 @@ export type UserUpdateWithoutDatosFacturacionUpdatedInput = {
   ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
@@ -10026,6 +10432,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
   ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserCreateWithoutCobrosRegistradosInput = {
@@ -10079,6 +10486,7 @@ export type UserCreateWithoutCobrosRegistradosInput = {
   ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserUncheckedCreateWithoutCobrosRegistradosInput = {
@@ -10132,6 +10540,7 @@ export type UserUncheckedCreateWithoutCobrosRegistradosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
 }
 
 export type UserCreateOrConnectWithoutCobrosRegistradosInput = {
@@ -10201,6 +10610,7 @@ export type UserUpdateWithoutCobrosRegistradosInput = {
   ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCobrosRegistradosInput = {
@@ -10254,6 +10664,7 @@ export type UserUncheckedUpdateWithoutCobrosRegistradosInput = {
   ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
   datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
   datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
 }
 
 
@@ -10299,6 +10710,7 @@ export type UserCountOutputType = {
   ordenesUpdated: number
   datosFacturacionCreated: number
   datosFacturacionUpdated: number
+  visitaMediaSubidas: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -10339,6 +10751,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   ordenesUpdated?: boolean | UserCountOutputTypeCountOrdenesUpdatedArgs
   datosFacturacionCreated?: boolean | UserCountOutputTypeCountDatosFacturacionCreatedArgs
   datosFacturacionUpdated?: boolean | UserCountOutputTypeCountDatosFacturacionUpdatedArgs
+  visitaMediaSubidas?: boolean | UserCountOutputTypeCountVisitaMediaSubidasArgs
 }
 
 /**
@@ -10610,6 +11023,13 @@ export type UserCountOutputTypeCountDatosFacturacionUpdatedArgs<ExtArgs extends 
   where?: Prisma.DatoFacturacionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountVisitaMediaSubidasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VisitaMediaWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -10663,6 +11083,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   ordenesUpdated?: boolean | Prisma.User$ordenesUpdatedArgs<ExtArgs>
   datosFacturacionCreated?: boolean | Prisma.User$datosFacturacionCreatedArgs<ExtArgs>
   datosFacturacionUpdated?: boolean | Prisma.User$datosFacturacionUpdatedArgs<ExtArgs>
+  visitaMediaSubidas?: boolean | Prisma.User$visitaMediaSubidasArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -10752,6 +11173,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   ordenesUpdated?: boolean | Prisma.User$ordenesUpdatedArgs<ExtArgs>
   datosFacturacionCreated?: boolean | Prisma.User$datosFacturacionCreatedArgs<ExtArgs>
   datosFacturacionUpdated?: boolean | Prisma.User$datosFacturacionUpdatedArgs<ExtArgs>
+  visitaMediaSubidas?: boolean | Prisma.User$visitaMediaSubidasArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -10802,6 +11224,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     ordenesUpdated: Prisma.$OrdenPayload<ExtArgs>[]
     datosFacturacionCreated: Prisma.$DatoFacturacionPayload<ExtArgs>[]
     datosFacturacionUpdated: Prisma.$DatoFacturacionPayload<ExtArgs>[]
+    visitaMediaSubidas: Prisma.$VisitaMediaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -11275,6 +11698,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   ordenesUpdated<T extends Prisma.User$ordenesUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ordenesUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   datosFacturacionCreated<T extends Prisma.User$datosFacturacionCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$datosFacturacionCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DatoFacturacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   datosFacturacionUpdated<T extends Prisma.User$datosFacturacionUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$datosFacturacionUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DatoFacturacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  visitaMediaSubidas<T extends Prisma.User$visitaMediaSubidasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$visitaMediaSubidasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaMediaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12632,6 +13056,30 @@ export type User$datosFacturacionUpdatedArgs<ExtArgs extends runtime.Types.Exten
   take?: number
   skip?: number
   distinct?: Prisma.DatoFacturacionScalarFieldEnum | Prisma.DatoFacturacionScalarFieldEnum[]
+}
+
+/**
+ * User.visitaMediaSubidas
+ */
+export type User$visitaMediaSubidasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VisitaMedia
+   */
+  select?: Prisma.VisitaMediaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VisitaMedia
+   */
+  omit?: Prisma.VisitaMediaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VisitaMediaInclude<ExtArgs> | null
+  where?: Prisma.VisitaMediaWhereInput
+  orderBy?: Prisma.VisitaMediaOrderByWithRelationInput | Prisma.VisitaMediaOrderByWithRelationInput[]
+  cursor?: Prisma.VisitaMediaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VisitaMediaScalarFieldEnum | Prisma.VisitaMediaScalarFieldEnum[]
 }
 
 /**

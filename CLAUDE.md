@@ -498,8 +498,19 @@ pruning and the broken sprinkler together, so a batch tag would be a lie half
 the time. The server enforces it too (the mobile confirm route requires
 `tareaId`), because a rule only the screen keeps is a suggestion; `PATCH` still
 accepts `null`, since older photos have no tag and the office has to be able to
-move them. The tag can be **any live tarea** and not only what that person
-ticked: in the field you photograph what shows up — a
+move them. **Each gardener sees and touches only the photos they uploaded**
+(`VisitaMedia.subidaPorId`, `fotosQueLeTocan`): on a three-person visit the grid
+mixed everyone's work and anyone could delete the photo somebody else had just
+taken. The office sees all of them, because it builds the informe, and so does
+the cliente, because they are of their garden; rows from before the column have
+no owner, so the gardener does not see them either — we don't know they are
+theirs. **Nothing saves until confirmed**: adding and removing are local, a bar
+offers *Cancelar* / *Guardar*, and one `PUT` carries both (`files` in,
+`eliminar` out, deletions applied first). Deleting used to be one call per photo
+— removing five was five trips, five chances for one to fail and nowhere to
+change your mind — and a mixed batch of your own plus someone else's is refused
+whole rather than half-applied. The tag can be **any live tarea** and not only
+what that person ticked: in the field you photograph what shows up — a
 watering problem during a pruning — and restricting the tag to your own tareas
 leaves exactly those photos unclassified, which is what stops the informe from
 placing them. From the portal,

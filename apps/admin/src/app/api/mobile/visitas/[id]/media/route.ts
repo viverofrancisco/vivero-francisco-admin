@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 import { requireMobileUser, isMobileUser } from "@/lib/mobile/auth";
 import {
   addVisitaMedia,
+  removeVisitaMediaMuchas,
   requestVisitaMediaUploads,
 } from "@/lib/services/visita.service";
 import {
@@ -53,20 +54,29 @@ export async function POST(
  * regla. Lo que **no** cambia es `PATCH`, que sigue aceptando `null`: las fotos
  * viejas ya vienen sin etiqueta y la oficina tiene que poder moverlas.
  */
-const confirmarSchema = z.object({
-  files: z
-    .array(mediaItemSchema.extend({ tareaId: z.string().min(1) }))
-    .min(1),
-});
+const confirmarSchema = z
+  .object({
+    files: z
+      .array(mediaItemSchema.extend({ tareaId: z.string().min(1) }))
+      .default([]),
+    /** Las que se sacan, en la misma tanda. */
+    eliminar: z.array(z.string().min(1)).default([]),
+  })
+  .refine((d) => d.files.length > 0 || d.eliminar.length > 0, {
+    message: "No hay nada que guardar",
+  });
 
 /**
- * Confirma en la base los archivos ya subidos a R2.
+ * Guarda los cambios de archivos de una visita: lo que entra y lo que sale.
  *
- * El teléfono no tenía cómo: las fotos viajaban **dentro del parte**, así que
- * subir una foto obligaba a llenar el parte, y sacar una foto a mitad de la
- * mañana no era posible. Los archivos son de la visita y no de un formulario
- * —se sacan mientras se trabaja— así que se confirman solos, en cualquier
- * estado.
+ * Las dos cosas en una sola llamada porque son un solo gesto. Borrar era una
+ * llamada por foto: sacar cinco eran cinco viajes, cinco oportunidades de que
+ * uno falle y ninguna forma de arrepentirse a mitad de camino. Ahora la
+ * pantalla junta lo agregado y lo quitado, y se guarda de una.
+ *
+ * Antes de esto el teléfono no tenía cómo subir nada suelto: las fotos viajaban
+ * **dentro del parte**, así que sacar una a mitad de la mañana no era posible.
+ * Los archivos son de la visita y no de un formulario.
  */
 export async function PUT(
   request: Request,
@@ -83,12 +93,12 @@ export async function PUT(
   }
 
   const { id } = await params;
+  const viewer = viewerFromMobileUser(userOrResponse);
   try {
-    const media = await addVisitaMedia(
-      id,
-      viewerFromMobileUser(userOrResponse),
-      parsed.data.files
-    );
+    // Primero lo que sale. Al revés, una foto nueva podría entrar y salir en la
+    // misma tanda si alguien manda su id en las dos listas.
+    await removeVisitaMediaMuchas(id, parsed.data.eliminar, viewer);
+    const media = await addVisitaMedia(id, viewer, parsed.data.files);
     return NextResponse.json({ media });
   } catch (error) {
     return serviceErrorResponse(error);

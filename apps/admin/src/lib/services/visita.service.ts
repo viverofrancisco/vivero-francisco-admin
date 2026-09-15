@@ -61,7 +61,7 @@ interface VisitaParaPermiso {
  */
 function ensureViewerCanSeeVisita(
   viewer: Viewer,
-  visita: VisitaParaPermiso
+  visita: VisitaParaPermiso,
 ): void {
   if (isAdminRole(viewer.role)) return;
   if (viewer.role === "CLIENTE") {
@@ -110,7 +110,27 @@ export async function getVisitaForViewer(visitaId: string, viewer: Viewer) {
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
   ensureViewerCanSeeVisita(viewer, visita);
-  return visita;
+  return { ...visita, media: fotosQueLeTocan(visita.media, viewer) };
+}
+
+/**
+ * Qué fotos de la visita le corresponden a quien mira.
+ *
+ * El jardinero ve **las suyas**. En una visita de tres, la grilla mezclaba el
+ * trabajo de todos y cualquiera podía borrar la foto que otro acababa de sacar;
+ * además, la de al lado no le sirve para nada —él sube lo que él vio—.
+ *
+ * La oficina las ve todas, porque es la que arma el informe, y el cliente
+ * también, porque son de su jardín. Las que no tienen dueño —subidas antes de
+ * que existiera la columna— quedan fuera de la vista del jardinero: no sabemos
+ * si son suyas, y mostrárselas sería dejarle borrar algo que quizá no subió.
+ */
+function fotosQueLeTocan<T extends { subidaPorId: string | null }>(
+  media: T[],
+  viewer: Viewer,
+): T[] {
+  if (viewer.role !== "PERSONAL") return media;
+  return media.filter((m) => m.subidaPorId === viewer.id);
 }
 
 export interface ListVisitasFilters {
@@ -143,7 +163,7 @@ function whereParaViewer(viewer: Viewer): Prisma.VisitaWhereInput {
 
 export async function listVisitas(
   viewer: Viewer,
-  filters: ListVisitasFilters = {}
+  filters: ListVisitasFilters = {},
 ) {
   const where = whereParaViewer(viewer);
   const limit = Math.min(Math.max(filters.limit ?? 50, 1), 200);
@@ -232,17 +252,44 @@ async function ensurePuedeTocarArchivos(visitaId: string, viewer: Viewer) {
 export async function removeVisitaMedia(
   visitaId: string,
   mediaId: string,
-  viewer: Viewer
+  viewer: Viewer,
+) {
+  await removeVisitaMediaMuchas(visitaId, [mediaId], viewer);
+}
+
+/**
+ * Borra varias de una vez.
+ *
+ * Una llamada por foto significaba que borrar cinco eran cinco viajes, cinco
+ * oportunidades de que uno falle y ninguna forma de arrepentirse a mitad de
+ * camino. Acá se manda la lista y se aplica entera o no se aplica.
+ *
+ * Un jardinero solo borra **las suyas**: la foto que sacó su compañero no es
+ * suya para tirarla. La oficina borra cualquiera.
+ */
+export async function removeVisitaMediaMuchas(
+  visitaId: string,
+  mediaIds: string[],
+  viewer: Viewer,
 ) {
   await ensurePuedeTocarArchivos(visitaId, viewer);
+  if (mediaIds.length === 0) return;
 
-  const media = await prisma.visitaMedia.findFirst({
-    where: { id: mediaId, visitaId },
+  const suyas = await prisma.visitaMedia.findMany({
+    where: {
+      id: { in: mediaIds },
+      visitaId,
+      ...(viewer.role === "PERSONAL" ? { subidaPorId: viewer.id } : {}),
+    },
     select: { id: true },
   });
-  if (!media) throw new NotFoundError("Archivo no encontrado");
+  if (suyas.length !== mediaIds.length) {
+    throw new NotFoundError(
+      "Alguno de los archivos no existe o no lo subiste vos.",
+    );
+  }
 
-  await prisma.visitaMedia.delete({ where: { id: mediaId } });
+  await prisma.visitaMedia.deleteMany({ where: { id: { in: mediaIds } } });
 }
 
 /**
@@ -257,12 +304,18 @@ export async function etiquetarVisitaMedia(
   visitaId: string,
   mediaId: string,
   tareaId: string | null,
-  viewer: Viewer
+  viewer: Viewer,
 ) {
   await ensurePuedeTocarArchivos(visitaId, viewer);
 
   const media = await prisma.visitaMedia.findFirst({
-    where: { id: mediaId, visitaId },
+    where: {
+      id: mediaId,
+      visitaId,
+      // Un jardinero etiqueta lo suyo. Reetiquetar la foto de otro es
+      // cambiarle a dónde va en el informe.
+      ...(viewer.role === "PERSONAL" ? { subidaPorId: viewer.id } : {}),
+    },
     select: { id: true },
   });
   if (!media) throw new NotFoundError("Archivo no encontrado");
@@ -285,7 +338,7 @@ export async function etiquetarVisitaMedia(
 export async function requestVisitaMediaUploads(
   visitaId: string,
   viewer: Viewer,
-  files: RequestUploadFile[]
+  files: RequestUploadFile[],
 ): Promise<UploadDescriptor[]> {
   await ensurePuedeTocarArchivos(visitaId, viewer);
 
@@ -304,30 +357,36 @@ export async function requestVisitaMediaUploads(
           : ("imagen" as const),
         contentType: f.contentType,
       };
-    })
+    }),
   );
 }
 
 export async function addVisitaMedia(
   visitaId: string,
   viewer: Viewer,
-  media: VisitaMediaInput[]
+  media: VisitaMediaInput[],
 ) {
   await ensurePuedeTocarArchivos(visitaId, viewer);
-  if (media.length === 0) return [];
-  await prisma.visitaMedia.createMany({
-    data: media.map((m) => ({
-      visitaId,
-      key: m.key,
-      url: publicUrlForKey(m.key),
-      tipo: m.tipo,
-      tareaId: m.tareaId ?? null,
-    })),
-  });
-  return prisma.visitaMedia.findMany({
+  // Con la lista vacía igual devuelve lo que hay: se lo llama también cuando la
+  // tanda era solo borrar, y responder `[]` ahí le diría a la pantalla que la
+  // visita se quedó sin fotos.
+  if (media.length > 0) {
+    await prisma.visitaMedia.createMany({
+      data: media.map((m) => ({
+        visitaId,
+        key: m.key,
+        url: publicUrlForKey(m.key),
+        tipo: m.tipo,
+        tareaId: m.tareaId ?? null,
+        subidaPorId: viewer.id,
+      })),
+    });
+  }
+  const todas = await prisma.visitaMedia.findMany({
     where: { visitaId },
     orderBy: { createdAt: "asc" },
   });
+  return fotosQueLeTocan(todas, viewer);
 }
 
 // ──────────────────────────────────────────────
@@ -385,7 +444,7 @@ export interface ParteDeVisitaPayload {
  */
 async function recalcularHorasDeVisita(
   tx: Prisma.TransactionClient,
-  visitaId: string
+  visitaId: string,
 ) {
   const partes = await tx.visitaPersonal.findMany({
     where: { visitaId, removedAt: null },
@@ -447,7 +506,7 @@ function aFecha(valor: string | Date | null | undefined): Date | null {
 async function miAsignacion(
   visitaId: string,
   viewer: Viewer,
-  personalIdPedido?: string
+  personalIdPedido?: string,
 ) {
   const visita = await getVisitaForViewer(visitaId, viewer);
   if (visita.estado === "CANCELADA") {
@@ -477,7 +536,7 @@ async function miAsignacion(
 /** Lo que rodea a una marca —dónde y desde qué aparato—, listo para escribir. */
 function columnasDeContexto(
   cual: "entrada" | "salida",
-  contexto: ContextoDeMarca
+  contexto: ContextoDeMarca,
 ) {
   const { ubicacion, dispositivo } = contexto;
   return {
@@ -511,7 +570,7 @@ function columnasDeContexto(
 function ensureQuienMarca(viewer: Viewer) {
   if (viewer.role !== "PERSONAL") {
     throw new ForbiddenError(
-      "Marcar entrada y salida es de quien hace la visita, desde la app."
+      "Marcar entrada y salida es de quien hace la visita, desde la app.",
     );
   }
 }
@@ -535,7 +594,7 @@ function ensureQuienMarca(viewer: Viewer) {
 export async function marcarEntrada(
   visitaId: string,
   viewer: Viewer,
-  opciones: ContextoDeMarca = {}
+  opciones: ContextoDeMarca = {},
 ) {
   ensureQuienMarca(viewer);
   const { visita, asignacion } = await miAsignacion(visitaId, viewer);
@@ -584,7 +643,7 @@ export async function marcarSalida(
   payload: ContextoDeMarca & {
     tareaIds: string[];
     media?: VisitaMediaInput[];
-  }
+  },
 ) {
   ensureQuienMarca(viewer);
   const { asignacion } = await miAsignacion(visitaId, viewer);
@@ -660,7 +719,7 @@ async function tareasVivas(pedidas: string[]): Promise<string[]> {
 export async function registrarParte(
   visitaId: string,
   viewer: Viewer,
-  payload: ParteDeVisitaPayload
+  payload: ParteDeVisitaPayload,
 ) {
   const visita = await getVisitaForViewer(visitaId, viewer);
   if (visita.estado === "CANCELADA") {
@@ -761,7 +820,7 @@ export async function registrarParte(
 export async function borrarParte(
   visitaId: string,
   viewer: Viewer,
-  personalId: string
+  personalId: string,
 ) {
   ensureOficina(viewer);
   const visita = await getVisitaForViewer(visitaId, viewer);
@@ -822,7 +881,7 @@ async function transicionar(
   visitaId: string,
   viewer: Viewer,
   estado: Extract<EstadoVisita, "COMPLETADA" | "INCOMPLETA" | "CANCELADA">,
-  patch: TransicionPayload = {}
+  patch: TransicionPayload = {},
 ) {
   const visita = await prisma.visita.findFirst({
     where: { id: visitaId, deletedAt: null },
@@ -894,7 +953,7 @@ async function transicionar(
 export async function completeVisita(
   visitaId: string,
   viewer: Viewer,
-  payload: CerrarVisitaPayload = {}
+  payload: CerrarVisitaPayload = {},
 ) {
   ensureOficina(viewer);
   const visita = await getVisitaForViewer(visitaId, viewer);
@@ -911,7 +970,7 @@ export async function completeVisita(
 export async function markVisitaIncomplete(
   visitaId: string,
   viewer: Viewer,
-  payload: CerrarVisitaPayload & { motivo: string }
+  payload: CerrarVisitaPayload & { motivo: string },
 ) {
   ensureOficina(viewer);
   const motivo = payload.motivo.trim();
@@ -935,7 +994,7 @@ export async function markVisitaIncomplete(
 export async function cancelVisita(
   visitaId: string,
   viewer: Viewer,
-  payload: CancelVisitaPayload = {}
+  payload: CancelVisitaPayload = {},
 ) {
   if (viewer.role !== "CLIENTE" && !isAdminRole(viewer.role)) {
     throw new ForbiddenError();
@@ -988,7 +1047,7 @@ async function validarTareas(ids: string[]): Promise<string[]> {
 /** Que el plan sea de este cliente: un id de otro no engancha nada. */
 async function validarPlanDelCliente(
   suscripcionId: string | null | undefined,
-  clienteId: string
+  clienteId: string,
 ): Promise<string | null> {
   if (!suscripcionId) return null;
   const plan = await prisma.suscripcion.findFirst({
@@ -1001,7 +1060,7 @@ async function validarPlanDelCliente(
 
 export async function createVisitasBatch(
   viewer: Viewer,
-  payload: CreateVisitasBatchPayload
+  payload: CreateVisitasBatchPayload,
 ) {
   // Agendar es de oficina: al irse el capataz, no quedó nadie en el campo que
   // arme la agenda de otros.
@@ -1018,7 +1077,7 @@ export async function createVisitasBatch(
 
   const suscripcionId = await validarPlanDelCliente(
     payload.suscripcionId,
-    cliente.id
+    cliente.id,
   );
   const tareaIds = await validarTareas(payload.tareasObligatoriasIds ?? []);
   const personalIds = [...new Set(payload.personalIds ?? [])];
@@ -1034,7 +1093,7 @@ export async function createVisitasBatch(
       throw new ConflictError(
         existentes.length === 1
           ? `Este cliente ya tiene la visita ${detalle}.`
-          : `Este cliente ya tiene visitas esos días: ${detalle}.`
+          : `Este cliente ya tiene visitas esos días: ${detalle}.`,
       );
     }
 
@@ -1057,7 +1116,7 @@ export async function createVisitasBatch(
     if (tareaIds.length) {
       await tx.visitaTareaObligatoria.createMany({
         data: creadas.flatMap((visita) =>
-          tareaIds.map((tareaId) => ({ visitaId: visita.id, tareaId }))
+          tareaIds.map((tareaId) => ({ visitaId: visita.id, tareaId })),
         ),
       });
     }
@@ -1069,7 +1128,7 @@ export async function createVisitasBatch(
             visitaId: visita.id,
             personalId,
             addedById: viewer.id,
-          }))
+          })),
         ),
       });
     }
@@ -1106,7 +1165,7 @@ export interface UpdateVisitaInfoPayload {
 export async function updateVisitaInfo(
   visitaId: string,
   viewer: Viewer,
-  payload: UpdateVisitaInfoPayload
+  payload: UpdateVisitaInfoPayload,
 ) {
   ensureOficina(viewer);
 
@@ -1142,11 +1201,11 @@ export async function updateVisitaInfo(
       prisma,
       visita.clienteId,
       [payload.fechaProgramada],
-      visita.id
+      visita.id,
     );
     if (ocupado.length > 0) {
       throw new ConflictError(
-        `Este cliente ya tiene la visita ${nombrarVisitas(ocupado)}.`
+        `Este cliente ya tiene la visita ${nombrarVisitas(ocupado)}.`,
       );
     }
   }
@@ -1191,7 +1250,7 @@ export async function updateVisitaInfo(
 export async function updateVisitaPersonal(
   visitaId: string,
   viewer: Viewer,
-  personalIds: string[]
+  personalIds: string[],
 ) {
   ensureOficina(viewer);
 
@@ -1217,11 +1276,11 @@ export async function updateVisitaPersonal(
       select: { id: true, personalId: true, removedAt: true },
     });
     const vigentes = new Set(
-      actuales.filter((a) => !a.removedAt).map((a) => a.personalId)
+      actuales.filter((a) => !a.removedAt).map((a) => a.personalId),
     );
 
     const sacar = actuales.filter(
-      (a) => !a.removedAt && !deseados.includes(a.personalId)
+      (a) => !a.removedAt && !deseados.includes(a.personalId),
     );
     if (sacar.length > 0) {
       await tx.visitaPersonal.updateMany({
@@ -1257,7 +1316,7 @@ async function visitasDelDia(
   tx: Pick<typeof prisma, "visita">,
   clienteId: string,
   fechas: Date[],
-  excepto?: string
+  excepto?: string,
 ) {
   return tx.visita.findMany({
     where: {
@@ -1273,12 +1332,11 @@ async function visitasDelDia(
 }
 
 function nombrarVisitas(
-  visitas: { numero: number; fechaProgramada: Date }[]
+  visitas: { numero: number; fechaProgramada: Date }[],
 ): string {
   return visitas
     .map(
-      (v) =>
-        `#${v.numero} (${v.fechaProgramada.toISOString().slice(0, 10)})`
+      (v) => `#${v.numero} (${v.fechaProgramada.toISOString().slice(0, 10)})`,
     )
     .join(", ");
 }
@@ -1310,9 +1368,7 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
 
-  const vivas = visita.ordenes.filter(
-    (ov) => ov.orden.estado === "CONFIRMADA"
-  );
+  const vivas = visita.ordenes.filter((ov) => ov.orden.estado === "CONFIRMADA");
   if (vivas.length > 0) {
     const numeros = [...new Set(vivas.map((ov) => ov.orden.numero))];
     throw new ConflictError(
@@ -1320,7 +1376,7 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
         numeros.length === 1
           ? `la orden #${numeros[0]}`
           : `las órdenes ${numeros.map((n) => `#${n}`).join(", ")}`
-      }. Anulá la orden primero.`
+      }. Anulá la orden primero.`,
     );
   }
 
@@ -1354,7 +1410,7 @@ export interface ResultadoEliminarVisitas {
  */
 export async function softDeleteVisitas(
   viewer: Viewer,
-  ids: string[]
+  ids: string[],
 ): Promise<ResultadoEliminarVisitas> {
   ensureOficina(viewer);
   const unicos = [...new Set(ids)];
@@ -1364,7 +1420,7 @@ export async function softDeleteVisitas(
         where: { id: { in: unicos } },
         select: { id: true, numero: true },
       })
-    ).map((v) => [v.id, v.numero])
+    ).map((v) => [v.id, v.numero]),
   );
 
   let eliminadas = 0;
@@ -1377,8 +1433,7 @@ export async function softDeleteVisitas(
       errores.push({
         id,
         numero: numeros.get(id) ?? null,
-        motivo:
-          error instanceof Error ? error.message : "No se pudo eliminar.",
+        motivo: error instanceof Error ? error.message : "No se pudo eliminar.",
       });
     }
   }

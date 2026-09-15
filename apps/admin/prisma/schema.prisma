@@ -240,6 +240,7 @@ model User {
   ordenesUpdated                Orden[]                @relation("OrdenUpdatedBy")
   datosFacturacionCreated       DatoFacturacion[]      @relation("DatoFacturacionCreatedBy")
   datosFacturacionUpdated       DatoFacturacion[]      @relation("DatoFacturacionUpdatedBy")
+  visitaMediaSubidas            VisitaMedia[]          @relation("VisitaMediaSubidaPor")
 }
 
 model Cliente {
@@ -1017,6 +1018,20 @@ model VisitaMedia {
   tipo      String
   createdAt DateTime @default(now())
 
+  /**
+   * Quién la subió.
+   * El jardinero ve y borra **las suyas**, no las de sus compañeros: en una
+   * visita de tres personas, la grilla mezclaba el trabajo de todos y cualquiera
+   * podía borrar la foto que otro acababa de sacar. La oficina las ve todas,
+   * porque es la que arma el informe, y el cliente también, porque son de su
+   * jardín.
+   * `SetNull` al borrar la cuenta: la foto no se va con la persona. Las que
+   * existían antes de esta columna quedan en `null` —no las subió nadie que
+   * sepamos— y por eso las ve solo la oficina.
+   */
+  subidaPorId String?
+  subidaPor   User?   @relation("VisitaMediaSubidaPor", fields: [subidaPorId], references: [id], onDelete: SetNull)
+
   /// A qué **tarea** corresponde la foto. Opcional.
   ///
   /// Era un producto del catálogo, de cuando la visita llevaba productos. Una
@@ -1040,6 +1055,9 @@ model VisitaMedia {
 
   @@index([visitaId])
   @@index([tareaId])
+  // Postgres no indexa las claves foráneas solo, y esta se filtra en cada
+  // visita ("las mías") y se recorre al borrar una cuenta.
+  @@index([subidaPorId])
 }
 
 model GrupoMiembro {
