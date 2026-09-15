@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, KeyRound, Pencil, ShieldCheck, ShieldOff } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import {
   EnlaceAcceso,
@@ -121,26 +121,22 @@ export function AccionesAcceso({
           }
         />
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuItem onClick={onEditar}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Editar
-          </DropdownMenuItem>
+          {/* Sin iconos: son tres opciones que se leen enteras, y un icono al
+              lado de cada una solo agrega ruido a un menú que ya es corto. */}
+          <DropdownMenuItem onClick={onEditar}>Editar</DropdownMenuItem>
 
           {conAcceso && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={generarEnlace}>
-                <KeyRound className="mr-2 h-4 w-4" />
                 Restablecer contraseña
               </DropdownMenuItem>
               {estado.revocado ? (
                 <DropdownMenuItem onClick={() => cambiarAcceso(false)}>
-                  <ShieldCheck className="mr-2 h-4 w-4" />
                   Restaurar acceso
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem onClick={() => setConfirmandoRevocar(true)}>
-                  <ShieldOff className="mr-2 h-4 w-4" />
                   Revocar acceso
                 </DropdownMenuItem>
               )}
