@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   FlatList,
-  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -11,7 +10,7 @@ import {
 import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { SelectorFecha } from "@/components/SelectorFecha";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -157,12 +156,6 @@ export default function PersonalVisitasListScreen() {
         </Pressable>
       </View>
 
-      {!esHoy ? (
-        <Pressable onPress={() => setFecha(hoyLocal())} style={styles.volverHoy}>
-          <Text style={styles.volverHoyTexto}>Volver a hoy</Text>
-        </Pressable>
-      ) : null}
-
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" />
@@ -200,25 +193,15 @@ export default function PersonalVisitasListScreen() {
         />
       )}
 
-      {abrirPicker ? (
-        <DateTimePicker
-          mode="date"
-          display={Platform.OS === "ios" ? "inline" : "default"}
-          value={fecha}
-          onChange={(_e, elegida) => {
-            setAbrirPicker(false);
-            if (elegida) {
-              setFecha(
-                new Date(
-                  elegida.getFullYear(),
-                  elegida.getMonth(),
-                  elegida.getDate()
-                )
-              );
-            }
-          }}
-        />
-      ) : null}
+      <SelectorFecha
+        visible={abrirPicker}
+        valor={fecha}
+        onElegir={(d) => {
+          setFecha(d);
+          setAbrirPicker(false);
+        }}
+        onCerrar={() => setAbrirPicker(false)}
+      />
 
       {canCreate ? (
         <FAB
@@ -315,8 +298,6 @@ const styles = StyleSheet.create({
   fechaBoton: { flex: 1, alignItems: "center" },
   fechaTitulo: { color: "#111", fontWeight: "700" },
   fechaSub: { color: "#888", fontSize: 12, marginTop: 1 },
-  volverHoy: { alignSelf: "center", paddingVertical: 8 },
-  volverHoyTexto: { color: "#2e7d32", fontWeight: "600", fontSize: 13 },
 
   listContent: { padding: 16, paddingBottom: 96, gap: 10 },
   row: {
