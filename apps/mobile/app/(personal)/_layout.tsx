@@ -4,12 +4,17 @@ import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/lib/auth-store";
 import { tema } from "@/lib/tema";
+import { usarPermisoDeUbicacion } from "@/lib/usar-permiso-ubicacion";
 
 export default function PersonalTabsLayout() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
   const isAdmin = role === "ADMIN";
   const isAdminOrStaff = role === "ADMIN" || role === "STAFF";
+
+  // Solo al jardinero: es el único que marca, y pedirle la ubicación a la
+  // oficina sería pedirla para nada.
+  usarPermisoDeUbicacion(role === "PERSONAL");
 
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((res) => {

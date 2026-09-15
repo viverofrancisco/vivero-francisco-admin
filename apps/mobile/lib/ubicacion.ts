@@ -1,3 +1,4 @@
+import { Alert, Linking } from "react-native";
 import * as Location from "expo-location";
 
 /**
@@ -74,5 +75,61 @@ export async function ubicacionActual(): Promise<ResultadoUbicacion> {
     };
   } catch {
     return { estado: "sin-senal" };
+  }
+}
+
+/**
+ * El aviso de que falta el permiso, uno solo.
+ *
+ * Estaba escrito en la entrada y en la salida, con dos textos parecidos: dos
+ * copias de un cartel son dos carteles que se despegan.
+ *
+ * `Linking.openSettings()` abre la página de **esta** app —no la raíz de
+ * Ajustes—, que es donde está el interruptor de Ubicación: un toque acá, otro
+ * allá y listo.
+ */
+export function avisarFaltaUbicacion(motivo: string, ajustes: boolean) {
+  Alert.alert(
+    "Falta la ubicación",
+    ajustes ? `${motivo} Actívala en Ajustes.` : motivo,
+    ajustes
+      ? [
+          { text: "Ahora no", style: "cancel" },
+          { text: "Abrir Ajustes", onPress: () => Linking.openSettings() },
+        ]
+      : [{ text: "Entendido" }]
+  );
+}
+
+/**
+ * Si ya lo dio, sin pedir nada. Para preguntar antes de necesitarlo.
+ *
+ * `ajustes` dice que el sistema ya no vuelve a mostrar su diálogo, que es
+ * cuando el único camino es Ajustes.
+ */
+export async function permisoDeUbicacion(): Promise<{
+  concedido: boolean;
+  puedePreguntar: boolean;
+  ajustes: boolean;
+}> {
+  try {
+    const permiso = await Location.getForegroundPermissionsAsync();
+    return {
+      concedido: permiso.granted,
+      puedePreguntar: permiso.canAskAgain,
+      ajustes: !permiso.canAskAgain,
+    };
+  } catch {
+    return { concedido: false, puedePreguntar: false, ajustes: true };
+  }
+}
+
+/** Muestra el diálogo del sistema. Devuelve si quedó concedido. */
+export async function pedirPermisoDeUbicacion(): Promise<boolean> {
+  try {
+    const permiso = await Location.requestForegroundPermissionsAsync();
+    return permiso.granted;
+  } catch {
+    return false;
   }
 }

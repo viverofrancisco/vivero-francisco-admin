@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PressableScale } from "@/components/ui/PressableScale";
 import {
-  Alert,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -19,7 +17,7 @@ import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiRequest, ApiError } from "@/lib/api";
 import { dispositivoId } from "@/lib/dispositivo";
-import type { ResultadoUbicacion } from "@/lib/ubicacion";
+import { avisarFaltaUbicacion, type ResultadoUbicacion } from "@/lib/ubicacion";
 import * as Haptics from "expo-haptics";
 import type {
   VisitaDetail,
@@ -141,17 +139,9 @@ export function VisitaResultForm({
       const donde = modo === "SALIDA" && ubicacion ? await ubicacion() : null;
       if (donde?.estado === "sin-permiso") {
         setSubmitting(false);
-        Alert.alert(
-          "Falta la ubicación",
+        avisarFaltaUbicacion(
+          "Para marcar tu salida necesitamos saber dónde estás.",
           donde.ajustes
-            ? "Para marcar tu salida, activá la ubicación en Ajustes."
-            : "Para marcar tu salida necesitamos saber dónde estás.",
-          donde.ajustes
-            ? [
-                { text: "Cancelar", style: "cancel" },
-                { text: "Abrir Ajustes", onPress: () => Linking.openSettings() },
-              ]
-            : [{ text: "Entendido" }]
         );
         return;
       }

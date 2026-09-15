@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { estadoLabel } from "@/lib/estado-visita";
-import { Alert, Linking, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
   Button,
@@ -23,7 +23,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
 import { hora12 } from "@/lib/hora";
 import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
-import { ubicacionActual } from "@/lib/ubicacion";
+import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
 import { dispositivoId } from "@/lib/dispositivo";
 import * as Haptics from "expo-haptics";
 
@@ -183,17 +183,9 @@ export default function PersonalVisitaScreen() {
       if (donde.estado === "sin-permiso") {
         setMarcando(false);
         setConfirmandoEntrada(false);
-        Alert.alert(
-          "Falta la ubicación",
+        avisarFaltaUbicacion(
+          "Para marcar tu entrada necesitamos saber dónde estás.",
           donde.ajustes
-            ? "Para marcar tu entrada, activá la ubicación en Ajustes. Queda registrado desde dónde marcaste."
-            : "Para marcar tu entrada necesitamos saber dónde estás.",
-          donde.ajustes
-            ? [
-                { text: "Cancelar", style: "cancel" },
-                { text: "Abrir Ajustes", onPress: () => Linking.openSettings() },
-              ]
-            : [{ text: "Entendido" }]
         );
         return;
       }
