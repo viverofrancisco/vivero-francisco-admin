@@ -3,10 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -14,23 +11,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LogIn, LogOut, MapPin, MapPinOff } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { ubicacionActual } from "@/lib/ubicacion";
-import { horaLocal } from "./formato-marca";
 import type { PersonalDeVisita } from "@/lib/visita-tareas";
 
 /**
- * Mi entrada y mi salida en esta visita.
+ * Marcar mi entrada y mi salida, desde el encabezado de la visita.
  *
- * Dos botones que **sellan el momento** en vez de dos campos donde escribir una
- * hora: eso es lo que convierte el dato en "estuvo ahí a esa hora" en lugar de
- * "alguien dijo que estuvo". Al salir se pregunta qué hizo, porque recién ahí
- * lo sabe.
+ * Vive donde la oficina tiene *Editar* y *Completar*, porque es la acción de
+ * esta pantalla: tenía una tarjeta propia arriba de todo y ocupaba media
+ * pantalla para mostrar dos guiones y un botón. Las horas marcadas se leen en
+ * *Detalles*, con el resto de lo que pasó.
  *
- * Las fotos no viven acá: se suben desde *Archivos*, en cualquier momento y en
- * cualquier estado, porque se sacan mientras se trabaja y hacerlo esperar a un
- * botón en otra pantalla es pedirle que se acuerde.
+ * Los dos momentos los **sella el servidor** al apretar, en vez de dos campos
+ * donde escribir una hora: eso es lo que convierte el dato en "estuvo ahí a esa
+ * hora" y no "alguien dijo que estuvo". Al salir se pregunta qué hizo, porque
+ * recién ahí lo sabe.
+ *
+ * Las fotos no están acá: se suben desde *Archivos*, en cualquier momento,
+ * porque se sacan mientras se trabaja.
  */
 export function MiParte({
   visitaId,
@@ -45,19 +45,16 @@ export function MiParte({
 }) {
   const router = useRouter();
   const [cargando, setCargando] = useState(false);
-  const [saliendo, setSaliendo] = useState(false);
+  const [abierto, setAbierto] = useState(false);
   const [elegidas, setElegidas] = useState<Set<string>>(
     () => new Set(parte.tareas.map((t) => t.tarea.id))
   );
 
-  const entrada = parte.entradaEl ? new Date(parte.entradaEl) : null;
-  const salida = parte.salidaEl ? new Date(parte.salidaEl) : null;
+  const entrada = parte.entradaEl;
+  const salida = parte.salidaEl;
 
-  /**
-   * Las obligatorias primero: es lo que hay que dejar hecho, así que tenerlas
-   * al final de una lista de diecisiete es esconderlas.
-   */
   const exigidas = new Set(obligatoriasIds);
+  /** Las obligatorias primero: al final de una lista de diecisiete se esconden. */
   const tareas = [
     ...catalogo.filter((t) => exigidas.has(t.tareaId)),
     ...catalogo.filter((t) => !exigidas.has(t.tareaId)),
@@ -66,7 +63,7 @@ export function MiParte({
   async function marcar(tipo: "ENTRADA" | "SALIDA") {
     setCargando(true);
     try {
-      // La ubicación se pide **antes** de mandar y no se exige: si no llega, la
+      // La ubicación se pide antes de mandar y no se exige: si no llega, la
       // marca sale igual y la oficina ve que vino sin ubicación.
       const ubicacion = await ubicacionActual();
       const res = await fetch(`/api/visitas/${visitaId}/marca`, {
@@ -84,7 +81,7 @@ export function MiParte({
       if (!ubicacion) {
         toast.warning("Se marcó sin ubicación: no pudimos obtenerla.");
       }
-      setSaliendo(false);
+      setAbierto(false);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No pudimos marcar");
@@ -93,7 +90,7 @@ export function MiParte({
     }
   }
 
-  /** Corregir lo que hizo, después de haber salido. */
+  /** Corregir lo que hizo, después de haber salido. No mueve las marcas. */
   async function guardarTareas() {
     setCargando(true);
     try {
@@ -105,7 +102,7 @@ export function MiParte({
       const datos = await res.json().catch(() => null);
       if (!res.ok) throw new Error(datos?.error ?? "No pudimos guardar");
       toast.success("Listo");
-      setSaliendo(false);
+      setAbierto(false);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No pudimos guardar");
@@ -125,87 +122,33 @@ export function MiParte({
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex-row items-center justify-between gap-2 border-b">
-          <CardTitle className="text-base">Mi parte</CardTitle>
-          {salida ? (
-            <Badge variant="secondary">Terminado</Badge>
-          ) : entrada ? (
-            <Badge variant="outline">En el jardín</Badge>
-          ) : (
-            <Badge variant="outline">Sin marcar</Badge>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4 pt-5">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Marca
-              etiqueta="Entrada"
-              fecha={entrada}
-              ubicacion={
-                parte.entradaLat !== null
-                  ? { precision: parte.entradaPrecision }
-                  : null
-              }
-            />
-            <Marca
-              etiqueta="Salida"
-              fecha={salida}
-              ubicacion={
-                parte.salidaLat !== null
-                  ? { precision: parte.salidaPrecision }
-                  : null
-              }
-            />
-          </div>
-
-          {salida && (
-            <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Lo que hice
-              </p>
-              {parte.tareas.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No marcaste ninguna tarea.
-                </p>
-              ) : (
-                <p className="text-sm">
-                  {parte.tareas.map((t) => t.tarea.nombre).join(", ")}
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="flex flex-wrap justify-end gap-2">
-            {!entrada && (
-              <Button onClick={() => marcar("ENTRADA")} disabled={cargando}>
-                <LogIn className="mr-2 h-4 w-4" />
-                {cargando ? "Marcando…" : "Marcar entrada"}
-              </Button>
-            )}
-            {entrada && !salida && (
-              <Button onClick={() => setSaliendo(true)} disabled={cargando}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Marcar salida
-              </Button>
-            )}
-            {salida && (
-              <Button
-                variant="outline"
-                onClick={() => setSaliendo(true)}
-                disabled={cargando}
-              >
-                Corregir lo que hice
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {!entrada ? (
+        <Button onClick={() => marcar("ENTRADA")} disabled={cargando}>
+          <LogIn className="mr-2 h-4 w-4" />
+          {cargando ? "Marcando…" : "Marcar entrada"}
+        </Button>
+      ) : !salida ? (
+        <Button onClick={() => setAbierto(true)} disabled={cargando}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Marcar salida
+        </Button>
+      ) : (
+        // Después de salir queda poder corregir lo que marcó: sin esto, una
+        // tarea tildada por error no se arregla desde ningún lado.
+        <Button
+          variant="outline"
+          onClick={() => setAbierto(true)}
+          disabled={cargando}
+        >
+          Editar mi parte
+        </Button>
+      )}
 
       {/* Al salir se pregunta qué hizo: recién ahí lo sabe. Preguntárselo al
           llegar sería pedirle que adivine. */}
       <Dialog
-        open={saliendo}
-        onOpenChange={(v) => !v && !cargando && setSaliendo(false)}
+        open={abierto}
+        onOpenChange={(v) => !v && !cargando && setAbierto(false)}
       >
         <DialogContent className="sm:max-w-lg" pantallaCompletaEnMovil>
           <DialogHeader>
@@ -241,7 +184,7 @@ export function MiParte({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setSaliendo(false)}
+              onClick={() => setAbierto(false)}
               disabled={cargando}
             >
               Cancelar
@@ -250,52 +193,11 @@ export function MiParte({
               onClick={() => (salida ? guardarTareas() : marcar("SALIDA"))}
               disabled={cargando}
             >
-              {cargando
-                ? "Guardando…"
-                : salida
-                  ? "Guardar"
-                  : "Marcar salida"}
+              {cargando ? "Guardando…" : salida ? "Guardar" : "Marcar salida"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-/** Una de las dos marcas: la hora, y si vino con ubicación o sin ella. */
-function Marca({
-  etiqueta,
-  fecha,
-  ubicacion,
-}: {
-  etiqueta: string;
-  fecha: Date | null;
-  ubicacion: { precision: number | null } | null;
-}) {
-  return (
-    <div className="rounded-lg border border-border px-3 py-2.5">
-      <p className="text-xs text-muted-foreground">{etiqueta}</p>
-      <p className="text-lg font-extrabold tabular-nums">
-        {fecha ? horaLocal(fecha) : "—"}
-      </p>
-      {fecha && (
-        <p className="mt-0.5 flex items-center gap-1 text-[11.5px] font-semibold text-muted-foreground">
-          {ubicacion ? (
-            <>
-              <MapPin className="h-3 w-3 flex-none" />
-              Con ubicación
-              {ubicacion.precision !== null &&
-                ` · ±${Math.round(ubicacion.precision)} m`}
-            </>
-          ) : (
-            <>
-              <MapPinOff className="h-3 w-3 flex-none" />
-              Sin ubicación
-            </>
-          )}
-        </p>
-      )}
-    </div>
   );
 }

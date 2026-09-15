@@ -236,6 +236,16 @@ export function VisitaDetail({
                 : ""}
             </p>
           </div>
+          {miParte && (
+            <div className="flex flex-none items-center gap-2">
+              <MiParte
+                visitaId={visita.id}
+                parte={miParte}
+                obligatoriasIds={visita.tareasObligatorias.map((o) => o.tarea.id)}
+                catalogo={catalogo}
+              />
+            </div>
+          )}
           {canModify && (
             <div className="flex flex-none items-center gap-2">
               {/* Editable en cualquier estado: corregir la fecha de una visita
@@ -274,17 +284,6 @@ export function VisitaDetail({
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-        {/* Arriba de todo: es lo único que el jardinero viene a hacer acá, y
-            debajo de las tareas quedaba después de leer lo que hizo el resto. */}
-        {miParte && (
-          <MiParte
-            visitaId={visita.id}
-            parte={miParte}
-            obligatoriasIds={visita.tareasObligatorias.map((o) => o.tarea.id)}
-            catalogo={catalogo}
-          />
-        )}
-
         {/* Qué exigía la visita y qué se hizo. Son dos preguntas distintas:
             la primera se decide al agendar, la segunda la contesta cada
             jardinero al terminar, y lo que la oficina mira es la diferencia. */}
@@ -542,6 +541,29 @@ export function VisitaDetail({
                   <span className="text-muted-foreground">—</span>
                 )}
               </Fila>
+              {/* Mis marcas, para quien está asignado. Separadas de "Horario",
+                  que es la ventana de **toda** la visita —la primera entrada y
+                  la última salida de todos— y quiere decir otra cosa. */}
+              {miParte && (
+                <>
+                  <Fila etiqueta="Mi entrada">
+                    <MarcaEnDetalle
+                      fecha={miParte.entradaEl}
+                      dia={visita.fechaProgramada}
+                      conUbicacion={miParte.entradaLat !== null}
+                      precision={miParte.entradaPrecision}
+                    />
+                  </Fila>
+                  <Fila etiqueta="Mi salida">
+                    <MarcaEnDetalle
+                      fecha={miParte.salidaEl}
+                      dia={visita.fechaProgramada}
+                      conUbicacion={miParte.salidaLat !== null}
+                      precision={miParte.salidaPrecision}
+                    />
+                  </Fila>
+                </>
+              )}
               {/* "Realizada" es el día del trabajo; esto es cuándo y quién la
                   cerró en el sistema, que no tiene por qué ser el mismo día ni
                   la misma persona. */}
@@ -755,4 +777,37 @@ function duracion(entrada: string | null, salida: string | null): string | null 
   return [horas ? `${horas} h` : null, resto ? `${resto} min` : null]
     .filter(Boolean)
     .join(" ");
+}
+
+/**
+ * Una de mis marcas, en Detalles: la hora y si vino con ubicación.
+ *
+ * El "sin ubicación" se dice también acá y no solo en el panel de la oficina,
+ * porque es quien marcó el que puede arreglarlo —dar el permiso y volver a
+ * marcar la próxima— y si no se le dice nunca se entera.
+ */
+function MarcaEnDetalle({
+  fecha,
+  dia,
+  conUbicacion,
+  precision,
+}: {
+  fecha: string | Date | null;
+  dia: string;
+  conUbicacion: boolean;
+  precision: number | null;
+}) {
+  if (!fecha) {
+    return <span className="text-muted-foreground">Sin marcar</span>;
+  }
+  return (
+    <>
+      <span className="block tabular-nums">{horaConDia(fecha, dia)}</span>
+      <span className="block text-xs text-muted-foreground">
+        {conUbicacion
+          ? `Con ubicación${precision !== null ? ` · ±${Math.round(precision)} m` : ""}`
+          : "Sin ubicación"}
+      </span>
+    </>
+  );
 }
