@@ -301,6 +301,60 @@ export async function removeVisitaMediaMuchas(
  * exigir que la etiqueta saliera de lo cargado dejaba esas fotos sin clasificar.
  * El informe arma secciones con cualquier tarea.
  */
+/**
+ * Reetiquetar varias de una, dentro del mismo guardado.
+ *
+ * La pantalla junta agregar, quitar y reetiquetar en un solo *Guardar*, así que
+ * esto tiene que viajar con lo demás: una foto que cambió de tarea y una que se
+ * borró son el mismo gesto, y partirlo en dos llamadas deja la mitad aplicada
+ * cuando la segunda falla.
+ *
+ * Cobra las mismas reglas que de a una: el jardinero solo toca lo suyo y la
+ * tarea tiene que existir. Acá `tareaId` **no** puede ser `null` —quitarle la
+ * etiqueta a una foto no es algo que la pantalla ofrezca—, a diferencia del
+ * `PATCH` suelto, que sí lo acepta porque las fotos viejas vienen sin ninguna.
+ */
+export async function etiquetarVisitaMediaMuchas(
+  visitaId: string,
+  cambios: { id: string; tareaId: string }[],
+  viewer: Viewer,
+) {
+  await ensurePuedeTocarArchivos(visitaId, viewer);
+  if (cambios.length === 0) return;
+
+  const ids = [...new Set(cambios.map((c) => c.id))];
+  const suyas = await prisma.visitaMedia.findMany({
+    where: {
+      id: { in: ids },
+      visitaId,
+      ...(viewer.role === "PERSONAL" ? { subidaPorId: viewer.id } : {}),
+    },
+    select: { id: true },
+  });
+  if (suyas.length !== ids.length) {
+    throw new NotFoundError(
+      "Alguno de los archivos no existe o no lo subiste vos.",
+    );
+  }
+
+  const tareaIds = [...new Set(cambios.map((c) => c.tareaId))];
+  const vivas = await prisma.tarea.count({
+    where: { id: { in: tareaIds }, deletedAt: null },
+  });
+  if (vivas !== tareaIds.length) {
+    throw new ValidationError("Alguna de las tareas ya no existe.");
+  }
+
+  await prisma.$transaction(
+    cambios.map((c) =>
+      prisma.visitaMedia.update({
+        where: { id: c.id },
+        data: { tareaId: c.tareaId },
+      }),
+    ),
+  );
+}
+
 export async function etiquetarVisitaMedia(
   visitaId: string,
   mediaId: string,

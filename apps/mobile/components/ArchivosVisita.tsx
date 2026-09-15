@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
@@ -40,37 +40,34 @@ import { tema } from "@/lib/tema";
  * **La fila se toca entera.** Antes lo único tocable era la etiqueta, y encima
  * de cada miniatura vivía una ✕ permanente: tres fotos, tres botones de borrar
  * mirándote, para algo que se hace de vez en cuando. Tocar la fila abre la hoja
- * de esa foto —verla grande, cambiarle la tarea, eliminarla—, que es donde esas
+ * de esa foto —verla grande, cambiarle la tarea, sacarla—, que es donde esas
  * tres cosas se piden.
- *
- * **La confirmación de borrado es el rótulo de la sección.** Estaba debajo de
- * las fotos, empujando la lista hacia abajo justo cuando se está apuntando a
- * una; ahora *ARCHIVOS* se convierte en la barra, como la barra de selección
- * del portal tapa el encabezado de la tabla.
- *
- * **Nada se guarda hasta confirmar.** Lo que se elige de la galería entra en
- * una hoja de revisión y se sube recién al apretar *Subir*; eliminar es local
- * hasta que se confirma en su barra. Un solo `PUT` lleva las dos cosas: se
- * sube todo junto o no se sube nada.
  *
  * **Y es una sola hoja con pasos**, no una por pantalla. Elegir la tarea abría
  * otro `HojaInferior`: una se cerraba hacia abajo y la otra subía detrás, medio
  * segundo de ida y vuelta para tocar un ítem de una lista. Ahora cambia el
- * contenido y la tarjeta se queda donde está, creciendo o encogiéndose con la
- * transición de layout.
+ * contenido y la tarjeta se queda donde está.
+ *
+ * **Nada se guarda hasta confirmar, y se confirma todo junto.** Agregar, sacar
+ * y cambiar de tarea son cambios locales hasta que alguien aprieta *Guardar*,
+ * que viaja en un solo `PUT`: se aplica todo o no se aplica nada. Reetiquetar
+ * se guardaba solo, en el momento, y era el único de los tres que no se podía
+ * deshacer. Los botones viven en el **encabezado de la pantalla** —ver
+ * `useCambiosDeArchivos`—, que es lo único que siempre está a la vista.
  */
 
 /** Una foto elegida que todavía no se subió. */
-interface Pendiente {
+export interface Pendiente {
   asset: ImagePicker.ImagePickerAsset;
   tareaId: string | null;
 }
 
-/** Qué está eligiendo tarea. */
-type Eligiendo =
+/** A qué foto se le está eligiendo tarea. */
+type Foto =
   | { tipo: "nueva"; indice: number }
-  | { tipo: "todas" }
   | { tipo: "subida"; media: VisitaMedia };
+
+type Eligiendo = Foto | { tipo: "todas" };
 
 /**
  * Qué muestra la hoja. `null` = cerrada.
@@ -81,107 +78,70 @@ type Eligiendo =
  */
 type Vista =
   | { paso: "revision" }
-  | { paso: "foto"; media: VisitaMedia }
+  | { paso: "foto"; de: Foto }
   | { paso: "tareas"; para: Eligiendo };
 
 /** De la lista de tareas se vuelve al paso que la abrió. */
 function volverDe(para: Eligiendo): Vista {
-  return para.tipo === "subida"
-    ? { paso: "foto", media: para.media }
-    : { paso: "revision" };
+  return para.tipo === "todas"
+    ? { paso: "revision" }
+    : { paso: "foto", de: para };
 }
 
-export function ArchivosVisita({
-  visitaId,
-  archivos,
-  catalogo,
-  onCambio,
-  onVer,
-}: {
-  visitaId: string;
-  archivos: VisitaMedia[];
-  /** El catálogo entero: cualquier tarea sirve de etiqueta. */
-  catalogo: TareaDeCatalogo[];
-  onCambio: () => void;
-  /** Abrir una foto a pantalla completa. */
-  onVer: (media: { url: string; tipo: string }) => void;
-}) {
+/**
+ * Todo lo que está sin guardar, más cómo guardarlo.
+ *
+ * Vive fuera de la lista porque *Guardar* y *Cancelar* están en el encabezado
+ * de la pantalla, muy lejos en el árbol: el encabezado es lo único que queda
+ * fijo mientras se scrollea, y una confirmación que hay que ir a buscar es una
+ * que se pierde. Mientras hay cambios, esos dos botones **reemplazan** el
+ * nombre del cliente y la flecha de volver: para salir hay que decidir antes.
+ */
+export interface CambiosDeArchivos {
+  pendientes: Pendiente[];
+  quitadas: Set<string>;
+  /** `mediaId` → la tarea nueva, todavía sin guardar. */
+  etiquetas: Map<string, string>;
+  hayCambios: boolean;
+  guardando: boolean;
+  error: string | null;
+  /** Cuántas de la tanda nueva siguen sin tarea. */
+  sinTarea: number;
+  agregar: (assets: ImagePicker.ImagePickerAsset[]) => void;
+  sacarPendiente: (indice: number) => void;
+  etiquetarPendiente: (indice: number, tareaId: string) => void;
+  etiquetarTodas: (tareaId: string) => void;
+  alternarQuitada: (mediaId: string) => void;
+  etiquetar: (mediaId: string, tareaId: string) => void;
+  guardar: () => Promise<void>;
+  cancelar: () => void;
+}
+
+export function useCambiosDeArchivos(
+  visitaId: string,
+  onCambio: () => void
+): CambiosDeArchivos {
   const [pendientes, setPendientes] = useState<Pendiente[]>([]);
   const [quitadas, setQuitadas] = useState<Set<string>>(new Set());
-  const [vista, setVista] = useState<Vista | null>(null);
+  const [etiquetas, setEtiquetas] = useState<Map<string, string>>(new Map());
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const nombreDeTarea = (id: string | null) =>
-    id ? (catalogo.find((t) => t.id === id)?.nombre ?? "Otra tarea") : null;
 
   const sinTarea = pendientes.filter((p) => p.tareaId === null).length;
+  const hayCambios =
+    pendientes.length > 0 || quitadas.size > 0 || etiquetas.size > 0;
 
-  /**
-   * En el orden del catálogo —el que eligió la oficina—, con las que no tienen
-   * tarea al final, que es donde se las busca para arreglarlas.
-   *
-   * Es un listado plano y no grupos con encabezado: cada fila lleva su nombre
-   * completo al lado de la miniatura, así que agrupar sería repetir el mismo
-   * texto dos veces. Ordenar por tarea alcanza para que las de una misma queden
-   * juntas.
-   */
-  const enFila = useMemo(() => {
-    const posicion = new Map(catalogo.map((t, i) => [t.id, i]));
-    const lugar = (m: VisitaMedia) =>
-      m.tareaId ? (posicion.get(m.tareaId) ?? 9e3) : 9e6;
-    return [...archivos].sort((a, b) => lugar(a) - lugar(b));
-  }, [archivos, catalogo]);
-
-  function agregar(assets: ImagePicker.ImagePickerAsset[]) {
+  const cancelar = useCallback(() => {
+    setPendientes([]);
+    setQuitadas(new Set());
+    setEtiquetas(new Map());
     setError(null);
-    setPendientes((antes) => [
-      ...antes,
-      ...assets.map((asset) => ({ asset, tareaId: null })),
-    ]);
-    setVista({ paso: "revision" });
-  }
+  }, []);
 
-  async function tomarFoto() {
-    const permiso = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permiso.granted) {
-      setError("Permite el acceso a la cámara para tomar fotos.");
-      return;
-    }
-    const r = await ImagePicker.launchCameraAsync({ quality: 0.85 });
-    if (!r.canceled) agregar(r.assets);
-  }
-
-  async function elegirDeGaleria() {
-    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permiso.granted) {
-      setError("Permite el acceso a tus fotos para subirlas.");
-      return;
-    }
-    const r = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsMultipleSelection: true,
-      quality: 0.85,
-      selectionLimit: 20,
-    });
-    if (!r.canceled) agregar(r.assets);
-  }
-
-  function marcarParaEliminar(media: VisitaMedia) {
-    setVista(null);
-    setQuitadas((antes) => {
-      const ahora = new Set(antes);
-      if (ahora.has(media.id)) ahora.delete(media.id);
-      else ahora.add(media.id);
-      return ahora;
-    });
-  }
-
-  /** Lo que entra y lo que sale, en un solo envío. */
-  async function guardar() {
-    if (pendientes.length === 0 && quitadas.size === 0) return;
+  const guardar = useCallback(async () => {
+    if (!hayCambios || guardando) return;
     if (sinTarea > 0) {
-      setVista({ paso: "revision" });
-      setError("Elige la tarea de cada foto antes de guardar.");
+      setError("Elige la tarea de cada foto nueva antes de guardar.");
       return;
     }
     setGuardando(true);
@@ -199,7 +159,8 @@ export function ArchivosVisita({
           return {
             uri: asset.uri,
             fileName: nombre,
-            contentType: asset.mimeType ?? (esVideo ? "video/mp4" : "image/jpeg"),
+            contentType:
+              asset.mimeType ?? (esVideo ? "video/mp4" : "image/jpeg"),
             tareaId: tareaId!,
           };
         });
@@ -241,17 +202,21 @@ export function ArchivosVisita({
         }));
       }
 
-      // Un solo guardado: lo que entra y lo que sale.
+      // Un solo guardado: lo que entra, lo que sale y lo que cambió de tarea.
       await apiRequest(`/api/mobile/visitas/${visitaId}/media`, {
         method: "PUT",
-        body: { files: subidas, eliminar: [...quitadas] },
+        body: {
+          files: subidas,
+          eliminar: [...quitadas],
+          etiquetar: [...etiquetas].map(([id, tareaId]) => ({ id, tareaId })),
+        },
       });
       // Un arrastre que se confirma: golpe liviano, no notificación. Subir
       // cinco fotos y borrar dos es un compromiso, no un aviso del sistema.
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setPendientes([]);
       setQuitadas(new Set());
-      setVista(null);
+      setEtiquetas(new Map());
       onCambio();
     } catch (e) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -259,88 +224,159 @@ export function ArchivosVisita({
     } finally {
       setGuardando(false);
     }
+  }, [
+    etiquetas,
+    guardando,
+    hayCambios,
+    onCambio,
+    pendientes,
+    quitadas,
+    sinTarea,
+    visitaId,
+  ]);
+
+  return {
+    pendientes,
+    quitadas,
+    etiquetas,
+    hayCambios,
+    guardando,
+    error,
+    sinTarea,
+    guardar,
+    cancelar,
+    agregar: useCallback((assets: ImagePicker.ImagePickerAsset[]) => {
+      setError(null);
+      setPendientes((antes) => [
+        ...antes,
+        ...assets.map((asset) => ({ asset, tareaId: null })),
+      ]);
+    }, []),
+    sacarPendiente: useCallback((indice: number) => {
+      setPendientes((antes) => antes.filter((_, i) => i !== indice));
+    }, []),
+    etiquetarPendiente: useCallback((indice: number, tareaId: string) => {
+      setPendientes((antes) =>
+        antes.map((p, i) => (i === indice ? { ...p, tareaId } : p))
+      );
+    }, []),
+    etiquetarTodas: useCallback((tareaId: string) => {
+      setPendientes((antes) => antes.map((p) => ({ ...p, tareaId })));
+    }, []),
+    alternarQuitada: useCallback((mediaId: string) => {
+      setQuitadas((antes) => {
+        const ahora = new Set(antes);
+        if (ahora.has(mediaId)) ahora.delete(mediaId);
+        else ahora.add(mediaId);
+        return ahora;
+      });
+    }, []),
+    etiquetar: useCallback((mediaId: string, tareaId: string) => {
+      setEtiquetas((antes) => new Map(antes).set(mediaId, tareaId));
+    }, []),
+  };
+}
+
+export function ArchivosVisita({
+  archivos,
+  catalogo,
+  cambios,
+  onVer,
+}: {
+  archivos: VisitaMedia[];
+  /** El catálogo entero: cualquier tarea sirve de etiqueta. */
+  catalogo: TareaDeCatalogo[];
+  cambios: CambiosDeArchivos;
+  /** Abrir una foto a pantalla completa. */
+  onVer: (media: { url: string; tipo: string }) => void;
+}) {
+  const [vista, setVista] = useState<Vista | null>(null);
+  const { pendientes, quitadas, etiquetas, guardando, error, sinTarea } =
+    cambios;
+
+  const nombreDeTarea = (id: string | null) =>
+    id ? (catalogo.find((t) => t.id === id)?.nombre ?? "Otra tarea") : null;
+
+  /** La tarea que va a quedar: la sin guardar si la hay, si no la de la foto. */
+  const tareaDe = (m: VisitaMedia) => etiquetas.get(m.id) ?? m.tareaId;
+
+  /**
+   * En el orden del catálogo —el que eligió la oficina—, con las que no tienen
+   * tarea al final, que es donde se las busca para arreglarlas.
+   *
+   * Es un listado plano y no grupos con encabezado: cada fila lleva su nombre
+   * completo al lado de la miniatura, así que agrupar sería repetir el mismo
+   * texto dos veces. Ordenar por tarea alcanza para que las de una misma queden
+   * juntas.
+   */
+  const enFila = useMemo(() => {
+    const posicion = new Map(catalogo.map((t, i) => [t.id, i]));
+    const lugar = (m: VisitaMedia) => {
+      const id = etiquetas.get(m.id) ?? m.tareaId;
+      return id ? (posicion.get(id) ?? 9e3) : 9e6;
+    };
+    return [...archivos].sort((a, b) => lugar(a) - lugar(b));
+  }, [archivos, catalogo, etiquetas]);
+
+  async function tomarFoto() {
+    const permiso = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permiso.granted) return;
+    const r = await ImagePicker.launchCameraAsync({ quality: 0.85 });
+    if (!r.canceled) {
+      cambios.agregar(r.assets);
+      setVista({ paso: "revision" });
+    }
   }
 
-  async function elegirTarea(tareaId: string) {
+  async function elegirDeGaleria() {
+    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permiso.granted) return;
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "videos"],
+      allowsMultipleSelection: true,
+      quality: 0.85,
+      selectionLimit: 20,
+    });
+    if (!r.canceled) {
+      cambios.agregar(r.assets);
+      setVista({ paso: "revision" });
+    }
+  }
+
+  function elegirTarea(tareaId: string) {
     if (vista?.paso !== "tareas") return;
     const quien = vista.para;
-
     if (quien.tipo === "todas") {
-      setPendientes((antes) => antes.map((p) => ({ ...p, tareaId })));
+      cambios.etiquetarTodas(tareaId);
       setVista({ paso: "revision" });
       return;
     }
     if (quien.tipo === "nueva") {
-      setPendientes((antes) =>
-        antes.map((p, i) => (i === quien.indice ? { ...p, tareaId } : p))
-      );
+      cambios.etiquetarPendiente(quien.indice, tareaId);
       setVista({ paso: "revision" });
       return;
     }
-    // Ya subida: la hoja se cierra porque la foto de la que se volvería tiene
-    // la etiqueta vieja hasta que `onCambio` traiga la nueva.
+    // Ya subida: el cambio queda pendiente como los demás y se guarda con todo
+    // lo otro desde el encabezado. Se guardaba solo, en el momento, y era el
+    // único de los tres que no se podía deshacer.
+    cambios.etiquetar(quien.media.id, tareaId);
     setVista(null);
-    // Una ya subida se reetiqueta en el momento: no es un cambio que se pueda
-    // "cancelar" junto con los otros, porque la foto ya está.
-    try {
-      await apiRequest(
-        `/api/mobile/visitas/${visitaId}/media/${quien.media.id}`,
-        { method: "PATCH", body: { tareaId } }
-      );
-      onCambio();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No pudimos etiquetarla");
-    }
   }
 
   const tareaMarcada =
     vista?.paso !== "tareas"
       ? null
       : vista.para.tipo === "subida"
-        ? vista.para.media.tareaId
+        ? tareaDe(vista.para.media)
         : vista.para.tipo === "nueva"
           ? (pendientes[vista.para.indice]?.tareaId ?? null)
           : null;
 
   return (
     <View style={styles.contenedor}>
-      {/* El rótulo de la sección **es** la barra cuando hay algo marcado: la
-          confirmación vivía debajo de las fotos, donde empujaba la lista justo
-          cuando se está apuntando a una. Es la misma idea que la barra de
-          selección del portal, que tapa el encabezado de la tabla. */}
-      <View style={styles.cabecera}>
-        {quitadas.size > 0 ? (
-          <>
-            <Text style={styles.cabeceraCuenta}>
-              {quitadas.size === 1
-                ? "1 foto para eliminar"
-                : `${quitadas.size} fotos para eliminar`}
-            </Text>
-            <PressableScale
-              onPress={() => setQuitadas(new Set())}
-              disabled={guardando}
-              style={styles.cabeceraBoton}
-              estiloPresionado={styles.cabeceraBotonTocado}
-            >
-              <Text style={styles.cabeceraCancelar}>Cancelar</Text>
-            </PressableScale>
-            <PressableScale
-              onPress={guardar}
-              disabled={guardando}
-              style={styles.cabeceraBoton}
-              estiloPresionado={styles.cabeceraBotonTocado}
-            >
-              {guardando ? (
-                <ActivityIndicator size="small" color={tema.rojo} />
-              ) : (
-                <Text style={styles.cabeceraEliminar}>Eliminar</Text>
-              )}
-            </PressableScale>
-          </>
-        ) : (
-          <Text style={styles.cabeceraTitulo}>ARCHIVOS</Text>
-        )}
-      </View>
+      <Text variant="labelMedium" style={styles.rotulo}>
+        ARCHIVOS
+      </Text>
 
       <View style={styles.acciones}>
         <PressableScale
@@ -364,39 +400,56 @@ export function ArchivosVisita({
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      {/* Cerrar la hoja de revisión no tira lo elegido: un arrastre de más no
-          puede costar ocho fotos ya etiquetadas. Queda esta línea para volver. */}
-      {pendientes.length > 0 && vista === null ? (
-        <Pressable
-          onPress={() => setVista({ paso: "revision" })}
-          style={styles.aviso}
-        >
-          <Ionicons name="cloud-upload-outline" size={16} color={tema.verde} />
-          <Text style={styles.avisoTexto}>
-            {pendientes.length === 1
-              ? "1 foto sin subir"
-              : `${pendientes.length} fotos sin subir`}
-          </Text>
-          <Text style={styles.avisoAccion}>Revisar</Text>
-        </Pressable>
+      {guardando ? (
+        <View style={styles.guardando}>
+          <ActivityIndicator size="small" color={tema.verde} />
+          <Text style={styles.guardandoTexto}>Guardando…</Text>
+        </View>
       ) : null}
 
-      {archivos.length === 0 ? (
+      {archivos.length === 0 && pendientes.length === 0 ? (
         <Text style={styles.vacio}>
           Todavía no subiste fotos. Sácalas mientras trabajas.
         </Text>
       ) : (
         <View style={styles.lista}>
+          {/* Las que faltan subir van primero: son lo que acaba de pasar, y lo
+              que el Guardar de arriba está esperando. */}
+          {pendientes.map((p, i) => (
+            <PressableScale
+              key={`${p.asset.uri}-${i}`}
+              onPress={() =>
+                setVista({ paso: "foto", de: { tipo: "nueva", indice: i } })
+              }
+              style={[styles.filaFoto, i > 0 && styles.filaConLinea]}
+              estiloPresionado={styles.filaTocada}
+            >
+              <View style={styles.miniaturaCaja}>
+                <Image source={{ uri: p.asset.uri }} style={styles.miniatura} />
+              </View>
+              <View style={styles.filaTexto}>
+                <Text
+                  style={[styles.filaNombre, !p.tareaId && styles.faltaTarea]}
+                >
+                  {nombreDeTarea(p.tareaId) ?? "Elegir tarea"}
+                </Text>
+                <Text style={styles.filaNueva}>Sin subir</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+            </PressableScale>
+          ))}
+
           {enFila.map((m, i) => {
             const fuera = quitadas.has(m.id);
             return (
               <PressableScale
                 key={m.id}
-                onPress={() => setVista({ paso: "foto", media: m })}
+                onPress={() =>
+                  setVista({ paso: "foto", de: { tipo: "subida", media: m } })
+                }
                 style={[
                   styles.filaFoto,
-                  i > 0 && styles.filaConLinea,
+                  (i > 0 || pendientes.length > 0) && styles.filaConLinea,
                   fuera && styles.filaFuera,
                 ]}
                 estiloPresionado={styles.filaTocada}
@@ -415,17 +468,23 @@ export function ArchivosVisita({
                     </View>
                   ) : null}
                 </View>
-                {/* Entero: el nombre de la tarea es lo único que dice de qué
-                    es la foto, y recortado a una línea "Deshoje de plantas de
-                    hojas grandes (alocasias, b…" no distingue nada. */}
-                <Text
-                  style={[
-                    styles.filaNombre,
-                    !m.tareaId && styles.revisionFalta,
-                  ]}
-                >
-                  {nombreDeTarea(m.tareaId) ?? "Sin tarea"}
-                </Text>
+                <View style={styles.filaTexto}>
+                  {/* Entero: el nombre de la tarea es lo único que dice de qué
+                      es la foto, y recortado a una línea "Deshoje de plantas de
+                      hojas grandes (alocasias, b…" no distingue nada. */}
+                  <Text
+                    style={[styles.filaNombre, !tareaDe(m) && styles.faltaTarea]}
+                  >
+                    {nombreDeTarea(tareaDe(m)) ?? "Sin tarea"}
+                  </Text>
+                  {fuera ? (
+                    <Text style={styles.filaPendiente}>
+                      Se elimina al guardar
+                    </Text>
+                  ) : etiquetas.has(m.id) ? (
+                    <Text style={styles.filaPendiente}>Tarea sin guardar</Text>
+                  ) : null}
+                </View>
                 <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
               </PressableScale>
             );
@@ -452,7 +511,9 @@ export function ArchivosVisita({
               </Text>
               {pendientes.length > 1 ? (
                 <Pressable
-                  onPress={() => setVista({ paso: "tareas", para: { tipo: "todas" } })}
+                  onPress={() =>
+                    setVista({ paso: "tareas", para: { tipo: "todas" } })
+                  }
                   hitSlop={8}
                 >
                   <Text style={styles.hojaAccion}>Aplicar a todas</Text>
@@ -463,10 +524,16 @@ export function ArchivosVisita({
             <ScrollView style={styles.hojaLista}>
               {pendientes.map((p, i) => (
                 <View key={`${p.asset.uri}-${i}`} style={styles.revision}>
-                  <Image source={{ uri: p.asset.uri }} style={styles.revisionFoto} />
+                  <Image
+                    source={{ uri: p.asset.uri }}
+                    style={styles.revisionFoto}
+                  />
                   <Pressable
                     onPress={() =>
-                      setVista({ paso: "tareas", para: { tipo: "nueva", indice: i } })
+                      setVista({
+                        paso: "tareas",
+                        para: { tipo: "nueva", indice: i },
+                      })
                     }
                     style={styles.revisionTarea}
                     hitSlop={6}
@@ -474,7 +541,7 @@ export function ArchivosVisita({
                     <Text
                       style={[
                         styles.revisionTexto,
-                        !p.tareaId && styles.revisionFalta,
+                        !p.tareaId && styles.faltaTarea,
                       ]}
                       numberOfLines={2}
                     >
@@ -488,11 +555,8 @@ export function ArchivosVisita({
                   </Pressable>
                   <Pressable
                     onPress={() => {
-                      setPendientes((a) => {
-                        const quedan = a.filter((_, j) => j !== i);
-                        if (quedan.length === 0) setVista(null);
-                        return quedan;
-                      });
+                      cambios.sacarPendiente(i);
+                      if (pendientes.length === 1) setVista(null);
                     }}
                     hitSlop={10}
                     style={styles.revisionQuitar}
@@ -504,91 +568,51 @@ export function ArchivosVisita({
             </ScrollView>
 
             <View style={styles.hojaPie}>
+              {/* No sube: deja la tanda lista y la sube el *Guardar* de arriba,
+                  junto con lo borrado y lo reetiquetado. Dos botones que
+                  guardan cosas distintas en la misma pantalla es cómo se
+                  termina con la mitad aplicada. */}
               <PressableScale
-                onPress={guardar}
-                disabled={guardando || sinTarea > 0 || pendientes.length === 0}
-                style={[
-                  styles.subir,
-                  (guardando || sinTarea > 0 || pendientes.length === 0) &&
-                    styles.subirApagado,
-                ]}
+                onPress={() => setVista(null)}
+                disabled={sinTarea > 0}
+                style={[styles.listo, sinTarea > 0 && styles.listoApagado]}
               >
-                {guardando ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.subirTexto}>
-                    {sinTarea > 0
-                      ? sinTarea === 1
-                        ? "Falta 1 tarea"
-                        : `Faltan ${sinTarea} tareas`
-                      : pendientes.length === 1
-                        ? "Subir foto"
-                        : `Subir ${pendientes.length} fotos`}
-                  </Text>
-                )}
+                <Text style={styles.listoTexto}>
+                  {sinTarea > 0
+                    ? sinTarea === 1
+                      ? "Falta 1 tarea"
+                      : `Faltan ${sinTarea} tareas`
+                    : "Listo"}
+                </Text>
               </PressableScale>
             </View>
           </>
         ) : null}
 
-        {/* Una foto ya subida: verla, cambiarle la tarea, eliminarla. */}
+        {/* Una foto: verla, cambiarle la tarea, sacarla. */}
         {vista?.paso === "foto" ? (
-          <View style={styles.hojaFoto}>
-            <Pressable
-              onPress={() => {
-                const m = vista.media;
-                setVista(null);
-                onVer({ url: m.url, tipo: m.tipo });
-              }}
-            >
-              {vista.media.tipo === "video" ? (
-                <View style={[styles.vistaPrevia, styles.video]}>
-                  <Ionicons name="play" size={34} color="#fff" />
-                </View>
-              ) : (
-                <Image
-                  source={{ uri: vista.media.url }}
-                  style={styles.vistaPrevia}
-                  resizeMode="cover"
-                />
-              )}
-            </Pressable>
-
-            <Pressable
-              onPress={() =>
-                setVista({
-                  paso: "tareas",
-                  para: { tipo: "subida", media: vista.media },
-                })
-              }
-              style={styles.fila}
-            >
-              <Ionicons name="pricetag-outline" size={20} color={tema.texto2} />
-              <View style={styles.filaTexto}>
-                <Text style={styles.filaEtiqueta}>Tarea</Text>
-                <Text
-                  style={[
-                    styles.filaValor,
-                    !vista.media.tareaId && styles.revisionFalta,
-                  ]}
-                  numberOfLines={1}
-                >
-                  {nombreDeTarea(vista.media.tareaId) ?? "Sin tarea"}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
-            </Pressable>
-
-            <Pressable
-              onPress={() => marcarParaEliminar(vista.media)}
-              style={styles.fila}
-            >
-              <Ionicons name="trash-outline" size={20} color={tema.rojo} />
-              <Text style={styles.filaEliminar}>
-                {quitadas.has(vista.media.id) ? "No eliminar" : "Eliminar foto"}
-              </Text>
-            </Pressable>
-          </View>
+          <FotoEnHoja
+            de={vista.de}
+            pendientes={pendientes}
+            quitada={
+              vista.de.tipo === "subida" && quitadas.has(vista.de.media.id)
+            }
+            nombreDeTarea={nombreDeTarea}
+            tareaDe={tareaDe}
+            onVerGrande={(m) => {
+              setVista(null);
+              onVer(m);
+            }}
+            onCambiarTarea={() =>
+              setVista({ paso: "tareas", para: vista.de })
+            }
+            onSacar={() => {
+              if (vista.de.tipo === "nueva")
+                cambios.sacarPendiente(vista.de.indice);
+              else cambios.alternarQuitada(vista.de.media.id);
+              setVista(null);
+            }}
+          />
         ) : null}
 
         {/* La lista de tareas. Sin opción de dejarla vacía: es obligatoria. */}
@@ -605,7 +629,9 @@ export function ArchivosVisita({
                 <Ionicons name="chevron-back" size={22} color={tema.texto} />
               </PressableScale>
               <Text variant="titleMedium" style={styles.hojaTitulo}>
-                {vista.para.tipo === "todas" ? "¿De qué son todas?" : "¿De qué es?"}
+                {vista.para.tipo === "todas"
+                  ? "¿De qué son todas?"
+                  : "¿De qué es?"}
               </Text>
             </View>
             <ScrollView style={styles.hojaLista}>
@@ -630,8 +656,98 @@ export function ArchivosVisita({
   );
 }
 
+/** El paso de una foto: la misma hoja sirve para una subida y una pendiente. */
+function FotoEnHoja({
+  de,
+  pendientes,
+  quitada,
+  nombreDeTarea,
+  tareaDe,
+  onVerGrande,
+  onCambiarTarea,
+  onSacar,
+}: {
+  de: Foto;
+  pendientes: Pendiente[];
+  quitada: boolean;
+  nombreDeTarea: (id: string | null) => string | null;
+  tareaDe: (m: VisitaMedia) => string | null;
+  onVerGrande: (m: { url: string; tipo: string }) => void;
+  onCambiarTarea: () => void;
+  onSacar: () => void;
+}) {
+  const nueva = de.tipo === "nueva" ? pendientes[de.indice] : null;
+  if (de.tipo === "nueva" && !nueva) return null;
+
+  const uri = nueva ? nueva.asset.uri : de.tipo === "subida" ? de.media.url : "";
+  const esVideo = nueva
+    ? nueva.asset.type === "video"
+    : de.tipo === "subida" && de.media.tipo === "video";
+  const tareaId = nueva
+    ? nueva.tareaId
+    : de.tipo === "subida"
+      ? tareaDe(de.media)
+      : null;
+
+  return (
+    <View style={styles.hojaFoto}>
+      <Pressable
+        // Una que todavía no se subió no tiene URL pública que abrir.
+        onPress={() =>
+          de.tipo === "subida" &&
+          onVerGrande({ url: de.media.url, tipo: de.media.tipo })
+        }
+      >
+        {esVideo ? (
+          <View style={[styles.vistaPrevia, styles.video]}>
+            <Ionicons name="play" size={34} color="#fff" />
+          </View>
+        ) : (
+          <Image
+            source={{ uri }}
+            style={styles.vistaPrevia}
+            resizeMode="cover"
+          />
+        )}
+      </Pressable>
+
+      <Pressable onPress={onCambiarTarea} style={styles.fila}>
+        <Ionicons name="pricetag-outline" size={20} color={tema.texto2} />
+        <View style={styles.filaTexto}>
+          <Text style={styles.filaEtiqueta}>Tarea</Text>
+          <Text
+            style={[styles.filaValor, !tareaId && styles.faltaTarea]}
+            numberOfLines={2}
+          >
+            {nombreDeTarea(tareaId) ?? (nueva ? "Elegir tarea" : "Sin tarea")}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+      </Pressable>
+
+      <Pressable onPress={onSacar} style={styles.fila}>
+        <Ionicons name="trash-outline" size={20} color={tema.rojo} />
+        <Text style={styles.filaEliminar}>
+          {nueva
+            ? "Sacar de la tanda"
+            : quitada
+              ? "No eliminar"
+              : "Eliminar foto"}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   contenedor: { gap: 12 },
+  rotulo: {
+    color: "#888",
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    paddingLeft: 4,
+  },
   acciones: { flexDirection: "row", gap: 10 },
   /** Reparte el ancho. Va en el `Pressable`, no en la vista que se encoge. */
   mitad: { flex: 1 },
@@ -650,38 +766,8 @@ const styles = StyleSheet.create({
   accionTexto: { color: tema.verde, fontWeight: "600" },
   error: { color: "#b3261e" },
   vacio: { color: "#888" },
-
-  aviso: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: "#f4faf4",
-  },
-  avisoTexto: { flex: 1, color: tema.verde, fontWeight: "600", fontSize: 13 },
-  avisoAccion: { color: tema.verde, fontWeight: "700", fontSize: 13 },
-
-  /** El rótulo de la sección, que hace de barra cuando hay algo marcado. */
-  cabecera: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    minHeight: 34,
-  },
-  cabeceraTitulo: {
-    color: "#888",
-    fontSize: 11,
-    letterSpacing: 0.8,
-    fontWeight: "600",
-    paddingLeft: 4,
-  },
-  cabeceraCuenta: { flex: 1, color: tema.rojo, fontWeight: "700", fontSize: 13 },
-  cabeceraBoton: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  cabeceraBotonTocado: { backgroundColor: "rgba(0,0,0,0.05)" },
-  cabeceraCancelar: { color: tema.texto2, fontWeight: "600" },
-  cabeceraEliminar: { color: tema.rojo, fontWeight: "700" },
+  guardando: { flexDirection: "row", alignItems: "center", gap: 8 },
+  guardandoTexto: { color: tema.texto3, fontSize: 13 },
 
   lista: { backgroundColor: "#fafafa", borderRadius: 12, overflow: "hidden" },
   filaFoto: {
@@ -698,13 +784,17 @@ const styles = StyleSheet.create({
   },
   /** Marcada para salir: se ve que se va, y se puede deshacer. */
   filaFuera: { opacity: 0.45 },
-  filaNombre: { flex: 1, color: tema.texto, fontSize: 15, lineHeight: 20 },
-  miniaturaCaja: {
-    width: 52,
-    height: 52,
-    borderRadius: 8,
-    overflow: "hidden",
+  filaNombre: { color: tema.texto, fontSize: 15, lineHeight: 20 },
+  /** Lo que va a pasar al guardar, en chico y debajo del nombre. */
+  filaPendiente: { color: tema.texto3, fontSize: 12, marginTop: 1 },
+  filaNueva: {
+    color: tema.verde,
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 1,
   },
+  faltaTarea: { color: tema.ambarTexto, fontWeight: "600" },
+  miniaturaCaja: { width: 52, height: 52, borderRadius: 8, overflow: "hidden" },
   miniatura: { width: "100%", height: "100%", backgroundColor: "#eee" },
   video: {
     alignItems: "center",
@@ -738,7 +828,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 8,
   },
-  revisionFoto: { width: 56, height: 56, borderRadius: 8, backgroundColor: "#eee" },
+  revisionFoto: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    backgroundColor: "#eee",
+  },
   revisionTarea: {
     flex: 1,
     flexDirection: "row",
@@ -746,18 +841,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   revisionTexto: { flex: 1, color: tema.texto, fontSize: 15 },
-  revisionFalta: { color: tema.ambarTexto, fontWeight: "600" },
   revisionQuitar: { padding: 4 },
 
-  subir: {
+  listo: {
     height: 48,
     borderRadius: 12,
     backgroundColor: tema.verde,
     alignItems: "center",
     justifyContent: "center",
   },
-  subirApagado: { backgroundColor: "#bdbdbd" },
-  subirTexto: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  listoApagado: { backgroundColor: "#bdbdbd" },
+  listoTexto: { color: "#fff", fontWeight: "700", fontSize: 15 },
 
   hojaFoto: { paddingHorizontal: 20, gap: 4 },
   vistaPrevia: {

@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 import { requireMobileUser, isMobileUser } from "@/lib/mobile/auth";
 import {
   addVisitaMedia,
+  etiquetarVisitaMediaMuchas,
   removeVisitaMediaMuchas,
   requestVisitaMediaUploads,
 } from "@/lib/services/visita.service";
@@ -61,18 +62,24 @@ const confirmarSchema = z
       .default([]),
     /** Las que se sacan, en la misma tanda. */
     eliminar: z.array(z.string().min(1)).default([]),
+    /** Las que cambian de tarea, en la misma tanda. */
+    etiquetar: z
+      .array(z.object({ id: z.string().min(1), tareaId: z.string().min(1) }))
+      .default([]),
   })
-  .refine((d) => d.files.length > 0 || d.eliminar.length > 0, {
-    message: "No hay nada que guardar",
-  });
+  .refine(
+    (d) => d.files.length > 0 || d.eliminar.length > 0 || d.etiquetar.length > 0,
+    { message: "No hay nada que guardar" },
+  );
 
 /**
  * Guarda los cambios de archivos de una visita: lo que entra y lo que sale.
  *
- * Las dos cosas en una sola llamada porque son un solo gesto. Borrar era una
- * llamada por foto: sacar cinco eran cinco viajes, cinco oportunidades de que
- * uno falle y ninguna forma de arrepentirse a mitad de camino. Ahora la
- * pantalla junta lo agregado y lo quitado, y se guarda de una.
+ * Las tres cosas —agregar, quitar y reetiquetar— en una sola llamada porque son
+ * un solo gesto. Borrar era una llamada por foto y reetiquetar otra: sacar
+ * cinco eran cinco viajes, cinco oportunidades de que uno falle y ninguna forma
+ * de arrepentirse a mitad de camino. Ahora la pantalla junta todo detrás de un
+ * *Guardar* y esto lo aplica junto.
  *
  * Antes de esto el teléfono no tenía cómo subir nada suelto: las fotos viajaban
  * **dentro del parte**, así que sacar una a mitad de la mañana no era posible.
@@ -96,8 +103,11 @@ export async function PUT(
   const viewer = viewerFromMobileUser(userOrResponse);
   try {
     // Primero lo que sale. Al revés, una foto nueva podría entrar y salir en la
-    // misma tanda si alguien manda su id en las dos listas.
+    // misma tanda si alguien manda su id en las dos listas. Reetiquetar va
+    // después de borrar y antes de agregar: una foto que se va no necesita
+    // etiqueta nueva, y una que recién entra ya trae la suya.
     await removeVisitaMediaMuchas(id, parsed.data.eliminar, viewer);
+    await etiquetarVisitaMediaMuchas(id, parsed.data.etiquetar, viewer);
     const media = await addVisitaMedia(id, viewer, parsed.data.files);
     return NextResponse.json({ media });
   } catch (error) {

@@ -537,12 +537,18 @@ mixed everyone's work and anyone could delete the photo somebody else had just
 taken. The office sees all of them, because it builds the informe, and so does
 the cliente, because they are of their garden; rows from before the column have
 no owner, so the gardener does not see them either — we don't know they are
-theirs. **Nothing saves until confirmed**: adding and removing are local, a bar
-offers *Cancelar* / *Guardar*, and one `PUT` carries both (`files` in,
-`eliminar` out, deletions applied first). Deleting used to be one call per photo
-— removing five was five trips, five chances for one to fail and nowhere to
-change your mind — and a mixed batch of your own plus someone else's is refused
-whole rather than half-applied. The tag can be **any live tarea** and not only
+theirs. **Nothing saves until confirmed, and it all confirms together**: adding,
+removing and re-tagging are local until someone presses *Guardar*, and one `PUT`
+carries the three (`files` in, `eliminar` out, `etiquetar` for the ones that
+changed tarea — deletions first, then re-tags, then the new ones). Deleting used
+to be one call per photo and re-tagging another — removing five was five trips,
+five chances for one to fail and nowhere to change your mind — and a mixed batch
+of your own plus someone else's is refused whole rather than half-applied. The
+two buttons live in the **screen's own header**, replacing the back arrow and
+the client's name while there are changes: that header is the only thing that
+stays put while the page scrolls, and a confirmation you have to scroll to find
+is one that gets lost. Taking the arrow with it is the point — leaving means
+deciding first. The tag can be **any live tarea** and not only
 what that person ticked: in the field you photograph what shows up — a
 watering problem during a pruning — and restricting the tag to your own tareas
 leaves exactly those photos unclassified, which is what stops the informe from

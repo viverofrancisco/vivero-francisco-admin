@@ -11,7 +11,10 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
-import { ArchivosVisita } from "@/components/ArchivosVisita";
+import {
+  ArchivosVisita,
+  useCambiosDeArchivos,
+} from "@/components/ArchivosVisita";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import type { VisitaDetail } from "@/lib/types";
 import { tareasHechas } from "@/lib/types";
@@ -101,6 +104,13 @@ export default function PersonalVisitaScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  /**
+   * Las fotos sin guardar viven acá arriba, no adentro de la lista: sus botones
+   * de *Guardar* y *Cancelar* son el encabezado de esta pantalla, que es lo
+   * único que no se va scrolleando.
+   */
+  const cambios = useCambiosDeArchivos(id ?? "", load);
 
   // Al volver de cargar el parte, se recarga para mostrarlo.
   useFocusEffect(
@@ -240,18 +250,52 @@ export default function PersonalVisitaScreen() {
           datos, sin nada en el medio: las tareas, que estaban acá en una línea
           recortada, tienen su propia sección más abajo. */}
       <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
-        <PressableScale
-          onPress={() => router.back()}
-          hitSlop={8}
-          style={styles.volver}
-        >
-          <Ionicons name="chevron-back" size={24} color={tema.texto} />
-        </PressableScale>
-        <View style={styles.encabezadoTexto}>
-          <Text style={styles.heroTitle} numberOfLines={2}>
-            {nombreCliente(cliente)}
-          </Text>
-        </View>
+        {cambios.hayCambios ? (
+          /* Con fotos sin guardar, el encabezado **es** la confirmación: es lo
+             único que queda fijo mientras se scrollea, y una confirmación que
+             hay que ir a buscar es una que se pierde. Se lleva puesta la
+             flecha de volver, a propósito: para salir hay que decidir antes. */
+          <>
+            <PressableScale
+              onPress={cambios.cancelar}
+              disabled={cambios.guardando}
+              hitSlop={8}
+              style={styles.encabezadoBoton}
+              estiloPresionado={styles.encabezadoBotonTocado}
+            >
+              <Text style={styles.encabezadoCancelar}>Cancelar</Text>
+            </PressableScale>
+            <View style={styles.encabezadoTexto} />
+            <PressableScale
+              onPress={cambios.guardar}
+              disabled={cambios.guardando}
+              hitSlop={8}
+              style={styles.encabezadoBoton}
+              estiloPresionado={styles.encabezadoBotonTocado}
+            >
+              {cambios.guardando ? (
+                <ActivityIndicator size="small" color={tema.verde} />
+              ) : (
+                <Text style={styles.encabezadoGuardar}>Guardar</Text>
+              )}
+            </PressableScale>
+          </>
+        ) : (
+          <>
+            <PressableScale
+              onPress={() => router.back()}
+              hitSlop={8}
+              style={styles.volver}
+            >
+              <Ionicons name="chevron-back" size={24} color={tema.texto} />
+            </PressableScale>
+            <View style={styles.encabezadoTexto}>
+              <Text style={styles.heroTitle} numberOfLines={2}>
+                {nombreCliente(cliente)}
+              </Text>
+            </View>
+          </>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -371,10 +415,9 @@ export default function PersonalVisitaScreen() {
                 marcadas para eliminar, esa línea se convierte en la barra de
                 Cancelar / Eliminar. */}
             <ArchivosVisita
-              visitaId={visita.id}
               archivos={visita.media ?? []}
               catalogo={catalogo}
-              onCambio={load}
+              cambios={cambios}
               onVer={setActiveMedia}
             />
           </View>
@@ -599,6 +642,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   encabezadoTexto: { flex: 1 },
+  encabezadoBoton: { paddingHorizontal: 6, paddingVertical: 6, borderRadius: 8 },
+  encabezadoBotonTocado: { backgroundColor: "rgba(0,0,0,0.05)" },
+  encabezadoCancelar: { color: tema.texto2, fontSize: 16, fontWeight: "600" },
+  encabezadoGuardar: { color: tema.verde, fontSize: 16, fontWeight: "700" },
   heroTitle: {
     fontSize: 22,
     fontWeight: "800",
