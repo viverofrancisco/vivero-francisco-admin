@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { estadoLabel } from "@/lib/estado-visita";
 import {
-  Linking,
-  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -26,12 +24,8 @@ import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { hora12 } from "@/lib/hora";
-import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
-import { ubicacionActual } from "@/lib/ubicacion";
-import { dispositivoId } from "@/lib/dispositivo";
-import * as Haptics from "expo-haptics";
 import { tema } from "@/lib/tema";
+import { hora12 } from "@/lib/hora";
 
 /**
  * Si la visita es de hoy, comparando por día y no por instante.
@@ -52,8 +46,6 @@ export default function PersonalVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [confirmandoEntrada, setConfirmandoEntrada] = useState(false);
-  const [marcando, setMarcando] = useState(false);
   const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const [visita, setVisita] = useState<VisitaDetail | null>(null);
   const [catalogo, setCatalogo] = useState<TareaDeCatalogo[]>([]);
@@ -173,42 +165,7 @@ export default function PersonalVisitaScreen() {
       : !mio.salidaEl
         ? "Marcar salida"
         : "Editar mi parte";
-  /**
-   * Marcar entrada, desde la ficha.
-   *
-   * Era una pantalla completa con un título, un renglón y un botón. Una
-   * pantalla es para algo que se llena; esto es una decisión de sí o no.
-   */
-  async function marcarEntrada() {
-    setMarcando(true);
-    try {
-      await apiRequest(`/api/mobile/visitas/${visita!.id}/marca`, {
-        method: "POST",
-        body: {
-          tipo: "ENTRADA",
-          ubicacion: await ubicacionActual(),
-          dispositivo: await dispositivoId(),
-        },
-      });
-      // En el mismo momento que el dato queda guardado, no cuando termina de
-      // dibujarse: una háptica que llega tarde se lee como una falla.
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setConfirmandoEntrada(false);
-      await load();
-    } catch (e) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(e instanceof ApiError ? e.message : "No pudimos marcar");
-      setConfirmandoEntrada(false);
-    } finally {
-      setMarcando(false);
-    }
-  }
-
   const cliente = visita.cliente;
-  /** Lo que se le manda al mapa: sin el sector, media dirección es ambigua. */
-  const direccionCompleta = [cliente.direccion, cliente.sector?.nombre, cliente.ciudad]
-    .filter(Boolean)
-    .join(", ");
   const personalAsignado = visita.personal ?? [];
 
   return (
@@ -239,26 +196,16 @@ export default function PersonalVisitaScreen() {
 
         {/* Cuándo */}
         <Section title="Cuándo">
-          <Row
-            icono="ellipse"
-            label="Estado"
-            value={estadoLabel(visita.estado)}
-          />
-          <Row
-            icono="calendar-outline"
-            label="Programada"
-            value={formatDate(visita.fechaProgramada)}
-          />
+          <Row label="Estado" value={estadoLabel(visita.estado)} />
+          <Row label="Programada" value={formatDate(visita.fechaProgramada)} />
           {visita.fechaRealizada ? (
             <Row
-              icono="checkmark-circle-outline"
               label="Realizada"
               value={formatDate(visita.fechaRealizada)}
             />
           ) : null}
           {visita.horaEntrada ? (
             <Row
-              icono="time-outline"
               label={
                 visita.estado === "PROGRAMADA"
                   ? "Hora estimada"
@@ -268,51 +215,20 @@ export default function PersonalVisitaScreen() {
             />
           ) : null}
           {visita.horaSalida ? (
-            <Row
-              icono="exit-outline"
-              label="Hora de salida"
-              value={hora12(visita.horaSalida)}
-            />
+            <Row label="Hora de salida" value={hora12(visita.horaSalida)} />
           ) : null}
         </Section>
 
-        {/* Cliente. Llamar y llegar arriba de los datos: son lo que se hace con
-            ellos, y buscarlos para copiar un número a mano es el paso que
-            sobra. "Llegar" abre el mapa con la dirección como texto —`Cliente`
-            no tiene coordenadas—, que es lo que un mapa sabe resolver. */}
+        {/* Cliente */}
         <Section title="Cliente">
-          {cliente.telefono || cliente.direccion ? (
-            <View style={styles.accesos}>
-              {cliente.direccion ? (
-                <AccesoRapido
-                  icono="navigate-outline"
-                  etiqueta="Llegar"
-                  onPress={() =>
-                    Linking.openURL(
-                      Platform.OS === "ios"
-                        ? `maps://?q=${encodeURIComponent(direccionCompleta)}`
-                        : `geo:0,0?q=${encodeURIComponent(direccionCompleta)}`
-                    )
-                  }
-                />
-              ) : null}
-              {cliente.telefono ? (
-                <AccesoRapido
-                  icono="call-outline"
-                  etiqueta="Llamar"
-                  onPress={() => Linking.openURL(`tel:${cliente.telefono}`)}
-                />
-              ) : null}
-            </View>
-          ) : null}
           {cliente.telefono ? (
-            <Row icono="call-outline" label="Teléfono" value={cliente.telefono} />
+            <Row label="Teléfono" value={cliente.telefono} />
           ) : null}
           {cliente.direccion ? (
-            <Row icono="location-outline" label="Dirección" value={cliente.direccion} />
+            <Row label="Dirección" value={cliente.direccion} />
           ) : null}
           {cliente.sector ? (
-            <Row icono="map-outline" label="Sector" value={cliente.sector.nombre} />
+            <Row label="Sector" value={cliente.sector.nombre} />
           ) : null}
         </Section>
 
@@ -385,9 +301,7 @@ export default function PersonalVisitaScreen() {
           <Button
             mode="contained"
             onPress={() =>
-              accion === "Marcar entrada"
-                ? setConfirmandoEntrada(true)
-                : router.push(`/(personal)/visitas/completar/${visita.id}`)
+              router.push(`/(personal)/visitas/completar/${visita.id}`)
             }
             style={styles.primaryBtn}
             contentStyle={styles.primaryBtnContent}
@@ -398,48 +312,11 @@ export default function PersonalVisitaScreen() {
         ) : null}
       </View>
 
-      <DialogoConfirmar
-        visible={confirmandoEntrada}
-        titulo="¿Marcar tu entrada?"
-        hora
-        confirmar="Marcar entrada"
-        cargando={marcando}
-        onConfirmar={marcarEntrada}
-        onCancelar={() => setConfirmandoEntrada(false)}
-      />
-
       <MediaViewer
         media={activeMedia}
         onClose={() => setActiveMedia(null)}
       />
     </View>
-  );
-}
-
-/**
- * Un acceso del sistema: mosaico verde de 44pt con su etiqueta debajo.
- *
- * Es el `CircleBtn` del diseño. Llamar y llegar son lo único que un jardinero
- * hace con los datos del cliente, y estaban solo como texto para copiar a mano.
- */
-function AccesoRapido({
-  icono,
-  etiqueta,
-  onPress,
-}: {
-  icono: React.ComponentProps<typeof Ionicons>["name"];
-  etiqueta: string;
-  onPress: () => void;
-}) {
-  return (
-    <PressableScale onPress={onPress} estiloExterno={styles.accesoExterno}>
-      <View style={styles.acceso}>
-        <View style={styles.accesoMosaico}>
-          <Ionicons name={icono} size={20} color={tema.verde700} />
-        </View>
-        <Text style={styles.accesoTexto}>{etiqueta}</Text>
-      </View>
-    </PressableScale>
   );
 }
 
@@ -468,30 +345,9 @@ function Section({
   );
 }
 
-/**
- * Una fila de dato, con su icono en mosaico verde.
- *
- * Del sistema de diseño: un cuadrado de 34pt con la esquina redonda y el icono
- * en verde oscuro sobre verde claro. Le da un ancla visual a cada renglón, que
- * es lo que hacía falta cuando una tarjeta tiene cinco datos seguidos y todos
- * pesan igual.
- */
-function Row({
-  label,
-  value,
-  icono,
-}: {
-  label: string;
-  value: string;
-  icono?: React.ComponentProps<typeof Ionicons>["name"];
-}) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.row}>
-      {icono ? (
-        <View style={styles.mosaico}>
-          <Ionicons name={icono} size={17} color={tema.verde700} />
-        </View>
-      ) : null}
       <Text variant="bodyMedium" style={styles.rowLabel}>
         {label}
       </Text>
@@ -573,33 +429,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     paddingVertical: 14,
   },
-  /** El mosaico verde del sistema: ancla visual de cada dato. */
-  mosaico: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: tema.verde50,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-
-  /** Llamar y llegar, arriba de los datos del cliente. */
-  accesos: { flexDirection: "row", gap: 10, paddingVertical: 6 },
-  accesoExterno: { flex: 1 },
-  acceso: { alignItems: "center", gap: 5, paddingVertical: 8 },
-  accesoMosaico: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: tema.verde50,
-    borderWidth: 1,
-    borderColor: tema.verde100,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  accesoTexto: { fontSize: 11.5, fontWeight: "700", color: tema.verde700 },
-
   section: { marginTop: 20, gap: 6 },
   sectionLabel: {
     color: "#888",

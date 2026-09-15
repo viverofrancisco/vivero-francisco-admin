@@ -102,10 +102,10 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   hora: {
-    fontSize: 40,
+    fontSize: 34,
     fontWeight: "800",
     color: tema.verde,
-    letterSpacing: -1.4,
+    letterSpacing: -1,
     fontVariant: ["tabular-nums"],
     // Sin margen propio: el `gap` del cuerpo ya separa, y sumarle margen dejaba
     // el número flotando en su propio bloque.
