@@ -389,9 +389,12 @@ export default function PersonalVisitaScreen() {
 
       {/* Sticky actions */}
       <View style={styles.footer}>
-        {canAct && !accion && mio && !mio.entradaEl ? (
+        {/* Sin botón hay que decir por qué, o parece que algo se rompió. */}
+        {canAct && !accion && mio ? (
           <Text style={styles.soloHoy}>
-            La entrada se marca el día de la visita.
+            {mio.entradaEl
+              ? "Las tareas ya no se editan. Las fotos sí."
+              : "La entrada se marca el día de la visita."}
           </Text>
         ) : null}
         {canAct && accion ? (
