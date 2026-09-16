@@ -33,11 +33,16 @@ interface VisitaParaFichas {
  * frase suelta abajo y las tareas convertidas en tildes: el parte de alguien
  * desarmado en tres pedazos de la misma tarjeta.
  *
- * Acá **cada persona es un bloque**: su entrada con la ubicación de esa marca,
- * su salida con la de esa otra, cuánto estuvo y qué hizo. Es la unidad que se
- * mira —un parte— y es también la unidad que se corrige.
+ * Acá **cada persona es una sección**: su entrada con la ubicación de esa
+ * marca, su salida con la de esa otra, cuánto estuvo y qué hizo. Es la unidad
+ * que se mira —un parte— y es también la unidad que se corrige.
  *
- * Dos cosas quedan afuera del bloque a propósito:
+ * Secciones separadas por una línea, no recuadros: adentro de una tarjeta,
+ * meter tarjetas convierte a cada persona en un objeto aparte que hay que
+ * volver a juntar con la vista, y de paso repite un borde que el de la tarjeta
+ * ya dibujó. Alcanza con la línea y con sangrar lo suyo al ancho del avatar.
+ *
+ * Dos cosas quedan afuera de la sección a propósito:
  *
  * - **Las obligatorias**, arriba y una sola vez: son de la visita, no de nadie
  *   en particular, y se decidieron al agendar. Adentro de cada ficha estarían
@@ -119,7 +124,11 @@ export function TareasYPersonal({
             Nadie está asignado todavía.
           </p>
         ) : (
-          <div className="space-y-2">
+          /* Separadas por una línea y no cada una en su recuadro: adentro de
+             una tarjeta, meter tarjetas convierte cada persona en un objeto
+             aparte que hay que volver a juntar con la vista. La línea alcanza
+             para decir dónde termina un parte y empieza el otro. */
+          <ul className="divide-y border-t">
             {gente.map((vp) => (
               <FichaDeParte
                 key={vp.personalId}
@@ -129,7 +138,7 @@ export function TareasYPersonal({
                 verUbicacion={canModify}
               />
             ))}
-          </div>
+          </ul>
         )}
       </CardContent>
     </Card>
@@ -137,9 +146,9 @@ export function TareasYPersonal({
 }
 
 /**
- * Todo lo de una persona en un bloque: cuándo entró, cuándo salió y qué hizo.
+ * Todo lo de una persona junto: cuándo entró, cuándo salió y qué hizo.
  *
- * Quien no cargó nada se dice con todas las letras en vez de dejar el bloque
+ * Quien no cargó nada se dice con todas las letras en vez de dejar el renglón
  * vacío: "no marcó ninguna tarea" y "todavía no cargó su parte" se ven igual de
  * vacíos y significan cosas distintas, y es exactamente lo que la oficina mira
  * antes de cerrar la visita.
@@ -161,8 +170,8 @@ function FichaDeParte({
   const duracion = duracionEntre(parte.entradaEl, parte.salidaEl);
 
   return (
-    <div className="rounded-lg border">
-      <div className="flex items-center gap-2.5 border-b px-3 py-2">
+    <li className="py-3">
+      <div className="flex items-center gap-2.5">
         <InitialsAvatar name={nombre} size={28} />
         <span className="min-w-0 flex-1 truncate text-sm font-medium">
           {nombre}
@@ -173,9 +182,11 @@ function FichaDeParte({
         </span>
       </div>
 
-      <div className="space-y-2.5 px-3 py-2.5">
+      {/* Sangrado al ancho del avatar: lo de abajo es de esta persona, y la
+          sangría lo dice sin necesidad de encerrarlo. */}
+      <div className="mt-1.5 space-y-1 pl-[38px]">
         {(parte.entradaEl || parte.salidaEl) && (
-          <div className="space-y-1.5">
+          <>
             <Marca
               icono={<LogIn className="h-3.5 w-3.5 flex-none" />}
               etiqueta="Entrada"
@@ -204,30 +215,29 @@ function FichaDeParte({
                 ) : null
               }
             />
-          </div>
+          </>
         )}
 
-        <div>
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Hizo
-          </p>
-          {suyas.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {suyas.map((n) => (
-                <Badge key={n} variant="outline" className="font-normal">
-                  {n}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              {parte.registradoEl === null
-                ? parte.entradaEl
-                  ? "Marcó entrada, todavía no cargó lo que hizo."
-                  : "Todavía no cargó su parte."
-                : "No marcó ninguna tarea."}
-            </p>
-          )}
+        {/* En la misma columna que las horas, con el mismo rótulo a la
+            izquierda: es un dato más del parte, no un bloque aparte. Separadas
+            por puntos y no por comas, porque las comas viven adentro de los
+            nombres: "Deshoje de plantas de hojas grandes (alocasias, bijao,
+            heliconias)". */}
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-xs">
+          <span className="w-20 flex-none text-muted-foreground">Hizo</span>
+          <span className="min-w-0 flex-1">
+            {suyas.length > 0 ? (
+              suyas.join(" · ")
+            ) : (
+              <span className="text-muted-foreground">
+                {parte.registradoEl === null
+                  ? parte.entradaEl
+                    ? "Marcó entrada, todavía no cargó lo que hizo."
+                    : "Todavía no cargó su parte."
+                  : "No marcó ninguna tarea."}
+              </span>
+            )}
+          </span>
         </div>
 
         {/* Es el único rastro que deja prestarle la cuenta a un compañero, y por
@@ -240,7 +250,7 @@ function FichaDeParte({
           </p>
         )}
       </div>
-    </div>
+    </li>
   );
 }
 
