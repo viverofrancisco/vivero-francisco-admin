@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +21,7 @@ import { CustomSelect } from "@/components/ui/custom-select";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -31,6 +34,7 @@ import {
   Play,
   Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import { MAX_ARCHIVOS_POR_SUBIDA } from "@vivero/shared";
 
@@ -38,7 +42,7 @@ export interface ArchivoDeVisita {
   id: string;
   url: string;
   tipo: string;
-  /** De qué producto de la visita es. `null` = sin etiqueta. */
+  /** De qué tarea de la visita es. `null` = sin etiqueta. */
   tareaId: string | null;
 }
 
@@ -47,31 +51,41 @@ interface TareaOpcion {
   nombre: string;
 }
 
-/** El grupo de los que no corresponden a ningún producto de la visita. */
+/** El valor que representa "ninguna tarea" en los selects. */
 const SIN_ETIQUETA = "__sin_etiqueta__";
 
-/** Con qué viaja una foto que se arrastra de una sección a otra. */
-const TIPO_ARRASTRE = "application/x-visita-media";
+/** Un archivo elegido que todavía no se subió. */
+interface Pendiente {
+  file: File;
+  vista: string;
+  tareaId: string | null;
+}
 
 /**
- * Los archivos de una visita: subir, mover entre tareas y borrar.
+ * Los archivos de una visita: subir, cambiarles la tarea y borrar.
  *
  * Vive en la ficha de la visita y cada cambio sale solo. Las fotos se sacan
  * **mientras** se hace el trabajo: quien está en el jardín sube lo que lleva y
  * sigue, y no tendría por qué esperar a completar la visita ni a apretar
  * *Guardar cambios* en otra pantalla.
  *
- * **La etiqueta se dice con el lugar, no con un campo.** Hay una sección por
- * etiqueta y se agrega dentro de la que corresponde; mover una foto es mandarla
- * a otra sección. Antes cada foto llevaba su propio desplegable con el nombre
- * del producto repetido debajo del encabezado que ya lo decía, más un tercer
- * selector arriba que fijaba con qué etiqueta entraban las nuevas: tres
- * controles para una sola idea.
- *
  * **La etiqueta es una tarea**, no un producto: una foto de un jardín muestra
  * un trabajo, no algo que se vende. Y es lo que hace que el informe se arme
  * solo — sus secciones salen de las tareas hechas, y cada foto ya sabe a cuál
  * va.
+ *
+ * **Es un listado, no una grilla por secciones.** Había una sección por tarea,
+ * con su propia zona para soltar, y la etiqueta se decía con el lugar: mover
+ * una foto era arrastrarla a otra sección. Se veía bien con tres tareas y se
+ * volvía una pared de recuadros punteados con diez, con el nombre largo de una
+ * tarea recortado en el encabezado y media pantalla de zonas vacías esperando
+ * que alguien suelte algo. Ahora cada foto es una fila —miniatura a la
+ * izquierda, nombre de la tarea entero a la derecha— igual que en la app, que
+ * es donde se suben de verdad.
+ *
+ * **La tarea se elige al subir, por archivo.** Una tanda trae la poda y el
+ * riego mezclados, así que una etiqueta para todo sería mentira la mitad de las
+ * veces; *Aplicar a todas* está igual, porque la otra mitad sí son de lo mismo.
  */
 export function ArchivosVisita({
   visitaId,
@@ -95,46 +109,23 @@ export function ArchivosVisita({
   puedeEditar: boolean;
 }) {
   const router = useRouter();
-  const [subiendoEn, setSubiendoEn] = useState<string | null>(null);
+  const [subiendo, setSubiendo] = useState(false);
   const [ocupado, setOcupado] = useState<string | null>(null);
-  const [arrastrandoEn, setArrastrandoEn] = useState<string | null>(null);
+  const [arrastrando, setArrastrando] = useState(false);
   const [viendo, setViendo] = useState<MediaViewerSource | null>(null);
   /** El archivo que se está por mover, mientras el diálogo está abierto. */
   const [moviendo, setMoviendo] = useState<ArchivoDeVisita | null>(null);
-  /** El que se está arrastrando ahora, para atenuarlo. */
-  const [arrastrando, setArrastrando] = useState<string | null>(null);
+  /** La tanda elegida, mientras se le pone tarea a cada una. */
+  const [pendientes, setPendientes] = useState<Pendiente[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  /** A qué sección van los archivos que se están eligiendo. */
-  const destinoRef = useRef<string | null>(null);
 
-  const nombreDe = new Map(catalogo.map((p) => [p.tareaId, p.nombre]));
-  const sueltos = archivos.filter((a) => !a.tareaId);
-  const seHizo = new Set(hechas);
-  /** Con qué está etiquetada alguna foto, aunque nadie la haya cargado. */
-  const conFotos = new Set(
-    archivos.map((a) => a.tareaId).filter((id): id is string => !!id)
+  const nombreDe = useMemo(
+    () => new Map(catalogo.map((t) => [t.tareaId, t.nombre])),
+    [catalogo]
   );
+  const seHizo = new Set(hechas);
 
-  /**
-   * Una sección por tarea hecha —aunque no tenga fotos todavía, porque es donde
-   * se agregan—, después las que solo aparecen etiquetando alguna, y siempre la
-   * de sin etiquetar: es a donde se arrastra una foto para sacarle la etiqueta,
-   * y una sección que no existe no puede recibir nada.
-   */
-  const claves = [
-    ...catalogo.filter((t) => seHizo.has(t.tareaId)).map((t) => t.tareaId),
-    ...[...conFotos].filter((id) => !seHizo.has(id)),
-  ];
-  const grupos = [
-    ...claves.map((id) => ({
-      clave: id,
-      titulo: nombreDe.get(id) ?? "Otra tarea",
-      archivos: archivos.filter((a) => a.tareaId === id),
-    })),
-    { clave: SIN_ETIQUETA, titulo: "Sin etiquetar", archivos: sueltos },
-  ].filter((g) => puedeEditar || g.archivos.length > 0);
-
-  /** Las de la visita primero, igual que los grupos. */
+  /** Las de la visita primero: son de las que va a haber fotos. */
   const destinos = [
     ...catalogo
       .filter((t) => seHizo.has(t.tareaId))
@@ -145,7 +136,31 @@ export function ArchivosVisita({
     { value: SIN_ETIQUETA, label: "Sin etiquetar" },
   ];
 
-  async function subir(destino: string, lista: FileList | File[]) {
+  /**
+   * En el orden del catálogo, con las que no tienen tarea al final: es donde se
+   * las busca para arreglarlas. Agrupar con encabezados sería repetir el mismo
+   * nombre que ya lleva cada fila.
+   */
+  const enFila = useMemo(() => {
+    const posicion = new Map(catalogo.map((t, i) => [t.tareaId, i]));
+    const lugar = (a: ArchivoDeVisita) =>
+      a.tareaId ? (posicion.get(a.tareaId) ?? 9e3) : 9e6;
+    return [...archivos].sort((a, b) => lugar(a) - lugar(b));
+  }, [archivos, catalogo]);
+
+  const faltanTareas = pendientes.filter((p) => p.tareaId === null).length;
+
+  // Las miniaturas de la tanda son URLs de objeto: si no se revocan, el
+  // navegador se queda con el archivo entero en memoria.
+  useEffect(() => {
+    return () => {
+      for (const p of pendientes) URL.revokeObjectURL(p.vista);
+    };
+    // Solo al desmontar: revocar en cada cambio rompería las que siguen vivas.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function elegir(lista: FileList | File[]) {
     const todos = Array.from(lista);
     const validos = todos.filter(
       (f) => f.type.startsWith("image/") || f.type.startsWith("video/")
@@ -163,16 +178,32 @@ export function ArchivosVisita({
     if (entran.length < validos.length) {
       toast.error(`Se suben de a ${MAX_ARCHIVOS_POR_SUBIDA} archivos`);
     }
+    setPendientes(
+      entran.map((file) => ({
+        file,
+        vista: URL.createObjectURL(file),
+        tareaId: null,
+      }))
+    );
+  }
 
-    setSubiendoEn(destino);
+  function cerrarTanda() {
+    for (const p of pendientes) URL.revokeObjectURL(p.vista);
+    setPendientes([]);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  async function subir() {
+    if (pendientes.length === 0 || faltanTareas > 0) return;
+    setSubiendo(true);
     try {
       const presign = await fetch(`/api/visitas/${visitaId}/media`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          files: entran.map((f) => ({
-            fileName: f.name,
-            contentType: f.type,
+          files: pendientes.map((p) => ({
+            fileName: p.file.name,
+            contentType: p.file.type,
           })),
         }),
       });
@@ -184,7 +215,7 @@ export function ArchivosVisita({
           fetch(u.uploadUrl, {
             method: "PUT",
             headers: { "Content-Type": u.contentType },
-            body: entran[i],
+            body: pendientes[i].file,
           })
         )
       );
@@ -196,26 +227,29 @@ export function ArchivosVisita({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          files: uploads.map((u: { key: string; tipo: string }) => ({
+          files: uploads.map((u: { key: string; tipo: string }, i: number) => ({
             key: u.key,
             tipo: u.tipo,
-            tareaId: destino === SIN_ETIQUETA ? null : destino,
+            tareaId:
+              pendientes[i].tareaId === SIN_ETIQUETA
+                ? null
+                : pendientes[i].tareaId,
           })),
         }),
       });
       if (!confirmar.ok) throw new Error("No pudimos guardar los archivos");
 
       toast.success(
-        entran.length === 1
+        pendientes.length === 1
           ? "Archivo agregado"
-          : `${entran.length} archivos agregados`
+          : `${pendientes.length} archivos agregados`
       );
+      cerrarTanda();
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al subir");
     } finally {
-      setSubiendoEn(null);
-      if (inputRef.current) inputRef.current.value = "";
+      setSubiendo(false);
     }
   }
 
@@ -254,106 +288,76 @@ export function ArchivosVisita({
     }
   }
 
-  function elegirArchivos(destino: string) {
-    destinoRef.current = destino;
-    inputRef.current?.click();
-  }
-
-  /**
-   * Cada sección recibe dos cosas: archivos del escritorio, que se suben, y
-   * fotos que ya están en otra sección, que se mueven. Es el mismo gesto para
-   * los dos casos, así que es la misma zona.
-   *
-   * Para estrenar una sección que todavía no existe hay que usar *Mover a…*
-   * una vez: sin fotos no hay sección, y sin sección no hay dónde soltar.
-   */
-  const zonaDe = (clave: string) =>
-    puedeEditar
-      ? {
-          onDragOver: (e: React.DragEvent) => {
-            e.preventDefault();
-            setArrastrandoEn(clave);
-          },
-          onDragLeave: (e: React.DragEvent) => {
-            if (e.currentTarget === e.target) setArrastrandoEn(null);
-          },
-          onDrop: (e: React.DragEvent) => {
-            e.preventDefault();
-            setArrastrandoEn(null);
-            if (e.dataTransfer.files?.length) {
-              void subir(clave, e.dataTransfer.files);
-              return;
-            }
-            const mediaId = e.dataTransfer.getData(TIPO_ARRASTRE);
-            // Soltarla donde ya estaba no es mover nada.
-            if (mediaId && grupoDe(mediaId) !== clave) void mover(mediaId, clave);
-          },
-        }
-      : {};
-
-  /** En qué sección está hoy un archivo, para no moverlo a la misma. */
-  function grupoDe(mediaId: string) {
-    const a = archivos.find((x) => x.id === mediaId);
-    return a?.tareaId ?? SIN_ETIQUETA;
-  }
-
   // Sin permiso y sin archivos no hay nada que mostrar.
   if (!puedeEditar && archivos.length === 0) return null;
+
+  /** Soltar archivos sobre la tarjeta abre la misma tanda que el botón. */
+  const zona = puedeEditar
+    ? {
+        onDragOver: (e: React.DragEvent) => {
+          e.preventDefault();
+          setArrastrando(true);
+        },
+        onDragLeave: (e: React.DragEvent) => {
+          if (e.currentTarget === e.target) setArrastrando(false);
+        },
+        onDrop: (e: React.DragEvent) => {
+          e.preventDefault();
+          setArrastrando(false);
+          if (e.dataTransfer.files?.length) elegir(e.dataTransfer.files);
+        },
+      }
+    : {};
 
   return (
     <Card className="overflow-visible">
       <CardHeader className="border-b py-3">
         <CardTitle className="text-base">Archivos</CardTitle>
+        {puedeEditar && (
+          <CardAction>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => inputRef.current?.click()}
+              disabled={subiendo}
+            >
+              <Plus className="mr-2 h-3.5 w-3.5" />
+              Agregar
+            </Button>
+          </CardAction>
+        )}
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent>
         <input
           ref={inputRef}
           type="file"
           accept="image/*,video/*"
           multiple
           className="hidden"
-          onChange={(e) => {
-            const destino = destinoRef.current;
-            if (destino && e.target.files) void subir(destino, e.target.files);
-            destinoRef.current = null;
-          }}
+          onChange={(e) => e.target.files && elegir(e.target.files)}
         />
 
-        {grupos.map((grupo) => (
-          <div key={grupo.clave} className="space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground">
-              {grupo.titulo}
+        <div
+          {...zona}
+          className={`rounded-md transition-colors ${
+            arrastrando ? "bg-primary/5 ring-1 ring-primary" : ""
+          }`}
+        >
+          {enFila.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              {puedeEditar
+                ? "Sin archivos. Arrastra fotos aquí o usa Agregar."
+                : "Sin archivos"}
             </p>
-            <div
-              {...zonaDe(grupo.clave)}
-              className={`grid grid-cols-2 gap-2 rounded-md border border-dashed p-2 transition-colors sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 ${
-                arrastrandoEn === grupo.clave
-                  ? "border-primary bg-primary/5"
-                  : "border-transparent"
-              }`}
-            >
-              {grupo.archivos.map((a) => (
-                <div
-                  key={a.id}
-                  draggable={puedeEditar}
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData(TIPO_ARRASTRE, a.id);
-                    e.dataTransfer.effectAllowed = "move";
-                    setArrastrando(a.id);
-                  }}
-                  onDragEnd={() => {
-                    setArrastrando(null);
-                    setArrastrandoEn(null);
-                  }}
-                  className={`group relative aspect-square ${
-                    puedeEditar ? "cursor-grab active:cursor-grabbing" : ""
-                  } ${arrastrando === a.id ? "opacity-40" : ""}`}
-                >
+          ) : (
+            <ul className="divide-y">
+              {enFila.map((a) => (
+                <li key={a.id} className="flex items-center gap-3 py-2">
                   <button
                     type="button"
                     onClick={() => setViendo({ url: a.url, tipo: a.tipo })}
                     title="Ver en grande"
-                    className="block h-full w-full overflow-hidden rounded bg-muted"
+                    className="relative h-12 w-12 flex-none overflow-hidden rounded bg-muted"
                   >
                     {a.tipo === "video" ? (
                       <>
@@ -363,7 +367,7 @@ export function ArchivosVisita({
                           className="h-full w-full object-cover"
                         />
                         <span className="absolute inset-0 flex items-center justify-center bg-black/30">
-                          <Play className="h-5 w-5 fill-white text-white" />
+                          <Play className="h-4 w-4 fill-white text-white" />
                         </span>
                       </>
                     ) : (
@@ -376,6 +380,18 @@ export function ArchivosVisita({
                     )}
                   </button>
 
+                  {/* Entero: el nombre de la tarea es lo único que dice de qué
+                      es la foto, y recortado no distingue una de otra. */}
+                  <span
+                    className={`min-w-0 flex-1 text-sm ${
+                      a.tareaId ? "" : "text-muted-foreground"
+                    }`}
+                  >
+                    {a.tareaId
+                      ? (nombreDe.get(a.tareaId) ?? "Otra tarea")
+                      : "Sin etiquetar"}
+                  </span>
+
                   {puedeEditar && (
                     <DropdownMenu>
                       <DropdownMenuTrigger
@@ -383,23 +399,22 @@ export function ArchivosVisita({
                           <button
                             type="button"
                             aria-label="Opciones del archivo"
-                            className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 data-[popup-open]:opacity-100"
+                            className="flex h-8 w-8 flex-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted"
                           />
                         }
                       >
                         {ocupado === a.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <MoreVertical className="h-3.5 w-3.5" />
+                          <MoreVertical className="h-4 w-4" />
                         )}
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         {/* Mover = cambiar la etiqueta. Va a un diálogo con
-                            buscador y no a una lista aquí: los destinos son
-                            todo el catálogo, no los dos de la visita. */}
+                            buscador: los destinos son todo el catálogo. */}
                         <DropdownMenuItem onClick={() => setMoviendo(a)}>
                           <FolderInput className="mr-2 h-4 w-4" />
-                          Mover a…
+                          Cambiar tarea…
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -412,33 +427,114 @@ export function ArchivosVisita({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
-                </div>
+                </li>
               ))}
+            </ul>
+          )}
+        </div>
+      </CardContent>
 
-              {/* Agregar dentro de la sección: dónde se suelta *es* la
-                  etiqueta, así que no hace falta elegirla en ningún lado. */}
-              {puedeEditar && (
+      {/* La tanda recién elegida: cada archivo con su tarea antes de subir. */}
+      <Dialog
+        open={pendientes.length > 0}
+        onOpenChange={(v) => !v && !subiendo && cerrarTanda()}
+      >
+        <DialogContent className="sm:max-w-lg" pantallaCompletaEnMovil>
+          <DialogHeader>
+            <DialogTitle>
+              {pendientes.length === 1
+                ? "¿De qué es esta foto?"
+                : `¿De qué son estas ${pendientes.length} fotos?`}
+            </DialogTitle>
+          </DialogHeader>
+
+          {pendientes.length > 1 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">Aplicar a todas</p>
+              <CustomSelect
+                value=""
+                onChange={(v) =>
+                  setPendientes((antes) =>
+                    antes.map((p) => ({ ...p, tareaId: v }))
+                  )
+                }
+                options={destinos}
+                placeholder="Elegir una tarea para todas..."
+                searchable
+                searchPlaceholder="Buscar tarea..."
+              />
+            </div>
+          )}
+
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+            {pendientes.map((p, i) => (
+              <div key={p.vista} className="flex items-center gap-3">
+                {p.file.type.startsWith("video/") ? (
+                  <span className="flex h-12 w-12 flex-none items-center justify-center rounded bg-muted">
+                    <Play className="h-4 w-4" />
+                  </span>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.vista}
+                    alt=""
+                    className="h-12 w-12 flex-none rounded object-cover"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <CustomSelect
+                    value={p.tareaId ?? ""}
+                    onChange={(v) =>
+                      setPendientes((antes) =>
+                        antes.map((x, j) => (j === i ? { ...x, tareaId: v } : x))
+                      )
+                    }
+                    options={destinos}
+                    placeholder="Elegir tarea..."
+                    searchable
+                    searchPlaceholder="Buscar tarea..."
+                  />
+                </div>
                 <button
                   type="button"
-                  onClick={() => elegirArchivos(grupo.clave)}
-                  disabled={subiendoEn !== null}
-                  className="flex aspect-square flex-col items-center justify-center gap-1 rounded border border-dashed text-muted-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                  aria-label="Sacar de la tanda"
+                  onClick={() => {
+                    URL.revokeObjectURL(p.vista);
+                    setPendientes((antes) => antes.filter((_, j) => j !== i));
+                  }}
+                  className="flex h-8 w-8 flex-none items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted"
                 >
-                  {subiendoEn === grupo.clave ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Plus className="h-5 w-5" />
-                  )}
-                  <span className="px-1 text-center text-[10px] leading-tight">
-                    {subiendoEn === grupo.clave ? "Subiendo…" : "Agregar"}
-                  </span>
+                  <X className="h-4 w-4" />
                 </button>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
-        ))}
 
-      </CardContent>
+          <DialogFooter>
+            <Button variant="outline" onClick={cerrarTanda} disabled={subiendo}>
+              Cancelar
+            </Button>
+            <Button onClick={subir} disabled={subiendo || faltanTareas > 0}>
+              {subiendo ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Subiendo…
+                </>
+              ) : faltanTareas > 0 ? (
+                faltanTareas === 1 ? (
+                  "Falta 1 tarea"
+                ) : (
+                  `Faltan ${faltanTareas} tareas`
+                )
+              ) : pendientes.length === 1 ? (
+                "Subir foto"
+              ) : (
+                `Subir ${pendientes.length} fotos`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={moviendo !== null}
@@ -446,11 +542,12 @@ export function ArchivosVisita({
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Mover archivo</DialogTitle>
+            <DialogTitle>Cambiar tarea</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              A qué producto o servicio corresponde.
+              De qué tarea es esta foto. Es lo que decide en qué sección del
+              informe aparece.
             </p>
             <CustomSelect
               value={moviendo?.tareaId ?? SIN_ETIQUETA}
@@ -460,9 +557,9 @@ export function ArchivosVisita({
                 if (archivo) void mover(archivo.id, v);
               }}
               options={destinos}
-              placeholder="Buscar producto o servicio..."
+              placeholder="Buscar tarea..."
               searchable
-              searchPlaceholder="Buscar producto o servicio..."
+              searchPlaceholder="Buscar tarea..."
             />
           </div>
         </DialogContent>

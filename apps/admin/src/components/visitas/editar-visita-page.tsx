@@ -286,6 +286,45 @@ export function EditarVisitaPage({
             </Card>
           )}
 
+          <Card className="overflow-visible">
+            <CardHeader className="border-b py-3">
+              <CardTitle className="text-base">Personal</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {grupos.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Aplicar un grupo</Label>
+                  <CustomSelect
+                    value={grupoId}
+                    onChange={aplicarGrupo}
+                    options={grupos.map((g) => ({
+                      value: g.id,
+                      label: g.nombre,
+                    }))}
+                    placeholder="Sin grupo"
+                    searchable
+                    searchPlaceholder="Buscar grupo..."
+                    clearable
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Carga sus miembros; después se pueden ajustar.
+                  </p>
+                </div>
+              )}
+              <PersonalSelector
+                personalList={personalList}
+                selectedIds={personalIds}
+                onChange={setPersonalIds}
+                // A quien ya marcó no se lo saca: la marca dice que estuvo ahí
+                // a esa hora, y quitarlo la esconde junto con su parte. Si no
+                // tenía que estar, se corrige su parte.
+                fijos={Object.fromEntries(
+                  visita.personalQueMarco.map((id) => [id, "Ya marcó entrada"])
+                )}
+              />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="border-b py-3">
               <CardTitle className="text-base">Notas</CardTitle>
@@ -301,7 +340,7 @@ export function EditarVisitaPage({
           </Card>
         </div>
 
-        {/* ── A quién y con quién ──────────────────────────────────── */}
+        {/* ── Para quién, y cuándo ─────────────────────────────────── */}
         <div className="space-y-6">
           <Card>
             <CardHeader className="border-b py-3">
@@ -355,44 +394,6 @@ export function EditarVisitaPage({
             </CardContent>
           </Card>
 
-          <Card className="overflow-visible">
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Personal</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {grupos.length > 0 && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Aplicar un grupo</Label>
-                  <CustomSelect
-                    value={grupoId}
-                    onChange={aplicarGrupo}
-                    options={grupos.map((g) => ({
-                      value: g.id,
-                      label: g.nombre,
-                    }))}
-                    placeholder="Sin grupo"
-                    searchable
-                    searchPlaceholder="Buscar grupo..."
-                    clearable
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Carga sus miembros; después se pueden ajustar.
-                  </p>
-                </div>
-              )}
-              <PersonalSelector
-                personalList={personalList}
-                selectedIds={personalIds}
-                onChange={setPersonalIds}
-                // A quien ya marcó no se lo saca: la marca dice que estuvo ahí
-                // a esa hora, y quitarlo la esconde junto con su parte. Si no
-                // tenía que estar, se corrige su parte.
-                fijos={Object.fromEntries(
-                  visita.personalQueMarco.map((id) => [id, "Ya marcó entrada"])
-                )}
-              />
-            </CardContent>
-          </Card>
         </div>
       </div>
 
