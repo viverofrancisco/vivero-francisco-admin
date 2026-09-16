@@ -35,6 +35,26 @@ export const setPasswordSchema = z.object({
 });
 export type SetPasswordBody = z.infer<typeof setPasswordSchema>;
 
+/**
+ * Cambiar la propia contraseña, ya estando adentro.
+ *
+ * No hay enlace acá, y no es un olvido: el enlace de un solo uso existe para
+ * quien **no puede** entrar —nadie le escribe la contraseña a nadie, y el
+ * jardinero no tiene correo al cual mandársela—. Quien ya tiene la sesión
+ * abierta prueba quién es con la contraseña que está usando.
+ */
+export const cambiarPasswordSchema = z.object({
+  actual: z.string().min(1),
+  nueva: z.string().min(6).max(72),
+  /**
+   * El refresh de este teléfono, para no cerrarle la sesión a quien cambia.
+   * Las demás se revocan: el motivo más común para cambiarla es que alguien
+   * más la sabía.
+   */
+  refreshToken: z.string().min(10).optional(),
+});
+export type CambiarPasswordBody = z.infer<typeof cambiarPasswordSchema>;
+
 export const refreshSchema = z.object({
   refreshToken: z.string().min(10),
 });

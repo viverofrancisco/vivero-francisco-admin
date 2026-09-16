@@ -392,3 +392,47 @@ export function buscarCuentaPorIdentificador(identificador: string) {
     ? prisma.user.findUnique({ where: { email: limpio.toLowerCase() } })
     : prisma.user.findUnique({ where: { usuario: normalizarUsuario(limpio) } });
 }
+
+/**
+ * Cambiar la propia contraseña, probando la que se está usando.
+ *
+ * Sin enlace: el de un solo uso existe para quien **no puede** entrar. Quien ya
+ * tiene la sesión abierta prueba quién es escribiendo la actual, que es la
+ * misma garantía y sin pedirle a nadie que reciba un correo que no tiene.
+ *
+ * **Revoca las demás sesiones.** El motivo más común para cambiar una
+ * contraseña es que alguien más la sabía; dejar abiertas las sesiones que esa
+ * persona tenga sería cambiarla para nada. La del teléfono que la cambia se
+ * conserva —si no, cambiarla te echaría a vos—.
+ */
+export async function cambiarContrasenaPropia(
+  userId: string,
+  actual: string,
+  nueva: string,
+  refreshTokenActual?: string,
+): Promise<{ ok: true } | { ok: false; motivo: "sin-password" | "incorrecta" }> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, password: true },
+  });
+  if (!user?.password) return { ok: false, motivo: "sin-password" };
+  if (!(await bcrypt.compare(actual, user.password))) {
+    return { ok: false, motivo: "incorrecta" };
+  }
+
+  const hashed = await bcrypt.hash(nueva, 12);
+  const conservar = refreshTokenActual ? sha256(refreshTokenActual) : null;
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: user.id }, data: { password: hashed } }),
+    prisma.refreshToken.updateMany({
+      where: {
+        userId: user.id,
+        revokedAt: null,
+        ...(conservar ? { tokenHash: { not: conservar } } : {}),
+      },
+      data: { revokedAt: new Date() },
+    }),
+  ]);
+  return { ok: true };
+}

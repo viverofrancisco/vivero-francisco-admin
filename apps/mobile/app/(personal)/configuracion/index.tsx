@@ -1,12 +1,15 @@
 import React, { useCallback, useState } from "react";
 import { Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, ApiError } from "@/lib/api";
+import { HojaInferior } from "@/components/ui/HojaInferior";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { useAuthStore } from "@/lib/auth-store";
 import { useBranding } from "@/lib/branding";
 import { tema } from "@/lib/tema";
@@ -87,6 +90,8 @@ export default function PersonalConfiguracionScreen() {
   const esJardinero = user?.role === "PERSONAL";
   const permisos = usePermisos(esJardinero);
   const version = Constants.expoConfig?.version ?? null;
+  const insets = useSafeAreaInsets();
+  const [cambiando, setCambiando] = useState(false);
   // El de la ubicación es el mismo texto del cartel que sale al abrir la app:
   // dos formas de decir lo mismo son dos que se despegan.
   const faltan = [
@@ -99,7 +104,14 @@ export default function PersonalConfiguracionScreen() {
   ].filter((t): t is string => t !== null);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    // Sin encabezado nativo no hay nadie que descuente la barra de estado: sin
+    // esto el avatar queda debajo de la hora y la señal.
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { paddingTop: insets.top + 12 },
+      ]}
+    >
       {/* Hero */}
       <View style={styles.hero}>
         <View style={styles.avatar}>
@@ -120,6 +132,15 @@ export default function PersonalConfiguracionScreen() {
             es lo único que hay acá. */}
         {user?.usuario ? <Row label="Usuario" value={user.usuario} /> : null}
         {user?.email ? <Row label="Email" value={user.email} /> : null}
+        {/* Sin enlace: el de un solo uso es para quien **no puede** entrar, y
+            el jardinero no tiene correo al cual mandárselo. Estando adentro
+            alcanza con escribir la que se está usando. */}
+        <Pressable onPress={() => setCambiando(true)} style={styles.accionFila}>
+          <Text variant="bodyMedium" style={styles.accionTexto}>
+            Cambiar contraseña
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+        </Pressable>
       </Section>
 
       {/* Un permiso solo ocupa lugar cuando falta. Decir "Ubicación · Activo"
@@ -152,6 +173,11 @@ export default function PersonalConfiguracionScreen() {
           Versión {version}
         </Text>
       ) : null}
+
+      <CambiarContrasena
+        visible={cambiando}
+        onCerrar={() => setCambiando(false)}
+      />
 
       {branding.logoUrl ? (
         <Image
@@ -231,6 +257,110 @@ function Aviso({
   );
 }
 
+/**
+ * Cambiar la propia contraseña, sin salir de la app.
+ *
+ * Pide la actual porque es lo que prueba quién es: la sesión sola no alcanza
+ * —el teléfono puede quedar abierto sobre una mesa—. Al guardar, el servidor
+ * revoca las demás sesiones, que es el motivo por el que se suele cambiar.
+ */
+function CambiarContrasena({
+  visible,
+  onCerrar,
+}: {
+  visible: boolean;
+  onCerrar: () => void;
+}) {
+  const refreshToken = useAuthStore((s) => s.refreshToken);
+  const [actual, setActual] = useState("");
+  const [nueva, setNueva] = useState("");
+  const [repetir, setRepetir] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function cerrar() {
+    setActual("");
+    setNueva("");
+    setRepetir("");
+    setError(null);
+    onCerrar();
+  }
+
+  const puede =
+    actual.length > 0 && nueva.length >= 6 && nueva === repetir && !guardando;
+
+  async function guardar() {
+    if (!puede) return;
+    setGuardando(true);
+    setError(null);
+    try {
+      await apiRequest("/api/mobile/auth/cambiar-password", {
+        method: "POST",
+        body: { actual, nueva, refreshToken },
+      });
+      cerrar();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "No pudimos cambiarla");
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <HojaInferior visible={visible} onCerrar={cerrar}>
+      <View style={styles.hoja}>
+        <Text variant="titleMedium" style={styles.hojaTitulo}>
+          Cambiar contraseña
+        </Text>
+        <TextInput
+          mode="outlined"
+          label="Contraseña actual"
+          value={actual}
+          onChangeText={setActual}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        <TextInput
+          mode="outlined"
+          label="Contraseña nueva"
+          value={nueva}
+          onChangeText={setNueva}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        <TextInput
+          mode="outlined"
+          label="Repetir la nueva"
+          value={repetir}
+          onChangeText={setRepetir}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        {/* Lo que falta, dicho antes de apretar y no después. */}
+        <Text variant="bodySmall" style={error ? styles.hojaError : styles.hojaPista}>
+          {error ??
+            (nueva.length > 0 && nueva.length < 6
+              ? "La nueva tiene que tener al menos 6 caracteres."
+              : repetir.length > 0 && nueva !== repetir
+                ? "Las dos nuevas no coinciden."
+                : "Se cierran las sesiones que tengas en otros teléfonos.")}
+        </Text>
+        <PressableScale
+          onPress={guardar}
+          disabled={!puede}
+          style={[styles.hojaBoton, !puede && styles.hojaBotonApagado]}
+        >
+          {guardando ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.hojaBotonTexto}>Guardar</Text>
+          )}
+        </PressableScale>
+      </View>
+    </HojaInferior>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.row}>
@@ -247,7 +377,6 @@ function Row({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 16,
     paddingBottom: 32,
   },
 
@@ -318,6 +447,30 @@ const styles = StyleSheet.create({
   avisoTexto: { flex: 1, gap: 4 },
   avisoLinea: { color: tema.ambarTexto, lineHeight: 18 },
   avisoAccion: { color: tema.ambarTexto, fontWeight: "700", marginTop: 2 },
+
+  accionFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 12,
+  },
+  accionTexto: { color: tema.verde, fontWeight: "600" },
+
+  hoja: { paddingHorizontal: 20, gap: 10 },
+  hojaTitulo: { color: "#111", fontWeight: "700" },
+  hojaPista: { color: tema.texto3 },
+  hojaError: { color: "#b3261e" },
+  hojaBoton: {
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: tema.verde,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  hojaBotonApagado: { backgroundColor: "#bdbdbd" },
+  hojaBotonTexto: { color: "#fff", fontWeight: "700", fontSize: 15 },
 
   version: { textAlign: "center", color: "#aaa", marginTop: 20 },
 
