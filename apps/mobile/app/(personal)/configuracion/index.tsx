@@ -168,17 +168,6 @@ export default function PersonalConfiguracionScreen() {
         Cerrar sesión
       </Button>
 
-      {version ? (
-        <Text variant="bodySmall" style={styles.version}>
-          Versión {version}
-        </Text>
-      ) : null}
-
-      <CambiarContrasena
-        visible={cambiando}
-        onCerrar={() => setCambiando(false)}
-      />
-
       {branding.logoUrl ? (
         <Image
           source={{ uri: branding.logoUrl }}
@@ -190,6 +179,17 @@ export default function PersonalConfiguracionScreen() {
           {branding.nombre ?? "Vivero Francisco"}
         </Text>
       )}
+
+      {version ? (
+        <Text variant="bodySmall" style={styles.version}>
+          Versión {version}
+        </Text>
+      ) : null}
+
+      <CambiarContrasena
+        visible={cambiando}
+        onCerrar={() => setCambiando(false)}
+      />
     </ScrollView>
   );
 }
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   hojaBotonApagado: { backgroundColor: "#bdbdbd" },
   hojaBotonTexto: { color: "#fff", fontWeight: "700", fontSize: 15 },
 
-  version: { textAlign: "center", color: "#aaa", marginTop: 20 },
+  version: { textAlign: "center", color: "#aaa", marginTop: 10 },
 
   footer: {
     textAlign: "center",
@@ -483,6 +483,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     height: 56,
     width: 200,
-    marginTop: 32,
+    marginTop: 28,
   },
 });
