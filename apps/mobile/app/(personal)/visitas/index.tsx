@@ -17,7 +17,7 @@ import { SelectorFecha } from "@/components/SelectorFecha";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
-import { estadoPildora, visitaTerminada } from "@/lib/estado-visita";
+import { estadoParaMi, estadoPildora, visitaTerminada } from "@/lib/estado-visita";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
 import { resumenTareas } from "@/lib/types";
 
@@ -95,6 +95,7 @@ function capitalizar(s: string): string {
 export default function PersonalVisitasListScreen() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
+  const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const canCreate = role === "ADMIN" || role === "STAFF";
 
   const [fecha, setFecha] = useState<Date>(hoyLocal);
@@ -178,7 +179,9 @@ export default function PersonalVisitasListScreen() {
           keyExtractor={(v) => v.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
-            items.length > 0 ? <TarjetaDeRuta visitas={items} /> : null
+            items.length > 0 ? (
+              <TarjetaDeRuta visitas={items} personalId={personalId} />
+            ) : null
           }
           refreshControl={
             <RefreshControl
@@ -202,6 +205,7 @@ export default function PersonalVisitasListScreen() {
           renderItem={({ item }) => (
             <VisitaRow
               visita={item}
+              personalId={personalId}
               onPress={() => router.push(`/(personal)/visitas/${item.id}`)}
             />
           )}
@@ -238,18 +242,22 @@ export default function PersonalVisitasListScreen() {
  */
 function VisitaRow({
   visita: v,
+  personalId,
   onPress,
 }: {
   visita: VisitaDetail;
+  personalId: string | null;
   onPress: () => void;
 }) {
   const cliente = v.cliente;
-  const terminada = visitaTerminada(v.estado);
+  // Para quien ya marcó su salida, esta visita terminó. Ver `estadoParaMi`.
+  const estado = estadoParaMi(v, personalId);
+  const terminada = visitaTerminada(estado);
   const direccion = [cliente.direccion, cliente.sector?.nombre]
     .filter(Boolean)
     .join(" · ");
 
-  const pildora = estadoPildora(v.estado);
+  const pildora = estadoPildora(estado);
 
   return (
     <PressableScale
@@ -265,9 +273,13 @@ function VisitaRow({
       <View style={styles.rowText}>
         {/* Hora y estado en la misma línea: el "cuándo" y el "cómo va". */}
         <View style={styles.filaSuperior}>
-          <Text style={[styles.hora, !v.horaEntrada && styles.horaVacia]}>
-            {v.horaEntrada ? hora12(v.horaEntrada) : "Sin hora"}
-          </Text>
+          <View style={styles.horaYNumero}>
+            <Text style={[styles.hora, !v.horaEntrada && styles.horaVacia]}>
+              {v.horaEntrada ? hora12(v.horaEntrada) : "Sin hora"}
+            </Text>
+            {/* El número, que es como se nombra una visita por teléfono. */}
+            <Text style={styles.numero}>#{v.numero}</Text>
+          </View>
           <View style={[styles.pildora, { backgroundColor: pildora.fondo }]}>
             <View style={[styles.punto, { backgroundColor: pildora.punto }]} />
             <Text style={[styles.pildoraTexto, { color: pildora.color }]}>
@@ -309,9 +321,19 @@ function VisitaRow({
  * ocupa un tercio de la pantalla para decir lo que la única fila de abajo ya
  * dice.
  */
-function TarjetaDeRuta({ visitas }: { visitas: VisitaDetail[] }) {
+function TarjetaDeRuta({
+  visitas,
+  personalId,
+}: {
+  visitas: VisitaDetail[];
+  personalId: string | null;
+}) {
   if (visitas.length < 2) return null;
-  const hechas = visitas.filter((v) => v.estado === "COMPLETADA").length;
+  // Con el mismo criterio que las filas: las que para quien mira terminaron.
+  // Si no, la tarjeta diría 0 de 5 arriba de cinco filas que dicen Completada.
+  const hechas = visitas.filter(
+    (v) => estadoParaMi(v, personalId) === "COMPLETADA"
+  ).length;
   const pct = Math.round((hechas / visitas.length) * 100);
 
   return (
@@ -416,6 +438,8 @@ const styles = StyleSheet.create({
   rowMuted: { opacity: 0.7 },
   franja: { width: 5 },
   rowText: { flex: 1, padding: 14, paddingLeft: 15, gap: 2, minWidth: 0 },
+  horaYNumero: { flexDirection: "row", alignItems: "center", gap: 8 },
+  numero: { color: tema.texto3, fontSize: 13, fontWeight: "600" },
   filaSuperior: {
     flexDirection: "row",
     alignItems: "center",

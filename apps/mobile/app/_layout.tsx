@@ -63,6 +63,7 @@ function useAuthGate() {
           name: me.name,
           apellido: me.apellido,
           email: me.email,
+          usuario: me.usuario,
           personalId: me.personalId,
           clienteId: me.clienteId,
         });

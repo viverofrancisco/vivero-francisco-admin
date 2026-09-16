@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       name: user.name,
       apellido: user.apellido,
       email: user.email,
+      usuario: user.usuario,
     },
   });
 }

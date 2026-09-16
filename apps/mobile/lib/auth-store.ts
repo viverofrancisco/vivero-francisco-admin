@@ -12,6 +12,8 @@ export interface SessionUser {
   name: string | null;
   apellido: string | null;
   email: string | null;
+  /** Con qué entra. El jardinero no tiene correo: entra con esto. */
+  usuario: string | null;
   personalId?: string | null;
   clienteId?: string | null;
 }
@@ -37,6 +39,7 @@ function toSessionUser(u: AuthUser | MeResponse): SessionUser {
     name: u.name,
     apellido: u.apellido,
     email: "email" in u ? u.email ?? null : null,
+    usuario: "usuario" in u ? u.usuario ?? null : null,
     personalId: "personalId" in u ? u.personalId : undefined,
     clienteId: "clienteId" in u ? u.clienteId : undefined,
   };

@@ -55,6 +55,8 @@ export interface AuthUser {
   name: string | null;
   apellido: string | null;
   email?: string | null;
+  /** Ver `MeResponse.usuario`. Opcional: el cliente entra por teléfono. */
+  usuario?: string | null;
 }
 
 export interface AuthSuccessResponse extends TokenPair {
@@ -67,6 +69,12 @@ export interface MeResponse {
   name: string | null;
   apellido: string | null;
   email: string | null;
+  /**
+   * Con qué entra. Es lo que la oficina le dicta por teléfono al jardinero, que
+   * no tiene correo, y lo primero que se olvida: la pantalla de Cuenta es donde
+   * se va a buscar.
+   */
+  usuario: string | null;
   personalId: string | null;
   clienteId: string | null;
 }

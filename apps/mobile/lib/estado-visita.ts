@@ -41,3 +41,27 @@ export function visitaTerminada(estado: string): boolean {
     estado === "CANCELADA"
   );
 }
+
+/**
+ * El estado como lo ve quien lo mira.
+ *
+ * Para el jardinero que ya marcó su salida, la visita terminó: lo suyo está
+ * cargado y se fue del jardín. La visita en sí sigue `EN_CURSO` hasta que la
+ * oficina la cierra —puede faltar el parte de un compañero, y cerrar es una
+ * decisión de oficina, no una cuenta— pero mostrarle "En curso" después de
+ * haberse ido le dice que algo le quedó a medio hacer.
+ *
+ * **Solo pisa `EN_CURSO`.** Si la oficina ya dijo `INCOMPLETA` o `CANCELADA`,
+ * eso es lo que pasó y no lo tapa nada; y `COMPLETADA` ya es lo mismo.
+ */
+export function estadoParaMi(
+  visita: {
+    estado: string;
+    personal?: { personalId: string; salidaEl: string | null }[] | null;
+  },
+  personalId: string | null
+): string {
+  if (!personalId || visita.estado !== "EN_CURSO") return visita.estado;
+  const mio = visita.personal?.find((p) => p.personalId === personalId);
+  return mio?.salidaEl ? "COMPLETADA" : visita.estado;
+}

@@ -41,6 +41,8 @@ export interface ParteDeVisita {
 
 export interface VisitaSummary {
   id: string;
+  /** El corto, el que se dice en voz alta: "la visita #194". */
+  numero: number;
   fechaProgramada: string;
   horaEntrada: string | null;
   estado: EstadoVisita;

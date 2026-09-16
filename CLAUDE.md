@@ -336,7 +336,12 @@ visit sees it and has no parte to file there). The web endpoint existed from the
 start and nothing called it: the form was only ever built for the phone, so on
 the portal a gardener saw that his parte was missing and had no way in. The first parte moves the visit from
 `PROGRAMADA` to `EN_CURSO` on its own; from there an `ADMIN`/`STAFF` marks it
-`COMPLETADA` or `INCOMPLETA`, looking at what was filed and what is missing. It
+`COMPLETADA` or `INCOMPLETA`, looking at what was filed and what is missing.
+**A gardener who marked his salida sees the visit as *Completada*** —
+`estadoParaMi` in the app, a rendering rule and not a column: his part is filed
+and he left the garden, and showing him "En curso" because a coworker hasn't
+filed yet tells him something of his is half-done. It only overrides
+`EN_CURSO`, so an office `INCOMPLETA` or `CANCELADA` still shows as what it is. It
 does **not** close itself when the last person files: someone may never file,
 and deciding that the work is nonetheless finished is a judgement, not a count.
 `tareaIds` replaces that person's set rather than adding to it — the form is a

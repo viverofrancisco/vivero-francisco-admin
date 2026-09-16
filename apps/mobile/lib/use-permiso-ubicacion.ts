@@ -29,7 +29,7 @@ import {
  * exactamente cuando el permiso pudo haber cambiado: se cambia en Ajustes, o
  * sea afuera de la app.
  */
-export function usarPermisoDeUbicacion(activo: boolean) {
+export function usePermisoDeUbicacion(activo: boolean) {
   const yaAvisamos = useRef(false);
 
   const revisar = useCallback(async () => {

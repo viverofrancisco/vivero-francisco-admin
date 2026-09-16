@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { estadoLabel } from "@/lib/estado-visita";
+import { estadoLabel, estadoParaMi } from "@/lib/estado-visita";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
@@ -303,7 +303,15 @@ export default function PersonalVisitaScreen() {
             nada que las propias filas no dijeran, y gastaba la línea que
             separa el nombre del cliente de sus datos. */}
         <Section>
-          <Row label="Estado" value={estadoLabel(visita.estado)} />
+          {/* El número corto, que es como se nombra la visita en voz alta y
+              por teléfono. El cuid de la URL no se dicta. */}
+          <Row label="Visita" value={`#${visita.numero}`} />
+          {/* El suyo: quien ya marcó su salida ve Completada aunque la visita
+              siga En curso esperando el parte de otro. Ver `estadoParaMi`. */}
+          <Row
+            label="Estado"
+            value={estadoLabel(estadoParaMi(visita, personalId))}
+          />
           <Row label="Programada" value={formatDate(visita.fechaProgramada)} />
           {visita.fechaRealizada ? (
             <Row

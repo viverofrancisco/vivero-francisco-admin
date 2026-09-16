@@ -4,17 +4,26 @@ import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/lib/auth-store";
 import { tema } from "@/lib/tema";
-import { usarPermisoDeUbicacion } from "@/lib/usar-permiso-ubicacion";
+import { usePermisoDeUbicacion } from "@/lib/use-permiso-ubicacion";
 
 export default function PersonalTabsLayout() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
   const isAdmin = role === "ADMIN";
   const isAdminOrStaff = role === "ADMIN" || role === "STAFF";
+  /**
+   * El jardinero ve dos pestañas: sus visitas y su cuenta.
+   *
+   * *Clientes* era la agenda de la oficina —todos los clientes del vivero— y él
+   * no tiene nada que hacer ahí: los datos del cliente de la visita que le toca
+   * los tiene adentro de la visita. Y *Más* escondía un solo ítem, Cuenta, así
+   * que era un rodeo de dos toques hacia la única cosa que había detrás.
+   */
+  const esJardinero = role === "PERSONAL";
 
   // Solo al jardinero: es el único que marca, y pedirle la ubicación a la
   // oficina sería pedirla para nada.
-  usarPermisoDeUbicacion(role === "PERSONAL");
+  usePermisoDeUbicacion(role === "PERSONAL");
 
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((res) => {
@@ -46,6 +55,8 @@ export default function PersonalTabsLayout() {
         name="clientes"
         options={{
           title: "Clientes",
+          href: esJardinero ? null : undefined,
+          tabBarItemStyle: esJardinero ? { display: "none" } : undefined,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),
@@ -80,9 +91,11 @@ export default function PersonalTabsLayout() {
         name="configuracion"
         options={{
           title: "Cuenta",
-          tabBarItemStyle: { display: "none" },
+          // Al jardinero se le muestra directo; al resto le sigue llegando por
+          // el menú de Más, que para ellos tiene tres cosas adentro.
+          tabBarItemStyle: esJardinero ? undefined : { display: "none" },
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+            <Ionicons name="person-circle-outline" size={size} color={color} />
           ),
         }}
       />
@@ -90,6 +103,8 @@ export default function PersonalTabsLayout() {
         name="mas"
         options={{
           title: "Más",
+          href: esJardinero ? null : undefined,
+          tabBarItemStyle: esJardinero ? { display: "none" } : undefined,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ellipsis-horizontal" size={size} color={color} />
           ),

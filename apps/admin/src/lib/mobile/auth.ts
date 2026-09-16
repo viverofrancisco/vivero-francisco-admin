@@ -6,6 +6,8 @@ import type { UserRole } from "@/generated/prisma/client";
 export interface MobileUser {
   id: string;
   email: string | null;
+  /** Con qué entra: el jardinero no tiene correo y entra con esto. */
+  usuario: string | null;
   name: string | null;
   apellido: string | null;
   role: UserRole;
@@ -36,6 +38,7 @@ export async function getMobileUser(
   return {
     id: user.id,
     email: user.email,
+    usuario: user.usuario,
     name: user.name,
     apellido: user.apellido,
     role: user.role,

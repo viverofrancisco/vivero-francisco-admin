@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     name: user.name,
     apellido: user.apellido,
     email: user.email,
+    usuario: user.usuario,
     personalId: user.personalId,
     clienteId: user.clienteId,
   });
