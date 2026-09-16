@@ -1,15 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
-  MapContainer,
+  APIProvider,
+  Map,
   Marker,
-  TileLayer,
   useMap,
-  useMapEvents,
-} from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+  useMapsLibrary,
+} from "@vis.gl/react-google-maps";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Crosshair, Loader2, Search, Trash2 } from "lucide-react";
@@ -22,10 +20,12 @@ import { Crosshair, Loader2, Search, Trash2 } from "lucide-react";
  * contra dónde se marcó la entrada: hasta ahora la marca traía coordenadas y no
  * había contra qué medirlas.
  *
- * **OpenStreetMap y no Google Maps**: no necesita clave ni cuenta de
- * facturación, que para un portal de oficina es la diferencia entre funcionar y
- * esperar a que alguien saque una cuenta. Si algún día hace falta el callejero
- * de Google, lo que cambia es la URL de las teselas y la clave.
+ * **Google Maps.** Empezó con Leaflet sobre OpenStreetMap, que no pide clave ni
+ * tarjeta, y el callejero alcanzaba para la ciudad pero no para adentro de las
+ * urbanizaciones privadas —que es justo donde están casi todas las propiedades
+ * de este vivero—. La clave viaja al navegador porque no hay otra forma: lo que
+ * la protege es la restricción por dominio en la consola de Google, no
+ * esconderla.
  *
  * Tres cosas que lo hacen usable, y las tres son la misma idea —**el mapa va a
  * donde está el pin**, en vez de dejar que uno lo busque—:
@@ -33,69 +33,21 @@ import { Crosshair, Loader2, Search, Trash2 } from "lucide-react";
  * - Poner el pin con *Usar mi ubicación* mueve el mapa hasta él. Antes el pin
  *   caía en la posición real y el mapa se quedaba donde estaba, así que había
  *   que ir a buscarlo con el dedo.
- * - Se puede **buscar una dirección**: eso deja el mapa en el barrio, y el
- *   ajuste fino se hace tocando. Buscar no pone el pin a propósito —el
+ * - Se puede **buscar una dirección**. Buscar no pone el pin a propósito: el
  *   resultado de "Blue Bay, Isla Mocolí" es el centro de la urbanización, que
- *   es justo el dato que este campo viene a reemplazar—.
+ *   es justo el dato que este campo viene a reemplazar. Deja el mapa en el
+ *   barrio y el ajuste fino se hace tocando.
  * - Abrir una propiedad que ya tiene pin arranca sobre él y con zoom de calle.
  */
 
 /** Guayaquil. Desde dónde arranca el mapa cuando la propiedad no tiene pin. */
-const CENTRO_POR_DEFECTO: [number, number] = [-2.1709, -79.9224];
+const CENTRO_POR_DEFECTO = { lat: -2.1709, lng: -79.9224 };
 /** El zoom con el que se distingue una casa de la de al lado. */
-const ZOOM_DE_CALLE = 18;
+const ZOOM_DE_CALLE = 19;
 
-/**
- * El ícono por defecto de Leaflet busca sus PNG por ruta relativa y con un
- * bundler no los encuentra: sale un marcador roto. Este es un pin dibujado en
- * SVG, con el verde del sistema, y de paso no pesa nada.
- */
-const PIN = L.divIcon({
-  className: "",
-  html: `<svg width="30" height="40" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="#2d7b48"/>
-    <circle cx="12" cy="12" r="4.5" fill="#fff"/>
-  </svg>`,
-  iconSize: [30, 40],
-  iconAnchor: [15, 40],
-});
-
-interface Lugar {
-  nombre: string;
+interface Punto {
   lat: number;
   lng: number;
-}
-
-function AlTocar({ onElegir }: { onElegir: (lat: number, lng: number) => void }) {
-  useMapEvents({
-    click: (e) => onElegir(e.latlng.lat, e.latlng.lng),
-  });
-  return null;
-}
-
-/**
- * Lleva el mapa a donde le digan.
- *
- * Es un componente y no una `ref` porque `useMap` solo existe adentro del
- * `MapContainer`; desde afuera no hay instancia a la cual pedirle nada.
- */
-function IrA({ destino }: { destino: { lat: number; lng: number; zoom?: number } | null }) {
-  const map = useMap();
-  const ultimo = useRef<string>("");
-
-  useEffect(() => {
-    if (!destino) return;
-    // Sin esta guarda, cada render repetiría el vuelo y el mapa quedaría
-    // peleando con quien esté arrastrándolo.
-    const clave = `${destino.lat},${destino.lng},${destino.zoom ?? ""}`;
-    if (clave === ultimo.current) return;
-    ultimo.current = clave;
-    map.flyTo([destino.lat, destino.lng], destino.zoom ?? map.getZoom(), {
-      duration: 0.6,
-    });
-  }, [destino, map]);
-
-  return null;
 }
 
 export function MapaPropiedad({
@@ -105,181 +57,118 @@ export function MapaPropiedad({
 }: {
   lat: number | null;
   lng: number | null;
-  onCambio: (punto: { lat: number; lng: number } | null) => void;
+  onCambio: (punto: Punto | null) => void;
 }) {
-  const [montado, setMontado] = useState(false);
-  const [destino, setDestino] = useState<{
-    lat: number;
-    lng: number;
-    zoom?: number;
-  } | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [resultados, setResultados] = useState<Lugar[] | null>(null);
-  const [buscando, setBuscando] = useState(false);
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  /*
+   * Sin clave no hay mapa, y decirlo es mejor que dibujar un rectángulo gris.
+   *
+   * Pasa en un entorno recién clonado y en una preview sin la variable: quien
+   * lo vea tiene que saber qué falta, no creer que el mapa se rompió.
+   */
+  if (!apiKey) {
+    return (
+      <div className="rounded-xl border border-dashed p-6 text-center">
+        <p className="text-sm font-semibold">El mapa no está configurado</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Falta <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>. Todo lo demás de
+          la propiedad se puede cargar igual.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <APIProvider apiKey={apiKey} libraries={["places"]}>
+      <Mapa lat={lat} lng={lng} onCambio={onCambio} />
+    </APIProvider>
+  );
+}
+
+function Mapa({
+  lat,
+  lng,
+  onCambio,
+}: {
+  lat: number | null;
+  lng: number | null;
+  onCambio: (punto: Punto | null) => void;
+}) {
+  const map = useMap();
   const [ubicando, setUbicando] = useState(false);
-  const marcador = useRef<L.Marker>(null);
+  /*
+   * Desde dónde arranca el mapa, calculado una sola vez.
+   *
+   * En estado y no en una `ref` porque leer una `ref` durante el render es
+   * justo lo que el compilador de React no deja: el valor podría cambiar entre
+   * el render y lo que se pinta. Acá da igual —es el valor inicial y nada
+   * más—, pero el que sí importa es el de al lado: si esto se recalculara en
+   * cada render, mover el mapa a mano se desharía solo.
+   */
+  const [vistaInicial] = useState(() =>
+    lat !== null && lng !== null
+      ? { centro: { lat, lng }, zoom: ZOOM_DE_CALLE }
+      : { centro: CENTRO_POR_DEFECTO, zoom: 12 }
+  );
 
-  // Leaflet mide el contenedor al montarse y necesita el DOM: dentro de un
-  // contenedor que todavía se está abriendo, mide cero y el mapa sale gris.
-  useEffect(() => {
-    const t = setTimeout(() => setMontado(true), 0);
-    return () => clearTimeout(t);
-  }, []);
-
-  const centro = useMemo<[number, number]>(
-    () => (lat !== null && lng !== null ? [lat, lng] : CENTRO_POR_DEFECTO),
-    // Solo el inicial: después manda `IrA`, o arrastrar el mapa se desharía
-    // en cada render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+  /** Llevar el mapa a un punto, opcionalmente acercándolo. */
+  const irA = useCallback(
+    (p: Punto, zoom?: number) => {
+      if (!map) return;
+      map.panTo(p);
+      if (zoom !== undefined) map.setZoom(zoom);
+    },
+    [map]
   );
 
   /** Poner el pin **y** llevar el mapa hasta él. */
   const ponerPin = useCallback(
-    (punto: { lat: number; lng: number } | null, acercar = false) => {
-      onCambio(punto);
-      if (punto) {
-        setDestino({ ...punto, zoom: acercar ? ZOOM_DE_CALLE : undefined });
-      }
+    (p: Punto | null, acercar = false) => {
+      onCambio(p);
+      if (p) irA(p, acercar ? ZOOM_DE_CALLE : undefined);
     },
-    [onCambio]
+    [irA, onCambio]
   );
-
-  /**
-   * Buscar una dirección con Nominatim, el buscador de OpenStreetMap.
-   *
-   * Gratis y sin clave, a cambio de un límite de una consulta por segundo: por
-   * eso se busca al apretar Enter o el botón, y no mientras se escribe.
-   * Acotado a Ecuador, que es donde están todas las propiedades.
-   */
-  async function buscar() {
-    const q = busqueda.trim();
-    if (q.length < 3) return;
-    setBuscando(true);
-    try {
-      const url = new URL("https://nominatim.openstreetmap.org/search");
-      url.searchParams.set("format", "jsonv2");
-      url.searchParams.set("q", q);
-      url.searchParams.set("countrycodes", "ec");
-      url.searchParams.set("limit", "5");
-      const res = await fetch(url);
-      const datos = (await res.json()) as {
-        display_name: string;
-        lat: string;
-        lon: string;
-      }[];
-      setResultados(
-        datos.map((d) => ({
-          nombre: d.display_name,
-          lat: Number(d.lat),
-          lng: Number(d.lon),
-        }))
-      );
-    } catch {
-      setResultados([]);
-    } finally {
-      setBuscando(false);
-    }
-  }
-
-  if (!montado) {
-    return <div className="h-80 w-full animate-pulse rounded-xl bg-muted" />;
-  }
 
   return (
     <div className="space-y-2">
-      {/* Buscar deja el mapa en el barrio; el punto exacto se toca. */}
-      <div className="relative">
-        <div className="flex gap-2">
-          <div className="relative min-w-0 flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  // Adentro de un formulario, Enter lo enviaría.
-                  e.preventDefault();
-                  void buscar();
-                }
-                if (e.key === "Escape") setResultados(null);
-              }}
-              placeholder="Buscar una dirección o urbanización…"
-              className="pl-9"
-            />
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void buscar()}
-            disabled={buscando || busqueda.trim().length < 3}
-          >
-            {buscando ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Buscar"
-            )}
-          </Button>
-        </div>
-
-        {resultados !== null && (
-          <div className="absolute z-1000 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-md">
-            {resultados.length === 0 ? (
-              <p className="px-3 py-2.5 text-sm text-muted-foreground">
-                Sin resultados. Acerca el mapa a mano y toca el punto.
-              </p>
-            ) : (
-              resultados.map((r) => (
-                <button
-                  key={`${r.lat},${r.lng}`}
-                  type="button"
-                  onClick={() => {
-                    // Solo mueve el mapa: el pin lo pone la persona, porque el
-                    // resultado de una urbanización es su centro.
-                    setDestino({ lat: r.lat, lng: r.lng, zoom: 17 });
-                    setResultados(null);
-                    setBusqueda("");
-                  }}
-                  className="block w-full px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted"
-                >
-                  {r.nombre}
-                </button>
-              ))
-            )}
-          </div>
-        )}
-      </div>
+      <Buscador onElegir={(p) => irA(p, 18)} />
 
       <div className="h-80 w-full overflow-hidden rounded-xl border">
-        <MapContainer
-          center={centro}
-          zoom={lat !== null ? ZOOM_DE_CALLE : 12}
+        <Map
+          defaultCenter={vistaInicial.centro}
+          defaultZoom={vistaInicial.zoom}
+          gestureHandling="greedy"
+          disableDefaultUI={false}
+          mapTypeControl={false}
+          streetViewControl={false}
+          fullscreenControl={false}
+          // El satélite es lo que deja reconocer una casa por su techo y su
+          // jardín, que es más fácil que leer el número desde el mapa.
+          mapTypeId="hybrid"
+          onClick={(e) => {
+            const p = e.detail.latLng;
+            if (p) ponerPin({ lat: p.lat, lng: p.lng });
+          }}
           className="h-full w-full"
-          scrollWheelZoom
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <IrA destino={destino} />
-          <AlTocar onElegir={(la, ln) => ponerPin({ lat: la, lng: ln })} />
           {lat !== null && lng !== null && (
+            /* El marcador clásico y no `AdvancedMarker`: ese necesita un Map ID
+               creado aparte en la consola de Google, un paso más de
+               configuración para un pin que se arrastra igual. */
             <Marker
-              position={[lat, lng]}
-              icon={PIN}
+              position={{ lat, lng }}
               draggable
-              ref={marcador}
-              eventHandlers={{
-                dragend: () => {
-                  const p = marcador.current?.getLatLng();
-                  // Arrastrando, el mapa no se mueve: el pin ya está donde el
-                  // dedo lo dejó.
-                  if (p) onCambio({ lat: p.lat, lng: p.lng });
-                },
+              onDragEnd={(e) => {
+                const p = e.latLng;
+                // Arrastrando, el mapa no se mueve: el pin ya está donde el
+                // dedo lo dejó.
+                if (p) onCambio({ lat: p.lat(), lng: p.lng() });
               }}
             />
           )}
-        </MapContainer>
+        </Map>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -288,7 +177,7 @@ export function MapaPropiedad({
             <>
               <button
                 type="button"
-                onClick={() => setDestino({ lat, lng, zoom: ZOOM_DE_CALLE })}
+                onClick={() => irA({ lat, lng }, ZOOM_DE_CALLE)}
                 className="font-semibold text-primary hover:underline"
               >
                 Centrar en el pin
@@ -346,6 +235,119 @@ export function MapaPropiedad({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Buscar una dirección con Places.
+ *
+ * Se busca al apretar Enter o el botón y no mientras se escribe: cada consulta
+ * a Places se factura, así que una por búsqueda y no una por tecla. Acotado a
+ * Ecuador, que es donde están todas las propiedades.
+ */
+function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
+  const places = useMapsLibrary("places");
+  const [texto, setTexto] = useState("");
+  const [buscando, setBuscando] = useState(false);
+  const [resultados, setResultados] = useState<
+    { id: string; nombre: string; punto: Punto }[] | null
+  >(null);
+
+  // El servicio necesita un nodo del DOM para atribuir el uso; uno suelto
+  // alcanza y no se muestra.
+  const nodo = useRef<HTMLDivElement>(null);
+
+  async function buscar() {
+    const q = texto.trim();
+    if (!places || q.length < 3) return;
+    setBuscando(true);
+    try {
+      const servicio = new places.PlacesService(
+        nodo.current ?? document.createElement("div")
+      );
+      const encontrados = await new Promise<google.maps.places.PlaceResult[]>(
+        (resolve) => {
+          servicio.textSearch(
+            { query: q, region: "ec" },
+            (res) => resolve(res ?? [])
+          );
+        }
+      );
+      setResultados(
+        encontrados.slice(0, 5).map((r, i) => ({
+          id: r.place_id ?? String(i),
+          nombre: [r.name, r.formatted_address].filter(Boolean).join(" · "),
+          punto: {
+            lat: r.geometry?.location?.lat() ?? 0,
+            lng: r.geometry?.location?.lng() ?? 0,
+          },
+        }))
+      );
+    } catch {
+      setResultados([]);
+    } finally {
+      setBuscando(false);
+    }
+  }
+
+  return (
+    <div className="relative">
+      <div ref={nodo} className="hidden" />
+      <div className="flex gap-2">
+        <div className="relative min-w-0 flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                // Adentro de un formulario, Enter lo enviaría.
+                e.preventDefault();
+                void buscar();
+              }
+              if (e.key === "Escape") setResultados(null);
+            }}
+            placeholder="Buscar una dirección o urbanización…"
+            className="pl-9"
+          />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => void buscar()}
+          disabled={buscando || !places || texto.trim().length < 3}
+        >
+          {buscando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}
+        </Button>
+      </div>
+
+      {resultados !== null && (
+        <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-md">
+          {resultados.length === 0 ? (
+            <p className="px-3 py-2.5 text-sm text-muted-foreground">
+              Sin resultados. Acerca el mapa a mano y toca el punto.
+            </p>
+          ) : (
+            resultados.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  // Solo mueve el mapa: el pin lo pone la persona, porque el
+                  // resultado de una urbanización es su centro.
+                  onElegir(r.punto);
+                  setResultados(null);
+                  setTexto("");
+                }}
+                className="block w-full px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted"
+              >
+                {r.nombre}
+              </button>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
