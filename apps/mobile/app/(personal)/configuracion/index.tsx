@@ -87,6 +87,16 @@ export default function PersonalConfiguracionScreen() {
   const esJardinero = user?.role === "PERSONAL";
   const permisos = usePermisos(esJardinero);
   const version = Constants.expoConfig?.version ?? null;
+  // El de la ubicación es el mismo texto del cartel que sale al abrir la app:
+  // dos formas de decir lo mismo son dos que se despegan.
+  const faltan = [
+    permisos.ubicacion === false
+      ? "La app usa tu ubicación para algunas de sus funciones."
+      : null,
+    permisos.notificaciones === false
+      ? "Sin notificaciones no te avisamos de tus visitas."
+      : null,
+  ].filter((t): t is string => t !== null);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -112,32 +122,26 @@ export default function PersonalConfiguracionScreen() {
         {user?.email ? <Row label="Email" value={user.email} /> : null}
       </Section>
 
-      {/* Permisos. Se cambian en Ajustes, que es adonde lleva la fila. */}
-      <Section title="Permisos">
-        {esJardinero ? (
-          <FilaPermiso
-            etiqueta="Ubicación"
-            concedido={permisos.ubicacion}
-            nota="Se guarda desde dónde marcas tu entrada y tu salida."
-          />
-        ) : null}
-        <FilaPermiso
-          etiqueta="Notificaciones"
-          concedido={permisos.notificaciones}
-          nota="Avisos de visitas y mensajes."
+      {/* Un permiso solo ocupa lugar cuando falta. Decir "Ubicación · Activo"
+          es informarle de algo que ya funciona a alguien que no vino a
+          revisarlo; lo que sí hace falta decir es que algo está apagado. */}
+      {faltan.length > 0 ? (
+        <Aviso
+          textos={faltan}
+          onActivar={() => Linking.openSettings()}
         />
-      </Section>
+      ) : null}
 
-      {/* Sesión */}
+      {/* Un bloque rojo a todo el ancho para algo que se hace una vez cada
+          tanto —y que además no es destructivo: se vuelve a entrar— gritaba
+          más fuerte que todo lo demás de la pantalla. Texto rojo alcanza. */}
       <Button
-        mode="contained"
+        mode="text"
         onPress={logout}
         loading={loggingOut}
         disabled={loggingOut}
-        buttonColor="#c62828"
-        textColor="#fff"
+        textColor={tema.rojo}
         style={styles.logoutBtn}
-        contentStyle={styles.logoutContent}
         labelStyle={styles.logoutLabel}
       >
         Cerrar sesión
@@ -191,60 +195,40 @@ function Section({
 }
 
 /**
- * Un permiso del sistema: cómo está y, si está apagado, cómo prenderlo.
+ * Lo que falta activar, y el atajo a Ajustes.
  *
- * Toca en Ajustes y no acá porque una vez negado iOS no vuelve a mostrar su
+ * Se toca en Ajustes y no acá porque una vez negado iOS no vuelve a mostrar su
  * diálogo: la app no tiene forma de conceder nada, solo de llevar hasta el
  * interruptor. `Linking.openSettings()` abre la página de esta app, que es
  * donde está.
  */
-function FilaPermiso({
-  etiqueta,
-  concedido,
-  nota,
+function Aviso({
+  textos,
+  onActivar,
 }: {
-  etiqueta: string;
-  concedido: boolean | null;
-  nota: string;
+  textos: string[];
+  onActivar: () => void;
 }) {
-  const cuerpo = (
-    <View style={styles.permiso}>
-      <View style={styles.permisoTexto}>
-        <Text variant="bodyMedium" style={styles.permisoEtiqueta}>
-          {etiqueta}
-        </Text>
-        <Text variant="bodySmall" style={styles.permisoNota}>
-          {nota}
-        </Text>
+  return (
+    <View style={styles.aviso}>
+      <Ionicons
+        name="alert-circle-outline"
+        size={20}
+        color={tema.ambarTexto}
+        style={styles.avisoIcono}
+      />
+      <View style={styles.avisoTexto}>
+        {textos.map((t) => (
+          <Text key={t} variant="bodySmall" style={styles.avisoLinea}>
+            {t}
+          </Text>
+        ))}
+        <Pressable onPress={onActivar} hitSlop={8}>
+          <Text style={styles.avisoAccion}>Activar en Ajustes</Text>
+        </Pressable>
       </View>
-      {concedido === null ? (
-        <Text variant="bodySmall" style={styles.permisoNota}>
-          —
-        </Text>
-      ) : concedido ? (
-        <View style={styles.permisoEstado}>
-          <Ionicons name="checkmark-circle" size={18} color={tema.verde} />
-          <Text variant="bodySmall" style={styles.permisoActivo}>
-            Activo
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.permisoEstado}>
-          <Text variant="bodySmall" style={styles.permisoActivar}>
-            Activar
-          </Text>
-          <Ionicons name="chevron-forward" size={16} color={tema.ambarTexto} />
-        </View>
-      )}
     </View>
   );
-
-  if (concedido === false) {
-    return (
-      <Pressable onPress={() => Linking.openSettings()}>{cuerpo}</Pressable>
-    );
-  }
-  return cuerpo;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -319,29 +303,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#eaeaea",
   },
 
-  logoutBtn: {
-    marginTop: 24,
-    borderRadius: 14,
-  },
-  logoutContent: { paddingVertical: 8 },
-  logoutLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    letterSpacing: 0.2,
-  },
+  logoutBtn: { marginTop: 20, alignSelf: "center" },
+  logoutLabel: { fontSize: 15, fontWeight: "600" },
 
-  permiso: {
+  aviso: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 12,
+    gap: 10,
+    marginTop: 20,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: tema.ambar50,
   },
-  permisoTexto: { flex: 1, gap: 1 },
-  permisoEtiqueta: { color: "#111" },
-  permisoNota: { color: "#888" },
-  permisoEstado: { flexDirection: "row", alignItems: "center", gap: 3 },
-  permisoActivo: { color: tema.verde, fontWeight: "600" },
-  permisoActivar: { color: tema.ambarTexto, fontWeight: "700" },
+  avisoIcono: { marginTop: 1 },
+  avisoTexto: { flex: 1, gap: 4 },
+  avisoLinea: { color: tema.ambarTexto, lineHeight: 18 },
+  avisoAccion: { color: tema.ambarTexto, fontWeight: "700", marginTop: 2 },
 
   version: { textAlign: "center", color: "#aaa", marginTop: 20 },
 
