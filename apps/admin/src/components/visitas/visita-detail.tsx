@@ -333,75 +333,78 @@ export function VisitaDetail({
                   {visita.grupo.nombre}
                 </span>
               )}
+              {/* Corto: las fichas de abajo dicen **cuáles** faltan, así que
+                  acá alcanza con el número, que es lo que se ve sin leer. */}
               {faltantes.length > 0 && (
                 <Badge variant="destructive" className="flex-none">
                   {faltantes.length === 1
-                    ? "1 obligatoria sin hacer"
-                    : `${faltantes.length} obligatorias sin hacer`}
+                    ? "1 sin hacer"
+                    : `${faltantes.length} sin hacer`}
                 </Badge>
               )}
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Las obligatorias, en una tira de fichas y no en una lista con
+                borde. Son tres o cuatro nombres y una marca cada uno: la lista
+                gastaba una fila entera por dato, con los nombres de quienes la
+                hicieron repetidos otra vez más abajo, en su propio bloque. Acá
+                se lee de un vistazo qué se pidió y qué falta, que es la
+                pregunta, y quién la hizo se ve en su fila. */}
             {visita.tareasObligatorias.length > 0 && (
-              <div>
-                <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Obligatorias
-                </p>
-                <ul className="divide-y rounded-md border">
-                  {visita.tareasObligatorias.map(({ tarea }) => {
-                    const hecha = hechas.find((t) => t.id === tarea.id);
-                    return (
-                      <li
-                        key={tarea.id}
-                        className="flex items-center gap-2.5 px-3 py-2"
-                      >
-                        {hecha ? (
-                          <Check className="h-4 w-4 flex-none text-primary" />
-                        ) : (
-                          <X className="h-4 w-4 flex-none text-destructive" />
-                        )}
-                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                          {tarea.nombre}
-                        </span>
-                        <span className="flex-none text-xs text-muted-foreground">
-                          {hecha ? hecha.porQuienes.join(", ") : "Sin hacer"}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                </span>
+                {visita.tareasObligatorias.map(({ tarea }) => {
+                  const hecha = hechas.some((t) => t.id === tarea.id);
+                  return (
+                    <Badge
+                      key={tarea.id}
+                      variant={hecha ? "secondary" : "destructive"}
+                      className="gap-1 font-normal"
+                    >
+                      {hecha ? (
+                        <Check className="h-3 w-3 flex-none" />
+                      ) : (
+                        <X className="h-3 w-3 flex-none" />
+                      )}
+                      {tarea.nombre}
+                    </Badge>
+                  );
+                })}
               </div>
             )}
 
-            {/* Cada uno con lo suyo: sus horas y sus tareas. Es el dato que
-                el modelo viejo —una persona reportando por todo el grupo— no
-                podía dar. Quien no cargó nada se dice, porque es lo que la
-                oficina mira antes de cerrar. */}
-            <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Quién fue
-              </p>
-              {visita.personal.length === 0 ? (
-                <EmptyState message="Nadie está asignado todavía" />
-              ) : (
-                <ul className="space-y-3">
-                  {visita.personal.map((vp) => {
-                    const nombre = nombrePersonal(vp.personal);
-                    const suyas = vp.tareas.map((t) => t.tarea.nombre);
-                    return (
-                      <li
-                        key={vp.personal.id}
-                        className="flex items-start gap-2.5"
-                      >
-                        <InitialsAvatar name={nombre} size={28} />
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-2">
-                            <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                              {nombre}
-                            </span>
+            {/* Cada uno con lo suyo: sus horas y sus tareas. Es el dato que el
+                modelo viejo —una persona reportando por todo el grupo— no podía
+                dar. Quien no cargó nada se dice, porque es lo que la oficina
+                mira antes de cerrar.
+
+                Filas separadas por línea y no bloques con aire: con tres
+                personas el aire hacía que la tarjeta pareciera tres tarjetas, y
+                lo que se compara entre ellas —las horas, qué hizo cada uno—
+                queda alineado en la misma columna. */}
+            {visita.personal.length === 0 ? (
+              <EmptyState message="Nadie está asignado todavía" />
+            ) : (
+              <ul className="divide-y rounded-md border">
+                {visita.personal.map((vp) => {
+                  const nombre = nombrePersonal(vp.personal);
+                  const suyas = vp.tareas.map((t) => t.tarea.nombre);
+                  return (
+                    <li key={vp.personal.id} className="flex gap-3 px-3 py-2.5">
+                      <InitialsAvatar name={nombre} size={28} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline gap-3">
+                          <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                            {nombre}
+                          </span>
+                          {/* Las horas a la derecha, en la misma columna para
+                              todos: es lo que se compara entre personas. */}
+                          <span className="flex-none text-xs tabular-nums text-muted-foreground">
                             {vp.entradaEl || vp.salidaEl ? (
-                              <span className="flex-none text-xs tabular-nums text-muted-foreground">
+                              <>
                                 {vp.entradaEl
                                   ? horaConDia(
                                       vp.entradaEl,
@@ -415,39 +418,54 @@ export function VisitaDetail({
                                       visita.fechaProgramada
                                     )
                                   : "—"}
-                              </span>
-                            ) : null}
+                                {duracionEntre(vp.entradaEl, vp.salidaEl) && (
+                                  <>
+                                    {" · "}
+                                    {duracionEntre(vp.entradaEl, vp.salidaEl)}
+                                  </>
+                                )}
+                              </>
+                            ) : (
+                              "Sin marcar"
+                            )}
                           </span>
-                          <span className="block text-xs text-muted-foreground">
-                            {vp.registradoEl === null
-                              ? vp.entradaEl
-                                ? "Marcó entrada, todavía no salió"
-                                : "Todavía no cargó su parte"
-                              : suyas.length > 0
-                                ? suyas.join(", ")
-                                : "No marcó ninguna tarea"}
+                        </div>
+
+                        {/* Lo que hizo. Separado por puntos y no por comas: las
+                            comas viven adentro de los nombres de las tareas
+                            —"Deshoje de plantas de hojas grandes (alocasias,
+                            bijao, heliconias)"— así que una lista con comas no
+                            se puede leer donde termina una y empieza otra. */}
+                        <p className="text-xs text-muted-foreground">
+                          {vp.registradoEl === null
+                            ? vp.entradaEl
+                              ? "Marcó entrada, todavía no salió"
+                              : "Todavía no cargó su parte"
+                            : suyas.length > 0
+                              ? suyas.join(" · ")
+                              : "No marcó ninguna tarea"}
+                        </p>
+
+                        {/* Solo la oficina. Es la pregunta que ella quería poder
+                            hacerse, y la única respuesta honesta: dónde estaba
+                            el teléfono cuando se apretó el botón. No prueba
+                            presencia —en el navegador la ubicación se falsea en
+                            tres clics— pero un "sin ubicación" repetido es algo
+                            que se conversa. Al jardinero no se le muestra: no es
+                            él quien revisa a nadie. */}
+                        {canModify && <Ubicaciones parte={vp} />}
+                        {mismoAparato.has(vp.personalId) && (
+                          <span className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-destructive">
+                            <Smartphone className="h-3 w-3 flex-none" />
+                            Marcó desde el mismo teléfono que otra persona
                           </span>
-                          {/* Solo la oficina. Es la pregunta que ella quería
-                              poder hacerse, y la única respuesta honesta: dónde
-                              estaba el teléfono cuando se apretó el botón. No
-                              prueba presencia —en el navegador la ubicación se
-                              falsea en tres clics— pero un "sin ubicación"
-                              repetido es algo que se conversa. Al jardinero no
-                              se le muestra: no es él quien revisa a nadie. */}
-                          {canModify && <Ubicaciones parte={vp} />}
-                          {mismoAparato.has(vp.personalId) && (
-                            <span className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-destructive">
-                              <Smartphone className="h-3 w-3 flex-none" />
-                              Marcó desde el mismo teléfono que otra persona
-                            </span>
-                          )}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </CardContent>
         </Card>
 
