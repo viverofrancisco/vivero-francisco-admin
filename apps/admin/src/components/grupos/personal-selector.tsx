@@ -15,12 +15,22 @@ interface PersonalSelectorProps {
   personalList: PersonalOption[];
   selectedIds: string[];
   onChange: (ids: string[]) => void;
+  /**
+   * Quiénes ya no se pueden destildar, con el motivo.
+   *
+   * En una visita son los que ya marcaron su entrada: la marca es un hecho
+   * —estuvo ahí a esa hora— y sacarlos la esconde de todo lo que cuenta. El
+   * servicio lo rechaza igual (`updateVisitaPersonal`); acá la casilla queda
+   * fija para no ofrecer algo que va a fallar al guardar.
+   */
+  fijos?: Record<string, string>;
 }
 
 export function PersonalSelector({
   personalList,
   selectedIds,
   onChange,
+  fijos,
 }: PersonalSelectorProps) {
   const [search, setSearch] = useState("");
 
@@ -34,6 +44,7 @@ export function PersonalSelector({
   }, [personalList, search]);
 
   const togglePersonal = (id: string) => {
+    if (fijos?.[id]) return;
     if (selectedIds.includes(id)) {
       onChange(selectedIds.filter((sid) => sid !== id));
     } else {
@@ -67,25 +78,38 @@ export function PersonalSelector({
             Sin resultados
           </p>
         ) : (
-          filtered.map((personal) => (
-            <div
-              key={personal.id}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
-              onClick={() => togglePersonal(personal.id)}
-            >
-              <Checkbox
-                id={`personal-${personal.id}`}
-                checked={selectedIds.includes(personal.id)}
-                onCheckedChange={() => togglePersonal(personal.id)}
-              />
-              <Label
-                htmlFor={`personal-${personal.id}`}
-                className="text-sm font-normal cursor-pointer flex-1"
+          filtered.map((personal) => {
+            const fijo = fijos?.[personal.id];
+            return (
+              <div
+                key={personal.id}
+                className={`flex items-center gap-2 rounded-md px-2 py-1.5 ${
+                  fijo ? "opacity-70" : "cursor-pointer hover:bg-gray-50"
+                }`}
+                onClick={() => togglePersonal(personal.id)}
               >
-                {`${personal.nombre} ${personal.apellido || ""}`.trim()}
-              </Label>
-            </div>
-          ))
+                <Checkbox
+                  id={`personal-${personal.id}`}
+                  checked={selectedIds.includes(personal.id)}
+                  disabled={Boolean(fijo)}
+                  onCheckedChange={() => togglePersonal(personal.id)}
+                />
+                <Label
+                  htmlFor={`personal-${personal.id}`}
+                  className={`flex-1 text-sm font-normal ${
+                    fijo ? "" : "cursor-pointer"
+                  }`}
+                >
+                  {`${personal.nombre} ${personal.apellido || ""}`.trim()}
+                  {fijo && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {fijo}
+                    </span>
+                  )}
+                </Label>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

@@ -37,7 +37,12 @@ export default async function EditarVisitaRoute({
           },
         },
         tareasObligatorias: { select: { tareaId: true } },
-        personal: { where: { removedAt: null }, select: { personalId: true } },
+        personal: {
+          where: { removedAt: null },
+          // `entradaEl` para saber a quién ya no se puede quitar: la marca es
+          // un hecho, y sacarlo la escondería. Ver `updateVisitaPersonal`.
+          select: { personalId: true, entradaEl: true },
+        },
       },
     }),
     prisma.tarea.findMany({
@@ -97,6 +102,9 @@ export default async function EditarVisitaRoute({
         suscripcionId: visita.suscripcionId,
         grupoId: visita.grupoId,
         personalIds: visita.personal.map((p) => p.personalId),
+        personalQueMarco: visita.personal
+          .filter((p) => p.entradaEl !== null)
+          .map((p) => p.personalId),
       }}
       tareas={tareas}
       planes={planes.map((s) => ({

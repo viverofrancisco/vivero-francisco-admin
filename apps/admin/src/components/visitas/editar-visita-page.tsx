@@ -45,6 +45,8 @@ interface VisitaEditable {
   suscripcionId: string | null;
   grupoId: string | null;
   personalIds: string[];
+  /** Quiénes ya marcaron su entrada: a esos no se los puede quitar. */
+  personalQueMarco: string[];
 }
 
 interface Grupo {
@@ -128,7 +130,13 @@ export function EditarVisitaPage({
   const aplicarGrupo = (id: string) => {
     setGrupoId(id);
     const g = grupos.find((x) => x.id === id);
-    if (g) setPersonalIds(g.miembrosIds);
+    if (!g) return;
+    // Los que ya marcaron se quedan aunque el grupo no los incluya: el
+    // servidor los rechaza igual, y aplicar un grupo no es una forma de
+    // saltear esa regla por la puerta de atrás.
+    setPersonalIds([
+      ...new Set([...visita.personalQueMarco, ...g.miembrosIds]),
+    ]);
   };
 
   const guardar = async () => {
@@ -376,6 +384,12 @@ export function EditarVisitaPage({
                 personalList={personalList}
                 selectedIds={personalIds}
                 onChange={setPersonalIds}
+                // A quien ya marcó no se lo saca: la marca dice que estuvo ahí
+                // a esa hora, y quitarlo la esconde junto con su parte. Si no
+                // tenía que estar, se corrige su parte.
+                fijos={Object.fromEntries(
+                  visita.personalQueMarco.map((id) => [id, "Ya marcó entrada"])
+                )}
               />
             </CardContent>
           </Card>

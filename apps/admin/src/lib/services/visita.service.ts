@@ -1419,7 +1419,13 @@ export async function updateVisitaPersonal(
   await prisma.$transaction(async (tx) => {
     const actuales = await tx.visitaPersonal.findMany({
       where: { visitaId },
-      select: { id: true, personalId: true, removedAt: true },
+      select: {
+        id: true,
+        personalId: true,
+        removedAt: true,
+        entradaEl: true,
+        personal: { select: { nombre: true, apellido: true } },
+      },
     });
     const vigentes = new Set(
       actuales.filter((a) => !a.removedAt).map((a) => a.personalId),
@@ -1428,6 +1434,28 @@ export async function updateVisitaPersonal(
     const sacar = actuales.filter(
       (a) => !a.removedAt && !deseados.includes(a.personalId),
     );
+
+    /*
+     * A quien ya marcó su entrada no se lo saca.
+     *
+     * Marcar es un hecho: estuvo ahí a esa hora, con su ubicación y su
+     * dispositivo. Sacarlo de la visita esconde esa marca de todo lo que
+     * cuenta —`removedAt: null` filtra en todos lados— y de paso desaparece su
+     * parte y las horas de la visita se recalculan sin él. Si de verdad no
+     * tenía que estar, lo que corresponde es corregir su parte, no borrarlo
+     * del registro. Quien todavía no marcó nada no dejó nada atrás y sale sin
+     * problema: agendar mal a alguien pasa todos los días.
+     */
+    const marcado = sacar.find((a) => a.entradaEl !== null);
+    if (marcado) {
+      const nombre = `${marcado.personal.nombre} ${
+        marcado.personal.apellido ?? ""
+      }`.trim();
+      throw new ConflictError(
+        `${nombre} ya marcó su entrada en esta visita, así que no se lo puede quitar.`,
+      );
+    }
+
     if (sacar.length > 0) {
       await tx.visitaPersonal.updateMany({
         where: { id: { in: sacar.map((a) => a.id) } },

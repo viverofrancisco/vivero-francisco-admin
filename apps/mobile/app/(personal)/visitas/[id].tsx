@@ -312,7 +312,9 @@ export default function PersonalVisitaScreen() {
             label="Estado"
             value={estadoLabel(estadoParaMi(visita, personalId))}
           />
-          <Row label="Programada" value={formatDate(visita.fechaProgramada)} />
+          {/* "Fecha" y no "Programada": arriba dice Estado: Programada, y la
+              misma palabra dos veces seguidas parecía un error. */}
+          <Row label="Fecha" value={formatDate(visita.fechaProgramada)} />
           {visita.fechaRealizada ? (
             <Row
               label="Realizada"
