@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   APIProvider,
   Map,
@@ -39,6 +39,20 @@ import { Crosshair, Loader2, Search, Trash2 } from "lucide-react";
  *   barrio y el ajuste fino se hace tocando.
  * - Abrir una propiedad que ya tiene pin arranca sobre él y con zoom de calle.
  */
+
+/**
+ * Cuánto acercar según lo que el navegador dice que sabe.
+ *
+ * Una lectura de ±20 m es un GPS y aguanta el zoom de casa; una de ±2 km es la
+ * antena de la operadora, y mostrarla de cerca haría creer que el pin está
+ * bien puesto.
+ */
+function zoomSegunPrecision(metros: number): number {
+  if (metros <= 30) return ZOOM_DE_CALLE;
+  if (metros <= 150) return 17;
+  if (metros <= 1000) return 15;
+  return 13;
+}
 
 /** Guayaquil. Desde dónde arranca el mapa cuando la propiedad no tiene pin. */
 const CENTRO_POR_DEFECTO = { lat: -2.1709, lng: -79.9224 };
@@ -97,6 +111,16 @@ function Mapa({
 }) {
   const map = useMap();
   const [ubicando, setUbicando] = useState(false);
+  /**
+   * Con cuántos metros de error llegó la última lectura del navegador.
+   *
+   * En una computadora la posición sale del WiFi o de la IP, no de un GPS:
+   * puede errarle cien metros o dos kilómetros, y `enableHighAccuracy` no lo
+   * arregla porque no hay GPS del cual sacar algo mejor. Decir el número es lo
+   * único honesto —el pin cae en el centro de esa nube, no en la puerta— y es
+   * lo que le dice a quien lo usa si tiene que corregirlo a mano.
+   */
+  const [precision, setPrecision] = useState<number | null>(null);
   /*
    * Desde dónde arranca el mapa, calculado una sola vez.
    *
@@ -185,6 +209,19 @@ function Mapa({
               <span className="ml-2 tabular-nums">
                 {lat.toFixed(6)}, {lng.toFixed(6)}
               </span>
+              {precision !== null && (
+                <span
+                  className={`ml-2 ${
+                    precision > 150 ? "text-warning-foreground" : ""
+                  }`}
+                >
+                  {precision > 150
+                    ? `Tu ubicación llegó con ±${Math.round(
+                        precision
+                      )} m: arrastrá el pin hasta la puerta.`
+                    : `±${Math.round(precision)} m`}
+                </span>
+              )}
             </>
           ) : (
             "Toca el mapa para poner el pin en la entrada de la casa."
@@ -203,9 +240,17 @@ function Mapa({
               setUbicando(true);
               navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                  ponerPin(
+                  const metros = pos.coords.accuracy;
+                  setPrecision(metros);
+                  onCambio({
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                  });
+                  // El zoom sigue a la precisión: acercar a nivel de casa una
+                  // lectura de ±2 km dibuja una certeza que no existe.
+                  irA(
                     { lat: pos.coords.latitude, lng: pos.coords.longitude },
-                    true
+                    zoomSegunPrecision(metros)
                   );
                   setUbicando(false);
                 },
@@ -242,50 +287,59 @@ function Mapa({
 /**
  * Buscar una dirección con Places.
  *
+ * Usa `Place.searchByText`, que es la **Places API (New)**. Nació con
+ * `PlacesService.textSearch` —la clásica— y con la nueva habilitada y la vieja
+ * no, Google devolvía `REQUEST_DENIED`: la pantalla decía "Sin resultados" y
+ * uno desconfiaba del buscador en vez de enterarse de que faltaba una casilla
+ * en la consola. Por eso ahora el error se muestra tal cual viene.
+ *
  * Se busca al apretar Enter o el botón y no mientras se escribe: cada consulta
- * a Places se factura, así que una por búsqueda y no una por tecla. Acotado a
- * Ecuador, que es donde están todas las propiedades.
+ * a Places se factura, así que una por búsqueda y no una por tecla.
  */
 function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
   const places = useMapsLibrary("places");
   const [texto, setTexto] = useState("");
   const [buscando, setBuscando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [resultados, setResultados] = useState<
     { id: string; nombre: string; punto: Punto }[] | null
   >(null);
-
-  // El servicio necesita un nodo del DOM para atribuir el uso; uno suelto
-  // alcanza y no se muestra.
-  const nodo = useRef<HTMLDivElement>(null);
 
   async function buscar() {
     const q = texto.trim();
     if (!places || q.length < 3) return;
     setBuscando(true);
+    setError(null);
     try {
-      const servicio = new places.PlacesService(
-        nodo.current ?? document.createElement("div")
-      );
-      const encontrados = await new Promise<google.maps.places.PlaceResult[]>(
-        (resolve) => {
-          servicio.textSearch(
-            { query: q, region: "ec" },
-            (res) => resolve(res ?? [])
-          );
-        }
-      );
+      const { places: encontrados } = await places.Place.searchByText({
+        textQuery: q,
+        fields: ["id", "displayName", "formattedAddress", "location"],
+        // Sesgado a Ecuador, que es donde están todas las propiedades. No es un
+        // filtro duro: si alguien busca algo de afuera, igual aparece.
+        region: "ec",
+        maxResultCount: 5,
+      });
       setResultados(
-        encontrados.slice(0, 5).map((r, i) => ({
-          id: r.place_id ?? String(i),
-          nombre: [r.name, r.formatted_address].filter(Boolean).join(" · "),
-          punto: {
-            lat: r.geometry?.location?.lat() ?? 0,
-            lng: r.geometry?.location?.lng() ?? 0,
-          },
-        }))
+        (encontrados ?? []).flatMap((p) => {
+          const loc = p.location;
+          if (!loc) return [];
+          return [
+            {
+              id: p.id ?? `${loc.lat()},${loc.lng()}`,
+              nombre: [p.displayName, p.formattedAddress]
+                .filter(Boolean)
+                .join(" · "),
+              punto: { lat: loc.lat(), lng: loc.lng() },
+            },
+          ];
+        })
       );
-    } catch {
-      setResultados([]);
+    } catch (e) {
+      // El error de Google dice exactamente qué falta —la API sin habilitar,
+      // la clave sin facturación— y esconderlo detrás de "Sin resultados" es
+      // lo que hace que se pierda una tarde.
+      setError(e instanceof Error ? e.message : "No pudimos buscar");
+      setResultados(null);
     } finally {
       setBuscando(false);
     }
@@ -293,7 +347,6 @@ function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
 
   return (
     <div className="relative">
-      <div ref={nodo} className="hidden" />
       <div className="flex gap-2">
         <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -306,7 +359,10 @@ function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
                 e.preventDefault();
                 void buscar();
               }
-              if (e.key === "Escape") setResultados(null);
+              if (e.key === "Escape") {
+                setResultados(null);
+                setError(null);
+              }
             }}
             placeholder="Buscar una dirección o urbanización…"
             className="pl-9"
@@ -321,6 +377,8 @@ function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
           {buscando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}
         </Button>
       </div>
+
+      {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
 
       {resultados !== null && (
         <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-md">
