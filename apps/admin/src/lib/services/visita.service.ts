@@ -1161,6 +1161,8 @@ export async function cancelVisita(
 
 export interface CreateVisitasBatchPayload {
   clienteId: string;
+  /** Dónde. Obligatorio: una visita pasa en un lugar. */
+  propiedadId: string;
   fechas: Date[];
   /**
    * De qué plan es la visita, si es de alguno. `null` = trabajo aparte.
@@ -1204,6 +1206,30 @@ async function validarPlanDelCliente(
   return plan.id;
 }
 
+/**
+ * En qué propiedad pasa la visita.
+ *
+ * El cliente manda el id y el servidor comprueba que sea suyo: si no, alguien
+ * podría agendarle una visita en la casa de otro. Con una sola propiedad la
+ * pantalla la elige sola, pero eso no la exime de venir.
+ */
+async function validarPropiedadDelCliente(
+  propiedadId: string | null | undefined,
+  clienteId: string,
+): Promise<string> {
+  if (!propiedadId) {
+    throw new ValidationError("Elige en qué propiedad es la visita.");
+  }
+  const propiedad = await prisma.propiedad.findFirst({
+    where: { id: propiedadId, clienteId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!propiedad) {
+    throw new ValidationError("Esa propiedad no es de este cliente.");
+  }
+  return propiedad.id;
+}
+
 export async function createVisitasBatch(
   viewer: Viewer,
   payload: CreateVisitasBatchPayload,
@@ -1220,6 +1246,11 @@ export async function createVisitasBatch(
     select: { id: true },
   });
   if (!cliente) throw new NotFoundError("Cliente no encontrado");
+
+  const propiedadId = await validarPropiedadDelCliente(
+    payload.propiedadId,
+    cliente.id,
+  );
 
   const suscripcionId = await validarPlanDelCliente(
     payload.suscripcionId,
@@ -1249,6 +1280,7 @@ export async function createVisitasBatch(
     const creadas = await tx.visita.createManyAndReturn({
       data: payload.fechas.map((fecha) => ({
         clienteId: cliente.id,
+        propiedadId,
         fechaProgramada: fecha,
         grupoId: payload.grupoId || null,
         suscripcionId,

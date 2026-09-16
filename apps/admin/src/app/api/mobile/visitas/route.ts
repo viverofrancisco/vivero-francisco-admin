@@ -82,6 +82,7 @@ export async function POST(request: Request) {
       viewerFromMobileUser(userOrResponse),
       {
         clienteId: parsed.data.clienteId,
+        propiedadId: parsed.data.propiedadId,
         tareasObligatoriasIds: parsed.data.tareasObligatoriasIds,
         fechas: parsed.data.fechas.map((f) => new Date(f)),
         grupoId: parsed.data.grupoId ?? null,

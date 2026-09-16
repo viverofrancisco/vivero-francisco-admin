@@ -106,18 +106,35 @@ async function sembrar() {
     nombre: [admin.name, admin.apellido].filter(Boolean).join(" ") || "Admin",
   };
 
-  // Un cliente con dirección, que es el que mejor se ve en el encabezado del
-  // informe; si no hay ninguno así, el primero que aparezca.
+  // Un cliente con una propiedad con dirección, que es el que mejor se ve en el
+  // encabezado del informe; si no hay ninguno así, el primero que aparezca.
+  const conPropiedad = {
+    id: true,
+    nombre: true,
+    apellido: true,
+    empresa: true,
+    propiedades: {
+      where: { deletedAt: null },
+      select: { id: true },
+      orderBy: { createdAt: "asc" },
+      take: 1,
+    },
+  } as const;
   const cliente =
     (await prisma.cliente.findFirst({
-      where: { deletedAt: null, direccion: { not: null } },
-      select: { id: true, nombre: true, apellido: true, empresa: true },
+      where: {
+        deletedAt: null,
+        propiedades: { some: { deletedAt: null, direccion: { not: null } } },
+      },
+      select: conPropiedad,
     })) ??
     (await prisma.cliente.findFirst({
       where: { deletedAt: null },
-      select: { id: true, nombre: true, apellido: true, empresa: true },
+      select: conPropiedad,
     }));
   if (!cliente) throw new Error("No hay clientes en la base.");
+  const propiedadId = cliente.propiedades[0]?.id;
+  if (!propiedadId) throw new Error("Ese cliente no tiene propiedades.");
 
   const personal = await prisma.personal.findMany({
     where: { deletedAt: null, estado: "ACTIVO" },
@@ -189,6 +206,7 @@ async function sembrar() {
     // ── Visita A ────────────────────────────────────────────────────────
     const [a] = await visitaSvc.createVisitasBatch(viewer, {
       clienteId: cliente.id,
+      propiedadId,
       fechas: [dia(9)],
       personalIds: personal.map((p) => p.id),
       // Una de las obligatorias se va a hacer y la otra no, para ver las dos
@@ -223,6 +241,7 @@ async function sembrar() {
     // ── Visita B ────────────────────────────────────────────────────────
     const [b] = await visitaSvc.createVisitasBatch(viewer, {
       clienteId: cliente.id,
+      propiedadId,
       fechas: [dia(2)],
       personalIds: [personal[0].id],
       tareasObligatoriasIds: [compartida.id],

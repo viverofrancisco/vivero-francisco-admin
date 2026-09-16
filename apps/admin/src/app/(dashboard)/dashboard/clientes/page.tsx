@@ -19,7 +19,17 @@ export default async function ClientesPage() {
     where: { ...where, deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: {
-      sector: { select: { id: true, nombre: true } },
+      propiedades: {
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          nombre: true,
+          ciudad: true,
+          direccion: true,
+          sector: { select: { id: true, nombre: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
       suscripciones: {
         where: { estado: "ACTIVO" },
         select: {

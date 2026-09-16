@@ -389,6 +389,7 @@ export const ModelName = {
   VerificationToken: 'VerificationToken',
   User: 'User',
   Cliente: 'Cliente',
+  Propiedad: 'Propiedad',
   Producto: 'Producto',
   Categoria: 'Categoria',
   ProductoCategoria: 'ProductoCategoria',
@@ -453,7 +454,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -824,6 +825,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ClienteCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ClienteCountAggregateOutputType> | number
+        }
+      }
+    }
+    Propiedad: {
+      payload: Prisma.$PropiedadPayload<ExtArgs>
+      fields: Prisma.PropiedadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PropiedadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PropiedadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>
+        }
+        findFirst: {
+          args: Prisma.PropiedadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PropiedadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>
+        }
+        findMany: {
+          args: Prisma.PropiedadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>[]
+        }
+        create: {
+          args: Prisma.PropiedadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>
+        }
+        createMany: {
+          args: Prisma.PropiedadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PropiedadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>[]
+        }
+        delete: {
+          args: Prisma.PropiedadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>
+        }
+        update: {
+          args: Prisma.PropiedadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>
+        }
+        deleteMany: {
+          args: Prisma.PropiedadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PropiedadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PropiedadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>[]
+        }
+        upsert: {
+          args: Prisma.PropiedadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PropiedadPayload>
+        }
+        aggregate: {
+          args: Prisma.PropiedadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePropiedad>
+        }
+        groupBy: {
+          args: Prisma.PropiedadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PropiedadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PropiedadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PropiedadCountAggregateOutputType> | number
         }
       }
     }
@@ -4554,13 +4629,7 @@ export const ClienteScalarFieldEnum = {
   empresa: 'empresa',
   email: 'email',
   telefono: 'telefono',
-  ciudad: 'ciudad',
-  sectorId: 'sectorId',
-  direccion: 'direccion',
-  numeroCasa: 'numeroCasa',
-  referencia: 'referencia',
   notas: 'notas',
-  metrosCuadrados: 'metrosCuadrados',
   cedula: 'cedula',
   ruc: 'ruc',
   tipoPersona: 'tipoPersona',
@@ -4575,6 +4644,35 @@ export const ClienteScalarFieldEnum = {
 } as const
 
 export type ClienteScalarFieldEnum = (typeof ClienteScalarFieldEnum)[keyof typeof ClienteScalarFieldEnum]
+
+
+export const PropiedadScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  nombre: 'nombre',
+  ciudad: 'ciudad',
+  sectorId: 'sectorId',
+  direccion: 'direccion',
+  numeroCasa: 'numeroCasa',
+  referencia: 'referencia',
+  notas: 'notas',
+  lat: 'lat',
+  lng: 'lng',
+  m2Total: 'm2Total',
+  jardinerasPlantaAlta: 'jardinerasPlantaAlta',
+  numeroArboles: 'numeroArboles',
+  mlVegetacionBaja: 'mlVegetacionBaja',
+  mlVegetacionMedia: 'mlVegetacionMedia',
+  mlVegetacionAlta: 'mlVegetacionAlta',
+  m2Cesped: 'm2Cesped',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  createdById: 'createdById',
+  updatedById: 'updatedById'
+} as const
+
+export type PropiedadScalarFieldEnum = (typeof PropiedadScalarFieldEnum)[keyof typeof PropiedadScalarFieldEnum]
 
 
 export const ProductoScalarFieldEnum = {
@@ -4786,6 +4884,7 @@ export const VisitaScalarFieldEnum = {
   id: 'id',
   numero: 'numero',
   clienteId: 'clienteId',
+  propiedadId: 'propiedadId',
   suscripcionId: 'suscripcionId',
   fechaProgramada: 'fechaProgramada',
   fechaRealizada: 'fechaRealizada',
@@ -5451,20 +5550,6 @@ export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-/**
  * Reference to a field of type 'TipoPersona'
  */
 export type EnumTipoPersonaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoPersona'>
@@ -5482,6 +5567,20 @@ export type ListEnumTipoPersonaFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 
@@ -5865,6 +5964,7 @@ export type GlobalOmitConfig = {
   verificationToken?: Prisma.VerificationTokenOmit
   user?: Prisma.UserOmit
   cliente?: Prisma.ClienteOmit
+  propiedad?: Prisma.PropiedadOmit
   producto?: Prisma.ProductoOmit
   categoria?: Prisma.CategoriaOmit
   productoCategoria?: Prisma.ProductoCategoriaOmit

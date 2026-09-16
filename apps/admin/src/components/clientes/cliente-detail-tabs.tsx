@@ -12,6 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ClienteForm } from "@/components/clientes/cliente-form";
+import {
+  PropiedadesCard,
+  type PropiedadData,
+} from "@/components/clientes/propiedades-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   DatosFacturacionCard,
@@ -90,14 +94,7 @@ interface ClienteData {
   empresa: string | null;
   email: string | null;
   telefono: string | null;
-  ciudad: string | null;
-  sectorId: string | null;
-  sector: { id: string; nombre: string } | null;
-  direccion: string | null;
-  numeroCasa: string | null;
-  referencia: string | null;
   notas: string | null;
-  metrosCuadrados: number | null;
   recibirRecordatorios: boolean;
   recibirConfirmaciones: boolean;
   createdAt: string;
@@ -105,6 +102,10 @@ interface ClienteData {
 
 interface ClienteDetailTabsProps {
   cliente: ClienteData;
+  /** Dónde se trabaja. La dirección y el sector viven acá. */
+  propiedades: PropiedadData[];
+  /** Para el selector de sector de cada propiedad. */
+  sectores: { id: string; nombre: string }[];
   asignaciones: Asignacion[];
   datosFacturacion: DatoFacturacion[];
   ordenes: OrdenResumen[];
@@ -149,6 +150,8 @@ const servicioEstado = (estado: string) => {
 
 export function ClienteDetailTabs({
   cliente,
+  propiedades,
+  sectores,
   asignaciones,
   datosFacturacion,
   ordenes,
@@ -267,11 +270,9 @@ export function ClienteDetailTabs({
               <h1 className="text-xl font-extrabold tracking-tight truncate">
                 {nombreCompleto}
               </h1>
-              {cliente.sector && (
-                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-bold text-green-700">
-                  {cliente.sector.nombre}
-                </span>
-              )}
+              {/* El sector es de cada propiedad: con dos casas en dos sectores,
+                  uno solo al lado del nombre sería mentira la mitad del
+                  tiempo. Se lee en la tarjeta de Propiedades. */}
             </div>
             <p className="text-sm font-medium text-muted-foreground">
               {empresaExtra ? `${empresaExtra} · ` : ""}Cliente desde{" "}
@@ -318,12 +319,7 @@ export function ClienteDetailTabs({
           empresa: cliente.empresa,
           email: cliente.email,
           telefono: cliente.telefono,
-          ciudad: cliente.ciudad,
-          direccion: cliente.direccion,
-          numeroCasa: cliente.numeroCasa,
-          referencia: cliente.referencia,
           notas: cliente.notas,
-          metrosCuadrados: cliente.metrosCuadrados,
         }}
         cards
         cardsEditing={cardsEditing}
@@ -550,8 +546,15 @@ export function ClienteDetailTabs({
 </>}
         rightColumnContent={
           <>
-
-
+            {/* Dónde se trabaja: es lo primero que se busca al abrir un
+                cliente, y desde que la dirección es de cada propiedad no hay
+                ninguna otra tarjeta que la diga. */}
+            <PropiedadesCard
+              clienteId={cliente.id}
+              propiedades={propiedades}
+              sectores={sectores}
+              puedeEditar={verPlata}
+            />
 
             {/* Notifications Card */}
             <Card>

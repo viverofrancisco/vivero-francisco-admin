@@ -19,11 +19,18 @@ export default async function EditarClientePage({
   // Solo permitimos volver a rutas internas del dashboard (evita open redirect).
   const backHref = from && from.startsWith("/dashboard/") ? from : "/dashboard/clientes";
 
-  const [cliente, visitas] = await Promise.all([
+  const [cliente, visitas, sectores] = await Promise.all([
     prisma.cliente.findUnique({
       where: { id, deletedAt: null },
       include: {
-        sector: { select: { id: true, nombre: true } },
+        propiedades: {
+          where: { deletedAt: null },
+          include: {
+            sector: { select: { id: true, nombre: true } },
+            _count: { select: { visitas: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
         datosFacturacion: {
           where: { archivado: false },
           orderBy: [{ esPredeterminado: "desc" }, { createdAt: "asc" }],
@@ -45,9 +52,16 @@ export default async function EditarClientePage({
         estado: true,
         notas: true,
         cliente: { select: { id: true, nombre: true, apellido: true } },
+        propiedad: { select: { id: true, nombre: true, direccion: true } },
         ...TAREAS_DE_VISITA_INCLUDE,
         grupo: { select: { id: true, nombre: true } },
       },
+    }),
+    // Para el selector de cada propiedad: el sector es del lugar.
+    prisma.sector.findMany({
+      where: { deletedAt: null },
+      select: { id: true, nombre: true },
+      orderBy: { nombre: "asc" },
     }),
   ]);
 
@@ -115,18 +129,33 @@ export default async function EditarClientePage({
           empresa: cliente.empresa,
           email: cliente.email,
           telefono: cliente.telefono,
-          ciudad: cliente.ciudad,
-          sectorId: cliente.sectorId,
-          sector: cliente.sector,
-          direccion: cliente.direccion,
-          numeroCasa: cliente.numeroCasa,
-          referencia: cliente.referencia,
           notas: cliente.notas,
-          metrosCuadrados: cliente.metrosCuadrados,
           recibirRecordatorios: cliente.recibirRecordatorios,
           recibirConfirmaciones: cliente.recibirConfirmaciones,
           createdAt: cliente.createdAt.toISOString(),
         }}
+        sectores={sectores}
+        propiedades={cliente.propiedades.map((p) => ({
+          id: p.id,
+          nombre: p.nombre,
+          ciudad: p.ciudad,
+          sectorId: p.sectorId,
+          sector: p.sector,
+          direccion: p.direccion,
+          numeroCasa: p.numeroCasa,
+          referencia: p.referencia,
+          notas: p.notas,
+          lat: p.lat,
+          lng: p.lng,
+          m2Total: p.m2Total,
+          jardinerasPlantaAlta: p.jardinerasPlantaAlta,
+          numeroArboles: p.numeroArboles,
+          mlVegetacionBaja: p.mlVegetacionBaja,
+          mlVegetacionMedia: p.mlVegetacionMedia,
+          mlVegetacionAlta: p.mlVegetacionAlta,
+          m2Cesped: p.m2Cesped,
+          visitas: p._count.visitas,
+        }))}
         asignaciones={asignaciones}
         ordenes={ordenes.map((o) => ({
           id: o.id,

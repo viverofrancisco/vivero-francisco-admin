@@ -390,9 +390,7 @@ export async function getSuscripcion(viewer: Viewer, id: string) {
     where: { id },
     include: {
       cliente: {
-        select: {
-          id: true, nombre: true, apellido: true, empresa: true, sectorId: true,
-        },
+        select: { id: true, nombre: true, apellido: true, empresa: true },
       },
       items: {
         include: { producto: { select: { id: true, nombre: true } } },

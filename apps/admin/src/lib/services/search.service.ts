@@ -195,8 +195,14 @@ export async function globalSearch(
             nombre: true,
             apellido: true,
             empresa: true,
-            ciudad: true,
-            sector: { select: { nombre: true } },
+            // Dónde está: la primera de sus propiedades alcanza para
+            // distinguir dos clientes que se llaman parecido.
+            propiedades: {
+              where: { deletedAt: null },
+              select: { ciudad: true, sector: { select: { nombre: true } } },
+              orderBy: { createdAt: "asc" },
+              take: 1,
+            },
           },
           orderBy: { nombre: "asc" },
           take,
@@ -285,7 +291,10 @@ export async function globalSearch(
       type: "cliente",
       id: c.id,
       title: nombreCliente(c),
-      subtitle: c.sector?.nombre ?? c.ciudad ?? "Cliente",
+      subtitle:
+        c.propiedades[0]?.sector?.nombre ??
+        c.propiedades[0]?.ciudad ??
+        "Cliente",
       href: `/dashboard/clientes/${c.id}`,
     })),
   };

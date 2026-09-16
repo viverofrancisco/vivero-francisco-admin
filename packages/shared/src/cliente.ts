@@ -37,6 +37,25 @@ const clienteBaseSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("").transform(() => null)),
+  notas: optionalString,
+});
+
+/**
+ * Un lugar donde se trabaja.
+ *
+ * La dirección era del cliente y se mudó acá: un cliente con dos casas tiene
+ * dos direcciones y ninguna de las dos es "la suya". El sector vino con ella
+ * porque es geográfico —es del lugar, no de la persona—.
+ *
+ * Los números son **lo que hay que mantener**, que es con lo que se cotiza, y
+ * todos son opcionales: se completan a medida que alguien los mide, y una
+ * propiedad recién cargada sirve igual para agendar.
+ */
+const numeroOpcional = (mensaje = "No puede ser negativo") =>
+  z.number().min(0, mensaje).optional().nullable();
+
+export const propiedadBaseSchema = z.object({
+  nombre: z.string().trim().min(1, "Ponle un nombre").max(120),
   ciudad: optionalString,
   sectorId: z
     .string()
@@ -48,18 +67,44 @@ const clienteBaseSchema = z.object({
   numeroCasa: optionalString,
   referencia: optionalString,
   notas: optionalString,
-  metrosCuadrados: z
-    .number()
-    .positive("Debe ser mayor a 0")
-    .optional()
-    .nullable(),
+  /** El punto exacto, elegido en el mapa. Van juntos o no van. */
+  lat: z.number().min(-90).max(90).optional().nullable(),
+  lng: z.number().min(-180).max(180).optional().nullable(),
+  m2Total: numeroOpcional(),
+  jardinerasPlantaAlta: z.boolean().optional(),
+  numeroArboles: z.number().int().min(0).optional().nullable(),
+  mlVegetacionBaja: numeroOpcional(),
+  mlVegetacionMedia: numeroOpcional(),
+  mlVegetacionAlta: numeroOpcional(),
+  m2Cesped: numeroOpcional(),
 });
+
+export const createPropiedadSchema = propiedadBaseSchema.refine(
+  (d) => (d.lat === null || d.lat === undefined) === (d.lng === null || d.lng === undefined),
+  { message: "El punto del mapa necesita las dos coordenadas", path: ["lat"] }
+);
+export type CreatePropiedadBody = z.infer<typeof createPropiedadSchema>;
+
+export const updatePropiedadSchema = propiedadBaseSchema.partial();
+export type UpdatePropiedadBody = z.infer<typeof updatePropiedadSchema>;
 // Un cliente puede ser una persona (nombre) o una empresa (empresa). Se exige
 // al menos uno de los dos al crear.
-export const createClienteSchema = clienteBaseSchema.refine(
-  (d) => Boolean(d.nombre?.trim() || d.empresa?.trim()),
-  { message: "Se requiere un nombre o una empresa", path: ["nombre"] }
-);
+export const createClienteSchema = clienteBaseSchema
+  .extend({
+    /**
+     * La primera propiedad, en el mismo formulario.
+     *
+     * Un cliente sin ningún lugar donde trabajar no sirve para agendar, y
+     * obligar a cargarlo en dos pasos es garantizar que alguien se olvide del
+     * segundo. Opcional en el tipo porque el formulario del teléfono todavía
+     * puede mandar solo el contacto; el servicio le pone una "Principal" vacía.
+     */
+    propiedad: propiedadBaseSchema.partial().optional(),
+  })
+  .refine((d) => Boolean(d.nombre?.trim() || d.empresa?.trim()), {
+    message: "Se requiere un nombre o una empresa",
+    path: ["nombre"],
+  });
 export type CreateClienteBody = z.infer<typeof createClienteSchema>;
 
 // Update is the same shape — all optional. No se re-valida nombre/empresa: la

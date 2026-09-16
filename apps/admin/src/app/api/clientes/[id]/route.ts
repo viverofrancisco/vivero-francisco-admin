@@ -59,12 +59,9 @@ export async function PUT(
         empresa: data.empresa || null,
         email: data.email || null,
         telefono: data.telefono || null,
-        ciudad: data.ciudad || null,
-        direccion: data.direccion || null,
-        numeroCasa: data.numeroCasa || null,
-        referencia: data.referencia || null,
         notas: data.notas || null,
-        metrosCuadrados: data.metrosCuadrados || null,
+        // La dirección no se edita acá: vive en cada propiedad, y tienen su
+        // propio endpoint (`/api/clientes/[id]/propiedades`).
         updatedById: user.id,
       },
     });

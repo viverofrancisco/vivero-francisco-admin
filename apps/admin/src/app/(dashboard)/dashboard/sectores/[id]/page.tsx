@@ -16,33 +16,45 @@ export default async function SectorDetailPage({
   const { from } = await searchParams;
   const backHref = hrefDeVuelta(from, "/dashboard/sectores");
 
-  const [sector, allClientes] = await Promise.all([
+  const [sector, candidatas] = await Promise.all([
     prisma.sector.findUnique({
       where: { id, deletedAt: null },
       include: {
-        clientes: {
+        // El sector agrupa lugares, no personas: es geográfico, así que es del
+        // lugar donde se trabaja. El nombre del cliente viaja con su propiedad.
+        propiedades: {
           where: { deletedAt: null },
-          select: { id: true, nombre: true, apellido: true, empresa: true, ciudad: true },
-          orderBy: { nombre: "asc" },
+          select: {
+            id: true,
+            nombre: true,
+            direccion: true,
+            ciudad: true,
+            cliente: {
+              select: { id: true, nombre: true, apellido: true, empresa: true },
+            },
+          },
+          orderBy: { createdAt: "asc" },
         },
       },
     }),
-    // Todos los que hoy no están en este sector, con el sector donde están.
-    // Incluir a los que ya tienen otro es a propósito: si solo se ofrecieran
-    // los sueltos, con todos los clientes asignados —que es lo normal— el
-    // botón de agregar no serviría nunca. Mover queda explícito porque el
-    // diálogo dice de dónde sale cada uno.
-    prisma.cliente.findMany({
+    // Todas las que hoy no están en este sector, con el sector donde están.
+    // Incluir a las que ya tienen otro es a propósito: si solo se ofrecieran
+    // las sueltas, con todas asignadas —que es lo normal— el botón de agregar
+    // no serviría nunca. Mover queda explícito porque el diálogo dice de dónde
+    // sale cada una.
+    prisma.propiedad.findMany({
       where: { deletedAt: null, NOT: { sectorId: id } },
       select: {
         id: true,
         nombre: true,
-        apellido: true,
-        empresa: true,
+        direccion: true,
         ciudad: true,
+        cliente: {
+          select: { id: true, nombre: true, apellido: true, empresa: true },
+        },
         sector: { select: { nombre: true } },
       },
-      orderBy: { nombre: "asc" },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
 
@@ -54,8 +66,8 @@ export default async function SectorDetailPage({
     <SectorDetailClient
       backHref={backHref}
       sector={sector}
-      candidatos={allClientes.map(({ sector: s, ...c }) => ({
-        ...c,
+      candidatas={candidatas.map(({ sector: s, ...p }) => ({
+        ...p,
         sectorActual: s?.nombre ?? null,
       }))}
     />

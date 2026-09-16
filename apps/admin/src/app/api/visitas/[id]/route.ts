@@ -33,8 +33,20 @@ export async function GET(
           nombre: true,
           apellido: true,
           empresa: true,
+        },
+      },
+      // Dónde pasa: la dirección y el sector son de la propiedad.
+      propiedad: {
+        select: {
+          id: true,
+          nombre: true,
+          direccion: true,
+          numeroCasa: true,
           ciudad: true,
-          sector: true,
+          referencia: true,
+          lat: true,
+          lng: true,
+          sector: { select: { id: true, nombre: true } },
         },
       },
       tareasObligatorias: {

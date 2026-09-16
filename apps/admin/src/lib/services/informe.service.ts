@@ -1478,7 +1478,7 @@ export async function getInforme(viewer: Viewer, id: string) {
     where: { id },
     include: {
       cliente: {
-        select: { id: true, nombre: true, apellido: true, empresa: true, sectorId: true },
+        select: { id: true, nombre: true, apellido: true, empresa: true },
       },
       generatedBy: {
         select: { id: true, name: true, apellido: true },

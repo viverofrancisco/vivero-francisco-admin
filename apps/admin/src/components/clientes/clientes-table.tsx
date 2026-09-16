@@ -44,12 +44,26 @@ interface Cliente {
   empresa: string | null;
   email: string | null;
   telefono: string | null;
-  ciudad: string | null;
-  direccion: string | null;
-  referencia: string | null;
-  metrosCuadrados?: number | null;
-  sector?: { id: string; nombre: string } | null;
+  /**
+   * Dónde trabaja: sus propiedades vivas.
+   *
+   * La dirección y el sector eran del cliente y se mudaron acá. La fila muestra
+   * la primera y, si hay más, cuántas: un cliente con casa en dos sectores
+   * quedaba contado en uno solo, que es lo que esto arregla.
+   */
+  propiedades: {
+    id: string;
+    nombre: string;
+    ciudad: string | null;
+    direccion: string | null;
+    sector: { id: string; nombre: string } | null;
+  }[];
   productos?: { producto: { nombre: string } }[];
+}
+
+/** La que se muestra cuando la fila tiene lugar para una sola. */
+function principal(c: Cliente) {
+  return c.propiedades[0] ?? null;
 }
 
 function fullName(cliente: Cliente): string {
@@ -64,7 +78,7 @@ function fullName(cliente: Cliente): string {
 function resumen(c: Cliente): string {
   const partes = [
     nombrePersona(c) && c.empresa ? c.empresa : null,
-    c.sector?.nombre ?? null,
+    principal(c)?.sector?.nombre ?? null,
     c.telefono ?? null,
   ].filter(Boolean);
   return partes.length > 0 ? partes.join(" · ") : "Sin datos de contacto";
@@ -87,7 +101,9 @@ export function ClientesTable({
   const sectors = useMemo(() => {
     const map = new Map<string, string>();
     for (const c of clientes) {
-      if (c.sector) map.set(c.sector.id, c.sector.nombre);
+      for (const p of c.propiedades) {
+        if (p.sector) map.set(p.sector.id, p.sector.nombre);
+      }
     }
     return Array.from(map, ([id, nombre]) => ({ id, nombre })).sort((a, b) =>
       a.nombre.localeCompare(b.nombre),
@@ -97,7 +113,11 @@ export function ClientesTable({
   const filtered = useMemo(() => {
     let result = clientes;
     if (sectorFilter) {
-      result = result.filter((c) => c.sector?.id === sectorFilter);
+      // Entra si **alguna** de sus propiedades está en el sector: con dos
+      // casas en dos sectores, el cliente está en los dos.
+      result = result.filter((c) =>
+        c.propiedades.some((p) => p.sector?.id === sectorFilter)
+      );
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -106,7 +126,11 @@ export function ClientesTable({
           fullName(c).toLowerCase().includes(q) ||
           (c.empresa?.toLowerCase().includes(q) ?? false) ||
           (c.telefono?.includes(q) ?? false) ||
-          (c.ciudad?.toLowerCase().includes(q) ?? false),
+          c.propiedades.some(
+            (p) =>
+              p.ciudad?.toLowerCase().includes(q) ||
+              p.direccion?.toLowerCase().includes(q)
+          ),
       );
     }
     return result;
@@ -274,7 +298,7 @@ export function ClientesTable({
                   <TableHead>Correo</TableHead>
                   <TableHead>Sector</TableHead>
                   <TableHead>Teléfono</TableHead>
-                  <TableHead>m²</TableHead>
+                  <TableHead>Propiedades</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -316,13 +340,21 @@ export function ClientesTable({
                         {cliente.email ?? "—"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {cliente.sector?.nombre ?? "—"}
+                        {/* El de su primera propiedad. Con dos en sectores
+                            distintos, el filtro de arriba igual lo encuentra
+                            por cualquiera de los dos. */}
+                        {principal(cliente)?.sector?.nombre ?? "—"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {cliente.telefono ?? "—"}
                       </TableCell>
-                      <TableCell className="font-bold text-foreground">
-                        {cliente.metrosCuadrados ?? "—"}
+                      <TableCell className="text-muted-foreground">
+                        {cliente.propiedades.length === 0
+                          ? "—"
+                          : cliente.propiedades.length === 1
+                            ? (principal(cliente)?.direccion ??
+                              principal(cliente)?.nombre)
+                            : `${cliente.propiedades.length} propiedades`}
                       </TableCell>
                     </TableRow>
                   );

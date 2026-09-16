@@ -89,7 +89,17 @@ interface VisitaDetailData {
     nombre: string;
     apellido?: string | null;
     empresa?: string | null;
+  };
+  /** Dónde pasa. La dirección y el sector son del lugar, no de la persona. */
+  propiedad: {
+    id: string;
+    nombre: string;
+    direccion: string | null;
+    numeroCasa: string | null;
     ciudad: string | null;
+    referencia: string | null;
+    lat: number | null;
+    lng: number | null;
     sector: { nombre: string } | null;
   };
   tareasObligatorias: { tarea: TareaDeVisita }[];
@@ -409,10 +419,16 @@ export function VisitaDetail({
                 >
                   {nombreCliente(visita.cliente)}
                 </Link>
+                {/* Debajo del nombre, dónde: la dirección de la propiedad de
+                    esta visita. Un cliente puede tener varias, así que decir
+                    "su" sector no alcanzaría. */}
                 <span className="block truncate text-[12.5px] font-semibold text-white/75">
-                  {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
+                  {[
+                    visita.propiedad.direccion,
+                    visita.propiedad.sector?.nombre ?? visita.propiedad.ciudad,
+                  ]
                     .filter(Boolean)
-                    .join(" · ") || "Sin sector"}
+                    .join(" · ") || visita.propiedad.nombre}
                 </span>
               </span>
             </div>

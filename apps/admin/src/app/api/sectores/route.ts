@@ -19,7 +19,7 @@ export async function GET() {
   const sectores = await prisma.sector.findMany({
     where: { deletedAt: null },
     orderBy: { nombre: "asc" },
-    include: { _count: { select: { clientes: true } } },
+    include: { _count: { select: { propiedades: true } } },
   });
 
   return NextResponse.json(sectores);

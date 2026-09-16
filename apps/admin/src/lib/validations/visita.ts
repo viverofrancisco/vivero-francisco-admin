@@ -6,6 +6,8 @@ import { z } from "zod/v4";
  */
 export const crearVisitasSchema = z.object({
   clienteId: z.string().min(1, "Selecciona un cliente"),
+  /** Dónde. Una visita pasa en un lugar; con una sola, la pantalla la elige. */
+  propiedadId: z.string().min(1, "Selecciona la propiedad"),
   fechas: z.array(z.string().min(1)).min(1, "Selecciona al menos una fecha"),
   /// Lo que esta visita exige que se haga. Opcional: la mayoría no exige nada.
   tareasObligatoriasIds: z.array(z.string().min(1)).default([]),

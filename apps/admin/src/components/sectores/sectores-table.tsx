@@ -27,7 +27,7 @@ import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 interface SectorRow {
   id: string;
   nombre: string;
-  _count: { clientes: number };
+  _count: { propiedades: number };
 }
 
 interface SectoresTableProps {
@@ -57,7 +57,7 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       // El error de acá dice *por qué* no se puede —normalmente porque tiene
-      // clientes—, así que vale más que un "Error al eliminar".
+      // propiedades—, así que vale más que un "Error al eliminar".
       throw new Error(body.error ?? "No pudimos eliminar el sector");
     }
   }
@@ -119,7 +119,7 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
                         </div>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {s._count.clientes}
+                        {s._count.propiedades}
                       </TableCell>
                       <TableCell className="text-right">
                         <div
@@ -129,11 +129,11 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
                           <DeleteDialog
                             title={`¿Eliminar ${s.nombre}?`}
                             description={
-                              s._count.clientes > 0
-                                ? `Este sector tiene ${s._count.clientes} ${
-                                    s._count.clientes === 1
-                                      ? "cliente asignado"
-                                      : "clientes asignados"
+                              s._count.propiedades > 0
+                                ? `Este sector tiene ${s._count.propiedades} ${
+                                    s._count.propiedades === 1
+                                      ? "propiedad asignada"
+                                      : "propiedades asignadas"
                                   }.`
                                 : "Esta acción no se puede deshacer."
                             }
@@ -159,7 +159,7 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
         />
       </div>
 
-      {/* Móvil: el sector y, debajo, cuántos clientes tiene y quién lo
+      {/* Móvil: el sector y, debajo, cuántas propiedades tiene y quién lo
           administra — las tres columnas de la tabla en una línea. */}
       <ListaMovil
         vacia={filtered.length === 0}
@@ -182,8 +182,8 @@ export function SectoresTable({ sectores }: SectoresTableProps) {
                   {s.nombre}
                 </span>
                 <span className="block truncate text-xs font-medium text-muted-foreground">
-                  {s._count.clientes}{" "}
-                  {s._count.clientes === 1 ? "cliente" : "clientes"}
+                  {s._count.propiedades}{" "}
+                  {s._count.propiedades === 1 ? "propiedad" : "propiedades"}
                 </span>
               </span>
             </Link>

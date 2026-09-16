@@ -33,9 +33,17 @@ export default async function EditarVisitaRoute({
             nombre: true,
             apellido: true,
             empresa: true,
-            sector: { select: { nombre: true } },
+            // Entre cuáles se puede mover la visita: las propiedades vivas del
+            // cliente. El cliente no se cambia —eso huerfanaría el plan— pero
+            // la propiedad sí: se agendó en la casa y era la oficina.
+            propiedades: {
+              where: { deletedAt: null },
+              select: { id: true, nombre: true, direccion: true },
+              orderBy: { createdAt: "asc" },
+            },
           },
         },
+        propiedadId: true,
         tareasObligatorias: { select: { tareaId: true } },
         personal: {
           where: { removedAt: null },
@@ -101,6 +109,7 @@ export default async function EditarVisitaRoute({
         tareasObligatoriasIds: visita.tareasObligatorias.map((t) => t.tareaId),
         suscripcionId: visita.suscripcionId,
         grupoId: visita.grupoId,
+        propiedadId: visita.propiedadId,
         personalIds: visita.personal.map((p) => p.personalId),
         personalQueMarco: visita.personal
           .filter((p) => p.entradaEl !== null)

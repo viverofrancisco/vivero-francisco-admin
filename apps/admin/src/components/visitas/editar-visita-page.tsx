@@ -38,8 +38,11 @@ interface VisitaEditable {
     nombre: string;
     apellido?: string | null;
     empresa?: string | null;
-    sector: { nombre: string } | null;
+    /** Entre cuáles se puede mover la visita: sus propiedades vivas. */
+    propiedades: { id: string; nombre: string; direccion: string | null }[];
   };
+  /** Dónde pasa hoy. El cliente no se cambia; la propiedad sí. */
+  propiedadId: string;
   tareasObligatoriasIds: string[];
   /** De qué plan es hoy la visita, si es de alguno. */
   suscripcionId: string | null;
@@ -118,6 +121,7 @@ export function EditarVisitaPage({
   );
   const [grupoId, setGrupoId] = useState(visita.grupoId ?? "");
   const [personalIds, setPersonalIds] = useState(visita.personalIds);
+  const [propiedadId, setPropiedadId] = useState(visita.propiedadId);
   const [notas, setNotas] = useState(visita.notas ?? "");
 
   const elegidas = tareas.filter((t) => tareaIds.includes(t.id));
@@ -153,6 +157,7 @@ export function EditarVisitaPage({
           suscripcionId: suscripcionId || null,
           grupoId: grupoId || null,
           personalIds,
+          propiedadId,
           notas: notas.trim() || null,
         }),
       });
@@ -353,15 +358,28 @@ export function EditarVisitaPage({
               >
                 {nombreCliente(visita.cliente)}
               </Link>
-              {visita.cliente.sector && (
-                <p className="text-xs text-muted-foreground">
-                  {visita.cliente.sector.nombre}
-                </p>
-              )}
               <p className="pt-1 text-xs text-muted-foreground">
                 El cliente no se cambia. Si el trabajo era para otro, agendá una
                 visita nueva y cancelá esta.
               </p>
+
+              {/* La propiedad sí: se agendó en la casa y era la oficina. El
+                  cliente es el mismo, así que nada queda huérfano. */}
+              <div className="space-y-1.5 pt-3">
+                <Label>Propiedad</Label>
+                <CustomSelect
+                  value={propiedadId}
+                  onChange={setPropiedadId}
+                  options={visita.cliente.propiedades.map((p) => ({
+                    value: p.id,
+                    label: p.nombre,
+                    hint: p.direccion ?? undefined,
+                  }))}
+                  placeholder="Elegir propiedad"
+                  searchable={visita.cliente.propiedades.length > 6}
+                  searchPlaceholder="Buscar propiedad..."
+                />
+              </div>
             </CardContent>
           </Card>
 

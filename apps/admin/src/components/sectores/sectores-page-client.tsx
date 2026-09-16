@@ -8,7 +8,7 @@ import { SectorForm } from "@/components/sectores/sector-form";
 interface SectorRow {
   id: string;
   nombre: string;
-  _count: { clientes: number };
+  _count: { propiedades: number };
 }
 
 interface SectoresPageClientProps {

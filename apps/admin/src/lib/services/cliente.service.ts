@@ -7,6 +7,39 @@ import { formatForWhatsApp } from "@/lib/whatsapp/phone";
 import { clienteImportRowSchema } from "@/lib/validations/cliente";
 import { nombreCliente } from "@vivero/shared";
 
+/**
+ * Lo que se muestra de una propiedad donde sea que aparezca.
+ *
+ * La dirección era del cliente y se mudó acá; el sector vino con ella, porque
+ * es geográfico y es del lugar, no de la persona.
+ */
+export const PROPIEDAD_SELECT = {
+  id: true,
+  nombre: true,
+  ciudad: true,
+  direccion: true,
+  numeroCasa: true,
+  referencia: true,
+  notas: true,
+  lat: true,
+  lng: true,
+  m2Total: true,
+  jardinerasPlantaAlta: true,
+  numeroArboles: true,
+  mlVegetacionBaja: true,
+  mlVegetacionMedia: true,
+  mlVegetacionAlta: true,
+  m2Cesped: true,
+  sector: { select: { id: true, nombre: true } },
+} as const;
+
+/** Las vivas de un cliente, en el orden en que se cargaron. */
+export const PROPIEDADES_DEL_CLIENTE = {
+  where: { deletedAt: null },
+  select: PROPIEDAD_SELECT,
+  orderBy: { createdAt: "asc" },
+} as const;
+
 export async function getClienteProfile(viewer: Viewer) {
   if (viewer.role !== "CLIENTE") {
     throw new ForbiddenError();
@@ -23,9 +56,7 @@ export async function getClienteProfile(viewer: Viewer) {
       apellido: true,
       empresa: true,
       telefono: true,
-      direccion: true,
-      ciudad: true,
-      sector: { select: { id: true, nombre: true } },
+      propiedades: PROPIEDADES_DEL_CLIENTE,
     },
   });
   if (!cliente) throw new NotFoundError("Cliente no encontrado");
@@ -64,8 +95,10 @@ const CLIENTE_LIST_SELECT = {
   apellido: true,
   empresa: true,
   telefono: true,
-  ciudad: true,
-  sector: { select: { id: true, nombre: true } },
+  // La lista muestra dónde está: con una propiedad, la suya; con varias, la
+  // primera y cuántas más. Contarlas de a una es lo que evita que la fila
+  // mienta cuando alguien tiene casa en dos sectores.
+  propiedades: PROPIEDADES_DEL_CLIENTE,
 } as const;
 
 async function buildClienteWhereForStaff(viewer: Viewer) {
@@ -120,13 +153,8 @@ export async function getClienteForStaff(clienteId: string, viewer: Viewer) {
       empresa: true,
       email: true,
       telefono: true,
-      direccion: true,
-      numeroCasa: true,
-      ciudad: true,
-      referencia: true,
       notas: true,
-      metrosCuadrados: true,
-      sector: { select: { id: true, nombre: true } },
+      propiedades: PROPIEDADES_DEL_CLIENTE,
       suscripciones: {
         where: { estado: { not: "CANCELADO" } },
         select: {
@@ -163,19 +191,35 @@ function startOfToday(): Date {
 // Create / update
 // ──────────────────────────────────────────────
 
-export interface CreateClientePayload {
+/** Lo que hay que mantener en un lugar. Todo opcional: se mide después. */
+export interface DatosDePropiedad {
   nombre?: string | null;
-  apellido?: string | null;
-  empresa?: string | null;
-  email?: string | null;
-  telefono?: string | null;
   ciudad?: string | null;
   sectorId?: string | null;
   direccion?: string | null;
   numeroCasa?: string | null;
   referencia?: string | null;
   notas?: string | null;
-  metrosCuadrados?: number | null;
+  lat?: number | null;
+  lng?: number | null;
+  m2Total?: number | null;
+  jardinerasPlantaAlta?: boolean;
+  numeroArboles?: number | null;
+  mlVegetacionBaja?: number | null;
+  mlVegetacionMedia?: number | null;
+  mlVegetacionAlta?: number | null;
+  m2Cesped?: number | null;
+}
+
+export interface CreateClientePayload {
+  nombre?: string | null;
+  apellido?: string | null;
+  empresa?: string | null;
+  email?: string | null;
+  telefono?: string | null;
+  notas?: string | null;
+  /** La primera, creada con él. Ver `createCliente`. */
+  propiedad?: DatosDePropiedad;
 }
 
 function ensureCanWrite(viewer: Viewer) {
@@ -210,16 +254,40 @@ export async function createCliente(
       empresa: payload.empresa ?? null,
       email: payload.email ?? null,
       telefono: payload.telefono ?? null,
-      ciudad: payload.ciudad ?? null,
-      sectorId: payload.sectorId ?? null,
-      direccion: payload.direccion ?? null,
-      numeroCasa: payload.numeroCasa ?? null,
-      referencia: payload.referencia ?? null,
       notas: payload.notas ?? null,
-      metrosCuadrados: payload.metrosCuadrados ?? null,
       createdById: viewer.id,
       updatedById: viewer.id,
+      // Un cliente nace con una propiedad, en la misma transacción.
+      //
+      // Sin ningún lugar donde trabajar no sirve para agendar, y cargarlo en
+      // dos pasos es garantizar que alguien se olvide del segundo — lo mismo
+      // que pasaba con la cuenta del jardinero antes de que naciera con su
+      // ficha. Si el formulario no mandó nada, la propiedad sale vacía y con
+      // el nombre que nadie va a tener que inventar.
+      propiedades: {
+        create: {
+          nombre: payload.propiedad?.nombre?.trim() || "Principal",
+          ciudad: payload.propiedad?.ciudad ?? null,
+          sectorId: payload.propiedad?.sectorId ?? null,
+          direccion: payload.propiedad?.direccion ?? null,
+          numeroCasa: payload.propiedad?.numeroCasa ?? null,
+          referencia: payload.propiedad?.referencia ?? null,
+          notas: payload.propiedad?.notas ?? null,
+          lat: payload.propiedad?.lat ?? null,
+          lng: payload.propiedad?.lng ?? null,
+          m2Total: payload.propiedad?.m2Total ?? null,
+          jardinerasPlantaAlta: payload.propiedad?.jardinerasPlantaAlta ?? false,
+          numeroArboles: payload.propiedad?.numeroArboles ?? null,
+          mlVegetacionBaja: payload.propiedad?.mlVegetacionBaja ?? null,
+          mlVegetacionMedia: payload.propiedad?.mlVegetacionMedia ?? null,
+          mlVegetacionAlta: payload.propiedad?.mlVegetacionAlta ?? null,
+          m2Cesped: payload.propiedad?.m2Cesped ?? null,
+          createdById: viewer.id,
+          updatedById: viewer.id,
+        },
+      },
     },
+    select: { id: true },
   });
 }
 
@@ -324,13 +392,15 @@ export async function importClientes(
         empresa: data.empresa,
         email: data.email,
         telefono: data.telefono,
-        ciudad: data.ciudad,
-        direccion: data.direccion,
-        numeroCasa: data.numeroCasa,
-        referencia: data.referencia,
         notas: data.notas,
-        metrosCuadrados: data.metrosCuadrados,
-        sectorId: null,
+        // Las columnas de dirección del CSV describen su primera propiedad.
+        propiedad: {
+          ciudad: data.ciudad,
+          direccion: data.direccion,
+          numeroCasa: data.numeroCasa,
+          referencia: data.referencia,
+          m2Total: data.metrosCuadrados,
+        },
       });
       created++;
       if (emailKey) seenEmails.add(emailKey);
@@ -368,15 +438,7 @@ export async function updateCliente(
         ...(payload.empresa !== undefined ? { empresa: payload.empresa } : {}),
         ...(payload.email !== undefined ? { email: payload.email } : {}),
         ...(payload.telefono !== undefined ? { telefono: payload.telefono } : {}),
-        ...(payload.ciudad !== undefined ? { ciudad: payload.ciudad } : {}),
-        ...(payload.sectorId !== undefined ? { sectorId: payload.sectorId } : {}),
-        ...(payload.direccion !== undefined ? { direccion: payload.direccion } : {}),
-        ...(payload.numeroCasa !== undefined ? { numeroCasa: payload.numeroCasa } : {}),
-        ...(payload.referencia !== undefined ? { referencia: payload.referencia } : {}),
         ...(payload.notas !== undefined ? { notas: payload.notas } : {}),
-        ...(payload.metrosCuadrados !== undefined
-          ? { metrosCuadrados: payload.metrosCuadrados }
-          : {}),
         updatedById: viewer.id,
       },
     });

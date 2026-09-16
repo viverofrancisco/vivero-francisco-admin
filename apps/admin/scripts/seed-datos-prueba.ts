@@ -408,20 +408,20 @@ async function sembrar(
     sectores.push(s);
   }
 
-  // Repartir solo los clientes que no tienen sector: los que ya tienen uno son
-  // dato real y no se toca.
-  const huerfanos = await prisma.cliente.findMany({
+  // Repartir solo las propiedades que no tienen sector: las que ya tienen uno
+  // son dato real y no se tocan. El sector es del lugar, no de la persona.
+  const huerfanas = await prisma.propiedad.findMany({
     where: { deletedAt: null, sectorId: null },
     select: { id: true },
   });
-  for (const c of huerfanos) {
-    await prisma.cliente.update({
-      where: { id: c.id },
+  for (const p of huerfanas) {
+    await prisma.propiedad.update({
+      where: { id: p.id },
       data: { sectorId: uno(sectores).id },
     });
-    m.clientesConSectorAsignado.push(c.id);
+    m.clientesConSectorAsignado.push(p.id);
   }
-  console.log(`  ${m.sectores.length} nuevo(s), ${huerfanos.length} cliente(s) asignados`);
+  console.log(`  ${m.sectores.length} nuevo(s), ${huerfanas.length} propiedad(es) asignadas`);
 
   // ── 3. Datos de facturación ───────────────────────────────────────────
   console.log("datos de facturación...");
@@ -430,7 +430,14 @@ async function sembrar(
     where: { deletedAt: null },
     select: {
       id: true, nombre: true, apellido: true, empresa: true,
-      direccion: true, telefono: true, email: true,
+      telefono: true, email: true,
+      // La dirección que va en el dato de facturación sale de su propiedad.
+      propiedades: {
+        where: { deletedAt: null },
+        select: { id: true, direccion: true },
+        orderBy: { createdAt: "asc" },
+        take: 1,
+      },
     },
     orderBy: { nombre: "asc" },
   });
@@ -447,7 +454,7 @@ async function sembrar(
         identificacion: juridica ? ruc(i + 3) : cedula(i + 11),
         razonSocial,
         tipoPersona: juridica ? "JURIDICA" : "NATURAL",
-        direccion: c.direccion ?? null,
+        direccion: c.propiedades[0]?.direccion ?? null,
         telefono: c.telefono ?? null,
         email: c.email ?? null,
       });
@@ -548,6 +555,9 @@ async function sembrar(
 
     visitas.push({
       clienteId: cliente.id,
+      // Donde trabaja: la primera de sus propiedades alcanza para datos de
+      // prueba, y todo cliente tiene al menos una.
+      propiedadId: cliente.propiedades[0].id,
       fechaProgramada: fecha,
       fechaRealizada: estado === "COMPLETADA" || estado === "INCOMPLETA" ? fecha : null,
       horaEntrada: estado === "PROGRAMADA" ? null : `${String(entre(7, 11)).padStart(2, "0")}:${uno(["00", "15", "30", "45"])}`,
@@ -1062,8 +1072,8 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
     prisma.datoFacturacion.deleteMany({ where: { id: { in: m.datosFacturacion } } })
   );
   await borrar("producto", () => prisma.producto.deleteMany({ where: { id: { in: m.productos } } }));
-  await borrar("cliente.sectorId", () =>
-    prisma.cliente.updateMany({
+  await borrar("propiedad.sectorId", () =>
+    prisma.propiedad.updateMany({
       where: { id: { in: m.clientesConSectorAsignado } },
       data: { sectorId: null },
     })

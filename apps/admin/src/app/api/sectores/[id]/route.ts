@@ -16,11 +16,21 @@ export async function GET(
   const sector = await prisma.sector.findUnique({
     where: { id, deletedAt: null },
     include: {
-      _count: { select: { clientes: true } },
-      clientes: {
+      _count: { select: { propiedades: true } },
+      // El sector agrupa lugares, no personas: el nombre del cliente viaja
+      // con su propiedad, que es lo que está en el sector.
+      propiedades: {
         where: { deletedAt: null },
-        select: { id: true, nombre: true, ciudad: true },
-        orderBy: { nombre: "asc" },
+        select: {
+          id: true,
+          nombre: true,
+          direccion: true,
+          ciudad: true,
+          cliente: {
+            select: { id: true, nombre: true, apellido: true, empresa: true },
+          },
+        },
+        orderBy: { createdAt: "asc" },
       },
     },
   });
@@ -77,13 +87,13 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const clienteCount = await prisma.cliente.count({
+  const enUso = await prisma.propiedad.count({
     where: { sectorId: id, deletedAt: null },
   });
 
-  if (clienteCount > 0) {
+  if (enUso > 0) {
     return NextResponse.json(
-      { error: `No se puede eliminar: ${clienteCount} cliente(s) asignado(s)` },
+      { error: `No se puede eliminar: ${enUso} propiedad(es) asignada(s)` },
       { status: 409 }
     );
   }

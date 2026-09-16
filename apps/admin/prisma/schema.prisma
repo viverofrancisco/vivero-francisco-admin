@@ -206,6 +206,8 @@ model User {
   // Audit relations
   clientesCreated               Cliente[]              @relation("ClienteCreatedBy")
   clientesUpdated               Cliente[]              @relation("ClienteUpdatedBy")
+  propiedadesCreated            Propiedad[]            @relation("PropiedadCreatedBy")
+  propiedadesUpdated            Propiedad[]            @relation("PropiedadUpdatedBy")
   media                         Media[]                @relation("MediaCreatedBy")
   productosCreated              Producto[]             @relation("ProductoCreatedBy")
   productosUpdated              Producto[]             @relation("ProductoUpdatedBy")
@@ -250,13 +252,7 @@ model Cliente {
   empresa         String?
   email           String?
   telefono        String?
-  ciudad          String?
-  sectorId        String?
-  direccion       String?
-  numeroCasa      String?
-  referencia      String? @db.Text
   notas           String? @db.Text
-  metrosCuadrados Float?
 
   /// Identificación tributaria del contacto. Lo que sale impreso en una
   /// factura no es esto sino `DatoFacturacion`, que puede haber varios.
@@ -277,7 +273,7 @@ model Cliente {
   updatedBy   User?   @relation("ClienteUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  sector            Sector?            @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  propiedades       Propiedad[]
   suscripciones     Suscripcion[]
   datosFacturacion  DatoFacturacion[]
   visitas           Visita[]
@@ -285,6 +281,75 @@ model Cliente {
   informes          Informe[]
   informeBorradores InformeBorrador[]
   setPasswordTokens SetPasswordToken[]
+}
+
+/// Un lugar donde se trabaja: la casa, la oficina, la villa de la playa.
+///
+/// La dirección era del cliente y ahora es de la propiedad, porque un cliente
+/// con dos casas tiene dos direcciones y ninguna de las dos es "la suya". El
+/// sector se mudó por lo mismo: es geográfico, así que es del lugar y no de la
+/// persona —alguien con casa en Isla Mocolí y oficina en Vía a la Costa está en
+/// dos sectores—. Lo que queda en `Cliente` es a quién se le cobra y a quién se
+/// le avisa.
+///
+/// Los números de abajo son **lo que hay que mantener**, que es con lo que se
+/// cotiza: cuántos metros de césped hay que cortar, cuántos metros lineales de
+/// seto hay que podar y a qué altura, cuántos árboles. Todos opcionales: se van
+/// completando a medida que alguien los mide, y una propiedad recién cargada
+/// sirve igual para agendar.
+model Propiedad {
+  id        String @id @default(cuid())
+  clienteId String
+  /// Cómo la llama el cliente: "Casa", "Oficina", "Villa Salinas".
+  ///
+  /// Con una sola propiedad nadie la nombra, así que la migración puso
+  /// "Principal" en todas y el formulario la propone: lo que se ve en pantalla
+  /// es la dirección, y el nombre es para distinguir dos.
+  nombre     String
+  ciudad     String?
+  sectorId   String?
+  direccion  String?
+  numeroCasa String?
+  referencia String? @db.Text
+  notas      String? @db.Text
+
+  /// El punto exacto, elegido arrastrando un pin en un mapa.
+  ///
+  /// La dirección escrita no alcanza para encontrar una casa en una
+  /// urbanización, y es lo que va a permitir comparar contra dónde se marcó la
+  /// entrada: hasta ahora la marca traía coordenadas y no había contra qué
+  /// medirlas. Opcional, porque una propiedad se carga por teléfono y el pin se
+  /// pone la primera vez que alguien va.
+  lat Float?
+  lng Float?
+
+  /// Superficie total del terreno.
+  m2Total Float?
+  /// Si hay jardineras en planta alta: cambia cómo se sube el material.
+  jardinerasPlantaAlta Boolean @default(false)
+  numeroArboles        Int?
+  /// Metros lineales de vegetación, por altura. Son tres números distintos
+  /// porque son tres trabajos distintos: no se poda igual un borde de 30 cm
+  /// que un seto de dos metros.
+  mlVegetacionBaja  Float?
+  mlVegetacionMedia Float?
+  mlVegetacionAlta  Float?
+  m2Cesped          Float?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  createdById String?
+  updatedById String?
+
+  cliente   Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  sector    Sector?  @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  createdBy User?    @relation("PropiedadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?    @relation("PropiedadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  visitas   Visita[]
+
+  @@index([clienteId])
+  @@index([sectorId])
 }
 
 /// Catálogo único: servicios de jardinería y, más adelante, bienes de vivero.
@@ -764,6 +829,10 @@ model Visita {
   /// confunde a nadie.
   numero              Int          @unique @default(autoincrement())
   clienteId           String
+  /// Dónde se hace. Obligatorio: una visita pasa en un lugar, y el lugar es lo
+  /// que dice cuánto césped hay que cortar. Con una sola propiedad se elige
+  /// sola en el formulario.
+  propiedadId         String
   /// De qué plan es esta visita, si es de alguno.
   ///
   /// La decisión es **de la visita**, no de cada producto: "esta visita es del
@@ -822,6 +891,7 @@ model Visita {
   deletedByNombre     String?
 
   cliente            Cliente                  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  propiedad          Propiedad                @relation(fields: [propiedadId], references: [id], onDelete: Restrict)
   tareasObligatorias VisitaTareaObligatoria[]
   calificacion       CalificacionVisita?
   grupo              Grupo?                   @relation(fields: [grupoId], references: [id], onDelete: SetNull)
@@ -837,6 +907,7 @@ model Visita {
   suscripcion        Suscripcion?             @relation(fields: [suscripcionId], references: [id], onDelete: SetNull)
 
   @@index([clienteId])
+  @@index([propiedadId])
   @@index([suscripcionId])
   @@index([fechaProgramada])
   /// Para filtrar "completadas entre estas fechas" sin recorrer la tabla.
@@ -1078,7 +1149,7 @@ model Sector {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  clientes Cliente[]
+  propiedades Propiedad[]
 }
 
 // ──────────────────────────────────────────────

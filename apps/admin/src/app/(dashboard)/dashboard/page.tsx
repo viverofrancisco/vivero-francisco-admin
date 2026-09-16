@@ -22,7 +22,10 @@ import {
 const PROXIMAS_VISIBLES = 10;
 
 const VISITA_DEL_PANEL = {
-  cliente: { include: { sector: { select: { nombre: true } } } },
+  cliente: true,
+  // El sector es de la propiedad: es geográfico, así que es del lugar donde se
+  // trabaja y no de la persona a la que se le cobra.
+  propiedad: { select: { sector: { select: { nombre: true } } } },
   ...TAREAS_DE_VISITA_INCLUDE,
 } as const;
 
@@ -35,8 +38,8 @@ type FilaDeVisita = {
     nombre: string;
     apellido: string | null;
     empresa: string | null;
-    sector: { nombre: string } | null;
   };
+  propiedad: { sector: { nombre: string } | null };
 };
 
 function aFilaDelPanel(
@@ -45,7 +48,7 @@ function aFilaDelPanel(
   return {
     id: v.id,
     cliente: nombreCliente(v.cliente),
-    sector: v.cliente.sector?.nombre ?? null,
+    sector: v.propiedad.sector?.nombre ?? null,
     horaEntrada: v.horaEntrada,
     fechaProgramada: v.fechaProgramada.toLocaleDateString("es-EC", {
       day: "2-digit",
@@ -276,7 +279,8 @@ export default async function DashboardPage() {
     prisma.visita.findMany({
       where: diaFilter,
       include: {
-        cliente: { include: { sector: { select: { nombre: true } } } },
+        cliente: true,
+        propiedad: { select: { sector: { select: { nombre: true } } } },
         ...TAREAS_DE_VISITA_INCLUDE,
         grupo: { select: { nombre: true } },
       },
@@ -294,7 +298,7 @@ export default async function DashboardPage() {
   for (const v of visitasHoy) {
     const nombre = v.grupo?.nombre;
     if (!nombre) continue;
-    const sector = v.cliente.sector?.nombre;
+    const sector = v.propiedad.sector?.nombre;
     const entry = crewMap.get(nombre) ?? { sectores: new Set(), count: 0 };
     if (sector) entry.sectores.add(sector);
     entry.count += 1;
@@ -410,7 +414,7 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     <span className="hidden text-[13px] font-semibold text-muted-foreground sm:block">
-                      {c.sector?.nombre ?? "—"}
+                      {v.propiedad.sector?.nombre ?? "—"}
                     </span>
                     <StatusBadge estado={v.estado} size="sm" />
                   </div>

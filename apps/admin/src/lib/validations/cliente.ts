@@ -4,8 +4,7 @@ import { z } from "zod/v4";
 // o internacional en formato E.164 (+<código de país> con 7-15 dígitos en total).
 const telefonoRegex = /^(\+593|0)(9\d{8}|[2-7]\d{7})$|^\+[1-9]\d{6,14}$/;
 
-export const clienteSchema = z
-  .object({
+const clienteBase = z.object({
   nombre: z.string().optional().or(z.literal("")),
   apellido: z.string().optional().or(z.literal("")),
   empresa: z.string().optional().or(z.literal("")),
@@ -15,21 +14,21 @@ export const clienteSchema = z
     .regex(telefonoRegex, "Número inválido. Ej: 0991234567, +593991234567 o +<país> internacional")
     .optional()
     .or(z.literal("")),
-  ciudad: z.string().optional().or(z.literal("")),
-  direccion: z.string().optional().or(z.literal("")),
-  numeroCasa: z.string().optional().or(z.literal("")),
-  referencia: z.string().optional().or(z.literal("")),
   notas: z.string().optional().or(z.literal("")),
-  metrosCuadrados: z.union([
-    z.coerce.number().positive("Debe ser mayor a 0"),
-    z.literal("").transform(() => undefined),
-  ]).optional(),
-  })
-  // Un cliente es una persona (nombre) o una empresa (empresa): se exige uno.
-  .refine((d) => Boolean(d.nombre?.trim() || d.empresa?.trim()), {
-    message: "Se requiere un nombre o una empresa",
-    path: ["nombre"],
-  });
+});
+
+// Un cliente es una persona (nombre) o una empresa (empresa): se exige uno.
+const tieneNombre = {
+  check: (d: { nombre?: string; empresa?: string }) =>
+    Boolean(d.nombre?.trim() || d.empresa?.trim()),
+  message: "Se requiere un nombre o una empresa",
+  path: ["nombre"] as const,
+};
+
+export const clienteSchema = clienteBase.refine(tieneNombre.check, {
+  message: tieneNombre.message,
+  path: [...tieneNombre.path],
+});
 
 export type ClienteFormData = z.infer<typeof clienteSchema>;
 
@@ -90,3 +89,66 @@ export const clienteImportRowSchema = z.preprocess(
 );
 
 export type ClienteImportRow = z.infer<typeof clienteImportRowSchema>;
+
+// ──────────────────────────────────────────────
+// Propiedades
+// ──────────────────────────────────────────────
+
+/** Un número que puede venir vacío del formulario. */
+const numeroDeFormulario = (mensaje = "No puede ser negativo") =>
+  z
+    .union([
+      z.coerce.number().min(0, mensaje),
+      z.literal("").transform(() => undefined),
+    ])
+    .optional();
+
+/**
+ * Un lugar donde se trabaja.
+ *
+ * La dirección era del cliente y se mudó acá, junto con el sector: un cliente
+ * con dos casas tiene dos direcciones y ninguna de las dos es "la suya", y el
+ * sector es geográfico, así que es del lugar y no de la persona.
+ *
+ * Los números de abajo son lo que hay que mantener, que es con lo que se
+ * cotiza, y todos son opcionales: se completan a medida que alguien los mide.
+ */
+export const propiedadSchema = z.object({
+  nombre: z.string().min(1, "Ponle un nombre"),
+  ciudad: z.string().optional().or(z.literal("")),
+  sectorId: z.string().optional().or(z.literal("")),
+  direccion: z.string().optional().or(z.literal("")),
+  numeroCasa: z.string().optional().or(z.literal("")),
+  referencia: z.string().optional().or(z.literal("")),
+  notas: z.string().optional().or(z.literal("")),
+  /** El punto del mapa. Van los dos o no va ninguno. */
+  lat: z.coerce.number().min(-90).max(90).optional().nullable(),
+  lng: z.coerce.number().min(-180).max(180).optional().nullable(),
+  m2Total: numeroDeFormulario(),
+  jardinerasPlantaAlta: z.boolean().optional(),
+  numeroArboles: numeroDeFormulario(),
+  mlVegetacionBaja: numeroDeFormulario(),
+  mlVegetacionMedia: numeroDeFormulario(),
+  mlVegetacionAlta: numeroDeFormulario(),
+  m2Cesped: numeroDeFormulario(),
+});
+
+export type PropiedadFormData = z.infer<typeof propiedadSchema>;
+
+/**
+ * Crear un cliente es crear también su primera propiedad.
+ *
+ * Un cliente sin ningún lugar donde trabajar no sirve para agendar, y cargarlo
+ * en dos pasos es garantizar que alguien se olvide del segundo — lo mismo que
+ * pasaba con la cuenta del jardinero antes de que naciera con su ficha.
+ */
+export const clienteConPropiedadSchema = clienteBase
+  .extend({ propiedad: propiedadSchema.partial().optional() })
+  .refine(tieneNombre.check, {
+    message: tieneNombre.message,
+    path: [...tieneNombre.path],
+  });
+
+export type ClienteConPropiedadFormData = z.infer<
+  typeof clienteConPropiedadSchema
+>;

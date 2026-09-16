@@ -45,7 +45,7 @@ function ensureCanRead(viewer: Viewer): void {
 async function ensureClienteVisible(viewer: Viewer, clienteId: string) {
   const cliente = await prisma.cliente.findFirst({
     where: { id: clienteId, deletedAt: null },
-    select: { id: true, sectorId: true },
+    select: { id: true },
   });
   if (!cliente) throw new NotFoundError("Cliente no encontrado");
   return cliente;
@@ -1321,7 +1321,7 @@ export async function getOrden(viewer: Viewer, id: string) {
         select: {
           id: true, nombre: true, apellido: true, empresa: true,
           cedula: true, ruc: true, tipoPersona: true,
-          direccion: true, telefono: true, email: true, sectorId: true,
+          telefono: true, email: true,
         },
       },
       lineas: {

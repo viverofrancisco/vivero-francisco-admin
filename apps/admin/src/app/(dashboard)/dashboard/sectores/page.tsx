@@ -9,7 +9,7 @@ export default async function SectoresPage() {
     where: { deletedAt: null },
     orderBy: { nombre: "asc" },
     include: {
-      _count: { select: { clientes: true } },
+      _count: { select: { propiedades: true } },
     },
   });
 

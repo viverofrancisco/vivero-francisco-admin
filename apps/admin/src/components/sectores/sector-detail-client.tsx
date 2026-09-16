@@ -40,22 +40,34 @@ import { ArrowLeft, Pencil, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { aca, useFiltroUrl } from "@/lib/filtros-url";
 
-interface ClienteRow {
+/**
+ * La fila del sector es una **propiedad**, no un cliente.
+ *
+ * El sector es geográfico, así que agrupa lugares: alguien con casa en Isla
+ * Mocolí y oficina en Vía a la Costa está en dos, y con el sector en el cliente
+ * había que elegir uno y el otro quedaba mal contado.
+ */
+interface PropiedadRow {
   id: string;
   nombre: string;
-  apellido?: string | null;
-  empresa?: string | null;
+  direccion: string | null;
   ciudad: string | null;
+  cliente: {
+    id: string;
+    nombre: string;
+    apellido?: string | null;
+    empresa?: string | null;
+  };
 }
 
 interface SectorData {
   id: string;
   nombre: string;
-  clientes: ClienteRow[];
+  propiedades: PropiedadRow[];
 }
 
-/** Un cliente que se puede sumar, y de dónde saldría. */
-interface Candidato extends ClienteRow {
+/** Una propiedad que se puede sumar, y de dónde saldría. */
+interface Candidato extends PropiedadRow {
   /** El sector donde está hoy, o null si no tiene ninguno. */
   sectorActual: string | null;
 }
@@ -64,14 +76,14 @@ interface SectorDetailClientProps {
   /** La lista de la que se vino, con sus filtros. */
   backHref?: string;
   sector: SectorData;
-  /** Todos los clientes que hoy no están en este sector. */
-  candidatos: Candidato[];
+  /** Todas las propiedades que hoy no están en este sector. */
+  candidatas: Candidato[];
 }
 
 
 export function SectorDetailClient({
   sector,
-  candidatos,
+  candidatas,
   backHref = "/dashboard/sectores",
 }: SectorDetailClientProps) {
   const router = useRouter();
@@ -89,13 +101,14 @@ export function SectorDetailClient({
 
   const filtrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
-    if (!q) return sector.clientes;
-    return sector.clientes.filter(
+    if (!q) return sector.propiedades;
+    return sector.propiedades.filter(
       (c) =>
-        nombreCliente(c).toLowerCase().includes(q) ||
+        nombreCliente(c.cliente).toLowerCase().includes(q) ||
+        (c.direccion ?? "").toLowerCase().includes(q) ||
         (c.ciudad ?? "").toLowerCase().includes(q)
     );
-  }, [sector.clientes, busqueda]);
+  }, [sector.propiedades, busqueda]);
 
   const totalPaginas = Math.max(
     1,
@@ -153,10 +166,10 @@ export function SectorDetailClient({
     if (ids.length === 0) return;
     setTrabajando(true);
     try {
-      const res = await fetch(`/api/sectores/${sector.id}/clientes`, {
+      const res = await fetch(`/api/sectores/${sector.id}/propiedades`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clienteIds: ids }),
+        body: JSON.stringify({ propiedadIds: ids }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
       toast.success(
@@ -176,10 +189,10 @@ export function SectorDetailClient({
     if (ids.length === 0) return;
     setTrabajando(true);
     try {
-      const res = await fetch(`/api/sectores/${sector.id}/clientes`, {
+      const res = await fetch(`/api/sectores/${sector.id}/propiedades`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clienteIds: ids }),
+        body: JSON.stringify({ propiedadIds: ids }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
       toast.success(
@@ -206,8 +219,8 @@ export function SectorDetailClient({
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-2xl font-bold">{sector.nombre}</h1>
           <p className="text-sm text-muted-foreground">
-            {sector.clientes.length} cliente
-            {sector.clientes.length !== 1 && "s"}
+            {sector.propiedades.length} cliente
+            {sector.propiedades.length !== 1 && "s"}
           </p>
         </div>
       </div>
@@ -233,7 +246,7 @@ export function SectorDetailClient({
             size="sm"
             className="ml-auto"
             onClick={() => setAgregando(true)}
-            disabled={candidatos.length === 0}
+            disabled={candidatas.length === 0}
           >
             <Plus className="mr-1.5 h-4 w-4" />
             Agregar clientes
@@ -303,7 +316,7 @@ export function SectorDetailClient({
                       key={c.id}
                       className="cursor-pointer"
                       onClick={() =>
-                        router.push(`/dashboard/clientes/${c.id}?from=${aca()}`)
+                        router.push(`/dashboard/clientes/${c.cliente.id}?from=${aca()}`)
                       }
                     >
                       <TableCell
@@ -313,14 +326,14 @@ export function SectorDetailClient({
                         <Checkbox
                           checked={seleccion.has(c.id)}
                           onCheckedChange={() => alternar(c.id)}
-                          aria-label={`Seleccionar ${nombreCliente(c)}`}
+                          aria-label={`Seleccionar ${nombreCliente(c.cliente)}`}
                         />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2.5">
-                          <InitialsAvatar name={nombreCliente(c)} size={36} />
+                          <InitialsAvatar name={nombreCliente(c.cliente)} size={36} />
                           <span className="truncate font-bold text-foreground">
-                            {nombreCliente(c)}
+                            {nombreCliente(c.cliente)}
                           </span>
                         </div>
                       </TableCell>
@@ -335,7 +348,7 @@ export function SectorDetailClient({
                           variant="ghost"
                           size="icon"
                           disabled={trabajando}
-                          aria-label={`Quitar a ${nombreCliente(c)} del sector`}
+                          aria-label={`Quitar a ${nombreCliente(c.cliente)} del sector`}
                           title="Quitar del sector"
                           onClick={() => quitarClientes([c.id])}
                         >
@@ -383,7 +396,7 @@ export function SectorDetailClient({
               </div>
               <div className="flex items-start justify-between gap-3">
                 <span className="flex-none text-muted-foreground">Clientes</span>
-                <span className="tabular-nums">{sector.clientes.length}</span>
+                <span className="tabular-nums">{sector.propiedades.length}</span>
               </div>
             </CardContent>
           </Card>
@@ -427,7 +440,7 @@ export function SectorDetailClient({
       <AgregarClientesDialog
         abierto={agregando}
         onCerrar={() => setAgregando(false)}
-        candidatos={candidatos}
+        candidatas={candidatas}
         trabajando={trabajando}
         onAgregar={agregarClientes}
       />
@@ -446,13 +459,13 @@ export function SectorDetailClient({
 function AgregarClientesDialog({
   abierto,
   onCerrar,
-  candidatos,
+  candidatas,
   trabajando,
   onAgregar,
 }: {
   abierto: boolean;
   onCerrar: () => void;
-  candidatos: Candidato[];
+  candidatas: Candidato[];
   trabajando: boolean;
   onAgregar: (ids: string[]) => void;
 }) {
@@ -461,11 +474,11 @@ function AgregarClientesDialog({
 
   const visibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
-    if (!q) return candidatos;
-    return candidatos.filter((c) =>
-      nombreCliente(c).toLowerCase().includes(q)
+    if (!q) return candidatas;
+    return candidatas.filter((c) =>
+      nombreCliente(c.cliente).toLowerCase().includes(q)
     );
-  }, [candidatos, busqueda]);
+  }, [candidatas, busqueda]);
 
   function cerrar() {
     setBusqueda("");
@@ -497,7 +510,7 @@ function AgregarClientesDialog({
         <div className="max-h-72 min-h-[8rem] overflow-y-auto rounded-md border">
           {visibles.length === 0 ? (
             <p className="p-4 text-center text-sm text-muted-foreground">
-              {candidatos.length === 0
+              {candidatas.length === 0
                 ? "Todos los clientes ya están en este sector."
                 : "Ningún cliente coincide."}
             </p>
@@ -518,7 +531,7 @@ function AgregarClientesDialog({
                       }
                     />
                     <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                      {nombreCliente(c)}
+                      {nombreCliente(c.cliente)}
                     </span>
                     <span className="flex-none text-xs text-muted-foreground">
                       {c.sectorActual ? `de ${c.sectorActual}` : "sin sector"}

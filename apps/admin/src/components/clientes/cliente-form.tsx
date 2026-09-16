@@ -4,7 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { clienteSchema, type ClienteFormData } from "@/lib/validations/cliente";
+import {
+  clienteConPropiedadSchema,
+  type ClienteConPropiedadFormData,
+} from "@/lib/validations/cliente";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,12 +27,8 @@ interface ClienteFormProps {
     empresa: string | null;
     email: string | null;
     telefono: string | null;
-    ciudad: string | null;
-    direccion: string | null;
-    numeroCasa: string | null;
-    referencia: string | null;
+
     notas: string | null;
-    metrosCuadrados: number | null;
   };
   onSuccess?: () => void;
   compact?: boolean;
@@ -79,21 +78,25 @@ export function ClienteForm({
     control,
     reset,
     formState: { errors },
-  } = useForm<ClienteFormData>({
+    /*
+     * El mismo formulario para crear y para editar, con la primera propiedad
+     * adentro.
+     *
+     * Crear un cliente sin ningún lugar donde trabajar deja algo que no sirve
+     * para agendar, y pedirlo en dos pasos es garantizar que alguien se olvide
+     * del segundo. Editando, esos campos no se dibujan —cada propiedad se toca
+     * en su propia tarjeta— así que viajan en `undefined` y el PUT los ignora.
+     */
+  } = useForm<ClienteConPropiedadFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(clienteSchema as any) as any,
+    resolver: zodResolver(clienteConPropiedadSchema as any) as any,
     defaultValues: {
       nombre: initialData?.nombre ?? "",
       apellido: initialData?.apellido ?? "",
       empresa: initialData?.empresa ?? "",
       email: initialData?.email ?? "",
       telefono: initialData?.telefono ?? "",
-      ciudad: initialData?.ciudad ?? "",
-      direccion: initialData?.direccion ?? "",
-      numeroCasa: initialData?.numeroCasa ?? "",
-      referencia: initialData?.referencia ?? "",
       notas: initialData?.notas ?? "",
-      metrosCuadrados: initialData?.metrosCuadrados ?? ("" as unknown as undefined),
     },
   });
 
@@ -107,18 +110,13 @@ export function ClienteForm({
         empresa: initialData.empresa ?? "",
         email: initialData.email ?? "",
         telefono: initialData.telefono ?? "",
-        ciudad: initialData.ciudad ?? "",
-        direccion: initialData.direccion ?? "",
-        numeroCasa: initialData.numeroCasa ?? "",
-        referencia: initialData.referencia ?? "",
         notas: initialData.notas ?? "",
-        metrosCuadrados: initialData.metrosCuadrados ?? ("" as unknown as undefined),
       });
     }
     prevEditing.current = cardsEditing;
   }, [cardsEditing, initialData, reset]);
 
-  const onSubmit = async (data: ClienteFormData) => {
+  const onSubmit = async (data: ClienteConPropiedadFormData) => {
     setLoading(true);
     try {
       const url = isEditing
@@ -179,26 +177,11 @@ export function ClienteForm({
                 <InfoRow label="Empresa" value={initialData?.empresa} />
                 <InfoRow label="Email" value={initialData?.email} />
                 <InfoRow label="Telefono" value={initialData?.telefono} />
-                <InfoRow
-                  label="Metros cuadrados"
-                  value={initialData?.metrosCuadrados ? `${initialData.metrosCuadrados} m²` : null}
-                />
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle>Ubicacion</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <InfoRow label="Ciudad" value={initialData?.ciudad} />
-                <InfoRow label="Direccion" value={initialData?.direccion} />
-                <InfoRow label="Numero de casa" value={initialData?.numeroCasa} />
-                <InfoRow label="Referencia" value={initialData?.referencia} />
-              </CardContent>
-            </Card>
-
-
+            {/* La dirección ya no está acá: es de cada propiedad, y la tarjeta
+                de Propiedades la muestra con todo lo demás del lugar. */}
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Notas</CardTitle>
@@ -283,82 +266,8 @@ export function ClienteForm({
                     )}
                   </div>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="metrosCuadrados">Metros cuadrados del jardin</Label>
-                    <Input
-                      id="metrosCuadrados"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      placeholder="Ej: 150"
-                      {...register("metrosCuadrados")}
-                    />
-                    {errors.metrosCuadrados && (
-                      <p className="text-sm text-destructive">{errors.metrosCuadrados.message}</p>
-                    )}
-                  </div>
-                </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle>Ubicacion</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Ciudad</Label>
-                    <Controller
-                      name="ciudad"
-                      control={control}
-                      render={({ field }) => (
-                        <CustomSelect
-                          value={field.value}
-                          onChange={field.onChange}
-                          options={CIUDADES_ECUADOR.map((ciudad) => ({
-                            value: ciudad,
-                            label: ciudad,
-                          }))}
-                          placeholder="Seleccionar ciudad"
-                          searchable
-                          searchPlaceholder="Buscar ciudad..."
-                        />
-                      )}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="direccion">Direccion</Label>
-                    <Input
-                      id="direccion"
-                      placeholder="Calle principal e interseccion"
-                      {...register("direccion")}
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="numeroCasa">Numero de casa</Label>
-                    <Input
-                      id="numeroCasa"
-                      placeholder="Ej: N45-123"
-                      {...register("numeroCasa")}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="referencia">Referencia</Label>
-                  <Textarea
-                    id="referencia"
-                    rows={2}
-                    placeholder="Ej: Frente al parque, casa blanca con porton verde"
-                    {...register("referencia")}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
 
             <Card>
               <CardHeader className="border-b">
@@ -435,15 +344,29 @@ export function ClienteForm({
         </CardContent>
       </Card>
 
+      {/* La primera propiedad, en el mismo formulario. Después se agregan más
+          desde la ficha del cliente, cada una con su mapa y sus medidas. */}
       <Card>
         <CardHeader className="border-b">
-          <CardTitle>Ubicación</CardTitle>
+          <CardTitle>Dónde se trabaja</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="propiedad.nombre">Nombre de la propiedad</Label>
+            <Input
+              id="propiedad.nombre"
+              placeholder="Casa, Oficina, Villa…"
+              {...register("propiedad.nombre")}
+            />
+            <p className="text-xs text-muted-foreground">
+              Para distinguirla si el cliente tiene más de una. Si la dejas
+              vacía se llama Principal.
+            </p>
+          </div>
           <div className="space-y-2">
             <Label>Ciudad</Label>
             <Controller
-              name="ciudad"
+              name="propiedad.ciudad"
               control={control}
               render={({ field }) => (
                 <CustomSelect
@@ -461,40 +384,40 @@ export function ClienteForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="direccion">Dirección</Label>
+            <Label htmlFor="propiedad.direccion">Dirección</Label>
             <Input
-              id="direccion"
+              id="propiedad.direccion"
               placeholder="Calle principal e intersección"
-              {...register("direccion")}
+              {...register("propiedad.direccion")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="numeroCasa">Número de casa</Label>
+            <Label htmlFor="propiedad.numeroCasa">Número de casa</Label>
             <Input
-              id="numeroCasa"
+              id="propiedad.numeroCasa"
               placeholder="Ej: N45-123"
-              {...register("numeroCasa")}
+              {...register("propiedad.numeroCasa")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="metrosCuadrados">Metros cuadrados del jardín</Label>
+            <Label htmlFor="propiedad.m2Total">Metros cuadrados</Label>
             <Input
-              id="metrosCuadrados"
+              id="propiedad.m2Total"
               type="number"
               step="0.1"
               min="0"
               placeholder="Ej: 150"
-              {...register("metrosCuadrados")}
+              {...register("propiedad.m2Total")}
             />
-            {fieldError(errors.metrosCuadrados?.message)}
+            {fieldError(errors.propiedad?.m2Total?.message)}
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="referencia">Referencia</Label>
+            <Label htmlFor="propiedad.referencia">Referencia</Label>
             <Textarea
-              id="referencia"
+              id="propiedad.referencia"
               rows={2}
               placeholder="Ej: Frente al parque, casa blanca con portón verde"
-              {...register("referencia")}
+              {...register("propiedad.referencia")}
             />
           </div>
         </CardContent>

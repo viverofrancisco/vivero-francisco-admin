@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isReadOnly } from "@/lib/auth-helpers";
-import { clienteSchema } from "@/lib/validations/cliente";
+import { clienteConPropiedadSchema } from "@/lib/validations/cliente";
+import { createCliente, PROPIEDADES_DEL_CLIENTE } from "@/lib/services/cliente.service";
+import { viewerFromSession } from "@/lib/auth-helpers";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -16,9 +18,7 @@ export async function GET() {
   const clientes = await prisma.cliente.findMany({
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
-    include: {
-      sector: { select: { id: true, nombre: true } },
-    },
+    include: { propiedades: PROPIEDADES_DEL_CLIENTE },
   });
 
   return NextResponse.json(clientes);
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const result = clienteSchema.safeParse(body);
+  const result = clienteConPropiedadSchema.safeParse(body);
 
   if (!result.success) {
     return NextResponse.json(
@@ -45,22 +45,34 @@ export async function POST(request: Request) {
   }
 
   const data = result.data;
+  const p = data.propiedad;
 
-  const cliente = await prisma.cliente.create({
-    data: {
-      nombre: data.nombre || "",
-      apellido: data.apellido || null,
-      empresa: data.empresa || null,
-      email: data.email || null,
-      telefono: data.telefono || null,
-      ciudad: data.ciudad || null,
-      direccion: data.direccion || null,
-      numeroCasa: data.numeroCasa || null,
-      referencia: data.referencia || null,
-      notas: data.notas || null,
-      metrosCuadrados: data.metrosCuadrados || null,
-      createdById: user.id,
-      updatedById: user.id,
+  // Por el servicio y no con un `create` suelto: es el que crea al cliente con
+  // su primera propiedad adentro de la misma transacción.
+  const cliente = await createCliente(await viewerFromSession(), {
+    nombre: data.nombre || "",
+    apellido: data.apellido || null,
+    empresa: data.empresa || null,
+    email: data.email || null,
+    telefono: data.telefono || null,
+    notas: data.notas || null,
+    propiedad: {
+      nombre: p?.nombre || null,
+      ciudad: p?.ciudad || null,
+      sectorId: p?.sectorId || null,
+      direccion: p?.direccion || null,
+      numeroCasa: p?.numeroCasa || null,
+      referencia: p?.referencia || null,
+      notas: p?.notas || null,
+      lat: p?.lat ?? null,
+      lng: p?.lng ?? null,
+      m2Total: p?.m2Total ?? null,
+      jardinerasPlantaAlta: p?.jardinerasPlantaAlta ?? false,
+      numeroArboles: p?.numeroArboles ?? null,
+      mlVegetacionBaja: p?.mlVegetacionBaja ?? null,
+      mlVegetacionMedia: p?.mlVegetacionMedia ?? null,
+      mlVegetacionAlta: p?.mlVegetacionAlta ?? null,
+      m2Cesped: p?.m2Cesped ?? null,
     },
   });
 

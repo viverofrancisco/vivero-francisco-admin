@@ -182,6 +182,8 @@ export type RequestUploadUrlsBody = z.infer<typeof requestUploadUrlsSchema>;
  */
 export const createVisitasSchema = z.object({
   clienteId: z.string().min(1),
+  /** Dónde. Una visita pasa en un lugar; con una sola, la pantalla la elige. */
+  propiedadId: z.string().min(1),
   fechas: z.array(z.string().min(1)).min(1, "Selecciona al menos una fecha"),
   /** Lo que esta visita exige que se haga. Opcional. */
   tareasObligatoriasIds: z.array(z.string().min(1)).optional(),

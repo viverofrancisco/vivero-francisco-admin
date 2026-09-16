@@ -56,6 +56,7 @@ export const ModelName = {
   VerificationToken: 'VerificationToken',
   User: 'User',
   Cliente: 'Cliente',
+  Propiedad: 'Propiedad',
   Producto: 'Producto',
   Categoria: 'Categoria',
   ProductoCategoria: 'ProductoCategoria',
@@ -185,13 +186,7 @@ export const ClienteScalarFieldEnum = {
   empresa: 'empresa',
   email: 'email',
   telefono: 'telefono',
-  ciudad: 'ciudad',
-  sectorId: 'sectorId',
-  direccion: 'direccion',
-  numeroCasa: 'numeroCasa',
-  referencia: 'referencia',
   notas: 'notas',
-  metrosCuadrados: 'metrosCuadrados',
   cedula: 'cedula',
   ruc: 'ruc',
   tipoPersona: 'tipoPersona',
@@ -206,6 +201,35 @@ export const ClienteScalarFieldEnum = {
 } as const
 
 export type ClienteScalarFieldEnum = (typeof ClienteScalarFieldEnum)[keyof typeof ClienteScalarFieldEnum]
+
+
+export const PropiedadScalarFieldEnum = {
+  id: 'id',
+  clienteId: 'clienteId',
+  nombre: 'nombre',
+  ciudad: 'ciudad',
+  sectorId: 'sectorId',
+  direccion: 'direccion',
+  numeroCasa: 'numeroCasa',
+  referencia: 'referencia',
+  notas: 'notas',
+  lat: 'lat',
+  lng: 'lng',
+  m2Total: 'm2Total',
+  jardinerasPlantaAlta: 'jardinerasPlantaAlta',
+  numeroArboles: 'numeroArboles',
+  mlVegetacionBaja: 'mlVegetacionBaja',
+  mlVegetacionMedia: 'mlVegetacionMedia',
+  mlVegetacionAlta: 'mlVegetacionAlta',
+  m2Cesped: 'm2Cesped',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  createdById: 'createdById',
+  updatedById: 'updatedById'
+} as const
+
+export type PropiedadScalarFieldEnum = (typeof PropiedadScalarFieldEnum)[keyof typeof PropiedadScalarFieldEnum]
 
 
 export const ProductoScalarFieldEnum = {
@@ -417,6 +441,7 @@ export const VisitaScalarFieldEnum = {
   id: 'id',
   numero: 'numero',
   clienteId: 'clienteId',
+  propiedadId: 'propiedadId',
   suscripcionId: 'suscripcionId',
   fechaProgramada: 'fechaProgramada',
   fechaRealizada: 'fechaRealizada',

@@ -43,6 +43,24 @@ export type User = Prisma.UserModel
  */
 export type Cliente = Prisma.ClienteModel
 /**
+ * Model Propiedad
+ * Un lugar donde se trabaja: la casa, la oficina, la villa de la playa.
+ * 
+ * La dirección era del cliente y ahora es de la propiedad, porque un cliente
+ * con dos casas tiene dos direcciones y ninguna de las dos es "la suya". El
+ * sector se mudó por lo mismo: es geográfico, así que es del lugar y no de la
+ * persona —alguien con casa en Isla Mocolí y oficina en Vía a la Costa está en
+ * dos sectores—. Lo que queda en `Cliente` es a quién se le cobra y a quién se
+ * le avisa.
+ * 
+ * Los números de abajo son **lo que hay que mantener**, que es con lo que se
+ * cotiza: cuántos metros de césped hay que cortar, cuántos metros lineales de
+ * seto hay que podar y a qué altura, cuántos árboles. Todos opcionales: se van
+ * completando a medida que alguien los mide, y una propiedad recién cargada
+ * sirve igual para agendar.
+ */
+export type Propiedad = Prisma.PropiedadModel
+/**
  * Model Producto
  * Catálogo único: servicios de jardinería y, más adelante, bienes de vivero.
  * Lo que los distingue es `tipo`, que no cambia nada al facturar.

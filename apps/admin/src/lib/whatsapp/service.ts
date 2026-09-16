@@ -59,6 +59,20 @@ function resolverVariables(
   return resultado;
 }
 
+/**
+ * La dirección para un mensaje: la de la propiedad de esa visita.
+ *
+ * Era la del cliente, cuando el cliente tenía una. Con propiedades, la del
+ * aviso tiene que ser la del lugar adonde hay que ir, que es la única que
+ * sirve para llegar.
+ */
+function direccionDe(
+  propiedad: { direccion: string | null; numeroCasa: string | null } | null
+): string {
+  if (!propiedad) return "";
+  return [propiedad.direccion, propiedad.numeroCasa].filter(Boolean).join(" ");
+}
+
 function formatFecha(date: Date): string {
   return date.toLocaleDateString("es-EC", {
     weekday: "long",
@@ -185,6 +199,7 @@ export async function enviarConfirmacionVisita(visitaId: string) {
     where: { id: visitaId },
     include: {
       cliente: true,
+      propiedad: { select: { direccion: true, numeroCasa: true } },
       tareasObligatorias: {
         select: { tarea: { select: { id: true, nombre: true, orden: true } } },
       },
@@ -212,7 +227,7 @@ export async function enviarConfirmacionVisita(visitaId: string) {
     ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
     servicio: listaTareas(visita),
-    direccion: cliente.direccion || "",
+    direccion: direccionDe(visita.propiedad),
   };
 
   const mensaje = resolverVariables(plantilla.contenido, vars);
@@ -244,6 +259,7 @@ export async function enviarRecordatorioCliente(visitaId: string) {
     where: { id: visitaId },
     include: {
       cliente: true,
+      propiedad: { select: { direccion: true, numeroCasa: true } },
       tareasObligatorias: {
         select: { tarea: { select: { id: true, nombre: true, orden: true } } },
       },
@@ -281,7 +297,7 @@ export async function enviarRecordatorioCliente(visitaId: string) {
     ...nombreVarsCliente(cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
     servicio: listaTareas(visita),
-    direccion: cliente.direccion || "",
+    direccion: direccionDe(visita.propiedad),
   };
 
   const mensaje = resolverVariables(plantilla.contenido, vars);
@@ -460,7 +476,8 @@ export async function enviarResumenDiarioAdmin() {
       deletedAt: null,
     },
     include: {
-      cliente: { select: { nombre: true, apellido: true, empresa: true, direccion: true } },
+      cliente: { select: { nombre: true, apellido: true, empresa: true } },
+      propiedad: { select: { direccion: true, numeroCasa: true } },
       tareasObligatorias: {
         select: { tarea: { select: { id: true, nombre: true, orden: true } } },
       },
@@ -485,7 +502,8 @@ export async function enviarResumenDiarioAdmin() {
   const listaVisitas = visitas
     .map((v, i) => {
       const c = v.cliente;
-      return `${i + 1}. ${nombreCliente(c)} - ${listaTareas(v)}${c.direccion ? ` (${c.direccion})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
+      const donde = direccionDe(v.propiedad);
+      return `${i + 1}. ${nombreCliente(c)} - ${listaTareas(v)}${donde ? ` (${donde})` : ""}${v.grupo ? ` [${v.grupo.nombre}]` : ""}`;
     })
     .join("\n");
 

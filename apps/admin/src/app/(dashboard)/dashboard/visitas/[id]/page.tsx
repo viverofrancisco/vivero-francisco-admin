@@ -27,7 +27,19 @@ export default async function VisitaDetailPage({
           nombre: true,
           apellido: true,
           empresa: true,
+        },
+      },
+      // Dónde pasa. La dirección y el sector son del lugar, no de la persona.
+      propiedad: {
+        select: {
+          id: true,
+          nombre: true,
+          direccion: true,
+          numeroCasa: true,
           ciudad: true,
+          referencia: true,
+          lat: true,
+          lng: true,
           sector: { select: { nombre: true } },
         },
       },
@@ -95,6 +107,7 @@ export default async function VisitaDetailPage({
     notasIncompleto: visita.notasIncompleto,
     media: visita.media,
     cliente: visita.cliente,
+    propiedad: visita.propiedad,
     grupo: visita.grupo,
     tareasObligatorias: visita.tareasObligatorias,
     // Los partes de cada uno, con la fecha como texto para que crucen el
