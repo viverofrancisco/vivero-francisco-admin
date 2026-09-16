@@ -300,21 +300,31 @@ export function VisitaDetail({
           <CalificacionVisita calificacion={visita.calificacion} />
         )}
 
-        {/* Qué exigía la visita y qué se hizo. Son dos preguntas distintas:
-            la primera se decide al agendar, la segunda la contesta cada
-            jardinero al terminar, y lo que la oficina mira es la diferencia. */}
+        {/* Qué exigía la visita y qué hizo cada uno, en una sola tarjeta.
+            Eran dos —Tareas de un lado, Personal del otro— y había que ir y
+            volver entre ellas para contestar la única pregunta que la oficina
+            se hace acá: qué se pidió, qué se hizo y quién lo hizo. Las tareas
+            **son** de cada jardinero: la lista suelta de "se hizo" era la unión
+            de todas, con los nombres al costado, o sea la misma información
+            ordenada de la peor manera. */}
         <Card>
           <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Tareas</CardTitle>
-            {faltantes.length > 0 && (
-              <CardAction>
+            <CardTitle className="text-base">Tareas y personal</CardTitle>
+            <CardAction className="flex items-center gap-2">
+              {/* El grupo nombra a este conjunto de gente. */}
+              {visita.grupo && (
+                <span className="text-xs text-muted-foreground">
+                  {visita.grupo.nombre}
+                </span>
+              )}
+              {faltantes.length > 0 && (
                 <Badge variant="destructive" className="flex-none">
                   {faltantes.length === 1
                     ? "1 obligatoria sin hacer"
                     : `${faltantes.length} obligatorias sin hacer`}
                 </Badge>
-              </CardAction>
-            )}
+              )}
+            </CardAction>
           </CardHeader>
           <CardContent className="space-y-4">
             {visita.tareasObligatorias.length > 0 && (
@@ -348,30 +358,77 @@ export function VisitaDetail({
               </div>
             )}
 
+            {/* Cada uno con lo suyo: sus horas y sus tareas. Es el dato que
+                el modelo viejo —una persona reportando por todo el grupo— no
+                podía dar. Quien no cargó nada se dice, porque es lo que la
+                oficina mira antes de cerrar. */}
             <div>
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Se hizo
+                Quién fue
               </p>
-              {hechas.length === 0 ? (
-                <EmptyState
-                  message={
-                    visita.personal.length === 0
-                      ? "Nadie está asignado todavía"
-                      : "Nadie registró lo que hizo todavía"
-                  }
-                />
+              {visita.personal.length === 0 ? (
+                <EmptyState message="Nadie está asignado todavía" />
               ) : (
-                <ul className="divide-y rounded-md border">
-                  {hechas.map((t) => (
-                    <li key={t.id} className="flex items-center gap-2.5 px-3 py-2">
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                        {t.nombre}
-                      </span>
-                      <span className="flex-none text-xs text-muted-foreground">
-                        {t.porQuienes.join(", ")}
-                      </span>
-                    </li>
-                  ))}
+                <ul className="space-y-3">
+                  {visita.personal.map((vp) => {
+                    const nombre = nombrePersonal(vp.personal);
+                    const suyas = vp.tareas.map((t) => t.tarea.nombre);
+                    return (
+                      <li
+                        key={vp.personal.id}
+                        className="flex items-start gap-2.5"
+                      >
+                        <InitialsAvatar name={nombre} size={28} />
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                              {nombre}
+                            </span>
+                            {vp.entradaEl || vp.salidaEl ? (
+                              <span className="flex-none text-xs tabular-nums text-muted-foreground">
+                                {vp.entradaEl
+                                  ? horaConDia(
+                                      vp.entradaEl,
+                                      visita.fechaProgramada
+                                    )
+                                  : "—"}{" "}
+                                →{" "}
+                                {vp.salidaEl
+                                  ? horaConDia(
+                                      vp.salidaEl,
+                                      visita.fechaProgramada
+                                    )
+                                  : "—"}
+                              </span>
+                            ) : null}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {vp.registradoEl === null
+                              ? vp.entradaEl
+                                ? "Marcó entrada, todavía no salió"
+                                : "Todavía no cargó su parte"
+                              : suyas.length > 0
+                                ? suyas.join(", ")
+                                : "No marcó ninguna tarea"}
+                          </span>
+                          {/* Solo la oficina. Es la pregunta que ella quería
+                              poder hacerse, y la única respuesta honesta: dónde
+                              estaba el teléfono cuando se apretó el botón. No
+                              prueba presencia —en el navegador la ubicación se
+                              falsea en tres clics— pero un "sin ubicación"
+                              repetido es algo que se conversa. Al jardinero no
+                              se le muestra: no es él quien revisa a nadie. */}
+                          {canModify && <Ubicaciones parte={vp} />}
+                          {mismoAparato.has(vp.personalId) && (
+                            <span className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-destructive">
+                              <Smartphone className="h-3 w-3 flex-none" />
+                              Marcó desde el mismo teléfono que otra persona
+                            </span>
+                          )}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
@@ -408,58 +465,6 @@ export function VisitaDetail({
           </Card>
         )}
 
-        {/* Las órdenes que dicen cubrir esta visita. **Es un enlace, no una
-            explicación de dónde sale cada peso**: la visita dejó de llevar
-            productos, así que ninguna línea viene de acá. Sirve para ir de una
-            a la otra. */}
-        {vePlata && (
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Órdenes</CardTitle>
-            {canModify && facturable && (
-              <CardAction>
-                <Link
-                  href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
-                >
-                  {/* Con su nombre y no un "+": es la acción de la card, y un
-                      ícono solo obliga a adivinar o a esperar el tooltip. */}
-                  <Button size="sm" variant="outline">
-                    <Plus className="mr-2 h-3.5 w-3.5" />
-                    Crear orden
-                  </Button>
-                </Link>
-              </CardAction>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {ordenes.length === 0 ? (
-              <EmptyState
-                message={
-                  facturable ? "Sin órdenes" : "La visita está cancelada"
-                }
-              />
-            ) : (
-              <div className="space-y-1">
-                {ordenes.map((o) => (
-                  <Link
-                    key={o.id}
-                    href={`/dashboard/ordenes/${o.id}?from=/dashboard/visitas/${visita.id}`}
-                    className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
-                  >
-                    <p className="text-sm font-bold">Orden #{o.numero}</p>
-                    <Badge
-                      variant={estadoOrdenVariant[o.estado] ?? "outline"}
-                      className="flex-none"
-                    >
-                      {estadoOrdenLabel[o.estado] ?? o.estado}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        )}
 
         {/* Editable aquí y no en el formulario de edición: las fotos se sacan
             mientras se hace el trabajo, y quien las sube no tiene por qué
@@ -617,82 +622,59 @@ export function VisitaDetail({
           </CardContent>
         </Card>
 
+
+        {/* Las órdenes que dicen cubrir esta visita. **Es un enlace, no una
+            explicación de dónde sale cada peso**: la visita dejó de llevar
+            productos, así que ninguna línea viene de acá. Sirve para ir de una
+            a la otra. */}
+        {vePlata && (
         <Card>
           <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Personal</CardTitle>
-            {/* El grupo nombra a este conjunto de gente: va con ellos y no con
-                las fechas, que es donde estaba. */}
-            {visita.grupo && (
+            <CardTitle className="text-base">Órdenes</CardTitle>
+            {canModify && facturable && (
               <CardAction>
-                <span className="text-xs text-muted-foreground">
-                  {visita.grupo.nombre}
-                </span>
+                <Link
+                  href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
+                >
+                  {/* Con su nombre y no un "+": es la acción de la card, y un
+                      ícono solo obliga a adivinar o a esperar el tooltip. */}
+                  <Button size="sm" variant="outline">
+                    <Plus className="mr-2 h-3.5 w-3.5" />
+                    Crear orden
+                  </Button>
+                </Link>
               </CardAction>
             )}
           </CardHeader>
-          <CardContent>
-            {visita.personal.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin asignar</p>
+          <CardContent className="space-y-3">
+            {ordenes.length === 0 ? (
+              <EmptyState
+                message={
+                  facturable ? "Sin órdenes" : "La visita está cancelada"
+                }
+              />
             ) : (
-              <ul className="space-y-3">
-                {/* Cada uno con lo suyo: sus horas y sus tareas. Es el dato que
-                    el modelo viejo —una persona reportando por todo el grupo—
-                    no podía dar. Quien no cargó nada se dice, porque es lo que
-                    la oficina mira antes de cerrar. */}
-                {visita.personal.map((vp) => {
-                  const nombre = nombrePersonal(vp.personal);
-                  const suyas = vp.tareas.map((t) => t.tarea.nombre);
-                  return (
-                    <li key={vp.personal.id} className="flex items-start gap-2.5">
-                      <InitialsAvatar name={nombre} size={28} />
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2">
-                          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                            {nombre}
-                          </span>
-                          {vp.entradaEl || vp.salidaEl ? (
-                            <span className="flex-none text-xs tabular-nums text-muted-foreground">
-                              {vp.entradaEl
-                                ? horaConDia(vp.entradaEl, visita.fechaProgramada)
-                                : "—"}{" "}
-                              →{" "}
-                              {vp.salidaEl
-                                ? horaConDia(vp.salidaEl, visita.fechaProgramada)
-                                : "—"}
-                            </span>
-                          ) : null}
-                        </span>
-                        <span className="block text-xs text-muted-foreground">
-                          {vp.registradoEl === null
-                            ? vp.entradaEl
-                              ? "Marcó entrada, todavía no salió"
-                              : "Todavía no cargó su parte"
-                            : suyas.length > 0
-                              ? suyas.join(", ")
-                              : "No marcó ninguna tarea"}
-                        </span>
-                        {/* Solo la oficina. Es la pregunta que ella quería
-                            poder hacerse, y la única respuesta honesta: dónde
-                            estaba el teléfono cuando se apretó el botón. No
-                            prueba presencia —en el navegador la ubicación se
-                            falsea en tres clics— pero un "sin ubicación"
-                            repetido es algo que se conversa. Al jardinero no se
-                            le muestra: no es él quien revisa a nadie. */}
-                        {canModify && <Ubicaciones parte={vp} />}
-                        {mismoAparato.has(vp.personalId) && (
-                          <span className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-destructive">
-                            <Smartphone className="h-3 w-3 flex-none" />
-                            Marcó desde el mismo teléfono que otra persona
-                          </span>
-                        )}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="space-y-1">
+                {ordenes.map((o) => (
+                  <Link
+                    key={o.id}
+                    href={`/dashboard/ordenes/${o.id}?from=/dashboard/visitas/${visita.id}`}
+                    className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                  >
+                    <p className="text-sm font-bold">Orden #{o.numero}</p>
+                    <Badge
+                      variant={estadoOrdenVariant[o.estado] ?? "outline"}
+                      className="flex-none"
+                    >
+                      {estadoOrdenLabel[o.estado] ?? o.estado}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>
+        )}
         </div>
       </div>
 

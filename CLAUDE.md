@@ -360,7 +360,13 @@ the edit form nor the close form asks for them. Fixing an hour means fixing the
 parte of whoever filed it. Removing someone from the visit marks the assignment
 `removedAt` and leaves their parte hanging off it: everything that counts what
 was done filters `removedAt: null`, so it stops counting, and re-assigning them
-brings it back exactly as they left it.
+brings it back exactly as they left it. **Someone who already marked their
+entrada cannot be removed** — the mark is a fact (they were there, at that hour,
+with that location and that device), and removing them hides it from everything
+that counts and recomputes the visit's hours without them. If they really
+shouldn't have been there, what gets corrected is their parte, not their
+existence. Whoever hasn't marked anything leaves without a fuss: scheduling the
+wrong person happens every day.
 
 A subscribed product is priced on a **Suscripcion**: one row per cliente
 holding *one or more* recurring products, each with its own price, IVA rate and
