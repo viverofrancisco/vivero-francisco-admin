@@ -1,4 +1,4 @@
-import { MapPin, ShieldAlert } from "lucide-react";
+import { MapPinned, ShieldAlert } from "lucide-react";
 import { ubicacionDe, type PersonalDeVisita } from "@/lib/visita-tareas";
 
 /**
@@ -37,6 +37,9 @@ export function UbicacionDeMarca({
      Va adentro de un botón redondo del alto del renglón para que quede
      centrado con el texto por flexbox y no por alineación de línea, que con
      un ícono al lado de texto siempre queda un píxel corrido. */
+  // 20 px de caja con el ícono a 16: `MapPinned` dibuja un pin encima de un
+  // mapa plegado, así que a 14 los trazos se tocan. Dos píxeles más y se
+  // distingue lo que es.
   const caja =
     "inline-flex h-5 w-5 flex-none items-center justify-center rounded-full";
 
@@ -63,7 +66,7 @@ export function UbicacionDeMarca({
         title="Esta marca vino sin ubicación"
         aria-label="Sin ubicación"
       >
-        <MapPin className="h-3.5 w-3.5" />
+        <MapPinned className="h-4 w-4" />
       </span>
     );
   }
@@ -79,7 +82,7 @@ export function UbicacionDeMarca({
       }`}
       aria-label="Ver en el mapa dónde se marcó"
     >
-      <MapPin className="h-3.5 w-3.5" />
+      <MapPinned className="h-4 w-4" />
     </a>
   );
 }
