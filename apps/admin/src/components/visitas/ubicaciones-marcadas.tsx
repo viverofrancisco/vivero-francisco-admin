@@ -1,4 +1,4 @@
-import { Map, ShieldAlert } from "lucide-react";
+import { MapPinned, ShieldAlert } from "lucide-react";
 import { ubicacionDe, type PersonalDeVisita } from "@/lib/visita-tareas";
 
 /**
@@ -52,7 +52,7 @@ export function UbicacionDeMarca({
     );
   }
 
-  /* El mismo mapa, en rojo, y no un ícono tachado: los dos estados son el
+  /* El mismo ícono, en rojo, y no uno tachado: los dos estados son el
      mismo dato —dónde se marcó— así que lo que cambia tiene que ser el color,
      que se ve de reojo, y no el dibujo, que hay que mirar de cerca para notar
      que tiene una rayita encima. Lo que falta se marca; lo que está, no grita. */
@@ -63,7 +63,7 @@ export function UbicacionDeMarca({
         title="Esta marca vino sin ubicación"
         aria-label="Sin ubicación"
       >
-        <Map className="h-3.5 w-3.5" />
+        <MapPinned className="h-3.5 w-3.5" />
       </span>
     );
   }
@@ -79,7 +79,7 @@ export function UbicacionDeMarca({
       }`}
       aria-label="Ver en el mapa dónde se marcó"
     >
-      <Map className="h-3.5 w-3.5" />
+      <MapPinned className="h-3.5 w-3.5" />
     </a>
   );
 }
