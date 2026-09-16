@@ -16,8 +16,6 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import {
@@ -423,12 +421,8 @@ export function VisitaDetail({
 
         {/* Las dos fechas juntas: para cuándo se agendó y cuándo se hizo. Verlas
             una al lado de la otra es la forma de notar que se corrió. */}
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Detalles</CardTitle>
-          </CardHeader>
-          <CardContent className="px-1">
-            <dl>
+        <TarjetaVisita titulo="Detalles" className="[&_dl]:-mx-2">
+          <dl>
               <Fila etiqueta="Programada" icono={<CalendarDays className="h-3.5 w-3.5 flex-none" />}>
                 <span className="capitalize">
                   {formatCorta(visita.fechaProgramada)}
@@ -513,9 +507,8 @@ export function VisitaDetail({
                   )}
                 </Fila>
               )}
-            </dl>
-          </CardContent>
-        </Card>
+          </dl>
+        </TarjetaVisita>
 
 
         {/* Las órdenes que dicen cubrir esta visita. **Es un enlace, no una

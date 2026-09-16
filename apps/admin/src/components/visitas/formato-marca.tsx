@@ -68,3 +68,26 @@ export function horaConDia(fecha: Date | string, diaDeLaVisita: Date | string): 
   const mismo = soloDia(d) === soloDia(new Date(diaDeLaVisita));
   return mismo ? horaLocal(d) : `${horaLocal(d)} (${soloDia(d)})`;
 }
+
+/**
+ * `"15 sept 2026, 5:26 PM"`. El instante completo, día y hora.
+ *
+ * Reemplaza al `"5:26 PM (15-sept)"` que solo mostraba el día cuando no
+ * coincidía con el de la visita: el paréntesis era una excepción que había que
+ * saber leer —y su ausencia, una que había que saber que significaba algo— y
+ * además el año no aparecía nunca. Una marca es un instante; escrito entero se
+ * lee igual de rápido y no hay que deducir nada.
+ */
+export function fechaYHora(fecha: Date | string): string {
+  const d = new Date(fecha);
+  const dia = d
+    .toLocaleDateString("es-EC", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: ZONA,
+    })
+    // `es-EC` escribe "15 sept 2026" o "15 sept. 2026" según la versión de ICU.
+    .replace(/\.(?=\s)/g, "");
+  return `${dia}, ${horaLocal(d)}`;
+}

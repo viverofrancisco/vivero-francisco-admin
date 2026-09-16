@@ -4,7 +4,7 @@ import { TarjetaVisita } from "@/components/visitas/tarjeta-visita";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Check, Clock, Smartphone } from "lucide-react";
 import { UbicacionDeMarca } from "@/components/visitas/ubicaciones-marcadas";
-import { horaConDia } from "@/components/visitas/formato-marca";
+import { fechaYHora } from "@/components/visitas/formato-marca";
 import type { PersonalDeVisita, TareaHecha } from "@/lib/visita-tareas";
 
 interface VisitaParaFichas {
@@ -79,7 +79,6 @@ export function Cronologia({
             <FichaDeParte
               key={vp.personalId}
               parte={vp}
-              fechaDeLaVisita={visita.fechaProgramada}
               mismoAparato={mismoAparato.has(vp.personalId)}
               verUbicacion={canModify}
               ultimo={i === gente.length - 1}
@@ -166,13 +165,11 @@ export function TareasObligatorias({
  */
 function FichaDeParte({
   parte,
-  fechaDeLaVisita,
   mismoAparato,
   verUbicacion,
   ultimo,
 }: {
   parte: PersonalDeVisita;
-  fechaDeLaVisita: string | Date;
   mismoAparato: boolean;
   verUbicacion: boolean;
   /** El último no lleva línea hacia abajo: no hay nadie después. */
@@ -221,16 +218,20 @@ function FichaDeParte({
         <div className="ml-10 flex flex-col gap-[3px] text-[13px] font-semibold text-ink-2">
           {parte.entradaEl ? (
             <>
-              <span>
-                Entrada {horaConDia(parte.entradaEl, fechaDeLaVisita)}
+              {/* Cada marca en su propia fila flex: así el ícono queda
+                  centrado con el texto por flexbox, y no por alineación de
+                  línea —que con un ícono al lado de texto siempre deja un
+                  píxel corrido—. */}
+              <span className="flex items-center gap-1.5">
+                Entrada {fechaYHora(parte.entradaEl)}
                 {verUbicacion && (
                   <UbicacionDeMarca parte={parte} cual="entrada" />
                 )}
               </span>
-              <span>
+              <span className="flex items-center gap-1.5">
                 Salida{" "}
                 {parte.salidaEl ? (
-                  horaConDia(parte.salidaEl, fechaDeLaVisita)
+                  fechaYHora(parte.salidaEl)
                 ) : (
                   <span className="text-muted-foreground">sin marcar</span>
                 )}

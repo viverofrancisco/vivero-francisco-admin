@@ -29,21 +29,38 @@ export function UbicacionDeMarca({
   if (!marcada) return null;
   const ubi = ubicacionDe(parte, cual);
 
+  /* Solo el ícono. El texto "ver en el mapa (±5 m)" era la mitad del renglón
+     para algo que se toca de vez en cuando, y el nombre del enlace ya lo dice
+     el pin. Lo que el texto sí decía —la precisión— vive en el `title`, que es
+     donde se va a buscar cuando importa.
+
+     Va adentro de un botón redondo del alto del renglón para que quede
+     centrado con el texto por flexbox y no por alineación de línea, que con
+     un ícono al lado de texto siempre queda un píxel corrido. */
+  const caja =
+    "inline-flex h-5 w-5 flex-none items-center justify-center rounded-full";
+
   if (ubi?.simulada) {
     return (
-      <span className="ml-1.5 inline-flex items-center gap-1 align-baseline font-bold text-destructive">
-        <ShieldAlert className="h-3 w-3 flex-none" />· ubicación simulada
+      <span
+        className={`${caja} text-destructive`}
+        title="Android dijo que esta ubicación viene de una app de mock"
+        aria-label="Ubicación simulada"
+      >
+        <ShieldAlert className="h-3.5 w-3.5" />
       </span>
     );
   }
 
-  /* Lo que falta se marca; lo que está, no grita. El caso normal es que la
-     marca traiga su punto, y pintar eso de color le sacaría el color a la
-     única línea que había que ver. */
+  /* Lo que falta se marca; lo que está, no grita. */
   if (!ubi) {
     return (
-      <span className="ml-1.5 inline-flex items-center gap-1 align-baseline font-bold text-warning-strong">
-        <MapPinOff className="h-3 w-3 flex-none" />· sin ubicación
+      <span
+        className={`${caja} text-warning-strong`}
+        title="Esta marca vino sin ubicación"
+        aria-label="Sin ubicación"
+      >
+        <MapPinOff className="h-3.5 w-3.5" />
       </span>
     );
   }
@@ -53,10 +70,13 @@ export function UbicacionDeMarca({
       href={`https://www.google.com/maps?q=${ubi.lat},${ubi.lng}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="ml-1.5 inline-flex items-center gap-1 align-baseline font-normal text-muted-foreground underline-offset-2 hover:underline"
+      className={`${caja} text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
+      title={`Ver en el mapa${
+        ubi.precision !== null ? ` (±${Math.round(ubi.precision)} m)` : ""
+      }`}
+      aria-label="Ver en el mapa dónde se marcó"
     >
-      <MapPin className="h-3 w-3 flex-none" />· ver en el mapa
-      {ubi.precision !== null && ` (±${Math.round(ubi.precision)} m)`}
+      <MapPin className="h-3.5 w-3.5" />
     </a>
   );
 }
