@@ -1,4 +1,4 @@
-import { MapPin, MapPinOff, ShieldAlert } from "lucide-react";
+import { MapPinned, MapPinOff, ShieldAlert } from "lucide-react";
 import { ubicacionDe, type PersonalDeVisita } from "@/lib/visita-tareas";
 
 /**
@@ -76,7 +76,7 @@ export function UbicacionDeMarca({
       }`}
       aria-label="Ver en el mapa dónde se marcó"
     >
-      <MapPin className="h-3.5 w-3.5" />
+      <MapPinned className="h-3.5 w-3.5" />
     </a>
   );
 }
