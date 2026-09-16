@@ -174,12 +174,37 @@ export interface VisitaDetail extends VisitaSummary {
     apellido: string | null;
     empresa: string | null;
     telefono: string | null;
-    direccion: string | null;
-    ciudad: string | null;
-    sector: { id: string; nombre: string } | null;
   };
+  /** Dónde pasa. La dirección y el sector son del lugar, no de la persona. */
+  propiedad: PropiedadResumen;
   grupo: { id: string; nombre: string } | null;
   media: VisitaMedia[];
+}
+
+/**
+ * Un lugar donde se trabaja.
+ *
+ * La dirección era del cliente y se mudó acá, con el sector y los metros: un
+ * cliente con dos casas tiene dos direcciones y ninguna es "la suya".
+ */
+export interface PropiedadResumen {
+  id: string;
+  nombre: string;
+  ciudad: string | null;
+  direccion: string | null;
+  numeroCasa: string | null;
+  referencia: string | null;
+  notas: string | null;
+  lat: number | null;
+  lng: number | null;
+  m2Total: number | null;
+  jardinerasPlantaAlta: boolean;
+  numeroArboles: number | null;
+  mlVegetacionBaja: number | null;
+  mlVegetacionMedia: number | null;
+  mlVegetacionAlta: number | null;
+  m2Cesped: number | null;
+  sector: { id: string; nombre: string } | null;
 }
 
 export interface ClienteProfileResponse {
@@ -189,9 +214,7 @@ export interface ClienteProfileResponse {
     apellido: string | null;
     empresa: string | null;
     telefono: string | null;
-    direccion: string | null;
-    ciudad: string | null;
-    sector: { id: string; nombre: string } | null;
+    propiedades: PropiedadResumen[];
   };
   proximaVisita: VisitaSummary | null;
 }
@@ -211,8 +234,7 @@ export interface ClienteListItem {
   apellido: string | null;
   empresa: string | null;
   telefono: string | null;
-  ciudad: string | null;
-  sector: { id: string; nombre: string } | null;
+  propiedades: PropiedadResumen[];
 }
 
 export interface ClientesListResponse {
@@ -223,11 +245,7 @@ export interface ClientesListResponse {
 export interface ClienteStaffDetail extends ClienteListItem {
   empresa: string | null;
   email: string | null;
-  direccion: string | null;
-  numeroCasa: string | null;
-  referencia: string | null;
   notas: string | null;
-  metrosCuadrados: number | null;
   suscripciones: {
     id: string;
     estado: string;

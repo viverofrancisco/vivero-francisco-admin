@@ -138,7 +138,13 @@ function ClienteRow({
       .map((w) => w[0])
       .join("")
       .toUpperCase() || "?";
-  const subtitle = [c.telefono, c.sector?.nombre, c.ciudad]
+  // De su primera propiedad: con varias, el sector de una sola sería mentira
+  // la mitad del tiempo, y la fila tiene lugar para una línea.
+  const subtitle = [
+    c.telefono,
+    c.propiedades[0]?.sector?.nombre,
+    c.propiedades[0]?.ciudad,
+  ]
     .filter(Boolean)
     .join(" · ");
 

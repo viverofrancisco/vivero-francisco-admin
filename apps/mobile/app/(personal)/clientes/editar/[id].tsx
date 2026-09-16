@@ -48,13 +48,20 @@ export default function ClienteEditarScreen() {
         empresa: initial.empresa,
         email: initial.email,
         telefono: initial.telefono,
-        ciudad: initial.ciudad,
-        sectorId: initial.sector?.id ?? null,
-        direccion: initial.direccion,
-        numeroCasa: initial.numeroCasa,
-        referencia: initial.referencia,
         notas: initial.notas,
-        metrosCuadrados: initial.metrosCuadrados,
+        // Editar desde el teléfono toca la primera propiedad, que es la que
+        // casi todos tienen. Las demás se manejan desde el portal, con su
+        // mapa y sus medidas.
+        propiedad: initial.propiedades?.[0]
+          ? {
+              ciudad: initial.propiedades[0].ciudad,
+              sectorId: initial.propiedades[0].sector?.id ?? null,
+              direccion: initial.propiedades[0].direccion,
+              numeroCasa: initial.propiedades[0].numeroCasa,
+              referencia: initial.propiedades[0].referencia,
+              m2Total: initial.propiedades[0].m2Total,
+            }
+          : undefined,
       }}
       onSubmit={submit}
     />

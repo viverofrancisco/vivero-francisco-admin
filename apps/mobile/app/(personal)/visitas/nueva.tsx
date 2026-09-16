@@ -371,9 +371,9 @@ function ClienteStep({
                 <Text variant="bodyLarge" style={styles.rowTitle}>
                   {nombreCliente(c)}
                 </Text>
-                {c.telefono || c.sector?.nombre ? (
+                {c.telefono || c.propiedades[0]?.sector?.nombre ? (
                   <Text variant="bodySmall" style={styles.muted}>
-                    {[c.telefono, c.sector?.nombre]
+                    {[c.telefono, c.propiedades[0]?.sector?.nombre]
                       .filter(Boolean)
                       .join(" · ")}
                   </Text>

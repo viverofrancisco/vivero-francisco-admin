@@ -94,29 +94,41 @@ export default function ClienteConfiguracionScreen() {
         <Text variant="headlineSmall" style={styles.heroTitle}>
           {cliente ? displayName : "Mi cuenta"}
         </Text>
-        {cliente?.sector?.nombre ? (
+        {/* Su primera propiedad. Con varias, las demás se ven en la sección
+            de abajo: acá solo entra una línea. */}
+        {cliente?.propiedades[0]?.sector?.nombre ? (
           <Text variant="bodyMedium" style={styles.heroSubtitle}>
-            {cliente.sector.nombre}
+            {cliente.propiedades[0].sector.nombre}
           </Text>
         ) : null}
       </View>
 
       {/* Datos */}
-      {cliente?.telefono || cliente?.direccion ? (
+      {cliente?.telefono ? (
         <Section title="Datos de contacto">
-          {cliente?.telefono ? (
-            <Row label="Teléfono" value={cliente.telefono} />
-          ) : null}
-          {cliente?.direccion ? (
+          <Row label="Teléfono" value={cliente.telefono} />
+        </Section>
+      ) : null}
+
+      {/* Dónde se le trabaja. Una fila por propiedad: quien tiene dos las ve
+          las dos, en vez de una dirección elegida a dedo. */}
+      {cliente && cliente.propiedades.length > 0 ? (
+        <Section
+          title={
+            cliente.propiedades.length === 1 ? "Mi propiedad" : "Mis propiedades"
+          }
+        >
+          {cliente.propiedades.map((p) => (
             <Row
-              label="Dirección"
+              key={p.id}
+              label={p.nombre}
               value={
-                cliente.ciudad
-                  ? `${cliente.direccion}, ${cliente.ciudad}`
-                  : cliente.direccion
+                [p.direccion, p.ciudad ?? p.sector?.nombre]
+                  .filter(Boolean)
+                  .join(", ") || "Sin dirección"
               }
             />
-          ) : null}
+          ))}
         </Section>
       ) : null}
 

@@ -253,7 +253,8 @@ function VisitaRow({
   // Para quien ya marcó su salida, esta visita terminó. Ver `estadoParaMi`.
   const estado = estadoParaMi(v, personalId);
   const terminada = visitaTerminada(estado);
-  const direccion = [cliente.direccion, cliente.sector?.nombre]
+  // De la propiedad: es adonde hay que ir, y un cliente puede tener varias.
+  const direccion = [v.propiedad.direccion, v.propiedad.sector?.nombre]
     .filter(Boolean)
     .join(" · ");
 

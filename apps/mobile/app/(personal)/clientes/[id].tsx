@@ -71,9 +71,7 @@ export default function ClienteDetailScreen() {
       .map((w) => w[0])
       .join("")
       .toUpperCase() || "?";
-  const direccion = [data.direccion, data.numeroCasa, data.ciudad]
-    .filter(Boolean)
-    .join(", ");
+
   // El detalle ya excluye las canceladas; se muestran activas y pausadas.
   const suscripcionesVisibles = data.suscripciones;
 
@@ -93,9 +91,9 @@ export default function ClienteDetailScreen() {
               {data.empresa}
             </Text>
           ) : null}
-          {data.sector?.nombre ? (
+          {data.propiedades[0]?.sector?.nombre ? (
             <Text variant="bodyMedium" style={styles.heroSubtitle}>
-              {data.sector.nombre}
+              {data.propiedades[0].sector.nombre}
             </Text>
           ) : null}
         </View>
@@ -120,18 +118,29 @@ export default function ClienteDetailScreen() {
         </Section>
       ) : null}
 
-      {/* Dirección */}
-      {direccion || data.referencia || data.metrosCuadrados ? (
-        <Section title="Dirección">
-          {direccion ? <Row label="Calle" value={direccion} /> : null}
-          {data.referencia ? (
-            <Row label="Referencia" value={data.referencia} />
+      {/* Dónde se le trabaja. Una sección por propiedad, porque un cliente
+          puede tener varias y ninguna es más "la suya" que otra. */}
+      {data.propiedades.map((p) => (
+        <Section key={p.id} title={p.nombre}>
+          {[p.direccion, p.numeroCasa, p.ciudad].filter(Boolean).length > 0 ? (
+            <Row
+              label="Dirección"
+              value={[p.direccion, p.numeroCasa, p.ciudad]
+                .filter(Boolean)
+                .join(", ")}
+            />
           ) : null}
-          {data.metrosCuadrados ? (
-            <Row label="Metros²" value={String(data.metrosCuadrados)} />
+          {p.sector ? <Row label="Sector" value={p.sector.nombre} /> : null}
+          {p.referencia ? <Row label="Referencia" value={p.referencia} /> : null}
+          {p.m2Total ? <Row label="Metros²" value={String(p.m2Total)} /> : null}
+          {p.m2Cesped ? (
+            <Row label="Césped" value={`${p.m2Cesped} m²`} />
+          ) : null}
+          {p.numeroArboles ? (
+            <Row label="Árboles" value={String(p.numeroArboles)} />
           ) : null}
         </Section>
-      ) : null}
+      ))}
 
       {/* Notas */}
       {data.notas ? (

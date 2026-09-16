@@ -374,11 +374,13 @@ export default function PersonalVisitaScreen() {
           {cliente.telefono ? (
             <Row label="Teléfono" value={cliente.telefono} />
           ) : null}
-          {cliente.direccion ? (
-            <Row label="Dirección" value={cliente.direccion} />
+          {/* La dirección es de la propiedad de esta visita: es adonde hay que
+              ir, y un cliente puede tener más de una. */}
+          {visita.propiedad.direccion ? (
+            <Row label="Dirección" value={visita.propiedad.direccion} />
           ) : null}
-          {cliente.sector ? (
-            <Row label="Sector" value={cliente.sector.nombre} />
+          {visita.propiedad.sector ? (
+            <Row label="Sector" value={visita.propiedad.sector.nombre} />
           ) : null}
         </Section>
 

@@ -44,6 +44,8 @@ interface Cliente {
   nombre: string;
   apellido?: string | null;
   empresa?: string | null;
+  /** Dónde se le trabaja. Casi siempre una; a veces dos o tres. */
+  propiedades: { id: string; nombre: string; direccion: string | null }[];
   suscripciones: SuscripcionOpcion[];
 }
 
@@ -105,6 +107,13 @@ export function NuevaVisitaPage({
         c.suscripciones.some((s) => s.id === suscripcionInicial)
       )?.id ?? ""
   );
+  // La propiedad sale sola cuando el cliente tiene una, que es casi siempre.
+  const [propiedadId, setPropiedadId] = useState(() => {
+    const c = clientes.find((x) =>
+      x.suscripciones.some((s) => s.id === suscripcionInicial)
+    );
+    return c?.propiedades.length === 1 ? c.propiedades[0].id : "";
+  });
   const [tareaIds, setTareaIds] = useState<string[]>([]);
   const [fechas, setFechas] = useState<string[]>([]);
   const [grupoId, setGrupoId] = useState("");
@@ -128,9 +137,17 @@ export function NuevaVisitaPage({
   // El orden del catálogo manda, así la lista no salta al elegir.
   const elegidas = tareas.filter((t) => tareaIds.includes(t.id));
 
+  /**
+   * Al elegir cliente, su propiedad queda elegida sola si tiene una sola.
+   *
+   * Es el caso de casi todos, y obligar a tocar un desplegable de un solo ítem
+   * es cobrarle a todos por el caso de los pocos que tienen dos.
+   */
   const elegirCliente = (id: string) => {
     setClienteId(id);
     setSuscripcionId("");
+    const c = clientes.find((x) => x.id === id);
+    setPropiedadId(c?.propiedades.length === 1 ? c.propiedades[0].id : "");
   };
 
   const alternarTarea = (id: string) =>
@@ -153,6 +170,7 @@ export function NuevaVisitaPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clienteId,
+          propiedadId,
           tareasObligatoriasIds: tareaIds,
           suscripcionId: suscripcionId || null,
           fechas,
@@ -197,7 +215,7 @@ export function NuevaVisitaPage({
           </Link>
           <Button
             onClick={() => setConfirmar(true)}
-            disabled={loading || !clienteId || fechas.length === 0}
+            disabled={loading || !clienteId || !propiedadId || fechas.length === 0}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {fechas.length > 1
@@ -336,6 +354,34 @@ export function NuevaVisitaPage({
                 searchPlaceholder="Buscar cliente..."
                 clearable
               />
+
+              {/* Dónde. Con una sola propiedad ya viene elegida y el
+                  desplegable solo confirma; con varias es la decisión que
+                  antes no existía porque la dirección era del cliente. */}
+              {cliente && (
+                <div className="mt-4 space-y-1.5">
+                  <Label>Propiedad</Label>
+                  {cliente.propiedades.length === 0 ? (
+                    <p className="text-sm text-warning-foreground">
+                      Este cliente no tiene ninguna propiedad cargada. Agrégale
+                      una desde su ficha para poder agendarle visitas.
+                    </p>
+                  ) : (
+                    <CustomSelect
+                      value={propiedadId}
+                      onChange={setPropiedadId}
+                      options={cliente.propiedades.map((p) => ({
+                        value: p.id,
+                        label: p.nombre,
+                        hint: p.direccion ?? undefined,
+                      }))}
+                      placeholder="Seleccionar propiedad"
+                      searchable={cliente.propiedades.length > 6}
+                      searchPlaceholder="Buscar propiedad..."
+                    />
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -426,6 +472,10 @@ export function NuevaVisitaPage({
           </DialogHeader>
           <div className="min-w-0 space-y-4">
             <dl className="divide-y rounded-md border text-sm">
+              <Fila etiqueta="Propiedad">
+                {cliente?.propiedades.find((p) => p.id === propiedadId)?.nombre ??
+                  "—"}
+              </Fila>
               <Fila etiqueta="Cliente">
                 {cliente ? nombreCliente(cliente) : "—"}
               </Fila>

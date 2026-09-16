@@ -42,16 +42,28 @@ export function ClienteForm({
   const [empresa, setEmpresa] = useState(initial?.empresa ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [telefono, setTelefono] = useState(initial?.telefono ?? "");
-  const [ciudad, setCiudad] = useState(initial?.ciudad ?? "");
-  const [direccion, setDireccion] = useState(initial?.direccion ?? "");
-  const [numeroCasa, setNumeroCasa] = useState(initial?.numeroCasa ?? "");
-  const [referencia, setReferencia] = useState(initial?.referencia ?? "");
+  /*
+   * La dirección es de la **propiedad**, no del cliente.
+   *
+   * Un cliente con dos casas tiene dos direcciones y ninguna es "la suya". Acá
+   * se carga la primera, que es la que el teléfono necesita para que el cliente
+   * recién creado sirva para agendar; las demás se agregan desde el portal,
+   * donde está el mapa y el resto de las medidas.
+   */
+  const [ciudad, setCiudad] = useState(initial?.propiedad?.ciudad ?? "");
+  const [direccion, setDireccion] = useState(initial?.propiedad?.direccion ?? "");
+  const [numeroCasa, setNumeroCasa] = useState(
+    initial?.propiedad?.numeroCasa ?? ""
+  );
+  const [referencia, setReferencia] = useState(
+    initial?.propiedad?.referencia ?? ""
+  );
   const [notas, setNotas] = useState(initial?.notas ?? "");
   const [metrosCuadrados, setMetrosCuadrados] = useState(
-    initial?.metrosCuadrados != null ? String(initial.metrosCuadrados) : ""
+    initial?.propiedad?.m2Total != null ? String(initial.propiedad.m2Total) : ""
   );
   const [sectorId, setSectorId] = useState<string | null>(
-    initial?.sectorId ?? null
+    initial?.propiedad?.sectorId ?? null
   );
 
   const [sectores, setSectores] = useState<SectorOption[]>([]);
@@ -93,13 +105,15 @@ export function ClienteForm({
         empresa: empresa?.trim() || null,
         email: email?.trim() || null,
         telefono: telefono?.trim() || null,
-        ciudad: ciudad?.trim() || null,
-        sectorId: sectorId ?? null,
-        direccion: direccion?.trim() || null,
-        numeroCasa: numeroCasa?.trim() || null,
-        referencia: referencia?.trim() || null,
         notas: notas?.trim() || null,
-        metrosCuadrados: metros,
+        propiedad: {
+          ciudad: ciudad?.trim() || null,
+          sectorId: sectorId ?? null,
+          direccion: direccion?.trim() || null,
+          numeroCasa: numeroCasa?.trim() || null,
+          referencia: referencia?.trim() || null,
+          m2Total: metros,
+        },
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar");
