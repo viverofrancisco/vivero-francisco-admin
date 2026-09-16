@@ -159,7 +159,10 @@ function Mapa({
     <div className="space-y-2">
       <Buscador onElegir={(p) => irA(p, 18)} />
 
-      <div className="h-80 w-full overflow-hidden rounded-xl border">
+      {/* 450 px: con el mapa más alto, la franja de atribución de Google —que
+          los términos de Maps Platform obligan a dejar visible— pesa menos en
+          proporción, y el pin no queda contra un borde apenas uno se mueve. */}
+      <div className="h-[450px] w-full overflow-hidden rounded-xl border">
         <Map
           defaultCenter={vistaInicial.centro}
           defaultZoom={vistaInicial.zoom}

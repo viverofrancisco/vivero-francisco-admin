@@ -27,12 +27,17 @@ import { CIUDADES_ECUADOR } from "@/lib/constants/ciudades-ecuador";
 import { propiedadSchema, type PropiedadFormData } from "@/lib/validations/cliente";
 
 /**
- * Leaflet toca `window` al importarse, así que no puede renderizarse en el
- * servidor.
+ * El SDK de Google Maps toca `window` al importarse, así que el mapa no puede
+ * renderizarse en el servidor.
  */
 const MapaPropiedad = dynamic(
   () => import("./mapa-propiedad").then((m) => m.MapaPropiedad),
-  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted" /> }
+  {
+    ssr: false,
+    // El mismo alto que el mapa: si no, la tarjeta salta cuando termina de
+    // cargar.
+    loading: () => <div className="h-[450px] animate-pulse rounded-xl bg-muted" />,
+  }
 );
 
 export interface PropiedadEditable {
