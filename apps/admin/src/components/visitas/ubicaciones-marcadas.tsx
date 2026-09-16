@@ -13,10 +13,10 @@ import { ubicacionDe, type PersonalDeVisita } from "@/lib/visita-tareas";
  * Lo que sí se señala es lo que se puede afirmar: que una marca vino **sin**
  * ubicación, y que Android dijo que venía de una app de mock.
  *
- * Va por marca y no por persona: la entrada y la salida son dos momentos
- * distintos, con dos horas distintas, y cada una se lee al lado de la suya.
- * Juntas en un renglón aparte había que volver a emparejarlas con la hora de
- * arriba para saber cuál era cuál.
+ * Va por marca y no por persona, y **pegada a su hora**: la entrada y la salida
+ * son dos momentos distintos, y juntas en un renglón aparte había que volver a
+ * emparejarlas con la hora de arriba para saber cuál era cuál. Por eso es un
+ * `<span>` en línea con un "·" adelante y no un bloque.
  */
 export function UbicacionDeMarca({
   parte,
@@ -31,34 +31,32 @@ export function UbicacionDeMarca({
 
   if (ubi?.simulada) {
     return (
-      <span className="flex items-center gap-1 text-[11px] font-semibold text-destructive">
-        <ShieldAlert className="h-3 w-3 flex-none" />
-        ubicación simulada
+      <span className="ml-1.5 inline-flex items-center gap-1 align-baseline font-bold text-destructive">
+        <ShieldAlert className="h-3 w-3 flex-none" />· ubicación simulada
       </span>
     );
   }
 
+  /* Lo que falta se marca; lo que está, no grita. El caso normal es que la
+     marca traiga su punto, y pintar eso de color le sacaría el color a la
+     única línea que había que ver. */
   if (!ubi) {
     return (
-      <span className="flex items-center gap-1 text-[11px] font-semibold text-warning-foreground">
-        <MapPinOff className="h-3 w-3 flex-none" />
-        sin ubicación
+      <span className="ml-1.5 inline-flex items-center gap-1 align-baseline font-bold text-warning-strong">
+        <MapPinOff className="h-3 w-3 flex-none" />· sin ubicación
       </span>
     );
   }
 
   return (
-    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-      <MapPin className="h-3 w-3 flex-none" />
-      <a
-        href={`https://www.google.com/maps?q=${ubi.lat},${ubi.lng}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline underline-offset-2 hover:text-foreground"
-      >
-        ver en el mapa
-        {ubi.precision !== null && ` (±${Math.round(ubi.precision)} m)`}
-      </a>
-    </span>
+    <a
+      href={`https://www.google.com/maps?q=${ubi.lat},${ubi.lng}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="ml-1.5 inline-flex items-center gap-1 align-baseline font-normal text-muted-foreground underline-offset-2 hover:underline"
+    >
+      <MapPin className="h-3 w-3 flex-none" />· ver en el mapa
+      {ubi.precision !== null && ` (±${Math.round(ubi.precision)} m)`}
+    </a>
   );
 }

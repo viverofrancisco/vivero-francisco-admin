@@ -58,6 +58,8 @@
   --color-green-100: var(--green-100);
   --color-green-700: var(--green-700);
   --color-green-deep: var(--green-deep);
+  --color-ink-2: var(--ink-2);
+  --color-warning-strong: var(--warning-strong);
 }
 
 :root {
@@ -116,6 +118,13 @@
   --green-100: oklch(0.93 0.035 150);
   --green-700: oklch(0.44 0.1 153);
   --green-deep: oklch(0.33 0.055 155);
+  /* El nivel de texto que faltaba: entre `foreground` (ink) y
+     `muted-foreground` (ink3). Es el gris de los datos de una ficha —se leen,
+     no se escanean— y con ink3 quedaban tan apagados como sus rótulos. */
+  --ink-2: oklch(0.46 0.012 152);
+  /* Más caliente que `warning`, para lo que hay que ver sí o sí adentro de un
+     renglón de texto: una marca que vino sin ubicación. */
+  --warning-strong: oklch(0.55 0.16 40);
 }
 
 .dark {
@@ -170,6 +179,8 @@
   --green-100: oklch(0.36 0.03 152);
   --green-700: oklch(0.78 0.07 150);
   --green-deep: oklch(0.85 0.05 150);
+  --ink-2: oklch(0.78 0.012 152);
+  --warning-strong: oklch(0.72 0.15 40);
 }
 
 @layer base {

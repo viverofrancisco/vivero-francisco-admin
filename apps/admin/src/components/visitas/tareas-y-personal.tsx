@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Check, Clock, Smartphone } from "lucide-react";
 import { UbicacionDeMarca } from "@/components/visitas/ubicaciones-marcadas";
@@ -62,52 +55,38 @@ export function Cronologia({
   /** La ubicación de las marcas es de oficina: el jardinero no revisa a nadie. */
   canModify: boolean;
 }) {
-  const gente = visita.personal;
+  const gente = [...visita.personal].sort(porCronologia);
 
   return (
-    <Card>
-      <CardHeader className="border-b py-3">
-        <CardTitle className="text-base">Cronología</CardTitle>
-        {/* El grupo nombra a este conjunto de gente. */}
-        {visita.grupo && (
-          <CardAction>
-            <span className="text-xs text-muted-foreground">
+    <Card className="gap-0 rounded-2xl py-0">
+      <CardContent className="p-[22px]">
+        <div className="mb-[18px] flex items-center justify-between gap-3">
+          <span className="text-[15.5px] font-extrabold">Cronología en vivo</span>
+          {/* El grupo nombra a este conjunto de gente. */}
+          {visita.grupo && (
+            <span className="text-[12.5px] font-bold text-muted-foreground">
               {visita.grupo.nombre}
             </span>
-          </CardAction>
-        )}
-      </CardHeader>
+          )}
+        </div>
 
-      <CardContent>
         {gente.length === 0 ? (
-          <p className="py-2 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Nadie está asignado todavía.
           </p>
         ) : (
-          /*
-           * Una línea vertical con un punto por persona.
-           *
-           * El orden es el del día —quien entró primero va primero, y quien no
-           * marcó queda al final—, así que la tarjeta se lee como pasó la
-           * jornada en vez de como está ordenada la tabla de asignaciones. El
-           * punto lleno dice que esa persona ya cerró lo suyo; el hueco, que
-           * todavía falta.
-           */
-          <ol className="relative space-y-5 py-1 pl-6">
-            <span
-              aria-hidden
-              className="absolute bottom-2 left-[5px] top-2 w-px bg-border"
-            />
-            {[...gente].sort(porCronologia).map((vp) => (
+          <div className="flex flex-col">
+            {gente.map((vp, i) => (
               <FichaDeParte
                 key={vp.personalId}
                 parte={vp}
                 fechaDeLaVisita={visita.fechaProgramada}
                 mismoAparato={mismoAparato.has(vp.personalId)}
                 verUbicacion={canModify}
+                ultimo={i === gente.length - 1}
               />
             ))}
-          </ol>
+          </div>
         )}
       </CardContent>
     </Card>
@@ -138,38 +117,42 @@ export function TareasObligatorias({
   if (visita.tareasObligatorias.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader className="border-b py-3">
-        <CardTitle className="text-base">Tareas obligatorias</CardTitle>
-        {faltantes.length > 0 && (
-          <CardAction>
-            <Badge variant="destructive" className="flex-none">
+    <Card className="gap-0 rounded-2xl py-0">
+      <CardContent className="p-[22px]">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[15.5px] font-extrabold">
+            Tareas obligatorias
+          </span>
+          {faltantes.length > 0 && (
+            <span className="rounded-full bg-warning/15 px-[11px] py-1 text-[12.5px] font-bold text-warning-foreground">
               {faltantes.length === 1
                 ? "1 sin hacer"
                 : `${faltantes.length} sin hacer`}
-            </Badge>
-          </CardAction>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-1.5">
+            </span>
+          )}
+        </div>
+        {/* Una ficha por obligatoria: verde con tilde la que alguien hizo, gris
+            con reloj la que sigue esperando. No hay rojo porque todavía no es
+            un error: la visita puede estar en curso. */}
+        <div className="mt-[14px] flex flex-wrap gap-2">
           {visita.tareasObligatorias.map(({ tarea }) => {
             const hecha = hechasIds.has(tarea.id);
             return (
-              <Badge
+              <span
                 key={tarea.id}
-                variant={hecha ? "secondary" : "outline"}
-                className={`gap-1.5 font-normal ${
-                  hecha ? "text-primary" : "text-muted-foreground"
+                className={`inline-flex items-center gap-[7px] rounded-full px-[13px] py-[7px] text-[13px] font-bold ${
+                  hecha
+                    ? "bg-green-50 text-green-700"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 {hecha ? (
-                  <Check className="h-3.5 w-3.5 flex-none" />
+                  <Check className="h-3.5 w-3.5 flex-none" strokeWidth={2.5} />
                 ) : (
-                  <Clock className="h-3.5 w-3.5 flex-none" />
+                  <Clock className="h-3.5 w-3.5 flex-none" strokeWidth={2.5} />
                 )}
                 {tarea.nombre}
-              </Badge>
+              </span>
             );
           })}
         </div>
@@ -191,132 +174,103 @@ function FichaDeParte({
   fechaDeLaVisita,
   mismoAparato,
   verUbicacion,
+  ultimo,
 }: {
   parte: PersonalDeVisita;
   fechaDeLaVisita: string | Date;
   mismoAparato: boolean;
   verUbicacion: boolean;
+  /** El último no lleva línea hacia abajo: no hay nadie después. */
+  ultimo: boolean;
 }) {
   const nombre =
     `${parte.personal.nombre} ${parte.personal.apellido ?? ""}`.trim();
   const suyas = parte.tareas.map((t) => t.tarea.nombre);
   const duracion = duracionEntre(parte.entradaEl, parte.salidaEl);
 
-  const cerro = parte.salidaEl !== null;
-
   return (
-    <li className="relative">
-      {/* El punto sobre la línea: lleno cuando esa persona ya cerró lo suyo,
-          hueco mientras falte. Es lo que hace que se lea de un vistazo cuánto
-          de la jornada está cerrado. */}
-      <span
-        aria-hidden
-        className={`absolute -left-6 top-2 h-2.5 w-2.5 rounded-full border-2 ${
-          cerro
-            ? "border-primary bg-primary"
-            : parte.entradaEl
-              ? "border-primary bg-card"
-              : "border-border bg-card"
-        }`}
-      />
-      <div className="flex items-center gap-2.5">
-        <InitialsAvatar name={nombre} size={28} />
-        <span className="min-w-0 flex-1 truncate text-sm font-medium">
-          {nombre}
-        </span>
-        {/* A la derecha, lo que resume su paso: cuánto estuvo, o que no marcó. */}
-        <span className="flex-none text-xs tabular-nums text-muted-foreground">
-          {duracion ?? (parte.entradaEl ? "Sin salir todavía" : "Sin marcar")}
-        </span>
+    <div className="flex gap-[14px]">
+      {/* El riel: el punto de esta persona y la línea que baja a la siguiente.
+          Lleno cuando ya cerró lo suyo, anillo gris mientras falte — es lo que
+          deja ver de un vistazo cuánto de la jornada está cerrado. */}
+      <div className="flex w-5 flex-none flex-col items-center">
+        <span
+          aria-hidden
+          className={`mt-1 h-[13px] w-[13px] flex-none rounded-full ${
+            parte.salidaEl
+              ? "bg-primary"
+              : "border-2 border-border bg-transparent"
+          }`}
+        />
+        {!ultimo && <span aria-hidden className="min-h-[54px] w-0.5 flex-1 bg-muted" />}
       </div>
 
-      {/* Sangrado al ancho del avatar: lo de abajo es de esta persona, y la
-          sangría lo dice sin necesidad de encerrarlo. */}
-      <div className="mt-1.5 space-y-1 pl-[38px]">
-        {(parte.entradaEl || parte.salidaEl) && (
-          <>
-            <Marca
-              etiqueta="Entrada"
-              cuando={
-                parte.entradaEl
-                  ? horaConDia(parte.entradaEl, fechaDeLaVisita)
-                  : null
-              }
-              ubicacion={
-                verUbicacion ? (
-                  <UbicacionDeMarca parte={parte} cual="entrada" />
-                ) : null
-              }
-            />
-            <Marca
-              etiqueta="Salida"
-              cuando={
-                parte.salidaEl
-                  ? horaConDia(parte.salidaEl, fechaDeLaVisita)
-                  : null
-              }
-              ubicacion={
-                verUbicacion ? (
-                  <UbicacionDeMarca parte={parte} cual="salida" />
-                ) : null
-              }
-            />
-          </>
-        )}
-
-        {/* En la misma columna que las horas, con el mismo rótulo a la
-            izquierda: es un dato más del parte, no un bloque aparte. Separadas
-            por puntos y no por comas, porque las comas viven adentro de los
-            nombres: "Deshoje de plantas de hojas grandes (alocasias, bijao,
-            heliconias)". */}
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-xs">
-          <span className="w-20 flex-none text-muted-foreground">Tareas</span>
-          <span className="min-w-0 flex-1">
-            {suyas.length > 0 ? (
-              suyas.join(" · ")
-            ) : (
-              <span className="text-muted-foreground">
-                {parte.registradoEl === null
-                  ? parte.entradaEl
-                    ? "Marcó entrada, todavía no cargó lo que hizo."
-                    : "Todavía no cargó su parte."
-                  : "No marcó ninguna tarea."}
-              </span>
-            )}
+      <div className="min-w-0 flex-1 pb-[22px]">
+        <div className="mb-1 flex items-center gap-2.5">
+          <InitialsAvatar name={nombre} size={30} />
+          <span className="min-w-0 truncate text-[14.5px] font-bold">
+            {nombre}
+          </span>
+          {/* A la derecha, lo que resume su paso: cuánto estuvo, o que falta. */}
+          <span
+            className={`ml-auto flex-none text-xs font-bold ${
+              duracion ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            {duracion ??
+              (parte.entradaEl ? "Sin salir todavía" : "Sin marcar")}
           </span>
         </div>
 
-        {/* Es el único rastro que deja prestarle la cuenta a un compañero, y por
-            eso va con esa persona y no en una lista de avisos: lo que se
-            conversa es con ella. */}
-        {mismoAparato && (
-          <p className="flex items-center gap-1.5 text-[11px] font-semibold text-destructive">
-            <Smartphone className="h-3 w-3 flex-none" />
-            Marcó desde el mismo teléfono que otra persona
-          </p>
-        )}
-      </div>
-    </li>
-  );
-}
+        {/* Sangrado al ancho del avatar, para que cuelgue de su nombre. */}
+        <div className="ml-10 flex flex-col gap-[3px] text-[13px] font-semibold text-ink-2">
+          {parte.entradaEl ? (
+            <>
+              <span>
+                Entrada {horaConDia(parte.entradaEl, fechaDeLaVisita)}
+                {verUbicacion && (
+                  <UbicacionDeMarca parte={parte} cual="entrada" />
+                )}
+              </span>
+              <span>
+                Salida{" "}
+                {parte.salidaEl ? (
+                  horaConDia(parte.salidaEl, fechaDeLaVisita)
+                ) : (
+                  <span className="text-muted-foreground">sin marcar</span>
+                )}
+                {verUbicacion && parte.salidaEl && (
+                  <UbicacionDeMarca parte={parte} cual="salida" />
+                )}
+              </span>
+              <span className="text-muted-foreground">
+                Tareas:{" "}
+                {suyas.length > 0
+                  ? suyas.join(" · ")
+                  : parte.registradoEl === null
+                    ? "todavía no las cargó"
+                    : "no marcó ninguna"}
+              </span>
+            </>
+          ) : (
+            /* Sin entrada no hay nada que contar, y el motivo importa: "no
+               marcó ninguna tarea" y "todavía no cargó su parte" se ven igual
+               de vacíos y significan cosas distintas. */
+            <span className="text-muted-foreground">
+              Todavía no cargó su parte.
+            </span>
+          )}
 
-/** Una marca: la hora y, pegada, dónde estaba el teléfono al apretar. */
-function Marca({
-  etiqueta,
-  cuando,
-  ubicacion,
-}: {
-  etiqueta: string;
-  cuando: string | null;
-  ubicacion: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
-      <span className="w-20 flex-none text-muted-foreground">{etiqueta}</span>
-      <span className="flex-none tabular-nums">
-        {cuando ?? <span className="text-muted-foreground">Sin marcar</span>}
-      </span>
-      {cuando ? ubicacion : null}
+          {/* Es el único rastro que deja prestarle la cuenta a un compañero, y
+              por eso va con esa persona: lo que se conversa es con ella. */}
+          {mismoAparato && (
+            <span className="flex items-center gap-1.5 font-bold text-destructive">
+              <Smartphone className="h-3.5 w-3.5 flex-none" />
+              Marcó desde el mismo teléfono que otra persona
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

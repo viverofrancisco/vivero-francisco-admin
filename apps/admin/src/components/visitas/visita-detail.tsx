@@ -247,11 +247,14 @@ export function VisitaDetail({
               </h1>
               <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
               {sinRegistrar.length > 0 && visita.estado === "EN_CURSO" && (
-                <Badge variant="outline" className="flex-none">
+                /* Ámbar y no gris: es lo que impide cerrar la visita, y al
+                   lado de la píldora del estado un contorno neutro se lee
+                   como un dato más. */
+                <span className="flex-none rounded-full bg-warning/15 px-[11px] py-1 text-[12.5px] font-bold text-warning-foreground">
                   {sinRegistrar.length === 1
                     ? "Falta 1 parte"
                     : `Faltan ${sinRegistrar.length} partes`}
-                </Badge>
+                </span>
               )}
             </div>
             <p className="text-sm text-muted-foreground truncate">
@@ -313,8 +316,8 @@ export function VisitaDetail({
         </div>
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid items-start gap-5 lg:grid-cols-[1.6fr_1fr]">
+        <div className="flex flex-col gap-[18px]">
         {/* Arriba de las tareas: cuando hay algo que decir, es lo primero que
             la oficina quiere leer. Cuando no hay, no ocupa nada. */}
         {visita.calificacion && (
@@ -411,31 +414,33 @@ export function VisitaDetail({
         </Card>
         </div>
 
-        <div className="space-y-6">
-        {/* En verde y no en blanco: es de quién es esta visita, el dato que
-            se busca primero al abrir la ficha, y en una columna de tarjetas
-            iguales había que leerlas todas para encontrarlo. */}
-        <Card className="border-transparent bg-primary text-primary-foreground">
-          <CardContent className="flex items-center gap-3 py-4">
-            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-primary-foreground/15 text-sm font-semibold">
-              {iniciales(nombreCliente(visita.cliente))}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-semibold uppercase tracking-wide text-primary-foreground/70">
-                Cliente
+        <div className="flex flex-col gap-[18px]">
+        {/* En degradado y no en blanco: es de quién es esta visita, el dato
+            que se busca primero al abrir la ficha, y en una columna de
+            tarjetas iguales había que leerlas todas para encontrarlo. */}
+        <Card className="gap-0 rounded-2xl border-transparent bg-linear-135 from-green-deep to-green-700 py-0 text-white">
+          <CardContent className="p-5">
+            <p className="text-[12.5px] font-bold tracking-[0.04em] text-white/75">
+              CLIENTE
+            </p>
+            <div className="mt-2.5 flex items-center gap-2.5">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white/20 text-[15px] font-bold">
+                {iniciales(nombreCliente(visita.cliente))}
               </span>
-              <Link
-                href={`/dashboard/clientes/${visita.cliente.id}`}
-                className="block truncate font-bold hover:underline"
-              >
-                {nombreCliente(visita.cliente)}
-              </Link>
-              <span className="block truncate text-xs text-primary-foreground/70">
-                {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
-                  .filter(Boolean)
-                  .join(" · ") || "Sin sector"}
+              <span className="min-w-0 flex-1">
+                <Link
+                  href={`/dashboard/clientes/${visita.cliente.id}`}
+                  className="block truncate text-[15.5px] font-extrabold hover:underline"
+                >
+                  {nombreCliente(visita.cliente)}
+                </Link>
+                <span className="block truncate text-[12.5px] font-semibold text-white/75">
+                  {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
+                    .filter(Boolean)
+                    .join(" · ") || "Sin sector"}
+                </span>
               </span>
-            </span>
+            </div>
           </CardContent>
         </Card>
 
@@ -445,8 +450,8 @@ export function VisitaDetail({
           <CardHeader className="border-b py-3">
             <CardTitle className="text-base">Detalles</CardTitle>
           </CardHeader>
-          <CardContent>
-            <dl className="space-y-1.5 text-sm">
+          <CardContent className="px-1">
+            <dl>
               <Fila etiqueta="Programada" icono={<CalendarDays className="h-3.5 w-3.5 flex-none" />}>
                 <span className="capitalize">
                   {formatCorta(visita.fechaProgramada)}
@@ -642,6 +647,14 @@ export function VisitaDetail({
  * El ícono no decora: en una columna de ocho filas de texto gris es lo que deja
  * encontrar la que se busca sin leerlas todas.
  */
+/**
+ * Una fila de Detalles: un chip con el ícono, el rótulo, y el valor a la
+ * derecha.
+ *
+ * El ícono no decora: en una columna de ocho renglones de texto gris es lo que
+ * deja encontrar el que se busca sin leerlos todos. Va adentro de un chip con
+ * fondo para que la izquierda tenga un ritmo en vez de ser ocho grises pegados.
+ */
 function Fila({
   etiqueta,
   icono,
@@ -652,12 +665,18 @@ function Fila({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <dt className="flex flex-none items-center gap-2 text-muted-foreground">
-        {icono}
+    <div className="flex items-center justify-between gap-3 border-b border-muted px-3 py-[11px] last:border-b-0">
+      <dt className="flex flex-none items-center gap-2.5 text-[13px] font-semibold text-ink-2">
+        {icono && (
+          <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-muted text-muted-foreground">
+            {icono}
+          </span>
+        )}
         {etiqueta}
       </dt>
-      <dd className="min-w-0 truncate text-right">{children}</dd>
+      <dd className="min-w-0 truncate text-right text-[13px] font-semibold">
+        {children}
+      </dd>
     </div>
   );
 }
