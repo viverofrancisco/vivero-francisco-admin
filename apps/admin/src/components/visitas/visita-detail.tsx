@@ -231,52 +231,51 @@ export function VisitaDetail({
 
   return (
     <>
-      <div className="sticky top-0 z-20 -mx-4 md:-mx-6 -mt-4 md:-mt-6 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b mb-6">
-        <div className="flex items-center gap-3">
-          {/* Vuelve de donde vino: llegar desde una suscripción y salir a la
-              lista de visitas es perder el lugar donde uno estaba. */}
+      {/*
+        El encabezado del diseño: el título con sus píldoras a la izquierda, las
+        acciones a la derecha, y nada más.
+        Se fue el renglón con el cliente y las tareas —el cliente tiene su
+        tarjeta verde a la derecha y las tareas son la mitad de la página— y se
+        fue la barra pegajosa: las acciones son "editar" y "completar", que se
+        usan una vez y no mientras se lee. La flecha se queda, porque volver a
+        donde uno estaba no lo resuelve el botón del navegador cuando se llegó
+        desde una suscripción o desde una lista filtrada.
+      */}
+      <div className="mb-[22px] flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-2.5">
           <Link href={backHref}>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="-ml-2 flex-none">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-extrabold tracking-tight truncate">
-                Visita #{visita.numero}
-              </h1>
-              <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
-              {sinRegistrar.length > 0 && visita.estado === "EN_CURSO" && (
-                /* Ámbar y no gris: es lo que impide cerrar la visita, y al
-                   lado de la píldora del estado un contorno neutro se lee
-                   como un dato más. */
-                <span className="flex-none rounded-full bg-warning/15 px-[11px] py-1 text-[12.5px] font-bold text-warning-foreground">
-                  {sinRegistrar.length === 1
-                    ? "Falta 1 parte"
-                    : `Faltan ${sinRegistrar.length} partes`}
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground truncate">
-              {nombreCliente(visita.cliente)}
-              {hechas.length > 0
-                ? ` — ${hechas.map((t) => t.nombre).join(", ")}`
-                : ""}
-            </p>
-          </div>
+          <h1 className="truncate text-2xl font-extrabold tracking-[-0.02em]">
+            Visita #{visita.numero}
+          </h1>
+          <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
+          {sinRegistrar.length > 0 && visita.estado === "EN_CURSO" && (
+            /* Ámbar y no gris: es lo que impide cerrar la visita, y al lado de
+               la píldora del estado un contorno neutro se lee como un dato
+               más. */
+            <span className="flex-none rounded-full bg-warning/15 px-[11px] py-1 text-[12.5px] font-bold text-warning-foreground">
+              {sinRegistrar.length === 1
+                ? "Falta 1 parte"
+                : `Faltan ${sinRegistrar.length} partes`}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-none items-center gap-2">
           {miParte && (
-            <div className="flex flex-none items-center gap-2">
-              <MiParte
-                visitaId={visita.id}
-                fechaProgramada={visita.fechaProgramada}
-                parte={miParte}
-                obligatoriasIds={visita.tareasObligatorias.map((o) => o.tarea.id)}
-                catalogo={catalogo}
-              />
-            </div>
+            <MiParte
+              visitaId={visita.id}
+              fechaProgramada={visita.fechaProgramada}
+              parte={miParte}
+              obligatoriasIds={visita.tareasObligatorias.map((o) => o.tarea.id)}
+              catalogo={catalogo}
+            />
           )}
           {canModify && (
-            <div className="flex flex-none items-center gap-2">
+            <>
               {/* Editable en cualquier estado: corregir la fecha de una visita
                   ya hecha no debería obligar a rehacerla. */}
               <Link href={`/dashboard/visitas/${visita.id}/editar`}>
@@ -311,7 +310,7 @@ export function VisitaDetail({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
