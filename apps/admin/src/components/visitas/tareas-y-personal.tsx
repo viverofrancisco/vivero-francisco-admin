@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
-import { Check, LogIn, LogOut, Smartphone, X } from "lucide-react";
+import { Check, Clock, Smartphone } from "lucide-react";
 import { UbicacionDeMarca } from "@/components/visitas/ubicaciones-marcadas";
 import { horaConDia } from "@/components/visitas/formato-marca";
 import type { PersonalDeVisita, TareaHecha } from "@/lib/visita-tareas";
@@ -51,85 +51,54 @@ interface VisitaParaFichas {
  *   corresponde. Juntas abajo había que volver a emparejarlas con la hora de
  *   arriba para saber cuál era la de la entrada.
  */
-export function TareasYPersonal({
+export function Cronologia({
   visita,
-  hechas,
-  faltantes,
   mismoAparato,
   canModify,
 }: {
   visita: VisitaParaFichas;
-  /** La unión de lo que cargó cada uno. */
-  hechas: TareaHecha[];
-  /** Las obligatorias que nadie cubrió. */
-  faltantes: { id: string }[];
   /** Quiénes marcaron desde el mismo aparato que otro. */
   mismoAparato: Set<string>;
   /** La ubicación de las marcas es de oficina: el jardinero no revisa a nadie. */
   canModify: boolean;
 }) {
   const gente = visita.personal;
-  const hechasIds = new Set(hechas.map((t) => t.id));
 
   return (
     <Card>
       <CardHeader className="border-b py-3">
-        <CardTitle className="text-base">Tareas y personal</CardTitle>
-        <CardAction className="flex items-center gap-2">
-          {/* El grupo nombra a este conjunto de gente. */}
-          {visita.grupo && (
+        <CardTitle className="text-base">Cronología</CardTitle>
+        {/* El grupo nombra a este conjunto de gente. */}
+        {visita.grupo && (
+          <CardAction>
             <span className="text-xs text-muted-foreground">
               {visita.grupo.nombre}
             </span>
-          )}
-          {faltantes.length > 0 && (
-            <Badge variant="destructive" className="flex-none">
-              {faltantes.length === 1
-                ? "1 sin hacer"
-                : `${faltantes.length} sin hacer`}
-            </Badge>
-          )}
-        </CardAction>
+          </CardAction>
+        )}
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        {/* Lo que la visita exigía, una sola vez y arriba de todo. */}
-        {visita.tareasObligatorias.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Obligatorias
-            </span>
-            {visita.tareasObligatorias.map(({ tarea }) => {
-              const hecha = hechasIds.has(tarea.id);
-              return (
-                <Badge
-                  key={tarea.id}
-                  variant={hecha ? "secondary" : "destructive"}
-                  className="gap-1 font-normal"
-                >
-                  {hecha ? (
-                    <Check className="h-3 w-3 flex-none" />
-                  ) : (
-                    <X className="h-3 w-3 flex-none" />
-                  )}
-                  {tarea.nombre}
-                </Badge>
-              );
-            })}
-          </div>
-        )}
-
+      <CardContent>
         {gente.length === 0 ? (
           <p className="py-2 text-sm text-muted-foreground">
             Nadie está asignado todavía.
           </p>
         ) : (
-          /* Separadas por una línea y no cada una en su recuadro: adentro de
-             una tarjeta, meter tarjetas convierte cada persona en un objeto
-             aparte que hay que volver a juntar con la vista. La línea alcanza
-             para decir dónde termina un parte y empieza el otro. */
-          <ul className="divide-y border-t">
-            {gente.map((vp) => (
+          /*
+           * Una línea vertical con un punto por persona.
+           *
+           * El orden es el del día —quien entró primero va primero, y quien no
+           * marcó queda al final—, así que la tarjeta se lee como pasó la
+           * jornada en vez de como está ordenada la tabla de asignaciones. El
+           * punto lleno dice que esa persona ya cerró lo suyo; el hueco, que
+           * todavía falta.
+           */
+          <ol className="relative space-y-5 py-1 pl-6">
+            <span
+              aria-hidden
+              className="absolute bottom-2 left-[5px] top-2 w-px bg-border"
+            />
+            {[...gente].sort(porCronologia).map((vp) => (
               <FichaDeParte
                 key={vp.personalId}
                 parte={vp}
@@ -138,8 +107,72 @@ export function TareasYPersonal({
                 verUbicacion={canModify}
               />
             ))}
-          </ul>
+          </ol>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Quien entró antes va antes; quien no marcó, al final. */
+function porCronologia(a: PersonalDeVisita, b: PersonalDeVisita): number {
+  if (!a.entradaEl && !b.entradaEl) return 0;
+  if (!a.entradaEl) return 1;
+  if (!b.entradaEl) return -1;
+  return new Date(a.entradaEl).getTime() - new Date(b.entradaEl).getTime();
+}
+
+/** Lo que la visita exigía, y si se cubrió. Se decide al agendar. */
+export function TareasObligatorias({
+  visita,
+  hechas,
+  faltantes,
+}: {
+  visita: Pick<VisitaParaFichas, "tareasObligatorias">;
+  /** La unión de lo que cargó cada uno. */
+  hechas: TareaHecha[];
+  /** Las obligatorias que nadie cubrió. */
+  faltantes: { id: string }[];
+}) {
+  const hechasIds = new Set(hechas.map((t) => t.id));
+  if (visita.tareasObligatorias.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader className="border-b py-3">
+        <CardTitle className="text-base">Tareas obligatorias</CardTitle>
+        {faltantes.length > 0 && (
+          <CardAction>
+            <Badge variant="destructive" className="flex-none">
+              {faltantes.length === 1
+                ? "1 sin hacer"
+                : `${faltantes.length} sin hacer`}
+            </Badge>
+          </CardAction>
+        )}
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-1.5">
+          {visita.tareasObligatorias.map(({ tarea }) => {
+            const hecha = hechasIds.has(tarea.id);
+            return (
+              <Badge
+                key={tarea.id}
+                variant={hecha ? "secondary" : "outline"}
+                className={`gap-1.5 font-normal ${
+                  hecha ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {hecha ? (
+                  <Check className="h-3.5 w-3.5 flex-none" />
+                ) : (
+                  <Clock className="h-3.5 w-3.5 flex-none" />
+                )}
+                {tarea.nombre}
+              </Badge>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
@@ -169,8 +202,23 @@ function FichaDeParte({
   const suyas = parte.tareas.map((t) => t.tarea.nombre);
   const duracion = duracionEntre(parte.entradaEl, parte.salidaEl);
 
+  const cerro = parte.salidaEl !== null;
+
   return (
-    <li className="py-3">
+    <li className="relative">
+      {/* El punto sobre la línea: lleno cuando esa persona ya cerró lo suyo,
+          hueco mientras falte. Es lo que hace que se lea de un vistazo cuánto
+          de la jornada está cerrado. */}
+      <span
+        aria-hidden
+        className={`absolute -left-6 top-2 h-2.5 w-2.5 rounded-full border-2 ${
+          cerro
+            ? "border-primary bg-primary"
+            : parte.entradaEl
+              ? "border-primary bg-card"
+              : "border-border bg-card"
+        }`}
+      />
       <div className="flex items-center gap-2.5">
         <InitialsAvatar name={nombre} size={28} />
         <span className="min-w-0 flex-1 truncate text-sm font-medium">
@@ -188,7 +236,6 @@ function FichaDeParte({
         {(parte.entradaEl || parte.salidaEl) && (
           <>
             <Marca
-              icono={<LogIn className="h-3.5 w-3.5 flex-none" />}
               etiqueta="Entrada"
               cuando={
                 parte.entradaEl
@@ -202,7 +249,6 @@ function FichaDeParte({
               }
             />
             <Marca
-              icono={<LogOut className="h-3.5 w-3.5 flex-none" />}
               etiqueta="Salida"
               cuando={
                 parte.salidaEl
@@ -224,7 +270,7 @@ function FichaDeParte({
             nombres: "Deshoje de plantas de hojas grandes (alocasias, bijao,
             heliconias)". */}
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-xs">
-          <span className="w-20 flex-none text-muted-foreground">Hizo</span>
+          <span className="w-20 flex-none text-muted-foreground">Tareas</span>
           <span className="min-w-0 flex-1">
             {suyas.length > 0 ? (
               suyas.join(" · ")
@@ -256,22 +302,17 @@ function FichaDeParte({
 
 /** Una marca: la hora y, pegada, dónde estaba el teléfono al apretar. */
 function Marca({
-  icono,
   etiqueta,
   cuando,
   ubicacion,
 }: {
-  icono: React.ReactNode;
   etiqueta: string;
   cuando: string | null;
   ubicacion: React.ReactNode;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
-      <span className="flex w-20 flex-none items-center gap-1.5 text-muted-foreground">
-        {icono}
-        {etiqueta}
-      </span>
+      <span className="w-20 flex-none text-muted-foreground">{etiqueta}</span>
       <span className="flex-none tabular-nums">
         {cuando ?? <span className="text-muted-foreground">Sin marcar</span>}
       </span>

@@ -23,9 +23,16 @@ import {
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import {
   ArrowLeft,
+  CalendarCheck,
+  CalendarDays,
   CheckCircle,
+  Clock,
+  LogIn,
+  LogOut,
   Pencil,
+  PenLine,
   Plus,
+  Timer,
   Trash2,
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -34,9 +41,12 @@ import {
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
 import { ArchivosVisita } from "@/components/visitas/archivos-visita";
-import { TareasYPersonal } from "@/components/visitas/tareas-y-personal";
+import {
+  Cronologia,
+  TareasObligatorias,
+} from "@/components/visitas/tareas-y-personal";
 import { Badge } from "@/components/ui/badge";
-import { horaConDia } from "./formato-marca";
+import { hora12, horaConDia } from "./formato-marca";
 import {
   CalificacionVisita,
   type CalificacionData,
@@ -311,14 +321,20 @@ export function VisitaDetail({
           <CalificacionVisita calificacion={visita.calificacion} />
         )}
 
-        {/* Quién hizo qué, en una grilla: la tarea es la fila y la persona
-            la columna. Ver `TareasYPersonal` para por qué. */}
-        <TareasYPersonal
+        {/* Cómo pasó la jornada, en orden: un punto por persona sobre una
+            línea, con su entrada, su salida y lo que hizo. Ver `Cronologia`. */}
+        <Cronologia
+          visita={visita}
+          mismoAparato={mismoAparato}
+          canModify={canModify}
+        />
+
+        {/* Lo que la visita exigía, aparte: se decide al agendar y es de la
+            visita, no de nadie en particular. */}
+        <TareasObligatorias
           visita={visita}
           hechas={hechas}
           faltantes={faltantes}
-          mismoAparato={mismoAparato}
-          canModify={canModify}
         />
 
 
@@ -396,22 +412,30 @@ export function VisitaDetail({
         </div>
 
         <div className="space-y-6">
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Cliente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Link
-              href={`/dashboard/clientes/${visita.cliente.id}`}
-              className="block truncate font-bold hover:underline"
-            >
-              {nombreCliente(visita.cliente)}
-            </Link>
-            <p className="text-xs text-muted-foreground">
-              {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
-                .filter(Boolean)
-                .join(" · ") || "Sin sector"}
-            </p>
+        {/* En verde y no en blanco: es de quién es esta visita, el dato que
+            se busca primero al abrir la ficha, y en una columna de tarjetas
+            iguales había que leerlas todas para encontrarlo. */}
+        <Card className="border-transparent bg-primary text-primary-foreground">
+          <CardContent className="flex items-center gap-3 py-4">
+            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-primary-foreground/15 text-sm font-semibold">
+              {iniciales(nombreCliente(visita.cliente))}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-semibold uppercase tracking-wide text-primary-foreground/70">
+                Cliente
+              </span>
+              <Link
+                href={`/dashboard/clientes/${visita.cliente.id}`}
+                className="block truncate font-bold hover:underline"
+              >
+                {nombreCliente(visita.cliente)}
+              </Link>
+              <span className="block truncate text-xs text-primary-foreground/70">
+                {[visita.cliente.sector?.nombre, visita.cliente.ciudad]
+                  .filter(Boolean)
+                  .join(" · ") || "Sin sector"}
+              </span>
+            </span>
           </CardContent>
         </Card>
 
@@ -423,12 +447,12 @@ export function VisitaDetail({
           </CardHeader>
           <CardContent>
             <dl className="space-y-1.5 text-sm">
-              <Fila etiqueta="Programada">
+              <Fila etiqueta="Programada" icono={<CalendarDays className="h-3.5 w-3.5 flex-none" />}>
                 <span className="capitalize">
                   {formatCorta(visita.fechaProgramada)}
                 </span>
               </Fila>
-              <Fila etiqueta="Realizada">
+              <Fila etiqueta="Realizada" icono={<CalendarCheck className="h-3.5 w-3.5 flex-none" />}>
                 {visita.fechaRealizada ? (
                   <span className="capitalize">
                     {formatCorta(visita.fechaRealizada)}
@@ -444,13 +468,13 @@ export function VisitaDetail({
                   La oficina ve la ventana, que es la que le importa. */}
               {miParte ? (
                 <>
-                  <Fila etiqueta="Entrada">
+                  <Fila etiqueta="Entrada" icono={<LogIn className="h-3.5 w-3.5 flex-none" />}>
                     <MarcaEnDetalle
                       fecha={miParte.entradaEl}
                       dia={visita.fechaProgramada}
                     />
                   </Fila>
-                  <Fila etiqueta="Salida">
+                  <Fila etiqueta="Salida" icono={<LogOut className="h-3.5 w-3.5 flex-none" />}>
                     <MarcaEnDetalle
                       fecha={miParte.salidaEl}
                       dia={visita.fechaProgramada}
@@ -460,7 +484,7 @@ export function VisitaDetail({
                       duración, no la de la visita: arriba están sus horas, y
                       mezclar las dos cosas en filas pegadas es lo que hace que
                       un número no cierre con el de al lado. */}
-                  <Fila etiqueta="Duración">
+                  <Fila etiqueta="Duración" icono={<Timer className="h-3.5 w-3.5 flex-none" />}>
                     {duracionEntre(miParte.entradaEl, miParte.salidaEl) ?? (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -468,14 +492,16 @@ export function VisitaDetail({
                 </>
               ) : (
                 <>
-                  <Fila etiqueta="Horario">
+                  <Fila etiqueta="Horario" icono={<Clock className="h-3.5 w-3.5 flex-none" />}>
                     {visita.horaEntrada || visita.horaSalida ? (
-                      `${visita.horaEntrada ?? "—"} a ${visita.horaSalida ?? "—"}`
+                      `${
+                        visita.horaEntrada ? hora12(visita.horaEntrada) : "—"
+                      } a ${visita.horaSalida ? hora12(visita.horaSalida) : "—"}`
                     ) : (
                       <span className="text-muted-foreground">Sin registrar</span>
                     )}
                   </Fila>
-                  <Fila etiqueta="Duración">
+                  <Fila etiqueta="Duración" icono={<Timer className="h-3.5 w-3.5 flex-none" />}>
                     {duracion(visita.horaEntrada, visita.horaSalida) ?? (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -486,7 +512,7 @@ export function VisitaDetail({
                   cerró en el sistema, que no tiene por qué ser el mismo día ni
                   la misma persona. */}
               {visita.completadaEl && (
-                <Fila etiqueta="Completada">
+                <Fila etiqueta="Completada" icono={<CheckCircle className="h-3.5 w-3.5 flex-none" />}>
                   <span className="block">{momento(visita.completadaEl)}</span>
                   {visita.completadaPorNombre && (
                     <span className="block text-xs text-muted-foreground">
@@ -496,7 +522,7 @@ export function VisitaDetail({
                 </Fila>
               )}
               {visita.actualizadaEl && (
-                <Fila etiqueta="Última edición">
+                <Fila etiqueta="Última edición" icono={<PenLine className="h-3.5 w-3.5 flex-none" />}>
                   <span className="block">{momento(visita.actualizadaEl)}</span>
                   {visita.actualizadaPorNombre && (
                     <span className="block text-xs text-muted-foreground">
@@ -610,19 +636,38 @@ export function VisitaDetail({
 
 /** Casilla chica: etiqueta arriba, valor abajo. */
 /** Etiqueta a la izquierda, valor a la derecha. */
+/**
+ * Una fila de Detalles, con su ícono.
+ *
+ * El ícono no decora: en una columna de ocho filas de texto gris es lo que deja
+ * encontrar la que se busca sin leerlas todas.
+ */
 function Fila({
   etiqueta,
+  icono,
   children,
 }: {
   etiqueta: string;
+  icono?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex justify-between gap-3">
-      <dt className="flex-none text-muted-foreground">{etiqueta}</dt>
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="flex flex-none items-center gap-2 text-muted-foreground">
+        {icono}
+        {etiqueta}
+      </dt>
       <dd className="min-w-0 truncate text-right">{children}</dd>
     </div>
   );
+}
+
+/** Las dos primeras letras del nombre, para el avatar del cliente. */
+function iniciales(nombre: string): string {
+  const partes = nombre.trim().split(/\s+/);
+  return (
+    (partes[0]?.[0] ?? "") + (partes[1]?.[0] ?? "")
+  ).toUpperCase() || "?";
 }
 
 const formatCorta = (iso: string) =>
