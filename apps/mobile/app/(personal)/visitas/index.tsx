@@ -376,7 +376,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  listContent: { padding: 18, paddingBottom: 96, gap: 10 },
+  // El mismo respiro que a los lados: los 96 de antes eran para despejar una
+  // barra de pestañas que el navegador ya descuenta solo, y dejaban una pantalla
+  // vacía debajo de la última visita.
+  listContent: { padding: 18, gap: 10 },
 
   /** La tarjeta de ruta, en el verde profundo del sistema. */
   ruta: {
