@@ -27,15 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { MediaViewer, type MediaViewerSource } from "@/components/ui/media-viewer";
 import { toast } from "sonner";
-import {
-  FolderInput,
-  Loader2,
-  MoreVertical,
-  Play,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Loader2, MoreVertical, Play, Plus, X } from "lucide-react";
 import { MAX_ARCHIVOS_POR_SUBIDA } from "@vivero/shared";
 
 export interface ArchivoDeVisita {
@@ -417,15 +409,13 @@ export function ArchivosVisita({
                         {/* Mover = cambiar la etiqueta. Va a un diálogo con
                             buscador: los destinos son todo el catálogo. */}
                         <DropdownMenuItem onClick={() => setMoviendo(a)}>
-                          <FolderInput className="mr-2 h-4 w-4" />
-                          Cambiar tarea…
+                          Cambiar tarea
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => borrar(a.id)}
                           className="text-destructive"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
