@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { TarjetaVisita } from "@/components/visitas/tarjeta-visita";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Check, Clock, Smartphone } from "lucide-react";
 import { UbicacionDeMarca } from "@/components/visitas/ubicaciones-marcadas";
@@ -58,38 +58,36 @@ export function Cronologia({
   const gente = [...visita.personal].sort(porCronologia);
 
   return (
-    <Card className="gap-0 rounded-2xl py-0">
-      <CardContent className="p-[22px]">
-        <div className="mb-[18px] flex items-center justify-between gap-3">
-          <span className="text-[15.5px] font-extrabold">Cronología en vivo</span>
-          {/* El grupo nombra a este conjunto de gente. */}
-          {visita.grupo && (
-            <span className="text-[12.5px] font-bold text-muted-foreground">
-              {visita.grupo.nombre}
-            </span>
-          )}
+    <TarjetaVisita
+      titulo="Cronología en vivo"
+      /* El grupo nombra a este conjunto de gente. */
+      accion={
+        visita.grupo ? (
+          <span className="text-[12.5px] font-bold text-muted-foreground">
+            {visita.grupo.nombre}
+          </span>
+        ) : null
+      }
+    >
+      {gente.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Nadie está asignado todavía.
+        </p>
+      ) : (
+        <div className="flex flex-col">
+          {gente.map((vp, i) => (
+            <FichaDeParte
+              key={vp.personalId}
+              parte={vp}
+              fechaDeLaVisita={visita.fechaProgramada}
+              mismoAparato={mismoAparato.has(vp.personalId)}
+              verUbicacion={canModify}
+              ultimo={i === gente.length - 1}
+            />
+          ))}
         </div>
-
-        {gente.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nadie está asignado todavía.
-          </p>
-        ) : (
-          <div className="flex flex-col">
-            {gente.map((vp, i) => (
-              <FichaDeParte
-                key={vp.personalId}
-                parte={vp}
-                fechaDeLaVisita={visita.fechaProgramada}
-                mismoAparato={mismoAparato.has(vp.personalId)}
-                verUbicacion={canModify}
-                ultimo={i === gente.length - 1}
-              />
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </TarjetaVisita>
   );
 }
 
@@ -117,24 +115,22 @@ export function TareasObligatorias({
   if (visita.tareasObligatorias.length === 0) return null;
 
   return (
-    <Card className="gap-0 rounded-2xl py-0">
-      <CardContent className="p-[22px]">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[15.5px] font-extrabold">
-            Tareas obligatorias
+    <TarjetaVisita
+      titulo="Tareas obligatorias"
+      accion={
+        faltantes.length > 0 ? (
+          <span className="rounded-full bg-warning/15 px-[11px] py-1 text-[12.5px] font-bold text-warning-foreground">
+            {faltantes.length === 1
+              ? "1 sin hacer"
+              : `${faltantes.length} sin hacer`}
           </span>
-          {faltantes.length > 0 && (
-            <span className="rounded-full bg-warning/15 px-[11px] py-1 text-[12.5px] font-bold text-warning-foreground">
-              {faltantes.length === 1
-                ? "1 sin hacer"
-                : `${faltantes.length} sin hacer`}
-            </span>
-          )}
-        </div>
-        {/* Una ficha por obligatoria: verde con tilde la que alguien hizo, gris
-            con reloj la que sigue esperando. No hay rojo porque todavía no es
-            un error: la visita puede estar en curso. */}
-        <div className="mt-[14px] flex flex-wrap gap-2">
+        ) : null
+      }
+    >
+      {/* Una ficha por obligatoria: verde con tilde la que alguien hizo, gris
+          con reloj la que sigue esperando. No hay rojo porque todavía no es un
+          error: la visita puede estar en curso. */}
+      <div className="flex flex-wrap gap-2">
           {visita.tareasObligatorias.map(({ tarea }) => {
             const hecha = hechasIds.has(tarea.id);
             return (
@@ -153,11 +149,10 @@ export function TareasObligatorias({
                 )}
                 {tarea.nombre}
               </span>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+          );
+        })}
+      </div>
+    </TarjetaVisita>
   );
 }
 

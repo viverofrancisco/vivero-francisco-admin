@@ -2,14 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { TarjetaVisita } from "@/components/visitas/tarjeta-visita";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { MediaViewer, type MediaViewerSource } from "@/components/ui/media-viewer";
 import { toast } from "sonner";
-import { Loader2, MoreVertical, Play, Plus, X } from "lucide-react";
+import { Loader2, MoreVertical, Play, X } from "lucide-react";
 import { MAX_ARCHIVOS_POR_SUBIDA } from "@vivero/shared";
 
 export interface ArchivoDeVisita {
@@ -302,24 +296,22 @@ export function ArchivosVisita({
     : {};
 
   return (
-    <Card className="overflow-visible">
-      <CardHeader className="border-b py-3">
-        <CardTitle className="text-base">Archivos</CardTitle>
-        {puedeEditar && (
-          <CardAction>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => inputRef.current?.click()}
-              disabled={subiendo}
-            >
-              <Plus className="mr-2 h-3.5 w-3.5" />
-              Agregar
-            </Button>
-          </CardAction>
-        )}
-      </CardHeader>
-      <CardContent>
+    <TarjetaVisita
+      titulo="Archivos"
+      accion={
+        puedeEditar ? (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={subiendo}
+            className="text-[12.5px] font-bold text-primary hover:underline disabled:opacity-50"
+          >
+            + Agregar
+          </button>
+        ) : null
+      }
+    >
+      <div>
         <input
           ref={inputRef}
           type="file"
@@ -426,7 +418,7 @@ export function ArchivosVisita({
             </ul>
           )}
         </div>
-      </CardContent>
+      </div>
 
       {/* La tanda recién elegida: cada archivo con su tarea antes de subir. */}
       <Dialog
@@ -560,6 +552,6 @@ export function ArchivosVisita({
       </Dialog>
 
       <MediaViewer media={viendo} onClose={() => setViendo(null)} />
-    </Card>
+    </TarjetaVisita>
   );
 }

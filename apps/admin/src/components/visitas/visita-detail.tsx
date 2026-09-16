@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Card,
-  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -31,7 +30,6 @@ import {
   LogOut,
   Pencil,
   PenLine,
-  Plus,
   Timer,
   Trash2,
 } from "lucide-react";
@@ -41,6 +39,7 @@ import {
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
 import { ArchivosVisita } from "@/components/visitas/archivos-visita";
+import { TarjetaVisita } from "@/components/visitas/tarjeta-visita";
 import {
   Cronologia,
   TareasObligatorias,
@@ -62,7 +61,6 @@ import {
 import { nombreCliente } from "@vivero/shared";
 import {
   obligatoriasSinCubrir,
-  personalSinRegistrar,
   marcaronDesdeElMismoAparato,
   tareasHechas,
   type PersonalDeVisita,
@@ -206,8 +204,6 @@ export function VisitaDetail({
     visita.estado !== "COMPLETADA" &&
     visita.estado !== "INCOMPLETA" &&
     !visita.personal.some((p) => p.entradaEl);
-  /** Quiénes todavía no cargaron su parte. */
-  const sinRegistrar = personalSinRegistrar(visita.personal);
   /** Quiénes marcaron desde el mismo teléfono que otro. Solo la oficina lo ve. */
   const mismoAparato = canModify
     ? marcaronDesdeElMismoAparato(visita.personal)
@@ -252,16 +248,6 @@ export function VisitaDetail({
             Visita #{visita.numero}
           </h1>
           <StatusBadge estado={visita.estado as EstadoVisitaUI} size="sm" />
-          {sinRegistrar.length > 0 && visita.estado === "EN_CURSO" && (
-            /* Ámbar y no gris: es lo que impide cerrar la visita, y al lado de
-               la píldora del estado un contorno neutro se lee como un dato
-               más. */
-            <span className="flex-none rounded-full bg-warning/15 px-[11px] py-1 text-[12.5px] font-bold text-warning-foreground">
-              {sinRegistrar.length === 1
-                ? "Falta 1 parte"
-                : `Faltan ${sinRegistrar.length} partes`}
-            </span>
-          )}
         </div>
 
         <div className="flex flex-none items-center gap-2">
@@ -341,33 +327,28 @@ export function VisitaDetail({
 
 
         {plan && (
-          <Card>
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Suscripción</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Link
-                href={`/dashboard/suscripciones/${plan.id}?from=/dashboard/visitas/${visita.id}`}
-                className="flex items-start justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
-              >
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold">
-                    Suscripción #{plan.numero}
-                  </span>
-                  <span className="block truncate text-xs font-semibold text-muted-foreground">
-                    {nombreCliente(plan.cliente)} ·{" "}
-                    {PERIODICIDAD_LABEL[plan.periodicidad] ?? plan.periodicidad}
-                  </span>
+          <TarjetaVisita titulo="Suscripción">
+            <Link
+              href={`/dashboard/suscripciones/${plan.id}?from=/dashboard/visitas/${visita.id}`}
+              className="flex items-start justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+            >
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-bold">
+                  Suscripción #{plan.numero}
                 </span>
-                <Badge
-                  variant={estadoSuscripcionVariant[plan.estado] ?? "outline"}
-                  className="flex-none"
-                >
-                  {plan.estado.charAt(0) + plan.estado.slice(1).toLowerCase()}
-                </Badge>
-              </Link>
-            </CardContent>
-          </Card>
+                <span className="block truncate text-xs font-semibold text-muted-foreground">
+                  {nombreCliente(plan.cliente)} ·{" "}
+                  {PERIODICIDAD_LABEL[plan.periodicidad] ?? plan.periodicidad}
+                </span>
+              </span>
+              <Badge
+                variant={estadoSuscripcionVariant[plan.estado] ?? "outline"}
+                className="flex-none"
+              >
+                {plan.estado.charAt(0) + plan.estado.slice(1).toLowerCase()}
+              </Badge>
+            </Link>
+          </TarjetaVisita>
         )}
 
 
@@ -387,18 +368,15 @@ export function VisitaDetail({
           puedeEditar={canModify || miParte !== undefined}
         />
 
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Notas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <TarjetaVisita titulo="Notas">
+          <div className="space-y-3">
             {visita.notas ? (
               <p className="whitespace-pre-wrap text-sm">{visita.notas}</p>
             ) : (
               <p className="text-sm text-muted-foreground">Sin notas</p>
             )}
             {visita.notasIncompleto && (
-              <div className="rounded-md bg-destructive/5 p-3">
+              <div className="rounded-xl bg-destructive/5 p-3">
                 <p className="mb-1 text-xs font-bold text-destructive">
                   {visita.estado === "CANCELADA"
                     ? "Razón de cancelación"
@@ -409,8 +387,8 @@ export function VisitaDetail({
                 </p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </TarjetaVisita>
         </div>
 
         <div className="flex flex-col gap-[18px]">
@@ -545,52 +523,43 @@ export function VisitaDetail({
             productos, así que ninguna línea viene de acá. Sirve para ir de una
             a la otra. */}
         {vePlata && (
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle className="text-base">Órdenes</CardTitle>
-            {canModify && facturable && (
-              <CardAction>
+        <TarjetaVisita
+          titulo="Órdenes"
+          accion={
+            canModify && facturable ? (
+              <Link
+                href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
+                className="text-[12.5px] font-bold text-primary hover:underline"
+              >
+                + Crear
+              </Link>
+            ) : null
+          }
+        >
+          {ordenes.length === 0 ? (
+            <EmptyState
+              message={facturable ? "Sin órdenes" : "La visita está cancelada"}
+            />
+          ) : (
+            <div className="space-y-1">
+              {ordenes.map((o) => (
                 <Link
-                  href={`/dashboard/ordenes/nueva?cliente=${visita.cliente.id}&visita=${visita.id}`}
+                  key={o.id}
+                  href={`/dashboard/ordenes/${o.id}?from=/dashboard/visitas/${visita.id}`}
+                  className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
                 >
-                  {/* Con su nombre y no un "+": es la acción de la card, y un
-                      ícono solo obliga a adivinar o a esperar el tooltip. */}
-                  <Button size="sm" variant="outline">
-                    <Plus className="mr-2 h-3.5 w-3.5" />
-                    Crear orden
-                  </Button>
-                </Link>
-              </CardAction>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {ordenes.length === 0 ? (
-              <EmptyState
-                message={
-                  facturable ? "Sin órdenes" : "La visita está cancelada"
-                }
-              />
-            ) : (
-              <div className="space-y-1">
-                {ordenes.map((o) => (
-                  <Link
-                    key={o.id}
-                    href={`/dashboard/ordenes/${o.id}?from=/dashboard/visitas/${visita.id}`}
-                    className="flex items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                  <p className="text-sm font-bold">Orden #{o.numero}</p>
+                  <Badge
+                    variant={estadoOrdenVariant[o.estado] ?? "outline"}
+                    className="flex-none"
                   >
-                    <p className="text-sm font-bold">Orden #{o.numero}</p>
-                    <Badge
-                      variant={estadoOrdenVariant[o.estado] ?? "outline"}
-                      className="flex-none"
-                    >
-                      {estadoOrdenLabel[o.estado] ?? o.estado}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    {estadoOrdenLabel[o.estado] ?? o.estado}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          )}
+        </TarjetaVisita>
         )}
         </div>
       </div>
