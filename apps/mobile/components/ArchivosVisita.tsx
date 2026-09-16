@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
@@ -291,8 +291,7 @@ export function ArchivosVisita({
   onVer: (media: { url: string; tipo: string }) => void;
 }) {
   const [vista, setVista] = useState<Vista | null>(null);
-  const { pendientes, quitadas, etiquetas, guardando, error, sinTarea } =
-    cambios;
+  const { pendientes, quitadas, etiquetas, error, sinTarea } = cambios;
 
   const nombreDeTarea = (id: string | null) =>
     id ? (catalogo.find((t) => t.id === id)?.nombre ?? "Otra tarea") : null;
@@ -399,13 +398,9 @@ export function ArchivosVisita({
         </PressableScale>
       </View>
 
+      {/* Sin "Guardando…" acá: el spinner que reemplaza a *Guardar* en el
+          encabezado ya lo dice, y está justo donde se acaba de tocar. */}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {guardando ? (
-        <View style={styles.guardando}>
-          <ActivityIndicator size="small" color={tema.verde} />
-          <Text style={styles.guardandoTexto}>Guardando…</Text>
-        </View>
-      ) : null}
 
       {archivos.length === 0 && pendientes.length === 0 ? (
         <Text style={styles.vacio}>
@@ -766,8 +761,6 @@ const styles = StyleSheet.create({
   accionTexto: { color: tema.verde, fontWeight: "600" },
   error: { color: "#b3261e" },
   vacio: { color: "#888" },
-  guardando: { flexDirection: "row", alignItems: "center", gap: 8 },
-  guardandoTexto: { color: tema.texto3, fontSize: 13 },
 
   lista: { backgroundColor: "#fafafa", borderRadius: 12, overflow: "hidden" },
   filaFoto: {
