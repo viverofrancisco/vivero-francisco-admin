@@ -190,6 +190,17 @@ export function VisitaDetail({
   const hechas = tareasHechas(visita);
   /** Lo que se exigía y **nadie** hizo. Es la pregunta de la oficina. */
   const faltantes = obligatoriasSinCubrir(visita);
+  /**
+   * Borrar es para la visita agendada mal que todavía no pasó: el cliente
+   * equivocado, el día equivocado, la duplicada. En cuanto alguien marcó su
+   * entrada hay un hecho anotado y atrás vienen su parte, sus fotos y el
+   * informe; ahí lo que corresponde es cancelarla.
+   */
+  const sePuedeEliminar =
+    visita.estado !== "EN_CURSO" &&
+    visita.estado !== "COMPLETADA" &&
+    visita.estado !== "INCOMPLETA" &&
+    !visita.personal.some((p) => p.entradaEl);
   /** Quiénes todavía no cargaron su parte. */
   const sinRegistrar = personalSinRegistrar(visita.personal);
   /** Quiénes marcaron desde el mismo teléfono que otro. Solo la oficina lo ve. */
@@ -276,17 +287,22 @@ export function VisitaDetail({
               )}
               {/* Solo el ícono: es la acción que nadie viene a buscar, y con
                   su nombre al lado de las otras dos compite por el mismo
-                  lugar de la pantalla. */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive"
-                aria-label="Eliminar visita"
-                title="Eliminar visita"
-                onClick={() => setConfirmando(true)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+                  lugar de la pantalla. Y solo mientras no haya trabajo
+                  registrado: en cuanto alguien marcó, lo que corresponde es
+                  cancelar. Lo rechaza el servicio igual (`softDeleteVisita`);
+                  acá no se ofrece. */}
+              {sePuedeEliminar && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive"
+                  aria-label="Eliminar visita"
+                  title="Eliminar visita"
+                  onClick={() => setConfirmando(true)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           )}
         </div>

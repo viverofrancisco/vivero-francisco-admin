@@ -55,6 +55,20 @@ interface VisitaRow {
   grupo: { id: string; nombre: string } | null;
 }
 
+/**
+ * Borrar es para la visita agendada mal que todavía no pasó. En cuanto alguien
+ * trabajó en ella hay un parte, fotos y un informe que las usa detrás; ahí lo
+ * que corresponde es cancelarla. El servicio lo rechaza igual
+ * (`softDeleteVisita`) y además mira si alguien marcó entrada, que desde una
+ * fila de la lista no se sabe: una cancelada que ya había empezado se va a
+ * negar allá y la respuesta lo dice por su número.
+ */
+function sePuedeEliminar(estado: string): boolean {
+  return (
+    estado !== "EN_CURSO" && estado !== "COMPLETADA" && estado !== "INCOMPLETA"
+  );
+}
+
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-EC", {
     day: "2-digit",
@@ -115,8 +129,9 @@ export function VisitasTable({
   const presentes = useMemo(() => new Set(visitas.map((v) => v.id)), [visitas]);
   const elegidas = marcadas.filter((id) => presentes.has(id));
   const elegidasSet = new Set(elegidas);
+  const elegibles = paginadas.filter((v) => sePuedeEliminar(v.estado));
   const todasEnPagina =
-    paginadas.length > 0 && paginadas.every((v) => elegidasSet.has(v.id));
+    elegibles.length > 0 && elegibles.every((v) => elegidasSet.has(v.id));
   const hayAlgoMarcado = puedeEliminar && elegidas.length > 0;
 
   const salirDeSeleccion = () => {
@@ -132,7 +147,7 @@ export function VisitasTable({
   // "Todas" son las de esta página: es lo que se está viendo, y llevarse
   // también las otras cincuenta que quedaron atrás no es lo que se pidió.
   const alternarPagina = (marcada: boolean) => {
-    const ids = paginadas.map((v) => v.id);
+    const ids = elegibles.map((v) => v.id);
     setMarcadas((prev) =>
       marcada
         ? [...new Set([...prev, ...ids])]
@@ -288,8 +303,13 @@ export function VisitasTable({
                       >
                         <Checkbox
                           checked={elegidasSet.has(v.id)}
+                          disabled={!sePuedeEliminar(v.estado)}
                           onCheckedChange={(c) => alternar(v.id, c === true)}
-                          aria-label={`Seleccionar la visita #${v.numero}`}
+                          aria-label={
+                            sePuedeEliminar(v.estado)
+                              ? `Seleccionar la visita #${v.numero}`
+                              : `La visita #${v.numero} ya tiene trabajo registrado`
+                          }
                         />
                       </TableCell>
                     )}

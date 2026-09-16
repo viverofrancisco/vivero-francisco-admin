@@ -1535,12 +1535,42 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
     where: { id: visitaId, deletedAt: null },
     select: {
       id: true,
+      estado: true,
+      personal: {
+        where: { removedAt: null, entradaEl: { not: null } },
+        select: { id: true },
+      },
       ordenes: {
         select: { orden: { select: { numero: true, estado: true } } },
       },
     },
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
+
+  /*
+   * Una visita en la que alguien trabajó no se borra.
+   *
+   * Borrar es para la que se agendó mal y todavía no pasó nada: el cliente
+   * equivocado, el día equivocado, la que se duplicó. En cuanto alguien marcó
+   * su entrada hay un hecho anotado —estuvo ahí a esa hora— y atrás vienen su
+   * parte, sus fotos y el informe que las usa; sacar la visita de las listas
+   * esconde todo eso sin que nadie lo decida. Lo que corresponde ahí es
+   * **cancelarla**, que deja dicho que no se hizo y por qué.
+   *
+   * `EN_CURSO`, `COMPLETADA` e `INCOMPLETA` son exactamente "alguien trabajó".
+   * `CANCELADA` puede serlo también —se cancela una visita que ya había
+   * empezado—, así que además se mira si hay alguna entrada marcada.
+   */
+  const trabajada =
+    visita.estado === "EN_CURSO" ||
+    visita.estado === "COMPLETADA" ||
+    visita.estado === "INCOMPLETA" ||
+    visita.personal.length > 0;
+  if (trabajada) {
+    throw new ConflictError(
+      "Esta visita ya tiene trabajo registrado, así que no se puede eliminar. Si no se hizo, cancelala.",
+    );
+  }
 
   const vivas = visita.ordenes.filter((ov) => ov.orden.estado === "CONFIRMADA");
   if (vivas.length > 0) {

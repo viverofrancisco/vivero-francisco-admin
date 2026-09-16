@@ -599,7 +599,14 @@ is the one thing it won't change, since that would orphan the subscription link.
 **Deleting a visita marks it, and says who did it.** `deletedAt` +
 `deletedById`/`deletedByNombre` (the usual id-plus-name-snapshot split): the row
 stays because the photos, the chat and everyone's partes hang off it, and every
-query filters `deletedAt: null`, so what disappears is the listings. It is
+query filters `deletedAt: null`, so what disappears is the listings. **A visita anyone worked
+is not deleted at all**: deleting is for the one scheduled wrong that hasn't
+happened yet — wrong client, wrong day, the duplicate — and the moment someone
+marks their entrada there is a fact on record, with their parte, their photos
+and the informe that uses them behind it. What fits there is *cancelling*, which
+says it didn't happen and why. So `softDeleteVisita` refuses `EN_CURSO`,
+`COMPLETADA` and `INCOMPLETA`, and also a `CANCELADA` where somebody had already
+marked — cancelling a visit that had started is ordinary. It is also
 **refused while a live order says it covers it** — `softDeleteVisita` names the
 orden and asks for it to be annulled first, since an issued document citing a
 visit that doesn't exist can't be explained. A **draft** is different: it is
