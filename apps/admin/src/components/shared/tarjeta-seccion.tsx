@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 /**
- * La tarjeta de la ficha de visita: título en negrita adentro, sin línea.
+ * La tarjeta de las fichas: título en negrita adentro, sin línea.
  *
  * Es la forma del handoff. Las tarjetas del portal separan su encabezado con un
  * `border-b`, y eso está bien donde el encabezado lleva botones —la línea dice
@@ -10,9 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
  * por nada: con el título en 15.5/800 y aire debajo ya se sabe que es un título.
  *
  * Medidas del diseño: radio 16, padding 22, 14 px entre el título y lo que
- * sigue.
+ * sigue. La estrenó la ficha de la visita y la usan las demás, para que dos
+ * fichas del portal no tengan dos formas de decir "esto es una sección".
  */
-export function TarjetaVisita({
+export function TarjetaSeccion({
   titulo,
   accion,
   children,

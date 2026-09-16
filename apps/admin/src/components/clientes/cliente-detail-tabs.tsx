@@ -104,8 +104,6 @@ interface ClienteDetailTabsProps {
   cliente: ClienteData;
   /** Dónde se trabaja. La dirección y el sector viven acá. */
   propiedades: PropiedadData[];
-  /** Para el selector de sector de cada propiedad. */
-  sectores: { id: string; nombre: string }[];
   asignaciones: Asignacion[];
   datosFacturacion: DatoFacturacion[];
   ordenes: OrdenResumen[];
@@ -151,7 +149,6 @@ const servicioEstado = (estado: string) => {
 export function ClienteDetailTabs({
   cliente,
   propiedades,
-  sectores,
   asignaciones,
   datosFacturacion,
   ordenes,
@@ -552,7 +549,6 @@ export function ClienteDetailTabs({
             <PropiedadesCard
               clienteId={cliente.id}
               propiedades={propiedades}
-              sectores={sectores}
               puedeEditar={verPlata}
             />
 

@@ -19,7 +19,7 @@ export default async function EditarClientePage({
   // Solo permitimos volver a rutas internas del dashboard (evita open redirect).
   const backHref = from && from.startsWith("/dashboard/") ? from : "/dashboard/clientes";
 
-  const [cliente, visitas, sectores] = await Promise.all([
+  const [cliente, visitas] = await Promise.all([
     prisma.cliente.findUnique({
       where: { id, deletedAt: null },
       include: {
@@ -56,12 +56,6 @@ export default async function EditarClientePage({
         ...TAREAS_DE_VISITA_INCLUDE,
         grupo: { select: { id: true, nombre: true } },
       },
-    }),
-    // Para el selector de cada propiedad: el sector es del lugar.
-    prisma.sector.findMany({
-      where: { deletedAt: null },
-      select: { id: true, nombre: true },
-      orderBy: { nombre: "asc" },
     }),
   ]);
 
@@ -134,7 +128,6 @@ export default async function EditarClientePage({
           recibirConfirmaciones: cliente.recibirConfirmaciones,
           createdAt: cliente.createdAt.toISOString(),
         }}
-        sectores={sectores}
         propiedades={cliente.propiedades.map((p) => ({
           id: p.id,
           nombre: p.nombre,

@@ -37,7 +37,7 @@ import {
   type MediaViewerSource,
 } from "@/components/ui/media-viewer";
 import { ArchivosVisita } from "@/components/visitas/archivos-visita";
-import { TarjetaVisita } from "@/components/visitas/tarjeta-visita";
+import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import {
   Cronologia,
   TareasObligatorias,
@@ -335,7 +335,7 @@ export function VisitaDetail({
 
 
         {plan && (
-          <TarjetaVisita titulo="Suscripción">
+          <TarjetaSeccion titulo="Suscripción">
             <Link
               href={`/dashboard/suscripciones/${plan.id}?from=/dashboard/visitas/${visita.id}`}
               className="flex items-start justify-between gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
@@ -356,7 +356,7 @@ export function VisitaDetail({
                 {plan.estado.charAt(0) + plan.estado.slice(1).toLowerCase()}
               </Badge>
             </Link>
-          </TarjetaVisita>
+          </TarjetaSeccion>
         )}
 
 
@@ -376,7 +376,7 @@ export function VisitaDetail({
           puedeEditar={canModify || miParte !== undefined}
         />
 
-        <TarjetaVisita titulo="Notas">
+        <TarjetaSeccion titulo="Notas">
           <div className="space-y-3">
             {visita.notas ? (
               <p className="whitespace-pre-wrap text-sm">{visita.notas}</p>
@@ -396,7 +396,7 @@ export function VisitaDetail({
               </div>
             )}
           </div>
-        </TarjetaVisita>
+        </TarjetaSeccion>
         </div>
 
         <div className="flex flex-col gap-[18px]">
@@ -437,7 +437,7 @@ export function VisitaDetail({
 
         {/* Las dos fechas juntas: para cuándo se agendó y cuándo se hizo. Verlas
             una al lado de la otra es la forma de notar que se corrió. */}
-        <TarjetaVisita titulo="Detalles" className="[&_dl]:-mx-2">
+        <TarjetaSeccion titulo="Detalles" className="[&_dl]:-mx-2">
           <dl>
               <Fila etiqueta="Programada" icono={<CalendarDays className="h-3.5 w-3.5 flex-none" />}>
                 <span className="capitalize">
@@ -524,7 +524,7 @@ export function VisitaDetail({
                 </Fila>
               )}
           </dl>
-        </TarjetaVisita>
+        </TarjetaSeccion>
 
 
         {/* Las órdenes que dicen cubrir esta visita. **Es un enlace, no una
@@ -532,7 +532,7 @@ export function VisitaDetail({
             productos, así que ninguna línea viene de acá. Sirve para ir de una
             a la otra. */}
         {vePlata && (
-        <TarjetaVisita
+        <TarjetaSeccion
           titulo="Órdenes"
           accion={
             canModify && facturable ? (
@@ -568,7 +568,7 @@ export function VisitaDetail({
               ))}
             </div>
           )}
-        </TarjetaVisita>
+        </TarjetaSeccion>
         )}
         </div>
       </div>

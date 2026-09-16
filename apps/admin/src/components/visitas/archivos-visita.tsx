@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { TarjetaVisita } from "@/components/visitas/tarjeta-visita";
+import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -296,7 +296,7 @@ export function ArchivosVisita({
     : {};
 
   return (
-    <TarjetaVisita
+    <TarjetaSeccion
       titulo="Archivos"
       accion={
         puedeEditar ? (
@@ -552,6 +552,6 @@ export function ArchivosVisita({
       </Dialog>
 
       <MediaViewer media={viendo} onClose={() => setViendo(null)} />
-    </TarjetaVisita>
+    </TarjetaSeccion>
   );
 }

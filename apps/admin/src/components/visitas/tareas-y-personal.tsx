@@ -1,6 +1,6 @@
 "use client";
 
-import { TarjetaVisita } from "@/components/visitas/tarjeta-visita";
+import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Check, Clock, Smartphone } from "lucide-react";
 import { UbicacionDeMarca } from "@/components/visitas/ubicaciones-marcadas";
@@ -58,7 +58,7 @@ export function Cronologia({
   const gente = [...visita.personal].sort(porCronologia);
 
   return (
-    <TarjetaVisita
+    <TarjetaSeccion
       titulo="Cronología en vivo"
       /* El grupo nombra a este conjunto de gente. */
       accion={
@@ -86,7 +86,7 @@ export function Cronologia({
           ))}
         </div>
       )}
-    </TarjetaVisita>
+    </TarjetaSeccion>
   );
 }
 
@@ -114,7 +114,7 @@ export function TareasObligatorias({
   if (visita.tareasObligatorias.length === 0) return null;
 
   return (
-    <TarjetaVisita
+    <TarjetaSeccion
       titulo="Tareas obligatorias"
       accion={
         faltantes.length > 0 ? (
@@ -151,7 +151,7 @@ export function TareasObligatorias({
           );
         })}
       </div>
-    </TarjetaVisita>
+    </TarjetaSeccion>
   );
 }
 
