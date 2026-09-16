@@ -409,7 +409,11 @@ export function ArchivosVisita({
                           <MoreVertical className="h-4 w-4" />
                         )}
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent>
+                      {/* `w-auto`: el contenido toma por defecto el ancho del
+                          disparador (`w-(--anchor-width)`), y el disparador acá
+                          es un botón de 32 px, así que "Cambiar tarea…" caía en
+                          dos líneas. */}
+                      <DropdownMenuContent className="w-auto">
                         {/* Mover = cambiar la etiqueta. Va a un diálogo con
                             buscador: los destinos son todo el catálogo. */}
                         <DropdownMenuItem onClick={() => setMoviendo(a)}>
