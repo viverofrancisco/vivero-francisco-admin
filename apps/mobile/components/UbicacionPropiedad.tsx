@@ -117,7 +117,7 @@ function Estampa({ lat, lng }: { lat: number; lng: number }) {
 
   const uri =
     `${API_BASE_URL}/api/mobile/mapa` +
-    `?lat=${lat}&lng=${lng}&ancho=400&alto=${ALTO_MAPA}&zoom=17`;
+    `?lat=${lat}&lng=${lng}&ancho=${ANCHO_PEDIDO}&alto=${ALTO_PEDIDO}&zoom=${ZOOM}`;
 
   return (
     <View style={styles.lienzo}>
@@ -129,6 +129,8 @@ function Estampa({ lat, lng }: { lat: number; lng: number }) {
           // pueda pedir mapas del mundo con nuestra cuenta.
           source={{ uri, headers: { Authorization: `Bearer ${token}` } }}
           style={StyleSheet.absoluteFill}
+          // La tarjeta tiene la misma proporción que la imagen, así que esto
+          // no recorta nada: solo la escala al ancho que haya.
           resizeMode="cover"
           onError={() => setFallo(true)}
         />
@@ -151,8 +153,39 @@ function Franjas() {
   );
 }
 
-/** Lo que mide la estampa. El servidor la manda al doble, para pantallas retina. */
-const ALTO_MAPA = 150;
+/**
+ * El tamaño que se le pide a Google, en píxeles lógicos (los manda al doble,
+ * para pantallas retina).
+ *
+ * **El ancho no es el de la tarjeta, y tiene que ser este.** La imagen trae
+ * abajo la atribución —"Map data ©2026 Imagery ©2026 Airbus, CNES / Airbus,
+ * Maxar Technologies"—, que los términos de Maps Platform obligan a mostrar
+ * legible, y **Google la recorta él mismo** cuando la imagen sale angosta: a
+ * 343 de ancho (lo que mide la tarjeta en un iPhone) la línea llegaba cortada a
+ * la mitad de una palabra. Desde 800 px reales —400 lógicos al doble— entra
+ * entera.
+ *
+ * Así que se pide siempre esta medida y la tarjeta usa **su misma proporción**,
+ * con lo cual no hay recorte en ningún lado: en un teléfono de 343 se ve a unos
+ * 189 de alto, y en uno más ancho, más grande.
+ *
+ * El alto pasó de 150 a esta proporción porque a 150 el mapa era una franja
+ * —entraba la manzana y poco más, con la atribución comiéndose una quinta
+ * parte—. Ahora entra la cuadra con sus accesos, que es lo que se mira antes de
+ * salir.
+ */
+const ANCHO_PEDIDO = 400;
+const ALTO_PEDIDO = 220;
+
+/**
+ * Cuánto acercar.
+ *
+ * 17 es donde se leen el nombre de la urbanización y el de la calle de entrada
+ * —que es lo que orienta a quien nunca fue— sin perder de vista la casa. En 18
+ * queda un techo sin contexto; en 16, una mancha de urbanización sin saber
+ * cuál es.
+ */
+const ZOOM = 17;
 
 const styles = StyleSheet.create({
   tarjeta: {
@@ -164,7 +197,8 @@ const styles = StyleSheet.create({
   },
 
   lienzo: {
-    height: ALTO_MAPA,
+    width: "100%",
+    aspectRatio: ANCHO_PEDIDO / ALTO_PEDIDO,
     backgroundColor: tema.verde50,
     overflow: "hidden",
     alignItems: "center",
@@ -180,6 +214,9 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "24deg" }],
   },
   pin: {
+    // Medio alto para arriba: lo que señala un pin es su **punta**, y centrando
+    // el dibujo la punta caía debajo del punto.
+    transform: [{ translateY: -20 }],
     // La sombra despega el pin del fondo, que si no se lee como un dibujo más
     // de las franjas.
     shadowColor: "#142819",
