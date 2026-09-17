@@ -1,0 +1,823 @@
+{
+  "visitasArchivadas": [
+    "cmtdkwvvc001wjds6drzoiri2",
+    "cmtdkwvvc001xjds6avl40jjp",
+    "cmtdkwvvc0026jds6j7p4ec1w",
+    "cmtdkwvvd006xjds60mhp940z",
+    "cmtdkwvvd006yjds6x8n50l85",
+    "cmtdkwvvc0021jds6oxozo6fu",
+    "cmtdkwvvc0022jds6e76cf4ys",
+    "cmtdkwvvd003yjds6szjvtbxg",
+    "cmtdkwvvc0023jds6ds77st8a",
+    "cmtdkwvvc0024jds6sfd8ecf3",
+    "cmtdkwvvc0025jds6agd8pvrw",
+    "cmtdkwvvc0027jds6ulbpsbcx",
+    "cmtdkwvvc0029jds68qqu3mgm",
+    "cmtdkwvvc002ajds69cxyhddu",
+    "cmtdkwvvc002bjds6rbuxiph0",
+    "cmtdkwvvc002cjds6eponrbil",
+    "cmtdkwvvc002djds64h9h3v0g",
+    "cmtdkwvvc002ejds6l9albue0",
+    "cmu37o6ga0006ffs62ep10p9a",
+    "cmu37o4sd0000ffs6g2yw1cqh",
+    "cmtdkwvvc002fjds6t2cfcx28",
+    "cmtdkwvvc002gjds6ghne2zhs",
+    "cmtdkwvvc002hjds6i7kmy6lt",
+    "cmtdkwvvd006qjds60tj57o66",
+    "cmtdkwvvc002ijds67flk3agt",
+    "cmtdkwvvc002jjds6siur6hbc",
+    "cmtdkwvvc002ujds6k65nvxay",
+    "cmtdkwvvc002kjds65f83q8yf",
+    "cmtdkwvvc002ljds6vki1q8yx",
+    "cmtdkwvvc002mjds6ruijqucb",
+    "cmtdkwvvc002njds651lcgqrh",
+    "cmtdkwvvc002ojds6mtzmeysg",
+    "cmtdkwvvc002pjds6vxttosfj",
+    "cmtdkwvvc002qjds6okjemghg",
+    "cmtdkwvvc002rjds6q427wyxh",
+    "cmtdkwvvc002sjds6fsntyy9g",
+    "cmtdkwvvc002tjds6gwjk40z5",
+    "cmtdkwvvc002vjds6oy4nvrre",
+    "cmtdkwvvc002wjds6h9sxeeh4",
+    "cmtdkwvvc002xjds66i46cocg",
+    "cmtdkwvvc002yjds67ge0ozad",
+    "cmtdkwvvc002zjds6y32daybz",
+    "cmtdkwvvc0030jds61bdtkvub",
+    "cmtdkwvvc0031jds6ax7z3tz4",
+    "cmtdkwvvc0033jds6b18e7t6g",
+    "cmtdkwvvc0034jds6sj0mbja3",
+    "cmtdkwvvc0035jds6qf3azs34",
+    "cmtdkwvvc0036jds67fi449vq",
+    "cmtdkwvvc0037jds6xah9fd27",
+    "cmtdkwvvc0039jds68eq1hn1h",
+    "cmtdkwvvc003sjds6ux36xqcr",
+    "cmtdkwvvc003ajds6a00lyqq1",
+    "cmtdkwvvc003bjds68fuz028i",
+    "cmtdkwvvc003cjds6lu3zocva",
+    "cmtdkwvvc003djds6d73xj1l8",
+    "cmtdkwvvc003ejds62khfn2xm",
+    "cmtdkwvvc003fjds62ro5rekt",
+    "cmtdkwvvc003gjds6zgtp1q4h",
+    "cmtdkwvvc003hjds6t6avpv46",
+    "cmtdkwvvc003ijds69uxfnvgk",
+    "cmtdkwvvc003kjds6e1wmxc5w",
+    "cmtdkwvvc003ljds6lffkmzkp",
+    "cmtdkwvvc003mjds67m0wq8s1",
+    "cmtdkwvvc003njds68plfve11",
+    "cmtdkwvvc003ojds626ec6n21",
+    "cmtdkwvvc003pjds6ewy7dcrx",
+    "cmtdkwvvc003qjds68wseuwnb",
+    "cmtdkwvvc003rjds60b5pomhs",
+    "cmtdkwvvc003jjds6c59bmzih",
+    "cmtdkwvvc0032jds68i0657wt",
+    "cmtdkwvvc003tjds6rsw8t8i4",
+    "cmtdkwvvc003ujds6xl34jcxs",
+    "cmtdkwvvc003vjds6li0rh9f3",
+    "cmtdkwvvc003wjds6qxjur4kg",
+    "cmtdkwvvc003xjds62w0tttn4",
+    "cmtdkwvvd003zjds6v9c232uc",
+    "cmtc1rt78000c5zs6nxx6ww8l",
+    "cmtc1rt78000d5zs62xtp1mu8",
+    "cmtc1rt78000e5zs6qxtafhay",
+    "cmtc1rt78000f5zs6qn2moend",
+    "cmtc1rt78000g5zs6e1jgw50b",
+    "cmtdkwvvd0040jds6az0m3wco",
+    "cmtdkwvvd0041jds6x2s3uutl",
+    "cmtdkwvvd0042jds6pf9d2mkk",
+    "cmtdkwvvd0043jds60odt72ui",
+    "cmtdkwvvd0044jds6dva6kyo1",
+    "cmtdkwvvd0045jds61gia0l23",
+    "cmtdkwvvd0046jds6uupzdhm8",
+    "cmtdkwvvd0047jds6ft80cnvw",
+    "cmtdkwvvd0048jds66pkynqhd",
+    "cmtdkwvvd0049jds6ejt62qdn",
+    "cmtdkwvvd004ajds63tfr9bch",
+    "cmtdkwvvd004bjds6wf3z3r3g",
+    "cmtdkwvvd004cjds6mza27m1c",
+    "cmtdkwvvd004djds6e7sf2gi3",
+    "cmtdkwvvd004ejds6e6o82h02",
+    "cmtdkwvvd004fjds6wxfjjy22",
+    "cmtdkwvvd004gjds64yasfj4q",
+    "cmtdkwvvd004hjds64tny7je5",
+    "cmtdkwvvd004ijds6bo0sjr4s",
+    "cmtdkwvvd004jjds6e04u492m",
+    "cmtdkwvvd004kjds6xi3habzx",
+    "cmtdkwvvd004ljds6scmmdspi",
+    "cmtdkwvvd004mjds6aomx2dap",
+    "cmtdkwvvd004njds6dltrdxoa",
+    "cmtdkwvvd004ojds6g61653i8",
+    "cmtdkwvvd004pjds6ipk6z6hc",
+    "cmtdkwvvd004qjds6g1ib2iho",
+    "cmtdkwvvd004rjds6z1fv8p1r",
+    "cmtdkwvvd004sjds6valn0dl4",
+    "cmtdkwvvd004tjds64zw5bwau",
+    "cmtdkwvvd004ujds645w8epdb",
+    "cmtdkwvvd004vjds6s7938igl",
+    "cmtdkwvvd004wjds691p8l532",
+    "cmtdkwvvd004xjds6ebd4fdwq",
+    "cmtdkwvvd004yjds6w67c4my4",
+    "cmtdkwvvd004zjds6ryi5fjqh",
+    "cmtdkwvvd0050jds6xvq4h31m",
+    "cmtdkwvvd0051jds6jm1roquu",
+    "cmtdkwvvd0052jds6urmqhwcf",
+    "cmtdkwvvd0053jds6hi0mfk5c",
+    "cmtdkwvvd0054jds6bjt3qaek",
+    "cmtdkwvvd0055jds6kom5z12j",
+    "cmtdkwvvd0056jds6cf9oczph",
+    "cmtdkwvvd0057jds65vin0pjt",
+    "cmtdkwvvd006jjds6wxff3xzl",
+    "cmtdkwvvd006kjds6v2ricuct",
+    "cmtdkwvvd006ljds6z09l71xg",
+    "cmtdkwvvd006mjds6g22jokm6",
+    "cmtdkwvvd006njds69v2caxra",
+    "cmtdkwvvd006ojds67rmti1o6",
+    "cmtdkwvvd006pjds6t8ew4seg",
+    "cmtdkwvvd006rjds6c7tbllqk",
+    "cmtdkwvvd006sjds6rzun65nb",
+    "cmtdkwvvd006tjds6ygeut7k3",
+    "cmtdkwvvd006ujds6pnqt4rnp",
+    "cmtdkwvvd006vjds6bksyrj5d",
+    "cmtc1rt78000b5zs6gr4dpode",
+    "cmtdkwvvd0058jds63qdkgeoq",
+    "cmtdkwvvd0059jds6m290lckt",
+    "cmtdkwvvd005ajds649mmypzy",
+    "cmtdkwvvd005bjds6nrowmkyh",
+    "cmtdkwvvd005cjds6a8tq8avl",
+    "cmtdkwvvd005djds63q89h6o3",
+    "cmtdkwvvd005ejds66fq8zvuf",
+    "cmtdkwvvd005fjds67up2nou8",
+    "cmtdkwvvd005gjds6901ws9g2",
+    "cmtdkwvvd005hjds6814tblnv",
+    "cmtdkwvvd005ijds63lbikw66",
+    "cmtdkwvvd005jjds6ieeaekjn",
+    "cmtdkwvvd006ijds67nbewni6",
+    "cmtdkwvvd005kjds6bfeguqvy",
+    "cmtdkwvvd005ljds6c1hkm4rg",
+    "cmtdkwvvd005mjds6faacevx1",
+    "cmtdkwvvd005njds63zg44l59",
+    "cmtdkwvvd005ojds6a63o58y1",
+    "cmtdkwvvd005pjds6frfl7wb8",
+    "cmtdkwvvd005qjds61ufvtga8",
+    "cmtdkwvvd005rjds6baql31tw",
+    "cmtdkwvvd005sjds6hhyrgtq2",
+    "cmtdkwvvd005tjds69tazsyvl",
+    "cmtdkwvvd005ujds6hf2cqbh1",
+    "cmu1poj8r0007hys6okm42vvm",
+    "cmtdkwvvc001yjds6xf8a4iyl",
+    "cmtdkwvvc0028jds69k7n2916",
+    "cmu37o5cy0002ffs6gqnd75bf",
+    "cmu37o5wm0004ffs6jdbwgg5a",
+    "cmtdkwvvc001zjds6imavy35j",
+    "cmtdkwvvc0020jds6cj2lo3lc",
+    "cmtdkwvvd0064jds6hhim9c1w",
+    "cmtdkwvvd005xjds6biiosjgk",
+    "cmtdkwvvd005yjds667auu5kl",
+    "cmtdkwvvd005zjds68omrdx4a",
+    "cmtdkwvvd0060jds64j427e6j",
+    "cmtdkwvvd0061jds6j8s3rfyj",
+    "cmtdkwvvd0062jds655ebxoyw",
+    "cmtdkwvvd0063jds60prcolbk",
+    "cmtdkwvvd0065jds6c9gpthh1",
+    "cmtdkwvvd0066jds6wnyyfq07",
+    "cmtdkwvvd0067jds65kkfhbc8",
+    "cmtdkwvvd0068jds6qlkwp0cb",
+    "cmtdkwvvd0069jds6j95vmnf8",
+    "cmtdkwvvd006ajds63rpyc4rp",
+    "cmtdkwvvd006bjds6bg54w08p",
+    "cmtdkwvvd006cjds6otrcrev3",
+    "cmtdkwvvd006djds63oikxu8c",
+    "cmtdkwvvd006ejds69osuzcvl",
+    "cmtdkwvvd006fjds65uyjxh0b",
+    "cmtdkwvvd006gjds6uj976r99",
+    "cmtdkwvvd006hjds60w7kvt6n",
+    "cmtdkwvvd006zjds6tqcj6xt2",
+    "cmtdkwvvd005vjds615e3wn64",
+    "cmtdkwvvd005wjds670r4a634",
+    "cmu1poao30000hys6h7z3najw"
+  ],
+  "visitasCreadas": [
+    "cmu61p0wb0009r0s6c6ku32l2",
+    "cmu61p1kx000br0s6axwc5w6s",
+    "cmu61p26y000dr0s621372s0j",
+    "cmu61p2yc000gr0s60vwcw1tz",
+    "cmu61p3kx000ir0s67jogq8e0",
+    "cmu61p47n000kr0s696lgucsl",
+    "cmu61p4wj000mr0s6bkoz9yxw",
+    "cmu61p5fh000or0s60mjxgcdr",
+    "cmu61p64h000rr0s68k1wphi7",
+    "cmu61p6qu000tr0s6bmnvdjpe",
+    "cmu61p7cr000vr0s6ggxzfs23",
+    "cmu61p7yf000xr0s62dy61cvf",
+    "cmu61p8zk000zr0s6wybgjtia",
+    "cmu61paa20012r0s680j2vp38",
+    "cmu61pb8r0014r0s60m5z60ml",
+    "cmu61pc6v0016r0s6qdlgrpag",
+    "cmu61pdld0019r0s69d1ijan3",
+    "cmu61pesx001cr0s6o3tylneq",
+    "cmu61pfpd001er0s601aigjnh",
+    "cmu61pgea001gr0s6iqh43ae2",
+    "cmu61phb7001ir0s6bc9eopfc",
+    "cmu61pi7y001kr0s6xq7aw4t3"
+  ],
+  "propiedadesCreadas": [
+    "cmu61oza00000r0s6h16wr3gs",
+    "cmu61ozff0001r0s6np037h0w",
+    "cmu61ozku0002r0s6hlej69xs",
+    "cmu61ozqc0003r0s6x1abegc9",
+    "cmu61ozvt0004r0s6c7wkhaho",
+    "cmu61p01a0005r0s6siiet5ds",
+    "cmu61p06p0006r0s67jn5klq7",
+    "cmu61p0c60007r0s6qzei05j8",
+    "cmu61p0hl0008r0s6cnn8vioe"
+  ],
+  "propiedadesTocadas": [
+    {
+      "id": "prop_cmqzdytqg000004l4sk4z52tu",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytqw000104l4hk05m3h9",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytr1000204l42kbt5ip6",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytr5000304l4m2h059be",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytrd000404l4u3akecpq",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytrh000504l4sx5meuoi",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytrm000604l4pkxtrtgd",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytrs000704l4885n4khs",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytsh000804l4mk50i57t",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytsn000904l45lcpmpdy",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytt1000a04l47a4rvkf7",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytt9000c04l44n14flio",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyttm000d04l457j34sk8",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyttr000e04l4q3grr440",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyttv000f04l4qc48slhj",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytu5000g04l44livp07f",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytu9000h04l4panl6yqt",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytud000i04l4hmlbwnyd",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytup000j04l4a8ompbq5",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytut000k04l4mnhdvh1v",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytux000l04l4ovr7p5rf",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytvb000m04l45fwefzlh",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdytvs000o04l4604lcism",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu2g000q04l43zqci6kn",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu31000r04l4bmimp8yn",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu3m000s04l4l7khi12i",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu3q000t04l4b5i6dyc8",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu3u000u04l45yjg7zfy",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu45000v04l4fuqo343o",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu48000w04l41z6ihkn7",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu4e000x04l42sbp0k4j",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu4p000y04l4jc060yvm",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu4t000z04l4nmtx8k5k",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu59001104l4sg9ga5qu",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu5d001204l4ob9m444u",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu5h001304l414tlka7g",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu5s001404l4v84aph33",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu5w001504l4exzntz7d",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu60001604l47cja7eb7",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu63001704l4g5p67dd7",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu67001804l48qpnl6ig",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu6d001904l4tpsm23kx",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu6m001a04l460m7egx0",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu6r001b04l4y4kgkw7n",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu71001d04l4af45yh07",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyu76001e04l4s58qs9dq",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyuby001f04l4kjx0ip1c",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyuc2001g04l4tz9hkie4",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyuc6001h04l4c8h1ky39",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyucb001i04l4e0cf16b2",
+      "campos": [
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyucg001j04l4tyg0rbne",
+      "campos": [
+        "lat",
+        "lng",
+        "m2Total",
+        "m2Cesped",
+        "numeroArboles",
+        "mlVegetacionBaja",
+        "mlVegetacionMedia",
+        "mlVegetacionAlta"
+      ]
+    },
+    {
+      "id": "prop_cmqzdyuck001k04l401clts1j",
+      "campos": [
+        "lat",
+        "lng"
+      ]
+    }
+  ]
+}

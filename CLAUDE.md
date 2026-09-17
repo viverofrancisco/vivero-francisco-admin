@@ -95,6 +95,18 @@ npx tsx --env-file=.env scripts/seed-datos-prueba.ts --limpiar
 npx tsx --env-file=.env scripts/seed-datos-prueba.ts --catalogo
 npx tsx --env-file=.env scripts/seed-datos-prueba.ts --informes
 
+# Propiedades y visitas para *mirar la interfaz*: le pone pin y medidas a las
+# que ya están —dejando una de cada tres **sin ubicación** a propósito, que es
+# el estado que hay que poder ver—, le agrega una segunda propiedad a uno de
+# cada seis clientes, y siembra ~22 visitas repartidas en el tiempo y en todos
+# los estados, con el jardinero que **puede iniciar sesión** en la mitad de
+# ellas. Las visitas que ya estaban se **archivan** (`deletedAt`), no se borran:
+# 81 están citadas por una orden y 75 por un informe, y borrarlas se llevaría
+# esos vínculos para siempre. `--limpiar` las devuelve, borra lo creado y
+# deshace pin por pin lo que tocó.
+npx tsx --env-file=.env scripts/seed-propiedades-y-visitas.ts
+npx tsx --env-file=.env scripts/seed-propiedades-y-visitas.ts --limpiar
+
 # Dos visitas cerradas, con partes de dos personas y **fotos reales en R2**,
 # etiquetadas por tarea: el escenario mínimo para probar que el asistente de
 # informes arma sus secciones solo. Sube las imágenes de verdad porque el PDF
