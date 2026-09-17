@@ -82,7 +82,9 @@ export async function GET(request: Request) {
   pedido.searchParams.set("format", "jpg");
   pedido.searchParams.set("language", "es");
   pedido.searchParams.set("region", "ec");
-  pedido.searchParams.set("markers", `color:0x2d7b48|${punto}`);
+  // Sin marcador de Google: el pin lo dibuja la app encima, centrado —que es
+  // donde está el punto, porque el mapa se pide centrado en él—. Así se ve
+  // igual antes y después de que cargue la imagen, y no quedan dos pines.
   pedido.searchParams.set("key", clave);
 
   let respuesta: Response;
