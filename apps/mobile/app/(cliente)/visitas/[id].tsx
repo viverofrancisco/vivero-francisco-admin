@@ -10,7 +10,7 @@ import {
 import { ActivityIndicator, Button, HelperText, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { VisitaDetail, VisitaMedia } from "@/lib/types";
 import { listaTareas } from "@/lib/types";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
@@ -32,7 +32,7 @@ export default function ClienteVisitaScreen() {
       const v = await apiRequest<VisitaDetail>(`/api/mobile/visitas/${id}`);
       setVisita(v);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No pudimos cargar la visita");
+      setError(mensajeDeError(e, "No pudimos cargar la visita"));
     } finally {
       setLoading(false);
     }

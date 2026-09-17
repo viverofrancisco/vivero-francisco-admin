@@ -64,6 +64,41 @@ function errorDeRed(vencio: boolean): ApiError {
   );
 }
 
+/**
+ * Qué se le muestra a quien está mirando la pantalla.
+ *
+ * `ApiError` trae el texto del servidor, que está escrito para leerse. De todo
+ * lo demás —un error de JavaScript, el almacén seguro que se negó a guardar—
+ * se mostraba **solo la frase de respaldo**, y esa frase esconde justo el dato
+ * con el que se arregla el problema: "No pudimos iniciar sesión" dice lo mismo
+ * para una contraseña equivocada que para un servidor mal apuntado.
+ *
+ * Así que la frase queda —es la que se entiende— y la causa va detrás, entre
+ * paréntesis, para quien tenga que arreglarlo.
+ */
+export function mensajeDeError(e: unknown, respaldo: string): string {
+  if (esApiError(e)) return e.message;
+  if (e instanceof Error && e.message) return `${respaldo} (${e.message})`;
+  return respaldo;
+}
+
+/**
+ * Por forma y no con `instanceof`.
+ *
+ * Con Fast Refresh, editar este archivo lo vuelve a evaluar y define una clase
+ * `ApiError` **nueva**; una pantalla que no se volvió a montar sigue comparando
+ * contra la vieja, así que `instanceof` da `false` para un error que sí es
+ * nuestro y la pantalla muestra la frase genérica en vez del mensaje del
+ * servidor. Pasa solo en desarrollo, que es justo cuando uno está mirando el
+ * mensaje para entender qué falló.
+ */
+function esApiError(e: unknown): e is ApiError {
+  return (
+    e instanceof Error &&
+    typeof (e as { status?: unknown }).status === "number"
+  );
+}
+
 let inflightRefresh: Promise<string | null> | null = null;
 
 async function refreshOnce(): Promise<string | null> {

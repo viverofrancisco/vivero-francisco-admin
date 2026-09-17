@@ -9,7 +9,7 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteStaffDetail } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -33,7 +33,7 @@ export default function ClienteDetailScreen() {
       setData(res);
     } catch (e) {
       setError(
-        e instanceof ApiError ? e.message : "No pudimos cargar el cliente"
+        mensajeDeError(e, "No pudimos cargar el cliente")
       );
     } finally {
       setLoading(false);

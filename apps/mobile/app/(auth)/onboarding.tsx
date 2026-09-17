@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import type { AuthSuccessResponse } from "@vivero/shared";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { useBranding } from "@/lib/branding";
 import { registerForPushNotifications } from "@/lib/push";
@@ -35,7 +35,7 @@ export default function OnboardingScreen() {
       router.replace("/(cliente)/visitas");
     } catch (e) {
       setError(
-        e instanceof ApiError ? e.message : "No pudimos iniciar sesión"
+        mensajeDeError(e, "No pudimos iniciar sesión")
       );
     } finally {
       setLoading(false);

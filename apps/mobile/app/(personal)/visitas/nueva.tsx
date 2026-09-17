@@ -22,7 +22,7 @@ import { Calendar, type DateData } from "react-native-calendars";
 import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { nombreCliente } from "@vivero/shared";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import type {
   ClienteListItem,
   ClientesListResponse,
@@ -172,7 +172,7 @@ export default function CrearVisitaScreen() {
       });
       router.back();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No pudimos crear");
+      setError(mensajeDeError(e, "No pudimos crear"));
     } finally {
       setSubmitting(false);
     }

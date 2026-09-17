@@ -4,7 +4,7 @@ import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { CreatePropiedadBody } from "@vivero/shared";
 import { PropiedadForm } from "@/components/PropiedadForm";
-import { apiRequest, ApiError } from "@/lib/api";
+import { ApiError, apiRequest, mensajeDeError } from "@/lib/api";
 import type { ClienteStaffDetail, PropiedadResumen } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
@@ -35,7 +35,7 @@ export default function PropiedadEditarScreen() {
       })
       .catch((e) =>
         setError(
-          e instanceof ApiError ? e.message : "No pudimos cargar la propiedad"
+          mensajeDeError(e, "No pudimos cargar la propiedad")
         )
       );
   }, [clienteId, propiedadId]);

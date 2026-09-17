@@ -10,7 +10,7 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import { nombreCliente } from "@vivero/shared";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import {
   ArchivosVisita,
   useCambiosDeArchivos,
@@ -95,7 +95,7 @@ export default function PersonalVisitaScreen() {
       setVisita(v);
       setCatalogo(t.items);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No pudimos cargar la visita");
+      setError(mensajeDeError(e, "No pudimos cargar la visita"));
     } finally {
       setLoading(false);
     }
@@ -231,7 +231,7 @@ export default function PersonalVisitaScreen() {
       await load();
     } catch (e) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(e instanceof ApiError ? e.message : "No pudimos marcar");
+      setError(mensajeDeError(e, "No pudimos marcar"));
       setConfirmandoEntrada(false);
     } finally {
       setMarcando(false);

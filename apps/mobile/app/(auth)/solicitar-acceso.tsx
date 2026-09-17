@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 
 interface RequestInviteResponse {
   ok: true;
@@ -34,7 +34,7 @@ export default function SolicitarAccesoScreen() {
       setSent(true);
     } catch (e) {
       setError(
-        e instanceof ApiError ? e.message : "No pudimos enviar el enlace"
+        mensajeDeError(e, "No pudimos enviar el enlace")
       );
     } finally {
       setLoading(false);

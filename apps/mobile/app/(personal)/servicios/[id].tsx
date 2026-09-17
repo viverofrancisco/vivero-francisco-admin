@@ -8,7 +8,7 @@ import {
   Text,
 } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { ServicioDetail } from "@/lib/types";
 
 export default function ServicioDetailScreen() {
@@ -28,7 +28,7 @@ export default function ServicioDetailScreen() {
       setData(res);
     } catch (e) {
       setError(
-        e instanceof ApiError ? e.message : "No pudimos cargar el servicio"
+        mensajeDeError(e, "No pudimos cargar el servicio")
       );
     } finally {
       setLoading(false);

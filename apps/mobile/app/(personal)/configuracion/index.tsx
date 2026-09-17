@@ -7,7 +7,7 @@ import Constants from "expo-constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { useAuthStore } from "@/lib/auth-store";
@@ -300,7 +300,7 @@ function CambiarContrasena({
       });
       cerrar();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "No pudimos cambiarla");
+      setError(mensajeDeError(e, "No pudimos cambiarla"));
     } finally {
       setGuardando(false);
     }

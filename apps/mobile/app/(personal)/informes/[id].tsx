@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
 import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 
 interface InformeDetail {
   id: string;
@@ -51,7 +51,7 @@ export default function InformeDetailScreen() {
       setData(res);
     } catch (e) {
       setError(
-        e instanceof ApiError ? e.message : "No pudimos cargar el informe"
+        mensajeDeError(e, "No pudimos cargar el informe")
       );
     } finally {
       setLoading(false);
@@ -78,7 +78,7 @@ export default function InformeDetailScreen() {
       router.back();
     } catch (e) {
       setError(
-        e instanceof ApiError ? e.message : "No pudimos eliminar el informe"
+        mensajeDeError(e, "No pudimos eliminar el informe")
       );
     } finally {
       setDeleting(false);
