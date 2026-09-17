@@ -136,7 +136,7 @@ function Estampa({ lat, lng }: { lat: number; lng: number }) {
         />
       ) : null}
       <View style={styles.pin}>
-        <Ionicons name="location" size={44} color={tema.verde} />
+        <Ionicons name="location" size={LADO_PIN} color={tema.rojo} />
       </View>
     </View>
   );
@@ -187,6 +187,17 @@ const ALTO_PEDIDO = 220;
  */
 const ZOOM = 17;
 
+/**
+ * El pin: rojo y chico.
+ *
+ * Era verde, del mismo verde de la marca, y sobre una foto satelital de un
+ * jardín se perdía entre los árboles —que es exactamente el fondo que va a
+ * tener siempre—. El rojo es el color que ningún jardín tiene. Y 34 en vez de
+ * 44 porque ahora señala sobre una imagen con detalle: un pin grande tapa
+ * justamente la casa que uno quiere ver.
+ */
+const LADO_PIN = 34;
+
 const styles = StyleSheet.create({
   tarjeta: {
     borderRadius: 16,
@@ -216,7 +227,7 @@ const styles = StyleSheet.create({
   pin: {
     // Medio alto para arriba: lo que señala un pin es su **punta**, y centrando
     // el dibujo la punta caía debajo del punto.
-    transform: [{ translateY: -20 }],
+    transform: [{ translateY: -LADO_PIN / 2 }],
     // La sombra despega el pin del fondo, que si no se lee como un dibujo más
     // de las franjas.
     shadowColor: "#142819",

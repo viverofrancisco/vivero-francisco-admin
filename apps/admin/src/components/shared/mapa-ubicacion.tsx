@@ -34,7 +34,11 @@ export function MapaUbicacion({
       <APIProvider apiKey={apiKey}>
         <Map
           defaultCenter={{ lat, lng }}
-          defaultZoom={18}
+          // 17, el mismo que la estampa de la app: es donde se leen el nombre
+          // de la urbanización y el de la calle de entrada sin perder de vista
+          // la casa. Dos pantallas que muestran lo mismo tienen que mostrar lo
+          // mismo.
+          defaultZoom={17}
           gestureHandling="none"
           disableDefaultUI
           keyboardShortcuts={false}
@@ -43,6 +47,9 @@ export function MapaUbicacion({
           mapTypeId="hybrid"
           className="h-full w-full"
         >
+          {/* El marcador de Google, que ya es el pin rojo de siempre: el que
+              había que cambiar era el de la app, que estaba en el verde de la
+              marca y se perdía entre los árboles de la foto satelital. */}
           <Marker position={{ lat, lng }} />
         </Map>
       </APIProvider>
