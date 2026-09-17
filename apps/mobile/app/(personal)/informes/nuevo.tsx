@@ -32,7 +32,7 @@ import { useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { nombreCliente } from "@vivero/shared";
+import { fechaSola, nombreCliente } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type {
   ClienteListItem,
@@ -1714,17 +1714,11 @@ function nextDay(yyyymmdd: string): string {
 }
 
 function formatLongDate(yyyymmdd: string): string {
-  const d = new Date(yyyymmdd + "T00:00:00");
-  return d.toLocaleDateString("es-EC", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return fechaSola(yyyymmdd, { day: "numeric", month: "short", year: "numeric" });
 }
 
 function formatChip(yyyymmdd: string): string {
-  const d = new Date(yyyymmdd + "T00:00:00");
-  return d.toLocaleDateString("es-EC", { day: "2-digit", month: "short" });
+  return fechaSola(yyyymmdd, { day: "2-digit", month: "short" });
 }
 
 function toIsoDate(d: Date): string {

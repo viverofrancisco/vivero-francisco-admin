@@ -15,6 +15,7 @@ import type {
   InformeRenderSeccion,
 } from "./template-data";
 import type { LineaEncabezado, TrozoEncabezado } from "./encabezado";
+import { fechaSola } from "@vivero/shared";
 
 // Use built-in Helvetica family. Loading custom fonts at runtime in
 // serverless environments is fragile and not worth it for v1.
@@ -534,10 +535,13 @@ function SignatureCell({ firma }: { firma: InformeRenderFirmante }) {
   );
 }
 
+/**
+ * La fecha impresa. `Informe.fecha` es `@db.Date`: un día, sin hora.
+ *
+ * En UTC y no en la zona del proceso: en Vercel da igual porque corre en UTC,
+ * pero generado desde una máquina en Ecuador el PDF salía con el día anterior
+ * —y el PDF es el documento que se entrega—.
+ */
 function formatLongDate(d: Date): string {
-  return d.toLocaleDateString("es-EC", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return fechaSola(d, { day: "2-digit", month: "long", year: "numeric" });
 }

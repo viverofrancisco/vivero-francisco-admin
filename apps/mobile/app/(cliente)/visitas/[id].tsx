@@ -15,6 +15,7 @@ import type { VisitaDetail, VisitaMedia } from "@/lib/types";
 import { listaTareas } from "@/lib/types";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { tema } from "@/lib/tema";
+import { fechaSola } from "@vivero/shared";
 
 export default function ClienteVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -298,8 +299,9 @@ function MediaTile({
   );
 }
 
+// Sin hora y sin zona: un día del calendario no se pasa por ningún reloj.
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-EC", {
+  return fechaSola(iso, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -308,11 +310,7 @@ function formatDate(iso: string): string {
 }
 
 function formatLongDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-EC", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  return fechaSola(iso, { weekday: "long", day: "numeric", month: "long" });
 }
 
 function tipoLabel(tipo: string): string {

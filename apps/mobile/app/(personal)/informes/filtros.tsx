@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Calendar, type DateData } from "react-native-calendars";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 import { tema } from "@/lib/tema";
+import { fechaSola } from "@vivero/shared";
 
 const ACCENT = tema.verde;
 
@@ -256,17 +257,11 @@ function Section({
 }
 
 function formatLongDate(yyyymmdd: string): string {
-  const d = new Date(yyyymmdd + "T00:00:00");
-  return d.toLocaleDateString("es-EC", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  return fechaSola(yyyymmdd, { day: "numeric", month: "long", year: "numeric" });
 }
 
 function formatChipDate(yyyymmdd: string): string {
-  const d = new Date(yyyymmdd + "T00:00:00");
-  return d.toLocaleDateString("es-EC", { day: "2-digit", month: "short" });
+  return fechaSola(yyyymmdd, { day: "2-digit", month: "short" });
 }
 
 const styles = StyleSheet.create({

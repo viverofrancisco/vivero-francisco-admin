@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { listaTareas } from "@/lib/visita-tareas";
-import { nombreCliente, nombrePersona } from "@vivero/shared";
+import { fechaSola, nombreCliente, nombrePersona } from "@vivero/shared";
 import { TipoNotificacion, DestinatarioTipo } from "@/generated/prisma/client";
 import { createMetaProvider } from "./meta-provider";
 import { formatForWhatsApp, isValidWhatsAppNumber } from "./phone";
@@ -73,8 +73,10 @@ function direccionDe(
   return [propiedad.direccion, propiedad.numeroCasa].filter(Boolean).join(" ");
 }
 
+// Un día sin hora: ver `fechaSola`. Esto viaja en el mensaje que le llega al
+// cliente, así que un día de corrimiento lo cita en la fecha equivocada.
 function formatFecha(date: Date): string {
-  return date.toLocaleDateString("es-EC", {
+  return fechaSola(date, {
     weekday: "long",
     year: "numeric",
     month: "long",

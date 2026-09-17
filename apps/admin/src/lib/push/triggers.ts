@@ -1,14 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { nombreCliente } from "@vivero/shared";
+import { fechaSola, nombreCliente } from "@vivero/shared";
 import { listaTareas } from "@/lib/visita-tareas";
 import { sendPushToUser, sendPushToUsers } from "./expo";
 
+// `fechaProgramada` es `@db.Date`: el día, sin hora. Formatearlo en la zona
+// del proceso lo corre al anterior y el aviso anuncia la visita del día que no
+// es.
 function formatFechaCorta(date: Date): string {
-  return date.toLocaleDateString("es-EC", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  return fechaSola(date, { weekday: "long", day: "numeric", month: "long" });
 }
 
 async function getVisitaForPush(visitaId: string) {

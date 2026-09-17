@@ -9,7 +9,7 @@ import {
 import { ActivityIndicator, FAB, IconButton, Text } from "react-native-paper";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
+import { fechaSola, nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 import { tema } from "@/lib/tema";
@@ -250,8 +250,7 @@ function formatGeneratedAt(iso: string): string {
 }
 
 function formatChipDate(yyyymmdd: string): string {
-  const d = new Date(yyyymmdd + "T00:00:00");
-  return d.toLocaleDateString("es-EC", { day: "2-digit", month: "short" });
+  return fechaSola(yyyymmdd, { day: "2-digit", month: "short" });
 }
 
 function summarize(

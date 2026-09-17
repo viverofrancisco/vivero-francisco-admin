@@ -9,7 +9,7 @@ import {
 } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
-import { nombreCliente } from "@vivero/shared";
+import { fechaSola, nombreCliente } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import {
   ArchivosVisita,
@@ -598,8 +598,15 @@ function armarFilasDeTareas(visita: VisitaDetail, yo: string | null) {
   return filas;
 }
 
+/**
+ * El día de la visita. Sin hora y sin zona: ver `fechaSola`.
+ *
+ * Acá se leía un día menos —la visita de hoy decía "miércoles 16"— porque el
+ * `@db.Date` llega como medianoche UTC y el teléfono lo mostraba en la hora de
+ * Guayaquil, que es cinco horas antes.
+ */
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-EC", {
+  return fechaSola(iso, {
     weekday: "long",
     day: "numeric",
     month: "long",

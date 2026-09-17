@@ -12,6 +12,8 @@ import { useRouter } from "expo-router";
 import { apiRequest } from "@/lib/api";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
 import { resumenTareas } from "@/lib/types";
+import { hoyEnEcuador } from "@/lib/hora";
+import { diaISO, fechaSola, sumarDias } from "@vivero/shared";
 
 type Group = "Hoy" | "Mañana" | "Esta semana" | "Más adelante" | "Historial";
 
@@ -152,14 +154,22 @@ function VisitaRow({
 
 
 function formatShortDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("es-EC", { day: "numeric", month: "short" });
+  return fechaSola(iso, { day: "numeric", month: "short" });
 }
 
+/**
+ * Las visitas por día, comparando **días** y no instantes.
+ *
+ * `fechaProgramada` es `@db.Date` y llega como medianoche UTC: convertirla a
+ * `Date` la corría cinco horas atrás, así que la visita de hoy caía en el día
+ * anterior y terminaba en Historial en vez de en Hoy. Comparar los
+ * `YYYY-MM-DD` en crudo no depende de ninguna zona, y en ese formato el texto
+ * ordena igual que la fecha.
+ */
 function groupVisitas(visitas: VisitaDetail[]): Section[] {
-  const today = startOfDay(new Date());
-  const tomorrow = addDays(today, 1);
-  const weekEnd = addDays(today, 7);
+  const hoy = hoyEnEcuador();
+  const manana = sumarDias(hoy, 1);
+  const finDeSemana = sumarDias(hoy, 7);
 
   const buckets: Record<Group, VisitaDetail[]> = {
     Hoy: [],
@@ -170,17 +180,16 @@ function groupVisitas(visitas: VisitaDetail[]): Section[] {
   };
 
   for (const v of visitas) {
-    const d = startOfDay(new Date(v.fechaProgramada));
-    const isUpcoming =
-      v.estado === "PROGRAMADA" && d.getTime() >= today.getTime();
+    const dia = diaISO(v.fechaProgramada);
+    const isUpcoming = v.estado === "PROGRAMADA" && dia >= hoy;
 
     if (!isUpcoming) {
       buckets["Historial"].push(v);
       continue;
     }
-    if (d.getTime() === today.getTime()) buckets["Hoy"].push(v);
-    else if (d.getTime() === tomorrow.getTime()) buckets["Mañana"].push(v);
-    else if (d.getTime() < weekEnd.getTime()) buckets["Esta semana"].push(v);
+    if (dia === hoy) buckets["Hoy"].push(v);
+    else if (dia === manana) buckets["Mañana"].push(v);
+    else if (dia < finDeSemana) buckets["Esta semana"].push(v);
     else buckets["Más adelante"].push(v);
   }
 
@@ -201,18 +210,6 @@ function groupVisitas(visitas: VisitaDetail[]): Section[] {
   return (Object.entries(buckets) as [Group, VisitaDetail[]][])
     .filter(([, list]) => list.length > 0)
     .map(([label, list]) => ({ label, visitas: list }));
-}
-
-function startOfDay(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function addDays(date: Date, days: number): Date {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
 }
 
 const styles = StyleSheet.create({
