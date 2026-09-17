@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   APIProvider,
   Map,
@@ -10,7 +10,7 @@ import {
 } from "@vis.gl/react-google-maps";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Crosshair, Loader2, Search, Trash2 } from "lucide-react";
+import { Crosshair, Loader2, Search, Trash2, X } from "lucide-react";
 
 /**
  * El punto exacto de una propiedad, elegido en el mapa.
@@ -166,7 +166,14 @@ function Mapa({
         <Map
           defaultCenter={vistaInicial.centro}
           defaultZoom={vistaInicial.zoom}
-          gestureHandling="greedy"
+          /*
+           * `cooperative` y no `greedy`: con `greedy` el mapa se queda con la
+           * rueda del mouse, así que bajar por el formulario se convertía en
+           * alejar el mapa apenas el cursor lo cruzaba. Así la rueda scrollea
+           * la página —que es lo que uno estaba haciendo— y para hacer zoom se
+           * usa ⌘/Ctrl + rueda, que el propio mapa avisa cuando hace falta.
+           */
+          gestureHandling="cooperative"
           disableDefaultUI={false}
           mapTypeControl={false}
           streetViewControl={false}
@@ -307,6 +314,23 @@ function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
   const [resultados, setResultados] = useState<
     { id: string; nombre: string; punto: Punto }[] | null
   >(null);
+  const caja = useRef<HTMLDivElement>(null);
+
+  /*
+   * Cerrar la lista tocando afuera.
+   *
+   * Sin esto, la única salida era elegir un resultado: el desplegable quedaba
+   * tapando el mapa y no había forma de decir "ninguno de estos". Escape
+   * también cierra, pero eso hay que saberlo.
+   */
+  useEffect(() => {
+    if (resultados === null) return;
+    const afuera = (e: MouseEvent) => {
+      if (!caja.current?.contains(e.target as Node)) setResultados(null);
+    };
+    document.addEventListener("mousedown", afuera);
+    return () => document.removeEventListener("mousedown", afuera);
+  }, [resultados]);
 
   async function buscar() {
     const q = texto.trim();
@@ -349,7 +373,7 @@ function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
   }
 
   return (
-    <div className="relative">
+    <div ref={caja} className="relative">
       <div className="flex gap-2">
         <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -368,8 +392,22 @@ function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
               }
             }}
             placeholder="Buscar una dirección o urbanización…"
-            className="pl-9"
+            className="pl-9 pr-9"
           />
+          {(texto || resultados !== null) && (
+            <button
+              type="button"
+              aria-label="Limpiar la búsqueda"
+              onClick={() => {
+                setTexto("");
+                setResultados(null);
+                setError(null);
+              }}
+              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
         <Button
           type="button"
