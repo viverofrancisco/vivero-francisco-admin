@@ -1,4 +1,5 @@
-import { Linking, Platform, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { Image, Linking, Platform, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -8,17 +9,26 @@ import {
   type PropiedadMostrable,
 } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { API_BASE_URL } from "@/lib/config";
+import { useAuthStore } from "@/lib/auth-store";
 import { tema } from "@/lib/tema";
 
 /**
  * Dónde queda la propiedad de esta visita, y cómo llegar.
  *
- * **El panel de arriba no es un mapa, y no pretende serlo.** Un mapa de verdad
- * acá es `react-native-maps`: un módulo nativo, otra clave de Google para
- * Android y una reconstrucción del dev build, todo para dibujar una postal de
- * 150 px que nadie va a explorar con el pulgar. Lo que se necesita parado en la
- * camioneta es otra cosa —la dirección y que arranque la navegación— y eso lo
- * hace *Llegar*, que abre la app de mapas del teléfono en el punto exacto.
+ * **Arriba va la estampa de Google Maps**, que la pide nuestro servidor
+ * (`/api/mobile/mapa`) y no la app: la clave se restringe por dominio y una app
+ * nativa no tiene dominio que mandar, así que una clave puesta acá adentro
+ * estaría sin proteger y encima viajaría en el bundle. Es una imagen y no un
+ * mapa navegable a propósito: lo que hace falta en esta pantalla es reconocer
+ * la manzana de un vistazo y salir a manejar —eso lo hace *Llegar*—, no
+ * explorar con el pulgar. Un mapa interactivo sería `react-native-maps`: módulo
+ * nativo, otra clave para Android y reconstruir la app, para una postal de
+ * 150 px.
+ *
+ * Si el servidor no tiene su clave, o no hay señal, queda el panel de franjas
+ * dibujado acá mismo. La tarjeta sigue sirviendo: lo único que falta es la
+ * foto.
  *
  * Por coordenadas y no por dirección escrita: "Blue Bay" son doscientas casas,
  * y el pin existe justamente para no depender de eso.
@@ -61,7 +71,7 @@ export function UbicacionPropiedad({
 
   return (
     <View style={styles.tarjeta}>
-      {tienePunto ? <Lienzo /> : null}
+      {tienePunto ? <Estampa lat={lat as number} lng={lng as number} /> : null}
 
       <View style={styles.pie}>
         <View style={styles.texto}>
@@ -94,24 +104,55 @@ export function UbicacionPropiedad({
 }
 
 /**
- * El fondo del panel: franjas diagonales, como el papel de un plano.
+ * La foto del lugar, con el panel de franjas debajo.
  *
- * Con vistas y no con una imagen para que no dependa de la red —la visita se
- * abre en un jardín, muchas veces sin señal— y para que siga el verde del
- * sistema en vez de traer el suyo.
+ * El respaldo va **abajo y siempre dibujado**, no en un `if`: así la tarjeta
+ * mide lo mismo antes y después de que cargue la imagen —nada salta— y si la
+ * imagen falla no queda un hueco, queda el panel. En un jardín sin señal eso
+ * es lo normal, no la excepción.
  */
-function Lienzo() {
+function Estampa({ lat, lng }: { lat: number; lng: number }) {
+  const token = useAuthStore((s) => s.accessToken);
+  const [fallo, setFallo] = useState(false);
+
+  const uri =
+    `${API_BASE_URL}/api/mobile/mapa` +
+    `?lat=${lat}&lng=${lng}&ancho=400&alto=${ALTO_MAPA}&zoom=17`;
+
   return (
     <View style={styles.lienzo}>
-      {Array.from({ length: 14 }).map((_, i) => (
-        <View key={i} style={[styles.franja, { left: i * 26 - 60 }]} />
-      ))}
+      <Franjas />
+      {!fallo && token ? (
+        <Image
+          // El token va en el encabezado porque la ruta pide sesión: es una
+          // imagen que se factura, no un proxy abierto al que cualquiera le
+          // pueda pedir mapas del mundo con nuestra cuenta.
+          source={{ uri, headers: { Authorization: `Bearer ${token}` } }}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+          onError={() => setFallo(true)}
+        />
+      ) : null}
       <View style={styles.pin}>
         <Ionicons name="location" size={44} color={tema.verde} />
       </View>
     </View>
   );
 }
+
+/** Franjas diagonales, como el papel de un plano. Dibujadas, no descargadas. */
+function Franjas() {
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      {Array.from({ length: 14 }).map((_, i) => (
+        <View key={i} style={[styles.franja, { left: i * 26 - 60 }]} />
+      ))}
+    </View>
+  );
+}
+
+/** Lo que mide la estampa. El servidor la manda al doble, para pantallas retina. */
+const ALTO_MAPA = 150;
 
 const styles = StyleSheet.create({
   tarjeta: {
@@ -123,7 +164,7 @@ const styles = StyleSheet.create({
   },
 
   lienzo: {
-    height: 150,
+    height: ALTO_MAPA,
     backgroundColor: tema.verde50,
     overflow: "hidden",
     alignItems: "center",
