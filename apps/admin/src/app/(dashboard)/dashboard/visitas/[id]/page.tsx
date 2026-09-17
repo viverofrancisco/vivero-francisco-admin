@@ -40,6 +40,15 @@ export default async function VisitaDetailPage({
           referencia: true,
           lat: true,
           lng: true,
+          // Lo que hay que mantener ahí: es con lo que se cotiza, y quien abre
+          // la visita es quien tiene que saberlo.
+          m2Total: true,
+          m2Cesped: true,
+          numeroArboles: true,
+          mlVegetacionBaja: true,
+          mlVegetacionMedia: true,
+          mlVegetacionAlta: true,
+          jardinerasPlantaAlta: true,
           sector: { select: { nombre: true } },
         },
       },

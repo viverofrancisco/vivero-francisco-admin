@@ -9,7 +9,11 @@ import {
 } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
-import { fechaSola, nombreCliente } from "@vivero/shared";
+import {
+  fechaSola,
+  medidasDePropiedad,
+  nombreCliente,
+} from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import {
   ArchivosVisita,
@@ -23,6 +27,7 @@ import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { UbicacionPropiedad } from "@/components/UbicacionPropiedad";
 import { tema } from "@/lib/tema";
 import { diaEnEcuador, fechaYHora12, hoyEnEcuador } from "@/lib/hora";
 import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
@@ -240,6 +245,7 @@ export default function PersonalVisitaScreen() {
 
   const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
+  const medidas = medidasDePropiedad(visita.propiedad);
   const filasDeTareas = armarFilasDeTareas(visita, personalId);
 
   return (
@@ -369,20 +375,38 @@ export default function PersonalVisitaScreen() {
           )}
         </Section>
 
+        {/* Dónde es. La dirección es de la **propiedad** de esta visita —un
+            cliente puede tener más de una— y arriba de todo lo demás porque es
+            lo primero que se necesita: llegar. */}
+        <View style={styles.seccionUbicacion}>
+          <Text variant="labelMedium" style={styles.sectionLabel}>
+            UBICACIÓN
+          </Text>
+          <UbicacionPropiedad propiedad={visita.propiedad} />
+        </View>
+
+        {/* Lo que hay que mantener ahí. Solo lo que alguien midió: se va
+            completando con el tiempo y una fila con un guión no informa. */}
+        {medidas.length > 0 || visita.propiedad.referencia ? (
+          <Section title="Propiedad">
+            {visita.propiedad.nombre ? (
+              <Row label="Nombre" value={visita.propiedad.nombre} />
+            ) : null}
+            {visita.propiedad.referencia ? (
+              <Row label="Referencia" value={visita.propiedad.referencia} />
+            ) : null}
+            {medidas.map((m) => (
+              <Row key={m.etiqueta} label={m.etiqueta} value={m.valor} />
+            ))}
+          </Section>
+        ) : null}
+
         {/* Cliente */}
-        <Section title="Cliente">
-          {cliente.telefono ? (
+        {cliente.telefono ? (
+          <Section title="Cliente">
             <Row label="Teléfono" value={cliente.telefono} />
-          ) : null}
-          {/* La dirección es de la propiedad de esta visita: es adonde hay que
-              ir, y un cliente puede tener más de una. */}
-          {visita.propiedad.direccion ? (
-            <Row label="Dirección" value={visita.propiedad.direccion} />
-          ) : null}
-          {visita.propiedad.sector ? (
-            <Row label="Sector" value={visita.propiedad.sector.nombre} />
-          ) : null}
-        </Section>
+          </Section>
+        ) : null}
 
         {/* Personal */}
         {personalAsignado.length > 0 ? (
@@ -682,6 +706,7 @@ const styles = StyleSheet.create({
   },
   section: { marginTop: 20, gap: 6 },
   sectionPegada: { gap: 6 },
+  seccionUbicacion: { marginTop: 20, gap: 6 },
   sectionLabel: {
     color: "#888",
     fontSize: 11,

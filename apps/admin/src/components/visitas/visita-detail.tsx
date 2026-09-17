@@ -26,8 +26,9 @@ import {
   Clock,
   LogIn,
   LogOut,
-  Pencil,
+  Navigation,
   PenLine,
+  Pencil,
   Timer,
   Trash2,
 } from "lucide-react";
@@ -38,6 +39,7 @@ import {
 } from "@/components/ui/media-viewer";
 import { ArchivosVisita } from "@/components/visitas/archivos-visita";
 import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
+import { MapaUbicacion } from "@/components/shared/mapa-ubicacion";
 import {
   Cronologia,
   TareasObligatorias,
@@ -56,7 +58,13 @@ import {
   PERIODICIDAD_LABEL,
   estadoVariant as estadoSuscripcionVariant,
 } from "@/components/suscripciones/formato";
-import { nombreCliente } from "@vivero/shared";
+import {
+  direccionDePropiedad,
+  enlaceParaLlegar,
+  medidasDePropiedad,
+  nombreCliente,
+  zonaDePropiedad,
+} from "@vivero/shared";
 import {
   obligatoriasSinCubrir,
   marcaronDesdeElMismoAparato,
@@ -100,6 +108,13 @@ interface VisitaDetailData {
     referencia: string | null;
     lat: number | null;
     lng: number | null;
+    m2Total: number | null;
+    m2Cesped: number | null;
+    numeroArboles: number | null;
+    mlVegetacionBaja: number | null;
+    mlVegetacionMedia: number | null;
+    mlVegetacionAlta: number | null;
+    jardinerasPlantaAlta: boolean;
     sector: { nombre: string } | null;
   };
   tareasObligatorias: { tarea: TareaDeVisita }[];
@@ -229,6 +244,11 @@ export function VisitaDetail({
     userRole === "PERSONAL" && personalId && visita.estado !== "CANCELADA"
       ? visita.personal.find((p) => p.personalId === personalId)
       : undefined;
+
+  /** Dónde queda: el pin lo puso alguien en la ficha de la propiedad. */
+  const tienePunto =
+    visita.propiedad.lat !== null && visita.propiedad.lng !== null;
+  const medidas = medidasDePropiedad(visita.propiedad);
 
   const plan = visita.suscripcion ?? null;
   const ordenes = visita.ordenes ?? [];
@@ -419,21 +439,81 @@ export function VisitaDetail({
                 >
                   {nombreCliente(visita.cliente)}
                 </Link>
-                {/* Debajo del nombre, dónde: la dirección de la propiedad de
-                    esta visita. Un cliente puede tener varias, así que decir
-                    "su" sector no alcanzaría. */}
+                {/* Debajo del nombre, **cuál** de sus propiedades, que es lo
+                    que esta tarjeta puede decir y el nombre solo no dice. La
+                    dirección estaba acá cuando era el único lugar donde se
+                    veía; ahora la dice la tarjeta de ubicación, con su mapa,
+                    justo debajo. */}
                 <span className="block truncate text-[12.5px] font-semibold text-white/75">
-                  {[
-                    visita.propiedad.direccion,
-                    visita.propiedad.sector?.nombre ?? visita.propiedad.ciudad,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ") || visita.propiedad.nombre}
+                  {visita.propiedad.nombre}
                 </span>
               </span>
             </div>
           </CardContent>
         </Card>
+
+        {/* Adónde hay que ir. El mapa solo si la propiedad tiene su punto: sin
+            pin sería un rectángulo gris avisando de un dato que no se arregla
+            desde acá. *Llegar* abre Google Maps en el punto exacto —por
+            coordenadas y no por la dirección escrita, que adentro de una
+            urbanización nombra doscientas casas—. */}
+        <Card className="gap-0 overflow-hidden rounded-2xl py-0">
+          {tienePunto ? (
+            <MapaUbicacion
+              lat={visita.propiedad.lat!}
+              lng={visita.propiedad.lng!}
+            />
+          ) : null}
+          <CardContent className="flex items-center gap-3 p-[18px]">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-bold">
+                {direccionDePropiedad(visita.propiedad) ||
+                  visita.propiedad.nombre}
+              </p>
+              <p className="truncate text-[12.5px] text-muted-foreground">
+                {zonaDePropiedad(visita.propiedad) ||
+                  (tienePunto
+                    ? visita.propiedad.nombre
+                    : "Sin ubicación en el mapa")}
+              </p>
+            </div>
+            {tienePunto ? (
+              <a
+                href={enlaceParaLlegar(
+                  visita.propiedad.lat!,
+                  visita.propiedad.lng!
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-none flex-col items-center gap-1 text-[12px] font-semibold text-green-700"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary transition-colors hover:bg-green-100">
+                  <Navigation className="h-[18px] w-[18px]" />
+                </span>
+                Llegar
+              </a>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        {/* Lo que hay que mantener ahí, que es con lo que se cotiza. Solo lo
+            medido: las medidas se completan con el tiempo y una fila con un
+            guión ocupa lo mismo sin decir nada. */}
+        {medidas.length > 0 || visita.propiedad.referencia ? (
+          <TarjetaSeccion titulo="Propiedad" className="[&_dl]:-mx-2">
+            <dl>
+              <Fila etiqueta="Nombre">{visita.propiedad.nombre}</Fila>
+              {visita.propiedad.referencia ? (
+                <Fila etiqueta="Referencia">{visita.propiedad.referencia}</Fila>
+              ) : null}
+              {medidas.map((m) => (
+                <Fila key={m.etiqueta} etiqueta={m.etiqueta}>
+                  <span className="tabular-nums">{m.valor}</span>
+                </Fila>
+              ))}
+            </dl>
+          </TarjetaSeccion>
+        ) : null}
 
         {/* Las dos fechas juntas: para cuándo se agendó y cuándo se hizo. Verlas
             una al lado de la otra es la forma de notar que se corrió. */}
