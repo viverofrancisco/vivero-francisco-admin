@@ -1,6 +1,7 @@
 import { viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { listarOrdenes } from "@/lib/services/orden.service";
 import { OrdenesTable } from "@/components/ordenes/ordenes-table";
+import { propiedadesDeVisitas } from "@vivero/shared";
 
 export default async function OrdenesPage({
   searchParams,
@@ -24,6 +25,11 @@ export default async function OrdenesPage({
     fecha: o.fecha.toISOString(),
     estado: o.estado,
     cliente: o.cliente,
+    // Dónde se trabajó, para poder distinguir dos órdenes del mismo cliente.
+    // Sale de las visitas que cubre: una orden de un plan no tiene ninguna.
+    propiedades: propiedadesDeVisitas(o.visitas.map((v) => v.visita)).map(
+      (p) => p.nombre
+    ),
     lineas: o._count.lineas,
     facturas: o._count.facturas,
     subtotal: Number(o.subtotal),

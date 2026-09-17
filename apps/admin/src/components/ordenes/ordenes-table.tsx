@@ -24,7 +24,7 @@ import {
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import {
   money,
@@ -48,6 +48,8 @@ interface OrdenRow {
   lineas: number;
   facturas: number;
   total: number;
+  /** En qué propiedades se trabajó. Vacío en la orden de un período de plan. */
+  propiedades: string[];
   /** Lo que falta cobrar de su factura viva. `null` = sin sincronizar. */
   saldo: number | null;
 }
@@ -186,6 +188,14 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
                     </TableCell>
                     <TableCell className="font-medium">
                       {nombreCliente(o.cliente)}
+                      {/* De qué casa. Debajo del nombre y no en una columna
+                          propia: es el mismo "dónde" que el cliente, y una
+                          columna se paga en ancho todo el tiempo. */}
+                      {o.propiedades.length > 0 ? (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          {resumenDePropiedades(o.propiedades)}
+                        </span>
+                      ) : null}
                     </TableCell>
                     <TableCell className="text-muted-foreground tabular-nums">
                       {fecha(o.fecha)}
@@ -245,8 +255,13 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
                 <span className="tabular-nums">#{o.numero}</span>{" "}
                 {nombreCliente(o.cliente)}
               </span>
-              <span className="block truncate text-xs font-medium tabular-nums text-muted-foreground">
-                {fecha(o.fecha)} · {money(o.total)}
+              <span className="block truncate text-xs font-medium text-muted-foreground">
+                <span className="tabular-nums">
+                  {fecha(o.fecha)} · {money(o.total)}
+                </span>
+                {o.propiedades.length > 0
+                  ? ` · ${resumenDePropiedades(o.propiedades)}`
+                  : ""}
               </span>
             </span>
             {o.estado === "ANULADA" ? (

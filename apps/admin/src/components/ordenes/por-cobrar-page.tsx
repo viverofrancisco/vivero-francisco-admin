@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import { ArrowRight, Search } from "lucide-react";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { money, fecha } from "./formato";
 import { ESTADO_FACTURA_LABEL } from "@/components/facturas/estado";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
@@ -41,6 +41,8 @@ interface OrdenRow {
     apellido: string | null;
     empresa: string | null;
   };
+  /** En qué propiedades se trabajó. Vacío en la orden de un período de plan. */
+  propiedades: string[];
 }
 
 /**
@@ -164,7 +166,14 @@ export function PorCobrarPage({ ordenes }: { ordenes: OrdenRow[] }) {
                         o.factura.estado}
                     </span>
                   </TableCell>
-                  <TableCell>{nombreCliente(o.cliente)}</TableCell>
+                  <TableCell>
+                    {nombreCliente(o.cliente)}
+                    {o.propiedades.length > 0 ? (
+                      <span className="block text-xs text-muted-foreground">
+                        {resumenDePropiedades(o.propiedades)}
+                      </span>
+                    ) : null}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {fecha(o.factura.fechaEmision)}
                   </TableCell>
@@ -218,6 +227,9 @@ export function PorCobrarPage({ ordenes }: { ordenes: OrdenRow[] }) {
                   <span className="tabular-nums">
                     {fecha(o.factura.fechaEmision)}
                   </span>
+                  {o.propiedades.length > 0
+                    ? ` · ${resumenDePropiedades(o.propiedades)}`
+                    : ""}
                 </span>
               </span>
               <span className="flex-none text-sm font-semibold tabular-nums text-amber-700">

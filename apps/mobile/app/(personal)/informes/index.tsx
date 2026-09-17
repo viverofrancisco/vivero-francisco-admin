@@ -9,7 +9,7 @@ import {
 import { ActivityIndicator, FAB, IconButton, Text } from "react-native-paper";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 import { tema } from "@/lib/tema";
@@ -28,6 +28,8 @@ interface InformeItem {
     empresa: string | null;
   };
   visitasCount: number;
+  /** En qué propiedades pasó lo que cuenta. Vacío si no cubre visitas. */
+  propiedades: string[];
 }
 
 const PAGE_SIZE = 20;
@@ -223,7 +225,11 @@ function InformeRow({
           {item.titulo}
         </Text>
         <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
-          {nombreCliente(item.cliente)}
+          {/* El cliente y, si se sabe, en cuál de sus casas: dos informes del
+              mismo cliente en el mismo mes se distinguen por eso. */}
+          {[nombreCliente(item.cliente), resumenDePropiedades(item.propiedades)]
+            .filter(Boolean)
+            .join(" · ")}
         </Text>
         <Text variant="bodySmall" style={styles.metaLine}>
           {formatGeneratedAt(item.generatedAt)} · {item.visitasCount} visita

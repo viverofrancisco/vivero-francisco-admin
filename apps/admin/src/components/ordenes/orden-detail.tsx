@@ -28,7 +28,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, propiedadesDeVisitas } from "@vivero/shared";
 import {
   money,
   fecha,
@@ -113,7 +113,13 @@ interface OrdenData {
    * de sus líneas: agregarle un producto a mano no la convierte en otra cosa.
    */
   /** De qué visitas es. Pueden ser varias: cobrar el mes entero en una orden. */
-  visitas: { id: string; numero: number; fecha: string }[];
+  visitas: {
+    id: string;
+    numero: number;
+    fecha: string;
+    /** Dónde se trabajó. De acá sale la propiedad de la orden. */
+    propiedad: { id: string; nombre: string } | null;
+  }[];
   suscripcion: {
     id: string;
     numero: number;
@@ -226,6 +232,8 @@ export function OrdenDetail({
   const [visitasEdit, setVisitasEdit] = useState<string[]>([]);
   const [notasEdit, setNotasEdit] = useState("");
   const [editando, setEditando] = useState(false);
+  /** En qué propiedades se trabajó: lo dicen las visitas que la orden cubre. */
+  const propiedades = propiedadesDeVisitas(orden.visitas);
   /** Anular no se deshace y puede soltar trabajo: siempre se confirma. */
   const [anulando, setAnulando] = useState(false);
   const [cobrando, setCobrando] = useState<FacturaCobrable | null>(null);
@@ -881,6 +889,11 @@ export function OrdenDetail({
                       </span>
                       <span className="block text-xs text-muted-foreground">
                         {fecha(v.fecha)}
+                        {/* Solo con más de una propiedad: repetir la misma
+                            casa en cada fila no distingue nada. */}
+                        {propiedades.length > 1 && v.propiedad
+                          ? ` · ${v.propiedad.nombre}`
+                          : ""}
                       </span>
                     </Link>
                   ))}
@@ -928,6 +941,22 @@ export function OrdenDetail({
                   {nombreCliente(orden.cliente)}
                 </Link>
               )}
+              {/* Dónde se trabajó. Sale de las visitas que la orden cubre, así
+                  que la de un período de plan no lo muestra: el plan es del
+                  cliente y no de un lugar. */}
+              {propiedades.length > 0 ? (
+                <div className="mt-2 space-y-0.5">
+                  {propiedades.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/dashboard/clientes/${orden.cliente.id}/propiedades/${p.id}`}
+                      className="block text-xs text-muted-foreground hover:underline"
+                    >
+                      {p.nombre}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
 

@@ -1,6 +1,7 @@
 import { viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { listarOrdenes } from "@/lib/services/orden.service";
 import { BorradoresTable } from "@/components/ordenes/borradores-table";
+import { propiedadesDeVisitas } from "@vivero/shared";
 
 export default async function BorradoresPage() {
   await requireStaff();
@@ -18,6 +19,9 @@ export default async function BorradoresPage() {
           numero: o.numero,
           fecha: o.fecha.toISOString(),
           cliente: o.cliente,
+          propiedades: propiedadesDeVisitas(o.visitas.map((v) => v.visita)).map(
+            (p) => p.nombre
+          ),
           lineas: o._count.lineas,
           total: Number(o.total),
         }))}

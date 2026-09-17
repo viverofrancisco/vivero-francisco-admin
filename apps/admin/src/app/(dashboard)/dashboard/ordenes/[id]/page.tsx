@@ -105,6 +105,7 @@ export default async function OrdenRoute({
             id: v.visita.id,
             numero: v.visita.numero,
             fecha: v.visita.fechaProgramada.toISOString(),
+            propiedad: v.visita.propiedad,
           })),
           suscripcion: orden.suscripcion,
           lineas: orden.lineas.map((l) => ({

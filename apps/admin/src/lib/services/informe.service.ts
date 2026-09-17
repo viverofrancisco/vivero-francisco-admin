@@ -95,6 +95,13 @@ export async function listInformes(
         cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
         generatedBy: { select: { id: true, name: true, apellido: true } },
         _count: { select: { visitas: true } },
+        // Dónde pasó lo que cuenta. El informe no tiene propiedad propia: la
+        // sacan sus visitas, que son las que saben el lugar.
+        visitas: {
+          select: {
+            visita: { select: { propiedad: { select: { id: true, nombre: true } } } },
+          },
+        },
       },
       orderBy: { generatedAt: "desc" },
       skip: offset,
@@ -238,6 +245,14 @@ export async function listInformesYBorradores(
             versionActual: true,
             cliente: {
               select: { id: true, nombre: true, apellido: true, empresa: true },
+            },
+            // Para decir en la fila de qué casa es. Un borrador no lo dice:
+            // sus visitas viven adentro del JSON del asistente, y todavía
+            // puede cambiarlas antes de generarse.
+            visitas: {
+              select: {
+                visita: { select: { propiedad: { select: { id: true, nombre: true } } } },
+              },
             },
           },
         })
@@ -1514,6 +1529,9 @@ export async function getInforme(viewer: Viewer, id: string) {
               estado: true,
               fechaProgramada: true,
               fechaRealizada: true,
+              // Dónde pasó. El informe no tiene propiedad propia: la saca de
+              // las visitas que cuenta, que son las que saben el lugar.
+              propiedad: { select: { id: true, nombre: true } },
             },
           },
         },

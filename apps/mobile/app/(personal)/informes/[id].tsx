@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { apiRequest, ApiError } from "@/lib/api";
 
 interface InformeDetail {
@@ -28,6 +28,8 @@ interface InformeDetail {
     empresa: string | null;
   };
   visitasCount: number;
+  /** En qué propiedades pasó. Sale de las visitas; vacío si no cubre ninguna. */
+  propiedades: string[];
 }
 
 export default function InformeDetailScreen() {
@@ -127,6 +129,16 @@ export default function InformeDetailScreen() {
             label="Visitas incluidas"
             value={`${data.visitasCount}`}
           />
+          {/* Sin visitas no hay propiedad que mostrar, y eso es distinto de
+              un guión: el informe simplemente no cuenta trabajo de ninguna. */}
+          {data.propiedades.length > 0 ? (
+            <Row
+              label={
+                data.propiedades.length === 1 ? "Propiedad" : "Propiedades"
+              }
+              value={resumenDePropiedades(data.propiedades) ?? ""}
+            />
+          ) : null}
         </Card.Content>
       </Card>
 

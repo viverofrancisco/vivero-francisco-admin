@@ -12,6 +12,7 @@
  */
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { propiedadesDeVisitas } from "@vivero/shared";
 import { periodosDeSuscripcion, clavePeriodo } from "@/lib/periodos";
 import { hoyEnEcuador } from "@/lib/fechas";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
@@ -929,6 +930,8 @@ export interface OrdenPorCobrar {
     apellido: string | null;
     empresa: string | null;
   };
+  /** En qué propiedades se trabajó. Vacío en la orden de un período de plan. */
+  propiedades: string[];
 }
 
 /**
@@ -973,6 +976,13 @@ export async function listarOrdenesPorCobrar(
       cliente: {
         select: { id: true, nombre: true, apellido: true, empresa: true },
       },
+      // Dónde se trabajó, para distinguir dos órdenes del mismo cliente en una
+      // lista que es justamente de varias por cliente.
+      visitas: {
+        select: {
+          visita: { select: { propiedad: { select: { id: true, nombre: true } } } },
+        },
+      },
     },
     orderBy: { fecha: "asc" },
   });
@@ -994,6 +1004,9 @@ export async function listarOrdenesPorCobrar(
         sincronizada: f.saldo !== null,
       },
       cliente: o.cliente,
+      propiedades: propiedadesDeVisitas(o.visitas.map((v) => v.visita)).map(
+        (p) => p.nombre
+      ),
     };
   });
 }
@@ -1295,6 +1308,13 @@ export async function listarOrdenes(
       include: {
         cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
         _count: { select: { lineas: true, facturas: true } },
+        // De qué casa es, para decirlo en la fila. Una orden de un período de
+        // plan no tiene ninguna: el plan es del cliente, no de un lugar.
+        visitas: {
+          select: {
+            visita: { select: { propiedad: { select: { id: true, nombre: true } } } },
+          },
+        },
         // La factura viva, para poder decir si está cobrada. El estado de la
         // orden no lo sabe: cobrar es otro eje.
         facturas: {
@@ -1356,7 +1376,17 @@ export async function getOrden(viewer: Viewer, id: string) {
       // y con las líneas la respuesta cambiaba según lo que llevara.
       visitas: {
         select: {
-          visita: { select: { id: true, numero: true, fechaProgramada: true } },
+          visita: {
+            select: {
+              id: true,
+              numero: true,
+              fechaProgramada: true,
+              // Dónde se trabajó. La orden no tiene propiedad propia: sale de
+              // las visitas que cubre, que pueden ser de dos casas del mismo
+              // cliente si se le cobra el mes entero en una sola orden.
+              propiedad: { select: { id: true, nombre: true } },
+            },
+          },
         },
       },
       suscripcion: {

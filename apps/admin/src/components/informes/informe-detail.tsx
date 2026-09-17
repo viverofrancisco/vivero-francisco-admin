@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { useAca } from "@/lib/filtros-url";
+import { propiedadesDeVisitas } from "@vivero/shared";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +74,8 @@ export interface InformeDetailData {
     numero: number;
     estado: string;
     fecha: string;
+    /** Dónde pasó. De acá sale la propiedad del informe: no tiene una propia. */
+    propiedad: { id: string; nombre: string } | null;
   }>;
   secciones: Array<{ titulo: string; fotos: number }>;
 }
@@ -101,6 +104,8 @@ export function InformeDetail({
   const router = useRouter();
   const aca = useAca();
   const [borrando, setBorrando] = useState(false);
+  /** En qué propiedades pasó lo que cuenta: lo dicen sus visitas. */
+  const propiedades = propiedadesDeVisitas(informe.visitas);
   const [eliminando, setEliminando] = useState(false);
 
   async function eliminar() {
@@ -220,6 +225,26 @@ export function InformeDetail({
                   {informe.cliente.nombre}
                 </Link>
               </Dato>
+              {/* Dónde. Sale de las visitas que el informe cuenta, así que un
+                  informe sin visitas no muestra el renglón: no hay nada que
+                  decir, que no es lo mismo que un guión. */}
+              {propiedades.length > 0 ? (
+                <Dato
+                  etiqueta={
+                    propiedades.length === 1 ? "Propiedad" : "Propiedades"
+                  }
+                >
+                  {propiedades.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/dashboard/clientes/${informe.cliente.id}/propiedades/${p.id}?from=${aca}`}
+                      className="block font-medium hover:underline"
+                    >
+                      {p.nombre}
+                    </Link>
+                  ))}
+                </Dato>
+              ) : null}
               {/* Dos fechas distintas a propósito: la impresa es la que dice
                   el documento, la de generado es cuándo se armó. */}
               <Dato etiqueta="Fecha del informe">{fechaLarga(informe.fecha)}</Dato>
@@ -334,6 +359,11 @@ export function InformeDetail({
                         </span>
                         <span className="truncate text-muted-foreground">
                           {fechaCorta(v.fecha)}
+                          {/* El lugar solo cuando hay más de uno: repetir la
+                              misma casa en cada fila no distingue nada. */}
+                          {propiedades.length > 1 && v.propiedad
+                            ? ` · ${v.propiedad.nombre}`
+                            : ""}
                         </span>
                       </span>
                       <StatusBadge

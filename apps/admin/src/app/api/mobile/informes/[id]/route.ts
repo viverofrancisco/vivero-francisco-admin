@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { propiedadesDeVisitas } from "@vivero/shared";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 import {
   deleteInforme,
@@ -30,6 +31,9 @@ export async function GET(
         nombre: `${informe.cliente.nombre} ${informe.cliente.apellido ?? ""}`.trim(),
       },
       visitasCount: informe.visitas.length,
+      propiedades: propiedadesDeVisitas(
+        informe.visitas.map((v) => v.visita)
+      ).map((p) => p.nombre),
     });
   } catch (error) {
     return serviceErrorResponse(error);

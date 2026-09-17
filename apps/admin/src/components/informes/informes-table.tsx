@@ -36,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useCargaInfinita } from "@/components/shared/scroll-infinito";
 import type { InformeListItem } from "@/lib/informes/lista";
+import { resumenDePropiedades } from "@vivero/shared";
 
 export type { InformeListItem } from "@/lib/informes/lista";
 
@@ -213,6 +214,15 @@ export function InformesTable({
                     {item.cliente?.nombre ?? (
                       <span className="text-muted-foreground">Sin cliente</span>
                     )}
+                    {/* De qué casa. Debajo del nombre y no en una columna
+                        propia: es el mismo "dónde" que el cliente, y una
+                        columna más en una tabla que ya tiene seis se paga en
+                        ancho todo el tiempo para leerse de vez en cuando. */}
+                    {item.propiedades.length > 0 ? (
+                      <span className="block text-xs font-normal text-muted-foreground">
+                        {resumenDePropiedades(item.propiedades)}
+                      </span>
+                    ) : null}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -454,6 +464,11 @@ export function InformesTable({
               </span>
               {" · "}
               <span className="tabular-nums">{generadoEl(item.fecha)}</span>
+              {/* Al final del renglón: si algo se corta que sea el lugar, no
+                  el número ni la fecha. */}
+              {item.propiedades.length > 0
+                ? ` · ${resumenDePropiedades(item.propiedades)}`
+                : ""}
             </span>
           </span>
         </Link>

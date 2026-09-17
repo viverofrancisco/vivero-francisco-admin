@@ -116,6 +116,7 @@ export default async function InformeDetailPage({
               fecha: (
                 v.visita.fechaRealizada ?? v.visita.fechaProgramada
               ).toISOString(),
+              propiedad: v.visita.propiedad,
             })),
           secciones: informe.secciones.map((s) => ({
             titulo: s.titulo,

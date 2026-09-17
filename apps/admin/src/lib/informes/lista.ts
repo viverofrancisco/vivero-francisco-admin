@@ -1,4 +1,4 @@
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, propiedadesDeVisitas } from "@vivero/shared";
 import type { listInformesYBorradores } from "@/lib/services/informe.service";
 
 type Fila = Awaited<ReturnType<typeof listInformesYBorradores>>["items"][number];
@@ -17,6 +17,14 @@ export interface InformeListItem {
   /** Si es el borrador de una **edición**, el número del informe que corrige. */
   deInforme: number | null;
   cliente: { id: string; nombre: string } | null;
+  /**
+   * En qué propiedades del cliente pasó lo que el informe cuenta.
+   *
+   * Sale de las visitas, que son las que saben el lugar. Vacío cuando no cubre
+   * ninguna —un informe puede armarse sin visitas— y en los borradores, cuyas
+   * visitas todavía están adentro del asistente.
+   */
+  propiedades: string[];
 }
 
 /**
@@ -39,6 +47,9 @@ export function serializarInformeItem(x: Fila): InformeListItem {
       version: i.versionActual,
       deInforme: null,
       cliente: { id: i.cliente.id, nombre: nombreCliente(i.cliente) },
+      propiedades: propiedadesDeVisitas(i.visitas.map((v) => v.visita)).map(
+        (p) => p.nombre
+      ),
     };
   }
   const b = x.borrador!;
@@ -55,5 +66,6 @@ export function serializarInformeItem(x: Fila): InformeListItem {
     cliente: b.cliente
       ? { id: b.cliente.id, nombre: nombreCliente(b.cliente) }
       : null,
+    propiedades: [],
   };
 }

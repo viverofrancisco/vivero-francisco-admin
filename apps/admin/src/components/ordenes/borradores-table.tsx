@@ -21,7 +21,7 @@ import {
   FILAS_POR_PAGINA,
 } from "@/components/shared/table-pagination";
 import { Search } from "lucide-react";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { money, fecha } from "./formato";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
@@ -37,6 +37,8 @@ interface OrdenRow {
   };
   lineas: number;
   total: number;
+  /** En qué propiedades se trabajó. Vacío en la orden de un período de plan. */
+  propiedades: string[];
 }
 
 /**
@@ -139,6 +141,11 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
                     </TableCell>
                     <TableCell className="font-medium">
                       {nombreCliente(o.cliente)}
+                      {o.propiedades.length > 0 ? (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          {resumenDePropiedades(o.propiedades)}
+                        </span>
+                      ) : null}
                     </TableCell>
                     <TableCell className="text-muted-foreground tabular-nums">
                       {fecha(o.fecha)}
@@ -188,6 +195,9 @@ export function BorradoresTable({ ordenes }: { ordenes: OrdenRow[] }) {
               <span className="block truncate text-xs font-medium text-muted-foreground">
                 <span className="tabular-nums">{fecha(o.fecha)}</span> ·{" "}
                 {o.lineas} {o.lineas === 1 ? "producto" : "productos"}
+                {o.propiedades.length > 0
+                  ? ` · ${resumenDePropiedades(o.propiedades)}`
+                  : ""}
               </span>
             </span>
             <span className="flex-none text-sm font-semibold tabular-nums">

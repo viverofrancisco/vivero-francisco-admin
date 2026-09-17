@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { propiedadesDeVisitas } from "@vivero/shared";
 import { informeGenerateSchema } from "@/lib/validations/informe";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 import {
@@ -45,6 +46,9 @@ export async function GET(request: Request) {
           nombre: `${i.cliente.nombre} ${i.cliente.apellido ?? ""}`.trim(),
         },
         visitasCount: i._count.visitas,
+        propiedades: propiedadesDeVisitas(i.visitas.map((v) => v.visita)).map(
+          (p) => p.nombre
+        ),
       })),
       total: result.total,
       limit: result.limit,
