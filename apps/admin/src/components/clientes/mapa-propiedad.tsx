@@ -295,156 +295,191 @@ function Mapa({
 }
 
 /**
- * Buscar una dirección con Places.
+ * Buscar una dirección mientras se escribe, con Places Autocomplete.
  *
- * Usa `Place.searchByText`, que es la **Places API (New)**. Nació con
- * `PlacesService.textSearch` —la clásica— y con la nueva habilitada y la vieja
- * no, Google devolvía `REQUEST_DENIED`: la pantalla decía "Sin resultados" y
- * uno desconfiaba del buscador en vez de enterarse de que faltaba una casilla
- * en la consola. Por eso ahora el error se muestra tal cual viene.
+ * Empezó con un botón de *Buscar* por una razón concreta: cada consulta a
+ * Places se factura, y buscar por tecla convierte "ribera del buijo" en
+ * dieciséis llamadas. Lo que resuelve eso es el **token de sesión**: todas las
+ * teclas de una misma búsqueda viajan con el mismo token y Google las cobra
+ * como una, cerrando la sesión cuando se elige un resultado y se piden sus
+ * datos. Por eso el token se renueva después de cada elección — reusarlo hace
+ * que cada consulta vuelva a cobrarse por separado.
  *
- * Se busca al apretar Enter o el botón y no mientras se escribe: cada consulta
- * a Places se factura, así que una por búsqueda y no una por tecla.
+ * Nació antes con `PlacesService`, que es la Places clásica, y con la nueva
+ * habilitada y la vieja no, Google devolvía `REQUEST_DENIED`: la pantalla decía
+ * "Sin resultados" y uno desconfiaba del buscador en vez de enterarse de que
+ * faltaba una casilla en la consola. Por eso el error se muestra tal cual
+ * viene.
+ *
+ * Elegir un resultado **mueve el mapa pero no pone el pin**, a propósito: lo
+ * que devuelve "Blue Bay, Isla Mocolí" es el centro de la urbanización, que es
+ * justo el dato que este campo viene a reemplazar.
  */
 function Buscador({ onElegir }: { onElegir: (p: Punto) => void }) {
   const places = useMapsLibrary("places");
   const [texto, setTexto] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resultados, setResultados] = useState<
-    { id: string; nombre: string; punto: Punto }[] | null
+  const [sugerencias, setSugerencias] = useState<
+    { id: string; principal: string; secundario: string; pedir: () => Promise<Punto | null> }[] | null
   >(null);
   const caja = useRef<HTMLDivElement>(null);
+  /** El token de la búsqueda en curso. Se renueva al elegir. */
+  const sesion = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
 
   /*
    * Cerrar la lista tocando afuera.
    *
-   * Sin esto, la única salida era elegir un resultado: el desplegable quedaba
-   * tapando el mapa y no había forma de decir "ninguno de estos". Escape
-   * también cierra, pero eso hay que saberlo.
+   * Sin esto, la única salida era elegir una sugerencia: el desplegable quedaba
+   * tapando el mapa y no había forma de decir "ninguna de estas".
    */
   useEffect(() => {
-    if (resultados === null) return;
+    if (sugerencias === null) return;
     const afuera = (e: MouseEvent) => {
-      if (!caja.current?.contains(e.target as Node)) setResultados(null);
+      if (!caja.current?.contains(e.target as Node)) setSugerencias(null);
     };
     document.addEventListener("mousedown", afuera);
     return () => document.removeEventListener("mousedown", afuera);
-  }, [resultados]);
+  }, [sugerencias]);
 
-  async function buscar() {
+  /*
+   * Se consulta ~300 ms después de dejar de escribir.
+   *
+   * Aun con la sesión cobrando una sola vez, mandar una consulta por tecla es
+   * ruido: el usuario todavía no terminó de escribir y las respuestas llegan
+   * desordenadas.
+   */
+  useEffect(() => {
     const q = texto.trim();
+    // Con menos de tres letras no se consulta; la lista la cierra quien
+    // escribe (más abajo), no este efecto: limpiar estado acá de forma
+    // síncrona dispara un render en cascada.
     if (!places || q.length < 3) return;
-    setBuscando(true);
+
+    let vigente = true;
+    const t = setTimeout(async () => {
+      setBuscando(true);
+      setError(null);
+      try {
+        sesion.current ??= new places.AutocompleteSessionToken();
+        const { suggestions } =
+          await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input: q,
+            sessionToken: sesion.current,
+            // Sesgado a Ecuador, que es donde están todas las propiedades.
+            includedRegionCodes: ["ec"],
+            language: "es",
+          });
+        if (!vigente) return;
+        setSugerencias(
+          suggestions.flatMap((s) => {
+            const p = s.placePrediction;
+            if (!p) return [];
+            return [
+              {
+                id: p.placeId ?? String(p.text),
+                principal: p.mainText?.toString() ?? p.text.toString(),
+                secundario: p.secondaryText?.toString() ?? "",
+                pedir: async () => {
+                  // Pedir los datos es lo que **cierra** la sesión: de ahí en
+                  // más el token ya no vale y hace falta uno nuevo.
+                  const lugar = p.toPlace();
+                  await lugar.fetchFields({ fields: ["location"] });
+                  sesion.current = null;
+                  const loc = lugar.location;
+                  return loc ? { lat: loc.lat(), lng: loc.lng() } : null;
+                },
+              },
+            ];
+          })
+        );
+      } catch (e) {
+        if (!vigente) return;
+        // El error de Google dice exactamente qué falta —la API sin habilitar,
+        // la clave sin facturación— y esconderlo detrás de "Sin resultados" es
+        // lo que hace que se pierda una tarde.
+        setError(e instanceof Error ? e.message : "No pudimos buscar");
+        setSugerencias(null);
+      } finally {
+        if (vigente) setBuscando(false);
+      }
+    }, 300);
+
+    return () => {
+      vigente = false;
+      clearTimeout(t);
+    };
+  }, [texto, places]);
+
+  function limpiar() {
+    setTexto("");
+    setSugerencias(null);
     setError(null);
-    try {
-      const { places: encontrados } = await places.Place.searchByText({
-        textQuery: q,
-        fields: ["id", "displayName", "formattedAddress", "location"],
-        // Sesgado a Ecuador, que es donde están todas las propiedades. No es un
-        // filtro duro: si alguien busca algo de afuera, igual aparece.
-        region: "ec",
-        maxResultCount: 5,
-      });
-      setResultados(
-        (encontrados ?? []).flatMap((p) => {
-          const loc = p.location;
-          if (!loc) return [];
-          return [
-            {
-              id: p.id ?? `${loc.lat()},${loc.lng()}`,
-              nombre: [p.displayName, p.formattedAddress]
-                .filter(Boolean)
-                .join(" · "),
-              punto: { lat: loc.lat(), lng: loc.lng() },
-            },
-          ];
-        })
-      );
-    } catch (e) {
-      // El error de Google dice exactamente qué falta —la API sin habilitar,
-      // la clave sin facturación— y esconderlo detrás de "Sin resultados" es
-      // lo que hace que se pierda una tarde.
-      setError(e instanceof Error ? e.message : "No pudimos buscar");
-      setResultados(null);
-    } finally {
-      setBuscando(false);
-    }
   }
 
   return (
     <div ref={caja} className="relative">
-      <div className="flex gap-2">
-        <div className="relative min-w-0 flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                // Adentro de un formulario, Enter lo enviaría.
-                e.preventDefault();
-                void buscar();
-              }
-              if (e.key === "Escape") {
-                setResultados(null);
-                setError(null);
-              }
-            }}
-            placeholder="Buscar una dirección o urbanización…"
-            className="pl-9 pr-9"
-          />
-          {(texto || resultados !== null) && (
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={texto}
+          onChange={(e) => {
+            const v = e.target.value;
+            setTexto(v);
+            if (v.trim().length < 3) {
+              setSugerencias(null);
+              setError(null);
+            }
+          }}
+          onKeyDown={(e) => {
+            // Adentro de un formulario, Enter lo enviaría.
+            if (e.key === "Enter") e.preventDefault();
+            if (e.key === "Escape") setSugerencias(null);
+          }}
+          placeholder="Buscar una dirección o urbanización…"
+          className="pl-9 pr-9"
+        />
+        {buscando ? (
+          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        ) : (
+          texto && (
             <button
               type="button"
               aria-label="Limpiar la búsqueda"
-              onClick={() => {
-                setTexto("");
-                setResultados(null);
-                setError(null);
-              }}
+              onClick={limpiar}
               className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
             </button>
-          )}
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => void buscar()}
-          disabled={buscando || !places || texto.trim().length < 3}
-        >
-          {buscando ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}
-        </Button>
+          )
+        )}
       </div>
 
       {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
 
-      {resultados !== null && (
+      {sugerencias !== null && sugerencias.length > 0 && (
         <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-md">
-          {resultados.length === 0 ? (
-            <p className="px-3 py-2.5 text-sm text-muted-foreground">
-              Sin resultados. Acerca el mapa a mano y toca el punto.
-            </p>
-          ) : (
-            resultados.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => {
-                  // Solo mueve el mapa: el pin lo pone la persona, porque el
-                  // resultado de una urbanización es su centro.
-                  onElegir(r.punto);
-                  setResultados(null);
-                  setTexto("");
-                }}
-                className="block w-full px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted"
-              >
-                {r.nombre}
-              </button>
-            ))
-          )}
+          {sugerencias.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={async () => {
+                const punto = await s.pedir();
+                if (punto) onElegir(punto);
+                limpiar();
+              }}
+              className="block w-full px-3 py-2.5 text-left transition-colors hover:bg-muted"
+            >
+              <span className="block truncate text-sm font-medium">
+                {s.principal}
+              </span>
+              {s.secundario && (
+                <span className="block truncate text-xs text-muted-foreground">
+                  {s.secundario}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>
