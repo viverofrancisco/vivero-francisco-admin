@@ -28,7 +28,9 @@ import { Crosshair, Loader2, Search, Trash2, X } from "lucide-react";
  * esconderla.
  *
  * Tres cosas que lo hacen usable, y las tres son la misma idea —**el mapa va a
- * donde está el pin**, en vez de dejar que uno lo busque—:
+ * donde está el pin**, en vez de dejar que uno lo busque—. Poner el pin a mano
+ * es la excepción, y por el mismo motivo: tocando o arrastrando el mapa se
+ * queda quieto, porque el punto ya está donde el dedo lo puso.
  *
  * - Poner el pin con *Usar mi ubicación* mueve el mapa hasta él. Antes el pin
  *   caía en la posición real y el mapa se quedaba donde estaba, así que había
@@ -146,15 +148,6 @@ function Mapa({
     [map]
   );
 
-  /** Poner el pin **y** llevar el mapa hasta él. */
-  const ponerPin = useCallback(
-    (p: Punto | null, acercar = false) => {
-      onCambio(p);
-      if (p) irA(p, acercar ? ZOOM_DE_CALLE : undefined);
-    },
-    [irA, onCambio]
-  );
-
   return (
     <div className="space-y-2">
       <Buscador onElegir={(p) => irA(p, 18)} />
@@ -182,8 +175,14 @@ function Mapa({
           // jardín, que es más fácil que leer el número desde el mapa.
           mapTypeId="hybrid"
           onClick={(e) => {
+            /*
+             * Tocar pone el pin y **no** mueve el mapa, igual que arrastrarlo:
+             * el punto ya está donde el dedo lo puso, y centrarlo ahí corre
+             * todo lo que se estaba mirando para ubicarlo —la esquina, el
+             * techo de al lado— justo cuando se lo está por corregir.
+             */
             const p = e.detail.latLng;
-            if (p) ponerPin({ lat: p.lat, lng: p.lng });
+            if (p) onCambio({ lat: p.lat, lng: p.lng });
           }}
           className="h-full w-full"
         >
