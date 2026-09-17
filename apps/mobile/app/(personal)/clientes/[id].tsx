@@ -6,8 +6,9 @@ import {
   HelperText,
   Text,
 } from "react-native-paper";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { apiRequest, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteStaffDetail } from "@/lib/types";
@@ -22,9 +23,9 @@ export default function ClienteDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silencioso = false) => {
     if (!id) return;
-    setLoading(true);
+    if (!silencioso) setLoading(true);
     try {
       const res = await apiRequest<ClienteStaffDetail>(
         `/api/mobile/clientes/${id}`
@@ -42,6 +43,17 @@ export default function ClienteDetailScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  /*
+   * Al volver de agregar o editar una propiedad, la ficha tiene que mostrarla.
+   * En silencio: prender el spinner en cada foco haría parpadear la pantalla
+   * entera por una fila que cambió.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      load(true);
+    }, [load])
+  );
 
   if (loading) {
     return (
@@ -118,29 +130,98 @@ export default function ClienteDetailScreen() {
         </Section>
       ) : null}
 
-      {/* Dónde se le trabaja. Una sección por propiedad, porque un cliente
+      {/* Dónde se le trabaja. Una tarjeta por propiedad, porque un cliente
           puede tener varias y ninguna es más "la suya" que otra. */}
-      {data.propiedades.map((p) => (
-        <Section key={p.id} title={p.nombre}>
-          {[p.direccion, p.numeroCasa, p.ciudad].filter(Boolean).length > 0 ? (
-            <Row
-              label="Dirección"
-              value={[p.direccion, p.numeroCasa, p.ciudad]
-                .filter(Boolean)
-                .join(", ")}
-            />
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text variant="labelMedium" style={styles.sectionLabel}>
+            PROPIEDADES
+          </Text>
+          {canEdit ? (
+            <Button
+              mode="text"
+              compact
+              style={styles.sectionAction}
+              onPress={() =>
+                router.push({
+                  pathname: "/(personal)/clientes/propiedades/nueva",
+                  params: { clienteId: id },
+                })
+              }
+            >
+              Agregar
+            </Button>
           ) : null}
-          {p.sector ? <Row label="Sector" value={p.sector.nombre} /> : null}
-          {p.referencia ? <Row label="Referencia" value={p.referencia} /> : null}
-          {p.m2Total ? <Row label="Metros²" value={String(p.m2Total)} /> : null}
-          {p.m2Cesped ? (
-            <Row label="Césped" value={`${p.m2Cesped} m²`} />
-          ) : null}
-          {p.numeroArboles ? (
-            <Row label="Árboles" value={String(p.numeroArboles)} />
-          ) : null}
-        </Section>
-      ))}
+        </View>
+
+        {data.propiedades.length === 0 ? (
+          <HelperText type="info" visible style={styles.muted}>
+            Sin propiedades. Agrega una para poder agendarle visitas.
+          </HelperText>
+        ) : (
+          data.propiedades.map((p) => {
+            const filas: { label: string; value: string }[] = [];
+            const direccion = [p.direccion, p.numeroCasa, p.ciudad]
+              .filter(Boolean)
+              .join(", ");
+            if (direccion) filas.push({ label: "Dirección", value: direccion });
+            if (p.sector) filas.push({ label: "Sector", value: p.sector.nombre });
+            if (p.referencia)
+              filas.push({ label: "Referencia", value: p.referencia });
+            if (p.m2Total)
+              filas.push({ label: "Metros²", value: String(p.m2Total) });
+            if (p.m2Cesped)
+              filas.push({ label: "Césped", value: `${p.m2Cesped} m²` });
+            if (p.numeroArboles)
+              filas.push({ label: "Árboles", value: String(p.numeroArboles) });
+
+            const cuerpo = (
+              <>
+                <View style={styles.propiedadHeader}>
+                  <Text variant="bodyLarge" style={styles.propiedadNombre}>
+                    {p.nombre}
+                  </Text>
+                  {canEdit ? (
+                    <Text style={styles.propiedadChevron}>›</Text>
+                  ) : null}
+                </View>
+                {filas.map((f, i) => (
+                  <View key={f.label}>
+                    {i === 0 ? null : <View style={styles.rowDivider} />}
+                    <Row label={f.label} value={f.value} />
+                  </View>
+                ))}
+                {filas.length === 0 ? (
+                  <Text style={[styles.muted, styles.propiedadVacia]}>
+                    Sin dirección ni medidas todavía.
+                  </Text>
+                ) : null}
+              </>
+            );
+
+            /* Toda la tarjeta abre la propiedad: un lápiz en la esquina gasta
+               espacio permanente en algo que además es más chico que el dedo. */
+            return canEdit ? (
+              <PressableScale
+                key={p.id}
+                onPress={() =>
+                  router.push({
+                    pathname: "/(personal)/clientes/propiedades/[propiedadId]",
+                    params: { propiedadId: p.id, clienteId: id },
+                  })
+                }
+                style={styles.sectionContent}
+              >
+                {cuerpo}
+              </PressableScale>
+            ) : (
+              <View key={p.id} style={styles.sectionContent}>
+                {cuerpo}
+              </View>
+            );
+          })
+        )}
+      </View>
 
       {/* Notas */}
       {data.notas ? (
@@ -328,7 +409,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 4,
+    marginBottom: 8,
   },
+
+  propiedadHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
+  propiedadNombre: { color: "#111", fontWeight: "600", flexShrink: 1 },
+  propiedadChevron: { fontSize: 22, color: "#bbb" },
+  propiedadVacia: { paddingBottom: 12 },
 
   row: {
     flexDirection: "row",

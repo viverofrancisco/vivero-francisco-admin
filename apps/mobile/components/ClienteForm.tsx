@@ -1,25 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
-import {
-  Button,
-  Dialog,
-  HelperText,
-  Portal,
-  Searchbar,
-  Text,
-  TextInput,
-} from "react-native-paper";
+import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { CreateClienteBody } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
-import type { SectorOption, SectoresListResponse } from "@/lib/types";
+import { SelectorSector } from "@/components/SelectorSector";
 import { tema } from "@/lib/tema";
 
 const PRIMARY = tema.verde;
@@ -28,12 +18,22 @@ export interface ClienteFormProps {
   initial?: Partial<CreateClienteBody>;
   submitLabel: string;
   onSubmit: (values: CreateClienteBody) => Promise<void>;
+  /**
+   * Si se pregunta también por la primera propiedad. Solo al crear.
+   *
+   * Al editar estos campos estaban y **no hacían nada**: `updateClienteSchema`
+   * no tiene `propiedad`, así que Zod los descartaba y la dirección volvía
+   * igual que antes sin decir una palabra. Ahora las propiedades tienen su
+   * pantalla, que es donde se corrigen.
+   */
+  pidePropiedad?: boolean;
 }
 
 export function ClienteForm({
   initial,
   submitLabel,
   onSubmit,
+  pidePropiedad = true,
 }: ClienteFormProps) {
   const insets = useSafeAreaInsets();
 
@@ -46,9 +46,8 @@ export function ClienteForm({
    * La dirección es de la **propiedad**, no del cliente.
    *
    * Un cliente con dos casas tiene dos direcciones y ninguna es "la suya". Acá
-   * se carga la primera, que es la que el teléfono necesita para que el cliente
-   * recién creado sirva para agendar; las demás se agregan desde el portal,
-   * donde está el mapa y el resto de las medidas.
+   * se carga la primera —sin un lugar donde trabajar el cliente no sirve para
+   * agendar—, y las demás se agregan desde su ficha, cada una con su pantalla.
    */
   const [ciudad, setCiudad] = useState(initial?.propiedad?.ciudad ?? "");
   const [direccion, setDireccion] = useState(initial?.propiedad?.direccion ?? "");
@@ -66,24 +65,8 @@ export function ClienteForm({
     initial?.propiedad?.sectorId ?? null
   );
 
-  const [sectores, setSectores] = useState<SectorOption[]>([]);
-  const [sectorPickerOpen, setSectorPickerOpen] = useState(false);
-  const [sectorQuery, setSectorQuery] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const selectedSector = sectores.find((s) => s.id === sectorId);
-  const filteredSectores = useMemo(() => {
-    const q = sectorQuery.trim().toLowerCase();
-    if (!q) return sectores;
-    return sectores.filter((s) => s.nombre.toLowerCase().includes(q));
-  }, [sectorQuery, sectores]);
-
-  useEffect(() => {
-    apiRequest<SectoresListResponse>("/api/mobile/sectores")
-      .then((res) => setSectores(res.items))
-      .catch(() => {});
-  }, []);
 
   async function submit() {
     if (!nombre.trim()) {
@@ -106,14 +89,18 @@ export function ClienteForm({
         email: email?.trim() || null,
         telefono: telefono?.trim() || null,
         notas: notas?.trim() || null,
-        propiedad: {
-          ciudad: ciudad?.trim() || null,
-          sectorId: sectorId ?? null,
-          direccion: direccion?.trim() || null,
-          numeroCasa: numeroCasa?.trim() || null,
-          referencia: referencia?.trim() || null,
-          m2Total: metros,
-        },
+        ...(pidePropiedad
+          ? {
+              propiedad: {
+                ciudad: ciudad?.trim() || null,
+                sectorId: sectorId ?? null,
+                direccion: direccion?.trim() || null,
+                numeroCasa: numeroCasa?.trim() || null,
+                referencia: referencia?.trim() || null,
+                m2Total: metros,
+              },
+            }
+          : {}),
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar");
@@ -165,50 +152,39 @@ export function ClienteForm({
           autoCapitalize="none"
         />
 
-        <SectionTitle>Sector</SectionTitle>
-        <Pressable
-          onPress={() => {
-            setSectorQuery("");
-            setSectorPickerOpen(true);
-          }}
-          style={({ pressed }) => [
-            styles.sectorRow,
-            pressed && styles.sectorRowPressed,
-          ]}
-        >
-          <Text variant="bodyLarge" style={styles.sectorValue}>
-            {selectedSector?.nombre ?? "Sin sector"}
-          </Text>
-          <Text style={styles.sectorChevron}>›</Text>
-        </Pressable>
+        {pidePropiedad ? (
+          <>
+            {/* La dirección es de la **propiedad**, no del cliente. Acá se
+                carga la primera —sin ella el cliente no sirve para agendar—;
+                las demás se agregan desde su ficha. */}
+            <SectionTitle>Sector</SectionTitle>
+            <SelectorSector value={sectorId} onChange={setSectorId} />
 
-        <SectionTitle>Dirección</SectionTitle>
-        <Field
-          label="Calle"
-          value={direccion ?? ""}
-          onChangeText={setDireccion}
-        />
-        <Field
-          label="Número de casa"
-          value={numeroCasa ?? ""}
-          onChangeText={setNumeroCasa}
-        />
-        <Field
-          label="Ciudad"
-          value={ciudad ?? ""}
-          onChangeText={setCiudad}
-        />
-        <Field
-          label="Referencia"
-          value={referencia ?? ""}
-          onChangeText={setReferencia}
-        />
-        <Field
-          label="Metros²"
-          value={metrosCuadrados}
-          onChangeText={(t) => setMetrosCuadrados(t.replace(/[^\d.]/g, ""))}
-          keyboardType="numeric"
-        />
+            <SectionTitle>Dirección</SectionTitle>
+            <Field
+              label="Calle"
+              value={direccion ?? ""}
+              onChangeText={setDireccion}
+            />
+            <Field
+              label="Número de casa"
+              value={numeroCasa ?? ""}
+              onChangeText={setNumeroCasa}
+            />
+            <Field label="Ciudad" value={ciudad ?? ""} onChangeText={setCiudad} />
+            <Field
+              label="Referencia"
+              value={referencia ?? ""}
+              onChangeText={setReferencia}
+            />
+            <Field
+              label="Metros²"
+              value={metrosCuadrados}
+              onChangeText={(t) => setMetrosCuadrados(t.replace(/[^\d.]/g, ""))}
+              keyboardType="numeric"
+            />
+          </>
+        ) : null}
 
         <SectionTitle>Notas</SectionTitle>
         <TextInput
@@ -251,84 +227,6 @@ export function ClienteForm({
         </Button>
       </View>
 
-      {/* Sector picker dialog */}
-      <Portal>
-        <Dialog
-          visible={sectorPickerOpen}
-          onDismiss={() => setSectorPickerOpen(false)}
-          style={styles.sectorDialog}
-        >
-          <Dialog.Title>Seleccionar sector</Dialog.Title>
-          <Dialog.Content style={styles.sectorDialogContent}>
-            <Searchbar
-              placeholder="Buscar sector"
-              value={sectorQuery}
-              onChangeText={setSectorQuery}
-              elevation={0}
-              style={styles.sectorSearch}
-              inputStyle={styles.sectorSearchInput}
-              autoFocus
-            />
-          </Dialog.Content>
-          <Dialog.ScrollArea style={styles.sectorDialogScroll}>
-            <ScrollView>
-              <Pressable
-                onPress={() => {
-                  setSectorId(null);
-                  setSectorPickerOpen(false);
-                }}
-                style={({ pressed }) => [
-                  styles.sectorOption,
-                  sectorId === null && styles.sectorOptionSelected,
-                  pressed && styles.sectorOptionPressed,
-                ]}
-              >
-                <Text variant="bodyLarge" style={styles.sectorOptionText}>
-                  Sin sector
-                </Text>
-                {sectorId === null ? (
-                  <View style={styles.checkmark}>
-                    <Text style={styles.checkmarkIcon}>✓</Text>
-                  </View>
-                ) : null}
-              </Pressable>
-              {filteredSectores.length === 0 ? (
-                <Text style={styles.empty}>Sin coincidencias.</Text>
-              ) : (
-                filteredSectores.map((s) => {
-                  const selected = sectorId === s.id;
-                  return (
-                    <Pressable
-                      key={s.id}
-                      onPress={() => {
-                        setSectorId(s.id);
-                        setSectorPickerOpen(false);
-                      }}
-                      style={({ pressed }) => [
-                        styles.sectorOption,
-                        selected && styles.sectorOptionSelected,
-                        pressed && !selected && styles.sectorOptionPressed,
-                      ]}
-                    >
-                      <Text variant="bodyLarge" style={styles.sectorOptionText}>
-                        {s.nombre}
-                      </Text>
-                      {selected ? (
-                        <View style={styles.checkmark}>
-                          <Text style={styles.checkmarkIcon}>✓</Text>
-                        </View>
-                      ) : null}
-                    </Pressable>
-                  );
-                })
-              )}
-            </ScrollView>
-          </Dialog.ScrollArea>
-          <Dialog.Actions>
-            <Button onPress={() => setSectorPickerOpen(false)}>Cerrar</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     </KeyboardAvoidingView>
   );
 }
@@ -402,52 +300,6 @@ const styles = StyleSheet.create({
   outline: {
     borderRadius: 12,
   },
-
-  sectorRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: "#fafafa",
-    marginBottom: 8,
-  },
-  sectorRowPressed: { backgroundColor: "#eaeaea" },
-  sectorValue: { color: "#111" },
-  sectorChevron: { fontSize: 22, color: "#bbb" },
-
-  sectorDialog: { backgroundColor: "#fff", borderRadius: 16 },
-  sectorDialogContent: { paddingBottom: 8 },
-  sectorDialogScroll: { paddingHorizontal: 0, maxHeight: 360 },
-  sectorSearch: {
-    backgroundColor: "#f4f4f4",
-    borderRadius: 12,
-  },
-  sectorSearchInput: { fontSize: 15 },
-
-  sectorOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#eee",
-  },
-  sectorOptionSelected: { backgroundColor: "#e8f5e9" },
-  sectorOptionPressed: { backgroundColor: "#fafafa" },
-  sectorOptionText: { color: "#111" },
-  checkmark: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: tema.verde,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkmarkIcon: { color: "#fff", fontWeight: "700", fontSize: 12 },
-  empty: { padding: 16, color: "#888", textAlign: "center" },
 
   notas: {
     minHeight: 110,

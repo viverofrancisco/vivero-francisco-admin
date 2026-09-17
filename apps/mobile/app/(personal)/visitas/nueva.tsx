@@ -30,6 +30,7 @@ import type {
   GruposListResponse,
   PersonalListResponse,
   PersonalOption,
+  PropiedadResumen,
 } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
@@ -63,6 +64,18 @@ export default function CrearVisitaScreen() {
 
   // Form state
   const [selectedClienteId, setSelectedClienteId] = useState<string | null>(
+    null
+  );
+  /**
+   * En cuál de sus propiedades.
+   *
+   * `Visita.propiedadId` es NOT NULL —una visita pasa en un lugar, y el lugar
+   * es el que dice cuánto césped hay—, y esta pantalla no lo mandaba: agendar
+   * desde el teléfono venía fallando con el error de validación del esquema,
+   * que además no dice qué falta. Con una sola propiedad la elige sola, pero
+   * eso no la exime de viajar.
+   */
+  const [selectedPropiedadId, setSelectedPropiedadId] = useState<string | null>(
     null
   );
   /** Las tareas que esta visita va a exigir. Opcional: la mayoría no exige. */
@@ -118,7 +131,7 @@ export default function CrearVisitaScreen() {
   );
 
   function canContinue(): boolean {
-    if (step === 0) return !!selectedClienteId;
+    if (step === 0) return !!selectedClienteId && !!selectedPropiedadId;
     if (step === 1) {
       return totalServicios > 0;
     }
@@ -149,6 +162,7 @@ export default function CrearVisitaScreen() {
         method: "POST",
         body: {
           clienteId: selectedClienteId,
+          propiedadId: selectedPropiedadId,
           tareasObligatoriasIds: selectedProductoIds,
           fechas,
           grupoId: grupoId || null,
@@ -209,7 +223,16 @@ export default function CrearVisitaScreen() {
             <ClienteStep
               clientes={clientes}
               selectedId={selectedClienteId}
-              onSelect={setSelectedClienteId}
+              onSelect={(id) => {
+                setSelectedClienteId(id);
+                const c = clientes.find((x) => x.id === id);
+                setSelectedPropiedadId(
+                  c?.propiedades.length === 1 ? c.propiedades[0].id : null
+                );
+              }}
+              propiedades={selectedCliente?.propiedades ?? []}
+              selectedPropiedadId={selectedPropiedadId}
+              onSelectPropiedad={setSelectedPropiedadId}
             />
           )}
           {step === 1 && (
@@ -259,6 +282,11 @@ export default function CrearVisitaScreen() {
           {step === 4 && (
             <RevisarStep
               cliente={selectedCliente}
+              propiedad={
+                selectedCliente?.propiedades.find(
+                  (p) => p.id === selectedPropiedadId
+                )?.nombre ?? null
+              }
               servicio={resumenTareasElegidos}
               fechas={fechas}
               personal={selectedPersonal}
@@ -324,10 +352,16 @@ function ClienteStep({
   clientes,
   selectedId,
   onSelect,
+  propiedades,
+  selectedPropiedadId,
+  onSelectPropiedad,
 }: {
   clientes: ClienteListItem[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  propiedades: PropiedadResumen[];
+  selectedPropiedadId: string | null;
+  onSelectPropiedad: (id: string) => void;
 }) {
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
@@ -391,6 +425,55 @@ function ClienteStep({
           <Text style={styles.empty}>Sin coincidencias.</Text>
         )}
       </View>
+
+      {/* Dónde. La mayoría tiene una sola y ya viene marcada; el que tiene dos
+          casas necesita decir en cuál, porque la dirección, el sector y los
+          metros son del lugar y no de la persona. */}
+      {selectedId ? (
+        <View style={styles.propiedades}>
+          <Text variant="labelMedium" style={styles.sectionLabel}>
+            ¿EN QUÉ PROPIEDAD?
+          </Text>
+          {propiedades.length === 0 ? (
+            <Text style={styles.empty}>
+              Este cliente no tiene propiedades. Agrégale una desde su ficha
+              para poder agendarle una visita.
+            </Text>
+          ) : (
+            <View style={styles.list}>
+              {propiedades.map((p) => {
+                const elegida = p.id === selectedPropiedadId;
+                const donde = [p.direccion, p.numeroCasa, p.sector?.nombre]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <Pressable
+                    key={p.id}
+                    onPress={() => onSelectPropiedad(p.id)}
+                    style={[styles.row, elegida && styles.rowSelected]}
+                  >
+                    <View style={styles.rowText}>
+                      <Text variant="bodyLarge" style={styles.rowTitle}>
+                        {p.nombre}
+                      </Text>
+                      {donde ? (
+                        <Text variant="bodySmall" style={styles.muted}>
+                          {donde}
+                        </Text>
+                      ) : null}
+                    </View>
+                    {elegida ? (
+                      <View style={styles.checkmark}>
+                        <Text style={styles.checkmarkIcon}>✓</Text>
+                      </View>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -755,6 +838,7 @@ function PersonalRow({
 
 function RevisarStep({
   cliente,
+  propiedad,
   servicio,
   fechas,
   personal,
@@ -762,6 +846,7 @@ function RevisarStep({
   onChangeNotas,
 }: {
   cliente: ClienteListItem | undefined;
+  propiedad: string | null;
   /** Líneas ya formateadas: "Nombre · $ 00.00". */
   servicio: string[];
   fechas: string[];
@@ -783,6 +868,7 @@ function RevisarStep({
           label="Cliente"
           value={cliente ? nombreCliente(cliente) : "—"}
         />
+        <SummaryRow label="Propiedad" value={propiedad ?? "—"} />
         <SummaryRow
           label={servicio.length === 1 ? "Servicio" : "Servicios"}
           value={
@@ -913,6 +999,8 @@ const styles = StyleSheet.create({
     color: "#777",
     marginBottom: 16,
   },
+
+  propiedades: { marginTop: 24, gap: 6 },
 
   searchbar: {
     backgroundColor: "#f4f4f4",

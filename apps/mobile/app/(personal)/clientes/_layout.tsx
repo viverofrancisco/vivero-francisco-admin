@@ -11,6 +11,14 @@ export default function PersonalClientesLayout() {
         options={{ title: "Editar cliente" }}
       />
       <Stack.Screen
+        name="propiedades/nueva"
+        options={{ title: "Nueva propiedad" }}
+      />
+      <Stack.Screen
+        name="propiedades/[propiedadId]"
+        options={{ title: "Propiedad" }}
+      />
+      <Stack.Screen
         name="asignar/[id]"
         options={{ title: "Asignar servicio" }}
       />
