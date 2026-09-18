@@ -9,6 +9,8 @@ import {
   serviceErrorResponse,
   viewerFromMobileUser,
 } from "@/lib/mobile/route-helpers";
+import { textoPlano } from "@/lib/html-seguro";
+import { publicUrlForKey } from "@/lib/s3";
 
 export async function GET(request: Request) {
   const userOrResponse = await requireMobileRole(
@@ -30,7 +32,33 @@ export async function GET(request: Request) {
       cursor,
       limit: Number.isFinite(limit) ? limit : undefined,
     });
-    return NextResponse.json(result);
+    // Aplanado para la fila del teléfono, igual que lo hace la página del
+    // portal: la app no tiene por qué saber que el stock es la suma de las
+    // variantes que se cuentan.
+    return NextResponse.json({
+      nextCursor: result.nextCursor,
+      items: result.items.map((p) => ({
+        id: p.id,
+        nombre: p.nombre,
+        tipo: p.tipo,
+        descripcion: textoPlano(p.descripcion),
+        ivaTasa: p.ivaTasa,
+        estado: p.estado,
+        archivadoEl: p.deletedAt?.toISOString() ?? null,
+        categorias: p.categorias.map((c) => c.categoria),
+        // `null` = no cuenta stock, que no es lo mismo que tener cero.
+        stock: p.variantes.some((v) => v.manejaInventario)
+          ? p.variantes
+              .filter((v) => v.manejaInventario)
+              .reduce((n, v) => n + v.stock, 0)
+          : null,
+        variantes: p.variantes.length,
+        imagenUrl: p.imagenes[0]
+          ? publicUrlForKey(p.imagenes[0].media.key)
+          : null,
+        suscripciones: p._count.suscripcionItems,
+      })),
+    });
   } catch (error) {
     return serviceErrorResponse(error);
   }

@@ -265,16 +265,30 @@ export interface ClienteStaffDetail extends ClienteListItem {
 // Servicios (admin only)
 // ──────────────────────────────────────────────
 
+/**
+ * Una fila del catálogo, con lo que la fila muestra.
+ *
+ * Es el mismo dato que la lista del portal: miniatura, stock, cuántas
+ * variantes, estado y categorías. Antes acá llegaban solo el nombre y el tipo,
+ * así que las dos listas del mismo catálogo mostraban cosas distintas.
+ */
 export interface ServicioListItem {
   id: string;
   nombre: string;
   /** Qué es: algo que se ejecuta o algo que se despacha. */
   tipo: "SERVICIO" | "BIEN";
-  /** Cómo se vende. Solo existe en el portal. */
   /** Porcentaje por defecto. En Ecuador conviven 0% y 15%. */
   ivaTasa: string | null;
   descripcion: string | null;
-  _count: { suscripcionItems: number };
+  estado: "ACTIVO" | "BORRADOR";
+  /** Fecha en que se archivó, o `null`. Archivado no se ofrece más. */
+  archivadoEl: string | null;
+  categorias: { id: string; nombre: string }[];
+  /** `null` = no cuenta stock, que no es lo mismo que tener cero. */
+  stock: number | null;
+  variantes: number;
+  imagenUrl: string | null;
+  suscripciones: number;
 }
 
 export interface ServiciosListResponse {
@@ -282,8 +296,20 @@ export interface ServiciosListResponse {
   nextCursor: string | null;
 }
 
-export interface ServicioDetail extends ServicioListItem {
+/**
+ * La ficha de un producto en la app.
+ *
+ * No extiende la fila de la lista: la ficha trae menos —lo que el detalle del
+ * teléfono muestra— y heredar de la lista prometía campos que la respuesta no
+ * tiene, que es lo que rompía al agregarle columnas a la lista.
+ */
+export interface ServicioDetail {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  tipo: "SERVICIO" | "BIEN";
   createdAt: string;
+  suscripciones: number;
 }
 
 export interface SectorOption {

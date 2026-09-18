@@ -1,5 +1,7 @@
 import { useEffect } from "react";
+import { StyleSheet } from "react-native";
 import { Tabs, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/lib/auth-store";
@@ -8,6 +10,7 @@ import { usePermisoDeUbicacion } from "@/lib/use-permiso-ubicacion";
 
 export default function PersonalTabsLayout() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const role = useAuthStore((s) => s.user?.role);
   const isAdmin = role === "ADMIN";
   const isAdminOrStaff = role === "ADMIN" || role === "STAFF";
@@ -38,19 +41,32 @@ export default function PersonalTabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: tema.verde,
         headerShown: false,
+        tabBarActiveTintColor: tema.verde,
+        tabBarInactiveTintColor: tema.texto3,
+        /*
+         * La barra del portal en móvil: blanca, con una línea arriba, 64 de
+         * alto y la etiqueta en 11 semibold. La de Expo viene con el fondo
+         * translúcido de iOS y su propia tipografía, así que las dos
+         * aplicaciones —que son el mismo producto— se veían distintas justo en
+         * lo que está siempre a la vista.
+         */
+        tabBarStyle: {
+          backgroundColor: tema.superficie,
+          borderTopColor: tema.linea,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          height: 64 + insets.bottom,
+          paddingTop: 8,
+          paddingBottom: insets.bottom,
+          elevation: 0,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+        tabBarIconStyle: { marginBottom: -2 },
       }}
     >
-      <Tabs.Screen
-        name="visitas"
-        options={{
-          title: "Visitas",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" size={size} color={color} />
-          ),
-        }}
-      />
+      {/* Para la oficina el orden es el del portal —Clientes, Visitas,
+          Órdenes, Informes, Más—; al jardinero, que solo tiene dos, Visitas le
+          queda primera igual. */}
       <Tabs.Screen
         name="clientes"
         options={{
@@ -59,6 +75,15 @@ export default function PersonalTabsLayout() {
           tabBarItemStyle: esJardinero ? { display: "none" } : undefined,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="visitas"
+        options={{
+          title: "Visitas",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar-outline" size={size} color={color} />
           ),
         }}
       />

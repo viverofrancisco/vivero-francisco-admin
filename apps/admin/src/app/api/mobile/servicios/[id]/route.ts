@@ -27,7 +27,15 @@ export async function GET(
       id,
       viewerFromMobileUser(userOrResponse)
     );
-    return NextResponse.json(servicio);
+    // `suscripciones` y no `_count.suscripcionItems`: la lista ya lo manda
+    // así, y dos nombres para el mismo número obligan a recordar en cuál de
+    // las dos pantallas se está.
+    const { _count, ...resto } = servicio;
+    return NextResponse.json({
+      ...resto,
+      createdAt: servicio.createdAt.toISOString(),
+      suscripciones: _count.suscripcionItems,
+    });
   } catch (error) {
     return serviceErrorResponse(error);
   }

@@ -11,12 +11,35 @@ import {
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 
+/**
+ * Lo que una fila del catálogo necesita decir.
+ *
+ * Creció cuando la app dejó de mostrar solo el nombre: en el portal la fila de
+ * móvil lleva miniatura, stock, cuántas variantes, el estado y las categorías,
+ * y la app mostraba dos líneas de texto contra la misma base. Dos listas del
+ * mismo catálogo que muestran cosas distintas son dos catálogos.
+ */
 const SERVICIO_LIST_SELECT = {
   id: true,
   nombre: true,
   tipo: true,
   ivaTasa: true,
   descripcion: true,
+  estado: true,
+  deletedAt: true,
+  categorias: { select: { categoria: { select: { id: true, nombre: true } } } },
+  // Para el stock: un bien puede tener varias variantes y lo que se muestra es
+  // el total de las que se cuentan.
+  variantes: {
+    orderBy: { posicion: "asc" },
+    select: { manejaInventario: true, stock: true },
+  },
+  // Solo la primera: es la miniatura de la lista, no la galería.
+  imagenes: {
+    orderBy: { posicion: "asc" },
+    take: 1,
+    select: { media: { select: { key: true } } },
+  },
   _count: { select: { suscripcionItems: true } },
 } as const;
 

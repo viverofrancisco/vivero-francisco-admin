@@ -62,7 +62,7 @@ export default function ServicioDetailScreen() {
       <Card mode="outlined">
         <Card.Title
           title={data.nombre}
-          subtitle={`${data._count.suscripcionItems} cliente${data._count.suscripcionItems === 1 ? "" : "s"} activo${data._count.suscripcionItems === 1 ? "" : "s"}`}
+          subtitle={`${data.suscripciones} cliente${data.suscripciones === 1 ? "" : "s"} activo${data.suscripciones === 1 ? "" : "s"}`}
           right={() => (
             <Chip compact mode="flat" style={styles.chip}>
               {data.tipo === "BIEN" ? "Bien" : "Servicio"}
