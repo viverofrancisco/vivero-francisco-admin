@@ -89,6 +89,10 @@ export async function validateClienteCredentials(
     include: { user: true },
   });
   if (!cliente?.user?.password) return null;
+  // Con el acceso revocado la contraseña deja de importar, igual que del lado
+  // del equipo. Acá no se miraba: revocarle el acceso a un cliente le sacaba
+  // los enlaces pendientes y no le impedía entrar con la que ya tenía.
+  if (cliente.user.accesoRevocadoEl) return null;
 
   const valid = await bcrypt.compare(password, cliente.user.password);
   if (!valid) return null;

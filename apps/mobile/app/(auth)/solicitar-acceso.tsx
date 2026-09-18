@@ -72,6 +72,15 @@ export default function SolicitarAccesoScreen() {
                 Ingresa tu teléfono o correo y te enviaremos un enlace a tu
                 correo para crear tu contraseña.
               </Text>
+              {/* Esto es para el cliente: el enlace sale de su ficha. Quien
+                  trabaja en el vivero no tiene por dónde recibirlo —el
+                  jardinero no tiene correo— así que su enlace lo emite la
+                  oficina, y conviene decirlo acá antes de que espere un mail
+                  que no va a llegar. */}
+              <Text variant="bodySmall" style={styles.nota}>
+                Si trabajas en el vivero, pídele el enlace a la oficina: el tuyo
+                se emite desde tu ficha.
+              </Text>
               <TextInput
                 mode="outlined"
                 label="Teléfono o correo"
@@ -117,5 +126,6 @@ const styles = StyleSheet.create({
   subtitle: { textAlign: "center", marginBottom: 32, color: "#555" },
   input: { marginBottom: 16 },
   button: { marginBottom: 8 },
+  nota: { textAlign: "center", color: "#777", marginBottom: 24, marginTop: -16 },
   error: { textAlign: "center" },
 });

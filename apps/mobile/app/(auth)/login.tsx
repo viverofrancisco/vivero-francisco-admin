@@ -66,17 +66,18 @@ export default function LoginScreen() {
             </Text>
           )}
           <Text variant="bodyLarge" style={styles.subtitle}>
-            Inicia sesión con tu usuario o tu correo
+            Inicia sesión con tu usuario, tu correo o tu teléfono
           </Text>
 
-          {/* Un solo campo para las dos cosas: la oficina entra con su correo y
-              quien trabaja en el jardín con el usuario que le dictaron, porque
-              no tiene correo. El servidor mira si hay arroba y busca por donde
-              corresponde, así que no hay nada que elegir acá. */}
+          {/* Un solo campo para los cuatro roles. La oficina entra con su
+              correo, quien trabaja en el jardín con el usuario que le dictaron
+              —no tiene correo— y el cliente con su teléfono. Quién es cada uno
+              lo resuelve el servidor, que es el único que puede: preguntárselo
+              a la persona es hacerle una pregunta nuestra. */}
           <TextInput
             mode="outlined"
-            label="Usuario o correo"
-            placeholder="jperez o tu@correo.com"
+            label="Usuario, correo o teléfono"
+            placeholder="jperez, tu@correo.com o 0991234567"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -103,17 +104,22 @@ export default function LoginScreen() {
             Iniciar sesión
           </Button>
 
+          {/* El enlace de un solo uso es del cliente: se le manda a su correo
+              o a su WhatsApp. Para el equipo no hay autoservicio y la pantalla
+              lo dice ahí, que es donde alguien lo va a leer. */}
+          <Button
+            mode="text"
+            onPress={() => router.push("/(auth)/solicitar-acceso")}
+            disabled={loading}
+          >
+            ¿Primera vez o olvidaste tu contraseña?
+          </Button>
+
           {error ? (
             <HelperText type="error" visible style={styles.error}>
               {error}
             </HelperText>
           ) : null}
-        </View>
-
-        <View style={styles.footer}>
-          <Button mode="text" onPress={() => router.back()}>
-            ¿Eres cliente? Volver
-          </Button>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

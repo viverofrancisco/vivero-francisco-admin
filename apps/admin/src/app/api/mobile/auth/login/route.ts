@@ -1,18 +1,27 @@
 import { NextResponse } from "next/server";
 import { loginSchema } from "@vivero/shared";
-import { prisma } from "@/lib/prisma";
-import { validateCredentials } from "@/lib/auth-helpers";
 import { enforceLoginLimit } from "@/lib/mobile/rate-limit";
 import { issueTokenPair } from "@/lib/mobile/tokens";
+import { autenticarEnLaApp } from "@/lib/services/login-app.service";
 
+/**
+ * Entrar a la app. **Una sola puerta para los cuatro roles.**
+ *
+ * Antes esta ruta era la del equipo y rechazaba al cliente con un 403 que lo
+ * mandaba a otra pantalla; el cliente tenía la suya, contra su ficha. Quién es
+ * cada uno lo resuelve ahora `autenticarEnLaApp`, que es donde se puede
+ * resolver: la app no tiene forma de saberlo antes de preguntar, y preguntarle
+ * a la persona de qué lado del negocio está es hacerle una pregunta nuestra.
+ *
+ * El campo se llama `email` por historia y acepta cualquier cosa: un usuario
+ * dictado por teléfono, un correo o el número del cliente.
+ */
 export async function POST(request: Request) {
   const parsed = loginSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  // El campo se llama `email` por historia: lo que llega puede ser un correo o
-  // un usuario. Quien trabaja en el jardín no tiene correo.
   const { email: identificador, password } = parsed.data;
 
   const limit = await enforceLoginLimit(identificador);
@@ -23,46 +32,33 @@ export async function POST(request: Request) {
     );
   }
 
-  const user = await validateCredentials(identificador, password);
-  if (!user) {
+  const sesion = await autenticarEnLaApp(identificador, password);
+  if (!sesion) {
+    // Un solo mensaje para todo: identificador que no existe, contraseña
+    // equivocada, acceso revocado. Distinguirlos le dice a quien prueba cuáles
+    // de sus intentos existen.
     return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
   }
 
-  // Un cliente entra por su propia pantalla, con teléfono o correo y la
-  // contraseña que se puso él mismo; acá no, porque esto resuelve por `User` y
-  // su identidad vive en la ficha del cliente.
-  if (user.role === "CLIENTE") {
-    return NextResponse.json(
-      { error: "Los clientes inician sesión desde la pantalla de clientes." },
-      { status: 403 }
-    );
-  }
-
-  const personal = await prisma.personal.findUnique({
-    where: { userId: user.id },
-    select: { id: true },
-  });
-
-  const deviceInfo =
-    request.headers.get("user-agent")?.slice(0, 200) ?? null;
+  const deviceInfo = request.headers.get("user-agent")?.slice(0, 200) ?? null;
 
   const tokens = await issueTokenPair({
-    userId: user.id,
-    role: user.role,
-    personalId: personal?.id ?? null,
-    clienteId: null,
+    userId: sesion.user.id,
+    role: sesion.role,
+    personalId: sesion.personalId,
+    clienteId: sesion.clienteId,
     deviceInfo,
   });
 
   return NextResponse.json({
     ...tokens,
     user: {
-      id: user.id,
-      role: user.role,
-      name: user.name,
-      apellido: user.apellido,
-      email: user.email,
-      usuario: user.usuario,
+      id: sesion.user.id,
+      role: sesion.role,
+      name: sesion.user.name,
+      apellido: sesion.user.apellido,
+      email: sesion.user.email,
+      usuario: sesion.user.usuario,
     },
   });
 }

@@ -49,9 +49,24 @@ publicada, y por eso su Zod ya **no** valida como dirección.
    `/establecer-contrasena` (fuera de `/dashboard`, sin NextAuth). Valida el token
    (`GET /api/auth/set-password?token=…`) y guarda la contraseña
    (`POST /api/auth/set-password`). Crea/enlaza un `User` (rol `CLIENTE`, bcrypt 12).
-4. **Login** — `POST /api/mobile/auth/cliente/login` `{ identifier, password }`.
-   `identifier` es teléfono **o** correo (resuelto contra la ficha del cliente; debe
-   haber exactamente una coincidencia). El mismo flujo de invitación sirve como
+4. **Login** — `POST /api/mobile/auth/login` `{ email, password }`, **la misma
+   ruta para todos**. El campo se llama `email` por historia y acepta cualquier
+   cosa: el usuario dictado del jardinero, un correo o el teléfono del cliente.
+   `autenticarEnLaApp` (`services/login-app.service.ts`) prueba primero la cuenta
+   del equipo (`User`, por usuario o correo) y después la ficha del cliente
+   (teléfono o correo, con exactamente una coincidencia), y devuelve el rol junto
+   con el `clienteId` o el `personalId` que acota la sesión.
+
+   Había una ruta aparte —`/api/mobile/auth/cliente/login`— y con ella dos
+   pantallas: lo primero que la app le preguntaba a alguien recién instalada era
+   de qué lado del negocio está, que es una pregunta nuestra y no suya. El
+   jardinero no sabe que existe una pantalla de clientes, y el cliente que
+   aterrizaba en la del equipo escribía su teléfono y recibía "Credenciales
+   inválidas" sin enterarse de que estaba en el lugar equivocado. **Quién es lo
+   sabe el servidor**, que es el único que puede saberlo antes de preguntar.
+
+   El único identificador que puede estar de los dos lados es un correo; ahí gana
+   el que valide la contraseña. El mismo flujo de invitación sirve como
    **restablecimiento de contraseña**.
 
 ## Usuarios del portal (la oficina)

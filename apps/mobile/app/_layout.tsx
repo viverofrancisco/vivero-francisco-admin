@@ -84,7 +84,7 @@ function useAuthGate() {
     const inPersonal = segments[0] === "(personal)";
 
     if (!user) {
-      if (!inAuth) router.replace("/(auth)/onboarding");
+      if (!inAuth) router.replace("/(auth)/login");
       return;
     }
 
