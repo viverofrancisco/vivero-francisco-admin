@@ -63,6 +63,13 @@ export default async function EditarClientePage({
     notFound();
   }
 
+  /**
+   * Un admin de sector no ve plata: ni las órdenes del cliente, ni los precios
+   * de sus suscripciones, ni sus datos de facturación. Y no es solo que no se
+   * muestren —`listarOrdenes` lo rechaza— así que ni siquiera se piden.
+   */
+  const verPlata = isAdminRole(user.role);
+
   // La ficha muestra los ítems de todas sus suscripciones: es lo que el cliente
   // tiene contratado, sin importar en qué suscripción esté agrupado.
   const asignaciones = cliente.suscripciones.flatMap((s) =>
@@ -99,13 +106,6 @@ export default async function EditarClientePage({
     },
     grupo: v.grupo,
   }));
-
-  /**
-   * Un admin de sector no ve plata: ni las órdenes del cliente, ni los precios
-   * de sus suscripciones, ni sus datos de facturación. Y no es solo que no se
-   * muestren —`listarOrdenes` lo rechaza— así que ni siquiera se piden.
-   */
-  const verPlata = isAdminRole(user.role);
 
   // Las facturas no van en la ficha: son parte de la orden que las generó.
   const { items: ordenes } = verPlata
