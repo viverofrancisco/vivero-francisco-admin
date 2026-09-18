@@ -452,7 +452,10 @@ export function ArchivosVisita({
                 >
                   {nombreDeTarea(p.tareaId) ?? "Elegir tarea"}
                 </Text>
-                <Text style={styles.filaNueva}>Sin subir</Text>
+                {/* "Nueva" y no "Sin subir": desde acá lo que importa es que
+                    todavía no está en la visita, no el paso técnico que falta.
+                    "Sin subir" se leía como una falla. */}
+                <Text style={styles.filaNueva}>Nueva</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
             </PressableScale>
@@ -753,11 +756,10 @@ function FotoEnHoja({
       <Pressable onPress={onSacar} style={styles.fila}>
         <Ionicons name="trash-outline" size={20} color={tema.rojo} />
         <Text style={styles.filaEliminar}>
-          {nueva
-            ? "Sacar de la tanda"
-            : quitada
-              ? "No eliminar"
-              : "Eliminar foto"}
+          {/* Lo mismo diga lo mismo: para quien mira, la foto se va. Que por
+              dentro una salga de la tanda y la otra se marque para borrar al
+              guardar es asunto nuestro. */}
+          {quitada ? "No eliminar" : "Eliminar foto"}
         </Text>
       </Pressable>
     </View>
