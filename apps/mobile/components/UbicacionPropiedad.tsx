@@ -136,6 +136,15 @@ function Estampa({ lat, lng }: { lat: number; lng: number }) {
         />
       ) : null}
       <View style={styles.pin}>
+        {/* El borde: el mismo pin, un poco más grande y blanco, debajo. Dos
+            iconos centrados en la misma caja dejan el de atrás asomando parejo
+            por todos lados, que es el contorno. Sin librería ni SVG. */}
+        <Ionicons
+          name="location"
+          size={LADO_PIN + 7}
+          color="#fff"
+          style={styles.pinBorde}
+        />
         <Ionicons name="location" size={LADO_PIN} color={tema.rojo} />
       </View>
     </View>
@@ -225,15 +234,20 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "24deg" }],
   },
   pin: {
+    alignItems: "center",
+    justifyContent: "center",
     // Medio alto para arriba: lo que señala un pin es su **punta**, y centrando
     // el dibujo la punta caía debajo del punto.
     transform: [{ translateY: -LADO_PIN / 2 }],
-    // La sombra despega el pin del fondo, que si no se lee como un dibujo más
-    // de las franjas.
+  },
+  pinBorde: {
+    position: "absolute",
+    // La sombra va en el contorno y no en el pin rojo: así se proyecta desde el
+    // borde de afuera, en vez de salir de abajo del blanco y ensuciarlo.
     shadowColor: "#142819",
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
 
