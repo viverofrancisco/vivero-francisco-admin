@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import { ActivityIndicator, FAB, Searchbar, Text } from "react-native-paper";
+import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
 import type { PersonalFicha } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -67,35 +68,26 @@ export default function PersonalListScreen() {
       )
     : items;
 
-  if (cargando) {
-    return (
-      <View style={styles.centro}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.contenedor}>
+    <PantallaLista
+      titulo="Personal"
+      busqueda={busqueda}
+      onBuscar={setBusqueda}
+      placeholder="Buscar por nombre o usuario..."
+    >
+      {cargando ? (
+        <View style={styles.centro}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
       <FlatList
         data={visibles}
         keyExtractor={(p) => p.id}
-        contentContainerStyle={styles.lista}
         refreshControl={
           <RefreshControl refreshing={refrescando} onRefresh={() => cargar()} />
         }
         ListHeaderComponent={
-          <>
-            <Searchbar
-              placeholder="Buscar por nombre o usuario"
-              value={busqueda}
-              onChangeText={setBusqueda}
-              elevation={0}
-              style={styles.buscador}
-              inputStyle={styles.buscadorTexto}
-            />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-          </>
+          error ? <Text style={styles.error}>{error}</Text> : null
         }
         ListEmptyComponent={
           <View style={styles.vacio}>
@@ -107,7 +99,7 @@ export default function PersonalListScreen() {
         renderItem={({ item }) => (
           <PressableScale
             onPress={() => router.push(`/(personal)/personal/${item.id}`)}
-            style={styles.fila}
+            style={FILA_LISTA}
           >
             <View style={styles.avatar}>
               <Text style={styles.avatarTexto}>
@@ -136,6 +128,7 @@ export default function PersonalListScreen() {
           </PressableScale>
         )}
       />
+      )}
 
       {puedeEditar ? (
         <FAB
@@ -145,26 +138,12 @@ export default function PersonalListScreen() {
           onPress={() => router.push("/(personal)/personal/nuevo")}
         />
       ) : null}
-    </View>
+    </PantallaLista>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: { flex: 1, backgroundColor: tema.fondo },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
-  lista: { padding: 16, paddingBottom: 96 },
-  buscador: { backgroundColor: "#fff", borderRadius: 12, marginBottom: 12 },
-  buscadorTexto: { fontSize: 15 },
-  fila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 8,
-  },
   avatar: {
     width: 40,
     height: 40,
@@ -180,7 +159,7 @@ const styles = StyleSheet.create({
   aviso: { color: tema.ambarTexto },
   vacio: { alignItems: "center", paddingVertical: 48 },
   vacioTitulo: { color: tema.texto },
-  error: { color: tema.rojo, marginBottom: 12, textAlign: "center" },
+  error: { color: tema.rojo, textAlign: "center", padding: 16 },
   fab: {
     position: "absolute",
     right: 16,

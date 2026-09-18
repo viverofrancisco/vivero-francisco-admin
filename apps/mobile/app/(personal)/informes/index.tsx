@@ -7,10 +7,11 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, FAB, IconButton, Text } from "react-native-paper";
-import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
+import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 import { tema } from "@/lib/tema";
 
@@ -117,33 +118,17 @@ export default function InformesListScreen() {
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Informes",
-          headerRight: () => (
-            <View style={styles.headerRight}>
-              <IconButton
-                icon="filter-variant"
-                size={22}
-                onPress={() => router.push("/(personal)/informes/filtros")}
-              />
-              {activeFilters > 0 ? (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{activeFilters}</Text>
-                </View>
-              ) : null}
-            </View>
-          ),
-        }}
-      />
-
+    <PantallaLista
+      titulo="Informes"
+      onFiltrar={() => router.push("/(personal)/informes/filtros")}
+      filtrosActivos={activeFilters}
+    >
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" />
         </View>
       ) : (
-        <View style={styles.container}>
+        <>
           {activeFilters > 0 ? (
             <Pressable
               onPress={() => router.push("/(personal)/informes/filtros")}
@@ -160,7 +145,6 @@ export default function InformesListScreen() {
           <FlatList
             data={items}
             keyExtractor={(i) => i.id}
-            contentContainerStyle={styles.listContent}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -203,9 +187,9 @@ export default function InformesListScreen() {
             style={styles.fab}
             onPress={() => router.push("/(personal)/informes/nuevo")}
           />
-        </View>
+        </>
       )}
-    </>
+    </PantallaLista>
   );
 }
 
@@ -219,7 +203,7 @@ function InformeRow({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      style={({ pressed }) => [FILA_LISTA, pressed && styles.rowPressed]}
     >
       <View style={styles.rowIcon}>
         <Ionicons name="document-text-outline" size={20} color={tema.verde} />

@@ -1,150 +1,200 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
-import {
-  ActivityIndicator,
-  FAB,
-  Searchbar,
-  Text,
-} from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { ActivityIndicator, FAB, Text } from "react-native-paper";
+import { useFocusEffect, useRouter } from "expo-router";
 import { nombreCliente, resumenDeCliente } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
-import { Pastillas } from "@/components/ui/Pastillas";
+import { apiRequest, mensajeDeError } from "@/lib/api";
+import { PressableScale } from "@/components/ui/PressableScale";
+import {
+  FILA_LISTA,
+  PantallaLista,
+  PieDeLista,
+  type GrupoDeFiltro,
+} from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
+const POR_PAGINA = 25;
+
+/**
+ * Los clientes, de a páginas.
+ *
+ * La búsqueda viaja al servidor —con doscientos clientes, filtrar en el
+ * teléfono es filtrar adentro de la página que ya se ve— y el sector se aplica
+ * sobre lo que llegó, con las opciones sacadas de esos mismos clientes: así no
+ * aparece un sector en el que nadie tiene una propiedad.
+ */
 export default function ClientesListScreen() {
   const router = useRouter();
-  const role = useAuthStore((s) => s.user?.role);
-  const canCreate = role === "ADMIN" || role === "STAFF";
-  const [items, setItems] = useState<ClienteListItem[]>([]);
-  const [search, setSearch] = useState("");
-  /**
-   * El filtro por sector, el mismo que el portal. Las opciones salen de los
-   * clientes que ya llegaron —no de la tabla de sectores— así que no aparece un
-   * sector en el que nadie tiene una propiedad, que sería un filtro que
-   * siempre da vacío.
-   */
-  const [sector, setSector] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const rol = useAuthStore((s) => s.user?.role);
+  const puedeCrear = rol === "ADMIN" || rol === "STAFF";
 
-  const load = useCallback(
-    async (q: string, initial = false) => {
-      if (initial) setLoading(true);
-      else setRefreshing(true);
+  const [items, setItems] = useState<ClienteListItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [sector, setSector] = useState("");
+  const [cargando, setCargando] = useState(true);
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const [refrescando, setRefrescando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pedido = useRef(0);
+
+  const traer = useCallback(
+    async (q: string, desde: string | null, modo: "inicial" | "mas" | "refrescar") => {
+      const mio = ++pedido.current;
+      if (modo === "inicial") setCargando(true);
+      if (modo === "mas") setCargandoMas(true);
+      if (modo === "refrescar") setRefrescando(true);
       try {
         const res = await apiRequest<ClientesListResponse>(
           "/api/mobile/clientes",
-          { query: { search: q || undefined, limit: 100 } }
+          {
+            query: {
+              search: q || undefined,
+              limit: POR_PAGINA,
+              cursor: desde ?? undefined,
+            },
+          }
         );
-        setItems(res.items);
-      } catch {
-        // ignore
+        if (mio !== pedido.current) return;
+        setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
+        setCursor(res.nextCursor);
+        setError(null);
+      } catch (e) {
+        if (mio !== pedido.current) return;
+        setError(mensajeDeError(e, "No pudimos cargar los clientes"));
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (mio === pedido.current) {
+          setCargando(false);
+          setCargandoMas(false);
+          setRefrescando(false);
+        }
       }
     },
     []
   );
 
-  useEffect(() => {
-    load("", true);
-  }, [load]);
-
-  // Debounce search
-  useEffect(() => {
-    const handle = setTimeout(() => load(search), 300);
-    return () => clearTimeout(handle);
-  }, [search, load]);
-
-  const sectores = useMemo(() => {
-    const vistos = new Map<string, string>();
-    for (const c of items) {
-      const s = c.propiedades[0]?.sector;
-      if (s && !vistos.has(s.nombre)) vistos.set(s.nombre, s.nombre);
-    }
-    return [
-      { clave: "", etiqueta: "Todos" },
-      ...[...vistos.keys()].sort().map((n) => ({ clave: n, etiqueta: n })),
-    ];
-  }, [items]);
-
-  const visibles = useMemo(
-    () =>
-      sector
-        ? items.filter((c) => c.propiedades[0]?.sector?.nombre === sector)
-        : items,
-    [items, sector]
+  useFocusEffect(
+    useCallback(() => {
+      traer(busqueda, null, items.length === 0 ? "inicial" : "refrescar");
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [traer])
   );
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+  function buscar(v: string) {
+    setBusqueda(v);
+    traer(v, null, "refrescar");
   }
 
+  const sectores = [
+    ...new Set(
+      items
+        .map((c) => c.propiedades[0]?.sector?.nombre)
+        .filter((n): n is string => Boolean(n))
+    ),
+  ].sort();
+
+  const visibles = sector
+    ? items.filter((c) => c.propiedades[0]?.sector?.nombre === sector)
+    : items;
+
+  // Sin sectores cargados el filtro no filtra nada, así que no se ofrece.
+  const grupos: GrupoDeFiltro[] =
+    sectores.length > 1
+      ? [
+          {
+            id: "sector",
+            titulo: "Sector",
+            valor: sector,
+            onElegir: setSector,
+            opciones: [
+              { clave: "", etiqueta: "Todos" },
+              ...sectores.map((n) => ({ clave: n, etiqueta: n })),
+            ],
+          },
+        ]
+      : [];
+
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={visibles}
-        keyExtractor={(c) => c.id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => load(search)}
-          />
-        }
-        ListHeaderComponent={
-          <View style={styles.cabecera}>
-            <Searchbar
-              placeholder="Buscar por nombre o teléfono"
-              value={search}
-              onChangeText={setSearch}
-              elevation={0}
-              style={styles.search}
-              inputStyle={styles.searchInput}
+    <PantallaLista
+      titulo="Clientes"
+      busqueda={busqueda}
+      onBuscar={buscar}
+      placeholder="Buscar por nombre o teléfono..."
+      grupos={grupos}
+    >
+      {cargando ? (
+        <View style={styles.centro}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
+        <FlatList
+          data={visibles}
+          keyExtractor={(c) => c.id}
+          refreshControl={
+            <RefreshControl
+              refreshing={refrescando}
+              onRefresh={() => traer(busqueda, null, "refrescar")}
             />
-            {/* Solo con más de un sector: con uno, el filtro no filtra nada. */}
-            {sectores.length > 2 ? (
-              <Pastillas opciones={sectores} valor={sector} onElegir={setSector} />
-            ) : null}
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text variant="titleMedium" style={styles.emptyTitle}>
-              {search ? "Sin coincidencias" : "No hay clientes"}
-            </Text>
-            <Text variant="bodyMedium" style={styles.emptyBody}>
-              {search
-                ? "Prueba con otro nombre o teléfono."
-                : canCreate
-                  ? "Toca el botón + para crear uno."
-                  : "Aún no hay clientes registrados."}
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <ClienteRow
-            cliente={item}
-            onPress={() => router.push(`/(personal)/clientes/${item.id}`)}
-          />
-        )}
-        ItemSeparatorComponent={() => <View style={styles.sep} />}
-      />
-      {canCreate ? (
+          }
+          ListHeaderComponent={
+            error ? <Text style={styles.error}>{error}</Text> : null
+          }
+          ListEmptyComponent={
+            <View style={styles.vacio}>
+              <Text variant="titleMedium" style={styles.vacioTitulo}>
+                {busqueda || sector ? "Sin coincidencias" : "No hay clientes"}
+              </Text>
+              <Text variant="bodyMedium" style={styles.vacioTexto}>
+                {busqueda || sector
+                  ? "Probá con otro nombre o quitá los filtros."
+                  : puedeCrear
+                    ? "Agregá el primero con el botón de abajo."
+                    : "Todavía no hay clientes registrados."}
+              </Text>
+            </View>
+          }
+          ListFooterComponent={
+            <PieDeLista cargando={cargandoMas} hayMas={cursor !== null} />
+          }
+          onEndReachedThreshold={0.4}
+          onEndReached={() => {
+            if (cursor && !cargandoMas) traer(busqueda, cursor, "mas");
+          }}
+          renderItem={({ item }) => {
+            const nombre = nombreCliente(item);
+            const iniciales =
+              nombre
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join("")
+                .toUpperCase() || "?";
+            return (
+              <PressableScale
+                onPress={() => router.push(`/(personal)/clientes/${item.id}`)}
+                style={FILA_LISTA}
+              >
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarTexto}>{iniciales}</Text>
+                </View>
+                <View style={styles.texto}>
+                  <Text variant="bodyLarge" style={styles.nombre} numberOfLines={1}>
+                    {nombre}
+                  </Text>
+                  <Text variant="bodySmall" style={styles.resumen} numberOfLines={1}>
+                    {resumenDeCliente(item)}
+                  </Text>
+                </View>
+              </PressableScale>
+            );
+          }}
+        />
+      )}
+
+      {puedeCrear ? (
         <FAB
           icon="plus"
           color="#fff"
@@ -152,106 +202,33 @@ export default function ClientesListScreen() {
           onPress={() => router.push("/(personal)/clientes/nuevo")}
         />
       ) : null}
-    </View>
-  );
-}
-
-function ClienteRow({
-  cliente: c,
-  onPress,
-}: {
-  cliente: ClienteListItem;
-  onPress: () => void;
-}) {
-  const displayName = nombreCliente(c);
-  const initials =
-    displayName
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase() || "?";
-  // La misma línea que la fila del portal: la empresa cuando arriba va el
-  // nombre de la persona, después el sector y el teléfono.
-  const subtitle = resumenDeCliente(c);
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-    >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{initials || "?"}</Text>
-      </View>
-      <View style={styles.rowText}>
-        <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
-          {displayName}
-        </Text>
-        {subtitle ? (
-          <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
-            {subtitle}
-          </Text>
-        ) : null}
-      </View>
-    </Pressable>
+    </PantallaLista>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  listContent: { padding: 16, paddingBottom: 96 },
-
-  cabecera: { gap: 8, marginBottom: 12 },
-  search: {
-    backgroundColor: "#f4f4f4",
-    borderRadius: 12,
-  },
-  searchInput: { fontSize: 15 },
-
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    backgroundColor: "#fafafa",
-    gap: 12,
-  },
-  rowPressed: { backgroundColor: "#eaeaea" },
-  rowText: { flex: 1, gap: 2 },
-  rowTitle: { color: "#111", fontWeight: "500" },
-  muted: { color: "#888" },
-
+  centro: { flex: 1, alignItems: "center", justifyContent: "center" },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#e8f5e9",
+    backgroundColor: tema.verde50,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: {
-    color: tema.verde,
-    fontWeight: "600",
-    fontSize: 14,
-  },
-
-  sep: { height: 6 },
-
-  empty: {
-    paddingVertical: 80,
-    alignItems: "center",
-    gap: 8,
-  },
-  emptyTitle: { color: "#444" },
-  emptyBody: { color: "#888", textAlign: "center", paddingHorizontal: 24 },
-
+  avatarTexto: { color: tema.verde700, fontWeight: "700", fontSize: 14 },
+  texto: { flex: 1, gap: 1 },
+  nombre: { color: tema.texto, fontWeight: "600" },
+  resumen: { color: tema.texto3 },
+  vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
+  vacioTitulo: { color: tema.texto },
+  vacioTexto: { color: tema.texto3, textAlign: "center" },
+  error: { color: tema.rojo, textAlign: "center", padding: 16 },
   fab: {
     position: "absolute",
     right: 16,
     bottom: 16,
     backgroundColor: tema.verde,
+    borderRadius: 16,
   },
 });

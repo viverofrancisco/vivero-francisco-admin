@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import { ActivityIndicator, FAB, Searchbar, Text } from "react-native-paper";
+import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { tema } from "@/lib/tema";
 
 interface Tarea {
@@ -61,35 +62,26 @@ export default function TareasListScreen() {
     ? items.filter((t) => t.nombre.toLowerCase().includes(q))
     : items;
 
-  if (cargando) {
-    return (
-      <View style={styles.centro}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.contenedor}>
+    <PantallaLista
+      titulo="Tareas"
+      busqueda={busqueda}
+      onBuscar={setBusqueda}
+      placeholder="Buscar tarea..."
+    >
+      {cargando ? (
+        <View style={styles.centro}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
       <FlatList
         data={visibles}
         keyExtractor={(t) => t.id}
-        contentContainerStyle={styles.lista}
         refreshControl={
           <RefreshControl refreshing={refrescando} onRefresh={() => cargar()} />
         }
         ListHeaderComponent={
-          <>
-            <Searchbar
-              placeholder="Buscar tarea"
-              value={busqueda}
-              onChangeText={setBusqueda}
-              elevation={0}
-              style={styles.buscador}
-              inputStyle={styles.buscadorTexto}
-            />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-          </>
+          error ? <Text style={styles.error}>{error}</Text> : null
         }
         ListEmptyComponent={
           <View style={styles.vacio}>
@@ -106,7 +98,7 @@ export default function TareasListScreen() {
         renderItem={({ item }) => (
           <PressableScale
             onPress={() => router.push(`/(personal)/tareas/${item.id}`)}
-            style={styles.fila}
+            style={FILA_LISTA}
           >
             <View style={styles.filaTexto}>
               <Text variant="bodyLarge" style={styles.nombre}>
@@ -126,6 +118,7 @@ export default function TareasListScreen() {
           </PressableScale>
         )}
       />
+      )}
 
       <FAB
         icon="plus"
@@ -133,29 +126,16 @@ export default function TareasListScreen() {
         color="#fff"
         onPress={() => router.push("/(personal)/tareas/nueva")}
       />
-    </View>
+    </PantallaLista>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: { flex: 1, backgroundColor: tema.fondo },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
-  lista: { padding: 16, paddingBottom: 96 },
   buscador: {
     backgroundColor: "#fff",
     borderRadius: 12,
     marginBottom: 12,
-  },
-  buscadorTexto: { fontSize: 15 },
-  fila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 8,
   },
   filaTexto: { flex: 1, gap: 2 },
   nombre: { color: tema.texto, fontWeight: "500" },
@@ -163,7 +143,7 @@ const styles = StyleSheet.create({
   vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
   vacioTitulo: { color: tema.texto },
   vacioTexto: { color: tema.texto3, textAlign: "center" },
-  error: { color: tema.rojo, marginBottom: 12, textAlign: "center" },
+  error: { color: tema.rojo, textAlign: "center", padding: 16 },
   fab: {
     position: "absolute",
     right: 16,

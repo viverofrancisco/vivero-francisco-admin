@@ -1,17 +1,16 @@
-import { useCallback, useMemo, useState } from "react";
-import {
-  FlatList,
-  Image,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
-import { ActivityIndicator, FAB, Searchbar, Text } from "react-native-paper";
+import { useCallback, useRef, useState } from "react";
+import { FlatList, Image, RefreshControl, StyleSheet, View } from "react-native";
+import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { Pastillas, type OpcionPastilla } from "@/components/ui/Pastillas";
+import {
+  FILA_LISTA,
+  PantallaLista,
+  PieDeLista,
+  type GrupoDeFiltro,
+} from "@/components/ui/PantallaLista";
 import type { ServicioListItem, ServiciosListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
@@ -20,9 +19,11 @@ const TIPO_LABEL: Record<string, string> = {
   BIEN: "Bien",
 };
 
+/** Cuántos se piden por vuelta. Entran unos ocho en pantalla. */
+const POR_PAGINA = 25;
+
 /**
- * El renglón chico de la fila: lo que la tabla del portal reparte en columnas,
- * dicho en una línea.
+ * El renglón chico de la fila: lo que la tabla del portal reparte en columnas.
  *
  * El stock va primero porque es lo que se mira, y **solo cuando existe**: un
  * servicio no lleva y un bien puede no contarlo, así que un "0" ahí mentiría.
@@ -37,170 +38,186 @@ function resumen(p: ServicioListItem): string {
 }
 
 /**
- * El catálogo: servicios y bienes.
+ * El catálogo: servicios y bienes, **de a páginas**.
  *
- * **Uno solo**, con `tipo` como único eje —lo que la cosa *es*—, y por eso el
- * buscador dice "productos" y no "servicios": el nombre viejo era de cuando el
- * catálogo solo tenía servicios, y quien viene a buscar una maceta no busca un
- * servicio.
- *
- * Los filtros son los mismos que en el portal (tipo, estado) y se ven como una
- * fila de pastillas: en un teléfono, un desplegable por filtro son tres toques
- * para algo que acá se elige con uno.
+ * Traía los doscientos de un saque para filtrarlos en el teléfono. La lista
+ * pide veinticinco y sigue pidiendo mientras se baja, que es lo que hace el
+ * portal: con un catálogo que crece, cargarlo entero es una espera que empeora
+ * sola.
  */
 export default function ProductosListScreen() {
   const router = useRouter();
   const [items, setItems] = useState<ServicioListItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [tipo, setTipo] = useState("");
   const [estado, setEstado] = useState("");
   const [cargando, setCargando] = useState(true);
+  const [cargandoMas, setCargandoMas] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** El último pedido que salió: lo que llega de uno viejo se descarta. */
+  const pedido = useRef(0);
 
-  const cargar = useCallback(async (q: string, inicial = false) => {
-    if (inicial) setCargando(true);
-    else setRefrescando(true);
-    try {
-      const res = await apiRequest<ServiciosListResponse>(
-        "/api/mobile/servicios",
-        { query: { search: q || undefined, limit: 200 } }
-      );
-      setItems(res.items);
-      setError(null);
-    } catch (e) {
-      setError(mensajeDeError(e, "No pudimos cargar el catálogo"));
-    } finally {
-      setCargando(false);
-      setRefrescando(false);
-    }
-  }, []);
+  const traer = useCallback(
+    async (q: string, desde: string | null, modo: "inicial" | "mas" | "refrescar") => {
+      const mio = ++pedido.current;
+      if (modo === "inicial") setCargando(true);
+      if (modo === "mas") setCargandoMas(true);
+      if (modo === "refrescar") setRefrescando(true);
+      try {
+        const res = await apiRequest<ServiciosListResponse>(
+          "/api/mobile/servicios",
+          {
+            query: {
+              search: q || undefined,
+              limit: POR_PAGINA,
+              cursor: desde ?? undefined,
+            },
+          }
+        );
+        if (mio !== pedido.current) return;
+        setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
+        setCursor(res.nextCursor);
+        setError(null);
+      } catch (e) {
+        if (mio !== pedido.current) return;
+        setError(mensajeDeError(e, "No pudimos cargar el catálogo"));
+      } finally {
+        if (mio === pedido.current) {
+          setCargando(false);
+          setCargandoMas(false);
+          setRefrescando(false);
+        }
+      }
+    },
+    []
+  );
 
   useFocusEffect(
     useCallback(() => {
-      cargar(busqueda, items.length === 0);
+      traer(busqueda, null, items.length === 0 ? "inicial" : "refrescar");
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cargar])
+    }, [traer])
   );
 
-  // La búsqueda va al servidor —el catálogo puede ser largo— y los filtros se
-  // aplican acá, sobre lo que ya vino: son dos valores y no vale un viaje.
-  const visibles = useMemo(() => {
-    let r = items;
-    if (tipo) r = r.filter((p) => p.tipo === tipo);
-    if (estado === "ARCHIVADO") r = r.filter((p) => p.archivadoEl !== null);
-    else {
-      r = r.filter((p) => p.archivadoEl === null);
-      if (estado) r = r.filter((p) => p.estado === estado);
-    }
-    return r;
-  }, [items, tipo, estado]);
-
-  const filtrosTipo: OpcionPastilla[] = [
-    { clave: "", etiqueta: "Todos" },
-    { clave: "SERVICIO", etiqueta: "Servicios" },
-    { clave: "BIEN", etiqueta: "Bienes" },
-  ];
-  const filtrosEstado: OpcionPastilla[] = [
-    { clave: "", etiqueta: "Activos y borradores" },
-    { clave: "ACTIVO", etiqueta: "Activos" },
-    { clave: "BORRADOR", etiqueta: "Borradores" },
-    { clave: "ARCHIVADO", etiqueta: "Archivados" },
-  ];
-
-  if (cargando) {
-    return (
-      <View style={styles.centro}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+  function buscar(v: string) {
+    setBusqueda(v);
+    traer(v, null, "refrescar");
   }
 
+  // Tipo y estado se aplican sobre lo que ya llegó: son dos valores y el
+  // servidor no los conoce. La búsqueda sí viaja, que es la que puede dejar
+  // afuera cientos.
+  const visibles = items.filter((p) => {
+    if (tipo && p.tipo !== tipo) return false;
+    if (estado === "ARCHIVADO") return p.archivadoEl !== null;
+    if (p.archivadoEl !== null) return false;
+    return !estado || p.estado === estado;
+  });
+
+  const grupos: GrupoDeFiltro[] = [
+    {
+      id: "tipo",
+      titulo: "Tipo",
+      valor: tipo,
+      onElegir: setTipo,
+      opciones: [
+        { clave: "", etiqueta: "Todos" },
+        { clave: "SERVICIO", etiqueta: "Servicios" },
+        { clave: "BIEN", etiqueta: "Bienes" },
+      ],
+    },
+    {
+      id: "estado",
+      titulo: "Estado",
+      valor: estado,
+      onElegir: setEstado,
+      opciones: [
+        { clave: "", etiqueta: "Activos y borradores" },
+        { clave: "ACTIVO", etiqueta: "Activos" },
+        { clave: "BORRADOR", etiqueta: "Borradores" },
+        { clave: "ARCHIVADO", etiqueta: "Archivados" },
+      ],
+    },
+  ];
+
   return (
-    <View style={styles.contenedor}>
-      <FlatList
-        data={visibles}
-        keyExtractor={(p) => p.id}
-        contentContainerStyle={styles.lista}
-        refreshControl={
-          <RefreshControl
-            refreshing={refrescando}
-            onRefresh={() => cargar(busqueda)}
-          />
-        }
-        ListHeaderComponent={
-          <View style={styles.cabecera}>
-            <Searchbar
-              placeholder="Buscar productos"
-              value={busqueda}
-              onChangeText={(v) => {
-                setBusqueda(v);
-                cargar(v);
-              }}
-              elevation={0}
-              style={styles.buscador}
-              inputStyle={styles.buscadorTexto}
+    <PantallaLista
+      titulo="Productos"
+      busqueda={busqueda}
+      onBuscar={buscar}
+      placeholder="Buscar producto..."
+      grupos={grupos}
+    >
+      {cargando ? (
+        <View style={styles.centro}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
+        <FlatList
+          data={visibles}
+          keyExtractor={(p) => p.id}
+          refreshControl={
+            <RefreshControl
+              refreshing={refrescando}
+              onRefresh={() => traer(busqueda, null, "refrescar")}
             />
-            <Pastillas
-              opciones={filtrosTipo}
-              valor={tipo}
-              onElegir={setTipo}
-            />
-            <Pastillas
-              opciones={filtrosEstado}
-              valor={estado}
-              onElegir={setEstado}
-            />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.vacio}>
-            <Text variant="titleMedium" style={styles.vacioTitulo}>
-              {busqueda || tipo || estado
-                ? "Sin coincidencias"
-                : "No hay productos"}
-            </Text>
-            <Text variant="bodyMedium" style={styles.vacioTexto}>
-              {busqueda || tipo || estado
-                ? "Probá con otro nombre o quitá los filtros."
-                : "Agregá el primero con el botón de abajo."}
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <PressableScale
-            onPress={() => router.push(`/(personal)/servicios/${item.id}`)}
-            style={styles.fila}
-          >
-            <View style={styles.miniatura}>
-              {item.imagenUrl ? (
-                <Image source={{ uri: item.imagenUrl }} style={styles.foto} />
-              ) : (
-                <Ionicons name="image-outline" size={18} color={tema.texto3} />
-              )}
+          }
+          ListHeaderComponent={
+            error ? <Text style={styles.error}>{error}</Text> : null
+          }
+          ListEmptyComponent={
+            <View style={styles.vacio}>
+              <Text variant="titleMedium" style={styles.vacioTitulo}>
+                {busqueda || tipo || estado
+                  ? "Sin coincidencias"
+                  : "No hay productos"}
+              </Text>
+              <Text variant="bodyMedium" style={styles.vacioTexto}>
+                {busqueda || tipo || estado
+                  ? "Probá con otro nombre o quitá los filtros."
+                  : "Agregá el primero con el botón de abajo."}
+              </Text>
             </View>
-            <View style={styles.filaTexto}>
-              <Text variant="bodyLarge" style={styles.nombre} numberOfLines={1}>
-                {item.nombre}
-              </Text>
-              <Text variant="bodySmall" style={styles.resumen} numberOfLines={1}>
-                {resumen(item)}
-              </Text>
-              {item.categorias.length > 0 ? (
-                <Text
-                  variant="bodySmall"
-                  style={styles.categorias}
-                  numberOfLines={1}
-                >
-                  {item.categorias.map((c) => c.nombre).join(" · ")}
+          }
+          ListFooterComponent={
+            <PieDeLista cargando={cargandoMas} hayMas={cursor !== null} />
+          }
+          onEndReachedThreshold={0.4}
+          onEndReached={() => {
+            if (cursor && !cargandoMas) traer(busqueda, cursor, "mas");
+          }}
+          renderItem={({ item }) => (
+            <PressableScale
+              onPress={() => router.push(`/(personal)/servicios/${item.id}`)}
+              style={FILA_LISTA}
+            >
+              <View style={styles.miniatura}>
+                {item.imagenUrl ? (
+                  <Image source={{ uri: item.imagenUrl }} style={styles.foto} />
+                ) : (
+                  <Ionicons name="image-outline" size={18} color={tema.texto3} />
+                )}
+              </View>
+              <View style={styles.texto}>
+                <Text variant="bodyLarge" style={styles.nombre} numberOfLines={1}>
+                  {item.nombre}
                 </Text>
-              ) : null}
-            </View>
-            <Estado item={item} />
-          </PressableScale>
-        )}
-      />
+                <Text variant="bodySmall" style={styles.resumen} numberOfLines={1}>
+                  {resumen(item)}
+                </Text>
+                {item.categorias.length > 0 ? (
+                  <Text variant="bodySmall" style={styles.resumen} numberOfLines={1}>
+                    {item.categorias.map((c) => c.nombre).join(" · ")}
+                  </Text>
+                ) : null}
+              </View>
+              <Estado item={item} />
+            </PressableScale>
+          )}
+        />
+      )}
 
       <FAB
         icon="plus"
@@ -208,7 +225,7 @@ export default function ProductosListScreen() {
         color="#fff"
         onPress={() => router.push("/(personal)/servicios/nuevo")}
       />
-    </View>
+    </PantallaLista>
   );
 }
 
@@ -236,27 +253,10 @@ function Estado({ item }: { item: ServicioListItem }) {
 }
 
 const styles = StyleSheet.create({
-  contenedor: { flex: 1, backgroundColor: tema.fondo },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
-  lista: { padding: 16, paddingBottom: 96 },
-  cabecera: { gap: 8, marginBottom: 12 },
-  buscador: { backgroundColor: "#fff", borderRadius: 12 },
-  buscadorTexto: { fontSize: 15 },
-
-
-  fila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 8,
-  },
   miniatura: {
-    width: 46,
-    height: 46,
+    width: 44,
+    height: 44,
     borderRadius: 10,
     backgroundColor: tema.lienzo,
     alignItems: "center",
@@ -264,10 +264,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   foto: { width: "100%", height: "100%" },
-  filaTexto: { flex: 1, gap: 1 },
+  texto: { flex: 1, gap: 1 },
   nombre: { color: tema.texto, fontWeight: "600" },
   resumen: { color: tema.texto3 },
-  categorias: { color: tema.texto3 },
 
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
   badgeArchivado: { backgroundColor: tema.linea2 },
@@ -279,7 +278,7 @@ const styles = StyleSheet.create({
   vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
   vacioTitulo: { color: tema.texto },
   vacioTexto: { color: tema.texto3, textAlign: "center" },
-  error: { color: tema.rojo, textAlign: "center" },
+  error: { color: tema.rojo, textAlign: "center", padding: 16 },
   fab: {
     position: "absolute",
     right: 16,

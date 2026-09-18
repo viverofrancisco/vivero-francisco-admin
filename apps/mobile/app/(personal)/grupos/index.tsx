@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
 import type { GrupoConMiembros } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -43,20 +44,16 @@ export default function GruposListScreen() {
     }, [cargar])
   );
 
-  if (cargando) {
-    return (
-      <View style={styles.centro}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.contenedor}>
+    <PantallaLista titulo="Grupos">
+      {cargando ? (
+        <View style={styles.centro}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
       <FlatList
         data={items}
         keyExtractor={(g) => g.id}
-        contentContainerStyle={styles.lista}
         refreshControl={
           <RefreshControl refreshing={refrescando} onRefresh={() => cargar()} />
         }
@@ -76,7 +73,7 @@ export default function GruposListScreen() {
         renderItem={({ item }) => (
           <PressableScale
             onPress={() => router.push(`/(personal)/grupos/${item.id}`)}
-            style={styles.fila}
+            style={FILA_LISTA}
           >
             <View style={styles.filaTexto}>
               <Text variant="bodyLarge" style={styles.nombre}>
@@ -94,6 +91,7 @@ export default function GruposListScreen() {
           </PressableScale>
         )}
       />
+      )}
 
       {puedeEditar ? (
         <FAB
@@ -103,31 +101,19 @@ export default function GruposListScreen() {
           onPress={() => router.push("/(personal)/grupos/nuevo")}
         />
       ) : null}
-    </View>
+    </PantallaLista>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: { flex: 1, backgroundColor: tema.fondo },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
-  lista: { padding: 16, paddingBottom: 96 },
-  fila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 8,
-  },
   filaTexto: { flex: 1, gap: 2 },
   nombre: { color: tema.texto, fontWeight: "500" },
   detalle: { color: tema.texto3 },
   vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
   vacioTitulo: { color: tema.texto },
   vacioTexto: { color: tema.texto3, textAlign: "center" },
-  error: { color: tema.rojo, marginBottom: 12, textAlign: "center" },
+  error: { color: tema.rojo, textAlign: "center", padding: 16 },
   fab: {
     position: "absolute",
     right: 16,
