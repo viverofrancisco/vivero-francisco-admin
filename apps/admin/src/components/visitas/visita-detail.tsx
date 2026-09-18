@@ -364,17 +364,22 @@ export function VisitaDetail({
               lat={visita.propiedad.lat!}
               lng={visita.propiedad.lng!}
               // Más alto que en la columna angosta: acá hay ancho de sobra y
-              // una franja baja desperdicia el lugar donde se reconoce la casa.
-              className="h-[240px]"
+              // una franja baja desperdicia el lugar donde se reconoce la casa
+              // —el techo, el jardín, por dónde se entra—.
+              className="h-[300px]"
             />
           ) : null}
-          <CardContent className="flex items-center gap-3 p-[18px]">
+          {/* La dirección grande y el botón en una línea: el icono con la
+              etiqueta debajo es la forma del teléfono, donde la tarjeta mide
+              343 px y no sobra nada. Acá la fila es cinco veces más ancha, y
+              ese botón alto dejaba un vacío entre la dirección y él. */}
+          <CardContent className="flex items-center gap-4 p-[18px]">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[14px] font-bold">
+              <p className="truncate text-[17px] font-bold leading-tight">
                 {direccionDePropiedad(visita.propiedad) ||
                   visita.propiedad.nombre}
               </p>
-              <p className="truncate text-[12.5px] text-muted-foreground">
+              <p className="mt-1 truncate text-[13px] text-muted-foreground">
                 {zonaDePropiedad(visita.propiedad) ||
                   (tienePunto
                     ? visita.propiedad.nombre
@@ -382,20 +387,24 @@ export function VisitaDetail({
               </p>
             </div>
             {tienePunto ? (
-              <a
-                href={enlaceParaLlegar(
-                  visita.propiedad.lat!,
-                  visita.propiedad.lng!
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-none flex-col items-center gap-1 text-[12px] font-semibold text-green-700"
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-none"
+                render={
+                  <a
+                    href={enlaceParaLlegar(
+                      visita.propiedad.lat!,
+                      visita.propiedad.lng!
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary transition-colors hover:bg-green-100">
-                  <Navigation className="h-[18px] w-[18px]" />
-                </span>
+                <Navigation className="mr-1.5 h-[15px] w-[15px]" />
                 Llegar
-              </a>
+              </Button>
             ) : null}
           </CardContent>
         </Card>
