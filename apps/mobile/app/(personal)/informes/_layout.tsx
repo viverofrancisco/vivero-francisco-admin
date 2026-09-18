@@ -4,7 +4,7 @@ export default function PersonalInformesLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="[id]" options={{ title: "Informe" }} />
+      <Stack.Screen name="[id]" options={{ headerShown: false }} />
       <Stack.Screen name="filtros" options={{ title: "Filtros" }} />
       <Stack.Screen
         name="filtros-cliente"

@@ -297,7 +297,15 @@ export default function NuevoInformeScreen() {
       case 0:
         return !!clienteId;
       case 1:
-        return selectedVisitaIds.size > 0 && titulo.trim().length > 0;
+        /*
+         * **Las visitas son opcionales.** Un informe que no sale de ninguna
+         * visita es un documento igual —una recomendación, un relevamiento— y
+         * acá no se podía avanzar sin marcar una: con un cliente sin visitas
+         * con fotos en el rango, el asistente quedaba trabado en un paso que no
+         * tenía nada para ofrecer. Lo que sí hace falta es el título, que es
+         * como se llama el documento.
+         */
+        return titulo.trim().length > 0;
       case 2:
         return (
           secciones.length > 0 &&
@@ -780,6 +788,9 @@ function VisitasStep({
       ) : visitas.length === 0 ? (
         <Text style={styles.empty}>
           No hay visitas con fotos para este cliente en el rango seleccionado.
+          {"\n\n"}
+          Podés seguir igual: el informe se arma con las secciones que agregues
+          en el paso siguiente.
         </Text>
       ) : (
         <View style={{ gap: 6 }}>

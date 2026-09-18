@@ -12,7 +12,10 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
 import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiRequest, mensajeDeError } from "@/lib/api";
+import { PressableScale } from "@/components/ui/PressableScale";
+import { tema } from "@/lib/tema";
 
 interface InformeDetail {
   id: string;
@@ -34,6 +37,7 @@ interface InformeDetail {
 
 export default function InformeDetailScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [data, setData] = useState<InformeDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,17 +108,31 @@ export default function InformeDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text variant="titleLarge" style={styles.title}>
-            {data.titulo}
-          </Text>
-          <Text variant="bodyMedium" style={styles.subtitle}>
+    <View style={styles.pantalla}>
+      {/* El mismo encabezado que la ficha de la visita: la flecha y el nombre
+          del cliente en grande. La barra nativa gastaba un renglón en decir
+          "Informe" al lado de un botón que ya decía "Informes", y el título
+          del informe —que es derivado y casi siempre el mismo— se llevaba la
+          línea que ahora usa el cliente. */}
+      <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
+        <PressableScale
+          onPress={() => router.back()}
+          hitSlop={8}
+          style={styles.volver}
+        >
+          <Ionicons name="chevron-back" size={24} color={tema.texto} />
+        </PressableScale>
+        <View style={styles.encabezadoTexto}>
+          <Text style={styles.heroTitulo} numberOfLines={2}>
             {nombreCliente(data.cliente)}
           </Text>
-        </Card.Content>
-      </Card>
+          <Text style={styles.heroSubtitulo} numberOfLines={1}>
+            {data.titulo}
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
 
       <Card style={styles.card}>
         <Card.Content>
@@ -199,7 +217,8 @@ export default function InformeDetailScreen() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -236,6 +255,31 @@ function formatRange(fromIso: string, toIso: string): string {
 }
 
 const styles = StyleSheet.create({
+  pantalla: { flex: 1, backgroundColor: tema.fondo },
+  encabezado: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    backgroundColor: "#fff",
+  },
+  volver: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: -8,
+  },
+  encabezadoTexto: { flex: 1, gap: 1 },
+  heroTitulo: {
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+    color: tema.texto,
+  },
+  heroSubtitulo: { fontSize: 13, color: tema.texto3 },
+
   container: { flex: 1, backgroundColor: "#f5f5f5" },
   content: { padding: 16, gap: 12 },
   center: {

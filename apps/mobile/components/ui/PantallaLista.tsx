@@ -93,12 +93,17 @@ export function PantallaLista({
           <View style={styles.acciones}>
             {accion}
             {onCrear ? (
+              /* Con la palabra y no con un más: un cuadrado verde de 40 al
+                 lado de un título de 26 pesa más que el título, y "+" no dice
+                 qué crea. Compacto, que es lo que necesita una acción que
+                 comparte renglón. */
               <PressableScale
                 onPress={onCrear}
                 style={styles.crear}
                 accessibilityLabel={etiquetaCrear}
               >
-                <Ionicons name="add" size={22} color="#fff" />
+                <Ionicons name="add" size={16} color="#fff" />
+                <Text style={styles.crearTexto}>Crear</Text>
               </PressableScale>
             ) : null}
             {/* Sin buscador el botón de filtros no tiene con quién compartir
@@ -260,13 +265,15 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 26, fontWeight: "800", color: tema.texto },
   acciones: { flexDirection: "row", alignItems: "center", gap: 8 },
   crear: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: tema.verde,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 4,
+    height: 34,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: tema.verde,
   },
+  crearTexto: { color: "#fff", fontSize: 14, fontWeight: "600" },
 
   buscarFila: { flexDirection: "row", alignItems: "center", gap: 8 },
   buscador: {
