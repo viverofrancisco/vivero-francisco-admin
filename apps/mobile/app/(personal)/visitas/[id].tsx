@@ -262,7 +262,7 @@ export default function PersonalVisitaScreen() {
   const cliente = visita.cliente;
   const personalAsignado = visita.personal ?? [];
   const medidas = medidasDePropiedad(visita.propiedad);
-  const filasDeTareas = armarFilasDeTareas(visita, personalId);
+  const { obligatorias, extras } = armarFilasDeTareas(visita, personalId);
 
   return (
     <View style={styles.container}>
@@ -363,33 +363,35 @@ export default function PersonalVisitaScreen() {
           ) : null}
         </Section>
 
-        {/* Lo que se registró: la unión de lo que cargó cada uno. Las
-            obligatorias que nadie marcó aparecen igual, en gris: la pregunta
-            que se hace acá es qué falta. */}
-        <Section title="Tareas">
-          {filasDeTareas.length > 0 ? (
-            filasDeTareas.map((f) => (
-              <View key={f.id} style={styles.tareaRow}>
-                <Text
-                  variant="bodyMedium"
-                  style={[
-                    styles.tareaNombre,
-                    f.pendiente && styles.tareaPendiente,
-                  ]}
-                >
-                  {f.nombre}
-                </Text>
-                <Text variant="bodySmall" style={styles.tareaQuien}>
-                  {f.detalle}
-                </Text>
-              </View>
-            ))
-          ) : (
+        {/* Lo que la visita exigía. Acá no se tilda nada: se marca al
+            registrar la salida, y lo que esta lista responde es qué falta. */}
+        {obligatorias.length > 0 ? (
+          <Section title="Tareas obligatorias">
+            {obligatorias.map((f) => (
+              <FilaTarea key={f.id} fila={f} />
+            ))}
+          </Section>
+        ) : null}
+
+        {/* Lo que se hizo sin que nadie lo pidiera. Cuando la visita no exigía
+            ninguna no son "otras" de nada, así que ahí son las tareas a secas. */}
+        {extras.length > 0 ? (
+          <Section
+            title={obligatorias.length > 0 ? "Otras tareas" : "Tareas"}
+          >
+            {extras.map((f) => (
+              <FilaTarea key={f.id} fila={f} />
+            ))}
+          </Section>
+        ) : null}
+
+        {obligatorias.length === 0 && extras.length === 0 ? (
+          <Section title="Tareas">
             <Text variant="bodySmall" style={styles.tareasVacio}>
               Marca tus tareas al marcar la salida.
             </Text>
-          )}
-        </Section>
+          </Section>
+        ) : null}
 
         {/* Dónde es. La dirección es de la **propiedad** de esta visita —un
             cliente puede tener más de una— y arriba de todo lo demás porque es
@@ -608,6 +610,19 @@ function marcas(visita: VisitaDetail, campo: "entradaEl" | "salidaEl") {
  * solo la columna repetía su nombre en cada fila. Los de los demás sí, que es
  * para lo que sirve: en una visita de tres, saber quién hizo el desmalezado.
  */
+/**
+ * Las tareas de la visita, separadas en dos preguntas distintas.
+ *
+ * **Lo que la visita exigía** (`obligatorias`) y **lo que además se hizo**
+ * (`extras`). Estaban en una sola lista bajo el título "Tareas", y ahí no se
+ * distinguía la poda que alguien tildó porque la hizo de la que la oficina
+ * pidió y nadie cubrió todavía. Son las dos preguntas que se le hacen a esta
+ * pantalla —¿está cubierto lo que se pidió?, ¿qué más se hizo?— y cada una
+ * necesita su lista.
+ *
+ * El nombre de quién la hizo va solo si la hizo **otro**: quien está mirando ya
+ * sabe lo que cargó él.
+ */
 function armarFilasDeTareas(visita: VisitaDetail, yo: string | null) {
   const quienes = new Map<string, string[]>();
   for (const p of visita.personal ?? []) {
@@ -618,30 +633,34 @@ function armarFilasDeTareas(visita: VisitaDetail, yo: string | null) {
       quienes.set(tarea.id, lista);
     }
   }
-  // Las hechas se siguen sacando de todos —las propias también son tareas de
-  // la visita—, pero sin nombre al lado.
   const hechas = new Set(
     (visita.personal ?? []).flatMap((p) => p.tareas.map((t) => t.tarea.id))
   );
+  const exigidas = new Set(
+    (visita.tareasObligatorias ?? []).map((o) => o.tarea.id)
+  );
 
-  const filas = tareasHechas(visita).map((t) => ({
+  const fila = (t: { id: string; nombre: string }, pendiente: boolean) => ({
     id: t.id,
     nombre: t.nombre,
-    detalle: (quienes.get(t.id) ?? []).join(", "),
-    pendiente: false,
-  }));
+    // Sin nombres al lado es porque la hizo quien está mirando: ahí alcanza con
+    // decir que está hecha.
+    detalle: pendiente
+      ? "Pendiente"
+      : (quienes.get(t.id) ?? []).join(", ") || "Hecha",
+    pendiente,
+  });
 
-  for (const { tarea } of visita.tareasObligatorias ?? []) {
-    if (hechas.has(tarea.id)) continue;
-    filas.push({
-      id: tarea.id,
-      nombre: tarea.nombre,
-      detalle: "Pendiente",
-      pendiente: true,
-    });
-  }
-  return filas;
+  return {
+    obligatorias: (visita.tareasObligatorias ?? []).map((o) =>
+      fila(o.tarea, !hechas.has(o.tarea.id))
+    ),
+    extras: tareasHechas(visita)
+      .filter((t) => !exigidas.has(t.id))
+      .map((t) => fila(t, false)),
+  };
 }
+
 
 /**
  * El día de la visita. Sin hora y sin zona: ver `fechaSola`.
@@ -657,6 +676,27 @@ function formatDate(iso: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+/** Una fila de tarea: el nombre, y quién la hizo o que falta. */
+function FilaTarea({
+  fila,
+}: {
+  fila: { nombre: string; detalle: string; pendiente: boolean };
+}) {
+  return (
+    <View style={styles.tareaRow}>
+      <Text
+        variant="bodyMedium"
+        style={[styles.tareaNombre, fila.pendiente && styles.tareaPendiente]}
+      >
+        {fila.nombre}
+      </Text>
+      <Text variant="bodySmall" style={styles.tareaQuien}>
+        {fila.detalle}
+      </Text>
+    </View>
+  );
 }
 
 function tipoLabel(tipo: string): string {
