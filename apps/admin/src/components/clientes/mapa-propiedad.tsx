@@ -5,10 +5,12 @@ import {
   APIProvider,
   Map,
   Marker,
+  useApiIsLoaded,
   useMap,
   useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 import { Button } from "@/components/ui/button";
+import { chincheta } from "@/components/shared/chincheta";
 import { Input } from "@/components/ui/input";
 import { Crosshair, Loader2, Search, Trash2, X } from "lucide-react";
 
@@ -112,6 +114,9 @@ function Mapa({
   onCambio: (punto: Punto | null) => void;
 }) {
   const map = useMap();
+  // El icono del pin se arma con `google.maps.Point`, que no existe hasta que
+  // la API terminó de cargar.
+  const apiLista = useApiIsLoaded();
   const [ubicando, setUbicando] = useState(false);
   /**
    * Con cuántos metros de error llegó la última lectura del navegador.
@@ -186,12 +191,18 @@ function Mapa({
           }}
           className="h-full w-full"
         >
-          {lat !== null && lng !== null && (
+          {lat !== null && lng !== null && apiLista && (
             /* El marcador clásico y no `AdvancedMarker`: ese necesita un Map ID
                creado aparte en la consola de Google, un paso más de
-               configuración para un pin que se arrastra igual. */
+               configuración para un pin que se arrastra igual.
+
+               Con la chincheta del sistema, la misma que muestran la ficha de
+               la visita y la app: el punto que se elige acá es el que se ve
+               allá, y con dos dibujos distintos no se reconoce que es el
+               mismo. */
             <Marker
               position={{ lat, lng }}
+              icon={chincheta()}
               draggable
               onDragEnd={(e) => {
                 const p = e.latLng;

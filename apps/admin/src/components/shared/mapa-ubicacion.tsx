@@ -6,6 +6,7 @@ import {
   Marker,
   useApiIsLoaded,
 } from "@vis.gl/react-google-maps";
+import { chincheta } from "@/components/shared/chincheta";
 
 /**
  * Un punto en el mapa, para mirar y nada más.
@@ -67,31 +68,4 @@ function Lienzo({ lat, lng }: { lat: number; lng: number }) {
       {cargada ? <Marker position={{ lat, lng }} icon={chincheta()} /> : null}
     </Map>
   );
-}
-
-/**
- * La chincheta, la misma que dibuja la app.
- *
- * Va como SVG en el `icon` del marcador y no como el pin de Google, para que la
- * ficha de una visita se vea igual en el portal y en el teléfono. Las medidas
- * son las de `UbicacionPropiedad`: bola de 18 con dos píxeles de aro, aguja de
- * 2 con un píxel de filo blanco a cada lado, y el punto de luz que la hace leer
- * como una esfera.
- *
- * `anchor` en la punta, que es lo que señala: sin eso Google centra la imagen
- * sobre el punto y la casa queda a media bola de distancia.
- */
-function chincheta(): google.maps.Icon {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" viewBox="0 0 20 30">
-    <rect x="8" y="9" width="4" height="21" rx="2" fill="#ffffff"/>
-    <rect x="9" y="10" width="2" height="19" rx="1" fill="#2f3330"/>
-    <circle cx="10" cy="9" r="9" fill="#ffffff"/>
-    <circle cx="10" cy="9" r="7" fill="#c8393a"/>
-    <circle cx="7.2" cy="6.2" r="2" fill="#ffffff" fill-opacity="0.8"/>
-  </svg>`;
-  return {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(20, 30),
-    anchor: new google.maps.Point(10, 30),
-  };
 }
