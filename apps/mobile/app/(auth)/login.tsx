@@ -77,7 +77,6 @@ export default function LoginScreen() {
           <TextInput
             mode="outlined"
             label="Usuario, correo o teléfono"
-            placeholder="jperez, tu@correo.com o 0991234567"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
