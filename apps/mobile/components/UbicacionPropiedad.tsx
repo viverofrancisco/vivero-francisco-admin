@@ -213,15 +213,18 @@ const ALTO_PEDIDO = 220;
 const ZOOM = 17;
 
 /**
- * El pin: rojo y chico.
+ * Cuánto mide el pin, y de ahí sale todo lo demás.
  *
- * Era verde, del mismo verde de la marca, y sobre una foto satelital de un
- * jardín se perdía entre los árboles —que es exactamente el fondo que va a
- * tener siempre—. El rojo es el color que ningún jardín tiene. Y 34 en vez de
- * 44 porque ahora señala sobre una imagen con detalle: un pin grande tapa
- * justamente la casa que uno quiere ver.
+ * Era verde, del verde de la marca, y sobre una foto satelital de un jardín se
+ * perdía entre los árboles —que es exactamente el fondo que va a tener
+ * siempre—. El rojo es el color que ningún jardín tiene.
+ *
+ * Y chico: señala sobre una imagen con detalle, así que cada píxel que ocupa es
+ * un pedazo de la casa que no se ve. El largo de la aguja sale de restar estos
+ * dos, así que no hay medidas sueltas que se puedan desalinear.
  */
-const ALTO_PIN = 34;
+const ALTO_PIN = 30;
+const LADO_BOLA = 18;
 
 const styles = StyleSheet.create({
   tarjeta: {
@@ -256,9 +259,9 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -ALTO_PIN / 2 }],
   },
   bola: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: LADO_BOLA,
+    height: LADO_BOLA,
+    borderRadius: LADO_BOLA / 2,
     backgroundColor: tema.rojo,
     borderWidth: 2,
     borderColor: "#fff",
@@ -272,17 +275,17 @@ const styles = StyleSheet.create({
   },
   brillo: {
     position: "absolute",
-    top: 3,
-    left: 3,
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    top: 2.5,
+    left: 2.5,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: "#fff",
     opacity: 0.8,
   },
   palito: {
     width: 4,
-    height: ALTO_PIN - 20 + 2,
+    height: ALTO_PIN - LADO_BOLA + 2,
     // Se mete dos píxeles bajo la bola para que no se vea la costura.
     marginTop: -2,
     borderRadius: 2.5,
