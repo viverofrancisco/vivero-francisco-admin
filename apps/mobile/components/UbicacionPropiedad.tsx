@@ -141,21 +141,25 @@ function Estampa({ lat, lng }: { lat: number; lng: number }) {
 }
 
 /**
- * El pin: una bola roja con aro blanco y un palito que baja hasta el punto.
+ * El pin: una chincheta. Bola roja arriba, palito fino que baja hasta el punto.
  *
- * Dibujado con vistas y no con un icono. La gota de Ionicons, aun en rojo, se
- * apoyaba sobre los techos de teja —que son de ese mismo color en media
- * Samborondón— y ocupaba con relleno una superficie que tapaba la casa. Esta
- * forma señala con la punta y deja ver lo que hay alrededor: casi todo lo que
- * pinta es borde.
+ * Dibujado con vistas y no con un icono. La gota rellena de Ionicons, aun en
+ * rojo, se apoyaba sobre los techos de teja —que son de ese mismo color en
+ * media Samborondón— y tapaba con su cuerpo justo la casa que uno quiere
+ * mirar. Esta forma señala con la punta y ocupa poco.
  *
- * El palito lleva su propio aro: por dentro rojo, con un píxel de blanco a cada
- * lado. Sin eso desaparece sobre el césped, que es el fondo más común de todos.
+ * El blanco es **fino, y solo el necesario**: dos píxeles de aro en la bola y
+ * uno a cada lado del palito. Con más, el pin se leía como un dibujo blanco con
+ * relleno rojo; con menos, desaparece sobre un techo claro o sobre el césped,
+ * que son los dos fondos de siempre. El punto de luz arriba a la izquierda es
+ * lo que lo hace leer como una esfera y no como un círculo plano.
  */
 function Pin() {
   return (
     <View style={styles.pin}>
-      <View style={styles.bola} />
+      <View style={styles.bola}>
+        <View style={styles.brillo} />
+      </View>
       <View style={styles.palito}>
         <View style={styles.palitoDentro} />
       </View>
@@ -256,7 +260,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     backgroundColor: tema.rojo,
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: "#fff",
     // La sombra despega el pin de la foto: sin ella, sobre un techo claro el
     // aro blanco se confunde con el fondo.
@@ -266,8 +270,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     elevation: 3,
   },
-  palito: {
+  brillo: {
+    position: "absolute",
+    top: 3,
+    left: 3,
     width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: "#fff",
+    opacity: 0.8,
+  },
+  palito: {
+    width: 4,
     height: ALTO_PIN - 20 + 2,
     // Se mete dos píxeles bajo la bola para que no se vea la costura.
     marginTop: -2,
@@ -281,12 +295,15 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   palitoDentro: {
-    width: 3,
+    width: 2,
     flex: 1,
     marginTop: 1,
     marginBottom: 1,
-    borderRadius: 1.5,
-    backgroundColor: tema.rojo,
+    borderRadius: 1,
+    // Oscuro y no rojo: es la aguja clavada, no parte de la cabeza, y así la
+    // bola se lee sola. Con el filo blanco a los costados aguanta el fondo
+    // oscuro de una foto satelital.
+    backgroundColor: "#2f3330",
   },
 
   pie: {
