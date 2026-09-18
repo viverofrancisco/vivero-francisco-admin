@@ -24,6 +24,10 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const estados = url.searchParams.get("estados");
+  // Los dos **los resuelve la base**: la lista viene de a páginas, así que
+  // filtrar en el teléfono sería filtrar adentro de lo que ya se ve.
+  const q = url.searchParams.get("q") ?? undefined;
+  const cobro = url.searchParams.get("cobro") ?? undefined;
 
   try {
     const { items, total } = await listarOrdenes(
@@ -32,6 +36,13 @@ export async function GET(request: Request) {
         limit: Number(url.searchParams.get("limit") ?? 50) || 50,
         offset: Number(url.searchParams.get("offset") ?? 0) || 0,
         clienteId: url.searchParams.get("clienteId") ?? undefined,
+        q,
+        cobro: cobro as
+          | "SIN_COBRAR"
+          | "PARCIAL"
+          | "COBRADO"
+          | "ANULADA"
+          | undefined,
         estados: estados ? estados.split(",") : ["CONFIRMADA", "ANULADA"],
       }
     );

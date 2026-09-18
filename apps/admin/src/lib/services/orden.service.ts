@@ -19,6 +19,7 @@ import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from ".
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { FACTURA_VIGENTE } from "./factura-vigente";
+import { filtroClientePorTexto, numeroBuscado } from "./busqueda";
 
 /**
  * Plata: solo ADMIN y STAFF.
@@ -1290,6 +1291,21 @@ export async function listarOrdenes(
     estado?: string;
     /** Varios estados a la vez; gana sobre `estado` si vienen los dos. */
     estados?: string[];
+    /**
+     * Si entró la plata. **Se filtra en la base, no sobre la página.**
+     *
+     * Se hacía en la pantalla, sobre las órdenes que ya habían llegado: con
+     * cien traídas y trescientas en la tabla, pedir "Sin cobrar" mostraba las
+     * sin cobrar *de esas cien*, y la lista se veía completa. Un filtro que
+     * miente sobre lo que no muestra es peor que no tenerlo.
+     *
+     * La comparación es contra el **total de la factura** y no el de la orden:
+     * son el mismo número —la factura se emite por la orden— y estando en la
+     * misma fila, Postgres puede comparar las dos columnas.
+     */
+    cobro?: "SIN_COBRAR" | "PARCIAL" | "COBRADO" | "ANULADA";
+    /** Texto libre: el nombre del cliente o el número de la orden. */
+    q?: string;
     limit?: number;
     offset?: number;
   } = {}
@@ -1299,6 +1315,31 @@ export async function listarOrdenes(
   if (options.clienteId) where.clienteId = options.clienteId;
   if (options.estados?.length) where.estado = { in: options.estados as never[] };
   else if (options.estado) where.estado = options.estado as never;
+
+  const texto = options.q?.trim();
+  if (texto) {
+    const porCliente = filtroClientePorTexto(texto);
+    const numero = numeroBuscado(texto);
+    where.OR = [
+      ...(porCliente ? [{ cliente: porCliente }] : []),
+      ...(numero !== null ? [{ numero }] : []),
+    ];
+  }
+
+  if (options.cobro === "ANULADA") {
+    where.estado = "ANULADA";
+  } else if (options.cobro) {
+    // Anulada es su propio casillero: una orden anulada no está "sin cobrar",
+    // está fuera de la cuenta.
+    where.estado = { not: "ANULADA" };
+    const saldo =
+      options.cobro === "COBRADO"
+        ? { lte: 0.001 }
+        : options.cobro === "SIN_COBRAR"
+          ? { gte: prisma.factura.fields.total }
+          : { gt: 0.001, lt: prisma.factura.fields.total };
+    where.facturas = { some: { ...FACTURA_VIGENTE, saldo } };
+  }
 
   const limit = Math.min(Math.max(options.limit ?? 30, 1), 100);
   const offset = Math.max(0, options.offset ?? 0);

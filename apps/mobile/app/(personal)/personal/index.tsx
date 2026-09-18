@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import { ActivityIndicator, FAB, Text } from "react-native-paper";
+import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
@@ -70,6 +70,8 @@ export default function PersonalListScreen() {
 
   return (
     <PantallaLista
+      onCrear={puedeEditar ? () => router.push("/(personal)/personal/nuevo") : undefined}
+      etiquetaCrear="Nueva persona"
       titulo="Personal"
       busqueda={busqueda}
       onBuscar={setBusqueda}
@@ -129,15 +131,6 @@ export default function PersonalListScreen() {
         )}
       />
       )}
-
-      {puedeEditar ? (
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          color="#fff"
-          onPress={() => router.push("/(personal)/personal/nuevo")}
-        />
-      ) : null}
     </PantallaLista>
   );
 }
@@ -160,11 +153,4 @@ const styles = StyleSheet.create({
   vacio: { alignItems: "center", paddingVertical: 48 },
   vacioTitulo: { color: tema.texto },
   error: { color: tema.rojo, textAlign: "center", padding: 16 },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    backgroundColor: tema.verde,
-    borderRadius: 16,
-  },
 });

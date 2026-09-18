@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -57,14 +57,25 @@ export default function OrdenesListScreen() {
    * es una espera que empeora sola.
    */
   const traer = useCallback(
-    async (desde: number, modo: "inicial" | "mas" | "refrescar") => {
+    async (
+      desde: number,
+      modo: "inicial" | "mas" | "refrescar",
+      filtros: { q: string; cobro: string }
+    ) => {
       if (modo === "inicial") setCargando(true);
       if (modo === "mas") setCargandoMas(true);
       if (modo === "refrescar") setRefrescando(true);
       try {
         const res = await apiRequest<{ items: OrdenListItem[]; total: number }>(
           "/api/mobile/ordenes",
-          { query: { limit: POR_PAGINA, offset: desde } }
+          {
+            query: {
+              limit: POR_PAGINA,
+              offset: desde,
+              q: filtros.q.trim() || undefined,
+              cobro: filtros.cobro || undefined,
+            },
+          }
         );
         setItems((antes) => (desde ? [...antes, ...res.items] : res.items));
         setTotal(res.total);
@@ -80,9 +91,21 @@ export default function OrdenesListScreen() {
     []
   );
   const cargar = useCallback(
-    (inicial = false) => traer(0, inicial ? "inicial" : "refrescar"),
-    [traer]
+    (inicial = false) =>
+      traer(0, inicial ? "inicial" : "refrescar", { q: busqueda, cobro }),
+    [traer, busqueda, cobro]
   );
+
+  /*
+   * Al cambiar la búsqueda o el filtro se pide de nuevo desde cero, con ~300 ms
+   * de respiro: una consulta por tecla es ruido y las respuestas llegan
+   * desordenadas.
+   */
+  useEffect(() => {
+    const reloj = setTimeout(() => cargar(), 300);
+    return () => clearTimeout(reloj);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busqueda, cobro]);
 
   useFocusEffect(
     useCallback(() => {
@@ -91,19 +114,8 @@ export default function OrdenesListScreen() {
     }, [cargar])
   );
 
-  const q = busqueda.trim().toLowerCase();
-  const visibles = items.filter((o) => {
-    if (cobro === "ANULADA" && o.estado !== "ANULADA") return false;
-    if (cobro && cobro !== "ANULADA") {
-      if (o.estado === "ANULADA") return false;
-      if (estadoCobro(o.total, o.saldo) !== cobro) return false;
-    }
-    if (!q) return true;
-    return (
-      o.cliente.toLowerCase().includes(q) ||
-      String(o.numero).includes(q.replace("#", ""))
-    );
-  });
+  // Lo que llega ya viene filtrado por el servidor.
+  const visibles = items;
 
   const grupos: GrupoDeFiltro[] = [
     {
@@ -146,7 +158,7 @@ export default function OrdenesListScreen() {
           ListEmptyComponent={
             <View style={styles.vacio}>
               <Text variant="titleMedium" style={styles.vacioTitulo}>
-                {q || cobro ? "Sin coincidencias" : "No hay órdenes"}
+                {busqueda || cobro ? "Sin coincidencias" : "No hay órdenes"}
               </Text>
               <Text variant="bodyMedium" style={styles.vacioTexto}>
                 Las órdenes se arman en el portal.
@@ -158,7 +170,8 @@ export default function OrdenesListScreen() {
           }
           onEndReachedThreshold={0.4}
           onEndReached={() => {
-            if (items.length < total && !cargandoMas) traer(items.length, "mas");
+            if (items.length < total && !cargandoMas)
+              traer(items.length, "mas", { q: busqueda, cobro });
           }}
           renderItem={({ item }) => {
             const anulada = item.estado === "ANULADA";

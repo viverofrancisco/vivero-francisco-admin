@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
-import { ActivityIndicator, FAB, Text } from "react-native-paper";
+import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
@@ -45,7 +45,13 @@ export default function GruposListScreen() {
   );
 
   return (
-    <PantallaLista titulo="Grupos">
+    <PantallaLista
+      titulo="Grupos"
+      onCrear={
+        puedeEditar ? () => router.push("/(personal)/grupos/nuevo") : undefined
+      }
+      etiquetaCrear="Nuevo grupo"
+    >
       {cargando ? (
         <View style={styles.centro}>
           <ActivityIndicator size="large" />
@@ -92,15 +98,6 @@ export default function GruposListScreen() {
         )}
       />
       )}
-
-      {puedeEditar ? (
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          color="#fff"
-          onPress={() => router.push("/(personal)/grupos/nuevo")}
-        />
-      ) : null}
     </PantallaLista>
   );
 }
@@ -114,11 +111,4 @@ const styles = StyleSheet.create({
   vacioTitulo: { color: tema.texto },
   vacioTexto: { color: tema.texto3, textAlign: "center" },
   error: { color: tema.rojo, textAlign: "center", padding: 16 },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    backgroundColor: tema.verde,
-    borderRadius: 16,
-  },
 });

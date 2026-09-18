@@ -6,16 +6,31 @@ import { propiedadesDeVisitas } from "@vivero/shared";
 export default async function OrdenesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cliente?: string }>;
+  searchParams: Promise<{ cliente?: string; q?: string; estado?: string }>;
 }) {
   await requireStaff();
   const viewer = await viewerFromSession();
-  const { cliente } = await searchParams;
-  // Los borradores tienen su propia página: acá va lo que ya se decidió cobrar.
-  // Las anuladas quedan porque si no serían inalcanzables desde la interfaz.
+  const { cliente, q, estado } = await searchParams;
+  /*
+   * Los borradores tienen su propia página: acá va lo que ya se decidió
+   * cobrar, y las anuladas quedan porque si no serían inalcanzables.
+   *
+   * **La búsqueda y el filtro de cobro los resuelve la base.** Se hacían en la
+   * pantalla, sobre las cien órdenes que se traían: con trescientas en la
+   * tabla, pedir "Sin cobrar" mostraba las sin cobrar *de esas cien* y la
+   * lista se veía completa. Un filtro que miente sobre lo que no muestra es
+   * peor que no tenerlo.
+   */
   const { items } = await listarOrdenes(viewer, {
     limit: 100,
     clienteId: cliente,
+    q,
+    cobro: (estado || undefined) as
+      | "SIN_COBRAR"
+      | "PARCIAL"
+      | "COBRADO"
+      | "ANULADA"
+      | undefined,
     estados: ["CONFIRMADA", "ANULADA"],
   });
 
@@ -43,7 +58,7 @@ export default async function OrdenesPage({
 
   return (
     <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
-      <OrdenesTable ordenes={serialized} />
+      <OrdenesTable ordenes={serialized} q={q ?? ""} estado={estado ?? ""} />
     </div>
   );
 }

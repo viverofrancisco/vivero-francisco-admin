@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { Modal, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
 
@@ -39,6 +38,8 @@ export interface GrupoDeFiltro {
 export function PantallaLista({
   titulo,
   accion,
+  onCrear,
+  etiquetaCrear = "Crear",
   busqueda,
   onBuscar,
   placeholder,
@@ -50,6 +51,16 @@ export function PantallaLista({
   titulo: string;
   /** Lo que va a la derecha del título: un botón, un menú. */
   accion?: React.ReactNode;
+  /**
+   * Crear, arriba y en verde.
+   *
+   * Era un botón flotante sobre la esquina inferior derecha, que es donde
+   * Android pone el suyo; en esta app tapaba la última fila y quedaba encima
+   * de la barra de pestañas. Arriba, al lado del título, comparte renglón con
+   * algo que ya estaba y no tapa nada.
+   */
+  onCrear?: () => void;
+  etiquetaCrear?: string;
   busqueda?: string;
   onBuscar?: (v: string) => void;
   placeholder?: string;
@@ -81,6 +92,15 @@ export function PantallaLista({
           <Text style={styles.titulo}>{titulo}</Text>
           <View style={styles.acciones}>
             {accion}
+            {onCrear ? (
+              <PressableScale
+                onPress={onCrear}
+                style={styles.crear}
+                accessibilityLabel={etiquetaCrear}
+              >
+                <Ionicons name="add" size={22} color="#fff" />
+              </PressableScale>
+            ) : null}
             {/* Sin buscador el botón de filtros no tiene con quién compartir
                 renglón, así que sube al lado del título. */}
             {hayFiltros && !onBuscar ? (
@@ -147,21 +167,28 @@ export function PantallaLista({
 
       <View style={styles.cuerpo}>{children}</View>
 
-      <HojaInferior visible={abierto} onCerrar={() => setAbierto(false)}>
-        <View style={styles.hoja}>
-          <View style={styles.hojaCabecera}>
-            <Text style={styles.hojaTitulo}>Filtros</Text>
-            {puestos > 0 ? (
-              <Pressable
-                onPress={() => grupos.forEach((g) => g.onElegir(""))}
-                hitSlop={8}
-              >
-                <Text style={styles.limpiar}>Limpiar</Text>
-              </Pressable>
-            ) : null}
+      {/* A pantalla completa, como el del portal en móvil: los controles
+          ocupan el renglón entero y abajo quedan Limpiar y Ver resultados, que
+          es lo que se busca después de tocar tres cosas. */}
+      <Modal
+        visible={abierto}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setAbierto(false)}
+      >
+        <View style={styles.panel}>
+          <View style={styles.panelCabecera}>
+            <Text style={styles.panelTitulo}>Filtros</Text>
+            <PressableScale
+              onPress={() => setAbierto(false)}
+              style={styles.cerrar}
+              accessibilityLabel="Cerrar filtros"
+            >
+              <Ionicons name="close" size={22} color={tema.texto2} />
+            </PressableScale>
           </View>
 
-          <ScrollView style={styles.hojaLista}>
+          <ScrollView style={styles.panelCuerpo}>
             {grupos.map((g) => (
               <View key={g.id} style={styles.grupo}>
                 <Text style={styles.grupoTitulo}>{g.titulo.toUpperCase()}</Text>
@@ -190,15 +217,25 @@ export function PantallaLista({
             ))}
           </ScrollView>
 
-          <PressableScale
-            onPress={() => setAbierto(false)}
-            estiloExterno={styles.ancho}
-            style={styles.listo}
-          >
-            <Text style={styles.listoTexto}>Listo</Text>
-          </PressableScale>
+          <View style={[styles.panelPie, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <PressableScale
+              onPress={() => grupos.forEach((g) => g.onElegir(""))}
+              disabled={puestos === 0}
+              estiloExterno={styles.mitad}
+              style={[styles.limpiarBoton, puestos === 0 && styles.apagado]}
+            >
+              <Text style={styles.limpiarTexto}>Limpiar</Text>
+            </PressableScale>
+            <PressableScale
+              onPress={() => setAbierto(false)}
+              estiloExterno={styles.mitad}
+              style={styles.ver}
+            >
+              <Text style={styles.verTexto}>Ver resultados</Text>
+            </PressableScale>
+          </View>
         </View>
-      </HojaInferior>
+      </Modal>
     </View>
   );
 }
@@ -222,6 +259,14 @@ const styles = StyleSheet.create({
   },
   titulo: { fontSize: 26, fontWeight: "800", color: tema.texto },
   acciones: { flexDirection: "row", alignItems: "center", gap: 8 },
+  crear: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: tema.verde,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   buscarFila: { flexDirection: "row", alignItems: "center", gap: 8 },
   buscador: {
@@ -263,16 +308,26 @@ const styles = StyleSheet.create({
 
   cuerpo: { flex: 1 },
 
-  hoja: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 12, gap: 12 },
-  hojaCabecera: {
+  panel: { flex: 1, backgroundColor: tema.superficie },
+  panelCabecera: {
+    height: 60,
+    paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: tema.linea,
   },
-  hojaTitulo: { fontSize: 18, fontWeight: "700", color: tema.texto },
-  limpiar: { color: tema.verde700, fontWeight: "600" },
-  hojaLista: { maxHeight: 380 },
-  grupo: { gap: 8, marginBottom: 18 },
+  panelTitulo: { fontSize: 17, fontWeight: "700", color: tema.texto },
+  cerrar: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  panelCuerpo: { flex: 1, padding: 16 },
+  grupo: { gap: 8, marginBottom: 22 },
   grupoTitulo: {
     fontSize: 11,
     letterSpacing: 0.8,
@@ -282,7 +337,7 @@ const styles = StyleSheet.create({
   opciones: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   opcion: {
     paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingVertical: 10,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: tema.linea,
@@ -290,16 +345,33 @@ const styles = StyleSheet.create({
   opcionElegida: { backgroundColor: tema.verde50, borderColor: tema.verde100 },
   opcionTexto: { color: tema.texto2, fontSize: 14 },
   opcionTextoElegida: { color: tema.verde700, fontWeight: "600" },
-
-  ancho: { alignSelf: "stretch" },
-  listo: {
+  panelPie: {
+    flexDirection: "row",
+    gap: 12,
+    padding: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: tema.linea,
+  },
+  mitad: { flex: 1 },
+  limpiarBoton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: tema.linea,
+  },
+  apagado: { opacity: 0.4 },
+  limpiarTexto: { color: tema.texto2, fontWeight: "600", fontSize: 15 },
+  ver: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 14,
     backgroundColor: tema.verde,
   },
-  listoTexto: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  verTexto: { color: "#fff", fontWeight: "600", fontSize: 15 },
+
 });
 
 /**

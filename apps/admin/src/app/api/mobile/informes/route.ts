@@ -17,6 +17,8 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const clienteId = url.searchParams.get("clienteId") ?? undefined;
+  // El buscador de la app: cliente, título o número, igual que el del portal.
+  const q = url.searchParams.get("q") ?? undefined;
   const fromStr = url.searchParams.get("from");
   const toStr = url.searchParams.get("to");
   const from = fromStr ? new Date(`${fromStr}T00:00:00.000Z`) : undefined;
@@ -27,6 +29,7 @@ export async function GET(request: Request) {
   try {
     const result = await listInformes(viewerFromMobileUser(userOrResponse), {
       clienteId,
+      q,
       from,
       to,
       offset,

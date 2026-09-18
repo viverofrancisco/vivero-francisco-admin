@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import {
   esSoloNumero,
+  filtroClientePorTexto,
   numeroBuscado,
   palabrasParaIlike,
 } from "./busqueda";
@@ -61,6 +62,16 @@ export async function listInformes(
   viewer: Viewer,
   options: {
     clienteId?: string;
+    /**
+     * Texto libre: el nombre del cliente, el título, o el número con o sin `#`.
+     *
+     * La misma pregunta que hace la lista del portal, y por las mismas razones:
+     * **palabra por palabra** —"Maria Luisa" encuentra a la mujer que se llama
+     * así y a la Maria de apellido Luisa— y el número aparte, porque "#194" es
+     * como se nombra un informe en voz alta. Un solo dígito no cuenta como
+     * número: "1" es texto y si no encontraría medio catálogo.
+     */
+    q?: string;
     from?: Date;
     to?: Date;
     limit?: number;
@@ -72,6 +83,23 @@ export async function listInformes(
 
   const where: Record<string, unknown> = {};
   if (options.clienteId) where.clienteId = options.clienteId;
+
+  const texto = options.q?.trim();
+  if (texto) {
+    const porCliente = filtroClientePorTexto(texto);
+    const numero = numeroBuscado(texto);
+    const palabras = texto.split(/\s+/).filter(Boolean);
+    where.OR = [
+      ...(porCliente ? [{ cliente: porCliente }] : []),
+      // Cada palabra en el título, igual que contra el cliente.
+      {
+        AND: palabras.map((palabra) => ({
+          titulo: { contains: palabra, mode: "insensitive" as const },
+        })),
+      },
+      ...(numero !== null ? [{ numero }] : []),
+    ];
+  }
   if (options.from || options.to) {
     const range: { gte?: Date; lt?: Date } = {};
     if (options.from) range.gte = options.from;

@@ -6,7 +6,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { ActivityIndicator, FAB, IconButton, Text } from "react-native-paper";
+import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades } from "@vivero/shared";
@@ -43,6 +43,12 @@ export default function InformesListScreen() {
   const router = useRouter();
   const { cliente, from, to, activeCount } = useInformesFilters();
   const activeFilters = activeCount();
+  /**
+   * El buscador del portal: nombre del cliente, título o número con o sin `#`.
+   * Viaja al servidor —la lista viene de a páginas, así que filtrar acá sería
+   * buscar adentro de lo que ya se ve.
+   */
+  const [busqueda, setBusqueda] = useState("");
 
   const [items, setItems] = useState<InformeItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -63,6 +69,7 @@ export default function InformesListScreen() {
           query: {
             limit: PAGE_SIZE,
             offset: 0,
+            ...(busqueda.trim() ? { q: busqueda.trim() } : {}),
             ...(cliente ? { clienteId: cliente.id } : {}),
             ...(from ? { from } : {}),
             ...(to ? { to } : {}),
@@ -77,12 +84,18 @@ export default function InformesListScreen() {
         setRefreshing(false);
       }
     },
-    [cliente, from, to]
+    [busqueda, cliente, from, to]
   );
 
-  // Re-fetch whenever filters change (and on initial mount).
+  /*
+   * Se vuelve a pedir cuando cambian los filtros o la búsqueda, con ~300 ms de
+   * respiro: una consulta por tecla es ruido y las respuestas llegan
+   * desordenadas.
+   */
   useEffect(() => {
-    load({ initial: true });
+    const reloj = setTimeout(() => load({ initial: items.length === 0 }), 300);
+    return () => clearTimeout(reloj);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
 
   // Also refresh when returning to this screen (e.g. after filter changes via store).
@@ -103,6 +116,7 @@ export default function InformesListScreen() {
         query: {
           limit: PAGE_SIZE,
           offset: items.length,
+          ...(busqueda.trim() ? { q: busqueda.trim() } : {}),
           ...(cliente ? { clienteId: cliente.id } : {}),
           ...(from ? { from } : {}),
           ...(to ? { to } : {}),
@@ -120,6 +134,11 @@ export default function InformesListScreen() {
   return (
     <PantallaLista
       titulo="Informes"
+      onCrear={() => router.push("/(personal)/informes/nuevo")}
+      etiquetaCrear="Generar informe"
+      busqueda={busqueda}
+      onBuscar={setBusqueda}
+      placeholder="Buscar por cliente o #número..."
       onFiltrar={() => router.push("/(personal)/informes/filtros")}
       filtrosActivos={activeFilters}
     >
@@ -180,12 +199,6 @@ export default function InformesListScreen() {
                 }
               />
             )}
-          />
-          <FAB
-            icon="plus"
-            color="#fff"
-            style={styles.fab}
-            onPress={() => router.push("/(personal)/informes/nuevo")}
           />
         </>
       )}

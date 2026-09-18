@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -25,7 +25,12 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { nombreCliente, resumenDePropiedades } from "@vivero/shared";
-import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
+import {
+  aca,
+  useAca,
+  useBusquedaEnUrl,
+  useFiltroUrl,
+} from "@/lib/filtros-url";
 import {
   money,
   fecha,
@@ -68,36 +73,50 @@ const FILTROS = [
   { value: "ANULADA", label: "Anuladas" },
 ];
 
-export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
+export function OrdenesTable({
+  ordenes,
+  q = "",
+  estado = "",
+}: {
+  ordenes: OrdenRow[];
+  /** Lo que el servidor ya filtró: la lista que llega es la respuesta. */
+  q?: string;
+  estado?: string;
+}) {
   const router = useRouter();
+  const [pendiente, startTransition] = useTransition();
   const [page, setPage] = useFiltroUrl("pagina", 1);
-  const [busqueda, setBusqueda] = useFiltroUrl("q", "");
-  const [estado, setEstado] = useFiltroUrl("estado", "");
 
-  /** Cualquier filtro que cambie vuelve a la primera página. */
-  const cambiar = (fn: () => void) => {
-    fn();
-    setPage(1);
-  };
+  /*
+   * Los filtros viajan en la URL y los resuelve el servidor, así que se
+   * escriben con `router.replace` y no con `useFiltroUrl`: reescribir la URL a
+   * mano no le pide nada al servidor, y la tabla seguiría mostrando lo de
+   * antes mientras los controles dicen otra cosa.
+   *
+   * `replace` y no `push` para que atrás salga del listado en vez de deshacer
+   * letra por letra, y adentro de una transición para que la lista de antes se
+   * quede —atenuada— hasta que llegue la nueva, en vez de parpadear con el
+   * esqueleto de `loading.tsx` en cada tecla.
+   */
+  function actualizar(patch: Record<string, string | null>) {
+    const params = new URLSearchParams(window.location.search);
+    for (const [clave, valor] of Object.entries(patch)) {
+      if (valor) params.set(clave, valor);
+      else params.delete(clave);
+    }
+    params.delete("pagina");
+    const qs = params.toString();
+    startTransition(() => {
+      router.replace(`/dashboard/ordenes${qs ? `?${qs}` : ""}`);
+    });
+  }
 
-  const filtradas = useMemo(() => {
-    let r = ordenes;
-    if (estado === "ANULADA") r = r.filter((o) => o.estado === "ANULADA");
-    else if (estado) {
-      r = r.filter(
-        (o) => o.estado !== "ANULADA" && estadoCobro(o.total, o.saldo) === estado
-      );
-    }
-    const q = busqueda.trim().toLowerCase();
-    if (q) {
-      r = r.filter(
-        (o) =>
-          nombreCliente(o.cliente).toLowerCase().includes(q) ||
-          String(o.numero).includes(q)
-      );
-    }
-    return r;
-  }, [ordenes, estado, busqueda]);
+  // Lo tecleado manda mientras se escribe; la URL solo cuando cambia por fuera.
+  const [busqueda, setBusqueda] = useBusquedaEnUrl(q, (v) =>
+    actualizar({ q: v || null })
+  );
+
+  const filtradas = ordenes;
 
   const totalPages = Math.max(1, Math.ceil(filtradas.length / FILAS_POR_PAGINA));
   const pagina = Math.min(page, totalPages);
@@ -109,7 +128,7 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
   // En móvil la lista crece al bajar en lugar de paginar.
   const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
     filtradas.length,
-    `${busqueda}|${estado}`
+    `${q}|${estado}`
   );
   const enLista = filtradas.slice(0, visibles);
   const aqui = useAca();
@@ -130,14 +149,14 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
 
       <BarraFiltros
         activos={estado ? 1 : 0}
-        onLimpiar={() => cambiar(() => setEstado(""))}
+        onLimpiar={() => actualizar({ estado: null })}
         busqueda={
           <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar por cliente o número..."
               value={busqueda}
-              onChange={(e) => cambiar(() => setBusqueda(e.target.value))}
+              onChange={(e) => setBusqueda(e.target.value)}
               className="pl-9"
             />
           </div>
@@ -146,14 +165,18 @@ export function OrdenesTable({ ordenes }: { ordenes: OrdenRow[] }) {
         <div className="w-48">
           <CustomSelect
             value={estado}
-            onChange={(v) => cambiar(() => setEstado(v))}
+            onChange={(v) => actualizar({ estado: v || null })}
             options={FILTROS}
             placeholder="Todas"
           />
         </div>
       </BarraFiltros>
 
-      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
+      <div
+        className={`hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card transition-opacity md:flex ${
+          pendiente ? "opacity-60" : ""
+        }`}
+      >
         <div className="min-h-0 flex-1 overflow-hidden">
           {filtradas.length === 0 ? (
             <EmptyState
