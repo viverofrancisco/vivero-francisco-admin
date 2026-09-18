@@ -6,7 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { VisitaMedia } from "@/lib/types";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import { tema } from "@/lib/tema";
@@ -106,6 +106,14 @@ export interface CambiosDeArchivos {
   hayCambios: boolean;
   guardando: boolean;
   error: string | null;
+  /**
+   * Cuándo se falló, para poder reaccionar **cada vez**.
+   *
+   * Mirar `error` no alcanza: apretando Guardar dos veces con el mismo problema
+   * el texto no cambia, así que un efecto colgado de él no se vuelve a
+   * disparar y la pantalla no hace nada la segunda vez.
+   */
+  errorEn: number;
   /** Cuántas de la tanda nueva siguen sin tarea. */
   sinTarea: number;
   agregar: (assets: ImagePicker.ImagePickerAsset[]) => void;
@@ -127,6 +135,13 @@ export function useCambiosDeArchivos(
   const [etiquetas, setEtiquetas] = useState<Map<string, string>>(new Map());
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorEn, setErrorEn] = useState(0);
+
+  /** Un error, y la marca de que **este** intento falló. */
+  const fallar = useCallback((texto: string) => {
+    setError(texto);
+    setErrorEn(Date.now());
+  }, []);
 
   const sinTarea = pendientes.filter((p) => p.tareaId === null).length;
   const hayCambios =
@@ -142,7 +157,7 @@ export function useCambiosDeArchivos(
   const guardar = useCallback(async () => {
     if (!hayCambios || guardando) return;
     if (sinTarea > 0) {
-      setError("Elige la tarea de cada foto nueva antes de guardar.");
+      fallar("Elige la tarea de cada foto nueva antes de guardar.");
       return;
     }
     setGuardando(true);
@@ -221,7 +236,10 @@ export function useCambiosDeArchivos(
       onCambio();
     } catch (e) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(e instanceof ApiError ? e.message : "No pudimos guardar");
+      // Con `fallar` y no `setError`: también acá la pantalla tiene que llevar
+      // el ojo hasta el mensaje, y el segundo intento fallido suele traer el
+      // mismo texto.
+      fallar(mensajeDeError(e, "No pudimos guardar"));
     } finally {
       setGuardando(false);
     }
@@ -232,6 +250,7 @@ export function useCambiosDeArchivos(
     onCambio,
     pendientes,
     quitadas,
+    fallar,
     sinTarea,
     visitaId,
   ]);
@@ -243,6 +262,7 @@ export function useCambiosDeArchivos(
     hayCambios,
     guardando,
     error,
+    errorEn,
     sinTarea,
     guardar,
     cancelar,

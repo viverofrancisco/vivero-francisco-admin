@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { estadoLabel, estadoParaMi } from "@/lib/estado-visita";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import {
@@ -116,6 +116,22 @@ export default function PersonalVisitaScreen() {
    * único que no se va scrolleando.
    */
   const cambios = useCambiosDeArchivos(id ?? "", load);
+
+  /*
+   * Guardar está en el encabezado, arriba de todo, y los archivos suelen
+   * quedar fuera de la pantalla: apretar Guardar sin etiquetar una foto
+   * mostraba el error donde nadie lo veía, así que parecía que el botón no
+   * hacía nada. La pantalla lleva el ojo hasta ahí.
+   */
+  const scroll = useRef<ScrollView>(null);
+  const yArchivos = useRef(0);
+
+  useEffect(() => {
+    if (!cambios.errorEn) return;
+    // Un poco antes del rótulo, para que se vea que la sección empieza ahí.
+    scroll.current?.scrollTo({ y: Math.max(yArchivos.current - 24, 0), animated: true });
+  }, [cambios.errorEn]);
+
 
   // Al volver de cargar el parte, se recarga para mostrarlo.
   useFocusEffect(
@@ -304,7 +320,7 @@ export default function PersonalVisitaScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView ref={scroll} contentContainerStyle={styles.scroll}>
         {/* Sin rótulo: "CUÁNDO" arriba de Estado y Programada no agregaba
             nada que las propias filas no dijeran, y gastaba la línea que
             separa el nombre del cliente de sus datos. */}
@@ -446,7 +462,12 @@ export default function PersonalVisitaScreen() {
             mientras se trabaja. Estaban dentro del formulario de salida, donde
             llegaban tarde. */}
         {canAct ? (
-          <View style={styles.mediaSection}>
+          <View
+            style={styles.mediaSection}
+            onLayout={(e) => {
+              yArchivos.current = e.nativeEvent.layout.y;
+            }}
+          >
             {/* El rótulo lo pone el propio componente: cuando hay fotos
                 marcadas para eliminar, esa línea se convierte en la barra de
                 Cancelar / Eliminar. */}
