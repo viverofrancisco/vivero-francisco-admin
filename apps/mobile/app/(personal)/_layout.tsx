@@ -68,11 +68,50 @@ export default function PersonalTabsLayout() {
       <Tabs.Screen
         name="servicios"
         options={{
-          title: "Servicios",
+          // "Productos", como en el portal: es el mismo catálogo —servicios y
+          // bienes— y dos nombres para una cosa son dos cosas hasta que alguien
+          // abre las dos.
+          title: "Productos",
           href: isAdmin ? undefined : null,
           tabBarItemStyle: { display: "none" },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      {/* La oficina administra desde el teléfono lo mismo que desde el
+          portal: el catálogo de tareas, la gente y las cuadrillas. Entran por
+          el menú de Más para que la barra siga teniendo tres cosas. */}
+      <Tabs.Screen
+        name="tareas"
+        options={{
+          title: "Tareas",
+          href: isAdminOrStaff ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="checkbox-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="personal"
+        options={{
+          title: "Personal",
+          href: isAdminOrStaff ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="grupos"
+        options={{
+          title: "Grupos",
+          href: isAdminOrStaff ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="git-merge-outline" size={size} color={color} />
           ),
         }}
       />

@@ -1,28 +1,42 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
+import { personalSchema } from "@/lib/validations/personal";
+import { requireMobileUser, requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
+import { crearPersonal, listPersonal } from "@/lib/services/personal.service";
+import {
+  serviceErrorResponse,
+  viewerFromMobileUser,
+} from "@/lib/mobile/route-helpers";
 
-/**
- * Lightweight list of active personal for picker UIs (e.g. crear visita).
- */
+/** La gente del vivero. La autorización la decide el servicio. */
 export async function GET(request: Request) {
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN",
-    "STAFF"
-  );
+  const userOrResponse = await requireMobileUser(request);
+  if (!isMobileUser(userOrResponse)) return userOrResponse;
+  try {
+    const items = await listPersonal(viewerFromMobileUser(userOrResponse));
+    return NextResponse.json({ items });
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
+}
+
+export async function POST(request: Request) {
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
-  const personal = await prisma.personal.findMany({
-    where: { deletedAt: null, estado: "ACTIVO" },
-    select: {
-      id: true,
-      nombre: true,
-      apellido: true,
-      tipo: true,
-    },
-    orderBy: [{ nombre: "asc" }, { apellido: "asc" }],
-  });
-
-  return NextResponse.json({ items: personal });
+  const parsed = personalSchema.safeParse(await request.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Datos inválidos" },
+      { status: 400 }
+    );
+  }
+  try {
+    const personal = await crearPersonal(
+      viewerFromMobileUser(userOrResponse),
+      parsed.data
+    );
+    return NextResponse.json(personal, { status: 201 });
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
 }

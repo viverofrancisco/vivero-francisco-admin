@@ -301,6 +301,22 @@ export interface GrupoOption {
   miembrosIds: string[];
 }
 
+/** Un grupo con su gente, como lo devuelve la app. */
+export interface GrupoConMiembros {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  miembros: {
+    personalId: string;
+    personal: {
+      id: string;
+      nombre: string;
+      apellido: string | null;
+      tipo: string | null;
+    };
+  }[];
+}
+
 export interface GruposListResponse {
   items: GrupoOption[];
 }
@@ -310,6 +326,23 @@ export interface PersonalOption {
   nombre: string;
   apellido: string | null;
   tipo: string;
+}
+
+/** La ficha completa de alguien del vivero, con la cuenta con la que entra. */
+export interface PersonalFicha {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  telefono: string | null;
+  especialidad: string | null;
+  tipo: string | null;
+  estado: string;
+  user: {
+    id: string;
+    usuario: string | null;
+    /** Cuándo se le cortó el acceso. `null` = entra normal. */
+    accesoRevocadoEl: string | null;
+  } | null;
 }
 
 export interface PersonalListResponse {

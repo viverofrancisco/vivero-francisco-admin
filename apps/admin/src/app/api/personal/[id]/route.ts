@@ -1,118 +1,61 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth-helpers";
-import { revocarAcceso } from "@/lib/services/acceso.service";
-import { cambiarUsuarioPersonal } from "@/lib/services/personal-acceso.service";
-import { ConflictError, ValidationError } from "@/lib/services/errors";
-import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
+import { getCurrentUser, viewerFromSession } from "@/lib/auth-helpers";
 import { personalSchema } from "@/lib/validations/personal";
+import {
+  actualizarPersonal,
+  archivarPersonal,
+  getPersonal,
+} from "@/lib/services/personal.service";
+import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Params = { params: Promise<{ id: string }> };
+
+export async function GET(_request: Request, { params }: Params) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-
   const { id } = await params;
-  const personal = await prisma.personal.findUnique({ where: { id, deletedAt: null } });
-
-  if (!personal) {
-    return NextResponse.json({ error: "Personal no encontrado" }, { status: 404 });
+  try {
+    return NextResponse.json(await getPersonal(await viewerFromSession(), id));
+  } catch (error) {
+    return serviceErrorResponse(error);
   }
-
-  return NextResponse.json(personal);
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: Params) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const { id } = await params;
-  const body = await request.json();
-  const result = personalSchema.safeParse(body);
-
-  if (!result.success) {
+  const parsed = personalSchema.safeParse(await request.json().catch(() => ({})));
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Datos inválidos", details: result.error.issues },
+      { error: "Datos inválidos", details: parsed.error.issues },
       { status: 400 }
     );
   }
-
-  const data = result.data;
-
+  const { id } = await params;
   try {
-    const personal = await prisma.personal.update({
-      where: { id },
-      data: {
-        nombre: data.nombre,
-        apellido: data.apellido || null,
-        telefono: data.telefono || null,
-
-        especialidad: data.especialidad || null,
-        sueldo: data.sueldo || null,
-        estado: data.estado,
-        tipo: data.tipo || null,
-        updatedById: user.id,
-      },
-      include: { user: { select: { usuario: true } } },
-    });
-
-    // El usuario va en la misma pantalla pero no en la misma tabla, y darlo
-    // solo si **cambió** es lo que evita que guardar la ficha sin tocarlo
-    // devuelva "ya está tomado" contra su propia cuenta. Solo ADMIN: dar o
-    // quitar acceso es suyo, y el resto del formulario no lo es.
-    const pedido = data.usuario?.trim();
-    if (pedido && pedido !== personal.user?.usuario) {
-      if (user.role !== "ADMIN") {
-        return NextResponse.json(
-          { error: "Solo un administrador puede cambiar el usuario" },
-          { status: 403 }
-        );
-      }
-      await cambiarUsuarioPersonal(id, pedido);
-    }
-
-    return NextResponse.json(personal);
+    return NextResponse.json(
+      await actualizarPersonal(await viewerFromSession(), id, parsed.data)
+    );
   } catch (error) {
-    if (error instanceof ConflictError || error instanceof ValidationError) {
-      return serviceErrorResponse(error);
-    }
-    return NextResponse.json({ error: "Personal no encontrado" }, { status: 404 });
+    return serviceErrorResponse(error);
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: Params) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-
   const { id } = await params;
-
   try {
-    const personal = await prisma.personal.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-      select: { userId: true },
-    });
-    // Archivar a alguien le corta el acceso: su ficha desaparece de las listas
-    // y la app no le muestra nada, pero su cuenta seguía entrando —y con ella
-    // el chat de las visitas—. La cuenta no se borra: su nombre firma los
-    // partes que cargó, y devolverle el acceso es un clic si vuelve.
-    if (personal.userId) await revocarAcceso(personal.userId);
+    await archivarPersonal(await viewerFromSession(), id);
     return NextResponse.json({ message: "Personal archivado" });
-  } catch {
-    return NextResponse.json({ error: "Personal no encontrado" }, { status: 404 });
+  } catch (error) {
+    return serviceErrorResponse(error);
   }
 }

@@ -20,10 +20,28 @@ export default function MasMenuScreen() {
 
   const items: MenuItem[] = [
     {
-      label: "Servicios",
-      icon: "briefcase-outline",
+      label: "Productos",
+      icon: "pricetags-outline",
       href: "/(personal)/servicios",
       visible: isAdmin,
+    },
+    {
+      label: "Tareas",
+      icon: "checkbox-outline",
+      href: "/(personal)/tareas",
+      visible: isAdminOrStaff,
+    },
+    {
+      label: "Personal",
+      icon: "people-circle-outline",
+      href: "/(personal)/personal",
+      visible: isAdminOrStaff,
+    },
+    {
+      label: "Grupos",
+      icon: "git-merge-outline",
+      href: "/(personal)/grupos",
+      visible: isAdminOrStaff,
     },
     {
       label: "Informes",

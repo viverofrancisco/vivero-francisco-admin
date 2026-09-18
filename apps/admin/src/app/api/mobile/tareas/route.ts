@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
-import { requireMobileUser, isMobileUser } from "@/lib/mobile/auth";
+import {
+  requireMobileUser,
+  requireMobileRole,
+  isMobileUser,
+} from "@/lib/mobile/auth";
+import { tareaSchema } from "@/lib/validations/tarea";
 import {
   serviceErrorResponse,
   viewerFromMobileUser,
 } from "@/lib/mobile/route-helpers";
-import { listTareas } from "@/lib/services/tarea.service";
+import { createTarea, listTareas } from "@/lib/services/tarea.service";
 
 /**
  * El catálogo, para las casillas que el jardinero marca al cerrar una visita.
@@ -19,6 +24,30 @@ export async function GET(request: Request) {
   try {
     const items = await listTareas(viewerFromMobileUser(userOrResponse));
     return NextResponse.json({ items });
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
+}
+
+/** Crear una tarea. Va al final de la lista: reordenar es otra cosa, y se hace
+ *  en el portal, arrastrando —que es un gesto de escritorio—. */
+export async function POST(request: Request) {
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
+  if (!isMobileUser(userOrResponse)) return userOrResponse;
+
+  const parsed = tareaSchema.safeParse(await request.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Datos inválidos" },
+      { status: 400 }
+    );
+  }
+  try {
+    const tarea = await createTarea(
+      viewerFromMobileUser(userOrResponse),
+      parsed.data
+    );
+    return NextResponse.json(tarea, { status: 201 });
   } catch (error) {
     return serviceErrorResponse(error);
   }

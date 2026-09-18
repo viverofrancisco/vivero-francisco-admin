@@ -16,6 +16,7 @@ import {
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { CreatePropiedadBody } from "@vivero/shared";
+import { BuscadorDeDireccion } from "@/components/BuscadorDeDireccion";
 import { SelectorSector } from "@/components/SelectorSector";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
@@ -248,6 +249,15 @@ export function PropiedadForm({
         <SelectorSector value={sectorId} onChange={setSectorId} />
 
         <Titulo>Dirección</Titulo>
+        {/* Buscar completa los campos de abajo; el pin no sale de acá —ver
+            `BuscadorDeDireccion`—. */}
+        <BuscadorDeDireccion
+          onElegir={(d) => {
+            if (d.direccion) setDireccion(d.direccion);
+            if (d.numeroCasa) setNumeroCasa(d.numeroCasa);
+            if (d.ciudad) setCiudad(d.ciudad);
+          }}
+        />
         <Campo label="Calle" value={direccion} onChangeText={setDireccion} />
         <Campo
           label="Número de casa"
