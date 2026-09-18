@@ -79,14 +79,15 @@ type Eligiendo = Foto | { tipo: "todas" };
 type Vista =
   | { paso: "revision" }
   | { paso: "foto"; de: Foto }
-  | { paso: "tareas"; para: Eligiendo };
-
-/** De la lista de tareas se vuelve al paso que la abrió. */
-function volverDe(para: Eligiendo): Vista {
-  return para.tipo === "todas"
-    ? { paso: "revision" }
-    : { paso: "foto", de: para };
-}
+  /**
+   * `volverA` es el paso que abrió la lista, y tiene que viajar con ella.
+   *
+   * La tarea de una foto se elige desde **dos lugares**: la fila de la tanda en
+   * revisión y la hoja de esa foto. Se deducía del `para` —si era una foto, se
+   * volvía a su hoja— así que tocando la tarea en la lista de revisión, la
+   * flecha de atrás dejaba en una pantalla donde nunca se había estado.
+   */
+  | { paso: "tareas"; para: Eligiendo; volverA: Vista };
 
 /**
  * Todo lo que está sin guardar, más cómo guardarlo.
@@ -345,14 +346,17 @@ export function ArchivosVisita({
   function elegirTarea(tareaId: string) {
     if (vista?.paso !== "tareas") return;
     const quien = vista.para;
+    // Al paso que abrió la lista, no a uno fijo: elegir desde la fila de la
+    // tanda devuelve a la tanda, y elegir desde la hoja de una foto devuelve a
+    // esa foto, ya etiquetada.
     if (quien.tipo === "todas") {
       cambios.etiquetarTodas(tareaId);
-      setVista({ paso: "revision" });
+      setVista(vista.volverA);
       return;
     }
     if (quien.tipo === "nueva") {
       cambios.etiquetarPendiente(quien.indice, tareaId);
-      setVista({ paso: "revision" });
+      setVista(vista.volverA);
       return;
     }
     // Ya subida: el cambio queda pendiente como los demás y se guarda con todo
@@ -507,7 +511,11 @@ export function ArchivosVisita({
               {pendientes.length > 1 ? (
                 <Pressable
                   onPress={() =>
-                    setVista({ paso: "tareas", para: { tipo: "todas" } })
+                    setVista({
+                      paso: "tareas",
+                      para: { tipo: "todas" },
+                      volverA: { paso: "revision" },
+                    })
                   }
                   hitSlop={8}
                 >
@@ -528,6 +536,8 @@ export function ArchivosVisita({
                       setVista({
                         paso: "tareas",
                         para: { tipo: "nueva", indice: i },
+                        // Se vino de la lista de la tanda: ahí se vuelve.
+                        volverA: { paso: "revision" },
                       })
                     }
                     style={styles.revisionTarea}
@@ -599,7 +609,7 @@ export function ArchivosVisita({
               onVer(m);
             }}
             onCambiarTarea={() =>
-              setVista({ paso: "tareas", para: vista.de })
+              setVista({ paso: "tareas", para: vista.de, volverA: vista })
             }
             onSacar={() => {
               if (vista.de.tipo === "nueva")
@@ -617,7 +627,7 @@ export function ArchivosVisita({
               {/* Volver al paso de donde se vino. Arrastrar la hoja también
                   cierra, pero eso hay que saberlo. */}
               <PressableScale
-                onPress={() => setVista(volverDe(vista.para))}
+                onPress={() => setVista(vista.volverA)}
                 hitSlop={10}
                 style={styles.hojaVolver}
               >
