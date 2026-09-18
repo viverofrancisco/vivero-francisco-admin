@@ -36,6 +36,11 @@ export async function GET(request: Request) {
     return NextResponse.json({
       items: result.items.map((i) => ({
         id: i.id,
+        // El número y la versión, que es lo que la fila del portal muestra: el
+        // número es como se nombra un informe en voz alta y la versión avisa
+        // que se corrigió.
+        numero: i.numero,
+        version: i.versionActual,
         titulo: i.titulo,
         fechaDesde: i.fechaDesde?.toISOString() ?? null,
         fechaHasta: i.fechaHasta?.toISOString() ?? null,

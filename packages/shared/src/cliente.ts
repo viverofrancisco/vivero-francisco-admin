@@ -131,3 +131,30 @@ export function nombrePersona(c: ClienteNombre): string {
 export function nombreCliente(c: ClienteNombre): string {
   return nombrePersona(c) || (c.empresa ?? "").trim() || "Sin nombre";
 }
+
+/**
+ * El renglón de abajo de un cliente en una lista.
+ *
+ * La empresa va primero **cuando el nombre de arriba es el de la persona** —es
+ * el dato que la fila de arriba no dice—, y después el sector y el teléfono,
+ * que es con lo que se lo ubica. El sector sale de su primera propiedad: con
+ * varias, nombrar una sola sería mentira la mitad del tiempo, y la fila tiene
+ * lugar para una línea.
+ *
+ * Vive en compartido porque la misma fila se dibuja en el portal y en la app, y
+ * con la regla escrita dos veces cada lista terminaba diciendo otra cosa.
+ */
+export function resumenDeCliente(c: {
+  nombre?: string | null;
+  apellido?: string | null;
+  empresa?: string | null;
+  telefono?: string | null;
+  propiedades?: { sector?: { nombre: string } | null }[] | null;
+}): string {
+  const partes = [
+    nombrePersona(c) && c.empresa ? c.empresa : null,
+    c.propiedades?.[0]?.sector?.nombre ?? null,
+    c.telefono ?? null,
+  ].filter(Boolean);
+  return partes.length > 0 ? partes.join(" · ") : "Sin datos de contacto";
+}

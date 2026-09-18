@@ -16,6 +16,10 @@ import { tema } from "@/lib/tema";
 
 interface InformeItem {
   id: string;
+  /** Como se lo nombra en voz alta. */
+  numero: number;
+  /** En qué versión va. Mayor a 1 = se corrigió. */
+  version: number;
   titulo: string;
   fechaDesde: string | null;
   fechaHasta: string | null;
@@ -221,19 +225,26 @@ function InformeRow({
         <Ionicons name="document-text-outline" size={20} color={tema.verde} />
       </View>
       <View style={styles.rowText}>
-        <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={2}>
-          {item.titulo}
+        {/* El cliente arriba, como en el portal: el título de un informe es
+            derivado y casi siempre dice lo mismo, así que lo que distingue una
+            fila de otra es de quién es. */}
+        <Text variant="bodyLarge" style={styles.rowTitle} numberOfLines={1}>
+          {nombreCliente(item.cliente)}
         </Text>
-        <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
-          {/* El cliente y, si se sabe, en cuál de sus casas: dos informes del
-              mismo cliente en el mismo mes se distinguen por eso. */}
-          {[nombreCliente(item.cliente), resumenDePropiedades(item.propiedades)]
+        {resumenDePropiedades(item.propiedades) ? (
+          <Text variant="bodySmall" style={styles.muted} numberOfLines={1}>
+            {resumenDePropiedades(item.propiedades)}
+          </Text>
+        ) : null}
+        <Text variant="bodySmall" style={styles.metaLine}>
+          {[
+            `#${item.numero}`,
+            item.version > 1 ? `v${item.version}` : null,
+            formatGeneratedAt(item.generatedAt),
+            `${item.visitasCount} visita${item.visitasCount === 1 ? "" : "s"}`,
+          ]
             .filter(Boolean)
             .join(" · ")}
-        </Text>
-        <Text variant="bodySmall" style={styles.metaLine}>
-          {formatGeneratedAt(item.generatedAt)} · {item.visitasCount} visita
-          {item.visitasCount === 1 ? "" : "s"}
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color="#bdbdbd" />

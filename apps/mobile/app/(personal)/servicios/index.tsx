@@ -3,7 +3,6 @@ import {
   FlatList,
   Image,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
@@ -12,6 +11,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { Pastillas, type OpcionPastilla } from "@/components/ui/Pastillas";
 import type { ServicioListItem, ServiciosListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
@@ -35,8 +35,6 @@ function resumen(p: ServicioListItem): string {
   partes.push(TIPO_LABEL[p.tipo] ?? p.tipo);
   return partes.join(" · ");
 }
-
-type Filtro = { clave: string; etiqueta: string };
 
 /**
  * El catálogo: servicios y bienes.
@@ -98,12 +96,12 @@ export default function ProductosListScreen() {
     return r;
   }, [items, tipo, estado]);
 
-  const filtrosTipo: Filtro[] = [
+  const filtrosTipo: OpcionPastilla[] = [
     { clave: "", etiqueta: "Todos" },
     { clave: "SERVICIO", etiqueta: "Servicios" },
     { clave: "BIEN", etiqueta: "Bienes" },
   ];
-  const filtrosEstado: Filtro[] = [
+  const filtrosEstado: OpcionPastilla[] = [
     { clave: "", etiqueta: "Activos y borradores" },
     { clave: "ACTIVO", etiqueta: "Activos" },
     { clave: "BORRADOR", etiqueta: "Borradores" },
@@ -214,45 +212,6 @@ export default function ProductosListScreen() {
   );
 }
 
-/** Una fila de pastillas: el filtro de un teléfono. */
-function Pastillas({
-  opciones,
-  valor,
-  onElegir,
-}: {
-  opciones: Filtro[];
-  valor: string;
-  onElegir: (v: string) => void;
-}) {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.pastillas}
-    >
-      {opciones.map((o) => {
-        const elegida = valor === o.clave;
-        return (
-          <PressableScale
-            key={o.clave || "todos"}
-            onPress={() => onElegir(o.clave)}
-            style={[styles.pastilla, elegida && styles.pastillaElegida]}
-          >
-            <Text
-              style={[
-                styles.pastillaTexto,
-                elegida && styles.pastillaTextoElegida,
-              ]}
-            >
-              {o.etiqueta}
-            </Text>
-          </PressableScale>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
 /** Archivado, borrador o nada: activo es el caso normal y no se rotula. */
 function Estado({ item }: { item: ServicioListItem }) {
   if (item.archivadoEl) {
@@ -284,18 +243,6 @@ const styles = StyleSheet.create({
   buscador: { backgroundColor: "#fff", borderRadius: 12 },
   buscadorTexto: { fontSize: 15 },
 
-  pastillas: { gap: 8, paddingRight: 8 },
-  pastilla: {
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: tema.linea,
-  },
-  pastillaElegida: { backgroundColor: tema.verde50, borderColor: tema.verde100 },
-  pastillaTexto: { color: tema.texto2, fontSize: 13 },
-  pastillaTextoElegida: { color: tema.verde700, fontWeight: "600" },
 
   fila: {
     flexDirection: "row",

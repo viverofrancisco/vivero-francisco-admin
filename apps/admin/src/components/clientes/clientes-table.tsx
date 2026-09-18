@@ -34,7 +34,11 @@ import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
-import { nombreCliente, nombrePersona } from "@vivero/shared";
+import {
+  nombreCliente,
+  nombrePersona,
+  resumenDeCliente,
+} from "@vivero/shared";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Cliente {
@@ -68,20 +72,6 @@ function principal(c: Cliente) {
 
 function fullName(cliente: Cliente): string {
   return nombreCliente(cliente);
-}
-
-/**
- * El renglón de abajo en la lista de móvil. La empresa va primero cuando el
- * nombre de arriba es el de la persona —es lo que la tabla muestra en su
- * propia línea—, y después sector y teléfono, que es con lo que se lo ubica.
- */
-function resumen(c: Cliente): string {
-  const partes = [
-    nombrePersona(c) && c.empresa ? c.empresa : null,
-    principal(c)?.sector?.nombre ?? null,
-    c.telefono ?? null,
-  ].filter(Boolean);
-  return partes.length > 0 ? partes.join(" · ") : "Sin datos de contacto";
 }
 
 export function ClientesTable({
@@ -396,7 +386,7 @@ export function ClientesTable({
                 {fullName(cliente)}
               </span>
               <span className="block truncate text-xs font-medium text-muted-foreground">
-                {resumen(cliente)}
+                {resumenDeCliente(cliente)}
               </span>
             </span>
           </Link>

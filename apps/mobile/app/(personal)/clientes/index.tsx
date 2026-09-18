@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -13,8 +13,9 @@ import {
   Text,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, resumenDeCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
+import { Pastillas } from "@/components/ui/Pastillas";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -25,6 +26,13 @@ export default function ClientesListScreen() {
   const canCreate = role === "ADMIN" || role === "STAFF";
   const [items, setItems] = useState<ClienteListItem[]>([]);
   const [search, setSearch] = useState("");
+  /**
+   * El filtro por sector, el mismo que el portal. Las opciones salen de los
+   * clientes que ya llegaron —no de la tabla de sectores— así que no aparece un
+   * sector en el que nadie tiene una propiedad, que sería un filtro que
+   * siempre da vacío.
+   */
+  const [sector, setSector] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -58,6 +66,26 @@ export default function ClientesListScreen() {
     return () => clearTimeout(handle);
   }, [search, load]);
 
+  const sectores = useMemo(() => {
+    const vistos = new Map<string, string>();
+    for (const c of items) {
+      const s = c.propiedades[0]?.sector;
+      if (s && !vistos.has(s.nombre)) vistos.set(s.nombre, s.nombre);
+    }
+    return [
+      { clave: "", etiqueta: "Todos" },
+      ...[...vistos.keys()].sort().map((n) => ({ clave: n, etiqueta: n })),
+    ];
+  }, [items]);
+
+  const visibles = useMemo(
+    () =>
+      sector
+        ? items.filter((c) => c.propiedades[0]?.sector?.nombre === sector)
+        : items,
+    [items, sector]
+  );
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -69,7 +97,7 @@ export default function ClientesListScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={items}
+        data={visibles}
         keyExtractor={(c) => c.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -79,14 +107,20 @@ export default function ClientesListScreen() {
           />
         }
         ListHeaderComponent={
-          <Searchbar
-            placeholder="Buscar por nombre o teléfono"
-            value={search}
-            onChangeText={setSearch}
-            elevation={0}
-            style={styles.search}
-            inputStyle={styles.searchInput}
-          />
+          <View style={styles.cabecera}>
+            <Searchbar
+              placeholder="Buscar por nombre o teléfono"
+              value={search}
+              onChangeText={setSearch}
+              elevation={0}
+              style={styles.search}
+              inputStyle={styles.searchInput}
+            />
+            {/* Solo con más de un sector: con uno, el filtro no filtra nada. */}
+            {sectores.length > 2 ? (
+              <Pastillas opciones={sectores} valor={sector} onElegir={setSector} />
+            ) : null}
+          </View>
         }
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -138,15 +172,9 @@ function ClienteRow({
       .map((w) => w[0])
       .join("")
       .toUpperCase() || "?";
-  // De su primera propiedad: con varias, el sector de una sola sería mentira
-  // la mitad del tiempo, y la fila tiene lugar para una línea.
-  const subtitle = [
-    c.telefono,
-    c.propiedades[0]?.sector?.nombre,
-    c.propiedades[0]?.ciudad,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // La misma línea que la fila del portal: la empresa cuando arriba va el
+  // nombre de la persona, después el sector y el teléfono.
+  const subtitle = resumenDeCliente(c);
 
   return (
     <Pressable
@@ -175,10 +203,10 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   listContent: { padding: 16, paddingBottom: 96 },
 
+  cabecera: { gap: 8, marginBottom: 12 },
   search: {
     backgroundColor: "#f4f4f4",
     borderRadius: 12,
-    marginBottom: 12,
   },
   searchInput: { fontSize: 15 },
 
