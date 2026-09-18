@@ -135,17 +135,29 @@ function Estampa({ lat, lng }: { lat: number; lng: number }) {
           onError={() => setFallo(true)}
         />
       ) : null}
-      <View style={styles.pin}>
-        {/* El borde: el mismo pin, un poco más grande y blanco, debajo. Dos
-            iconos centrados en la misma caja dejan el de atrás asomando parejo
-            por todos lados, que es el contorno. Sin librería ni SVG. */}
-        <Ionicons
-          name="location"
-          size={LADO_PIN + 7}
-          color="#fff"
-          style={styles.pinBorde}
-        />
-        <Ionicons name="location" size={LADO_PIN} color={tema.rojo} />
+      <Pin />
+    </View>
+  );
+}
+
+/**
+ * El pin: una bola roja con aro blanco y un palito que baja hasta el punto.
+ *
+ * Dibujado con vistas y no con un icono. La gota de Ionicons, aun en rojo, se
+ * apoyaba sobre los techos de teja —que son de ese mismo color en media
+ * Samborondón— y ocupaba con relleno una superficie que tapaba la casa. Esta
+ * forma señala con la punta y deja ver lo que hay alrededor: casi todo lo que
+ * pinta es borde.
+ *
+ * El palito lleva su propio aro: por dentro rojo, con un píxel de blanco a cada
+ * lado. Sin eso desaparece sobre el césped, que es el fondo más común de todos.
+ */
+function Pin() {
+  return (
+    <View style={styles.pin}>
+      <View style={styles.bola} />
+      <View style={styles.palito}>
+        <View style={styles.palitoDentro} />
       </View>
     </View>
   );
@@ -205,7 +217,7 @@ const ZOOM = 17;
  * 44 porque ahora señala sobre una imagen con detalle: un pin grande tapa
  * justamente la casa que uno quiere ver.
  */
-const LADO_PIN = 34;
+const ALTO_PIN = 34;
 
 const styles = StyleSheet.create({
   tarjeta: {
@@ -235,20 +247,46 @@ const styles = StyleSheet.create({
   },
   pin: {
     alignItems: "center",
-    justifyContent: "center",
-    // Medio alto para arriba: lo que señala un pin es su **punta**, y centrando
-    // el dibujo la punta caía debajo del punto.
-    transform: [{ translateY: -LADO_PIN / 2 }],
+    // La punta del palito es lo que señala, así que el dibujo entero sube su
+    // mitad: centrado, el punto quedaba a la altura de la bola.
+    transform: [{ translateY: -ALTO_PIN / 2 }],
   },
-  pinBorde: {
-    position: "absolute",
-    // La sombra va en el contorno y no en el pin rojo: así se proyecta desde el
-    // borde de afuera, en vez de salir de abajo del blanco y ensuciarlo.
-    shadowColor: "#142819",
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+  bola: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: tema.rojo,
+    borderWidth: 3,
+    borderColor: "#fff",
+    // La sombra despega el pin de la foto: sin ella, sobre un techo claro el
+    // aro blanco se confunde con el fondo.
+    shadowColor: "#000",
+    shadowOpacity: 0.35,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
     elevation: 3,
+  },
+  palito: {
+    width: 5,
+    height: ALTO_PIN - 20 + 2,
+    // Se mete dos píxeles bajo la bola para que no se vea la costura.
+    marginTop: -2,
+    borderRadius: 2.5,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  palitoDentro: {
+    width: 3,
+    flex: 1,
+    marginTop: 1,
+    marginBottom: 1,
+    borderRadius: 1.5,
+    backgroundColor: tema.rojo,
   },
 
   pie: {
