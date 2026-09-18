@@ -44,12 +44,6 @@ export default function MasMenuScreen() {
       visible: isAdminOrStaff,
     },
     {
-      label: "Informes",
-      icon: "document-text-outline",
-      href: "/(personal)/informes",
-      visible: isAdminOrStaff,
-    },
-    {
       label: "Cuenta",
       icon: "settings-outline",
       href: "/(personal)/configuracion",

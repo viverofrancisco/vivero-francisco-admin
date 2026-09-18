@@ -1,4 +1,5 @@
 import { ZONA_ECUADOR } from "@/lib/fechas";
+import type { EstadoCobro } from "@vivero/shared";
 
 /** Formato de plata compartido por las pantallas de órdenes. */
 export const money = (n: number | string) =>
@@ -67,32 +68,6 @@ export const estadoVariant: Record<
  * del saldo y no se guarda aparte: cruzar los dos ejes en un solo enum pediría
  * un estado por combinación.
  */
-export type EstadoCobro =
-  | "SIN_COBRAR"
-  | "PARCIAL"
-  | "COBRADO"
-  | "SIN_SINCRONIZAR";
-
-export function estadoCobro(
-  total: number,
-  saldo: number | null | undefined
-): EstadoCobro {
-  // Sin saldo calculado no sabemos, y suponer "cobrada" sería el error caro.
-  // Lo emitido por el portal nace con el total como saldo, así que esto solo
-  // aparece en filas viejas.
-  if (saldo === null || saldo === undefined) return "SIN_SINCRONIZAR";
-  if (saldo <= 0.001) return "COBRADO";
-  if (saldo >= total - 0.001) return "SIN_COBRAR";
-  return "PARCIAL";
-}
-
-export const cobroLabel: Record<EstadoCobro, string> = {
-  SIN_COBRAR: "Sin cobrar",
-  PARCIAL: "Cobrado parcialmente",
-  COBRADO: "Cobrado",
-  SIN_SINCRONIZAR: "Sin sincronizar",
-};
-
 export const cobroVariant: Record<
   EstadoCobro,
   "default" | "secondary" | "outline" | "destructive"
@@ -102,3 +77,11 @@ export const cobroVariant: Record<
   COBRADO: "default",
   SIN_SINCRONIZAR: "outline",
 };
+
+/**
+ * La regla de cobro vive en `@vivero/shared` —la app muestra la misma fila— y
+ * se reexporta acá para no cambiar los veinte imports que ya la piden de este
+ * módulo, que es donde vive el resto del formato de una orden.
+ */
+export { estadoCobro, cobroLabel } from "@vivero/shared";
+export type { EstadoCobro } from "@vivero/shared";

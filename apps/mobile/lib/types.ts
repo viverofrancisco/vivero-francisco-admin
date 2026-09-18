@@ -348,3 +348,56 @@ export interface PersonalFicha {
 export interface PersonalListResponse {
   items: PersonalOption[];
 }
+
+// ──────────────────────────────────────────────
+// Órdenes (solo lectura desde la app)
+// ──────────────────────────────────────────────
+
+/**
+ * Una orden en la lista.
+ *
+ * `saldo` es el de su factura viva y es lo que dice si entró la plata: el
+ * estado de la orden (`CONFIRMADA`, `ANULADA`) es otro eje. `null` significa
+ * que nunca se sincronizó con el SRI, que no es lo mismo que cero.
+ */
+export interface OrdenListItem {
+  id: string;
+  numero: number;
+  fecha: string;
+  estado: string;
+  cliente: string;
+  clienteId: string;
+  propiedades: string[];
+  lineas: number;
+  total: number;
+  saldo: number | null;
+}
+
+export interface OrdenDetalle {
+  id: string;
+  numero: number;
+  fecha: string;
+  estado: string;
+  notas: string | null;
+  cliente: { id: string; nombre: string; telefono: string | null };
+  propiedades: string[];
+  visitas: { id: string; numero: number }[];
+  suscripcion: { id: string; numero: number } | null;
+  lineas: {
+    id: string;
+    descripcion: string;
+    cantidad: number;
+    precioUnitario: number;
+    total: number;
+  }[];
+  subtotal: number;
+  iva: number;
+  total: number;
+  factura: {
+    id: string;
+    numero: string;
+    estado: string;
+    saldo: number | null;
+    fechaEmision: string;
+  } | null;
+}

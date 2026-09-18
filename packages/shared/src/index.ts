@@ -5,4 +5,5 @@ export * from "./servicio";
 export * from "./cliente";
 export * from "./propiedad";
 export * from "./fecha";
+export * from "./orden";
 export * from "./chat";

@@ -62,9 +62,25 @@ export default function PersonalTabsLayout() {
           ),
         }}
       />
-      {/* Hidden tabs — accessible via the "Más" menu so the tab bar stays
-          short. `tabBarItemStyle: { display: "none" }` keeps the route
-          navigable while removing it from the bar. */}
+      {/* Órdenes e Informes van **en la barra**: son dos de las cosas que la
+          oficina abre todos los días —cuánto se le debe a quién, qué informe
+          salió— y estaban a dos toques adentro de Más, que es donde se guarda
+          lo que se usa de vez en cuando. */}
+      <Tabs.Screen
+        name="ordenes"
+        options={{
+          title: "Órdenes",
+          href: isAdminOrStaff ? undefined : null,
+          tabBarItemStyle: isAdminOrStaff ? undefined : { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="receipt-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* El resto vive en el menú de Más, para que la barra no pase de cinco:
+          `tabBarItemStyle: { display: "none" }` deja la ruta navegable y la
+          saca de la barra. */}
       <Tabs.Screen
         name="servicios"
         options={{
@@ -120,7 +136,7 @@ export default function PersonalTabsLayout() {
         options={{
           title: "Informes",
           href: isAdminOrStaff ? undefined : null,
-          tabBarItemStyle: { display: "none" },
+          tabBarItemStyle: isAdminOrStaff ? undefined : { display: "none" },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="document-text-outline" size={size} color={color} />
           ),
