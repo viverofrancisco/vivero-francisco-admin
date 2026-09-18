@@ -813,12 +813,17 @@ const styles = StyleSheet.create({
   /** Lo que va a pasar al guardar, en chico y debajo del nombre. */
   filaPendiente: { color: tema.texto3, fontSize: 12, marginTop: 1 },
   filaNueva: {
-    color: tema.verde,
+    // Rojo, como "Elegir tarea": las dos líneas hablan de la misma foto y de lo
+    // mismo —que todavía no está guardada— así que dicho en dos colores
+    // parecían dos avisos distintos.
+    color: tema.rojo,
     fontSize: 12,
     fontWeight: "600",
     marginTop: 1,
   },
-  faltaTarea: { color: tema.ambarTexto, fontWeight: "600" },
+  // Rojo y no ámbar: es lo único que impide guardar, y el ámbar de la casa se
+  // usa para "mirá esto", no para "esto te frena".
+  faltaTarea: { color: tema.rojo, fontWeight: "600" },
   miniaturaCaja: { width: 52, height: 52, borderRadius: 8, overflow: "hidden" },
   miniatura: { width: "100%", height: "100%", backgroundColor: "#eee" },
   video: {
