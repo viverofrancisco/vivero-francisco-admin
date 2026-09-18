@@ -353,6 +353,54 @@ export function VisitaDetail({
           faltantes={faltantes}
         />
 
+        {/* Adónde hay que ir. El mapa solo si la propiedad tiene su punto: sin
+            pin sería un rectángulo gris avisando de un dato que no se arregla
+            desde acá. *Llegar* abre Google Maps en el punto exacto —por
+            coordenadas y no por la dirección escrita, que adentro de una
+            urbanización nombra doscientas casas—. */}
+        <Card className="gap-0 overflow-hidden rounded-2xl py-0">
+          {tienePunto ? (
+            <MapaUbicacion
+              lat={visita.propiedad.lat!}
+              lng={visita.propiedad.lng!}
+              // Más alto que en la columna angosta: acá hay ancho de sobra y
+              // una franja baja desperdicia el lugar donde se reconoce la casa.
+              className="h-[240px]"
+            />
+          ) : null}
+          <CardContent className="flex items-center gap-3 p-[18px]">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-bold">
+                {direccionDePropiedad(visita.propiedad) ||
+                  visita.propiedad.nombre}
+              </p>
+              <p className="truncate text-[12.5px] text-muted-foreground">
+                {zonaDePropiedad(visita.propiedad) ||
+                  (tienePunto
+                    ? visita.propiedad.nombre
+                    : "Sin ubicación en el mapa")}
+              </p>
+            </div>
+            {tienePunto ? (
+              <a
+                href={enlaceParaLlegar(
+                  visita.propiedad.lat!,
+                  visita.propiedad.lng!
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-none flex-col items-center gap-1 text-[12px] font-semibold text-green-700"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary transition-colors hover:bg-green-100">
+                  <Navigation className="h-[18px] w-[18px]" />
+                </span>
+                Llegar
+              </a>
+            ) : null}
+          </CardContent>
+        </Card>
+
+
 
         {plan && (
           <TarjetaSeccion titulo="Suscripción">
@@ -449,50 +497,6 @@ export function VisitaDetail({
                 </span>
               </span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Adónde hay que ir. El mapa solo si la propiedad tiene su punto: sin
-            pin sería un rectángulo gris avisando de un dato que no se arregla
-            desde acá. *Llegar* abre Google Maps en el punto exacto —por
-            coordenadas y no por la dirección escrita, que adentro de una
-            urbanización nombra doscientas casas—. */}
-        <Card className="gap-0 overflow-hidden rounded-2xl py-0">
-          {tienePunto ? (
-            <MapaUbicacion
-              lat={visita.propiedad.lat!}
-              lng={visita.propiedad.lng!}
-            />
-          ) : null}
-          <CardContent className="flex items-center gap-3 p-[18px]">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[14px] font-bold">
-                {direccionDePropiedad(visita.propiedad) ||
-                  visita.propiedad.nombre}
-              </p>
-              <p className="truncate text-[12.5px] text-muted-foreground">
-                {zonaDePropiedad(visita.propiedad) ||
-                  (tienePunto
-                    ? visita.propiedad.nombre
-                    : "Sin ubicación en el mapa")}
-              </p>
-            </div>
-            {tienePunto ? (
-              <a
-                href={enlaceParaLlegar(
-                  visita.propiedad.lat!,
-                  visita.propiedad.lng!
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-none flex-col items-center gap-1 text-[12px] font-semibold text-green-700"
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary transition-colors hover:bg-green-100">
-                  <Navigation className="h-[18px] w-[18px]" />
-                </span>
-                Llegar
-              </a>
-            ) : null}
           </CardContent>
         </Card>
 
