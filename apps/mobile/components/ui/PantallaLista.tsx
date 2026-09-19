@@ -38,6 +38,7 @@ export interface GrupoDeFiltro {
 export function PantallaLista({
   titulo,
   accion,
+  barra,
   onCrear,
   etiquetaCrear = "Crear",
   busqueda,
@@ -49,6 +50,15 @@ export function PantallaLista({
   children,
 }: {
   titulo: string;
+  /**
+   * Reemplaza al título y a la búsqueda mientras hay algo sin confirmar.
+   *
+   * Es lo que hace la ficha de la visita con las fotos sin guardar: el
+   * encabezado **es** la confirmación, porque es lo único que no se va
+   * scrolleando. Una barra flotando abajo tapa la última fila —y la última
+   * fila es justo la que alguien acaba de mover hasta ahí—.
+   */
+  barra?: React.ReactNode;
   /** Lo que va a la derecha del título: un botón, un menú. */
   accion?: React.ReactNode;
   /**
@@ -88,6 +98,8 @@ export function PantallaLista({
       {/* Fijo: el título, la búsqueda y el botón de filtros se quedan mientras
           la lista corre debajo. */}
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
+        {barra ?? (
+          <>
         <View style={styles.tituloFila}>
           <Text style={styles.titulo}>{titulo}</Text>
           <View style={styles.acciones}>
@@ -166,6 +178,8 @@ export function PantallaLista({
             ) : null}
           </View>
         ) : null}
+          </>
+        )}
       </View>
 
       <View style={styles.cuerpo}>{children}</View>

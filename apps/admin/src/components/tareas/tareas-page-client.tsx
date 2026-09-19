@@ -255,63 +255,73 @@ export function TareasPageClient({
 
   return (
     <>
-      <PageHeader
-        title="Tareas"
-        actions={[
-          {
-            label: "Nueva tarea",
-            icon: "plus",
-            onClick: () => setAbierta("nueva"),
-            primary: true,
-          },
-          // Solo en móvil y solo cuando hay algo que acomodar: en escritorio
-          // las casillas ya están en su columna, y en alfabético o con un
-          // filtro puesto no hay nada que mover.
-          ...(sePuedeArrastrar && !seleccionandoMovil && lista.length > 0
-            ? [
-                {
-                  label: "Seleccionar tareas",
-                  onClick: () => setSeleccionandoMovil(true),
-                  soloMovil: true,
-                } as const,
-              ]
-            : []),
-        ]}
-      />
+      {/* Con un acomodo a medio hacer, el encabezado **es** la barra de
+          guardado: Cancelar a la izquierda y Guardar a la derecha. Estaba
+          abajo, en la fila de filtros, y ahí empujaba la lista hacia abajo
+          justo cuando alguien acababa de soltar una fila. */}
+      {hayCambios ? (
+        <div className="flex flex-none items-center justify-between gap-3">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setLista(tareas);
+              setMarcadas([]);
+            }}
+            disabled={guardandoOrden}
+          >
+            Cancelar
+          </Button>
+          <span className="hidden text-sm font-medium text-muted-foreground sm:block">
+            Orden sin guardar
+          </span>
+          <Button onClick={guardarOrden} disabled={guardandoOrden}>
+            {guardandoOrden ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      ) : (
+        <PageHeader
+          title="Tareas"
+          actions={[
+            {
+              label: "Nueva tarea",
+              icon: "plus",
+              onClick: () => setAbierta("nueva"),
+              primary: true,
+            },
+            // Solo en móvil y solo cuando hay algo que acomodar: en escritorio
+            // las casillas ya están en su columna, y en alfabético o con un
+            // filtro puesto no hay nada que mover.
+            ...(sePuedeArrastrar && !seleccionandoMovil && lista.length > 0
+              ? [
+                  {
+                    label: "Seleccionar tareas",
+                    onClick: () => setSeleccionandoMovil(true),
+                    soloMovil: true,
+                  } as const,
+                ]
+              : []),
+          ]}
+        />
+      )}
 
-      <p className="flex-none text-sm text-muted-foreground">
-        Lo que se hace en una visita. El personal marca de esta lista las tareas
-        que hizo al cerrarla, y al agendar se puede exigir que alguna se haga.
-      </p>
+      {/* Solo en escritorio: en el teléfono esas tres líneas empujaban la
+          lista —lo que se vino a ver— media pantalla hacia abajo, y explican
+          algo que se entiende mirando las filas. */}
+      {hayCambios ? null : (
+        <p className="hidden flex-none text-sm text-muted-foreground md:block">
+          Lo que se hace en una visita. El personal marca de esta lista las
+          tareas que hizo al cerrarla, y al agendar se puede exigir que alguna
+          se haga.
+        </p>
+      )}
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
-        {/* Con un acomodo a medio hacer, esta fila **se convierte** en la barra
-            de guardado en vez de aparecer una segunda debajo: el buscador ahí no
-            sirve —filtrar apaga el arrastre— y el selector de orden ya está
-            deshabilitado, así que los dos controles que reemplaza son los dos
-            que no se pueden usar. De paso la tabla no se corre hacia abajo justo
-            cuando alguien está apuntando a una fila. */}
-        {hayCambios ? (
-          <div className="flex flex-none flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2">
-            <p className="text-sm font-medium">Orden sin guardar</p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setLista(tareas);
-                  setMarcadas([]);
-                }}
-                disabled={guardandoOrden}
-              >
-                Cancelar
-              </Button>
-              <Button size="sm" onClick={guardarOrden} disabled={guardandoOrden}>
-                {guardandoOrden ? "Guardando..." : "Guardar orden"}
-              </Button>
-            </div>
-          </div>
-        ) : (
+        {/* El buscador y el selector de orden. Con un acomodo a medio hacer no
+            se ven: filtrar apaga el arrastre y el selector queda deshabilitado,
+            así que los dos controles que desaparecen son justo los dos que no
+            se podrían usar —y su lugar lo ocupa la lista, que es lo que uno
+            está mirando—. */}
+        {hayCambios ? null : (
           <div className="flex flex-none flex-wrap items-center gap-3">
             <div className="relative min-w-0 max-w-sm flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

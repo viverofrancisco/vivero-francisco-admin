@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import ReorderableList, { reorderItems } from "react-native-reorderable-list";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -101,14 +102,15 @@ export default function TareasListScreen() {
     }
   }
 
-  function mover(desde: number, hacia: number) {
-    const base = acomodo ?? items;
-    if (hacia < 0 || hacia >= base.length) return;
-    const copia = [...base];
-    const [fila] = copia.splice(desde, 1);
-    copia.splice(hacia, 0, fila);
-    Haptics.selectionAsync();
-    setAcomodo(copia);
+  /**
+   * Soltar una fila mueve **solo el estado local**.
+   *
+   * Es la misma regla que en el portal: acomodar diecisiete filas y que cada
+   * movimiento se escriba deja sin manera de arrepentirse. Lo que se guarda lo
+   * decide el botón de arriba.
+   */
+  function alSoltar(desde: number, hasta: number) {
+    setAcomodo(reorderItems(acomodo ?? items, desde, hasta));
   }
 
   async function guardarOrden() {
@@ -151,6 +153,28 @@ export default function TareasListScreen() {
   return (
     <PantallaLista
       titulo="Tareas"
+      barra={
+        acomodo ? (
+          <View style={styles.barra}>
+            <PressableScale
+              onPress={() => setAcomodo(null)}
+              disabled={guardando}
+              style={styles.barraBoton}
+            >
+              <Text style={styles.cancelarTexto}>Cancelar</Text>
+            </PressableScale>
+            <PressableScale
+              onPress={guardarOrden}
+              disabled={guardando}
+              style={[styles.barraBoton, styles.guardar]}
+            >
+              <Text style={styles.guardarTexto}>
+                {guardando ? "Guardando…" : "Guardar"}
+              </Text>
+            </PressableScale>
+          </View>
+        ) : undefined
+      }
       onCrear={acomodo ? undefined : () => router.push("/(personal)/tareas/nueva")}
       etiquetaCrear="Nueva tarea"
       accion={
@@ -173,14 +197,22 @@ export default function TareasListScreen() {
           <ActivityIndicator size="large" />
         </View>
       ) : (
-        <FlatList
+        <Lista
+          arrastrable={sePuedeAcomodar}
           data={visibles}
-          keyExtractor={(t) => t.id}
+          keyExtractor={(t: Tarea) => t.id}
           refreshControl={
             <RefreshControl
               refreshing={refrescando}
               onRefresh={() => cargar()}
             />
+          }
+          // 300 ms, los mismos que el portal: mantener apretado agarra la
+          // fila, que es como reordena el sistema operativo. Menos que eso y
+          // un scroll rápido se convierte en un arrastre.
+          panActivateAfterLongPress={300}
+          onReorder={({ from, to }: { from: number; to: number }) =>
+            alSoltar(from, to)
           }
           ListHeaderComponent={
             error ? <Text style={styles.error}>{error}</Text> : null
@@ -197,84 +229,15 @@ export default function TareasListScreen() {
               </Text>
             </View>
           }
-          renderItem={({ item, index }) => (
-            <View style={FILA_LISTA}>
-              {sePuedeAcomodar ? (
-                <Text style={styles.posicion}>{index + 1}</Text>
-              ) : null}
-              <PressableScale
-                onPress={() => router.push(`/(personal)/tareas/${item.id}`)}
-                estiloExterno={styles.crece}
-                style={styles.filaTexto}
-              >
-                <Text variant="bodyLarge" style={styles.nombre}>
-                  {item.nombre}
-                </Text>
-                {item.descripcion ? (
-                  <Text
-                    variant="bodySmall"
-                    style={styles.descripcion}
-                    numberOfLines={1}
-                  >
-                    {item.descripcion}
-                  </Text>
-                ) : null}
-              </PressableScale>
-
-              {sePuedeAcomodar ? (
-                <View style={styles.flechas}>
-                  <PressableScale
-                    onPress={() => mover(index, index - 1)}
-                    disabled={index === 0}
-                    style={[styles.flecha, index === 0 && styles.flechaApagada]}
-                    accessibilityLabel="Subir"
-                  >
-                    <Ionicons name="chevron-up" size={18} color={tema.texto2} />
-                  </PressableScale>
-                  <PressableScale
-                    onPress={() => mover(index, index + 1)}
-                    disabled={index === visibles.length - 1}
-                    style={[
-                      styles.flecha,
-                      index === visibles.length - 1 && styles.flechaApagada,
-                    ]}
-                    accessibilityLabel="Bajar"
-                  >
-                    <Ionicons name="chevron-down" size={18} color={tema.texto2} />
-                  </PressableScale>
-                </View>
-              ) : (
-                <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
-              )}
-            </View>
+          renderItem={({ item, index }: { item: Tarea; index: number }) => (
+            <Fila
+              tarea={item}
+              posicion={sePuedeAcomodar ? index + 1 : null}
+              onAbrir={() => router.push(`/(personal)/tareas/${item.id}`)}
+            />
           )}
         />
       )}
-
-      {/* Mientras hay un acomodo sin guardar, la barra es lo único que importa:
-          se queda abajo, tapando la lista lo mínimo, hasta que se decida. */}
-      {acomodo ? (
-        <View style={styles.barra}>
-          <PressableScale
-            onPress={() => setAcomodo(null)}
-            disabled={guardando}
-            estiloExterno={styles.mitad}
-            style={styles.cancelar}
-          >
-            <Text style={styles.cancelarTexto}>Cancelar</Text>
-          </PressableScale>
-          <PressableScale
-            onPress={guardarOrden}
-            disabled={guardando}
-            estiloExterno={styles.mitad}
-            style={styles.guardar}
-          >
-            <Text style={styles.guardarTexto}>
-              {guardando ? "Guardando…" : "Guardar orden"}
-            </Text>
-          </PressableScale>
-        </View>
-      ) : null}
 
       <HojaInferior
         visible={eligiendoModo}
@@ -311,6 +274,81 @@ export default function TareasListScreen() {
   );
 }
 
+/**
+ * La lista, arrastrable o no.
+ *
+ * `ReorderableList` solo cuando se puede acomodar: fuera de Personalizado —o
+ * con una búsqueda puesta— mantener apretado no tiene que despegar nada, y una
+ * lista que a veces se mueve y a veces no confunde más que una que nunca lo
+ * hace.
+ */
+function Lista({
+  arrastrable,
+  onReorder,
+  panActivateAfterLongPress,
+  ...props
+}: {
+  arrastrable: boolean;
+  onReorder: (e: { from: number; to: number }) => void;
+  panActivateAfterLongPress: number;
+} & React.ComponentProps<typeof FlatList<Tarea>>) {
+  if (!arrastrable) return <FlatList<Tarea> {...props} />;
+  return (
+    <ReorderableList<Tarea>
+      {...props}
+      data={props.data as Tarea[]}
+      renderItem={props.renderItem as never}
+      onReorder={onReorder}
+      panActivateAfterLongPress={panActivateAfterLongPress}
+    />
+  );
+}
+
+/**
+ * Una fila. Tocarla abre la tarea; mantenerla apretada la levanta para
+ * moverla, cuando la lista lo permite.
+ *
+ * El gesto largo lo maneja la lista: `panActivateAfterLongPress` levanta la
+ * fila que está bajo el dedo, así que acá no hay nada que enganchar. Cuando la
+ * lista no es arrastrable, mantener apretado no hace nada.
+ */
+function Fila({
+  tarea,
+  posicion,
+  onAbrir,
+}: {
+  tarea: Tarea;
+  posicion: number | null;
+  onAbrir: () => void;
+}) {
+  return (
+    <View style={FILA_LISTA}>
+      {posicion !== null ? (
+        <Text style={styles.posicion}>{posicion}</Text>
+      ) : null}
+      <PressableScale
+        onPress={onAbrir}
+        estiloExterno={styles.crece}
+        style={styles.filaTexto}
+      >
+        <Text variant="bodyLarge" style={styles.nombre}>
+          {tarea.nombre}
+        </Text>
+        {tarea.descripcion ? (
+          <Text variant="bodySmall" style={styles.descripcion} numberOfLines={1}>
+            {tarea.descripcion}
+          </Text>
+        ) : null}
+      </PressableScale>
+      {posicion !== null ? (
+        <Ionicons name="reorder-three" size={22} color={tema.texto3} />
+      ) : (
+        <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
   crece: { flex: 1 },
@@ -334,47 +372,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  flechas: { flexDirection: "row", gap: 2 },
-  flecha: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: tema.lienzo,
-  },
-  flechaApagada: { opacity: 0.35 },
-
+  /* La barra ocupa el lugar del título: Cancelar a la izquierda y Guardar a la
+     derecha, que es donde el pulgar espera cada uno. */
   barra: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     flexDirection: "row",
-    gap: 12,
-    padding: 12,
-    backgroundColor: tema.superficie,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: tema.linea,
-  },
-  mitad: { flex: 1 },
-  cancelar: {
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 13,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: tema.linea,
+    justifyContent: "space-between",
+    minHeight: 36,
   },
-  cancelarTexto: { color: tema.texto2, fontWeight: "600" },
-  guardar: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 13,
-    borderRadius: 12,
-    backgroundColor: tema.verde,
+  barraBoton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
   },
-  guardarTexto: { color: "#fff", fontWeight: "600" },
+  cancelarTexto: { color: tema.texto2, fontWeight: "600", fontSize: 15 },
+  guardar: { backgroundColor: tema.verde },
+  guardarTexto: { color: "#fff", fontWeight: "600", fontSize: 15 },
 
   hoja: { paddingHorizontal: 20, paddingBottom: 12, gap: 8 },
   hojaTitulo: { fontSize: 18, fontWeight: "700", color: tema.texto },
