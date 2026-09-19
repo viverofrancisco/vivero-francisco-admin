@@ -259,7 +259,25 @@ export async function softDeleteTarea(viewer: Viewer, id: string) {
  *
  * Lo que no esté en `ids` se queda como está: no es una eliminación encubierta.
  */
-export async function reordenarTareas(viewer: Viewer, ids: string[]) {
+/**
+ * Guarda el acomodo a mano y, en el mismo viaje, con qué modo se muestra.
+ *
+ * El modo viaja acá y no en una segunda llamada porque en la pantalla es **una
+ * sola decisión**: se arrastran cinco filas, se elige cómo se ve la lista y se
+ * confirma una vez. Dos requests dejarían la puerta abierta a que el segundo
+ * falle y quede guardado medio cambio.
+ *
+ * Por omisión es `PERSONALIZADO`, que es lo que quiso quien arrastró. Pero se
+ * acepta un alfabético: acomodar a mano y mostrar A–Z no se contradicen —
+ * `Tarea.orden` guarda el acomodo igual, intacto, y volver a Personalizado lo
+ * muestra— y es justo lo que alguien hace cuando ordena la lista a mano para
+ * más adelante.
+ */
+export async function reordenarTareas(
+  viewer: Viewer,
+  ids: string[],
+  modo: OrdenTareas = "PERSONALIZADO"
+) {
   ensureAdmin(viewer);
   if (ids.length === 0) return;
 
@@ -278,13 +296,12 @@ export async function reordenarTareas(viewer: Viewer, ids: string[]) {
         data: { orden: (idx + 1) * 10, updatedById: viewer.id },
       })
     ),
-    // Arrastrar **es** elegir el orden personalizado. Guardar las posiciones y
-    // seguir mostrando la lista alfabética dejaría el acomodo invisible, y
-    // quien arrastró vería la fila volver a su lugar.
+    // El modo, en la misma transacción: o se guardan las dos cosas o no se
+    // guarda ninguna.
     prisma.empresaConfig.upsert({
       where: { id: "default" },
-      create: { id: "default", tareasOrden: "PERSONALIZADO" },
-      update: { tareasOrden: "PERSONALIZADO" },
+      create: { id: "default", tareasOrden: modo },
+      update: { tareasOrden: modo },
     }),
   ]);
 }

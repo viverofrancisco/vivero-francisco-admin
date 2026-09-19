@@ -12,12 +12,17 @@ import {
  *
  * Con dos pantallas moviendo al mismo tiempo, "subí esta" deja dos tareas en el
  * mismo lugar; mandando toda la lista, la última en guardar define un orden
- * completo y coherente. Y guardar acomoda además el modo en PERSONALIZADO: es
- * lo que acaba de elegir quien movió las filas, y guardar posiciones que la
- * pantalla ordena alfabéticamente sería escribir algo que no se ve.
+ * completo y coherente. Viaja además el modo —por omisión PERSONALIZADO, que es
+ * lo que quiso quien movió las filas—, así acomodar y elegir cómo se ve la
+ * lista se guardan juntos o no se guarda ninguno. Ver `reordenarTareas`.
  */
 const reordenarSchema = z.object({
   ids: z.array(z.string().min(1)).min(1).max(500),
+  /**
+   * Con qué modo queda la lista. Viaja acá porque en la pantalla es una sola
+   * decisión —acomodar y elegir cómo se ve— y se confirma de una.
+   */
+  modo: z.enum(["PERSONALIZADO", "ALFABETICO_AZ", "ALFABETICO_ZA"]).optional(),
 });
 
 export async function POST(request: Request) {
@@ -31,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
   try {
-    await reordenarTareas(viewerFromMobileUser(userOrResponse), parsed.data.ids);
+    await reordenarTareas(viewerFromMobileUser(userOrResponse), parsed.data.ids, parsed.data.modo);
     return NextResponse.json({ ok: true });
   } catch (error) {
     return serviceErrorResponse(error);

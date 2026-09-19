@@ -41,16 +41,13 @@ import {
 } from "@/components/shared/table-pagination";
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
-import {
-  ACCION_BARRA_MOVIL,
-  BarraSeleccionMovil,
-} from "@/components/shared/barra-seleccion-movil";
-import { GripVertical, Search } from "lucide-react";
+import { ArrowDownUp, ChevronRight, GripVertical, Search } from "lucide-react";
 import { useFiltroUrl } from "@/lib/filtros-url";
 import { toast } from "sonner";
 import { TareaForm } from "./tarea-form";
-import { MoverSeleccion, MoverSeleccionMovil } from "./mover-seleccion";
+import { MoverSeleccion } from "./mover-seleccion";
 import { SelectorOrden } from "./selector-orden";
+import { OrdenarTareasMovil } from "./ordenar-tareas-movil";
 import {
   moverEnOrden,
   ordenarTareas,
@@ -103,12 +100,8 @@ export function TareasPageClient({
   const [guardandoOrden, setGuardandoOrden] = useState(false);
   /** Ids marcados para mover de a varios. Solo existe en orden personalizado. */
   const [marcadas, setMarcadas] = useState<string[]>([]);
-  /**
-   * Solo en el teléfono. En escritorio las casillas ya están en su columna;
-   * acá no hay dónde ponerlas sin gastar ancho en todas las filas para siempre,
-   * así que son un modo que se prende desde el ⋯ del encabezado.
-   */
-  const [seleccionandoMovil, setSeleccionandoMovil] = useState(false);
+  /** La pantalla de ordenar del teléfono. En escritorio se ordena en la tabla. */
+  const [ordenando, setOrdenando] = useState(false);
 
   // Se resincroniza **durante el render**, comparando contra lo último que
   // llegó, y no con un `useEffect`: un efecto pinta primero la lista vieja y la
@@ -122,7 +115,6 @@ export function TareasPageClient({
     setPersonalizado(ordenarTareas(tareas, "PERSONALIZADO"));
     setModo(modoOrden);
     setMarcadas([]);
-    setSeleccionandoMovil(false);
   }
 
   /** Lo que se ve: el acomodo a mano, o la lista alfabética del modo elegido. */
@@ -132,12 +124,13 @@ export function TareasPageClient({
   );
 
   /*
-   * El acomodo cuenta como cambio solo en Personalizado: con un alfabético en
-   * pantalla, guardar posiciones que nadie está viendo sería escribir algo
-   * invisible. Se queda en estado local igual, por si se vuelve.
+   * El acomodo cuenta como cambio **aunque en pantalla haya un alfabético**:
+   * acomodar a mano y mostrar A–Z no se contradicen —`Tarea.orden` guarda el
+   * acomodo igual y volver a Personalizado lo muestra—, así que armar la lista
+   * a mano y dejarla mostrándose por nombre es una cosa que alguien quiere
+   * hacer, y las dos se guardan con el mismo botón.
    */
-  const cambioDeOrden =
-    modo === "PERSONALIZADO" && !mismosIds(personalizado, ordenGuardado);
+  const cambioDeOrden = !mismosIds(personalizado, ordenGuardado);
   const hayCambios = modo !== modoOrden || cambioDeOrden;
   const todasMarcadas = lista.length > 0 && marcadas.length === lista.length;
 
@@ -226,9 +219,9 @@ export function TareasPageClient({
    * Un solo *Guardar* para las dos cosas, porque son una sola decisión: cómo se
    * ve la lista.
    *
-   * Acomodar a mano **es** elegir Personalizado —`reordenarTareas` pone el modo
-   * en el mismo movimiento—, así que cuando hay acomodo alcanza con mandarlo; si
-   * lo único que cambió es el modo, va el modo.
+   * Un solo request en los dos casos: `reordenarTareas` guarda el acomodo y el
+   * modo en la misma transacción, así que cuando hay acomodo va todo por ahí; si
+   * lo único que cambió es el modo, va el modo solo.
    */
   async function guardarOrden() {
     setGuardandoOrden(true);
@@ -237,7 +230,10 @@ export function TareasPageClient({
         ? await fetch("/api/tareas/reordenar", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ids: personalizado.map((t) => t.id) }),
+            body: JSON.stringify({
+              ids: personalizado.map((t) => t.id),
+              modo,
+            }),
           })
         : await fetch("/api/tareas/orden", {
             method: "PUT",
@@ -268,10 +264,7 @@ export function TareasPageClient({
   function cambiarModo(nuevo: ModoOrdenTareas) {
     setModo(nuevo);
     // Marcar sirve para mover, y mover solo existe en Personalizado.
-    if (nuevo !== "PERSONALIZADO") {
-      setMarcadas([]);
-      setSeleccionandoMovil(false);
-    }
+    if (nuevo !== "PERSONALIZADO") setMarcadas([]);
   }
 
   const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
@@ -298,7 +291,6 @@ export function TareasPageClient({
               setPersonalizado(ordenGuardado);
               setModo(modoOrden);
               setMarcadas([]);
-              setSeleccionandoMovil(false);
             }}
             disabled={guardandoOrden}
           >
@@ -321,18 +313,6 @@ export function TareasPageClient({
               onClick: () => setAbierta("nueva"),
               primary: true,
             },
-            // Solo en móvil y solo cuando hay algo que acomodar: en escritorio
-            // las casillas ya están en su columna, y en alfabético o con un
-            // filtro puesto no hay nada que mover.
-            ...(sePuedeArrastrar && !seleccionandoMovil && lista.length > 0
-              ? [
-                  {
-                    label: "Seleccionar tareas",
-                    onClick: () => setSeleccionandoMovil(true),
-                    soloMovil: true,
-                  } as const,
-                ]
-              : []),
           ]}
         />
       )}
@@ -363,18 +343,32 @@ export function TareasPageClient({
                 setBusqueda(e.target.value);
                 setPage(1);
                 // Con un filtro puesto no se puede mover nada, así que un
-                // contador de seleccionadas quedaría colgado sin acción.
+                // contador de seleccionadas quedaría colgado sin acción. Lo
+                // acomodado hasta acá se queda: sigue estando sin guardar.
                 setMarcadas([]);
-                setSeleccionandoMovil(false);
               }}
               className="pl-9"
             />
           </div>
           <SelectorOrden value={modo} onChange={cambiarModo} />
+          {/* En el teléfono el orden no es un desplegable: abre la pantalla de
+              ordenar, que es donde están el tipo de orden, las manijas y las
+              casillas. */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="flex-none md:hidden"
+            aria-label="Ordenar tareas"
+            onClick={() => setOrdenando(true)}
+          >
+            <ArrowDownUp className="h-4 w-4" />
+          </Button>
         </div>
 
+        {/* Solo en escritorio: en el teléfono ordenar vive en su propia
+            pantalla, que no tiene buscador, así que filtrar acá no apaga nada. */}
         {modo === "PERSONALIZADO" && busqueda.trim() ? (
-          <p className="flex-none text-xs text-muted-foreground">
+          <p className="hidden flex-none text-xs text-muted-foreground md:block">
             Limpia la búsqueda para poder reordenar arrastrando.
           </p>
         ) : null}
@@ -509,68 +503,36 @@ export function TareasPageClient({
           />
         </div>
 
-        {/* Móvil: un toque abre la tarea; mantener apretado la agarra para
-            moverla, que es como reordena el teléfono. */}
-        <DndContext
-          sensors={sensores}
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis]}
-          onDragEnd={alSoltar}
+        {/* En el teléfono la lista es una lista: un toque abre la tarea.
+            Ordenar tiene su propia pantalla, que abre el botón de al lado del
+            buscador — ahí entran el tipo de orden, las manijas y las casillas,
+            sin pelearse con el encabezado. */}
+        <ListaMovil
+          vacia={filtradas.length === 0}
+          mensajeVacio={vacio}
+          hayMas={hayMas}
+          cargando={cargando}
+          centinela={centinela}
         >
-          <ListaMovil
-            vacia={filtradas.length === 0}
-            mensajeVacio={vacio}
-            hayMas={hayMas}
-            cargando={cargando}
-            centinela={centinela}
-          >
-            <SortableContext
-              items={enLista.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {enLista.map((t) => (
-                <FilaTareaMovil
-                  key={t.id}
-                  tarea={t}
-                  // Seleccionando no se arrastra: el gesto es el mismo —el dedo
-                  // apoyado— y tocar tiene que marcar, sin que a los 300 ms la
-                  // fila se despegue sola.
-                  arrastrable={sePuedeArrastrar && !seleccionandoMovil}
-                  seleccionando={seleccionandoMovil}
-                  marcada={marcadas.includes(t.id)}
-                  onAlternar={() =>
-                    setMarcadas((actuales) =>
-                      actuales.includes(t.id)
-                        ? actuales.filter((id) => id !== t.id)
-                        : [...actuales, t.id]
-                    )
-                  }
-                  onAbrir={() => setAbierta(t)}
-                />
-              ))}
-            </SortableContext>
-            {/* La barra flota sobre la lista, así que sin esto tapa la última
-                fila y no hay manera de marcarla. */}
-            {seleccionandoMovil ? <div className="h-16" aria-hidden /> : null}
-          </ListaMovil>
-        </DndContext>
+          {enLista.map((t) => (
+            <FilaTareaMovil key={t.id} tarea={t} onAbrir={() => setAbierta(t)} />
+          ))}
+        </ListaMovil>
       </div>
 
-      {seleccionandoMovil ? (
-        <BarraSeleccionMovil
-          cuantas={marcadas.length}
-          onSalir={() => {
-            setSeleccionandoMovil(false);
-            setMarcadas([]);
+      {ordenando ? (
+        <OrdenarTareasMovil
+          abierto
+          onCerrar={() => setOrdenando(false)}
+          // Ordenadas a mano de entrada: la pantalla de ordenar muestra el
+          // acomodo guardado, no el alfabético con el que se esté viendo acá.
+          tareas={ordenGuardado}
+          modo={modoOrden}
+          onGuardado={() => {
+            setOrdenando(false);
+            router.refresh();
           }}
-        >
-          <MoverSeleccionMovil
-            cuantas={marcadas.length}
-            total={lista.length}
-            onMover={moverMarcadas}
-            className={ACCION_BARRA_MOVIL}
-          />
-        </BarraSeleccionMovil>
+        />
       ) : null}
 
       {abierta !== null ? (
@@ -668,71 +630,27 @@ function FilaTarea({
   );
 }
 
+/**
+ * La fila del teléfono: se toca y se abre la tarea.
+ *
+ * Sin casillas ni manija: ordenar pasó a `OrdenarTareasMovil`, que es una
+ * pantalla propia. Acá esos controles gastaban ancho en todas las filas para
+ * algo que se hace de vez en cuando, y obligaban a que un toque significara dos
+ * cosas distintas según el modo.
+ */
 function FilaTareaMovil({
   tarea,
-  arrastrable,
-  seleccionando,
-  marcada,
-  onAlternar,
   onAbrir,
 }: {
   tarea: TareaRow;
-  arrastrable: boolean;
-  seleccionando: boolean;
-  marcada: boolean;
-  onAlternar: () => void;
   onAbrir: () => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: tarea.id, disabled: !arrastrable });
-
   return (
     <button
-      ref={setNodeRef}
       type="button"
-      // Seleccionando, tocar marca en vez de abrir: una fila que a veces navega
-      // y a veces no es una trampa.
-      onClick={seleccionando ? onAlternar : onAbrir}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        // `manipulation` y no `none`: con el sensor táctil configurado por
-        // espera, dnd-kit cancela solo si el dedo se va antes de tiempo, así que
-        // la lista sigue scrolleando normalmente. Con `none` se trabaría.
-        touchAction: "manipulation",
-      }}
-      className={`${FILA_MOVIL} w-full text-left ${
-        isDragging
-          ? "relative z-10 bg-muted shadow-sm"
-          : marcada
-            ? "bg-primary/5"
-            : "bg-card"
-      }`}
-      {...attributes}
-      {...listeners}
-      // Después del spread a propósito: `attributes` de dnd-kit trae su propio
-      // `aria-pressed` y, puesto antes, lo pisaba. Seleccionando no se arrastra,
-      // así que acá el que manda es el de la selección.
-      aria-pressed={seleccionando ? marcada : undefined}
+      onClick={onAbrir}
+      className={`${FILA_MOVIL} w-full bg-card text-left`}
     >
-      {seleccionando ? (
-        <Checkbox
-          checked={marcada}
-          // La fila entera es el área de toque; la casilla solo pinta. Sin esto
-          // el toque llega dos veces —a ella y al botón— y la marca y la
-          // desmarca en el mismo gesto.
-          onClick={(e) => e.preventDefault()}
-          className="pointer-events-none flex-none"
-          tabIndex={-1}
-          aria-hidden
-        />
-      ) : null}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-bold text-foreground">
           {tarea.nombre}
@@ -743,6 +661,7 @@ function FilaTareaMovil({
           </span>
         ) : null}
       </span>
+      <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
     </button>
   );
 }

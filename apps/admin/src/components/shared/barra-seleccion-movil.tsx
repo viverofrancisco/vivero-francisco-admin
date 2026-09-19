@@ -2,12 +2,15 @@
 
 import { X } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 /**
  * La barra de selección múltiple del teléfono.
  *
- * Flota arriba del nav, como el pie de selección de Shopify. Aparece con el
- * modo prendido **aunque no haya nada marcado**: es lo que dice que el modo
- * está prendido, y por dónde se sale.
+ * Flota arriba del nav, como el pie de selección de Shopify. Donde marcar es un
+ * **modo**, aparece con el modo prendido aunque no haya nada marcado: es lo que
+ * dice que está prendido, y por dónde se sale. Donde las casillas están siempre
+ * —ordenar tareas—, aparece con lo primero que se marca.
  *
  * Existe porque en escritorio las casillas viven en una columna de la tabla y
  * en el teléfono no hay dónde ponerlas sin gastar ancho en todas las filas para
@@ -26,14 +29,25 @@ export function BarraSeleccionMovil({
   cuantas,
   children,
   onSalir,
+  className,
 }: {
   cuantas: number;
   /** Las acciones, a la derecha. Ver la nota de arriba sobre el color. */
   children?: React.ReactNode;
   onSalir: () => void;
+  /**
+   * Para correr la barra de su lugar: por omisión se apoya arriba del nav, y
+   * adentro de una hoja a pantalla completa no hay nav del que correrse.
+   */
+  className?: string;
 }) {
   return (
-    <div className="fixed inset-x-3 bottom-[calc(4rem+env(safe-area-inset-bottom)+0.75rem)] z-40 md:hidden">
+    <div
+      className={cn(
+        "fixed inset-x-3 bottom-[calc(4rem+env(safe-area-inset-bottom)+0.75rem)] z-40 md:hidden",
+        className
+      )}
+    >
       <div className="flex items-center gap-2 rounded-2xl bg-foreground p-2 text-background shadow-lg">
         <button
           type="button"
