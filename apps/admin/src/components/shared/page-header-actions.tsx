@@ -47,15 +47,24 @@ function ActionIcon({ name }: { name?: HeaderActionIcon }) {
 }
 
 /**
- * Acciones del encabezado de página. En escritorio se muestran como botones en
- * línea; en móvil se colapsan siempre en un menú desplegable (⋯), incluso si es
- * una sola acción.
+ * Acciones del encabezado de página.
+ *
+ * En escritorio van como botones en línea; en móvil se colapsan siempre en un
+ * menú (⋯), incluso si es una sola.
+ *
+ * **El ⋯ también está en escritorio**, con la lista completa. Lo que vive solo
+ * ahí —"Seleccionar tareas", por ejemplo— no tenía ninguna puerta de entrada
+ * en pantalla grande, y quien lo aprendió en el teléfono lo buscaba en el mismo
+ * lugar y no lo encontraba. Aparece cuando hay algo que el escritorio no
+ * muestra ya como botón: repetir un menú con lo mismo que está al lado no
+ * agrega nada.
  */
 export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
   const router = useRouter();
   if (actions.length === 0) return null;
 
   const enEscritorio = actions.filter((a) => !a.soloMovil);
+  const soloEnElMenu = actions.filter((a) => a.soloMovil);
 
   return (
     <>
@@ -86,8 +95,9 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
         )}
       </div>
 
-      {/* Móvil: menú desplegable */}
-      <div className="sm:hidden">
+      {/* El menú: siempre en móvil, y en escritorio cuando hay algo que los
+          botones de al lado no muestran. */}
+      <div className={soloEnElMenu.length > 0 ? "" : "sm:hidden"}>
         <DropdownMenu>
           <DropdownMenuTrigger
             render={

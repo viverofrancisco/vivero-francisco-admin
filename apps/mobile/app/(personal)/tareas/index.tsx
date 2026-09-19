@@ -177,20 +177,22 @@ export default function TareasListScreen() {
       }
       onCrear={acomodo ? undefined : () => router.push("/(personal)/tareas/nueva")}
       etiquetaCrear="Nueva tarea"
-      accion={
-        acomodo ? null : (
-          <PressableScale
-            onPress={() => setEligiendoModo(true)}
-            style={styles.botonOrden}
-            accessibilityLabel={`Orden: ${nombreDelModo}`}
-          >
-            <Ionicons name="swap-vertical" size={18} color={tema.texto2} />
-          </PressableScale>
-        )
-      }
       busqueda={busqueda}
       onBuscar={setBusqueda}
       placeholder="Buscar tarea..."
+      /* Al lado del buscador y no arriba con el título: el orden es de la
+         lista, igual que el filtro en las demás pantallas, y los dos juntos se
+         leen como la fila de controles que son. */
+      accionBusqueda={
+        <PressableScale
+          onPress={() => setEligiendoModo(true)}
+          disabled={acomodo !== null}
+          style={[styles.botonOrden, acomodo !== null && styles.apagado]}
+          accessibilityLabel={`Orden: ${nombreDelModo}`}
+        >
+          <Ionicons name="swap-vertical" size={20} color={tema.texto2} />
+        </PressableScale>
+      }
     >
       {cargando ? (
         <View style={styles.centro}>
@@ -363,14 +365,17 @@ const styles = StyleSheet.create({
   },
 
   botonOrden: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: tema.linea,
     alignItems: "center",
     justifyContent: "center",
   },
+  /* Mientras hay un acomodo sin guardar, cambiar el modo lo tiraría a la
+     basura sin avisar: el botón se queda a la vista, apagado. */
+  apagado: { opacity: 0.4 },
 
   /* La barra ocupa el lugar del título: Cancelar a la izquierda y Guardar a la
      derecha, que es donde el pulgar espera cada uno. */

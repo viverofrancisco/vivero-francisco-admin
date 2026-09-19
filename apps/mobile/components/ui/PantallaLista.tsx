@@ -44,6 +44,7 @@ export function PantallaLista({
   busqueda,
   onBuscar,
   placeholder,
+  accionBusqueda,
   grupos = [],
   onFiltrar,
   filtrosActivos = 0,
@@ -51,12 +52,15 @@ export function PantallaLista({
 }: {
   titulo: string;
   /**
-   * Reemplaza al título y a la búsqueda mientras hay algo sin confirmar.
+   * Reemplaza el renglón del título mientras hay algo sin confirmar.
    *
    * Es lo que hace la ficha de la visita con las fotos sin guardar: el
    * encabezado **es** la confirmación, porque es lo único que no se va
    * scrolleando. Una barra flotando abajo tapa la última fila —y la última
    * fila es justo la que alguien acaba de mover hasta ahí—.
+   *
+   * La búsqueda no se va con el título: sigue abajo, porque lo que está a
+   * medio confirmar es una cosa y buscar es otra.
    */
   barra?: React.ReactNode;
   /** Lo que va a la derecha del título: un botón, un menú. */
@@ -74,6 +78,13 @@ export function PantallaLista({
   busqueda?: string;
   onBuscar?: (v: string) => void;
   placeholder?: string;
+  /**
+   * Un control más al lado del buscador —el orden de las tareas, por ejemplo—.
+   *
+   * Ahí y no arriba con el título: pertenece a la lista, igual que el filtro,
+   * y los tres juntos se leen como la fila de controles que son.
+   */
+  accionBusqueda?: React.ReactNode;
   grupos?: GrupoDeFiltro[];
   /**
    * Para las pantallas cuyos filtros no entran en pastillas —un rango de
@@ -99,7 +110,6 @@ export function PantallaLista({
           la lista corre debajo. */}
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
         {barra ?? (
-          <>
         <View style={styles.tituloFila}>
           <Text style={styles.titulo}>{titulo}</Text>
           <View style={styles.acciones}>
@@ -141,6 +151,7 @@ export function PantallaLista({
             ) : null}
           </View>
         </View>
+        )}
 
         {onBuscar ? (
           <View style={styles.buscarFila}>
@@ -158,6 +169,7 @@ export function PantallaLista({
                 clearButtonMode="while-editing"
               />
             </View>
+            {accionBusqueda}
             {hayFiltros ? (
               <PressableScale
                 onPress={() => (onFiltrar ? onFiltrar() : setAbierto(true))}
@@ -178,8 +190,6 @@ export function PantallaLista({
             ) : null}
           </View>
         ) : null}
-          </>
-        )}
       </View>
 
       <View style={styles.cuerpo}>{children}</View>
