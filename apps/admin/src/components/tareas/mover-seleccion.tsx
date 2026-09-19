@@ -20,7 +20,7 @@ import {
   ArrowUpToLine,
   ChevronDown,
 } from "lucide-react";
-import type { Destino } from "./orden-tareas";
+import type { DestinoDeOrden } from "@vivero/shared";
 
 /**
  * Mover las tareas marcadas de a varias, sin arrastrarlas.
@@ -39,7 +39,7 @@ interface PropsComunes {
   cuantas: number;
   /** Cuántas tareas hay en total, para no aceptar una posición que no existe. */
   total: number;
-  onMover: (destino: Destino) => void;
+  onMover: (destino: DestinoDeOrden) => void;
 }
 
 /** Escritorio: un menú anclado al botón. */
@@ -123,7 +123,7 @@ function Opciones({
   comodo = false,
 }: {
   total: number;
-  onMover: (destino: Destino) => void;
+  onMover: (destino: DestinoDeOrden) => void;
   /** Renglones grandes, para el dedo. */
   comodo?: boolean;
 }) {

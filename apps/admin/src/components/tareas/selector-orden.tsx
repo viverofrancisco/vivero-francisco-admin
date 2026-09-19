@@ -10,7 +10,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ArrowDownUp, Check } from "lucide-react";
-import { OPCIONES_ORDEN, type ModoOrden } from "./orden-tareas";
+import { OPCIONES_ORDEN_TAREAS, type ModoOrdenTareas } from "@vivero/shared";
 
 /**
  * Cómo se elige el orden, en los dos tamaños.
@@ -24,20 +24,20 @@ import { OPCIONES_ORDEN, type ModoOrden } from "./orden-tareas";
  * Es un solo componente y no dos usos sueltos para que cuál está elegido se
  * pase una vez y no pueda desincronizarse entre una pantalla y la otra.
  *
- * No tiene estado deshabilitado: con un acomodo a medio guardar la fila entera
- * se reemplaza por la barra de Cancelar/Guardar, así que este control no está
- * en pantalla en el único momento en que habría que apagarlo.
+ * No tiene estado deshabilitado: elegir un orden no guarda nada por sí solo
+ * —queda pendiente, con Cancelar y Guardar arriba, igual que arrastrar—, así
+ * que no hay momento en que haya que apagarlo.
  */
 export function SelectorOrden({
   value,
   onChange,
 }: {
-  value: ModoOrden;
-  onChange: (modo: ModoOrden) => void;
+  value: ModoOrdenTareas;
+  onChange: (modo: ModoOrdenTareas) => void;
 }) {
   const [abierto, setAbierto] = useState(false);
 
-  function elegir(modo: ModoOrden) {
+  function elegir(modo: ModoOrdenTareas) {
     setAbierto(false);
     if (modo !== value) onChange(modo);
   }
@@ -49,8 +49,8 @@ export function SelectorOrden({
       <div className="hidden md:block md:w-56">
         <CustomSelect
           value={value}
-          onChange={(v) => onChange(v as ModoOrden)}
-          options={OPCIONES_ORDEN}
+          onChange={(v) => onChange(v as ModoOrdenTareas)}
+          options={OPCIONES_ORDEN_TAREAS}
           anchoMinimo={220}
         />
       </div>
@@ -74,7 +74,7 @@ export function SelectorOrden({
             <SheetTitle>Ordenar</SheetTitle>
           </SheetHeader>
           <div className="px-2 pb-4">
-            {OPCIONES_ORDEN.map((o) => (
+            {OPCIONES_ORDEN_TAREAS.map((o) => (
               <button
                 key={o.value}
                 type="button"

@@ -14,10 +14,10 @@ import {
  * también las casillas que el jardinero marca al cerrar una visita. Si fuera
  * una preferencia de pantalla, la oficina vería una cosa y el teléfono otra.
  *
- * Elegir el modo **sí se guarda al tocarlo**: es una sola decisión y no hay
- * nada que confirmar. Lo que espera al botón de guardar es el acomodo a mano
- * —ver `/reordenar`—, que son diecisiete movimientos y uno querría poder
- * arrepentirse.
+ * Elegir el modo **no se guarda al tocarlo**: la pantalla lo deja pendiente
+ * junto con el acomodo a mano —ver `/reordenar`— y confirma las dos cosas con
+ * un solo *Guardar*. Es lo mismo que cambia todo el sistema, así que se decide
+ * igual que se acomodan diecisiete filas: con manera de arrepentirse.
  */
 const ordenSchema = z.object({
   modo: z.enum(["PERSONALIZADO", "ALFABETICO_AZ", "ALFABETICO_ZA"]),

@@ -52,11 +52,11 @@ import { TareaForm } from "./tarea-form";
 import { MoverSeleccion, MoverSeleccionMovil } from "./mover-seleccion";
 import { SelectorOrden } from "./selector-orden";
 import {
-  moverA,
-  ordenar,
-  type Destino,
-  type ModoOrden,
-} from "./orden-tareas";
+  moverEnOrden,
+  ordenarTareas,
+  type DestinoDeOrden,
+  type ModoOrdenTareas,
+} from "@vivero/shared";
 
 export interface TareaRow {
   id: string;
@@ -73,7 +73,7 @@ export function TareasPageClient({
   modoOrden,
 }: {
   tareas: TareaRow[];
-  modoOrden: ModoOrden;
+  modoOrden: ModoOrdenTareas;
 }) {
   const router = useRouter();
   const [busqueda, setBusqueda] = useFiltroUrl("q", "");
@@ -82,14 +82,24 @@ export function TareasPageClient({
   const [abierta, setAbierta] = useState<TareaRow | "nueva" | null>(null);
 
   /**
-   * El acomodo que se está probando, que puede no ser el guardado.
+   * Lo que está sin confirmar: el acomodo a mano **y** el modo elegido.
    *
-   * Arrastrar mueve solo esto; recién *Guardar orden* lo manda. Así se pueden
-   * acomodar cinco filas y confirmarlas de una, en vez de disparar un guardado
-   * por cada fila movida y quedarse sin forma de arrepentirse.
+   * Los dos son locales hasta que alguien toca *Guardar*. Arrastrar cinco filas
+   * y que cada movimiento se escriba deja sin manera de arrepentirse, y elegir
+   * A–Z merece el mismo trato: cambia cómo se ve la lista en todo el sistema
+   * —también las casillas que marca el jardinero—, así que se decide y se
+   * confirma, no se dispara al tocarlo.
+   *
+   * `personalizado` es el acomodo a mano, esté o no en pantalla: con un
+   * alfabético puesto sigue guardado abajo, y volver a Personalizado lo muestra
+   * intacto.
    */
-  const [lista, setLista] = useState(tareas);
-  const [modo, setModo] = useState<ModoOrden>(modoOrden);
+  const ordenGuardado = useMemo(
+    () => ordenarTareas(tareas, "PERSONALIZADO"),
+    [tareas]
+  );
+  const [personalizado, setPersonalizado] = useState(ordenGuardado);
+  const [modo, setModo] = useState<ModoOrdenTareas>(modoOrden);
   const [guardandoOrden, setGuardandoOrden] = useState(false);
   /** Ids marcados para mover de a varios. Solo existe en orden personalizado. */
   const [marcadas, setMarcadas] = useState<string[]>([]);
@@ -109,14 +119,26 @@ export function TareasPageClient({
   const [delServidor, setDelServidor] = useState({ tareas, modoOrden });
   if (delServidor.tareas !== tareas || delServidor.modoOrden !== modoOrden) {
     setDelServidor({ tareas, modoOrden });
-    setLista(tareas);
+    setPersonalizado(ordenarTareas(tareas, "PERSONALIZADO"));
     setModo(modoOrden);
     setMarcadas([]);
     setSeleccionandoMovil(false);
   }
 
-  /** Hay algo que guardar solo si el acomodo local difiere del guardado. */
-  const hayCambios = !mismosIds(lista, tareas);
+  /** Lo que se ve: el acomodo a mano, o la lista alfabética del modo elegido. */
+  const lista = useMemo(
+    () => (modo === "PERSONALIZADO" ? personalizado : ordenarTareas(tareas, modo)),
+    [modo, personalizado, tareas]
+  );
+
+  /*
+   * El acomodo cuenta como cambio solo en Personalizado: con un alfabético en
+   * pantalla, guardar posiciones que nadie está viendo sería escribir algo
+   * invisible. Se queda en estado local igual, por si se vuelve.
+   */
+  const cambioDeOrden =
+    modo === "PERSONALIZADO" && !mismosIds(personalizado, ordenGuardado);
+  const hayCambios = modo !== modoOrden || cambioDeOrden;
   const todasMarcadas = lista.length > 0 && marcadas.length === lista.length;
 
   const filtradas = useMemo(() => {
@@ -189,25 +211,39 @@ export function TareasPageClient({
     const { active, over } = evento;
     if (!over || active.id === over.id) return;
 
-    const desde = lista.findIndex((t) => t.id === active.id);
-    const hasta = lista.findIndex((t) => t.id === over.id);
+    const desde = personalizado.findIndex((t) => t.id === active.id);
+    const hasta = personalizado.findIndex((t) => t.id === over.id);
     if (desde < 0 || hasta < 0) return;
 
-    setLista(arrayMove(lista, desde, hasta));
+    setPersonalizado(arrayMove(personalizado, desde, hasta));
   }
 
-  function moverMarcadas(destino: Destino) {
-    setLista(moverA(lista, marcadas, destino));
+  function moverMarcadas(destino: DestinoDeOrden) {
+    setPersonalizado(moverEnOrden(personalizado, marcadas, destino));
   }
 
+  /**
+   * Un solo *Guardar* para las dos cosas, porque son una sola decisión: cómo se
+   * ve la lista.
+   *
+   * Acomodar a mano **es** elegir Personalizado —`reordenarTareas` pone el modo
+   * en el mismo movimiento—, así que cuando hay acomodo alcanza con mandarlo; si
+   * lo único que cambió es el modo, va el modo.
+   */
   async function guardarOrden() {
     setGuardandoOrden(true);
     try {
-      const res = await fetch("/api/tareas/reordenar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: lista.map((t) => t.id) }),
-      });
+      const res = cambioDeOrden
+        ? await fetch("/api/tareas/reordenar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: personalizado.map((t) => t.id) }),
+          })
+        : await fetch("/api/tareas/orden", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ modo }),
+          });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "No pudimos guardar el orden");
@@ -222,24 +258,19 @@ export function TareasPageClient({
     }
   }
 
-  async function cambiarModo(nuevo: ModoOrden) {
-    const previo = modo;
-    setMarcadas([]);
-    setSeleccionandoMovil(false);
+  /**
+   * Elegir el modo **no guarda**, igual que arrastrar.
+   *
+   * Se guardaba al tocarlo, y así mirar la lista alfabética un momento
+   * reescribía la configuración de todo el sistema sin preguntar, sin más vuelta
+   * atrás que acordarse de cuál era la anterior.
+   */
+  function cambiarModo(nuevo: ModoOrdenTareas) {
     setModo(nuevo);
-    setLista((actual) => ordenar(actual, nuevo));
-    try {
-      const res = await fetch("/api/tareas/orden", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modo: nuevo }),
-      });
-      if (!res.ok) throw new Error("No pudimos cambiar el orden");
-      router.refresh();
-    } catch (err) {
-      setModo(previo);
-      setLista((actual) => ordenar(actual, previo));
-      toast.error(err instanceof Error ? err.message : "No pudimos guardar");
+    // Marcar sirve para mover, y mover solo existe en Personalizado.
+    if (nuevo !== "PERSONALIZADO") {
+      setMarcadas([]);
+      setSeleccionandoMovil(false);
     }
   }
 
@@ -264,15 +295,17 @@ export function TareasPageClient({
           <Button
             variant="ghost"
             onClick={() => {
-              setLista(tareas);
+              setPersonalizado(ordenGuardado);
+              setModo(modoOrden);
               setMarcadas([]);
+              setSeleccionandoMovil(false);
             }}
             disabled={guardandoOrden}
           >
             Cancelar
           </Button>
           <span className="hidden text-sm font-medium text-muted-foreground sm:block">
-            Orden sin guardar
+            Sin guardar
           </span>
           <Button onClick={guardarOrden} disabled={guardandoOrden}>
             {guardandoOrden ? "Guardando..." : "Guardar"}
@@ -316,32 +349,29 @@ export function TareasPageClient({
       )}
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
-        {/* El buscador y el selector de orden. Con un acomodo a medio hacer no
-            se ven: filtrar apaga el arrastre y el selector queda deshabilitado,
-            así que los dos controles que desaparecen son justo los dos que no
-            se podrían usar —y su lugar lo ocupa la lista, que es lo que uno
-            está mirando—. */}
-        {hayCambios ? null : (
-          <div className="flex flex-none flex-wrap items-center gap-3">
-            <div className="relative min-w-0 max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar tarea..."
-                value={busqueda}
-                onChange={(e) => {
-                  setBusqueda(e.target.value);
-                  setPage(1);
-                  // Con un filtro puesto no se puede mover nada, así que un
-                  // contador de seleccionadas quedaría colgado sin acción.
-                  setMarcadas([]);
-                  setSeleccionandoMovil(false);
-                }}
-                className="pl-9"
-              />
-            </div>
-            <SelectorOrden value={modo} onChange={cambiarModo} />
+        {/* El buscador y el selector de orden **no se van** con algo sin
+            confirmar: el selector es justamente una de las cosas que se está
+            decidiendo, y buscar una tarea en el medio de acomodar la lista es
+            normal. Lo que se reemplaza es el título, que no hace nada. */}
+        <div className="flex flex-none flex-wrap items-center gap-3">
+          <div className="relative min-w-0 max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar tarea..."
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+                setPage(1);
+                // Con un filtro puesto no se puede mover nada, así que un
+                // contador de seleccionadas quedaría colgado sin acción.
+                setMarcadas([]);
+                setSeleccionandoMovil(false);
+              }}
+              className="pl-9"
+            />
           </div>
-        )}
+          <SelectorOrden value={modo} onChange={cambiarModo} />
+        </div>
 
         {modo === "PERSONALIZADO" && busqueda.trim() ? (
           <p className="flex-none text-xs text-muted-foreground">

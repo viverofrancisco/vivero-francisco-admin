@@ -1,16 +1,33 @@
 /**
- * Cómo se ordena el catálogo de tareas, del lado del navegador.
+ * Cómo se ordena el catálogo de tareas, del lado del cliente.
  *
- * El enum vive en Prisma; esto es solo cómo se llama cada opción en pantalla y
- * cómo se ordena una lista ya cargada, que es lo que hace falta para pintar el
- * cambio sin esperar al servidor.
+ * El enum vive en Prisma y el orden de verdad lo decide el servidor; esto es
+ * cómo se llama cada opción en pantalla, cómo se ordena una lista ya cargada
+ * —para pintar el cambio sin esperar al servidor— y cómo se mueve una selección
+ * de a varias.
+ *
+ * Está acá y no en el portal porque la app hace exactamente lo mismo: la misma
+ * pantalla, los mismos tres modos y el mismo "mover a la posición N". Escrito
+ * dos veces, el día que uno se arregle el otro sigue roto.
  */
-export type ModoOrden = "PERSONALIZADO" | "ALFABETICO_AZ" | "ALFABETICO_ZA";
+export type ModoOrdenTareas =
+  | "PERSONALIZADO"
+  | "ALFABETICO_AZ"
+  | "ALFABETICO_ZA";
 
-export const OPCIONES_ORDEN: { value: ModoOrden; label: string }[] = [
-  { value: "PERSONALIZADO", label: "Personalizado" },
-  { value: "ALFABETICO_AZ", label: "Alfabético (A–Z)" },
-  { value: "ALFABETICO_ZA", label: "Alfabético (Z–A)" },
+export const OPCIONES_ORDEN_TAREAS: {
+  value: ModoOrdenTareas;
+  label: string;
+  /** Una línea de ayuda, para donde haya lugar (el cajón del teléfono). */
+  detalle: string;
+}[] = [
+  {
+    value: "PERSONALIZADO",
+    label: "Personalizado",
+    detalle: "El orden que armaste a mano",
+  },
+  { value: "ALFABETICO_AZ", label: "Alfabético (A–Z)", detalle: "Por nombre" },
+  { value: "ALFABETICO_ZA", label: "Alfabético (Z–A)", detalle: "Al revés" },
 ];
 
 interface Ordenable {
@@ -22,7 +39,10 @@ interface Ordenable {
  * `localeCompare` con `es` y no una comparación de strings a secas: sin eso
  * "Árboles" se va después de "Zanja", porque la Á está fuera del alfabeto ASCII.
  */
-export function ordenar<T extends Ordenable>(items: T[], modo: ModoOrden): T[] {
+export function ordenarTareas<T extends Ordenable>(
+  items: T[],
+  modo: ModoOrdenTareas
+): T[] {
   const copia = [...items];
   if (modo === "PERSONALIZADO") {
     return copia.sort((a, b) => a.orden - b.orden || cmp(a.nombre, b.nombre));
@@ -35,7 +55,7 @@ function cmp(a: string, b: string): number {
   return a.localeCompare(b, "es", { sensitivity: "base" });
 }
 
-export type Destino = "inicio" | "fin" | number;
+export type DestinoDeOrden = "inicio" | "fin" | number;
 
 /**
  * Lleva las marcadas a donde se pidió, **juntas y en el orden que ya tenían**
@@ -49,10 +69,10 @@ export type Destino = "inicio" | "fin" | number;
  * La posición se cuenta sobre la lista **final** y se recorta a lo que existe:
  * pedir la 20 de 17 es pedir el final, y la 0 o un negativo es el principio.
  */
-export function moverA<T extends { id: string }>(
+export function moverEnOrden<T extends { id: string }>(
   lista: T[],
   ids: string[],
-  destino: Destino
+  destino: DestinoDeOrden
 ): T[] {
   const marcadas = new Set(ids);
   const elegidas = lista.filter((t) => marcadas.has(t.id));
