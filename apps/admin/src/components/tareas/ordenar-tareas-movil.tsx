@@ -161,11 +161,18 @@ export function OrdenarTareasMovil({
       <SheetContent
         side="bottom"
         showCloseButton={false}
-        // `h-dvh` y no `h-screen`: `100vh` cuenta la barra de direcciones
-        // aunque se esté viendo, y el pie quedaba abajo del borde.
-        className="h-dvh gap-0 p-0"
+        /*
+         * `top-0` es lo que le da el alto, y no una clase de altura: el `side`
+         * de abajo trae `data-[side=bottom]:h-auto`, que por el selector de
+         * atributo le gana en especificidad a cualquier `h-dvh` que le pase
+         * acá —y la hoja crecía con su contenido, anclada abajo, así que el
+         * encabezado se iba por arriba del borde de la pantalla—. Con el
+         * arriba y el abajo puestos y `height: auto`, el navegador la estira
+         * entre los dos, que es exactamente lo que queremos.
+         */
+        className="top-0 gap-0 p-0"
       >
-        <div className="flex h-14 flex-none items-center gap-2 border-b border-border px-2">
+        <div className="flex h-14 flex-none items-center gap-2 border-b border-border py-2 pl-2 pr-3">
           <Button
             variant="ghost"
             size="icon"
@@ -176,7 +183,7 @@ export function OrdenarTareasMovil({
             <X className="h-5 w-5" />
           </Button>
           <SheetTitle className="flex-1">Ordenar tareas</SheetTitle>
-          <Button onClick={guardar} disabled={!hayCambios || guardando}>
+          <Button size="sm" onClick={guardar} disabled={!hayCambios || guardando}>
             {guardando ? "Guardando..." : "Guardar"}
           </Button>
         </div>

@@ -347,7 +347,8 @@ const styles = StyleSheet.create({
 
   cabecera: {
     height: 60,
-    paddingHorizontal: 8,
+    paddingLeft: 8,
+    paddingRight: 12,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -362,13 +363,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   titulo: { flex: 1, fontSize: 17, fontWeight: "700", color: tema.texto },
+  /* Los mismos números que el botón Crear de las listas: 30 de alto, 12 de
+     costado, 13 semibold. Era más grande y más alto que todo lo que tiene al
+     lado, y quedaba pegado al borde. */
   guardar: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: tema.verde,
   },
-  guardarTexto: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  guardarTexto: { color: "#fff", fontWeight: "600", fontSize: 13 },
   apagado: { opacity: 0.4 },
 
   filaModo: {
