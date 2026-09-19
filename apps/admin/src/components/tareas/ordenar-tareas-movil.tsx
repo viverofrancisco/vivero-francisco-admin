@@ -31,6 +31,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   ACCION_BARRA_MOVIL,
   BarraSeleccionMovil,
 } from "@/components/shared/barra-seleccion-movil";
@@ -80,7 +86,6 @@ export function OrdenarTareasMovil({
   const [personalizado, setPersonalizado] = useState(ordenGuardado);
   const [modo, setModo] = useState(modoGuardado);
   const [marcadas, setMarcadas] = useState<string[]>([]);
-  const [eligiendoModo, setEligiendoModo] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   const lista = useMemo(
@@ -118,7 +123,6 @@ export function OrdenarTareasMovil({
   }
 
   function elegirModo(nuevo: ModoOrdenTareas) {
-    setEligiendoModo(false);
     setModo(nuevo);
     // Marcar sirve para mover, y mover solo existe en Personalizado.
     if (nuevo !== "PERSONALIZADO") setMarcadas([]);
@@ -189,22 +193,56 @@ export function OrdenarTareasMovil({
         </div>
 
         {/* El tipo de orden, arriba y siempre a la vista: se cambia, se mira
-            cómo queda y se vuelve a cambiar sin salir de acá. */}
-        <button
-          type="button"
-          onClick={() => setEligiendoModo(true)}
-          className="flex flex-none items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left"
-        >
-          <span className="min-w-0 flex-1">
-            <span className="block text-xs text-muted-foreground">
-              Orden de la lista
+            cómo queda y se vuelve a cambiar sin salir de acá.
+            Es un desplegable anclado a su renglón —el de Shopify— y no un
+            cajón desde abajo: un cajón adentro de otra hoja se apila sobre lo
+            único que podía cerrarlo, así que quedaba sin salida más que elegir
+            una opción. */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                className="flex flex-none items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left"
+              />
+            }
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-xs text-muted-foreground">
+                Orden de la lista
+              </span>
+              <span className="block text-sm font-semibold text-foreground">
+                {nombreDelModo}
+              </span>
             </span>
-            <span className="block text-sm font-semibold text-foreground">
-              {nombreDelModo}
-            </span>
-          </span>
-          <ChevronDown className="h-4 w-4 flex-none text-muted-foreground" />
-        </button>
+            <ChevronDown className="h-4 w-4 flex-none text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" sideOffset={-1}>
+            {OPCIONES_ORDEN_TAREAS.map((o) => (
+              <DropdownMenuItem
+                key={o.value}
+                onClick={() => elegirModo(o.value)}
+                className="gap-3 py-2.5"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium text-foreground">
+                    {o.label}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {o.detalle}
+                  </span>
+                </span>
+                {o.value === modo ? (
+                  <Check className="h-4 w-4 flex-none text-primary" />
+                ) : null}
+              </DropdownMenuItem>
+            ))}
+            <p className="px-2 pt-2 pb-1 text-xs text-muted-foreground">
+              Es el orden en que se ven las tareas en todo el sistema, también
+              al marcarlas en una visita.
+            </p>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <DndContext
@@ -255,75 +293,6 @@ export function OrdenarTareasMovil({
             />
           </BarraSeleccionMovil>
         ) : null}
-
-        <HojaDeModo
-          abierta={eligiendoModo}
-          onCerrar={() => setEligiendoModo(false)}
-          valor={modo}
-          onElegir={elegirModo}
-        />
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-/**
- * Las tres opciones, en un cajón desde abajo —donde está el pulgar, y con
- * renglones grandes de tocar—. Es el mismo cajón que la app.
- */
-function HojaDeModo({
-  abierta,
-  onCerrar,
-  valor,
-  onElegir,
-}: {
-  abierta: boolean;
-  onCerrar: () => void;
-  valor: ModoOrdenTareas;
-  onElegir: (modo: ModoOrdenTareas) => void;
-}) {
-  return (
-    <Sheet open={abierta} onOpenChange={(v) => (v ? null : onCerrar())}>
-      <SheetContent
-        side="bottom"
-        showCloseButton={false}
-        className="gap-0 rounded-t-2xl p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
-      >
-        <SheetTitle className="px-1 pb-3 text-lg font-bold">
-          Ordenar por
-        </SheetTitle>
-        <div className="space-y-2">
-          {OPCIONES_ORDEN_TAREAS.map((o) => {
-            const elegida = o.value === valor;
-            return (
-              <button
-                key={o.value}
-                type="button"
-                onClick={() => onElegir(o.value)}
-                aria-pressed={elegida}
-                className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left ${
-                  elegida ? "bg-primary/10" : "bg-muted/50"
-                }`}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-foreground">
-                    {o.label}
-                  </span>
-                  <span className="block text-xs text-muted-foreground">
-                    {o.detalle}
-                  </span>
-                </span>
-                {elegida ? (
-                  <Check className="h-4 w-4 flex-none text-primary" />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-        <p className="px-1 pt-3 text-xs text-muted-foreground">
-          Es el orden en que se ven las tareas en todo el sistema, también al
-          marcarlas en una visita.
-        </p>
       </SheetContent>
     </Sheet>
   );

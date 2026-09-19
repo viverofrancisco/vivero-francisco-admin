@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FlatList, Modal, StyleSheet, View } from "react-native";
+import { FlatList, Modal, Pressable, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ReorderableList, { reorderItems } from "react-native-reorderable-list";
 import { Text } from "react-native-paper";
@@ -15,7 +15,6 @@ import {
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { HojaInferior } from "@/components/ui/HojaInferior";
 import {
   ALTO_BARRA_SELECCION,
   BarraSeleccion,
@@ -71,7 +70,9 @@ export function OrdenarTareas({
   const [personalizado, setPersonalizado] = useState(ordenGuardado);
   const [modo, setModo] = useState(modoGuardado);
   const [marcadas, setMarcadas] = useState<string[]>([]);
-  const [eligiendoModo, setEligiendoModo] = useState(false);
+  const [desplegado, setDesplegado] = useState(false);
+  /** Dónde termina el renglón del tipo de orden: de ahí cuelga el desplegable. */
+  const [ancla, setAncla] = useState(0);
   const [moviendo, setMoviendo] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +89,7 @@ export function OrdenarTareas({
     OPCIONES_ORDEN_TAREAS.find((m) => m.value === modo)?.label ?? "Orden";
 
   function elegirModo(nuevo: ModoOrdenTareas) {
-    setEligiendoModo(false);
+    setDesplegado(false);
     setModo(nuevo);
     // Marcar sirve para mover, y mover solo existe en Personalizado.
     if (nuevo !== "PERSONALIZADO") setMarcadas([]);
@@ -138,7 +139,9 @@ export function OrdenarTareas({
       visible
       animationType="slide"
       presentationStyle="pageSheet"
-      onRequestClose={onCerrar}
+      // El botón de atrás cierra primero el desplegable, que es lo último que
+      // se abrió; recién después, la pantalla.
+      onRequestClose={() => (desplegado ? setDesplegado(false) : onCerrar())}
     >
       {/* Adentro de un `Modal` los gestos necesitan su propia raíz, o la fila no
           se despega del dedo. */}
@@ -165,17 +168,30 @@ export function OrdenarTareas({
         </View>
 
         {/* El tipo de orden, arriba y siempre a la vista: se cambia, se mira
-            cómo queda y se vuelve a cambiar sin salir de acá. */}
+            cómo queda y se vuelve a cambiar sin salir de acá.
+            Es un desplegable anclado a su renglón —el de Shopify— y no un
+            cajón desde abajo: un cajón adentro de esta pantalla se apilaba
+            sobre lo único que podía cerrarlo, y quedaba sin salida más que
+            elegir una opción. */}
         <PressableScale
-          onPress={() => setEligiendoModo(true)}
+          onPress={() => setDesplegado((v) => !v)}
+          onLayout={(e) =>
+            setAncla(e.nativeEvent.layout.y + e.nativeEvent.layout.height)
+          }
           estiloExterno={styles.ancho}
           style={styles.filaModo}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: desplegado }}
         >
           <View style={styles.crece}>
             <Text style={styles.modoEtiqueta}>Orden de la lista</Text>
             <Text style={styles.modoValor}>{nombreDelModo}</Text>
           </View>
-          <Ionicons name="chevron-down" size={18} color={tema.texto3} />
+          <Ionicons
+            name={desplegado ? "chevron-up" : "chevron-down"}
+            size={18}
+            color={tema.texto3}
+          />
         </PressableScale>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -236,37 +252,41 @@ export function OrdenarTareas({
           onMover={moverMarcadas}
         />
 
-        <HojaInferior
-          visible={eligiendoModo}
-          onCerrar={() => setEligiendoModo(false)}
-        >
-          <View style={styles.hoja}>
-            <Text style={styles.hojaTitulo}>Ordenar por</Text>
-            {OPCIONES_ORDEN_TAREAS.map((m) => {
-              const elegido = m.value === modo;
-              return (
-                <PressableScale
-                  key={m.value}
-                  onPress={() => elegirModo(m.value)}
-                  estiloExterno={styles.ancho}
-                  style={[styles.opcion, elegido && styles.opcionElegida]}
-                >
-                  <View style={styles.crece}>
-                    <Text style={styles.opcionTexto}>{m.label}</Text>
-                    <Text style={styles.opcionDetalle}>{m.detalle}</Text>
-                  </View>
-                  {elegido ? (
-                    <Ionicons name="checkmark" size={20} color={tema.verde} />
-                  ) : null}
-                </PressableScale>
-              );
-            })}
-            <Text style={styles.hojaNota}>
-              Es el orden en que se ven las tareas en todo el sistema, también al
-              marcarlas en una visita.
-            </Text>
-          </View>
-        </HojaInferior>
+        {desplegado ? (
+          <>
+            {/* Tocar afuera cierra, que es lo que hace un desplegable. */}
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setDesplegado(false)}
+            />
+            <View style={[styles.menu, { top: ancla }]}>
+              {OPCIONES_ORDEN_TAREAS.map((m) => {
+                const elegido = m.value === modo;
+                return (
+                  <PressableScale
+                    key={m.value}
+                    onPress={() => elegirModo(m.value)}
+                    estiloExterno={styles.ancho}
+                    style={styles.opcion}
+                    estiloPresionado={styles.opcionPresionada}
+                  >
+                    <View style={styles.crece}>
+                      <Text style={styles.opcionTexto}>{m.label}</Text>
+                      <Text style={styles.opcionDetalle}>{m.detalle}</Text>
+                    </View>
+                    {elegido ? (
+                      <Ionicons name="checkmark" size={18} color={tema.verde} />
+                    ) : null}
+                  </PressableScale>
+                );
+              })}
+              <Text style={styles.menuNota}>
+                Es el orden en que se ven las tareas en todo el sistema, también
+                al marcarlas en una visita.
+              </Text>
+            </View>
+          </>
+        ) : null}
       </GestureHandlerRootView>
     </Modal>
   );
@@ -419,29 +439,39 @@ const styles = StyleSheet.create({
   },
   accionBarraTexto: { color: "#fff", fontWeight: "600", fontSize: 15 },
 
-  hoja: { paddingHorizontal: 4, paddingBottom: 12, gap: 8 },
-  hojaTitulo: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: tema.texto,
-    paddingHorizontal: 10,
+  /* Colgado del renglón, como el desplegable de Shopify: pegado a su borde de
+     abajo y del ancho de la pantalla menos un margen. */
+  menu: {
+    position: "absolute",
+    left: 12,
+    right: 12,
+    paddingVertical: 4,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: tema.linea,
+    backgroundColor: tema.superficie,
+    shadowColor: "#142819",
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   opcion: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: "#fafafa",
+    paddingVertical: 11,
+    borderRadius: 10,
   },
-  opcionElegida: { backgroundColor: tema.verde50 },
-  opcionTexto: { color: tema.texto, fontSize: 15, fontWeight: "600" },
+  opcionPresionada: { backgroundColor: tema.lienzo },
+  opcionTexto: { color: tema.texto, fontSize: 15, fontWeight: "500" },
   opcionDetalle: { color: tema.texto3, fontSize: 13 },
-  hojaNota: {
+  menuNota: {
     color: tema.texto3,
-    fontSize: 13,
-    marginTop: 4,
-    paddingHorizontal: 10,
+    fontSize: 12,
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 8,
   },
 });
