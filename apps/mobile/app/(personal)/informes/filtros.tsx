@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { Stack, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { Calendar, type DateData } from "react-native-calendars";
 import { useInformesFilters } from "@/lib/informes-filters-store";
 import { tema } from "@/lib/tema";
@@ -12,8 +11,7 @@ const ACCENT = tema.verde;
 
 export default function FiltrosScreen() {
   const router = useRouter();
-  const { cliente, from, to, setCliente, setFrom, setTo, clear, activeCount } =
-    useInformesFilters();
+  const { from, to, setFrom, setTo, clear, activeCount } = useInformesFilters();
 
   const active = activeCount();
 
@@ -90,44 +88,6 @@ export default function FiltrosScreen() {
           style={styles.container}
           contentContainerStyle={styles.content}
         >
-          <Section title="Cliente">
-          <Pressable
-            onPress={() =>
-              router.push("/(personal)/informes/filtros-cliente")
-            }
-            style={({ pressed }) => [
-              styles.row,
-              styles.rowLast,
-              pressed && styles.rowPressed,
-            ]}
-          >
-            <Text style={styles.rowLabel}>Cliente</Text>
-            <View style={styles.rowRight}>
-              <Text
-                style={[
-                  styles.rowValue,
-                  cliente && styles.rowValueActive,
-                ]}
-                numberOfLines={1}
-              >
-                {cliente?.nombre ?? "Todos"}
-              </Text>
-              {cliente ? (
-                <Pressable
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    setCliente(null);
-                  }}
-                  hitSlop={10}
-                >
-                  <Ionicons name="close-circle" size={18} color="#bdbdbd" />
-                </Pressable>
-              ) : null}
-              <Ionicons name="chevron-forward" size={18} color="#bdbdbd" />
-            </View>
-          </Pressable>
-        </Section>
-
         <Section title="Fecha de generación">
           <View style={styles.calendarWrap}>
             <View style={styles.calendarHeader}>

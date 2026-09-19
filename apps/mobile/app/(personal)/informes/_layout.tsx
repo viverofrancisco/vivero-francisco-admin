@@ -6,10 +6,6 @@ export default function PersonalInformesLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="[id]" options={{ headerShown: false }} />
       <Stack.Screen name="filtros" options={{ title: "Filtros" }} />
-      <Stack.Screen
-        name="filtros-cliente"
-        options={{ title: "Cliente" }}
-      />
       <Stack.Screen name="nuevo" options={{ title: "Nuevo informe" }} />
     </Stack>
   );

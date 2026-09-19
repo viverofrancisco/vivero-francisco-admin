@@ -41,7 +41,7 @@ const PAGE_SIZE = 20;
 
 export default function InformesListScreen() {
   const router = useRouter();
-  const { cliente, from, to, activeCount } = useInformesFilters();
+  const { from, to, activeCount } = useInformesFilters();
   const activeFilters = activeCount();
   /**
    * El buscador del portal: nombre del cliente, título o número con o sin `#`.
@@ -70,7 +70,6 @@ export default function InformesListScreen() {
             limit: PAGE_SIZE,
             offset: 0,
             ...(busqueda.trim() ? { q: busqueda.trim() } : {}),
-            ...(cliente ? { clienteId: cliente.id } : {}),
             ...(from ? { from } : {}),
             ...(to ? { to } : {}),
           },
@@ -84,7 +83,7 @@ export default function InformesListScreen() {
         setRefreshing(false);
       }
     },
-    [busqueda, cliente, from, to]
+    [busqueda, from, to]
   );
 
   /*
@@ -117,7 +116,6 @@ export default function InformesListScreen() {
           limit: PAGE_SIZE,
           offset: items.length,
           ...(busqueda.trim() ? { q: busqueda.trim() } : {}),
-          ...(cliente ? { clienteId: cliente.id } : {}),
           ...(from ? { from } : {}),
           ...(to ? { to } : {}),
         },
@@ -138,7 +136,7 @@ export default function InformesListScreen() {
       etiquetaCrear="Generar informe"
       busqueda={busqueda}
       onBuscar={setBusqueda}
-      placeholder="Buscar por cliente o #número..."
+      placeholder="Buscar..."
       onFiltrar={() => router.push("/(personal)/informes/filtros")}
       filtrosActivos={activeFilters}
     >
@@ -155,7 +153,7 @@ export default function InformesListScreen() {
             >
               <Ionicons name="funnel" size={14} color={tema.verde} />
               <Text style={styles.summaryText} numberOfLines={1}>
-                {summarize(cliente?.nombre, from, to)}
+                {summarize(from, to)}
               </Text>
               <Ionicons name="chevron-forward" size={14} color={tema.verde} />
             </Pressable>
@@ -261,13 +259,9 @@ function formatChipDate(yyyymmdd: string): string {
   return fechaSola(yyyymmdd, { day: "2-digit", month: "short" });
 }
 
-function summarize(
-  clienteName: string | undefined,
-  from: string | null,
-  to: string | null
-): string {
+/** Lo que dice la tira de filtros puestos. Hoy solo el rango de fechas. */
+function summarize(from: string | null, to: string | null): string {
   const parts: string[] = [];
-  if (clienteName) parts.push(clienteName);
   if (from || to) {
     if (from && to) parts.push(`${formatChipDate(from)} → ${formatChipDate(to)}`);
     else if (from) parts.push(`Desde ${formatChipDate(from)}`);
