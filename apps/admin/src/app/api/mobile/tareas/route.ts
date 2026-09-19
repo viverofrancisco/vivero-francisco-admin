@@ -9,7 +9,11 @@ import {
   serviceErrorResponse,
   viewerFromMobileUser,
 } from "@/lib/mobile/route-helpers";
-import { createTarea, listTareas } from "@/lib/services/tarea.service";
+import {
+  createTarea,
+  getOrdenTareas,
+  listTareas,
+} from "@/lib/services/tarea.service";
 
 /**
  * El catálogo, para las casillas que el jardinero marca al cerrar una visita.
@@ -22,8 +26,14 @@ export async function GET(request: Request) {
   const userOrResponse = await requireMobileUser(request);
   if (!isMobileUser(userOrResponse)) return userOrResponse;
   try {
-    const items = await listTareas(viewerFromMobileUser(userOrResponse));
-    return NextResponse.json({ items });
+    // El modo viaja con la lista: la pantalla necesita saber si lo que está
+    // viendo es el acomodo a mano o un alfabético, y pedirlo aparte sería un
+    // viaje más para un dato que siempre se usa junto con las tareas.
+    const [items, orden] = await Promise.all([
+      listTareas(viewerFromMobileUser(userOrResponse)),
+      getOrdenTareas(),
+    ]);
+    return NextResponse.json({ items, orden });
   } catch (error) {
     return serviceErrorResponse(error);
   }
