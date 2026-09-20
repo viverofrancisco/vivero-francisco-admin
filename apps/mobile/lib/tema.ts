@@ -47,7 +47,23 @@ export const tema = {
   arcilla: "#c37144",
   cielo: "#49829f",
   cielo50: "#e4f3fc",
+  violeta: "#7b63a3",
 } as const;
+
+/**
+ * Los cinco colores de gráfico del portal, en el mismo orden en que los usa
+ * para distinguir cuadrillas (`--chart-1..5`, convertidos de oklch una vez).
+ *
+ * El orden no es 1-2-3-4-5: el portal saltea el 4 al 5 porque el ámbar y el
+ * arcilla, seguidos, se confunden.
+ */
+export const coloresDeGrafico = [
+  tema.verde,
+  tema.cielo,
+  tema.arcilla,
+  tema.violeta,
+  tema.ambar,
+] as const;
 
 /**
  * Cómo se ve cada estado de una visita.

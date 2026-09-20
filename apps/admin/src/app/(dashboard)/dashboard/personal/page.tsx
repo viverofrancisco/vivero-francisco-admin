@@ -1,22 +1,19 @@
-import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth-helpers";
+import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
 import { PageHeader } from "@/components/shared/page-header";
-import { estadoDeAcceso } from "@/lib/services/personal-acceso.service";
+import { listPersonal } from "@/lib/services/personal.service";
 import { PersonalTable } from "@/components/personal/personal-table";
 
+/**
+ * La lista sale del servicio, no de una consulta propia.
+ *
+ * Tenía la suya —con su `include` y su cálculo del estado de acceso— mientras
+ * la app pedía lo mismo por `/api/mobile/personal`, así que las dos listas
+ * mostraban campos distintos de la misma gente. Ahora las dos leen
+ * `listPersonal`.
+ */
 export default async function PersonalPage() {
   await requireAuth();
-
-  const personal = await prisma.personal.findMany({
-    where: { deletedAt: null },
-    orderBy: { createdAt: "desc" },
-    include: {
-      grupos: { select: { grupo: { select: { nombre: true } } } },
-      // Para la columna de acceso. El hash nunca sale de acá: se convierte en
-      // una palabra antes de llegar al cliente.
-      user: { select: { password: true, accesoRevocadoEl: true } },
-    },
-  });
+  const personal = await listPersonal(await viewerFromSession());
 
   return (
     <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
@@ -32,17 +29,7 @@ export default async function PersonalPage() {
         ]}
       />
 
-      <PersonalTable
-        personal={personal.map(({ user, ...p }) => ({
-          ...p,
-          acceso: estadoDeAcceso(
-            user && {
-              tieneContrasena: user.password !== null,
-              revocado: user.accesoRevocadoEl !== null,
-            }
-          ),
-        }))}
-      />
+      <PersonalTable personal={personal} />
     </div>
   );
 }

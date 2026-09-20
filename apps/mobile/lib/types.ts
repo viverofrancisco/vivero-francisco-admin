@@ -332,6 +332,8 @@ export interface GrupoConMiembros {
   id: string;
   nombre: string;
   descripcion: string | null;
+  /** Cuántas visitas lleva la cuadrilla: lo que distingue una de otra. */
+  _count?: { visitas: number };
   miembros: {
     personalId: string;
     personal: {
@@ -355,6 +357,9 @@ export interface PersonalOption {
 }
 
 /** La ficha completa de alguien del vivero, con la cuenta con la que entra. */
+/** Si entra a la app, y si no, por qué no. Lo calcula el servidor. */
+export type EstadoAcceso = "ACTIVO" | "PENDIENTE" | "REVOCADO" | "SIN_CUENTA";
+
 export interface PersonalFicha {
   id: string;
   nombre: string;
@@ -363,6 +368,9 @@ export interface PersonalFicha {
   especialidad: string | null;
   tipo: string | null;
   estado: string;
+  /** Las cuadrillas con las que sale habitualmente. */
+  grupos?: { grupo: { id: string; nombre: string } }[];
+  acceso: EstadoAcceso;
   user: {
     id: string;
     usuario: string | null;

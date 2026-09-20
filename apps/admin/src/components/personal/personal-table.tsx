@@ -25,7 +25,7 @@ import type { EstadoAcceso } from "@/lib/services/personal-acceso.service";
 import { StatCards } from "@/components/shared/stat-cards";
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
-import { Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 
 interface Personal {
@@ -37,6 +37,8 @@ interface Personal {
   tipo: string | null;
   estado: string;
   grupos?: { grupo: { nombre: string } }[];
+  /** Lo que la oficina dicta por teléfono para que alguien entre a la app. */
+  user?: { usuario: string | null } | null;
   /** Si entra a la app, y si no, por qué no. */
   acceso: EstadoAcceso;
 }
@@ -68,6 +70,9 @@ function resumen(p: Personal): string {
   const cuadrillas = crewNames(p);
   const partes = [
     p.especialidad ?? (p.tipo ? tipoLabel(p.tipo) : null),
+    // El usuario va segundo porque en un renglón truncado es lo que más se
+    // viene a buscar: es lo que se dicta por teléfono para que alguien entre.
+    p.user?.usuario,
     cuadrillas !== "—" ? cuadrillas : null,
     p.telefono,
   ].filter(Boolean);
@@ -128,6 +133,7 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
       result = result.filter(
         (p) =>
           fullName(p).toLowerCase().includes(q) ||
+          (p.user?.usuario?.toLowerCase().includes(q) ?? false) ||
           (p.telefono?.includes(q) ?? false) ||
           (p.especialidad?.toLowerCase().includes(q) ?? false),
       );
@@ -190,7 +196,7 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
           <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nombre, telefono o especialidad..."
+            placeholder="Buscar por nombre, usuario o teléfono..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -380,6 +386,7 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                 {resumen(p)}
               </span>
             </span>
+            <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
           </Link>
         ))}
       </ListaMovil>

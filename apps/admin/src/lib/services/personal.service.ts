@@ -1,3 +1,4 @@
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ForbiddenError, NotFoundError } from "./errors";
 import type { Viewer } from "./viewer";
@@ -5,6 +6,7 @@ import { isAdminRole } from "./viewer";
 import {
   cambiarUsuarioPersonal,
   crearCuentaPersonal,
+  estadoDeAcceso,
 } from "./personal-acceso.service";
 import { revocarAcceso } from "./acceso.service";
 
@@ -70,16 +72,58 @@ const PERSONAL_SELECT = {
   estado: true,
   tipo: true,
   createdAt: true,
-  user: { select: { id: true, usuario: true, accesoRevocadoEl: true } },
+  // Las cuadrillas viajan con la ficha porque es lo que la lista muestra
+  // debajo del nombre, en las dos aplicaciones.
+  grupos: { select: { grupo: { select: { id: true, nombre: true } } } },
+  // El hash se pide para poder decir "falta que elija su contraseña", y no sale
+  // de este archivo: `conAcceso` lo cambia por una palabra.
+  user: {
+    select: {
+      id: true,
+      usuario: true,
+      accesoRevocadoEl: true,
+      password: true,
+    },
+  },
 } as const;
+
+type PersonalCrudo = Prisma.PersonalGetPayload<{ select: typeof PERSONAL_SELECT }>;
+
+/**
+ * Cambia el hash por el estado de acceso, que es lo que las listas muestran.
+ *
+ * Lo calculaba la página del portal por su cuenta, con su propia consulta, y la
+ * app no lo tenía: la misma ficha decía dos cosas distintas según por dónde se
+ * mirara. Acá se calcula una vez y **el hash nunca cruza la puerta**.
+ */
+function conAcceso(p: PersonalCrudo) {
+  const { user, ...resto } = p;
+  return {
+    ...resto,
+    user: user
+      ? {
+          id: user.id,
+          usuario: user.usuario,
+          accesoRevocadoEl: user.accesoRevocadoEl,
+        }
+      : null,
+    acceso: estadoDeAcceso(
+      user && {
+        tieneContrasena: user.password !== null,
+        revocado: user.accesoRevocadoEl !== null,
+      }
+    ),
+  };
+}
 
 export async function listPersonal(viewer: Viewer) {
   ensurePuedeVer(viewer);
-  return prisma.personal.findMany({
+  const personal = await prisma.personal.findMany({
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     select: PERSONAL_SELECT,
   });
+  return personal.map(conAcceso);
 }
 
 export async function getPersonal(viewer: Viewer, id: string) {
@@ -89,7 +133,7 @@ export async function getPersonal(viewer: Viewer, id: string) {
     select: PERSONAL_SELECT,
   });
   if (!personal) throw new NotFoundError("Personal no encontrado");
-  return personal;
+  return conAcceso(personal);
 }
 
 /**

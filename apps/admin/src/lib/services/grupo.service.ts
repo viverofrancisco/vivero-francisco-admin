@@ -22,6 +22,9 @@ export interface DatosDeGrupo {
 }
 
 const GRUPO_INCLUDE = {
+  // Cuántas visitas lleva: es lo que distingue una cuadrilla de otra en la
+  // lista, y lo muestran las dos aplicaciones.
+  _count: { select: { visitas: true } },
   miembros: {
     include: {
       personal: { select: { id: true, nombre: true, apellido: true, tipo: true } },

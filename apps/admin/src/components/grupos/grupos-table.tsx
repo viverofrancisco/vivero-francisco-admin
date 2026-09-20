@@ -219,6 +219,7 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
                   visitas
                 </span>
               </span>
+              <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
             </Link>
           );
         })}
