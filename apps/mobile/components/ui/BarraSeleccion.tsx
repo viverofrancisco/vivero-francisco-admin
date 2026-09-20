@@ -1,5 +1,6 @@
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
@@ -25,8 +26,16 @@ export function BarraSeleccion({
   onSalir: () => void;
   children?: React.ReactNode;
 }) {
+  // El borde de abajo no es el borde de la pantalla: está el indicador de
+  // inicio, y adentro de una hoja, la esquina redondeada. Apoyada ahí, la
+  // pastilla quedaba cortada.
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.caja} pointerEvents="box-none">
+    <View
+      style={[styles.caja, { bottom: Math.max(insets.bottom, 16) }]}
+      pointerEvents="box-none"
+    >
       <View style={styles.pastilla}>
         <PressableScale
           onPress={onSalir}
@@ -44,13 +53,13 @@ export function BarraSeleccion({
 }
 
 const styles = StyleSheet.create({
-  caja: { position: "absolute", left: 12, right: 12, bottom: 12 },
+  caja: { position: "absolute", left: 12, right: 12 },
   pastilla: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    padding: 8,
-    borderRadius: 16,
+    padding: 6,
+    borderRadius: 14,
     backgroundColor: tema.texto,
     shadowColor: "#142819",
     shadowOpacity: 0.25,
@@ -63,17 +72,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
   cuenta: {
     color: tema.superficie,
     fontWeight: "700",
-    fontSize: 15,
+    fontSize: 14,
     fontVariant: ["tabular-nums"],
   },
   crece: { flex: 1 },
 });
 
 /** Lo que mide la barra, para que la lista deje lugar y no tape la última fila. */
-export const ALTO_BARRA_SELECCION = 76;
+export const ALTO_BARRA_SELECCION = 62;

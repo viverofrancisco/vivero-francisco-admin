@@ -431,13 +431,16 @@ const styles = StyleSheet.create({
   vacio: { color: tema.texto3, textAlign: "center", padding: 24 },
   error: { color: tema.rojo, textAlign: "center", padding: 12 },
 
+  /* Claro sobre oscuro, nunca el rojo de la casa —ver la nota de
+     `BarraSeleccion`—, y del alto del botón de guardar: la pastilla flota
+     sobre la última fila, así que cada píxel de más tapa lista. */
   accionBarra: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
     backgroundColor: "rgba(255,255,255,0.18)",
   },
-  accionBarraTexto: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  accionBarraTexto: { color: "#fff", fontWeight: "600", fontSize: 14 },
 
   /* Colgado del renglón, como el desplegable de Shopify: pegado a su borde de
      abajo y del ancho de la pantalla menos un margen. */

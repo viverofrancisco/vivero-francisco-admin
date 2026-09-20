@@ -31,12 +31,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   ACCION_BARRA_MOVIL,
   BarraSeleccionMovil,
 } from "@/components/shared/barra-seleccion-movil";
@@ -87,6 +81,7 @@ export function OrdenarTareasMovil({
   const [modo, setModo] = useState(modoGuardado);
   const [marcadas, setMarcadas] = useState<string[]>([]);
   const [guardando, setGuardando] = useState(false);
+  const [desplegado, setDesplegado] = useState(false);
 
   const lista = useMemo(
     () =>
@@ -123,6 +118,7 @@ export function OrdenarTareasMovil({
   }
 
   function elegirModo(nuevo: ModoOrdenTareas) {
+    setDesplegado(false);
     setModo(nuevo);
     // Marcar sirve para mover, y mover solo existe en Personalizado.
     if (nuevo !== "PERSONALIZADO") setMarcadas([]);
@@ -194,18 +190,18 @@ export function OrdenarTareasMovil({
 
         {/* El tipo de orden, arriba y siempre a la vista: se cambia, se mira
             cómo queda y se vuelve a cambiar sin salir de acá.
-            Es un desplegable anclado a su renglón —el de Shopify— y no un
-            cajón desde abajo: un cajón adentro de otra hoja se apila sobre lo
-            único que podía cerrarlo, así que quedaba sin salida más que elegir
-            una opción. */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="flex flex-none items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left"
-              />
-            }
+            Cuelga de su renglón —el desplegable de Shopify— y no es ni un
+            cajón desde abajo ni un menú en portal. El cajón se apilaba sobre
+            lo único que podía cerrarlo y quedaba sin salida; el menú anclado
+            se medía contra `--anchor-width`, que adentro de la hoja no para
+            quieto, y se estiraba solo. Esto es una tarjeta colgada del
+            renglón, con un velo invisible detrás: lo mismo que hace la app. */}
+        <div className="relative flex-none">
+          <button
+            type="button"
+            onClick={() => setDesplegado((v) => !v)}
+            aria-expanded={desplegado}
+            className="flex w-full items-center gap-3 border-b border-border bg-muted/40 px-4 py-3 text-left"
           >
             <span className="min-w-0 flex-1">
               <span className="block text-xs text-muted-foreground">
@@ -215,34 +211,51 @@ export function OrdenarTareasMovil({
                 {nombreDelModo}
               </span>
             </span>
-            <ChevronDown className="h-4 w-4 flex-none text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" sideOffset={-1}>
-            {OPCIONES_ORDEN_TAREAS.map((o) => (
-              <DropdownMenuItem
-                key={o.value}
-                onClick={() => elegirModo(o.value)}
-                className="gap-3 py-2.5"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-foreground">
-                    {o.label}
-                  </span>
-                  <span className="block text-xs text-muted-foreground">
-                    {o.detalle}
-                  </span>
-                </span>
-                {o.value === modo ? (
-                  <Check className="h-4 w-4 flex-none text-primary" />
-                ) : null}
-              </DropdownMenuItem>
-            ))}
-            <p className="px-2 pt-2 pb-1 text-xs text-muted-foreground">
-              Es el orden en que se ven las tareas en todo el sistema, también
-              al marcarlas en una visita.
-            </p>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <ChevronDown
+              className={`h-4 w-4 flex-none text-muted-foreground transition-transform ${
+                desplegado ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {desplegado ? (
+            <>
+              {/* Tocar afuera cierra, que es lo que hace un desplegable. */}
+              <button
+                type="button"
+                aria-label="Cerrar el menú"
+                onClick={() => setDesplegado(false)}
+                className="fixed inset-0 z-20 cursor-default"
+              />
+              <div className="absolute inset-x-3 top-full z-30 mt-1 rounded-2xl border border-border bg-popover p-1 shadow-lg">
+                {OPCIONES_ORDEN_TAREAS.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    onClick={() => elegirModo(o.value)}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-muted"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium text-foreground">
+                        {o.label}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {o.detalle}
+                      </span>
+                    </span>
+                    {o.value === modo ? (
+                      <Check className="h-4 w-4 flex-none text-primary" />
+                    ) : null}
+                  </button>
+                ))}
+                <p className="px-3 pt-1 pb-2 text-xs text-muted-foreground">
+                  Es el orden en que se ven las tareas en todo el sistema,
+                  también al marcarlas en una visita.
+                </p>
+              </div>
+            </>
+          ) : null}
+        </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <DndContext
