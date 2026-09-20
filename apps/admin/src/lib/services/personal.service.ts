@@ -9,6 +9,7 @@ import {
   estadoDeAcceso,
 } from "./personal-acceso.service";
 import { revocarAcceso } from "./acceso.service";
+import type { ResultadoEnLote } from "./lote";
 
 /**
  * La gente del vivero: su ficha y su cuenta.
@@ -211,4 +212,45 @@ export async function archivarPersonal(viewer: Viewer, id: string) {
     data: { deletedAt: new Date(), updatedById: viewer.id },
   });
   if (personal.userId) await revocarAcceso(personal.userId);
+}
+
+/**
+ * Archivar de a varios. **Uno por uno, no un `updateMany`.**
+ *
+ * Cada ficha tiene lo suyo que revisar —existir todavía, y cortarle el acceso a
+ * su cuenta—, y que una falle no tiene por qué cancelar a las demás. La
+ * respuesta dice cuántas salieron y **nombra** a las que se quedaron: el motivo
+ * puede ser distinto en cada una, y un "algunas fallaron" deja a quien lo hizo
+ * sin saber cuál reintentar.
+ */
+export async function archivarVariosPersonal(
+  viewer: Viewer,
+  ids: string[]
+): Promise<ResultadoEnLote> {
+  ensureOficina(viewer);
+  const unicos = [...new Set(ids)];
+  const nombres = new Map(
+    (
+      await prisma.personal.findMany({
+        where: { id: { in: unicos } },
+        select: { id: true, nombre: true, apellido: true },
+      })
+    ).map((p) => [p.id, `${p.nombre} ${p.apellido ?? ""}`.trim()])
+  );
+
+  let eliminados = 0;
+  const errores: ResultadoEnLote["errores"] = [];
+  for (const id of unicos) {
+    try {
+      await archivarPersonal(viewer, id);
+      eliminados++;
+    } catch (error) {
+      errores.push({
+        id,
+        nombre: nombres.get(id) ?? null,
+        motivo: error instanceof Error ? error.message : "No se pudo eliminar.",
+      });
+    }
+  }
+  return { eliminados, errores };
 }

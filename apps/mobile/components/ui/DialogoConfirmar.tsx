@@ -20,6 +20,7 @@ export function DialogoConfirmar({
   /** Lo que se está por sellar. Se muestra grande y en vivo. */
   hora,
   confirmar,
+  peligro = false,
   cargando = false,
   onConfirmar,
   onCancelar,
@@ -29,6 +30,12 @@ export function DialogoConfirmar({
   detalle?: string;
   hora?: boolean;
   confirmar: string;
+  /**
+   * Para lo que destruye. **Acá sí va el rojo**: la barra de selección lo evita
+   * porque sobre su fondo oscuro desaparece, y el color pertenece al momento en
+   * que se decide, que es este.
+   */
+  peligro?: boolean;
   cargando?: boolean;
   onConfirmar: () => void;
   onCancelar: () => void;
@@ -44,7 +51,7 @@ export function DialogoConfirmar({
           onPress={onConfirmar}
           disabled={cargando}
           estiloExterno={[styles.ancho, styles.separado]}
-          style={styles.confirmar}
+          style={[styles.confirmar, peligro && styles.peligro]}
         >
           {cargando ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -129,6 +136,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   confirmarTexto: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  peligro: { backgroundColor: tema.rojo },
   // Pegado al primario: son el mismo par de opciones, y el aire de por medio
   // lo hacía parecer de otro grupo.
   cancelar: { height: 42, alignItems: "center", justifyContent: "center" },

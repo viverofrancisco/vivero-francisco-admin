@@ -1,5 +1,4 @@
 import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
-import { PageHeader } from "@/components/shared/page-header";
 import { listPersonal } from "@/lib/services/personal.service";
 import { PersonalTable } from "@/components/personal/personal-table";
 
@@ -10,6 +9,9 @@ import { PersonalTable } from "@/components/personal/personal-table";
  * la app pedía lo mismo por `/api/mobile/personal`, así que las dos listas
  * mostraban campos distintos de la misma gente. Ahora las dos leen
  * `listPersonal`.
+ *
+ * El encabezado lo pone `PersonalTable`: su ⋯ prende el modo de selección, que
+ * es estado de esa pantalla.
  */
 export default async function PersonalPage() {
   await requireAuth();
@@ -17,18 +19,6 @@ export default async function PersonalPage() {
 
   return (
     <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
-      <PageHeader
-        title="Personal"
-        actions={[
-          {
-            label: "Nuevo Personal",
-            href: "/dashboard/personal/nuevo",
-            icon: "plus",
-            primary: true,
-          },
-        ]}
-      />
-
       <PersonalTable personal={personal} />
     </div>
   );

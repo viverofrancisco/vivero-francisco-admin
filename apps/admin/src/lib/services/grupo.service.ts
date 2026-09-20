@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ForbiddenError, NotFoundError } from "./errors";
 import type { Viewer } from "./viewer";
+import type { ResultadoEnLote } from "./lote";
 import { isAdminRole } from "./viewer";
 
 /**
@@ -125,6 +126,43 @@ export async function archivarGrupo(viewer: Viewer, id: string) {
     where: { id },
     data: { deletedAt: new Date(), updatedById: viewer.id },
   });
+}
+
+/**
+ * Archivar de a varias. Una por una y no un `updateMany`, por lo mismo que en
+ * personal: que una falle no cancela a las demás, y la respuesta nombra a las
+ * que se quedaron. Ver `archivarVariosPersonal`.
+ */
+export async function archivarVariosGrupos(
+  viewer: Viewer,
+  ids: string[]
+): Promise<ResultadoEnLote> {
+  ensureOficina(viewer);
+  const unicos = [...new Set(ids)];
+  const nombres = new Map(
+    (
+      await prisma.grupo.findMany({
+        where: { id: { in: unicos } },
+        select: { id: true, nombre: true },
+      })
+    ).map((g) => [g.id, g.nombre])
+  );
+
+  let eliminados = 0;
+  const errores: ResultadoEnLote["errores"] = [];
+  for (const id of unicos) {
+    try {
+      await archivarGrupo(viewer, id);
+      eliminados++;
+    } catch (error) {
+      errores.push({
+        id,
+        nombre: nombres.get(id) ?? null,
+        motivo: error instanceof Error ? error.message : "No se pudo eliminar.",
+      });
+    }
+  }
+  return { eliminados, errores };
 }
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];

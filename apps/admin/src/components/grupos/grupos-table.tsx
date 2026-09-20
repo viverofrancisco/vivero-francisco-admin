@@ -1,9 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PageHeader } from "@/components/shared/page-header";
+import {
+  ACCION_BARRA_MOVIL,
+  BarraSeleccionMovil,
+} from "@/components/shared/barra-seleccion-movil";
+import {
+  DialogoEliminarEnLote,
+  useEliminarEnLote,
+} from "@/components/shared/eliminar-en-lote";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
@@ -39,6 +50,10 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
   const [page, setPage] = useFiltroUrl("pagina", 1);
+  const [marcados, setMarcados] = useState<string[]>([]);
+  /** Solo en el teléfono: ahí marcar es un modo, que prende el ⋯. */
+  const [seleccionando, setSeleccionando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return grupos;
@@ -58,6 +73,29 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
     if (!res.ok) throw new Error("Error al eliminar");
   };
 
+  const { eliminar, eliminando } = useEliminarEnLote({
+    endpoint: "/api/grupos/eliminar",
+    sustantivo: "grupo",
+    plural: "grupos",
+    onListo: () => {
+      setConfirmando(false);
+      setMarcados([]);
+      setSeleccionando(false);
+      router.refresh();
+    },
+  });
+
+  // Marcar y filtrar después dejaría una cuenta de seleccionados que ya no
+  // están en pantalla, y un botón que borra lo que no se ve.
+  const enPantalla = new Set(filtered.map((g) => g.id));
+  const elegidos = marcados.filter((id) => enPantalla.has(id));
+
+  function alternar(id: string, marcar: boolean) {
+    setMarcados((actuales) =>
+      marcar ? [...actuales, id] : actuales.filter((x) => x !== id)
+    );
+  }
+
   const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
     filtered.length,
     searchQuery
@@ -69,6 +107,28 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
     // Columna con alto propio en móvil, para que scrollee la lista y no la
     // página; en escritorio, el bloque de tarjetas de siempre.
     <div className="flex min-h-0 flex-1 flex-col gap-3 md:block md:flex-none md:space-y-5">
+      {/* El encabezado vive en el cliente porque el ⋯ prende el modo de
+          selección, que es estado de esta pantalla. */}
+      <PageHeader
+        title="Grupos"
+        actions={[
+          {
+            label: "Nuevo Grupo",
+            href: "/dashboard/grupos/nuevo",
+            icon: "plus",
+            primary: true,
+          },
+          ...(seleccionando || filtered.length === 0
+            ? []
+            : [
+                {
+                  label: "Seleccionar grupos",
+                  onClick: () => setSeleccionando(true),
+                  soloMovil: true,
+                } as const,
+              ]),
+        ]}
+      />
       {/* Search */}
       <div className="flex flex-none flex-wrap items-center gap-3 [&_input]:h-9">
         <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
@@ -83,6 +143,33 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
             className="pl-9"
           />
         </div>
+
+        {/* Comparte renglón con el buscador en vez de ir sobre las tarjetas:
+            una franja propia las empujaría hacia abajo justo cuando se está
+            apuntando a una, y acá no hay fila de encabezados que tapar. */}
+        {elegidos.length > 0 ? (
+          <div className="hidden items-center gap-3 md:flex">
+            <span className="text-xs font-bold tracking-wide text-muted-foreground">
+              {elegidos.length === 1
+                ? "1 grupo seleccionado"
+                : `${elegidos.length} grupos seleccionados`}
+            </span>
+            <button
+              type="button"
+              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              onClick={() => setMarcados([])}
+            >
+              Quitar selección
+            </button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmando(true)}
+            >
+              Eliminar
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       {/* Tarjetas: solo en escritorio. En una columna de 400 px cada una
@@ -103,9 +190,22 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
                   onClick={() =>
                     router.push(`/dashboard/grupos/${grupo.id}?from=${aca()}`)
                   }
-                  className="cursor-pointer rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+                  className={`cursor-pointer rounded-2xl border bg-card p-5 transition-shadow hover:shadow-md ${
+                    marcados.includes(grupo.id)
+                      ? "border-primary/40 bg-primary/5"
+                      : "border-border"
+                  }`}
                 >
                   <div className="mb-4 flex items-center gap-3">
+                    <span onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={marcados.includes(grupo.id)}
+                        onCheckedChange={(valor) =>
+                          alternar(grupo.id, valor === true)
+                        }
+                        aria-label={`Seleccionar ${grupo.nombre}`}
+                      />
+                    </span>
                     <div
                       className={`h-11 w-3 flex-none rounded-md ${
                         barColors[idx % barColors.length]
@@ -191,10 +291,15 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
         {enLista.map((grupo, idx) => {
           const miembros = grupo.miembros ?? [];
           return (
-            <Link
+            <FilaMovil
               key={grupo.id}
               href={`/dashboard/grupos/${grupo.id}?from=${aqui}`}
-              className={FILA_MOVIL}
+              seleccionando={seleccionando}
+              marcada={marcados.includes(grupo.id)}
+              onAlternar={() =>
+                alternar(grupo.id, !marcados.includes(grupo.id))
+              }
+              etiqueta={grupo.nombre}
             >
               <span
                 className={`h-10 w-1.5 flex-none rounded-md ${
@@ -220,10 +325,91 @@ export function GruposTable({ grupos }: { grupos: Grupo[] }) {
                 </span>
               </span>
               <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
-            </Link>
+            </FilaMovil>
           );
         })}
+        {/* La barra flota sobre la lista: sin esto tapa la última fila. */}
+        {seleccionando ? <div className="h-16" aria-hidden /> : null}
       </ListaMovil>
+
+      {seleccionando ? (
+        <BarraSeleccionMovil
+          cuantas={elegidos.length}
+          onSalir={() => {
+            setSeleccionando(false);
+            setMarcados([]);
+          }}
+        >
+          <Button
+            size="sm"
+            className={ACCION_BARRA_MOVIL}
+            disabled={elegidos.length === 0}
+            onClick={() => setConfirmando(true)}
+          >
+            Eliminar
+          </Button>
+        </BarraSeleccionMovil>
+      ) : null}
+
+      <DialogoEliminarEnLote
+        abierto={confirmando}
+        onOpenChange={setConfirmando}
+        cuantas={elegidos.length}
+        sustantivo="grupo"
+        plural="grupos"
+        detalle="Las cuadrillas salen de las listas y de los selectores. Las visitas que salieron con ellas las siguen nombrando: por eso se archivan en vez de borrarse."
+        eliminando={eliminando}
+        onConfirmar={() => eliminar(elegidos)}
+      />
     </div>
+  );
+}
+
+/**
+ * Una fila del teléfono. Marcando **no navega**: una fila que a veces abre la
+ * ficha y a veces marca es una trampa, así que mientras el modo está prendido
+ * es un botón y no un enlace, y la casilla solo pinta —el toque es de la fila
+ * entera—.
+ */
+function FilaMovil({
+  href,
+  seleccionando,
+  marcada,
+  onAlternar,
+  etiqueta,
+  children,
+}: {
+  href: string;
+  seleccionando: boolean;
+  marcada: boolean;
+  onAlternar: () => void;
+  etiqueta: string;
+  children: React.ReactNode;
+}) {
+  if (!seleccionando) {
+    return (
+      <Link href={href} className={`${FILA_MOVIL} bg-card`}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onAlternar}
+      aria-pressed={marcada}
+      aria-label={etiqueta}
+      className={`${FILA_MOVIL} w-full text-left ${
+        marcada ? "bg-primary/5" : "bg-card"
+      }`}
+    >
+      <Checkbox
+        checked={marcada}
+        className="pointer-events-none flex-none"
+        tabIndex={-1}
+        aria-hidden
+      />
+      {children}
+    </button>
   );
 }

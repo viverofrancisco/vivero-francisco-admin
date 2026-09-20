@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,6 +12,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PageHeader } from "@/components/shared/page-header";
+import {
+  ACCION_BARRA_MOVIL,
+  BarraSeleccionMovil,
+} from "@/components/shared/barra-seleccion-movil";
+import {
+  DialogoEliminarEnLote,
+  useEliminarEnLote,
+} from "@/components/shared/eliminar-en-lote";
+import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -119,6 +130,15 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
   const [estadoFilter, setEstadoFilter] = useFiltroUrl<string | null>("estado", null);
   const [tipoFilter, setTipoFilter] = useFiltroUrl<string | null>("tipo", null);
   const [page, setPage] = useFiltroUrl("pagina", 1);
+  /** Ids marcados para eliminar de a varios. */
+  const [marcadas, setMarcadas] = useState<string[]>([]);
+  /**
+   * Solo en el teléfono: ahí no hay dónde poner una casilla en cada fila sin
+   * gastar ese ancho para siempre, así que marcar es un modo que se prende
+   * desde el ⋯ del encabezado. En escritorio las casillas están en su columna.
+   */
+  const [seleccionando, setSeleccionando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
 
   const filtered = useMemo(() => {
     let result = personal;
@@ -168,6 +188,31 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
     if (!res.ok) throw new Error("Error al eliminar");
   };
 
+  const { eliminar, eliminando } = useEliminarEnLote({
+    endpoint: "/api/personal/eliminar",
+    sustantivo: "persona",
+    plural: "personas",
+    onListo: () => {
+      setConfirmando(false);
+      setMarcadas([]);
+      setSeleccionando(false);
+      router.refresh();
+    },
+  });
+
+  // Marcar y filtrar después dejaría una cuenta de seleccionadas que ya no
+  // están en pantalla, y un botón que borra lo que no se ve.
+  const enPantalla = new Set(filtered.map((p) => p.id));
+  const elegidas = marcadas.filter((id) => enPantalla.has(id));
+  const todasMarcadas =
+    filtered.length > 0 && elegidas.length === filtered.length;
+
+  function alternar(id: string, marcar: boolean) {
+    setMarcadas((actuales) =>
+      marcar ? [...actuales, id] : actuales.filter((x) => x !== id)
+    );
+  }
+
   const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
     filtered.length,
     `${searchQuery}|${estadoFilter ?? ""}|${tipoFilter ?? ""}`
@@ -177,6 +222,29 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
+      {/* El encabezado vive en el cliente porque el ⋯ prende el modo de
+          selección, que es estado de esta pantalla. */}
+      <PageHeader
+        title="Personal"
+        actions={[
+          {
+            label: "Nuevo Personal",
+            href: "/dashboard/personal/nuevo",
+            icon: "plus",
+            primary: true,
+          },
+          ...(seleccionando || filtered.length === 0
+            ? []
+            : [
+                {
+                  label: "Seleccionar personal",
+                  onClick: () => setSeleccionando(true),
+                  soloMovil: true,
+                } as const,
+              ]),
+        ]}
+      />
+
       {/* Solo en escritorio: cuatro tarjetas apiladas se comían la pantalla
           entera antes de la primera fila, y quien entra acá viene a buscar a
           alguien, no a mirar los totales. */}
@@ -241,13 +309,67 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
 
       {/* Solo las filas scrollean: encabezado y paginación quedan fijos. */}
       <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card md:flex">
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          {/* Tapa la fila de encabezados en vez de empujarla: la tabla no se
+              mueve al marcar la primera fila, que es justo cuando se está
+              apuntando a otra. Va **fuera** de la tabla porque scrollea a lo
+              ancho, y ahí el botón se iría de pantalla; el hueco del ancho de
+              la columna de casillas la deja justo encima de la suya. */}
+          {elegidas.length > 0 ? (
+            <div className="absolute inset-x-0 top-0 z-20 flex h-10 items-center border-b border-border bg-secondary px-2">
+              <Checkbox
+                checked={todasMarcadas}
+                indeterminate={!todasMarcadas}
+                onCheckedChange={() => setMarcadas([])}
+                aria-label="Quitar la selección"
+              />
+              <span className="ml-3 text-xs font-bold tracking-wide text-secondary-foreground">
+                {elegidas.length === 1
+                  ? "1 persona seleccionada"
+                  : `${elegidas.length} personas seleccionadas`}
+              </span>
+              <button
+                type="button"
+                className="ml-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                onClick={() => setMarcadas([])}
+              >
+                Quitar selección
+              </button>
+              <span className="flex-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmando(true)}
+              >
+                Eliminar
+              </Button>
+            </div>
+          ) : null}
           {filtered.length === 0 ? (
             <EmptyState message="No se encontro personal" />
           ) : (
             <Table containerClassName="h-full overflow-y-auto">
               <TableHeader sticky>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={todasMarcadas}
+                      indeterminate={elegidas.length > 0 && !todasMarcadas}
+                      // Con algo marcado, tocarla limpia; si no, marca la lista
+                      // entera. Es lo que espera quien la ve a medias: el
+                      // segundo clic deshace el primero.
+                      onCheckedChange={() =>
+                        setMarcadas(
+                          elegidas.length > 0 ? [] : filtered.map((p) => p.id)
+                        )
+                      }
+                      aria-label={
+                        elegidas.length > 0
+                          ? "Quitar la selección"
+                          : "Seleccionar todo el personal"
+                      }
+                    />
+                  </TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Especialidad</TableHead>
                   <TableHead>Teléfono</TableHead>
@@ -261,11 +383,25 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
                 {paginated.map((p) => (
                   <TableRow
                     key={p.id}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${
+                      marcadas.includes(p.id) ? "bg-primary/5" : ""
+                    }`}
                     onClick={() =>
                       router.push(`/dashboard/personal/${p.id}?from=${aca()}`)
                     }
                   >
+                    <TableCell
+                      className="w-10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={marcadas.includes(p.id)}
+                        onCheckedChange={(valor) =>
+                          alternar(p.id, valor === true)
+                        }
+                        aria-label={`Seleccionar ${fullName(p)}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
                         <InitialsAvatar name={fullName(p)} size={36} />
@@ -356,10 +492,13 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
         centinela={centinela}
       >
         {enLista.map((p) => (
-          <Link
+          <FilaMovil
             key={p.id}
             href={`/dashboard/personal/${p.id}?from=${aqui}`}
-            className={FILA_MOVIL}
+            seleccionando={seleccionando}
+            marcada={marcadas.includes(p.id)}
+            onAlternar={() => alternar(p.id, !marcadas.includes(p.id))}
+            etiqueta={fullName(p)}
           >
             <InitialsAvatar name={fullName(p)} size={40} />
             <span className="min-w-0 flex-1">
@@ -387,9 +526,91 @@ export function PersonalTable({ personal }: { personal: Personal[] }) {
               </span>
             </span>
             <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
-          </Link>
+          </FilaMovil>
         ))}
+        {/* La barra flota sobre la lista: sin esto tapa la última fila. */}
+        {seleccionando ? <div className="h-16" aria-hidden /> : null}
       </ListaMovil>
+
+      {seleccionando ? (
+        <BarraSeleccionMovil
+          cuantas={elegidas.length}
+          onSalir={() => {
+            setSeleccionando(false);
+            setMarcadas([]);
+          }}
+        >
+          <Button
+            size="sm"
+            className={ACCION_BARRA_MOVIL}
+            disabled={elegidas.length === 0}
+            onClick={() => setConfirmando(true)}
+          >
+            Eliminar
+          </Button>
+        </BarraSeleccionMovil>
+      ) : null}
+
+      <DialogoEliminarEnLote
+        abierto={confirmando}
+        onOpenChange={setConfirmando}
+        cuantas={elegidas.length}
+        sustantivo="persona"
+        plural="personas"
+        detalle="Sus fichas salen de las listas y su cuenta deja de entrar a la app. No se borra nada de lo que hicieron: su nombre sigue firmando los partes que cargaron."
+        eliminando={eliminando}
+        onConfirmar={() => eliminar(elegidas)}
+      />
     </div>
+  );
+}
+
+/**
+ * Una fila del teléfono. Marcando **no navega**: una fila que a veces abre la
+ * ficha y a veces marca es una trampa, así que mientras el modo está prendido
+ * es un botón y no un enlace, y la casilla solo pinta —el toque es de la fila
+ * entera, y dejar que la casilla lo tome también marca y desmarca en el mismo
+ * gesto—.
+ */
+function FilaMovil({
+  href,
+  seleccionando,
+  marcada,
+  onAlternar,
+  etiqueta,
+  children,
+}: {
+  href: string;
+  seleccionando: boolean;
+  marcada: boolean;
+  onAlternar: () => void;
+  etiqueta: string;
+  children: React.ReactNode;
+}) {
+  if (!seleccionando) {
+    return (
+      <Link href={href} className={`${FILA_MOVIL} bg-card`}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onAlternar}
+      aria-pressed={marcada}
+      aria-label={etiqueta}
+      className={`${FILA_MOVIL} w-full text-left ${
+        marcada ? "bg-primary/5" : "bg-card"
+      }`}
+    >
+      <Checkbox
+        checked={marcada}
+        className="pointer-events-none flex-none"
+        tabIndex={-1}
+        aria-hidden
+      />
+      {children}
+    </button>
   );
 }

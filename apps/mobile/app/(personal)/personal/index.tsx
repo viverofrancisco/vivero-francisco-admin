@@ -6,6 +6,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
+import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
+import {
+  ALTO_BARRA_SELECCION,
+  BarraSeleccion,
+} from "@/components/ui/BarraSeleccion";
+import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+import { avisoDeLote, eliminarEnLote } from "@/lib/lote";
 import { useAuthStore } from "@/lib/auth-store";
 import type { EstadoAcceso, PersonalFicha } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -76,6 +83,15 @@ export default function PersonalListScreen() {
   const [busqueda, setBusqueda] = useState("");
   const [estado, setEstado] = useState("");
   const [tipo, setTipo] = useState("");
+  const [marcadas, setMarcadas] = useState<string[]>([]);
+  /**
+   * Marcar es un **modo**, que prende el ⋯ del encabezado: en una pantalla de
+   * 375 px no hay dónde poner una casilla en cada fila sin gastar ese ancho
+   * para siempre. Es lo mismo que hace el portal en el teléfono.
+   */
+  const [seleccionando, setSeleccionando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +120,31 @@ export default function PersonalListScreen() {
     }, [cargar])
   );
 
+  function alternar(id: string) {
+    setMarcadas((actuales) =>
+      actuales.includes(id)
+        ? actuales.filter((x) => x !== id)
+        : [...actuales, id]
+    );
+  }
+
+  async function eliminarMarcadas() {
+    setEliminando(true);
+    try {
+      const res = await eliminarEnLote("/api/mobile/personal/eliminar", elegidas);
+      setError(avisoDeLote(res, "personas"));
+      setConfirmando(false);
+      setSeleccionando(false);
+      setMarcadas([]);
+      await cargar();
+    } catch (e) {
+      setError(mensajeDeError(e, "No pudimos eliminar"));
+      setConfirmando(false);
+    } finally {
+      setEliminando(false);
+    }
+  }
+
   const q = busqueda.trim().toLowerCase();
   const visibles = useMemo(
     () =>
@@ -121,9 +162,28 @@ export default function PersonalListScreen() {
     [items, estado, tipo, q]
   );
 
+  // Marcar y filtrar después dejaría una cuenta de seleccionadas que ya no
+  // están en pantalla, y un botón que borra lo que no se ve.
+  const enPantalla = new Set(visibles.map((p) => p.id));
+  const elegidas = marcadas.filter((id) => enPantalla.has(id));
+
   return (
     <PantallaLista
       titulo="Personal"
+      accion={
+        puedeEditar && !seleccionando && visibles.length > 0 ? (
+          <MenuDeEncabezado
+            opciones={[
+              {
+                icono: "checkbox-outline",
+                etiqueta: "Seleccionar personal",
+                detalle: "Para eliminar de a varios",
+                onPress: () => setSeleccionando(true),
+              },
+            ]}
+          />
+        ) : undefined
+      }
       onCrear={
         puedeEditar ? () => router.push("/(personal)/personal/nuevo") : undefined
       }
@@ -179,14 +239,33 @@ export default function PersonalListScreen() {
               </Text>
             </View>
           }
+          ListFooterComponent={
+            seleccionando ? (
+              <View style={{ height: ALTO_BARRA_SELECCION }} />
+            ) : null
+          }
           renderItem={({ item }) => {
             const aviso = ACCESO[item.acceso];
+            const marcada = marcadas.includes(item.id);
             return (
               <PressableScale
-                onPress={() => router.push(`/(personal)/personal/${item.id}`)}
+                // Marcando **no navega**: una fila que a veces abre la ficha y
+                // a veces marca es una trampa.
+                onPress={() =>
+                  seleccionando
+                    ? alternar(item.id)
+                    : router.push(`/(personal)/personal/${item.id}`)
+                }
                 estiloExterno={styles.ancho}
-                style={FILA_LISTA}
+                style={[FILA_LISTA, marcada && styles.filaMarcada]}
               >
+                {seleccionando ? (
+                  <Ionicons
+                    name={marcada ? "checkbox" : "square-outline"}
+                    size={22}
+                    color={marcada ? tema.verde : tema.texto3}
+                  />
+                ) : null}
                 <View style={styles.avatar}>
                   <Text style={styles.avatarTexto}>{iniciales(item)}</Text>
                 </View>
@@ -222,12 +301,51 @@ export default function PersonalListScreen() {
                     {resumen(item)}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
+                {seleccionando ? null : (
+                  <Ionicons
+                    name="chevron-forward"
+                    size={18}
+                    color={tema.texto3}
+                  />
+                )}
               </PressableScale>
             );
           }}
         />
       )}
+
+      {seleccionando ? (
+        <BarraSeleccion
+          cuantas={elegidas.length}
+          onSalir={() => {
+            setSeleccionando(false);
+            setMarcadas([]);
+          }}
+        >
+          <PressableScale
+            onPress={() => setConfirmando(true)}
+            disabled={elegidas.length === 0}
+            style={[styles.accionBarra, elegidas.length === 0 && styles.apagado]}
+          >
+            <Text style={styles.accionBarraTexto}>Eliminar</Text>
+          </PressableScale>
+        </BarraSeleccion>
+      ) : null}
+
+      <DialogoConfirmar
+        visible={confirmando}
+        titulo={
+          elegidas.length === 1
+            ? "¿Eliminar 1 persona?"
+            : `¿Eliminar ${elegidas.length} personas?`
+        }
+        detalle="Sus fichas salen de las listas y su cuenta deja de entrar a la app. No se borra nada de lo que hicieron: su nombre sigue firmando los partes que cargaron."
+        confirmar="Eliminar"
+        peligro
+        cargando={eliminando}
+        onConfirmar={eliminarMarcadas}
+        onCancelar={() => setConfirmando(false)}
+      />
     </PantallaLista>
   );
 }
@@ -261,6 +379,7 @@ const styles = StyleSheet.create({
   },
   avatarTexto: { color: tema.verde700, fontWeight: "700", fontSize: 15 },
   filaTexto: { flex: 1, gap: 2 },
+  filaMarcada: { backgroundColor: tema.verde50 },
   renglon: { flexDirection: "row", alignItems: "center", gap: 6 },
   nombre: { flexShrink: 1, color: tema.texto, fontWeight: "700" },
   detalle: { color: tema.texto3 },
@@ -270,6 +389,16 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   pastillaTexto: { fontSize: 11, fontWeight: "700" },
+  /* Claro sobre oscuro, nunca el rojo de la casa: sobre la pastilla oscura
+     desaparece. El rojo lo pone la confirmación, que es donde se decide. */
+  accionBarra: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  accionBarraTexto: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  apagado: { opacity: 0.45 },
   vacio: { alignItems: "center", paddingVertical: 48 },
   vacioTitulo: { color: tema.texto },
   error: { color: tema.rojo, textAlign: "center", padding: 16 },
