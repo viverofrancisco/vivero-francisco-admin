@@ -177,7 +177,6 @@ export default function PersonalListScreen() {
               {
                 icono: "checkbox-outline",
                 etiqueta: "Seleccionar personal",
-                detalle: "Para eliminar de a varios",
                 onPress: () => setSeleccionando(true),
               },
             ]}

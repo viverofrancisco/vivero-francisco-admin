@@ -1,69 +1,100 @@
-import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useRef, useState } from "react";
+import {
+  Dimensions,
+  Modal,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
 
 export interface OpcionDeMenu {
   icono: React.ComponentProps<typeof Ionicons>["name"];
   etiqueta: string;
-  /** Una línea de ayuda, cuando la acción no se explica sola. */
-  detalle?: string;
   onPress: () => void;
 }
 
 /**
  * El ⋯ del encabezado: lo que se hace de vez en cuando.
  *
- * Es el mismo lugar que en el portal en móvil —ahí las acciones `soloMovil` de
- * `PageHeader` caen en un ⋯— y por eso prender el modo de selección vive acá:
- * en una pantalla de 375 px no hay dónde poner una casilla en cada fila sin
- * gastar ese ancho para siempre.
+ * **Cuelga del botón**, como el del portal: es un menú de dos renglones, y un
+ * cajón desde abajo para eso tapa media pantalla, llega con una animación de
+ * hoja y se arrastra para cerrar —todo el peso de una decisión chica—. El cajón
+ * queda para lo que necesita renglones grandes y varias opciones con su
+ * explicación.
  *
- * Las opciones se abren en un cajón desde abajo, donde está el pulgar, y no en
- * un menú colgado del botón, que a 375 px queda en la punta más lejana de la
- * mano.
+ * La posición sale de medir el botón (`measureInWindow`) y no de un número
+ * fijo: el encabezado crece con el safe area del teléfono y con el tamaño de
+ * letra del sistema. Va adentro de un `Modal` transparente porque si no lo
+ * recorta la cabecera, que es la que lo contiene.
  */
 export function MenuDeEncabezado({ opciones }: { opciones: OpcionDeMenu[] }) {
-  const [abierto, setAbierto] = useState(false);
+  const ancla = useRef<View>(null);
+  const [desde, setDesde] = useState<{ top: number; right: number } | null>(
+    null
+  );
 
   if (opciones.length === 0) return null;
 
+  function abrir() {
+    ancla.current?.measureInWindow((x, y, ancho, alto) => {
+      setDesde({
+        top: y + alto + 6,
+        // Anclado por la derecha: el botón vive en esa esquina y el menú es más
+        // ancho que él, así que crece hacia adentro de la pantalla.
+        right: Dimensions.get("window").width - (x + ancho),
+      });
+    });
+  }
+
   return (
     <>
-      <PressableScale
-        onPress={() => setAbierto(true)}
-        style={styles.boton}
-        accessibilityLabel="Más acciones"
-      >
-        <Ionicons name="ellipsis-horizontal" size={20} color={tema.texto2} />
-      </PressableScale>
+      {/* `collapsable={false}`: sin esto Android se come la vista por no pintar
+          nada, y no hay qué medir. */}
+      <View ref={ancla} collapsable={false}>
+        <PressableScale
+          onPress={abrir}
+          style={styles.boton}
+          accessibilityLabel="Acciones"
+        >
+          <Ionicons name="ellipsis-horizontal" size={20} color={tema.texto2} />
+        </PressableScale>
+      </View>
 
-      <HojaInferior visible={abierto} onCerrar={() => setAbierto(false)}>
-        <View style={styles.hoja}>
-          {opciones.map((o) => (
-            <PressableScale
-              key={o.etiqueta}
-              onPress={() => {
-                setAbierto(false);
-                o.onPress();
-              }}
-              estiloExterno={styles.ancho}
-              style={styles.opcion}
-            >
-              <Ionicons name={o.icono} size={20} color={tema.texto2} />
-              <View style={styles.crece}>
+      <Modal
+        visible={desde !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDesde(null)}
+      >
+        {/* Tocar afuera cierra, que es lo que hace un desplegable. */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => setDesde(null)}>
+          <View
+            style={[styles.menu, desde ?? undefined]}
+            // El toque adentro del menú no tiene que cerrarlo.
+            onStartShouldSetResponder={() => true}
+          >
+            {opciones.map((o) => (
+              <PressableScale
+                key={o.etiqueta}
+                onPress={() => {
+                  setDesde(null);
+                  o.onPress();
+                }}
+                estiloExterno={styles.ancho}
+                style={styles.opcion}
+                estiloPresionado={styles.presionada}
+              >
+                <Ionicons name={o.icono} size={18} color={tema.texto2} />
                 <Text style={styles.etiqueta}>{o.etiqueta}</Text>
-                {o.detalle ? (
-                  <Text style={styles.detalle}>{o.detalle}</Text>
-                ) : null}
-              </View>
-            </PressableScale>
-          ))}
-        </View>
-      </HojaInferior>
+              </PressableScale>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -78,17 +109,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  hoja: { paddingHorizontal: 4, paddingBottom: 8, gap: 4 },
+  menu: {
+    position: "absolute",
+    minWidth: 200,
+    paddingVertical: 4,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: tema.linea,
+    backgroundColor: tema.superficie,
+    shadowColor: "#142819",
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
   ancho: { alignSelf: "stretch" },
-  crece: { flex: 1 },
   opcion: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    borderRadius: 12,
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: 10,
   },
-  etiqueta: { color: tema.texto, fontSize: 15, fontWeight: "600" },
-  detalle: { color: tema.texto3, fontSize: 13 },
+  presionada: { backgroundColor: tema.lienzo },
+  etiqueta: { color: tema.texto, fontSize: 15, fontWeight: "500" },
 });

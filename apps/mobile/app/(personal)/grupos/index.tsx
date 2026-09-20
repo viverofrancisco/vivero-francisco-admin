@@ -111,7 +111,6 @@ export default function GruposListScreen() {
               {
                 icono: "checkbox-outline",
                 etiqueta: "Seleccionar grupos",
-                detalle: "Para eliminar de a varios",
                 onPress: () => setSeleccionando(true),
               },
             ]}
