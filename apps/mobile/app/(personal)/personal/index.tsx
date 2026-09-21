@@ -6,7 +6,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
 import {
   ALTO_BARRA_SELECCION,
   BarraSeleccion,
@@ -170,23 +169,28 @@ export default function PersonalListScreen() {
   return (
     <PantallaLista
       titulo="Personal"
-      accion={
-        puedeEditar && !seleccionando && visibles.length > 0 ? (
-          <MenuDeEncabezado
-            opciones={[
+      acciones={
+        puedeEditar
+          ? [
               {
-                icono: "checkbox-outline",
-                etiqueta: "Seleccionar personal",
-                onPress: () => setSeleccionando(true),
+                icono: "add" as const,
+                etiqueta: "Nueva persona",
+                onPress: () => router.push("/(personal)/personal/nuevo"),
               },
-            ]}
-          />
-        ) : undefined
+              // Prender la selección solo cuando hay algo que marcar y no se
+              // está marcando ya.
+              ...(!seleccionando && visibles.length > 0
+                ? [
+                    {
+                      icono: "checkbox-outline" as const,
+                      etiqueta: "Seleccionar personal",
+                      onPress: () => setSeleccionando(true),
+                    },
+                  ]
+                : []),
+            ]
+          : []
       }
-      onCrear={
-        puedeEditar ? () => router.push("/(personal)/personal/nuevo") : undefined
-      }
-      etiquetaCrear="Nueva persona"
       busqueda={busqueda}
       onBuscar={setBusqueda}
       placeholder="Buscar por nombre, usuario o teléfono..."

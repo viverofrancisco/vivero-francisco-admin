@@ -118,8 +118,17 @@ export default function ClientesListScreen() {
 
   return (
     <PantallaLista
-      onCrear={puedeCrear ? () => router.push("/(personal)/clientes/nuevo") : undefined}
-      etiquetaCrear="Nuevo cliente"
+      acciones={
+        puedeCrear
+          ? [
+              {
+                icono: "add",
+                etiqueta: "Nuevo cliente",
+                onPress: () => router.push("/(personal)/clientes/nuevo"),
+              },
+            ]
+          : []
+      }
       titulo="Clientes"
       busqueda={busqueda}
       onBuscar={buscar}

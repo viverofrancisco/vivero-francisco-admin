@@ -132,8 +132,13 @@ export default function InformesListScreen() {
   return (
     <PantallaLista
       titulo="Informes"
-      onCrear={() => router.push("/(personal)/informes/nuevo")}
-      etiquetaCrear="Generar informe"
+      acciones={[
+        {
+          icono: "add",
+          etiqueta: "Generar informe",
+          onPress: () => router.push("/(personal)/informes/nuevo"),
+        },
+      ]}
       busqueda={busqueda}
       onBuscar={setBusqueda}
       placeholder="Buscar..."

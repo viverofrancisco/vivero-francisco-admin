@@ -74,8 +74,13 @@ export default function TareasListScreen() {
   return (
     <PantallaLista
       titulo="Tareas"
-      onCrear={() => router.push("/(personal)/tareas/nueva")}
-      etiquetaCrear="Nueva tarea"
+      acciones={[
+        {
+          icono: "add",
+          etiqueta: "Nueva tarea",
+          onPress: () => router.push("/(personal)/tareas/nueva"),
+        },
+      ]}
       busqueda={busqueda}
       onBuscar={setBusqueda}
       placeholder="Buscar tarea..."

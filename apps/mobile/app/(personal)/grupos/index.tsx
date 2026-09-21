@@ -6,7 +6,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
-import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
 import {
   ALTO_BARRA_SELECCION,
   BarraSeleccion,
@@ -104,23 +103,28 @@ export default function GruposListScreen() {
   return (
     <PantallaLista
       titulo="Grupos"
-      accion={
-        puedeEditar && !seleccionando && visibles.length > 0 ? (
-          <MenuDeEncabezado
-            opciones={[
+      acciones={
+        puedeEditar
+          ? [
               {
-                icono: "checkbox-outline",
-                etiqueta: "Seleccionar grupos",
-                onPress: () => setSeleccionando(true),
+                icono: "add" as const,
+                etiqueta: "Nuevo grupo",
+                onPress: () => router.push("/(personal)/grupos/nuevo"),
               },
-            ]}
-          />
-        ) : undefined
+              // Prender la selección solo cuando hay algo que marcar y no se
+              // está marcando ya.
+              ...(!seleccionando && visibles.length > 0
+                ? [
+                    {
+                      icono: "checkbox-outline" as const,
+                      etiqueta: "Seleccionar grupos",
+                      onPress: () => setSeleccionando(true),
+                    },
+                  ]
+                : []),
+            ]
+          : []
       }
-      onCrear={
-        puedeEditar ? () => router.push("/(personal)/grupos/nuevo") : undefined
-      }
-      etiquetaCrear="Nuevo grupo"
       busqueda={busqueda}
       onBuscar={setBusqueda}
       placeholder="Buscar grupo..."

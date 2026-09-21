@@ -49,11 +49,11 @@ function ActionIcon({ name }: { name?: HeaderActionIcon }) {
 /**
  * Acciones del encabezado de página.
  *
- * En escritorio van como botones en línea. **En el teléfono la primaria es un
- * botón verde chico que dice `Crear`** —lo que se viene a hacer a una lista— y
- * el resto queda detrás del ⋯. Estaba todo adentro del ⋯, incluida la primaria:
- * la acción principal de la pantalla escondida en un menú, a dos toques, y la
- * app mostrando su botón verde al lado del título. Son la misma pantalla.
+ * En escritorio van como botones en línea; **en el teléfono, todas adentro del
+ * ⋯**, la primaria incluida. Hubo un botón verde al lado del título —y en la
+ * app lo mismo—: compite con el título por el renglón y gasta ancho permanente
+ * en algo que se toca de vez en cuando. Un menú para todo deja el encabezado
+ * con el nombre de la pantalla y un solo control.
  *
  * **El ⋯ también está en escritorio**, con lo que allá no es un botón —
  * "Seleccionar personal", por ejemplo, que ahí se hace con las casillas de la
@@ -66,19 +66,11 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
 
   const enEscritorio = actions.filter((a) => !a.soloMovil);
   const soloEnElMenu = actions.filter((a) => a.soloMovil);
-  const primaria = enEscritorio.find((a) => a.primary);
-  const enElMenuDelTelefono = actions.filter((a) => a !== primaria);
-
   return (
     <>
-      {/* Teléfono */}
-      <div className="flex items-center gap-2 sm:hidden">
-        {primaria ? (
-          <BotonCrear accion={primaria} />
-        ) : null}
-        {enElMenuDelTelefono.length > 0 ? (
-          <Menu acciones={enElMenuDelTelefono} />
-        ) : null}
+      {/* Teléfono: todo en el ⋯, aunque sea una sola. */}
+      <div className="sm:hidden">
+        <Menu acciones={actions} />
       </div>
 
       {/* Escritorio: botones en línea, y el ⋯ solo con lo que no es botón. */}
@@ -109,28 +101,6 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
         {soloEnElMenu.length > 0 ? <Menu acciones={soloEnElMenu} /> : null}
       </div>
     </>
-  );
-}
-
-/**
- * El botón verde del teléfono. Solo la palabra: el "+" al lado de "Crear" decía
- * la misma cosa dos veces, y el botón entero compite con el título —lo que se
- * crea acá se crea de a ratos, no todo el tiempo—. El nombre completo de la
- * acción queda en el `aria-label`.
- */
-function BotonCrear({ accion }: { accion: HeaderAction }) {
-  const clases = "h-[30px] rounded-lg px-3 text-[13px] font-semibold";
-  if (accion.href) {
-    return (
-      <Link href={accion.href} aria-label={accion.label}>
-        <Button className={clases}>Crear</Button>
-      </Link>
-    );
-  }
-  return (
-    <Button className={clases} aria-label={accion.label} onClick={accion.onClick}>
-      Crear
-    </Button>
   );
 }
 

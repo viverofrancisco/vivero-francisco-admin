@@ -144,8 +144,13 @@ export default function ProductosListScreen() {
 
   return (
     <PantallaLista
-      onCrear={() => router.push("/(personal)/servicios/nuevo")}
-      etiquetaCrear="Nuevo producto"
+      acciones={[
+        {
+          icono: "add",
+          etiqueta: "Nuevo producto",
+          onPress: () => router.push("/(personal)/servicios/nuevo"),
+        },
+      ]}
       titulo="Productos"
       busqueda={busqueda}
       onBuscar={buscar}

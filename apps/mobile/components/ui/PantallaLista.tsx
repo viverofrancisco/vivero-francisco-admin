@@ -4,6 +4,10 @@ import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
+import {
+  MenuDeEncabezado,
+  type OpcionDeMenu,
+} from "@/components/ui/MenuDeEncabezado";
 import { tema } from "@/lib/tema";
 
 export interface OpcionFiltro {
@@ -38,9 +42,8 @@ export interface GrupoDeFiltro {
 export function PantallaLista({
   titulo,
   accion,
+  acciones = [],
   barra,
-  onCrear,
-  etiquetaCrear = "Crear",
   busqueda,
   onBuscar,
   placeholder,
@@ -63,18 +66,18 @@ export function PantallaLista({
    * medio confirmar es una cosa y buscar es otra.
    */
   barra?: React.ReactNode;
-  /** Lo que va a la derecha del título: un botón, un menú. */
+  /** Algo suelto a la derecha del título, para lo que no es una acción de menú. */
   accion?: React.ReactNode;
   /**
-   * Crear, arriba y en verde.
+   * Lo que se puede hacer en esta pantalla, **todo detrás del ⋯**: crear,
+   * prender la selección.
    *
-   * Era un botón flotante sobre la esquina inferior derecha, que es donde
-   * Android pone el suyo; en esta app tapaba la última fila y quedaba encima
-   * de la barra de pestañas. Arriba, al lado del título, comparte renglón con
-   * algo que ya estaba y no tapa nada.
+   * Crear fue un botón flotante en la esquina de abajo —donde lo pone
+   * Android—, que acá tapaba la última fila; después un botón verde al lado
+   * del título, que competía con él. Es la misma lista que el portal muestra
+   * en su ⋯ en el teléfono, y las dos aplicaciones son la misma pantalla.
    */
-  onCrear?: () => void;
-  etiquetaCrear?: string;
+  acciones?: OpcionDeMenu[];
   busqueda?: string;
   onBuscar?: (v: string) => void;
   placeholder?: string;
@@ -114,18 +117,7 @@ export function PantallaLista({
           <Text style={styles.titulo}>{titulo}</Text>
           <View style={styles.acciones}>
             {accion}
-            {onCrear ? (
-              /* Solo la palabra: el "+" al lado de "Crear" decía la misma cosa
-                 dos veces, y el botón entero compite con un título de 26 —lo
-                 que se crea acá se crea de a ratos, no todo el tiempo—. */
-              <PressableScale
-                onPress={onCrear}
-                style={styles.crear}
-                accessibilityLabel={etiquetaCrear}
-              >
-                <Text style={styles.crearTexto}>Crear</Text>
-              </PressableScale>
-            ) : null}
+            <MenuDeEncabezado opciones={acciones} />
             {/* Sin buscador el botón de filtros no tiene con quién compartir
                 renglón, así que sube al lado del título. */}
             {hayFiltros && !onBuscar ? (
@@ -286,15 +278,6 @@ const styles = StyleSheet.create({
   },
   titulo: { fontSize: 26, fontWeight: "800", color: tema.texto },
   acciones: { flexDirection: "row", alignItems: "center", gap: 8 },
-  crear: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: 30,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: tema.verde,
-  },
-  crearTexto: { color: "#fff", fontSize: 13, fontWeight: "600" },
 
   buscarFila: { flexDirection: "row", alignItems: "center", gap: 8 },
   buscador: {
