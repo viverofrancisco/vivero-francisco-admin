@@ -11,6 +11,13 @@ import {
   PieDeLista,
   type GrupoDeFiltro,
 } from "@/components/ui/PantallaLista";
+import {
+  ALTO_BARRA_SELECCION,
+  BarraSeleccion,
+} from "@/components/ui/BarraSeleccion";
+import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+import { Ionicons } from "@expo/vector-icons";
+import { avisoDeLote, eliminarEnLote } from "@/lib/lote";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteListItem, ClientesListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -38,6 +45,11 @@ export default function ClientesListScreen() {
   const [cargandoMas, setCargandoMas] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [marcados, setMarcados] = useState<string[]>([]);
+  /** Marcar es un modo, que prende el ⋯ del encabezado. Igual que el portal. */
+  const [seleccionando, setSeleccionando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
+  const [archivando, setArchivando] = useState(false);
   const pedido = useRef(0);
 
   const traer = useCallback(
@@ -99,6 +111,36 @@ export default function ClientesListScreen() {
     ? items.filter((c) => c.propiedades[0]?.sector?.nombre === sector)
     : items;
 
+  // Marcar y filtrar después dejaría una cuenta de seleccionados que ya no
+  // están en pantalla, y un botón que archiva lo que no se ve.
+  const enPantalla = new Set(visibles.map((c) => c.id));
+  const elegidos = marcados.filter((id) => enPantalla.has(id));
+
+  function alternar(id: string) {
+    setMarcados((actuales) =>
+      actuales.includes(id)
+        ? actuales.filter((x) => x !== id)
+        : [...actuales, id]
+    );
+  }
+
+  async function archivarMarcados() {
+    setArchivando(true);
+    try {
+      const res = await eliminarEnLote("/api/mobile/clientes/eliminar", elegidos);
+      setError(avisoDeLote(res, "clientes"));
+      setConfirmando(false);
+      setSeleccionando(false);
+      setMarcados([]);
+      await traer(busqueda, null, "refrescar");
+    } catch (e) {
+      setError(mensajeDeError(e, "No pudimos archivar"));
+      setConfirmando(false);
+    } finally {
+      setArchivando(false);
+    }
+  }
+
   // Sin sectores cargados el filtro no filtra nada, así que no se ofrece.
   const grupos: GrupoDeFiltro[] =
     sectores.length > 1
@@ -122,10 +164,19 @@ export default function ClientesListScreen() {
         puedeCrear
           ? [
               {
-                icono: "add",
+                icono: "add" as const,
                 etiqueta: "Nuevo cliente",
                 onPress: () => router.push("/(personal)/clientes/nuevo"),
               },
+              ...(!seleccionando && visibles.length > 0
+                ? [
+                    {
+                      icono: "checkbox-outline" as const,
+                      etiqueta: "Seleccionar clientes",
+                      onPress: () => setSeleccionando(true),
+                    },
+                  ]
+                : []),
             ]
           : []
       }
@@ -167,7 +218,12 @@ export default function ClientesListScreen() {
             </View>
           }
           ListFooterComponent={
-            <PieDeLista cargando={cargandoMas} hayMas={cursor !== null} />
+            <>
+              <PieDeLista cargando={cargandoMas} hayMas={cursor !== null} />
+              {seleccionando ? (
+                <View style={{ height: ALTO_BARRA_SELECCION }} />
+              ) : null}
+            </>
           }
           onEndReachedThreshold={0.4}
           onEndReached={() => {
@@ -183,11 +239,26 @@ export default function ClientesListScreen() {
                 .map((w) => w[0])
                 .join("")
                 .toUpperCase() || "?";
+            const marcado = marcados.includes(item.id);
             return (
               <PressableScale
-                onPress={() => router.push(`/(personal)/clientes/${item.id}`)}
-                style={FILA_LISTA}
+                // Marcando **no navega**: una fila que a veces abre la ficha y
+                // a veces marca es una trampa.
+                onPress={() =>
+                  seleccionando
+                    ? alternar(item.id)
+                    : router.push(`/(personal)/clientes/${item.id}`)
+                }
+                estiloExterno={styles.ancho}
+                style={[FILA_LISTA, marcado && styles.filaMarcada]}
               >
+                {seleccionando ? (
+                  <Ionicons
+                    name={marcado ? "checkbox" : "square-outline"}
+                    size={22}
+                    color={marcado ? tema.verde : tema.texto3}
+                  />
+                ) : null}
                 <View style={styles.avatar}>
                   <Text style={styles.avatarTexto}>{iniciales}</Text>
                 </View>
@@ -204,6 +275,39 @@ export default function ClientesListScreen() {
           }}
         />
       )}
+
+      {seleccionando ? (
+        <BarraSeleccion
+          cuantas={elegidos.length}
+          onSalir={() => {
+            setSeleccionando(false);
+            setMarcados([]);
+          }}
+        >
+          <PressableScale
+            onPress={() => setConfirmando(true)}
+            disabled={elegidos.length === 0}
+            style={[styles.accionBarra, elegidos.length === 0 && styles.apagado]}
+          >
+            <Text style={styles.accionBarraTexto}>Archivar</Text>
+          </PressableScale>
+        </BarraSeleccion>
+      ) : null}
+
+      <DialogoConfirmar
+        visible={confirmando}
+        titulo={
+          elegidos.length === 1
+            ? "¿Archivar 1 cliente?"
+            : `¿Archivar ${elegidos.length} clientes?`
+        }
+        detalle="Salen de las listas y de los selectores. Sus visitas, informes y facturas siguen donde están, y se pueden recuperar."
+        confirmar="Archivar"
+        peligro
+        cargando={archivando}
+        onConfirmar={archivarMarcados}
+        onCancelar={() => setConfirmando(false)}
+      />
     </PantallaLista>
   );
 }
@@ -219,9 +323,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarTexto: { color: tema.verde700, fontWeight: "700", fontSize: 14 },
+  ancho: { alignSelf: "stretch" },
   texto: { flex: 1, gap: 1 },
+  filaMarcada: { backgroundColor: tema.verde50 },
   nombre: { color: tema.texto, fontWeight: "600" },
   resumen: { color: tema.texto3 },
+  /* Claro sobre oscuro, nunca el rojo de la casa: sobre la pastilla oscura
+     desaparece. El rojo lo pone la confirmación, que es donde se decide. */
+  accionBarra: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  accionBarraTexto: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  apagado: { opacity: 0.45 },
   vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
   vacioTitulo: { color: tema.texto },
   vacioTexto: { color: tema.texto3, textAlign: "center" },

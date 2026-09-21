@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,6 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ProductosHeader } from "./boton-nuevo-producto";
+import {
+  ACCION_BARRA_MOVIL,
+  BarraSeleccionMovil,
+} from "@/components/shared/barra-seleccion-movil";
+import {
+  DialogoEliminarEnLote,
+  useEliminarEnLote,
+} from "@/components/shared/eliminar-en-lote";
 import { EmptyState } from "@/components/shared/empty-state";
 import { EstadoBadge } from "./estado-badge";
 import {
@@ -96,6 +106,11 @@ export function ServiciosTable({
   const [estado, setEstado] = useFiltroUrl("estado", "");
   const [categoria, setCategoria] = useFiltroUrl("categoria", "");
   const [page, setPage] = useFiltroUrl("pagina", 1);
+  /** Ids marcados para archivar de a varios. */
+  const [marcados, setMarcados] = useState<string[]>([]);
+  /** Solo en el teléfono: ahí marcar es un modo, que prende el ⋯. */
+  const [seleccionandoMovil, setSeleccionandoMovil] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
 
   const filtered = useMemo(() => {
     let result = productos.filter(
@@ -173,8 +188,49 @@ export function ServiciosTable({
   const enLista = filtered.slice(0, visibles);
   const aqui = useAca();
 
+  const { eliminar, eliminando } = useEliminarEnLote({
+    endpoint: "/api/servicios/eliminar",
+    sustantivo: "producto",
+    plural: "productos",
+    onListo: () => {
+      setConfirmando(false);
+      setMarcados([]);
+      setSeleccionandoMovil(false);
+      router.refresh();
+    },
+  });
+
+  // Marcar y filtrar después dejaría una cuenta de seleccionados que ya no
+  // están en pantalla, y un botón que archiva lo que no se ve.
+  const enPantalla = new Set(filtered.map((p) => p.id));
+  const elegidos = marcados.filter((id) => enPantalla.has(id));
+  const todosMarcados =
+    filtered.length > 0 && elegidos.length === filtered.length;
+
+  function alternar(id: string, marcar: boolean) {
+    setMarcados((actuales) =>
+      marcar ? [...actuales, id] : actuales.filter((x) => x !== id)
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
+      {/* El encabezado lo pone la tabla y no la página: su ⋯ prende el modo de
+          selección, que es estado de acá. */}
+      <ProductosHeader
+        accionesExtra={
+          seleccionandoMovil || filtered.length === 0
+            ? []
+            : [
+                {
+                  label: "Seleccionar productos",
+                  onClick: () => setSeleccionandoMovil(true),
+                  soloMovil: true,
+                },
+              ]
+        }
+      />
+
       <BarraFiltros
         activos={filtrosPuestos}
         onLimpiar={limpiarFiltros}
@@ -233,13 +289,62 @@ export function ServiciosTable({
       </BarraFiltros>
 
       <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-card md:flex">
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          {/* Tapa la fila de encabezados en vez de empujarla: la tabla no se
+              mueve al marcar la primera fila, que es justo cuando se está
+              apuntando a otra. */}
+          {elegidos.length > 0 ? (
+            <div className="absolute inset-x-0 top-0 z-20 flex h-10 items-center border-b border-border bg-secondary px-2">
+              <Checkbox
+                checked={todosMarcados}
+                indeterminate={!todosMarcados}
+                onCheckedChange={() => setMarcados([])}
+                aria-label="Quitar la selección"
+              />
+              <span className="ml-3 text-xs font-bold tracking-wide text-secondary-foreground">
+                {elegidos.length === 1
+                  ? "1 producto seleccionado"
+                  : `${elegidos.length} productos seleccionados`}
+              </span>
+              <button
+                type="button"
+                className="ml-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                onClick={() => setMarcados([])}
+              >
+                Quitar selección
+              </button>
+              <span className="flex-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmando(true)}
+              >
+                Eliminar
+              </Button>
+            </div>
+          ) : null}
           {filtered.length === 0 ? (
             <EmptyState message="No se encontraron productos" />
           ) : (
             <Table containerClassName="h-full overflow-y-auto">
               <TableHeader sticky>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={todosMarcados}
+                      indeterminate={elegidos.length > 0 && !todosMarcados}
+                      onCheckedChange={() =>
+                        setMarcados(
+                          elegidos.length > 0 ? [] : filtered.map((p) => p.id)
+                        )
+                      }
+                      aria-label={
+                        elegidos.length > 0
+                          ? "Quitar la selección"
+                          : "Seleccionar todos los productos"
+                      }
+                    />
+                  </TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead className="w-24 text-right">Stock</TableHead>
@@ -251,11 +356,25 @@ export function ServiciosTable({
                 {paginated.map((servicio) => (
                   <TableRow
                     key={servicio.id}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${
+                      marcados.includes(servicio.id) ? "bg-primary/5" : ""
+                    }`}
                     onClick={() =>
                       router.push(`/dashboard/productos/${servicio.id}?from=${aca()}`)
                     }
                   >
+                    <TableCell
+                      className="w-10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={marcados.includes(servicio.id)}
+                        onCheckedChange={(valor) =>
+                          alternar(servicio.id, valor === true)
+                        }
+                        aria-label={`Seleccionar ${servicio.nombre}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="font-medium">{servicio.nombre}</div>
                       {servicio.archivadoEl ? (
@@ -348,7 +467,33 @@ export function ServiciosTable({
         centinela={centinela}
       >
         {enLista.map((servicio) => (
-          <div key={servicio.id} className={FILA_MOVIL + " gap-0 pr-1"}>
+          <div
+            key={servicio.id}
+            className={`${FILA_MOVIL} gap-0 pr-1 ${
+              marcados.includes(servicio.id) ? "bg-primary/5" : ""
+            }`}
+          >
+            {/* Marcando, la fila marca en vez de navegar: una fila que a veces
+                abre la ficha y a veces marca es una trampa. */}
+            {seleccionandoMovil ? (
+              <button
+                type="button"
+                onClick={() =>
+                  alternar(servicio.id, !marcados.includes(servicio.id))
+                }
+                aria-pressed={marcados.includes(servicio.id)}
+                aria-label={`Seleccionar ${servicio.nombre}`}
+                className="flex min-w-0 flex-1 items-center gap-3 py-0.5 pr-2 text-left"
+              >
+                <Checkbox
+                  checked={marcados.includes(servicio.id)}
+                  className="pointer-events-none flex-none"
+                  tabIndex={-1}
+                  aria-hidden
+                />
+                <ContenidoProducto servicio={servicio} />
+              </button>
+            ) : (
             <Link
               href={`/dashboard/productos/${servicio.id}?from=${aqui}`}
               className="flex min-w-0 flex-1 items-center gap-3 py-0.5 pr-2"
@@ -378,9 +523,11 @@ export function ServiciosTable({
                 estado={servicio.estado}
               />
             </Link>
+            )}
             {/* Fuera del Link: un botón adentro de un enlace no es HTML
-                válido, y el tap se lo llevaría el enlace igual. */}
-            <div className="flex-none">
+                válido, y el tap se lo llevaría el enlace igual. Marcando no va:
+                la fila entera es para marcar. */}
+            <div className={seleccionandoMovil ? "hidden" : "flex-none"}>
               {servicio.archivadoEl ? (
                 <Button
                   variant="ghost"
@@ -401,7 +548,71 @@ export function ServiciosTable({
             </div>
           </div>
         ))}
+        {/* La barra flota sobre la lista: sin esto tapa la última fila. */}
+        {seleccionandoMovil ? <div className="h-16" aria-hidden /> : null}
       </ListaMovil>
+
+      {seleccionandoMovil ? (
+        <BarraSeleccionMovil
+          cuantas={elegidos.length}
+          onSalir={() => {
+            setSeleccionandoMovil(false);
+            setMarcados([]);
+          }}
+        >
+          <Button
+            size="sm"
+            className={ACCION_BARRA_MOVIL}
+            disabled={elegidos.length === 0}
+            onClick={() => setConfirmando(true)}
+          >
+            Eliminar
+          </Button>
+        </BarraSeleccionMovil>
+      ) : null}
+
+      <DialogoEliminarEnLote
+        abierto={confirmando}
+        onOpenChange={setConfirmando}
+        cuantas={elegidos.length}
+        sustantivo="producto"
+        plural="productos"
+        detalle="Se archivan y dejan de ofrecerse. Lo ya vendido sigue nombrándolos, por eso no se borran; el que esté en el plan de algún cliente no se archiva y se avisa cuál."
+        eliminando={eliminando}
+        onConfirmar={() => eliminar(elegidos)}
+      />
     </div>
+  );
+}
+
+/** Lo que muestra la fila del teléfono, con casilla o sin ella. */
+function ContenidoProducto({ servicio }: { servicio: Servicio }) {
+  return (
+    <>
+      <span className="flex h-11 w-11 flex-none items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary">
+        {servicio.imagenUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={servicio.imagenUrl}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <ImageOff className="h-4 w-4 text-muted-foreground" />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-foreground">
+          {servicio.nombre}
+        </span>
+        <span className="block truncate text-xs text-muted-foreground">
+          {resumen(servicio)}
+        </span>
+      </span>
+      <EstadoBadge
+        archivado={servicio.archivadoEl !== null}
+        estado={servicio.estado}
+      />
+    </>
   );
 }

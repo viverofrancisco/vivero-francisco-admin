@@ -24,3 +24,12 @@ export const servicioSchema = z.object({
 });
 
 export type ServicioFormData = z.infer<typeof servicioSchema>;
+
+/**
+ * Los ids de un archivado en lote. El tope no es decorativo: cada producto se
+ * revisa solo —no se archiva lo que está en el plan de un cliente—, así que
+ * mil ids son mil idas a la base en una sola petición.
+ */
+export const eliminarEnLoteSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(200),
+});

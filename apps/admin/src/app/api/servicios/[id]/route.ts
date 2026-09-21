@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, viewerFromUser } from "@/lib/auth-helpers";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
-import { updateServicio } from "@/lib/services/servicio.service";
+import {
+  archivarProducto,
+  updateServicio,
+} from "@/lib/services/servicio.service";
 import { servicioSchema } from "@/lib/validations/servicio";
 
 export async function GET(
@@ -70,28 +73,18 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
   const { id } = await params;
-
-  const asignaciones = await prisma.suscripcionItem.count({
-    where: { productoId: id },
-  });
-
-  if (asignaciones > 0) {
-    return NextResponse.json(
-      { error: "No se puede eliminar un servicio asignado a clientes" },
-      { status: 409 }
-    );
-  }
-
   try {
-    await prisma.producto.update({ where: { id }, data: { deletedAt: new Date() } });
-    return NextResponse.json({ message: "Servicio archivado" });
-  } catch {
-    return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
+    // La regla —no archivar algo que está en el plan de un cliente— vive en el
+    // servicio, no acá: la app archiva por su propia puerta y tiene que
+    // encontrarse con la misma respuesta.
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+    await archivarProducto(viewerFromUser(user), id);
+    return NextResponse.json({ message: "Producto archivado" });
+  } catch (error) {
+    return serviceErrorResponse(error);
   }
 }

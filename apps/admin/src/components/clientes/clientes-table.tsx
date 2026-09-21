@@ -14,6 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ClientesPageHeader } from "./clientes-page-header";
+import {
+  ACCION_BARRA_MOVIL,
+  BarraSeleccionMovil,
+} from "@/components/shared/barra-seleccion-movil";
 import {
   Dialog,
   DialogContent,
@@ -76,9 +81,12 @@ function fullName(cliente: Cliente): string {
 
 export function ClientesTable({
   clientes,
+  canCreate = false,
   devTools = false,
 }: {
   clientes: Cliente[];
+  /** Si puede escribir: de eso dependen crear, importar y archivar. */
+  canCreate?: boolean;
   devTools?: boolean;
 }) {
   const router = useRouter();
@@ -87,6 +95,12 @@ export function ClientesTable({
   const [page, setPage] = useFiltroUrl("pagina", 1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<null | "soft" | "hard">(null);
+  /**
+   * Solo en el teléfono: ahí no hay dónde poner una casilla en cada fila sin
+   * gastar ese ancho para siempre, así que marcar es un modo que se prende
+   * desde el ⋯ del encabezado. En escritorio las casillas están en su columna.
+   */
+  const [seleccionandoMovil, setSeleccionandoMovil] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const sectors = useMemo(() => {
     const map = new Map<string, string>();
@@ -173,6 +187,7 @@ export function ClientesTable({
       );
       setConfirm(null);
       clearSelection();
+      setSeleccionandoMovil(false);
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error al eliminar");
@@ -192,6 +207,23 @@ export function ClientesTable({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-5">
+      {/* El encabezado lo pone la tabla y no la página: su ⋯ prende el modo de
+          selección, que es estado de acá. */}
+      <ClientesPageHeader
+        canCreate={canCreate}
+        accionesExtra={
+          seleccionandoMovil || filtered.length === 0
+            ? []
+            : [
+                {
+                  label: "Seleccionar clientes",
+                  onClick: () => setSeleccionandoMovil(true),
+                  soloMovil: true,
+                },
+              ]
+        }
+      />
+
       <BarraFiltros
         activos={sectorFilter ? 1 : 0}
         onLimpiar={() => {
@@ -236,41 +268,56 @@ export function ClientesTable({
         )}
       </BarraFiltros>
 
-      {/* Bulk actions bar */}
-      {selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-2.5">
-          <span className="text-sm font-semibold">
-            {selected.size} seleccionado{selected.size !== 1 ? "s" : ""}
-          </span>
-          <div className="ml-auto flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={clearSelection}>
-              Limpiar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConfirm("soft")}
-            >
-              Archivar
-            </Button>
-            {devTools && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setConfirm("hard")}
-              >
-                Eliminar permanentemente
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Scrollean las filas, no la página: el encabezado y la paginación
           quedan siempre a la vista. El alto sale del contenedor, no de un
           `calc` a ojo que había que reajustar con cada filtro nuevo. */}
       <div className="hidden min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card md:flex">
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          {/* Tapa la fila de encabezados en vez de empujarla: la tabla no se
+              mueve al marcar la primera fila, que es justo cuando se está
+              apuntando a otra. Estaba arriba de la tarjeta, en su propio
+              renglón, y empujaba la lista entera. */}
+          {selected.size > 0 ? (
+            <div className="absolute inset-x-0 top-0 z-20 flex h-10 items-center border-b border-border bg-secondary px-2">
+              <Checkbox
+                checked={allPageSelected}
+                indeterminate={!allPageSelected}
+                onCheckedChange={clearSelection}
+                aria-label="Quitar la selección"
+              />
+              <span className="ml-3 text-xs font-bold tracking-wide text-secondary-foreground">
+                {selected.size === 1
+                  ? "1 cliente seleccionado"
+                  : `${selected.size} clientes seleccionados`}
+              </span>
+              <button
+                type="button"
+                className="ml-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                onClick={clearSelection}
+              >
+                Quitar selección
+              </button>
+              <span className="flex-1" />
+              <div className="flex items-center gap-2">
+                {devTools && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setConfirm("hard")}
+                  >
+                    Eliminar permanentemente
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setConfirm("soft")}
+                >
+                  Archivar
+                </Button>
+              </div>
+            </div>
+          ) : null}
           {filtered.length === 0 ? (
             <EmptyState message="No se encontraron clientes" />
           ) : (
@@ -365,8 +412,8 @@ export function ClientesTable({
       {/* Móvil: una fila por cliente en vez de seis columnas apretadas. Nombre
           y empresa arriba, y debajo lo que sirve para reconocerlo —sector y
           teléfono—; el correo y los m² quedan para la ficha, que es donde se
-          los va a buscar. Sin casillas: seleccionar de a varios para
-          archivarlos es trabajo de escritorio. */}
+          los va a buscar. Marcando de a varios la fila marca en vez de
+          navegar; el modo lo prende el ⋯ del encabezado. */}
       <ListaMovil
         vacia={filtered.length === 0}
         mensajeVacio="No se encontraron clientes"
@@ -375,10 +422,13 @@ export function ClientesTable({
         centinela={centinela}
       >
         {enLista.map((cliente) => (
-          <Link
+          <FilaMovil
             key={cliente.id}
             href={`/dashboard/clientes/${cliente.id}?from=${aqui}`}
-            className={FILA_MOVIL}
+            seleccionando={seleccionandoMovil}
+            marcada={selected.has(cliente.id)}
+            onAlternar={() => toggleOne(cliente.id)}
+            etiqueta={fullName(cliente)}
           >
             <InitialsAvatar name={fullName(cliente)} size={40} />
             <span className="min-w-0 flex-1">
@@ -389,9 +439,30 @@ export function ClientesTable({
                 {resumenDeCliente(cliente)}
               </span>
             </span>
-          </Link>
+          </FilaMovil>
         ))}
+        {/* La barra flota sobre la lista: sin esto tapa la última fila. */}
+        {seleccionandoMovil ? <div className="h-16" aria-hidden /> : null}
       </ListaMovil>
+
+      {seleccionandoMovil ? (
+        <BarraSeleccionMovil
+          cuantas={selected.size}
+          onSalir={() => {
+            setSeleccionandoMovil(false);
+            clearSelection();
+          }}
+        >
+          <Button
+            size="sm"
+            className={ACCION_BARRA_MOVIL}
+            disabled={selected.size === 0}
+            onClick={() => setConfirm("soft")}
+          >
+            Archivar
+          </Button>
+        </BarraSeleccionMovil>
+      ) : null}
 
       {/* Confirmación bulk (archivar / eliminar permanentemente) */}
       <Dialog
@@ -434,5 +505,55 @@ export function ClientesTable({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/**
+ * Una fila del teléfono. Marcando **no navega**: una fila que a veces abre la
+ * ficha y a veces marca es una trampa, así que mientras el modo está prendido
+ * es un botón y no un enlace, y la casilla solo pinta —el toque es de la fila
+ * entera, y dejar que la casilla lo tome también marca y desmarca en el mismo
+ * gesto—.
+ */
+function FilaMovil({
+  href,
+  seleccionando,
+  marcada,
+  onAlternar,
+  etiqueta,
+  children,
+}: {
+  href: string;
+  seleccionando: boolean;
+  marcada: boolean;
+  onAlternar: () => void;
+  etiqueta: string;
+  children: React.ReactNode;
+}) {
+  if (!seleccionando) {
+    return (
+      <Link href={href} className={`${FILA_MOVIL} bg-card`}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onAlternar}
+      aria-pressed={marcada}
+      aria-label={etiqueta}
+      className={`${FILA_MOVIL} w-full text-left ${
+        marcada ? "bg-primary/5" : "bg-card"
+      }`}
+    >
+      <Checkbox
+        checked={marcada}
+        className="pointer-events-none flex-none"
+        tabIndex={-1}
+        aria-hidden
+      />
+      {children}
+    </button>
   );
 }

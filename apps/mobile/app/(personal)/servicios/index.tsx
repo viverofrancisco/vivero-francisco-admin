@@ -11,6 +11,12 @@ import {
   PieDeLista,
   type GrupoDeFiltro,
 } from "@/components/ui/PantallaLista";
+import {
+  ALTO_BARRA_SELECCION,
+  BarraSeleccion,
+} from "@/components/ui/BarraSeleccion";
+import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+import { avisoDeLote, eliminarEnLote } from "@/lib/lote";
 import type { ServicioListItem, ServiciosListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
@@ -56,6 +62,11 @@ export default function ProductosListScreen() {
   const [cargandoMas, setCargandoMas] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [marcados, setMarcados] = useState<string[]>([]);
+  /** Marcar es un modo, que prende el ⋯ del encabezado. Igual que el portal. */
+  const [seleccionando, setSeleccionando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
+  const [archivando, setArchivando] = useState(false);
   /** El último pedido que salió: lo que llega de uno viejo se descarta. */
   const pedido = useRef(0);
 
@@ -116,6 +127,39 @@ export default function ProductosListScreen() {
     return !estado || p.estado === estado;
   });
 
+  // Marcar y filtrar después dejaría una cuenta de seleccionados que ya no
+  // están en pantalla, y un botón que archiva lo que no se ve.
+  const enPantalla = new Set(visibles.map((p) => p.id));
+  const elegidos = marcados.filter((id) => enPantalla.has(id));
+
+  function alternar(id: string) {
+    setMarcados((actuales) =>
+      actuales.includes(id)
+        ? actuales.filter((x) => x !== id)
+        : [...actuales, id]
+    );
+  }
+
+  async function archivarMarcados() {
+    setArchivando(true);
+    try {
+      const res = await eliminarEnLote(
+        "/api/mobile/servicios/eliminar",
+        elegidos
+      );
+      setError(avisoDeLote(res, "productos"));
+      setConfirmando(false);
+      setSeleccionando(false);
+      setMarcados([]);
+      await traer(busqueda, null, "refrescar");
+    } catch (e) {
+      setError(mensajeDeError(e, "No pudimos eliminar"));
+      setConfirmando(false);
+    } finally {
+      setArchivando(false);
+    }
+  }
+
   const grupos: GrupoDeFiltro[] = [
     {
       id: "tipo",
@@ -146,10 +190,19 @@ export default function ProductosListScreen() {
     <PantallaLista
       acciones={[
         {
-          icono: "add",
+          icono: "add" as const,
           etiqueta: "Nuevo producto",
           onPress: () => router.push("/(personal)/servicios/nuevo"),
         },
+        ...(!seleccionando && visibles.length > 0
+          ? [
+              {
+                icono: "checkbox-outline" as const,
+                etiqueta: "Seleccionar productos",
+                onPress: () => setSeleccionando(true),
+              },
+            ]
+          : []),
       ]}
       titulo="Productos"
       busqueda={busqueda}
@@ -189,7 +242,12 @@ export default function ProductosListScreen() {
             </View>
           }
           ListFooterComponent={
-            <PieDeLista cargando={cargandoMas} hayMas={cursor !== null} />
+            <>
+              <PieDeLista cargando={cargandoMas} hayMas={cursor !== null} />
+              {seleccionando ? (
+                <View style={{ height: ALTO_BARRA_SELECCION }} />
+              ) : null}
+            </>
           }
           onEndReachedThreshold={0.4}
           onEndReached={() => {
@@ -197,9 +255,28 @@ export default function ProductosListScreen() {
           }}
           renderItem={({ item }) => (
             <PressableScale
-              onPress={() => router.push(`/(personal)/servicios/${item.id}`)}
-              style={FILA_LISTA}
+              // Marcando **no navega**: una fila que a veces abre la ficha y a
+              // veces marca es una trampa.
+              onPress={() =>
+                seleccionando
+                  ? alternar(item.id)
+                  : router.push(`/(personal)/servicios/${item.id}`)
+              }
+              estiloExterno={styles.ancho}
+              style={[
+                FILA_LISTA,
+                marcados.includes(item.id) && styles.filaMarcada,
+              ]}
             >
+              {seleccionando ? (
+                <Ionicons
+                  name={
+                    marcados.includes(item.id) ? "checkbox" : "square-outline"
+                  }
+                  size={22}
+                  color={marcados.includes(item.id) ? tema.verde : tema.texto3}
+                />
+              ) : null}
               <View style={styles.miniatura}>
                 {item.imagenUrl ? (
                   <Image source={{ uri: item.imagenUrl }} style={styles.foto} />
@@ -225,6 +302,39 @@ export default function ProductosListScreen() {
           )}
         />
       )}
+
+      {seleccionando ? (
+        <BarraSeleccion
+          cuantas={elegidos.length}
+          onSalir={() => {
+            setSeleccionando(false);
+            setMarcados([]);
+          }}
+        >
+          <PressableScale
+            onPress={() => setConfirmando(true)}
+            disabled={elegidos.length === 0}
+            style={[styles.accionBarra, elegidos.length === 0 && styles.apagado]}
+          >
+            <Text style={styles.accionBarraTexto}>Eliminar</Text>
+          </PressableScale>
+        </BarraSeleccion>
+      ) : null}
+
+      <DialogoConfirmar
+        visible={confirmando}
+        titulo={
+          elegidos.length === 1
+            ? "¿Eliminar 1 producto?"
+            : `¿Eliminar ${elegidos.length} productos?`
+        }
+        detalle="Se archivan y dejan de ofrecerse. Lo ya vendido sigue nombrándolos, por eso no se borran; el que esté en el plan de algún cliente no se archiva y se avisa cuál."
+        confirmar="Eliminar"
+        peligro
+        cargando={archivando}
+        onConfirmar={archivarMarcados}
+        onCancelar={() => setConfirmando(false)}
+      />
     </PantallaLista>
   );
 }
@@ -264,7 +374,19 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   foto: { width: "100%", height: "100%" },
+  ancho: { alignSelf: "stretch" },
   texto: { flex: 1, gap: 1 },
+  filaMarcada: { backgroundColor: tema.verde50 },
+  /* Claro sobre oscuro, nunca el rojo de la casa: sobre la pastilla oscura
+     desaparece. El rojo lo pone la confirmación, que es donde se decide. */
+  accionBarra: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  accionBarraTexto: { color: "#fff", fontWeight: "600", fontSize: 14 },
+  apagado: { opacity: 0.45 },
   nombre: { color: tema.texto, fontWeight: "600" },
   resumen: { color: tema.texto3 },
 

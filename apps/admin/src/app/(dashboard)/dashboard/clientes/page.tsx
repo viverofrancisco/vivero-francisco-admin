@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
 import { ClientesTable } from "@/components/clientes/clientes-table";
-import { ClientesPageHeader } from "@/components/clientes/clientes-page-header";
 
 export default async function ClientesPage() {
   const user = await requireAuth();
@@ -46,9 +45,12 @@ export default async function ClientesPage() {
 
   return (
     <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
-      <ClientesPageHeader canCreate={canCreate} />
 
-      <ClientesTable clientes={clientes} devTools={devTools} />
+      <ClientesTable
+        clientes={clientes}
+        canCreate={canCreate}
+        devTools={devTools}
+      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   ValidationError,
 } from "./errors";
 import type { Viewer } from "./viewer";
+import type { ResultadoEnLote } from "./lote";
 import { isAdminRole } from "./viewer";
 
 /**
@@ -292,4 +293,73 @@ export async function getServicio(productoId: string, viewer: Viewer) {
   });
   if (!servicio) throw new NotFoundError("Servicio no encontrado");
   return servicio;
+}
+
+/**
+ * Archivar un producto: sale del catálogo y deja de ofrecerse.
+ *
+ * **Es soft delete y no puede ser otra cosa**: sus variantes están citadas por
+ * `OrdenLinea` y `FacturaLinea`, que son documentos ya emitidos. Y se refuse
+ * mientras esté en el plan de algún cliente: una suscripción que renueva sola
+ * no puede quedar apuntando a algo que ya no está en el catálogo. La regla
+ * vivía suelta adentro de la ruta web, donde la app no la veía.
+ */
+export async function archivarProducto(viewer: Viewer, id: string) {
+  ensureAdmin(viewer);
+  const producto = await prisma.producto.findFirst({
+    where: { id, deletedAt: null },
+    select: { id: true, nombre: true },
+  });
+  if (!producto) throw new NotFoundError("Producto no encontrado");
+
+  const enPlanes = await prisma.suscripcionItem.count({
+    where: { productoId: id },
+  });
+  if (enPlanes > 0) {
+    throw new ConflictError(
+      "Está en el plan de algún cliente. Sacalo de la suscripción primero."
+    );
+  }
+
+  await prisma.producto.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
+}
+
+/**
+ * Archivar de a varios. Uno por uno, porque cada producto tiene su propia
+ * regla que revisar —estar o no en un plan— y que uno falle no puede cancelar
+ * a los demás. Ver `ResultadoEnLote`.
+ */
+export async function archivarVariosProductos(
+  viewer: Viewer,
+  ids: string[]
+): Promise<ResultadoEnLote> {
+  ensureAdmin(viewer);
+  const unicos = [...new Set(ids)];
+  const nombres = new Map(
+    (
+      await prisma.producto.findMany({
+        where: { id: { in: unicos } },
+        select: { id: true, nombre: true },
+      })
+    ).map((p) => [p.id, p.nombre])
+  );
+
+  let eliminados = 0;
+  const errores: ResultadoEnLote["errores"] = [];
+  for (const id of unicos) {
+    try {
+      await archivarProducto(viewer, id);
+      eliminados++;
+    } catch (error) {
+      errores.push({
+        id,
+        nombre: nombres.get(id) ?? null,
+        motivo: error instanceof Error ? error.message : "No se pudo eliminar.",
+      });
+    }
+  }
+  return { eliminados, errores };
 }

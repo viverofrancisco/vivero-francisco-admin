@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PageHeader } from "@/components/shared/page-header";
+import { PageHeader, type HeaderAction } from "@/components/shared/page-header";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,15 @@ import {
  * diálogo se responde sin salir del listado, y quien se arrepiente cierra en
  * vez de tener que volver.
  */
-export function ProductosHeader() {
+export function ProductosHeader({
+  /**
+   * Lo renderiza la tabla y no la página: acá llega "Seleccionar productos",
+   * que prende un modo que vive en la tabla.
+   */
+  accionesExtra = [],
+}: {
+  accionesExtra?: HeaderAction[];
+}) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
 
@@ -40,6 +48,7 @@ export function ProductosHeader() {
             icon: "plus",
             primary: true,
           },
+          ...accionesExtra,
         ]}
       />
 
