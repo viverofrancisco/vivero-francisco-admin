@@ -63,7 +63,6 @@ export default function ChatsListScreen() {
         esAdmin
           ? [
               {
-                icono: "add" as const,
                 etiqueta: "Nuevo chat",
                 onPress: () => router.push("/(personal)/chats/nuevo"),
               },

@@ -134,7 +134,6 @@ export default function InformesListScreen() {
       titulo="Informes"
       acciones={[
         {
-          icono: "add",
           etiqueta: "Generar informe",
           onPress: () => router.push("/(personal)/informes/nuevo"),
         },

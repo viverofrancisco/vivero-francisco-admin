@@ -190,14 +190,12 @@ export default function ProductosListScreen() {
     <PantallaLista
       acciones={[
         {
-          icono: "add" as const,
           etiqueta: "Nuevo producto",
           onPress: () => router.push("/(personal)/servicios/nuevo"),
         },
         ...(!seleccionando && visibles.length > 0
           ? [
               {
-                icono: "checkbox-outline" as const,
                 etiqueta: "Seleccionar productos",
                 onPress: () => setSeleccionando(true),
               },

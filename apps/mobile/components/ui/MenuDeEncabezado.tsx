@@ -12,7 +12,6 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
 
 export interface OpcionDeMenu {
-  icono: React.ComponentProps<typeof Ionicons>["name"];
   etiqueta: string;
   onPress: () => void;
 }
@@ -25,6 +24,11 @@ export interface OpcionDeMenu {
  * hoja y se arrastra para cerrar —todo el peso de una decisión chica—. El cajón
  * queda para lo que necesita renglones grandes y varias opciones con su
  * explicación.
+ *
+ * **Las opciones van con su nombre a secas, sin icono**, que es lo que hace el
+ * ⋯ del portal: en una lista de dos o tres acciones el icono no distingue
+ * nada —la palabra ya dice lo que el dibujo repetía— y una columna de iconos
+ * empuja el texto sin agregarle nada.
  *
  * La posición sale de medir el botón (`measureInWindow`) y no de un número
  * fijo: el encabezado crece con el safe area del teléfono y con el tamaño de
@@ -88,7 +92,6 @@ export function MenuDeEncabezado({ opciones }: { opciones: OpcionDeMenu[] }) {
                 style={styles.opcion}
                 estiloPresionado={styles.presionada}
               >
-                <Ionicons name={o.icono} size={18} color={tema.texto2} />
                 <Text style={styles.etiqueta}>{o.etiqueta}</Text>
               </PressableScale>
             ))}

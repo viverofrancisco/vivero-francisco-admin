@@ -76,7 +76,6 @@ export default function TareasListScreen() {
       titulo="Tareas"
       acciones={[
         {
-          icono: "add",
           etiqueta: "Nueva tarea",
           onPress: () => router.push("/(personal)/tareas/nueva"),
         },

@@ -173,7 +173,6 @@ export default function PersonalListScreen() {
         puedeEditar
           ? [
               {
-                icono: "add" as const,
                 etiqueta: "Nueva persona",
                 onPress: () => router.push("/(personal)/personal/nuevo"),
               },
@@ -182,7 +181,6 @@ export default function PersonalListScreen() {
               ...(!seleccionando && visibles.length > 0
                 ? [
                     {
-                      icono: "checkbox-outline" as const,
                       etiqueta: "Seleccionar personal",
                       onPress: () => setSeleccionando(true),
                     },

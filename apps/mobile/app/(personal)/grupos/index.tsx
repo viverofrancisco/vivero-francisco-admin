@@ -107,7 +107,6 @@ export default function GruposListScreen() {
         puedeEditar
           ? [
               {
-                icono: "add" as const,
                 etiqueta: "Nuevo grupo",
                 onPress: () => router.push("/(personal)/grupos/nuevo"),
               },
@@ -116,7 +115,6 @@ export default function GruposListScreen() {
               ...(!seleccionando && visibles.length > 0
                 ? [
                     {
-                      icono: "checkbox-outline" as const,
                       etiqueta: "Seleccionar grupos",
                       onPress: () => setSeleccionando(true),
                     },

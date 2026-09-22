@@ -4,6 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { useFiltroUrl } from "@/lib/filtros-url";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FILA_MOVIL } from "@/components/shared/lista-movil";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
@@ -40,6 +43,12 @@ export function ChatsPageClient({
 }) {
   const router = useRouter();
   const [creando, setCreando] = useState(false);
+  const [busqueda, setBusqueda] = useFiltroUrl("q", "");
+
+  const q = busqueda.trim().toLowerCase();
+  const visibles = q
+    ? chats.filter((c) => c.nombre.toLowerCase().includes(q))
+    : chats;
 
   return (
     <>
@@ -59,18 +68,33 @@ export function ChatsPageClient({
         }
       />
 
+      {/* El buscador, el mismo que en la app: con diez conversaciones no hace
+          falta, con cuarenta sí, y es el único filtro que tiene sentido acá. */}
+      <div className="relative min-w-0 max-w-sm flex-none">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Buscar chat..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-        {chats.length === 0 ? (
+        {visibles.length === 0 ? (
           <EmptyState
-            message={
-              puedeCrear
-                ? "Todavía no hay chats. Creá el primero y elegí quién está adentro."
-                : "Todavía no estás en ningún chat."
+            message={q ? "Sin coincidencias" : "No estás en ningún chat"}
+            detalle={
+              q
+                ? "Probá con otro nombre."
+                : puedeCrear
+                  ? "Creá el primero y elegí quién está adentro."
+                  : "Cuando te agreguen a uno te llega un aviso."
             }
           />
         ) : (
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-            {chats.map((c) => (
+            {visibles.map((c) => (
               <Link
                 key={c.id}
                 href={`/dashboard/chats/${c.id}?from=${aca()}`}

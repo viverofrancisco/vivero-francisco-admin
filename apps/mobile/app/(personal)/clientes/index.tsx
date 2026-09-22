@@ -164,14 +164,12 @@ export default function ClientesListScreen() {
         puedeCrear
           ? [
               {
-                icono: "add" as const,
                 etiqueta: "Nuevo cliente",
                 onPress: () => router.push("/(personal)/clientes/nuevo"),
               },
               ...(!seleccionando && visibles.length > 0
                 ? [
                     {
-                      icono: "checkbox-outline" as const,
                       etiqueta: "Seleccionar clientes",
                       onPress: () => setSeleccionando(true),
                     },
