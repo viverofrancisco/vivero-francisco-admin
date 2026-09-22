@@ -87,7 +87,13 @@ export default function ChatFormScreen() {
           method: "POST",
           body,
         });
-        router.replace(`/(personal)/chats/${chat.id}`);
+        // Con `pathname` y `params`, no con la ruta armada a mano: expo-router
+        // resuelve el segmento dinámico él mismo. Interpolada quedaba sin
+        // resolver y caía en "Unmatched Route" con el chat ya creado.
+        router.replace({
+          pathname: "/(personal)/chats/[id]",
+          params: { id: chat.id },
+        });
       }
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos guardar"));

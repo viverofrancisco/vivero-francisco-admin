@@ -34,7 +34,7 @@ export default function PersonalTabsLayout() {
       // Un aviso de chat abre el chat; el resto, la visita.
       const chatId = data.chatId;
       if (typeof chatId === "string") {
-        router.push(`/(personal)/chats/${chatId}`);
+        router.push({ pathname: "/(personal)/chats/[id]", params: { id: chatId } });
         return;
       }
       const visitaId = data.visitaId;

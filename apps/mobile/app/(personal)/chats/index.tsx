@@ -103,7 +103,12 @@ export default function ChatsListScreen() {
           }
           renderItem={({ item }) => (
             <PressableScale
-              onPress={() => router.push(`/(personal)/chats/${item.id}`)}
+              onPress={() =>
+                router.push({
+                  pathname: "/(personal)/chats/[id]",
+                  params: { id: item.id },
+                })
+              }
               estiloExterno={styles.ancho}
               style={FILA_LISTA}
             >

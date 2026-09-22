@@ -5,12 +5,16 @@ import { cn } from "@/lib/utils";
 
 /**
  * Un campo con **etiqueta flotante**: adentro cuando está vacío, montada sobre
- * el borde cuando tiene foco o algo escrito.
+ * el borde cuando tiene foco o algo escrito. Es la forma del `TextInput`
+ * `outlined` de react-native-paper, con el que están hechos los formularios de
+ * la app, y las dos son la misma pantalla.
  *
- * Es la misma forma que el `TextInput` de react-native-paper con el que están
- * hechos los formularios de la app, y las dos son la misma pantalla. Un
- * `Label` arriba y un `Input` abajo ocupan dos renglones para decir lo mismo, y
- * al lado del teléfono se veía otro formulario.
+ * El borde lo dibuja un `fieldset` y el hueco por donde asoma la etiqueta lo
+ * abre su `legend`. La versión obvia —un `<span>` con fondo del color de la
+ * tarjeta, tapando la línea— falla en cuanto el campo está sobre otra
+ * superficie: el parche queda de un blanco distinto al de atrás y se ve el
+ * recorte. Con la muesca no hay color que adivinar, que es justamente cómo lo
+ * resuelven Material y paper.
  *
  * La etiqueta es un `<label>` de verdad con su `htmlFor`, así que sigue siendo
  * lo que anuncia el lector de pantalla y tocarla enfoca el campo.
@@ -39,9 +43,13 @@ export function InputFlotante({
   const idCampo = id ?? propio;
   const [enfocado, setEnfocado] = useState(false);
   const arriba = enfocado || value.length > 0;
+  const texto = required ? `${label} *` : label;
 
   return (
-    <div className={cn("relative", className)}>
+    // `pt-2`: la etiqueta se monta sobre el borde, así que el renglón de arriba
+    // tiene que dejarle ese lugar o la recorta lo que venga antes —un contenedor
+    // con scroll, por ejemplo—.
+    <div className={cn("relative pt-2", className)}>
       <input
         id={idCampo}
         value={value}
@@ -50,24 +58,45 @@ export function InputFlotante({
         onBlur={() => setEnfocado(false)}
         maxLength={maxLength}
         placeholder={enfocado ? placeholder : undefined}
-        className={cn(
-          "h-14 w-full rounded-xl border bg-card px-3.5 pt-5 pb-1.5 text-sm text-foreground outline-none transition-colors",
-          "placeholder:text-muted-foreground/60",
-          enfocado ? "border-primary ring-1 ring-primary" : "border-border"
-        )}
+        className="relative h-14 w-full rounded-xl bg-transparent px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
       />
+
+      {/* El borde y su muesca. `aria-hidden`: es dibujo, no estructura. */}
+      <fieldset
+        aria-hidden
+        className={cn(
+          // El borde arranca **a la altura del centro de la etiqueta** (el
+          // `pt-2` del contenedor), para que la línea la corte por la mitad
+          // como hace paper. Un píxel más abajo y el texto queda colgando.
+          "pointer-events-none absolute inset-x-0 bottom-0 top-2 rounded-xl border px-2.5 transition-colors",
+          enfocado ? "border-primary" : "border-border"
+        )}
+      >
+        <legend
+          className={cn(
+            // Alto cero: lo que hace falta es el hueco en la línea, no una
+            // caja. El ancho —lo que de verdad abre la muesca— lo da el texto
+            // invisible de adentro.
+            "ml-0.5 h-0 p-0 text-xs leading-none transition-all duration-150",
+            // `px-1.5` y no `px-1`: con menos, los muñones de la línea tocan
+            // la primera y la última letra.
+            arriba ? "max-w-full px-1.5" : "max-w-0 px-0"
+          )}
+        >
+          {/* Invisible pero medible: lo que abre el hueco del tamaño exacto. */}
+          <span className="invisible whitespace-nowrap">{texto}</span>
+        </legend>
+      </fieldset>
+
       <label
         htmlFor={idCampo}
         className={cn(
-          "pointer-events-none absolute left-3 origin-left bg-card px-1 transition-all",
-          arriba
-            ? "top-0 -translate-y-1/2 text-xs"
-            : "top-1/2 -translate-y-1/2 text-sm",
+          "pointer-events-none absolute left-3.5 transition-all duration-150",
+          arriba ? "top-0 text-xs" : "top-1/2 -translate-y-1/2 text-sm",
           enfocado ? "text-primary" : "text-muted-foreground"
         )}
       >
-        {label}
-        {required ? " *" : ""}
+        {texto}
       </label>
     </div>
   );

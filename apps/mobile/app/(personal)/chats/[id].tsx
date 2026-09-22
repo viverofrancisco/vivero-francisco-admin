@@ -280,7 +280,12 @@ export default function ChatScreen() {
         </View>
         {chat?.puedeEditar ? (
           <PressableScale
-            onPress={() => router.push(`/(personal)/chats/nuevo?id=${id}`)}
+            onPress={() =>
+              router.push({
+                pathname: "/(personal)/chats/nuevo",
+                params: { id },
+              })
+            }
             style={styles.iconoCabecera}
             accessibilityLabel="Editar el chat"
           >

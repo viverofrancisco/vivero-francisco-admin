@@ -115,7 +115,7 @@ export function ChatForm({
           </Button>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-0.5">
           <InputFlotante
             id="nombre-chat"
             label="Nombre"
