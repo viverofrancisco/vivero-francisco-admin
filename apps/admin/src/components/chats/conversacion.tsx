@@ -412,12 +412,12 @@ export function Conversacion({
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 flex-none text-muted-foreground"
+            className="h-9 w-9 flex-none text-muted-foreground"
             aria-label="Mandar una foto"
             disabled={subiendo || enviando}
             onClick={() => archivos.current?.click()}
           >
-            <ImageIcon className="h-5 w-5" />
+            <ImageIcon className="h-[22px] w-[22px]" />
           </Button>
           <Textarea
             value={texto}
@@ -428,7 +428,10 @@ export function Conversacion({
             // tamaños: la clase base cambia de `text-base` a `text-sm` en `md`,
             // y con el interlineado de cada una el alto cambiaba con el ancho
             // de la ventana.
-            className="max-h-32 min-h-10 flex-1 resize-none rounded-full px-4 py-[7px] leading-6"
+            // 36 de alto, los mismos que los botones: los tres eran 40 y en el
+            // teléfono la fila de escribir se comía más de lo que hace falta,
+            // con un círculo pesado al lado de un ícono chiquito.
+            className="max-h-32 min-h-9 flex-1 resize-none rounded-full px-3.5 py-[5px] leading-6"
             onKeyDown={(e) => {
               // Enter manda, Shift+Enter hace un renglón: es lo que hacen los
               // dedos que vienen de WhatsApp.
@@ -440,12 +443,12 @@ export function Conversacion({
           />
           <Button
             size="icon"
-            className="h-10 w-10 flex-none rounded-full"
+            className="h-9 w-9 flex-none rounded-full"
             aria-label="Enviar"
             onClick={() => enviar()}
             disabled={enviando || subiendo || !texto.trim()}
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-[18px] w-[18px]" />
           </Button>
         </div>
         {subiendo ? (
