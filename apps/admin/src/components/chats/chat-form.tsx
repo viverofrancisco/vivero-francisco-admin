@@ -115,7 +115,7 @@ export function ChatForm({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Quiénes están</Label>
+            <Label>Miembros</Label>
             {personas === null ? (
               <p className="text-sm text-muted-foreground">Cargando...</p>
             ) : personas.length === 0 ? (
@@ -164,13 +164,6 @@ export function ChatForm({
               </ul>
               </>
             )}
-            {/* Quien lo arma queda adentro sin marcarse —es el que después va
-                a tener que agregar o sacar gente—, pero no hace falta decirlo:
-                no es una decisión que esté tomando acá. El mismo renglón, en el
-                mismo lugar, que en la app. */}
-            <p className="text-xs text-muted-foreground">
-              Al agregar a alguien le llega un aviso al teléfono.
-            </p>
           </div>
         </div>
 

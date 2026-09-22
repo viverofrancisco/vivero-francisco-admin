@@ -125,7 +125,7 @@ export default function ChatFormScreen() {
           placeholder="Cuadrilla 1, Oficina, Urgencias..."
         />
 
-        <Titulo>Quiénes están</Titulo>
+        <Titulo>Miembros</Titulo>
         {personas === null || personas.length === 0 ? (
           <Text style={styles.vacio}>
             No hay cuentas que puedan entrar a un chat.
@@ -181,12 +181,6 @@ export default function ChatFormScreen() {
           </View>
           </>
         )}
-        {/* Quien lo arma queda adentro sin marcarse —es el que después va a
-            tener que agregar o sacar gente—, pero no hace falta decirlo: no es
-            una decisión que esté tomando acá. */}
-        <Text style={styles.nota}>
-          Al agregar a alguien le llega un aviso al teléfono.
-        </Text>
       </ScrollView>
 
       <PieDeFormulario
@@ -236,7 +230,6 @@ const styles = StyleSheet.create({
   filaMarcada: { backgroundColor: tema.verde50 },
   nombre: { flex: 1, fontSize: 15, fontWeight: "500", color: tema.texto },
   rol: { fontSize: 12, color: tema.texto3 },
-  nota: { fontSize: 13, color: tema.texto3 },
   vacio: { color: tema.texto3 },
   error: { color: tema.rojo },
 });
