@@ -2163,6 +2163,15 @@ model ChatAdjunto {
   mensajeId String
   key       String
   url       String
+  /**
+   * Cómo se llamaba el archivo cuando lo mandaron.
+   *
+   * La clave en R2 es un uuid —tiene que serlo, dos fotos "IMG_0001.jpg" no
+   * pueden pisarse—, así que sin esto una foto no tiene ninguna palabra por la
+   * cual encontrarla. Es lo único con lo que se puede buscar una imagen: el
+   * nombre que le puso la cámara o quien la guardó.
+   */
+  nombre    String?
   /// "imagen" por ahora. La columna ya está para el día que entre un video.
   tipo      String   @default("imagen")
   createdAt DateTime @default(now())
@@ -2170,4 +2179,5 @@ model ChatAdjunto {
   mensaje ChatMensaje @relation(fields: [mensajeId], references: [id], onDelete: Cascade)
 
   @@index([mensajeId])
+  @@index([nombre])
 }

@@ -94,7 +94,20 @@ export function Conversacion({
   const [respondiendo, setRespondiendo] = useState<MensajeEnPantalla | null>(
     null
   );
-  const [subiendo, setSubiendo] = useState(false);
+  /**
+   * Las fotos elegidas que todavía no salieron.
+   *
+   * Antes se subían y se mandaban en el acto, así que una foto nunca podía
+   * llevar texto ni juntarse con otra: cada una era su propio mensaje. Ahora
+   * esperan acá —con su miniatura arriba del campo— y salen **con lo que se
+   * escriba**, en un solo mensaje, como en WhatsApp.
+   *
+   * La miniatura es una URL de objeto del navegador, no la foto subida: se ve
+   * al instante y no gasta una subida que todavía puede cancelarse.
+   */
+  const [pendientes, setPendientes] = useState<
+    { archivo: File; vista: string }[]
+  >([]);
   const [enviando, setEnviando] = useState(false);
   const [editando, setEditando] = useState(false);
   const [viendo, setViendo] = useState<string | null>(null);
@@ -179,11 +192,12 @@ export function Conversacion({
     }
   }
 
-  async function subirFotos(lista: FileList): Promise<
-    { key: string; url: string }[]
+  /** Sube lo que esté esperando y devuelve con qué crear el mensaje. */
+  async function subirPendientes(): Promise<
+    { key: string; url: string; nombre: string }[]
   > {
-    const files = Array.from(lista).filter((f) => f.type.startsWith("image/"));
-    if (files.length === 0) return [];
+    if (pendientes.length === 0) return [];
+    const files = pendientes.map((p) => p.archivo);
     const res = await fetch(`/api/chats/${chat.id}/fotos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -203,17 +217,21 @@ export function Conversacion({
         })
       )
     );
-    return data.uploads.map((u: { key: string; url: string }) => ({
+    return data.uploads.map((u: { key: string; url: string }, i: number) => ({
       key: u.key,
       url: u.url,
+      // El nombre del archivo viaja porque es lo único por lo que después se
+      // puede buscar una foto.
+      nombre: files[i].name,
     }));
   }
 
-  async function enviar(fotos: { key: string; url: string }[] = []) {
+  async function enviar() {
     const cuerpo = texto.trim();
-    if (!cuerpo && fotos.length === 0) return;
+    if (!cuerpo && pendientes.length === 0) return;
     setEnviando(true);
     try {
+      const fotos = await subirPendientes();
       const res = await fetch(`/api/chats/${chat.id}/mensajes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -228,6 +246,8 @@ export function Conversacion({
       setMensajes((actuales) => [...actuales, data as MensajeEnPantalla]);
       setTexto("");
       setRespondiendo(null);
+      pendientes.forEach((p) => URL.revokeObjectURL(p.vista));
+      setPendientes([]);
       requestAnimationFrame(() => irAlFondo(true));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos enviar");
@@ -236,19 +256,30 @@ export function Conversacion({
     }
   }
 
-  async function elegirFotos(lista: FileList | null) {
+  /** Elegir **no manda**: la foto espera arriba del campo hasta que se envíe. */
+  function elegirFotos(lista: FileList | null) {
     if (!lista || lista.length === 0) return;
-    setSubiendo(true);
-    try {
-      const fotos = await subirFotos(lista);
-      if (fotos.length > 0) await enviar(fotos);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos subir la foto");
-    } finally {
-      setSubiendo(false);
-      if (archivos.current) archivos.current.value = "";
-    }
+    const nuevas = Array.from(lista)
+      .filter((f) => f.type.startsWith("image/"))
+      .map((archivo) => ({ archivo, vista: URL.createObjectURL(archivo) }));
+    setPendientes((actuales) => [...actuales, ...nuevas].slice(0, 10));
+    if (archivos.current) archivos.current.value = "";
   }
+
+  function quitarPendiente(i: number) {
+    setPendientes((actuales) => {
+      URL.revokeObjectURL(actuales[i].vista);
+      return actuales.filter((_, j) => j !== i);
+    });
+  }
+
+  // Las URLs de objeto viven hasta que alguien las suelte; si la pantalla se
+  // va con fotos esperando, quedarían colgadas en memoria.
+  useEffect(
+    () => () => pendientes.forEach((p) => URL.revokeObjectURL(p.vista)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   async function borrar(id: string) {
     try {
@@ -395,6 +426,34 @@ export function Conversacion({
           </div>
         ) : null}
 
+        {/* Las fotos que están por salir: se ven, se sacan de la tanda con su
+            ✕, y recién salen cuando alguien toca enviar. */}
+        {pendientes.length > 0 ? (
+          <div className="mb-2 flex flex-wrap gap-1.5 px-0.5">
+            {pendientes.map((p, i) => (
+              <span
+                key={p.vista}
+                className="relative h-14 w-14 overflow-hidden rounded-lg border border-border"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.vista}
+                  alt={p.archivo.name}
+                  className="h-full w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => quitarPendiente(i)}
+                  aria-label={`Quitar ${p.archivo.name}`}
+                  className="absolute right-0.5 top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-foreground/60 text-background"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <div className="flex items-end gap-2">
           <input
             ref={archivos}
@@ -414,7 +473,7 @@ export function Conversacion({
             size="icon"
             className="h-9 w-9 flex-none text-muted-foreground"
             aria-label="Mandar una foto"
-            disabled={subiendo || enviando}
+            disabled={enviando}
             onClick={() => archivos.current?.click()}
           >
             <ImageIcon className="h-[22px] w-[22px]" />
@@ -446,14 +505,13 @@ export function Conversacion({
             className="h-9 w-9 flex-none rounded-full"
             aria-label="Enviar"
             onClick={() => enviar()}
-            disabled={enviando || subiendo || !texto.trim()}
+            // Se puede mandar con texto **o** con fotos esperando: una foto
+            // sola es un mensaje, y con pie de foto también.
+            disabled={enviando || (!texto.trim() && pendientes.length === 0)}
           >
             <Send className="h-[18px] w-[18px]" />
           </Button>
         </div>
-        {subiendo ? (
-          <p className="pt-1 text-xs text-muted-foreground">Subiendo foto...</p>
-        ) : null}
       </div>
 
       {editando ? (

@@ -87,7 +87,17 @@ export default function ChatScreen() {
   const [texto, setTexto] = useState("");
   const [respondiendo, setRespondiendo] = useState<MensajeDeChat | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const [subiendo, setSubiendo] = useState(false);
+  /**
+   * Las fotos elegidas que todavía no salieron.
+   *
+   * Antes se subían y se mandaban en el acto, así que una foto nunca podía
+   * llevar texto ni juntarse con otra: cada una era su propio mensaje. Ahora
+   * esperan acá —con su miniatura arriba del campo— y salen **con lo que se
+   * escriba**, en un solo mensaje, como en WhatsApp.
+   */
+  const [pendientes, setPendientes] = useState<ImagePicker.ImagePickerAsset[]>(
+    []
+  );
   const [tocado, setTocado] = useState<MensajeDeChat | null>(null);
   const [viendo, setViendo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -175,11 +185,50 @@ export default function ChatScreen() {
     }
   }
 
-  async function enviar(fotos: { key: string; url: string }[] = []) {
+  /** Sube lo que esté esperando y devuelve con qué crear el mensaje. */
+  async function subirPendientes(): Promise<
+    { key: string; url: string; nombre?: string }[]
+  > {
+    if (pendientes.length === 0) return [];
+    const presign = await apiRequest<{
+      uploads: { key: string; url: string; uploadUrl: string; contentType: string }[];
+    }>(`/api/mobile/chats/${id}/fotos`, {
+      method: "POST",
+      body: {
+        files: pendientes.map((a, i) => ({
+          fileName: a.fileName ?? `foto-${i}.jpg`,
+          contentType: a.mimeType ?? "image/jpeg",
+        })),
+      },
+    });
+
+    await Promise.all(
+      presign.uploads.map(async (u, i) => {
+        const blob = await (await fetch(pendientes[i].uri)).blob();
+        const res = await fetch(u.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": u.contentType },
+          body: blob,
+        });
+        if (!res.ok) throw new Error("No pudimos subir una de las fotos.");
+      })
+    );
+
+    return presign.uploads.map((u, i) => ({
+      key: u.key,
+      url: u.url,
+      // El nombre del archivo viaja porque es lo único por lo que después se
+      // puede buscar una foto.
+      nombre: pendientes[i].fileName ?? undefined,
+    }));
+  }
+
+  async function enviar() {
     const cuerpo = texto.trim();
-    if (!cuerpo && fotos.length === 0) return;
+    if (!cuerpo && pendientes.length === 0) return;
     setEnviando(true);
     try {
+      const fotos = pendientes.length > 0 ? await subirPendientes() : [];
       const mensaje = await apiRequest<MensajeDeChat>(
         `/api/mobile/chats/${id}/mensajes`,
         {
@@ -194,6 +243,7 @@ export default function ChatScreen() {
       setMensajes((actuales) => [mensaje, ...actuales]);
       setTexto("");
       setRespondiendo(null);
+      setPendientes([]);
       setAviso(null);
     } catch (e) {
       setAviso(mensajeDeError(e, "No pudimos enviar el mensaje"));
@@ -202,40 +252,10 @@ export default function ChatScreen() {
     }
   }
 
-  async function mandarFotos(assets: ImagePicker.ImagePickerAsset[]) {
+  /** Elegir **no manda**: la foto espera arriba del campo hasta que se envíe. */
+  function agregar(assets: ImagePicker.ImagePickerAsset[]) {
     if (assets.length === 0) return;
-    setSubiendo(true);
-    try {
-      const presign = await apiRequest<{
-        uploads: { key: string; url: string; uploadUrl: string; contentType: string }[];
-      }>(`/api/mobile/chats/${id}/fotos`, {
-        method: "POST",
-        body: {
-          files: assets.map((a, i) => ({
-            fileName: a.fileName ?? `foto-${i}.jpg`,
-            contentType: a.mimeType ?? "image/jpeg",
-          })),
-        },
-      });
-
-      await Promise.all(
-        presign.uploads.map(async (u, i) => {
-          const blob = await (await fetch(assets[i].uri)).blob();
-          const res = await fetch(u.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": u.contentType },
-            body: blob,
-          });
-          if (!res.ok) throw new Error("No pudimos subir una de las fotos.");
-        })
-      );
-
-      await enviar(presign.uploads.map((u) => ({ key: u.key, url: u.url })));
-    } catch (e) {
-      setAviso(mensajeDeError(e, "No pudimos subir la foto"));
-    } finally {
-      setSubiendo(false);
-    }
+    setPendientes((actuales) => [...actuales, ...assets].slice(0, 10));
   }
 
   async function elegirDeGaleria() {
@@ -245,14 +265,14 @@ export default function ChatScreen() {
       selectionLimit: 10,
       quality: 0.7,
     });
-    if (!r.canceled) mandarFotos(r.assets);
+    if (!r.canceled) agregar(r.assets);
   }
 
   async function sacarFoto() {
     const permiso = await ImagePicker.requestCameraPermissionsAsync();
     if (!permiso.granted) return;
     const r = await ImagePicker.launchCameraAsync({ quality: 0.7 });
-    if (!r.canceled) mandarFotos(r.assets);
+    if (!r.canceled) agregar(r.assets);
   }
 
   async function borrar(mensaje: MensajeDeChat) {
@@ -408,11 +428,32 @@ export default function ChatScreen() {
           </View>
         ) : null}
 
+        {pendientes.length > 0 ? (
+          <View style={styles.bandeja}>
+            {pendientes.map((a, i) => (
+              <View key={a.uri} style={styles.miniatura}>
+                <Image source={{ uri: a.uri }} style={styles.miniaturaFoto} />
+                <PressableScale
+                  onPress={() =>
+                    setPendientes((actuales) =>
+                      actuales.filter((_, j) => j !== i)
+                    )
+                  }
+                  style={styles.quitar}
+                  accessibilityLabel="Quitar la foto"
+                >
+                  <Ionicons name="close" size={12} color="#fff" />
+                </PressableScale>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         <View style={styles.escribir}>
           <PressableScale
             onPress={elegirDeGaleria}
             onLongPress={sacarFoto}
-            disabled={subiendo || enviando}
+            disabled={enviando}
             style={styles.adjuntar}
             accessibilityLabel="Mandar una foto"
           >
@@ -428,14 +469,17 @@ export default function ChatScreen() {
           />
           <PressableScale
             onPress={() => enviar()}
-            disabled={enviando || subiendo || !texto.trim()}
+            // Se puede mandar con texto **o** con fotos esperando: una foto
+            // sola es un mensaje, y con pie de foto también.
+            disabled={enviando || (!texto.trim() && pendientes.length === 0)}
             style={[
               styles.enviar,
-              (enviando || subiendo || !texto.trim()) && styles.apagado,
+              (enviando || (!texto.trim() && pendientes.length === 0)) &&
+                styles.apagado,
             ]}
             accessibilityLabel="Enviar"
           >
-            {subiendo ? (
+            {enviando ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Ionicons name="send" size={18} color="#fff" />
@@ -564,12 +608,17 @@ function Burbuja({
                   key={f.id}
                   onPress={() => onVerFoto(f.url)}
                   onLongPress={onMantener}
-                  estiloExterno={
-                    mensaje.fotos.length > 1 ? styles.mitad : styles.ancho
-                  }
                   style={styles.fotoCaja}
                 >
-                  <Image source={{ uri: f.url }} style={styles.foto} />
+                  {/* Medidas fijas y no porcentajes: adentro de una burbuja
+                      que se mide por su contenido, un `100%` no tiene contra
+                      qué resolverse —quedaba de ancho cero y alto estirado—. */}
+                  <Image
+                    source={{ uri: f.url }}
+                    style={
+                      mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola
+                    }
+                  />
                 </PressableScale>
               ))}
             </View>
@@ -668,10 +717,17 @@ const styles = StyleSheet.create({
   citaAutor: { fontSize: 11, fontWeight: "700", color: tema.verde700 },
   citaCuerpo: { fontSize: 12, color: tema.texto2 },
 
-  fotos: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 4 },
-  mitad: { width: "48%" },
+  fotos: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 3,
+    marginBottom: 4,
+    // Dos por fila cuando hay varias: 105 + 3 + 105.
+    maxWidth: 213,
+  },
   fotoCaja: { borderRadius: 10, overflow: "hidden" },
-  foto: { width: "100%", height: 150, backgroundColor: tema.lienzo },
+  fotoSola: { width: 213, height: 160, backgroundColor: tema.lienzo },
+  fotoChica: { width: 105, height: 105, backgroundColor: tema.lienzo },
 
   aviso: {
     color: tema.rojo,
@@ -703,6 +759,28 @@ const styles = StyleSheet.create({
   },
   citandoAutor: { fontSize: 12, fontWeight: "700", color: tema.verde700 },
   citandoTexto: { fontSize: 12, color: tema.texto3 },
+  /* Las fotos que están por salir, arriba del campo: se ven, se sacan de la
+     tanda con su ✕, y recién salen cuando alguien toca enviar. */
+  bandeja: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 8,
+    paddingHorizontal: 2,
+  },
+  miniatura: { width: 56, height: 56, borderRadius: 8, overflow: "hidden" },
+  miniaturaFoto: { width: "100%", height: "100%", backgroundColor: tema.lienzo },
+  quitar: {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   cerrarCita: {
     width: 28,
     height: 28,

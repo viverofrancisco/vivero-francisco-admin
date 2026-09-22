@@ -361,7 +361,7 @@ const MENSAJE_SELECT = {
   deletedAt: true,
   autorId: true,
   autorNombre: true,
-  adjuntos: { select: { id: true, url: true, tipo: true } },
+  adjuntos: { select: { id: true, url: true, tipo: true, nombre: true } },
   respondeA: {
     select: {
       id: true,
@@ -383,10 +383,50 @@ const MENSAJE_SELECT = {
 export async function listMensajes(
   viewer: Viewer,
   chatId: string,
-  opciones: { cursor?: string; limit?: number } = {}
+  opciones: { cursor?: string; limit?: number; alrededorDe?: string } = {}
 ) {
   await ensureMiembro(viewer, chatId);
   const limit = Math.min(opciones.limit ?? MENSAJES_POR_PAGINA, 100);
+
+  /*
+   * Llegando desde el buscador, la conversación no se abre por el final sino
+   * **alrededor** del mensaje encontrado: hay que traer los de antes y los de
+   * después, o el mensaje aparece pegado a un borde sin nada que lo explique.
+   */
+  if (opciones.alrededorDe) {
+    const centro = await prisma.chatMensaje.findFirst({
+      where: { id: opciones.alrededorDe, chatId },
+      select: { createdAt: true },
+    });
+    if (!centro) throw new NotFoundError("Mensaje no encontrado");
+
+    const [nuevos, viejos] = await Promise.all([
+      prisma.chatMensaje.findMany({
+        where: { chatId, createdAt: { gt: centro.createdAt } },
+        orderBy: { createdAt: "asc" },
+        take: limit,
+        select: MENSAJE_SELECT,
+      }),
+      prisma.chatMensaje.findMany({
+        where: { chatId, createdAt: { lte: centro.createdAt } },
+        orderBy: { createdAt: "desc" },
+        take: limit + 1,
+        select: MENSAJE_SELECT,
+      }),
+    ]);
+
+    const hayMasViejos = viejos.length > limit;
+    const pagina = [
+      ...[...nuevos].reverse(),
+      ...(hayMasViejos ? viejos.slice(0, limit) : viejos),
+    ];
+    return {
+      items: pagina.map((m) => mensajeParaPantalla(m, viewer.id)),
+      cursor: hayMasViejos
+        ? (pagina[pagina.length - 1]?.id ?? null)
+        : null,
+    };
+  }
 
   const mensajes = await prisma.chatMensaje.findMany({
     where: { chatId },
@@ -414,7 +454,7 @@ type MensajeCrudo = {
   deletedAt: Date | null;
   autorId: string | null;
   autorNombre: string;
-  adjuntos: { id: string; url: string; tipo: string }[];
+  adjuntos: { id: string; url: string; tipo: string; nombre: string | null }[];
   respondeA: {
     id: string;
     texto: string | null;
@@ -462,7 +502,7 @@ export async function enviarMensaje(
   chatId: string,
   datos: {
     texto?: string | null;
-    fotos?: { key: string; url: string; tipo?: string }[];
+    fotos?: { key: string; url: string; nombre?: string; tipo?: string }[];
     respondeAId?: string | null;
   }
 ) {
@@ -501,6 +541,9 @@ export async function enviarMensaje(
         create: fotos.map((f) => ({
           key: f.key,
           url: f.url,
+          // El nombre con el que la mandaron: es por lo único que después se
+          // la puede buscar.
+          nombre: f.nombre ?? null,
           tipo: f.tipo ?? "imagen",
         })),
       },
@@ -560,3 +603,83 @@ export async function contarSinLeer(viewer: Viewer): Promise<number> {
   const chats = await listChats(viewer);
   return chats.reduce((suma, c) => suma + c.sinLeer, 0);
 }
+
+/**
+ * Buscar entre los mensajes de los chats donde uno está.
+ *
+ * Busca en el texto y **en el nombre de los archivos**: una foto no tiene
+ * palabras, así que lo único por lo que se la puede encontrar es cómo se
+ * llamaba cuando la mandaron. Por eso `ChatAdjunto.nombre` existe.
+ *
+ * El alcance sale de la misma regla de siempre: los chats donde la persona es
+ * miembro **hoy**. Alguien a quien sacaron de un grupo no encuentra por el
+ * buscador lo que ya no puede abrir.
+ */
+export async function buscarMensajes(
+  viewer: Viewer,
+  q: string,
+  limit = 30
+) {
+  ensureEnElEquipo(viewer);
+  const texto = q.trim();
+  if (texto.length < 2) return [];
+
+  const mios = await prisma.chatMiembro.findMany({
+    where: { userId: viewer.id, salioEl: null, chat: { deletedAt: null } },
+    select: { chatId: true },
+  });
+  if (mios.length === 0) return [];
+  const chatIds = mios.map((m) => m.chatId);
+
+  const mensajes = await prisma.chatMensaje.findMany({
+    where: {
+      chatId: { in: chatIds },
+      deletedAt: null,
+      OR: [
+        { texto: { contains: texto, mode: "insensitive" } },
+        {
+          adjuntos: {
+            some: { nombre: { contains: texto, mode: "insensitive" } },
+          },
+        },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+    take: Math.min(limit, 50),
+    select: {
+      id: true,
+      texto: true,
+      createdAt: true,
+      autorId: true,
+      autorNombre: true,
+      chat: { select: { id: true, nombre: true } },
+      adjuntos: { select: { id: true, url: true, nombre: true } },
+    },
+  });
+
+  return mensajes.map((m) => {
+    // Cuál de las fotos hizo el match: es la que hay que mostrar, no la
+    // primera del mensaje.
+    const coincide = m.adjuntos.find((a) =>
+      a.nombre?.toLowerCase().includes(texto.toLowerCase())
+    );
+    return {
+      id: m.id,
+      chatId: m.chat.id,
+      chatNombre: m.chat.nombre,
+      autorNombre: m.autorNombre,
+      mio: m.autorId !== null && m.autorId === viewer.id,
+      texto: m.texto,
+      createdAt: m.createdAt,
+      foto: coincide
+        ? { id: coincide.id, url: coincide.url, nombre: coincide.nombre }
+        : null,
+      /** Cuántas fotos trae el mensaje, para decirlo cuando no hay texto. */
+      fotos: m.adjuntos.length,
+    };
+  });
+}
+
+export type ResultadoDeBusqueda = Awaited<
+  ReturnType<typeof buscarMensajes>
+>[number];

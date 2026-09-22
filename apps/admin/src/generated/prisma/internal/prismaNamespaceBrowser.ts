@@ -1043,6 +1043,7 @@ export const ChatAdjuntoScalarFieldEnum = {
   mensajeId: 'mensajeId',
   key: 'key',
   url: 'url',
+  nombre: 'nombre',
   tipo: 'tipo',
   createdAt: 'createdAt'
 } as const

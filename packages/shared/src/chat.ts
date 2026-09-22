@@ -37,6 +37,11 @@ export type ActualizarChatBody = z.infer<typeof actualizarChatSchema>;
 const fotoDeMensajeSchema = z.object({
   key: z.string().min(1),
   url: z.string().min(1),
+  /**
+   * Cómo se llamaba el archivo. Es lo único por lo que después se puede
+   * **buscar** una foto: su clave en R2 es un uuid.
+   */
+  nombre: z.string().max(200).optional(),
   /** Por ahora solo imágenes; la columna ya acepta lo que venga después. */
   tipo: z.literal("imagen").optional(),
 });
@@ -61,6 +66,12 @@ export type EnviarMensajeBody = z.infer<typeof enviarMensajeSchema>;
 export const mensajesQuerySchema = z.object({
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
+  /**
+   * Abrir la conversación **alrededor de un mensaje**, no por el final: es lo
+   * que hace falta cuando se llega desde el buscador. Trae los de antes y los
+   * de después en la misma página.
+   */
+  alrededorDe: z.string().optional(),
 });
 export type MensajesQuery = z.infer<typeof mensajesQuerySchema>;
 
@@ -82,3 +93,10 @@ export const chatUploadUrlsSchema = z.object({
     .max(MAX_FOTOS_POR_MENSAJE),
 });
 export type ChatUploadUrlsBody = z.infer<typeof chatUploadUrlsSchema>;
+
+/** Buscar entre los mensajes de los chats donde uno está. */
+export const busquedaDeMensajesSchema = z.object({
+  q: z.string().trim().min(2, "Escribe al menos dos letras").max(100),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+});
+export type BusquedaDeMensajes = z.infer<typeof busquedaDeMensajesSchema>;
