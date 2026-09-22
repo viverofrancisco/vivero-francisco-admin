@@ -164,7 +164,7 @@ export default function ChatFormScreen() {
           </Text>
         ) : (
           <>
-          <View style={styles.buscador}>
+          <View style={[styles.buscador, styles.separado]}>
             <Ionicons name="search" size={18} color={tema.texto3} />
             <TextInput
               value={busqueda}
@@ -260,6 +260,9 @@ const styles = StyleSheet.create({
     backgroundColor: tema.superficie,
   },
   buscadorTexto: { flex: 1, fontSize: 15, color: tema.texto, padding: 0 },
+  // Aire entre el buscador y la lista: pegados se leen como un solo bloque y
+  // la primera fila parece parte del campo.
+  separado: { marginBottom: 8 },
   sinCoincidencias: { color: tema.texto3, padding: 14, fontSize: 14 },
   lista: {
     borderRadius: 14,

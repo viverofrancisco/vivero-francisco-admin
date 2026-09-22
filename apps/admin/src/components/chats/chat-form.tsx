@@ -138,7 +138,9 @@ export function ChatForm({
               </p>
             ) : (
               <>
-              <div className="relative">
+              {/* `mb-2`: pegados, el buscador y la lista se leen como un solo
+                  bloque y la primera fila parece parte del campo. */}
+              <div className="relative mb-2">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Buscar persona..."
