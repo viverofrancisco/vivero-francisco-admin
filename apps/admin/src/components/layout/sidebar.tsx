@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
-  UserCircle,
   MessageCircle,
   LayoutDashboard,
   Users,
@@ -18,19 +17,20 @@ import {
   Settings,
   MapPin,
   ChevronDown,
-  LogOut,
   Receipt,
   RefreshCw,
 } from "lucide-react";
 import type { UserRole } from "@/generated/prisma/client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Brand } from "./brand";
+
+/** Lo que va debajo del nombre cuando no hay correo. Las mismas palabras
+ *  que la página de Cuenta. */
+const ROL: Record<string, string> = {
+  ADMIN: "Administrador",
+  STAFF: "Staff",
+  PERSONAL: "Personal",
+  CLIENTE: "Cliente",
+};
 
 interface NavChild {
   label: string;
@@ -119,9 +119,8 @@ const mainItems: NavItem[] = [
       { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion" },
     ],
   },
-  // Para todos, el jardinero incluido: es la tercera de sus tres pestañas en
-  // el teléfono, y acá tiene que estar en el mismo lugar.
-  { label: "Cuenta", href: "/dashboard/cuenta", icon: UserCircle },
+  // Cuenta no está acá: en el escritorio es el bloque con el nombre al pie
+  // de la barra. En el teléfono sí es una entrada del menú.
 ];
 
 /**
@@ -241,6 +240,9 @@ export function Sidebar({ branding, role }: BrandingProps) {
   const userName =
     [session?.user?.name, session?.user?.apellido].filter(Boolean).join(" ") ||
     "Usuario";
+  // El jardinero no tiene correo: debajo del nombre va lo que es.
+  const debajo = session?.user?.email || ROL[role] || "";
+  const enCuenta = pathname.startsWith("/dashboard/cuenta");
 
   return (
     <aside className="hidden h-dvh min-h-0 bg-sidebar md:flex md:w-64 md:flex-col md:border-r">
@@ -255,55 +257,56 @@ export function Sidebar({ branding, role }: BrandingProps) {
         {mainVisible.map(renderItem)}
       </nav>
 
-      {/* Footer user menu */}
+      {/* El bloque con el nombre **es** la entrada a Cuenta: abría un menú
+          con el nombre otra vez y "Cerrar sesión", que ya está en esa página.
+          Como en la app y en el teléfono, donde Cuenta es una pestaña más. */}
       <div className="flex-none p-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="flex w-full items-center gap-2.5 rounded-xl bg-sidebar-accent p-2.5 text-left transition-colors hover:bg-sidebar-accent/70"
-              />
-            }
+        <Link
+          href="/dashboard/cuenta"
+          aria-current={enCuenta ? "page" : undefined}
+          className={cn(
+            "flex w-full items-center gap-2.5 rounded-xl p-2.5 text-left transition-colors",
+            enCuenta
+              ? "bg-sidebar-primary text-sidebar-primary-foreground"
+              : "bg-sidebar-accent hover:bg-sidebar-accent/70"
+          )}
+        >
+          <div
+            className={cn(
+              "flex h-9 w-9 flex-none items-center justify-center rounded-full text-sm font-bold",
+              enCuenta
+                ? "bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground"
+                : "bg-primary text-primary-foreground"
+            )}
           >
-            <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-              {userName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-bold text-foreground">
-                {userName}
-              </div>
-              <div className="truncate text-[11px] font-semibold text-muted-foreground">
-                {session?.user?.email}
-              </div>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="top"
-            align="start"
-            className="min-w-[230px]"
-          >
-            <div className="px-2 py-1.5">
-              <p className="truncate text-sm font-medium">{userName}</p>
-              <p className="break-all text-xs leading-snug text-muted-foreground">
-                {session?.user?.email}
-              </p>
-            </div>
-
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => signOut({ callbackUrl: "/login" })}
+            {userName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div
+              className={cn(
+                "truncate text-[13px] font-bold",
+                enCuenta ? "" : "text-foreground"
+              )}
             >
-              <LogOut className="mr-2 h-4 w-4" />
-              Cerrar sesión
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              {userName}
+            </div>
+            <div
+              className={cn(
+                "truncate text-[11px] font-semibold",
+                enCuenta
+                  ? "text-sidebar-primary-foreground/80"
+                  : "text-muted-foreground"
+              )}
+            >
+              {debajo}
+            </div>
+          </div>
+        </Link>
       </div>
     </aside>
   );
