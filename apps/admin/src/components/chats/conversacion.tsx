@@ -276,8 +276,8 @@ export function Conversacion({
           </h1>
           <p className="truncate text-xs text-muted-foreground">
             {otros.length === 0
-              ? "Solo vos"
-              : `Vos y ${otros.map((m) => m.nombre).join(", ")}`}
+              ? "Solo tú"
+              : `Tú y ${otros.map((m) => m.nombre).join(", ")}`}
           </p>
         </div>
         {chat.puedeEditar ? (
@@ -307,7 +307,7 @@ export function Conversacion({
 
         {mensajes.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">
-            Todavía no hay mensajes. Escribí el primero.
+            Todavía no hay mensajes. Escribe el primero.
           </p>
         ) : null}
 
@@ -347,7 +347,7 @@ export function Conversacion({
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-4 border-primary bg-muted/60 px-3 py-2">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-primary">
-                {respondiendo.mio ? "Vos" : respondiendo.autorNombre}
+                {respondiendo.mio ? "Tú" : respondiendo.autorNombre}
               </p>
               <p className="truncate text-xs text-muted-foreground">
                 {respondiendo.texto ?? "📷 Foto"}
@@ -385,7 +385,7 @@ export function Conversacion({
           <Textarea
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Escribí un mensaje..."
+            placeholder="Escribe un mensaje..."
             rows={1}
             className="max-h-32 min-h-10 flex-1 resize-none"
             onKeyDown={(e) => {

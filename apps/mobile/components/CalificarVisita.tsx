@@ -164,7 +164,7 @@ export function CalificarVisita({
 
       <TextInput
         mode="outlined"
-        label="¿Querés contarnos algo? (opcional)"
+        label="¿Quieres contarnos algo? (opcional)"
         value={comentario}
         onChangeText={setComentario}
         multiline

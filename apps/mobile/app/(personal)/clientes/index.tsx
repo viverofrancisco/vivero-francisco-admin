@@ -208,9 +208,9 @@ export default function ClientesListScreen() {
               </Text>
               <Text variant="bodyMedium" style={styles.vacioTexto}>
                 {busqueda || sector
-                  ? "Probá con otro nombre o quitá los filtros."
+                  ? "Prueba con otro nombre o quita los filtros."
                   : puedeCrear
-                    ? "Agregá el primero con el botón de abajo."
+                    ? "Agrega el primero desde el menú de arriba."
                     : "Todavía no hay clientes registrados."}
               </Text>
             </View>

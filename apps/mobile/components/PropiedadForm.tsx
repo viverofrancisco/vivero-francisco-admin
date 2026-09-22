@@ -139,7 +139,7 @@ export function PropiedadForm({
     if (res.estado === "sin-senal") {
       Alert.alert(
         "No pudimos ubicarte",
-        "No llegó una posición. Probá afuera o cargá la dirección y ponele el punto después, desde el portal."
+        "No llegó una posición. Prueba afuera, o carga la dirección y pon el punto después desde el portal."
       );
       return;
     }

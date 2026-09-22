@@ -86,9 +86,9 @@ export function ChatsPageClient({
             message={q ? "Sin coincidencias" : "No estás en ningún chat"}
             detalle={
               q
-                ? "Probá con otro nombre."
+                ? "Prueba con otro nombre."
                 : puedeCrear
-                  ? "Creá el primero y elegí quién está adentro."
+                  ? "Crea el primero y elige quién está adentro."
                   : "Cuando te agreguen a uno te llega un aviso."
             }
           />

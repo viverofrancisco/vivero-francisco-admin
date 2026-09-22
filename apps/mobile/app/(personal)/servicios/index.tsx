@@ -234,8 +234,8 @@ export default function ProductosListScreen() {
               </Text>
               <Text variant="bodyMedium" style={styles.vacioTexto}>
                 {busqueda || tipo || estado
-                  ? "Probá con otro nombre o quitá los filtros."
-                  : "Agregá el primero con el botón de abajo."}
+                  ? "Prueba con otro nombre o quita los filtros."
+                  : "Agrega el primero desde el menú de arriba."}
               </Text>
             </View>
           }

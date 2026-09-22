@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -37,6 +37,7 @@ export default function ChatFormScreen() {
   const [nombre, setNombre] = useState("");
   const [elegidos, setElegidos] = useState<string[]>([]);
   const [personas, setPersonas] = useState<Persona[] | null>(null);
+  const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +71,7 @@ export default function ChatFormScreen() {
 
   async function guardar() {
     if (!nombre.trim()) {
-      setError("Ponele un nombre");
+      setError("Ponle un nombre");
       return;
     }
     setGuardando(true);
@@ -92,6 +93,16 @@ export default function ChatFormScreen() {
       setGuardando(false);
     }
   }
+
+  /*
+   * Los marcados quedan **arriba y siempre a la vista**, incluso mientras se
+   * busca: si no, elegir a la cuarta persona esconde a las tres anteriores y
+   * hay que borrar la búsqueda para saber a quiénes ya elegiste.
+   */
+  const q = busqueda.trim().toLowerCase();
+  const lista = (personas ?? []).filter(
+    (p) => elegidos.includes(p.id) || !q || p.nombre.toLowerCase().includes(q)
+  );
 
   if (cargando) {
     return (
@@ -120,8 +131,25 @@ export default function ChatFormScreen() {
             No hay cuentas que puedan entrar a un chat.
           </Text>
         ) : (
+          <>
+          <View style={styles.buscador}>
+            <Ionicons name="search" size={18} color={tema.texto3} />
+            <TextInput
+              value={busqueda}
+              onChangeText={setBusqueda}
+              placeholder="Buscar persona..."
+              placeholderTextColor={tema.texto3}
+              style={styles.buscadorTexto}
+              autoCapitalize="none"
+              autoCorrect={false}
+              clearButtonMode="while-editing"
+            />
+          </View>
           <View style={styles.lista}>
-            {personas.map((p) => {
+            {lista.length === 0 ? (
+              <Text style={styles.sinCoincidencias}>Sin coincidencias</Text>
+            ) : null}
+            {lista.map((p) => {
               const marcado = elegidos.includes(p.id);
               return (
                 <PressableScale
@@ -151,12 +179,13 @@ export default function ChatFormScreen() {
               );
             })}
           </View>
+          </>
         )}
-        {/* Quien lo arma queda adentro sin marcarse: es el que después va a
-            tener que agregar o sacar gente. */}
+        {/* Quien lo arma queda adentro sin marcarse —es el que después va a
+            tener que agregar o sacar gente—, pero no hace falta decirlo: no es
+            una decisión que esté tomando acá. */}
         <Text style={styles.nota}>
-          Vos quedás adentro siempre. Al agregar a alguien le llega un aviso al
-          teléfono.
+          Al agregar a alguien le llega un aviso al teléfono.
         </Text>
       </ScrollView>
 
@@ -175,6 +204,19 @@ const styles = StyleSheet.create({
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
   cuerpo: { padding: 16, gap: 12, paddingBottom: 32 },
   ancho: { alignSelf: "stretch" },
+  buscador: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    height: 44,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: tema.linea,
+    backgroundColor: tema.superficie,
+  },
+  buscadorTexto: { flex: 1, fontSize: 15, color: tema.texto, padding: 0 },
+  sinCoincidencias: { color: tema.texto3, padding: 14, fontSize: 14 },
   lista: {
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,

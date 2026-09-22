@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **The app is in Spanish.** All UI strings, user-facing text, error messages, and domain vocabulary (cliente, servicio, visita, personal, sector, informe, notificacion) are in Spanish. Write all user-facing text in Spanish and match the existing Spanish naming conventions in code.
+> **The app is in Spanish — Ecuador's Spanish, with *tuteo*.** All UI strings, user-facing text, error messages, and domain vocabulary (cliente, servicio, visita, personal, sector, informe, notificacion) are in Spanish. Write every user-facing string with **tú**: *crea*, *elige*, *prueba*, *agrega*, *escribe*, *pon*, *puedes*. **Never voseo** (*creá*, *elegí*, *probá*, *ponele*, *vos*, *podés*): the vivero is Ecuadorian and its clientes and jardineros are the ones reading it. Match the existing Spanish naming conventions in code.
 
 ## Documentation
 

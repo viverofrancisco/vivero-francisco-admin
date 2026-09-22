@@ -120,8 +120,8 @@ export default function TareasListScreen() {
               </Text>
               <Text variant="bodyMedium" style={styles.vacioTexto}>
                 {q
-                  ? "Probá con otro nombre."
-                  : "Agregá la primera con el botón de arriba."}
+                  ? "Prueba con otro nombre."
+                  : "Agrega la primera desde el menú de arriba."}
               </Text>
             </View>
           }

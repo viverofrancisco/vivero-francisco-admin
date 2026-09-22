@@ -274,8 +274,8 @@ export default function ChatScreen() {
           </Text>
           <Text style={styles.subtitulo} numberOfLines={1}>
             {otros.length === 0
-              ? "Solo vos"
-              : `Vos y ${otros.map((m) => m.nombre).join(", ")}`}
+              ? "Solo tú"
+              : `Tú y ${otros.map((m) => m.nombre).join(", ")}`}
           </Text>
         </View>
         {chat?.puedeEditar ? (
@@ -308,7 +308,7 @@ export default function ChatScreen() {
         ListEmptyComponent={
           <View style={styles.vacio}>
             <Text style={styles.vacioTexto}>
-              Todavía no hay mensajes. Escribí el primero.
+              Todavía no hay mensajes. Escribe el primero.
             </Text>
           </View>
         }
@@ -356,7 +356,7 @@ export default function ChatScreen() {
           <View style={styles.citando}>
             <View style={styles.crece}>
               <Text style={styles.citandoAutor}>
-                {respondiendo.mio ? "Vos" : respondiendo.autorNombre}
+                {respondiendo.mio ? "Tú" : respondiendo.autorNombre}
               </Text>
               <Text style={styles.citandoTexto} numberOfLines={1}>
                 {respondiendo.texto ?? "📷 Foto"}
@@ -385,7 +385,7 @@ export default function ChatScreen() {
           <TextInput
             value={texto}
             onChangeText={setTexto}
-            placeholder="Escribí un mensaje..."
+            placeholder="Escribe un mensaje..."
             placeholderTextColor={tema.texto3}
             style={styles.campo}
             multiline

@@ -13,7 +13,7 @@ import { z } from "zod";
 export const MAX_FOTOS_POR_MENSAJE = 10;
 
 export const crearChatSchema = z.object({
-  nombre: z.string().trim().min(1, "Ponele un nombre").max(80),
+  nombre: z.string().trim().min(1, "Ponle un nombre").max(80),
   /**
    * Quién está adentro. Quien lo crea se agrega solo del lado del servidor:
    * armar una conversación y no poder abrirla no le sirve a nadie.

@@ -94,9 +94,9 @@ export default function ChatsListScreen() {
               </Text>
               <Text variant="bodyMedium" style={styles.vacioTexto}>
                 {q
-                  ? "Probá con otro nombre."
+                  ? "Prueba con otro nombre."
                   : esAdmin
-                    ? "Creá el primero y elegí quién está adentro."
+                    ? "Crea el primero y elige quién está adentro."
                     : "Cuando te agreguen a uno te llega un aviso."}
               </Text>
             </View>

@@ -789,7 +789,7 @@ function VisitasStep({
         <Text style={styles.empty}>
           No hay visitas con fotos para este cliente en el rango seleccionado.
           {"\n\n"}
-          Podés seguir igual: el informe se arma con las secciones que agregues
+          Puedes seguir igual: el informe se arma con las secciones que agregues
           en el paso siguiente.
         </Text>
       ) : (

@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -48,6 +48,7 @@ export function ChatForm({
   const [nombre, setNombre] = useState(chat?.nombre ?? "");
   const [elegidos, setElegidos] = useState<string[]>(chat?.miembrosIds ?? []);
   const [personas, setPersonas] = useState<Persona[] | null>(null);
+  const [busqueda, setBusqueda] = useState("");
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export function ChatForm({
 
   async function guardar() {
     if (!nombre.trim()) {
-      toast.error("Ponele un nombre");
+      toast.error("Ponle un nombre");
       return;
     }
     setGuardando(true);
@@ -84,15 +85,21 @@ export function ChatForm({
     }
   }
 
+  /*
+   * Los marcados quedan **arriba y siempre a la vista**, incluso mientras se
+   * busca: si no, elegir a la cuarta persona esconde a las tres anteriores y
+   * hay que borrar la búsqueda para saber a quiénes ya elegiste.
+   */
+  const q = busqueda.trim().toLowerCase();
+  const lista = (personas ?? []).filter(
+    (p) => elegidos.includes(p.id) || !q || p.nombre.toLowerCase().includes(q)
+  );
+
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent pantallaCompletaEnMovil className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{chat ? "Editar chat" : "Nuevo chat"}</DialogTitle>
-          <DialogDescription>
-            Quién está adentro lo decide el administrador. Al agregar a alguien
-            le llega un aviso al teléfono.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
@@ -116,8 +123,23 @@ export function ChatForm({
                 No hay cuentas que puedan entrar a un chat.
               </p>
             ) : (
+              <>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar persona..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               <ul className="divide-y rounded-xl border border-border">
-                {personas.map((p) => (
+                {lista.length === 0 ? (
+                  <li className="px-3 py-3 text-sm text-muted-foreground">
+                    Sin coincidencias
+                  </li>
+                ) : null}
+                {lista.map((p) => (
                   <li key={p.id}>
                     <label className="flex cursor-pointer items-center gap-3 px-3 py-2.5">
                       <Checkbox
@@ -140,11 +162,14 @@ export function ChatForm({
                   </li>
                 ))}
               </ul>
+              </>
             )}
-            {/* Quien lo arma queda adentro sin marcarse: es el que después va a
-                tener que agregar o sacar gente. */}
+            {/* Quien lo arma queda adentro sin marcarse —es el que después va
+                a tener que agregar o sacar gente—, pero no hace falta decirlo:
+                no es una decisión que esté tomando acá. El mismo renglón, en el
+                mismo lugar, que en la app. */}
             <p className="text-xs text-muted-foreground">
-              Vos quedás adentro siempre.
+              Al agregar a alguien le llega un aviso al teléfono.
             </p>
           </div>
         </div>
