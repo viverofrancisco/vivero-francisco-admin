@@ -12,7 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MediaViewer } from "@/components/ui/media-viewer";
-import { ArrowLeft, ImagePlus, MoreVertical, Reply, Send, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ImageIcon,
+  MoreVertical,
+  Reply,
+  Send,
+  SquarePen,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { ChatForm } from "./chat-form";
@@ -261,19 +269,19 @@ export function Conversacion({
   const otros = chat.miembros.filter((m) => !m.soyYo);
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      {/* El encabezado, con la forma del detalle de la visita: la flecha, el
-          nombre y quiénes están. */}
-      {/* Compacto, como WhatsApp: una fila baja con la flecha, el nombre y
-          quiénes están. */}
-      <div className="flex flex-none items-center gap-2 border-b border-border pb-2">
+    <div className="-mx-3 -my-3 flex h-[calc(100%+1.5rem)] min-h-0 flex-col md:mx-0 md:my-0 md:h-full">
+      {/* El encabezado, con la forma de la app: el chevron, el nombre con
+          quiénes están debajo, y el lápiz. Una fila baja y de borde a borde:
+          en el teléfono la conversación ocupa la pantalla, no una tarjeta
+          adentro de una página con margen. */}
+      <div className="flex flex-none items-center gap-1 border-b border-border px-1 pb-1.5 md:px-0">
         <Link href={hrefDeVuelta(from, "/dashboard/chats")}>
           <Button variant="ghost" size="icon" aria-label="Volver">
-            <ArrowLeft className="h-5 w-5" />
+            <ChevronLeft className="h-6 w-6" />
           </Button>
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-base font-bold tracking-tight md:text-lg">
+          <h1 className="truncate text-base font-bold tracking-tight">
             {chat.nombre}
           </h1>
           <p className="truncate text-xs text-muted-foreground">
@@ -283,8 +291,13 @@ export function Conversacion({
           </p>
         </div>
         {chat.puedeEditar ? (
-          <Button variant="outline" size="sm" onClick={() => setEditando(true)}>
-            Editar
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Editar el chat"
+            onClick={() => setEditando(true)}
+          >
+            <SquarePen className="h-5 w-5" />
           </Button>
         ) : null}
       </div>
@@ -294,7 +307,7 @@ export function Conversacion({
           hueco queda arriba y no debajo del último, que es donde uno mira. */}
       <div
         ref={scroll}
-        className="flex min-h-0 flex-1 flex-col justify-end overflow-y-auto overscroll-contain py-2"
+        className="flex min-h-0 flex-1 flex-col justify-end overflow-y-auto overscroll-contain px-2.5 py-2 md:px-0"
       >
         {/* Los mensajes seguidos casi se tocan: lo que separa es el cambio de
             quién habla, no el aire entre burbujas. */}
@@ -350,7 +363,7 @@ export function Conversacion({
       </div>
 
       {/* Lo que se está por mandar */}
-      <div className="flex-none border-t border-border pt-2">
+      <div className="flex-none border-t border-border px-2 py-1.5 md:px-0">
         {respondiendo ? (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-4 border-primary bg-muted/60 px-3 py-2">
             <div className="min-w-0 flex-1">
@@ -384,15 +397,17 @@ export function Conversacion({
           {/* Los tres del mismo alto: con el `size="icon"` de la casa los
               botones median 32 contra los 42 del campo, y la fila se veía
               desalineada apenas el campo estaba vacío. */}
+          {/* Ícono pelado, como en la app: al lado de un campo redondeado, un
+              botón con borde compite con él. */}
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
-            className="h-10 w-10 flex-none"
+            className="h-10 w-10 flex-none text-muted-foreground"
             aria-label="Mandar una foto"
             disabled={subiendo || enviando}
             onClick={() => archivos.current?.click()}
           >
-            <ImagePlus className="h-4 w-4" />
+            <ImageIcon className="h-5 w-5" />
           </Button>
           <Textarea
             value={texto}
@@ -403,7 +418,7 @@ export function Conversacion({
             // tamaños: la clase base cambia de `text-base` a `text-sm` en `md`,
             // y con el interlineado de cada una el alto cambiaba con el ancho
             // de la ventana.
-            className="max-h-32 min-h-10 flex-1 resize-none py-[7px] leading-6"
+            className="max-h-32 min-h-10 flex-1 resize-none rounded-full px-4 py-[7px] leading-6"
             onKeyDown={(e) => {
               // Enter manda, Shift+Enter hace un renglón: es lo que hacen los
               // dedos que vienen de WhatsApp.
@@ -415,7 +430,7 @@ export function Conversacion({
           />
           <Button
             size="icon"
-            className="h-10 w-10 flex-none"
+            className="h-10 w-10 flex-none rounded-full"
             aria-label="Enviar"
             onClick={() => enviar()}
             disabled={enviando || subiendo || !texto.trim()}

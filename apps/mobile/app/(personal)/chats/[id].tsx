@@ -357,6 +357,15 @@ export default function ChatScreen() {
             anterior && anterior.autorId === item.autorId && !cambiaElDia;
           return (
             <View>
+              {/* El separador va **antes** de la burbuja: `inverted` da vuelta
+                  el orden de las celdas, no lo que hay adentro de cada una. */}
+              {cambiaElDia ? (
+                <View style={styles.dia}>
+                  <Text style={styles.diaTexto}>
+                    {tituloDelDia(item.createdAt)}
+                  </Text>
+                </View>
+              ) : null}
               <Burbuja
                 mensaje={item}
                 conNombre={!item.mio && !mismoAutor}
@@ -366,13 +375,6 @@ export default function ChatScreen() {
                 }}
                 onVerFoto={setViendo}
               />
-              {cambiaElDia ? (
-                <View style={styles.dia}>
-                  <Text style={styles.diaTexto}>
-                    {tituloDelDia(item.createdAt)}
-                  </Text>
-                </View>
-              ) : null}
             </View>
           );
         }}
