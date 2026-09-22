@@ -154,6 +154,32 @@ export function Conversacion({
   );
   /** El mensaje que alguien mantuvo apretado, en el teléfono. */
   const [tocado, setTocado] = useState<MensajeEnPantalla | null>(null);
+  /**
+   * El mensaje resaltado: el que trajo el buscador, o el que se citó y se
+   * acaba de tocar. Es un destello y no una marca fija —se apaga solo a los
+   * dos segundos—, porque una vez que la vista llegó ahí ya cumplió.
+   */
+  const [resaltado, setResaltado] = useState<string | null>(destacado ?? null);
+  useEffect(() => {
+    if (!resaltado) return;
+    const id = setTimeout(() => setResaltado(null), 2000);
+    return () => clearTimeout(id);
+  }, [resaltado]);
+
+  /**
+   * Ir a un mensaje: al que cita una respuesta. Si está cargado se va hasta él
+   * y se lo hace destellar; si quedó más atrás de lo que se trajo, se vuelve a
+   * abrir la conversación alrededor de él, que es lo que hace el buscador.
+   */
+  function irAlMensaje(id: string) {
+    const el = document.getElementById(`mensaje-${id}`);
+    if (el) {
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      setResaltado(id);
+    } else {
+      router.push(`/dashboard/chats/${chat.id}?mensaje=${id}`);
+    }
+  }
 
   const scroll = useRef<HTMLDivElement>(null);
   const archivos = useRef<HTMLInputElement>(null);
@@ -470,8 +496,9 @@ export function Conversacion({
               ) : null}
               <Burbuja
                 mensaje={m}
-                destacado={m.id === destacado}
+                destacado={m.id === resaltado}
                 conNombre={!m.mio && !mismoAutor}
+                onIrACita={irAlMensaje}
                 onResponder={() => setRespondiendo(m)}
                 onCopiar={() => copiar(m)}
                 onBorrar={() => borrar(m.id)}
@@ -703,6 +730,7 @@ function Burbuja({
   onBorrar,
   onVerFoto,
   onMantener,
+  onIrACita,
 }: {
   mensaje: MensajeEnPantalla;
   /** El que se vino a ver desde el buscador. */
@@ -713,6 +741,8 @@ function Burbuja({
   onBorrar: () => void;
   onVerFoto: (media: { url: string; tipo: string }) => void;
   onMantener: () => void;
+  /** Tocar la cita lleva al mensaje citado, como en WhatsApp. */
+  onIrACita: (id: string) => void;
 }) {
   const mio = mensaje.mio;
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -755,7 +785,7 @@ function Burbuja({
           mio
             ? "rounded-br-md bg-primary text-primary-foreground"
             : "rounded-bl-md border border-border bg-card"
-        } ${destacado ? "ring-2 ring-amber-400" : ""}`}
+        } transition-shadow duration-500 ${destacado ? "ring-2 ring-amber-400" : ""}`}
       >
         {conNombre ? (
           <p className="pb-0.5 text-xs font-bold text-primary">
@@ -765,7 +795,16 @@ function Burbuja({
 
         {mensaje.respondeA ? (
           <div
-            className={`mb-1 flex items-center gap-2 rounded-lg border-l-[3px] px-2 py-1 text-xs ${
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onIrACita(mensaje.respondeA!.id);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onIrACita(mensaje.respondeA!.id);
+            }}
+            className={`mb-1 flex cursor-pointer items-center gap-2 rounded-lg border-l-[3px] px-2 py-1 text-xs ${
               mio
                 ? "border-primary-foreground/60 bg-primary-foreground/15"
                 : "border-primary bg-muted"

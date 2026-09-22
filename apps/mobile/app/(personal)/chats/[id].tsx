@@ -121,6 +121,65 @@ export default function ChatScreen() {
     []
   );
   const [tocado, setTocado] = useState<MensajeDeChat | null>(null);
+  /**
+   * El mensaje resaltado: el que trajo el buscador, o el que se citó y se
+   * acaba de tocar. Es un destello y no una marca fija —se apaga solo a los
+   * dos segundos—, porque una vez que la vista llegó ahí ya cumplió.
+   */
+  const [resaltado, setResaltado] = useState<string | null>(destacado ?? null);
+  useEffect(() => {
+    if (!resaltado) return;
+    const t = setTimeout(() => setResaltado(null), 2000);
+    return () => clearTimeout(t);
+  }, [resaltado]);
+  const lista = useRef<FlatList<MensajeDeChat>>(null);
+  /** A dónde había que ir cuando la lista todavía no había medido esa fila. */
+  const pendienteDeIr = useRef<number | null>(null);
+
+  /**
+   * Ir a un mensaje: al que cita una respuesta. Si está cargado, la lista se
+   * desplaza hasta él y se lo hace destellar; si quedó más atrás de lo que se
+   * trajo, se vuelve a pedir la conversación alrededor de él, como hace el
+   * buscador, y recién entonces se va.
+   */
+  async function irAlMensaje(mensajeId: string) {
+    const i = mensajes.findIndex((m) => m.id === mensajeId);
+    if (i >= 0) {
+      lista.current?.scrollToIndex({ index: i, viewPosition: 0.5, animated: true });
+      setResaltado(mensajeId);
+      return;
+    }
+    try {
+      const pagina = await apiRequest<{
+        items: MensajeDeChat[];
+        cursor: string | null;
+      }>(`/api/mobile/chats/${id}/mensajes`, {
+        query: { alrededorDe: mensajeId },
+      });
+      setMensajes(pagina.items);
+      setCursor(pagina.cursor);
+      const j = pagina.items.findIndex((m) => m.id === mensajeId);
+      if (j >= 0) {
+        // La lista recién va a tener estas filas en el próximo render.
+        pendienteDeIr.current = j;
+        setResaltado(mensajeId);
+      }
+    } catch {
+      setAviso("No pudimos llegar a ese mensaje");
+    }
+  }
+
+  useEffect(() => {
+    if (pendienteDeIr.current === null) return;
+    const j = pendienteDeIr.current;
+    pendienteDeIr.current = null;
+    // Un tick, para que la lista haya montado las filas nuevas.
+    const t = setTimeout(
+      () => lista.current?.scrollToIndex({ index: j, viewPosition: 0.5, animated: true }),
+      50
+    );
+    return () => clearTimeout(t);
+  }, [mensajes]);
   const [viendo, setViendo] = useState<{ url: string; tipo: string } | null>(
     null
   );
@@ -384,9 +443,28 @@ export default function ChatScreen() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <FlatList
+        ref={lista}
         data={mensajes}
         keyExtractor={(m) => m.id}
         inverted
+        // Las filas miden distinto y la lista no las conoce hasta dibujarlas:
+        // si pide una que todavía no midió, se acerca a ojo y vuelve a
+        // intentar cuando ya la tiene.
+        onScrollToIndexFailed={({ index, averageItemLength }) => {
+          lista.current?.scrollToOffset({
+            offset: index * averageItemLength,
+            animated: false,
+          });
+          setTimeout(
+            () =>
+              lista.current?.scrollToIndex({
+                index,
+                viewPosition: 0.5,
+                animated: true,
+              }),
+            100
+          );
+        }}
         contentContainerStyle={styles.lista}
         onEndReachedThreshold={0.3}
         onEndReached={cargarViejos}
@@ -425,8 +503,9 @@ export default function ChatScreen() {
               ) : null}
               <Burbuja
                 mensaje={item}
-                destacado={item.id === destacado}
+                destacado={item.id === resaltado}
                 conNombre={!item.mio && !mismoAutor}
+                onIrACita={irAlMensaje}
                 onMantener={() => {
                   Haptics.selectionAsync();
                   setTocado(item);
@@ -611,6 +690,7 @@ function Burbuja({
   conNombre,
   onMantener,
   onVerFoto,
+  onIrACita,
 }: {
   mensaje: MensajeDeChat;
   /** El que se vino a ver desde el buscador. */
@@ -618,6 +698,8 @@ function Burbuja({
   conNombre: boolean;
   onMantener: () => void;
   onVerFoto: (media: { url: string; tipo: string }) => void;
+  /** Tocar la cita lleva al mensaje citado, como en WhatsApp. */
+  onIrACita: (id: string) => void;
 }) {
   const mio = mensaje.mio;
   return (
@@ -636,7 +718,14 @@ function Burbuja({
       ) : null}
 
       {mensaje.respondeA ? (
-        <View style={[styles.cita, mio ? styles.citaMia : styles.citaAjena]}>
+        <PressableScale
+          onPress={() => onIrACita(mensaje.respondeA!.id)}
+          onLongPress={onMantener}
+          estiloExterno={styles.ancho}
+          style={[styles.cita, mio ? styles.citaMia : styles.citaAjena]}
+          accessibilityRole="link"
+          accessibilityLabel="Ir al mensaje citado"
+        >
           <View style={styles.crece}>
             <Text style={[styles.citaAutor, mio && styles.textoClaro]}>
               {mensaje.respondeA.autorNombre}
@@ -663,7 +752,7 @@ function Burbuja({
               lado={36}
             />
           ) : null}
-        </View>
+        </PressableScale>
       ) : null}
 
       {mensaje.borrado ? (
@@ -814,6 +903,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    // Ancho mínimo fijo, por lo mismo que las fotos: adentro de una burbuja
+    // que se mide por su contenido, la columna del texto —`flex: 1`— no tiene
+    // contra qué resolverse y quedaba de ancho cero, con la cita estirada a lo
+    // alto y sin una letra a la vista.
+    minWidth: 210,
     borderLeftWidth: 3,
     borderRadius: 8,
     paddingHorizontal: 8,
