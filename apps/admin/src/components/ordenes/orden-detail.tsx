@@ -72,7 +72,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 import { CobrosCard } from "./cobros-card";
-import { CopyField } from "@/components/shared/copy-field";
 import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
 import { facturaVigenteDe } from "@/lib/services/factura-vigente";
 import { Input } from "@/components/ui/input";
@@ -1113,10 +1112,16 @@ export function OrdenDetail({
                     <span className="flex-none text-muted-foreground">
                       Clave de acceso
                     </span>
-                    <CopyField
-                      value={facturaVigente.claveAcceso}
-                      label="la clave de acceso"
-                      className="min-w-0 break-all text-right font-mono text-xs"
+                    {/* El mismo copiable que el número de al lado: su
+                        etiqueta es para el lector de pantalla y el globito, no
+                        para pintarla. El componente anterior la dibujaba, así
+                        que el renglón decía "Clave de acceso" y, pegado al
+                        número, "la clave de acceso" otra vez. */}
+                    <ValorCopiable
+                      valor={facturaVigente.claveAcceso}
+                      etiqueta="la clave de acceso"
+                      envuelve
+                      className="min-w-0 font-mono text-xs"
                     />
                   </div>
                 )}
@@ -1516,11 +1521,18 @@ function FilaDato({
 function ValorCopiable({
   valor,
   etiqueta,
+  envuelve = false,
   className = "",
 }: {
   valor: string;
-  /** Qué es, para el `title` y el lector de pantalla. */
+  /** Qué es, para el `title` y el lector de pantalla. **No se dibuja.** */
   etiqueta: string;
+  /**
+   * Para los valores largos —la clave de acceso son 49 dígitos—: cortan donde
+   * llegan en vez de terminar en puntos suspensivos. Un identificador a medias
+   * no sirve para nada, y ahí el ancho es lo único que sobra.
+   */
+  envuelve?: boolean;
   className?: string;
 }) {
   const [copiado, setCopiado] = useState(false);
@@ -1540,7 +1552,7 @@ function ValorCopiable({
       }}
       className={`group relative -mx-1 flex min-w-0 cursor-pointer rounded px-1 text-right transition-colors hover:bg-muted ${className}`}
     >
-      <span className="truncate">{valor}</span>
+      <span className={envuelve ? "break-all" : "truncate"}>{valor}</span>
       {/* El globito dice qué va a pasar antes del click y qué pasó después.
           Un tilde al costado empujaba el valor y solo servía para lo segundo. */}
       <span className="pointer-events-none absolute bottom-full right-0 z-20 mb-1 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-sm group-hover:block group-focus-visible:block">
