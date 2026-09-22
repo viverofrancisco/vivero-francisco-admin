@@ -77,11 +77,14 @@ export function Conversacion({
   mensajes: primeros,
   cursor: cursorInicial,
   from,
+  destacado,
 }: {
   chat: ChatCabecera;
   mensajes: MensajeEnPantalla[];
   cursor: string | null;
   from?: string;
+  /** El mensaje al que se llegó desde el buscador: se resalta y se centra. */
+  destacado?: string;
 }) {
   const router = useRouter();
   const [chat, setChat] = useState(chatInicial);
@@ -127,10 +130,21 @@ export function Conversacion({
   }, []);
 
   useEffect(() => {
-    irAlFondo();
+    // Llegando desde el buscador se va **al mensaje**, no al final: el final
+    // puede estar a cien mensajes de lo que la persona vino a leer.
+    if (destacado) {
+      const el = document.getElementById(`mensaje-${destacado}`);
+      if (el) {
+        el.scrollIntoView({ block: "center" });
+      } else {
+        irAlFondo();
+      }
+    } else {
+      irAlFondo();
+    }
     // Abrir el chat **es** leerlo.
     fetch(`/api/chats/${chat.id}/leido`, { method: "POST" }).catch(() => {});
-  }, [chat.id, irAlFondo]);
+  }, [chat.id, destacado, irAlFondo]);
 
   /** Trae la página más nueva y pega lo que no estaba. */
   const buscarNuevos = useCallback(async () => {
@@ -380,7 +394,7 @@ export function Conversacion({
           const mismoAutor =
             anterior && anterior.autorId === m.autorId && !cambiaElDia;
           return (
-            <div key={m.id}>
+            <div key={m.id} id={`mensaje-${m.id}`}>
               {cambiaElDia ? (
                 <div className="flex justify-center py-3">
                   <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-semibold text-muted-foreground">
@@ -390,6 +404,7 @@ export function Conversacion({
               ) : null}
               <Burbuja
                 mensaje={m}
+                destacado={m.id === destacado}
                 conNombre={!m.mio && !mismoAutor}
                 onResponder={() => setRespondiendo(m)}
                 onCopiar={() => m.texto && copiar(m.texto)}
@@ -608,6 +623,7 @@ const MANTENER_MS = 400;
  */
 function Burbuja({
   mensaje,
+  destacado = false,
   conNombre,
   onResponder,
   onCopiar,
@@ -616,6 +632,8 @@ function Burbuja({
   onMantener,
 }: {
   mensaje: MensajeEnPantalla;
+  /** El que se vino a ver desde el buscador. */
+  destacado?: boolean;
   conNombre: boolean;
   onResponder: () => void;
   onCopiar: () => void;
@@ -664,7 +682,7 @@ function Burbuja({
           mio
             ? "rounded-br-md bg-primary text-primary-foreground"
             : "rounded-bl-md border border-border bg-card"
-        }`}
+        } ${destacado ? "ring-2 ring-amber-400" : ""}`}
       >
         {conNombre ? (
           <p className="pb-0.5 text-xs font-bold text-primary">

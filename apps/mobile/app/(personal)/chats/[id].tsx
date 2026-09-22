@@ -66,7 +66,11 @@ async function copiarAlPortapapeles(texto: string): Promise<boolean> {
  * viejo, es justo el que necesita.
  */
 export default function ChatScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, mensaje: destacado } = useLocalSearchParams<{
+    id: string;
+    /** Llegando desde el buscador: el mensaje que se vino a ver. */
+    mensaje?: string;
+  }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   /**
@@ -110,7 +114,11 @@ export default function ChatScreen() {
       const [detalle, pagina] = await Promise.all([
         apiRequest<ChatDetalle>(`/api/mobile/chats/${id}`),
         apiRequest<{ items: MensajeDeChat[]; cursor: string | null }>(
-          `/api/mobile/chats/${id}/mensajes`
+          `/api/mobile/chats/${id}/mensajes`,
+          // Llegando desde el buscador, la conversación se abre **alrededor**
+          // de ese mensaje y no por el final, que puede estar a cien mensajes
+          // de lo que la persona vino a leer.
+          destacado ? { query: { alrededorDe: destacado } } : undefined
         ),
       ]);
       setChat(detalle);
@@ -125,7 +133,7 @@ export default function ChatScreen() {
     } finally {
       setCargando(false);
     }
-  }, [id]);
+  }, [id, destacado]);
 
   useEffect(() => {
     cargar();
@@ -388,6 +396,7 @@ export default function ChatScreen() {
               ) : null}
               <Burbuja
                 mensaje={item}
+                destacado={item.id === destacado}
                 conNombre={!item.mio && !mismoAutor}
                 onMantener={() => {
                   Haptics.selectionAsync();
@@ -555,11 +564,14 @@ export default function ChatScreen() {
  */
 function Burbuja({
   mensaje,
+  destacado = false,
   conNombre,
   onMantener,
   onVerFoto,
 }: {
   mensaje: MensajeDeChat;
+  /** El que se vino a ver desde el buscador. */
+  destacado?: boolean;
   conNombre: boolean;
   onMantener: () => void;
   onVerFoto: (url: string) => void;
@@ -570,7 +582,11 @@ function Burbuja({
       onLongPress={mensaje.borrado ? undefined : onMantener}
       delayLongPress={300}
       estiloExterno={[styles.fila, mio ? styles.aLaDerecha : styles.aLaIzquierda]}
-      style={[styles.burbuja, mio ? styles.mia : styles.ajena]}
+      style={[
+        styles.burbuja,
+        mio ? styles.mia : styles.ajena,
+        destacado && styles.destacada,
+      ]}
     >
       {conNombre ? (
         <Text style={styles.autor}>{mensaje.autorNombre}</Text>
@@ -689,6 +705,9 @@ const styles = StyleSheet.create({
   aLaIzquierda: { alignSelf: "flex-start" },
   burbuja: { borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6 },
   mia: { backgroundColor: tema.verde, borderBottomRightRadius: 4 },
+  /* El que se vino a ver: un borde ámbar, que es lo único que lo distingue sin
+     taparle el contenido. */
+  destacada: { borderWidth: 2, borderColor: tema.ambar },
   ajena: {
     backgroundColor: tema.superficie,
     borderBottomLeftRadius: 4,

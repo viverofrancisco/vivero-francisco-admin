@@ -16,11 +16,11 @@ export default async function ChatPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; mensaje?: string }>;
 }) {
   await requireAuth();
   const { id } = await params;
-  const { from } = await searchParams;
+  const { from, mensaje } = await searchParams;
   const viewer = await viewerFromSession();
 
   // Los datos se piden adentro del `try` y el JSX se arma afuera: un error de
@@ -30,7 +30,9 @@ export default async function ChatPage({
   try {
     datos = await Promise.all([
       getChat(viewer, id),
-      listMensajes(viewer, id),
+      // Llegando desde el buscador, la conversación se abre **alrededor** de
+      // ese mensaje y no por el final.
+      listMensajes(viewer, id, mensaje ? { alrededorDe: mensaje } : {}),
     ]);
   } catch (error) {
     // Un chat en el que no estás y uno que no existe son lo mismo desde
@@ -57,6 +59,7 @@ export default async function ChatPage({
         }))}
         cursor={mensajes.cursor}
         from={from}
+        destacado={mensaje}
       />
     </div>
   );

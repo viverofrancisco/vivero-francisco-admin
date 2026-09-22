@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { FlatList, Image, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,7 +7,12 @@ import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
-import { cuandoFue, resumenDelUltimo, type ChatEnLista } from "@/lib/chats";
+import {
+  cuandoFue,
+  resumenDelUltimo,
+  type ChatEnLista,
+  type MensajeEncontrado,
+} from "@/lib/chats";
 import { tema } from "@/lib/tema";
 
 /**
@@ -56,6 +61,37 @@ export default function ChatsListScreen() {
     ? items.filter((c) => c.nombre.toLowerCase().includes(q))
     : items;
 
+  /*
+   * Los mensajes los busca el servidor, no el teléfono: acá solo están los
+   * chats, no lo que se dijo adentro. Busca en el texto y en el nombre de las
+   * fotos, que es lo único por lo que se puede encontrar una imagen.
+   */
+  const [mensajes, setMensajes] = useState<MensajeEncontrado[]>([]);
+  useEffect(() => {
+    const texto = busqueda.trim();
+    let vivo = true;
+    // Un respiro antes de preguntar: si no, cada letra es una consulta.
+    const tic = setTimeout(async () => {
+      if (texto.length < 2) {
+        setMensajes([]);
+        return;
+      }
+      try {
+        const res = await apiRequest<{ items: MensajeEncontrado[] }>(
+          "/api/mobile/chats/buscar",
+          { query: { q: texto } }
+        );
+        if (vivo) setMensajes(res.items);
+      } catch {
+        if (vivo) setMensajes([]);
+      }
+    }, 250);
+    return () => {
+      vivo = false;
+      clearTimeout(tic);
+    };
+  }, [busqueda]);
+
   return (
     <PantallaLista
       titulo="Chats"
@@ -87,7 +123,69 @@ export default function ChatsListScreen() {
           ListHeaderComponent={
             error ? <Text style={styles.error}>{error}</Text> : null
           }
+          ListFooterComponent={
+            q && mensajes.length > 0 ? (
+              <View>
+                {/* Los chats arriba y los mensajes abajo, como en WhatsApp:
+                    son dos preguntas distintas —"¿cómo se llamaba el grupo?"
+                    y "¿dónde dijimos eso?"— y mezclarlas deja sin saber qué
+                    se está mirando. */}
+                <Text style={styles.seccion}>MENSAJES</Text>
+                {mensajes.map((m) => (
+                  <PressableScale
+                    key={m.id}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(personal)/chats/[id]",
+                        params: { id: m.chatId, mensaje: m.id },
+                      })
+                    }
+                    estiloExterno={styles.ancho}
+                    style={FILA_LISTA}
+                  >
+                    {m.foto ? (
+                      <Image
+                        source={{ uri: m.foto.url }}
+                        style={styles.fotoEncontrada}
+                      />
+                    ) : (
+                      <View style={styles.avatar}>
+                        <Ionicons
+                          name="chatbubble-ellipses"
+                          size={18}
+                          color={tema.verde700}
+                        />
+                      </View>
+                    )}
+                    <View style={styles.texto}>
+                      <View style={styles.renglon}>
+                        <Text
+                          variant="bodyLarge"
+                          style={styles.nombre}
+                          numberOfLines={1}
+                        >
+                          {m.chatNombre}
+                        </Text>
+                        <Text style={styles.cuando}>
+                          {cuandoFue(m.createdAt)}
+                        </Text>
+                      </View>
+                      <Text
+                        variant="bodySmall"
+                        style={styles.resumen}
+                        numberOfLines={2}
+                      >
+                        {(m.mio ? "Tú: " : `${m.autorNombre}: `) +
+                          (m.texto ?? m.foto?.nombre ?? "📷 Foto")}
+                      </Text>
+                    </View>
+                  </PressableScale>
+                ))}
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
+            q && mensajes.length > 0 ? null : (
             <View style={styles.vacio}>
               <Text variant="titleMedium" style={styles.vacioTitulo}>
                 {q ? "Sin coincidencias" : "No estás en ningún chat"}
@@ -100,6 +198,7 @@ export default function ChatsListScreen() {
                     : "Cuando te agreguen a uno te llega un aviso."}
               </Text>
             </View>
+            )
           }
           renderItem={({ item }) => (
             <PressableScale
@@ -180,6 +279,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   globoTexto: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  seccion: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    color: tema.texto3,
+    backgroundColor: tema.lienzo,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+  },
+  fotoEncontrada: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: tema.lienzo,
+  },
   vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
   vacioTitulo: { color: tema.texto },
   vacioTexto: { color: tema.texto3, textAlign: "center" },

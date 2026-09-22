@@ -17,6 +17,9 @@ export async function GET(request: Request, { params }: Params) {
   const parsed = mensajesQuerySchema.safeParse({
     cursor: searchParams.get("cursor") ?? undefined,
     limit: searchParams.get("limit") ?? undefined,
+    // Llegando desde el buscador: la conversación se abre alrededor de ese
+    // mensaje, no por el final.
+    alrededorDe: searchParams.get("alrededorDe") ?? undefined,
   });
   if (!parsed.success) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });

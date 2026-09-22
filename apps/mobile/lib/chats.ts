@@ -34,10 +34,23 @@ export interface ChatDetalle {
   miembros: MiembroDeChat[];
 }
 
+/** Un mensaje encontrado por el buscador, con de qué chat es. */
+export interface MensajeEncontrado {
+  id: string;
+  chatId: string;
+  chatNombre: string;
+  autorNombre: string;
+  mio: boolean;
+  texto: string | null;
+  createdAt: string;
+  foto: { id: string; url: string; nombre: string | null } | null;
+  fotos: number;
+}
+
 export interface MensajeDeChat {
   id: string;
   texto: string | null;
-  fotos: { id: string; url: string; tipo: string }[];
+  fotos: { id: string; url: string; tipo: string; nombre?: string | null }[];
   createdAt: string;
   borrado: boolean;
   autorId: string | null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
@@ -34,6 +34,38 @@ export interface ChatEnLista {
  * es un renglón con su nombre, lo último que se dijo y cuántos quedaron sin
  * leer, y eso no mejora repartido en columnas.
  */
+interface MensajeEncontrado {
+  id: string;
+  chatId: string;
+  chatNombre: string;
+  autorNombre: string;
+  mio: boolean;
+  texto: string | null;
+  createdAt: string;
+  foto: { id: string; url: string; nombre: string | null } | null;
+  fotos: number;
+}
+
+/**
+ * Resalta lo buscado dentro del texto encontrado, como WhatsApp.
+ *
+ * Sin esto, en un mensaje largo hay que releerlo entero para ver por qué
+ * apareció en los resultados.
+ */
+function conMarca(texto: string, q: string) {
+  const i = texto.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) return texto;
+  return (
+    <>
+      {texto.slice(0, i)}
+      <mark className="bg-transparent font-bold text-foreground">
+        {texto.slice(i, i + q.length)}
+      </mark>
+      {texto.slice(i + q.length)}
+    </>
+  );
+}
+
 export function ChatsPageClient({
   chats,
   puedeCrear,
@@ -49,6 +81,34 @@ export function ChatsPageClient({
   const visibles = q
     ? chats.filter((c) => c.nombre.toLowerCase().includes(q))
     : chats;
+
+  /*
+   * Los mensajes los busca el servidor, no el navegador: acá solo están los
+   * chats, no lo que se dijo adentro. Se pide con lo que ya se escribió, que
+   * es lo que hace WhatsApp — dos letras alcanzan para empezar.
+   */
+  const [mensajes, setMensajes] = useState<MensajeEncontrado[]>([]);
+  useEffect(() => {
+    const texto = busqueda.trim();
+    let vivo = true;
+    // Un respiro antes de preguntar: si no, cada letra es una consulta. Y el
+    // vaciado también pasa por acá —dentro del `setTimeout` y no en el cuerpo
+    // del efecto— para no encadenar un render por cada tecla.
+    const id = setTimeout(() => {
+      if (texto.length < 2) {
+        setMensajes([]);
+        return;
+      }
+      fetch(`/api/chats/buscar?q=${encodeURIComponent(texto)}`)
+        .then((r) => (r.ok ? r.json() : { items: [] }))
+        .then((d) => vivo && setMensajes(d.items))
+        .catch(() => vivo && setMensajes([]));
+    }, 250);
+    return () => {
+      vivo = false;
+      clearTimeout(id);
+    };
+  }, [busqueda]);
 
   return (
     <>
@@ -81,7 +141,7 @@ export function ChatsPageClient({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-        {visibles.length === 0 ? (
+        {visibles.length === 0 && mensajes.length === 0 ? (
           <EmptyState
             message={q ? "Sin coincidencias" : "No estás en ningún chat"}
             detalle={
@@ -94,6 +154,15 @@ export function ChatsPageClient({
           />
         ) : (
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            {/* Con una búsqueda puesta, los chats van bajo su título y los
+                mensajes debajo, como en WhatsApp: son dos preguntas distintas
+                —"¿cómo se llamaba el grupo?" y "¿dónde dijimos eso?"— y
+                mezclarlas deja sin saber qué se está mirando. */}
+            {q && visibles.length > 0 ? (
+              <p className="border-b border-border bg-muted/40 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                Chats
+              </p>
+            ) : null}
             {visibles.map((c) => (
               <Link
                 key={c.id}
@@ -130,6 +199,49 @@ export function ChatsPageClient({
                 ) : null}
               </Link>
             ))}
+            {q && mensajes.length > 0 ? (
+              <>
+                <p className="border-b border-t border-border bg-muted/40 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Mensajes
+                </p>
+                {mensajes.map((m) => (
+                  <Link
+                    key={m.id}
+                    href={`/dashboard/chats/${m.chatId}?mensaje=${m.id}&from=${aca()}`}
+                    className={`${FILA_MOVIL} bg-card`}
+                  >
+                    {m.foto ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={m.foto.url}
+                        alt=""
+                        className="h-10 w-10 flex-none rounded-lg object-cover"
+                      />
+                    ) : (
+                      <InitialsAvatar name={m.chatNombre} size={40} />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-baseline gap-2">
+                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
+                          {m.chatNombre}
+                        </span>
+                        <span className="flex-none text-[11px] font-medium text-muted-foreground">
+                          {fechaRelativaCorta(m.createdAt)}
+                        </span>
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {m.mio ? "Tú: " : `${m.autorNombre}: `}
+                        {m.texto
+                          ? conMarca(m.texto, busqueda.trim())
+                          : m.foto?.nombre
+                            ? conMarca(m.foto.nombre, busqueda.trim())
+                            : "📷 Foto"}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </>
+            ) : null}
           </div>
         )}
       </div>
