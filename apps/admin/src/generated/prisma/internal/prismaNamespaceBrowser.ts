@@ -105,7 +105,11 @@ export const ModelName = {
   DatoFacturacion: 'DatoFacturacion',
   Factura: 'Factura',
   Cobro: 'Cobro',
-  FacturaLinea: 'FacturaLinea'
+  FacturaLinea: 'FacturaLinea',
+  Chat: 'Chat',
+  ChatMiembro: 'ChatMiembro',
+  ChatMensaje: 'ChatMensaje',
+  ChatAdjunto: 'ChatAdjunto'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -994,6 +998,56 @@ export const FacturaLineaScalarFieldEnum = {
 } as const
 
 export type FacturaLineaScalarFieldEnum = (typeof FacturaLineaScalarFieldEnum)[keyof typeof FacturaLineaScalarFieldEnum]
+
+
+export const ChatScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  createdById: 'createdById'
+} as const
+
+export type ChatScalarFieldEnum = (typeof ChatScalarFieldEnum)[keyof typeof ChatScalarFieldEnum]
+
+
+export const ChatMiembroScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId',
+  agregadoEl: 'agregadoEl',
+  salioEl: 'salioEl',
+  leidoEl: 'leidoEl'
+} as const
+
+export type ChatMiembroScalarFieldEnum = (typeof ChatMiembroScalarFieldEnum)[keyof typeof ChatMiembroScalarFieldEnum]
+
+
+export const ChatMensajeScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  texto: 'texto',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt',
+  autorId: 'autorId',
+  autorNombre: 'autorNombre',
+  respondeAId: 'respondeAId'
+} as const
+
+export type ChatMensajeScalarFieldEnum = (typeof ChatMensajeScalarFieldEnum)[keyof typeof ChatMensajeScalarFieldEnum]
+
+
+export const ChatAdjuntoScalarFieldEnum = {
+  id: 'id',
+  mensajeId: 'mensajeId',
+  key: 'key',
+  url: 'url',
+  tipo: 'tipo',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatAdjuntoScalarFieldEnum = (typeof ChatAdjuntoScalarFieldEnum)[keyof typeof ChatAdjuntoScalarFieldEnum]
 
 
 export const SortOrder = {

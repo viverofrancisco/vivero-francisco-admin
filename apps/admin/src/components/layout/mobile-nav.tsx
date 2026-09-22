@@ -8,6 +8,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
+  MessageCircle,
   LayoutDashboard,
   Receipt,
   RefreshCw,
@@ -69,6 +70,7 @@ const navItems: NavItem[] = [
       },
     ],
   },
+  { label: "Chats", href: "/dashboard/chats", icon: MessageCircle },
   {
     label: "Informes",
     href: "/dashboard/informes",

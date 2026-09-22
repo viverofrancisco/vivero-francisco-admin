@@ -438,7 +438,11 @@ export const ModelName = {
   DatoFacturacion: 'DatoFacturacion',
   Factura: 'Factura',
   Cobro: 'Cobro',
-  FacturaLinea: 'FacturaLinea'
+  FacturaLinea: 'FacturaLinea',
+  Chat: 'Chat',
+  ChatMiembro: 'ChatMiembro',
+  ChatMensaje: 'ChatMensaje',
+  ChatAdjunto: 'ChatAdjunto'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -454,7 +458,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatAdjunto"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4528,6 +4532,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Chat: {
+      payload: Prisma.$ChatPayload<ExtArgs>
+      fields: Prisma.ChatFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>
+        }
+        findFirst: {
+          args: Prisma.ChatFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>
+        }
+        findMany: {
+          args: Prisma.ChatFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>[]
+        }
+        create: {
+          args: Prisma.ChatCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>
+        }
+        createMany: {
+          args: Prisma.ChatCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>[]
+        }
+        delete: {
+          args: Prisma.ChatDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>
+        }
+        update: {
+          args: Prisma.ChatUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPayload>
+        }
+        aggregate: {
+          args: Prisma.ChatAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChat>
+        }
+        groupBy: {
+          args: Prisma.ChatGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChatMiembro: {
+      payload: Prisma.$ChatMiembroPayload<ExtArgs>
+      fields: Prisma.ChatMiembroFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatMiembroFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatMiembroFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>
+        }
+        findFirst: {
+          args: Prisma.ChatMiembroFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatMiembroFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>
+        }
+        findMany: {
+          args: Prisma.ChatMiembroFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>[]
+        }
+        create: {
+          args: Prisma.ChatMiembroCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>
+        }
+        createMany: {
+          args: Prisma.ChatMiembroCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatMiembroCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>[]
+        }
+        delete: {
+          args: Prisma.ChatMiembroDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>
+        }
+        update: {
+          args: Prisma.ChatMiembroUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatMiembroDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatMiembroUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatMiembroUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatMiembroUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMiembroPayload>
+        }
+        aggregate: {
+          args: Prisma.ChatMiembroAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatMiembro>
+        }
+        groupBy: {
+          args: Prisma.ChatMiembroGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatMiembroGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatMiembroCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatMiembroCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChatMensaje: {
+      payload: Prisma.$ChatMensajePayload<ExtArgs>
+      fields: Prisma.ChatMensajeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatMensajeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatMensajeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>
+        }
+        findFirst: {
+          args: Prisma.ChatMensajeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatMensajeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>
+        }
+        findMany: {
+          args: Prisma.ChatMensajeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>[]
+        }
+        create: {
+          args: Prisma.ChatMensajeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>
+        }
+        createMany: {
+          args: Prisma.ChatMensajeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatMensajeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>[]
+        }
+        delete: {
+          args: Prisma.ChatMensajeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>
+        }
+        update: {
+          args: Prisma.ChatMensajeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatMensajeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatMensajeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatMensajeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatMensajeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatMensajePayload>
+        }
+        aggregate: {
+          args: Prisma.ChatMensajeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatMensaje>
+        }
+        groupBy: {
+          args: Prisma.ChatMensajeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatMensajeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatMensajeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatMensajeCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChatAdjunto: {
+      payload: Prisma.$ChatAdjuntoPayload<ExtArgs>
+      fields: Prisma.ChatAdjuntoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatAdjuntoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatAdjuntoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>
+        }
+        findFirst: {
+          args: Prisma.ChatAdjuntoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatAdjuntoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>
+        }
+        findMany: {
+          args: Prisma.ChatAdjuntoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>[]
+        }
+        create: {
+          args: Prisma.ChatAdjuntoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>
+        }
+        createMany: {
+          args: Prisma.ChatAdjuntoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatAdjuntoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>[]
+        }
+        delete: {
+          args: Prisma.ChatAdjuntoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>
+        }
+        update: {
+          args: Prisma.ChatAdjuntoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatAdjuntoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatAdjuntoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatAdjuntoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatAdjuntoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatAdjuntoPayload>
+        }
+        aggregate: {
+          args: Prisma.ChatAdjuntoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatAdjunto>
+        }
+        groupBy: {
+          args: Prisma.ChatAdjuntoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatAdjuntoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatAdjuntoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatAdjuntoCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -5439,6 +5739,56 @@ export const FacturaLineaScalarFieldEnum = {
 export type FacturaLineaScalarFieldEnum = (typeof FacturaLineaScalarFieldEnum)[keyof typeof FacturaLineaScalarFieldEnum]
 
 
+export const ChatScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  createdById: 'createdById'
+} as const
+
+export type ChatScalarFieldEnum = (typeof ChatScalarFieldEnum)[keyof typeof ChatScalarFieldEnum]
+
+
+export const ChatMiembroScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId',
+  agregadoEl: 'agregadoEl',
+  salioEl: 'salioEl',
+  leidoEl: 'leidoEl'
+} as const
+
+export type ChatMiembroScalarFieldEnum = (typeof ChatMiembroScalarFieldEnum)[keyof typeof ChatMiembroScalarFieldEnum]
+
+
+export const ChatMensajeScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  texto: 'texto',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt',
+  autorId: 'autorId',
+  autorNombre: 'autorNombre',
+  respondeAId: 'respondeAId'
+} as const
+
+export type ChatMensajeScalarFieldEnum = (typeof ChatMensajeScalarFieldEnum)[keyof typeof ChatMensajeScalarFieldEnum]
+
+
+export const ChatAdjuntoScalarFieldEnum = {
+  id: 'id',
+  mensajeId: 'mensajeId',
+  key: 'key',
+  url: 'url',
+  tipo: 'tipo',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatAdjuntoScalarFieldEnum = (typeof ChatAdjuntoScalarFieldEnum)[keyof typeof ChatAdjuntoScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -6014,6 +6364,10 @@ export type GlobalOmitConfig = {
   factura?: Prisma.FacturaOmit
   cobro?: Prisma.CobroOmit
   facturaLinea?: Prisma.FacturaLineaOmit
+  chat?: Prisma.ChatOmit
+  chatMiembro?: Prisma.ChatMiembroOmit
+  chatMensaje?: Prisma.ChatMensajeOmit
+  chatAdjunto?: Prisma.ChatAdjuntoOmit
 }
 
 /* Types for Logging */

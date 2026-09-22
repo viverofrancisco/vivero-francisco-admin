@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
+  MessageCircle,
   LayoutDashboard,
   Users,
   Tag,
@@ -71,6 +72,9 @@ const mainItems: NavItem[] = [
       },
     ],
   },
+  // Sin `roles`: el jardinero también tiene chats, y es de las dos cosas que
+  // abre todos los días.
+  { label: "Chats", href: "/dashboard/chats", icon: MessageCircle },
   {
     label: "Informes",
     href: "/dashboard/informes",

@@ -155,3 +155,81 @@ export async function pushPedirCalificacion(visitaId: string): Promise<void> {
     data: { type: "calificar_visita", visitaId },
   });
 }
+
+// ──────────────────────────────────────────────
+// Chats del equipo
+// ──────────────────────────────────────────────
+
+/**
+ * Mensaje nuevo: **a todos los del chat menos a quien lo escribió**.
+ *
+ * El cuerpo es el mensaje, no "tenés un mensaje nuevo": la mitad de las veces
+ * con leer la notificación alcanza y no hay que abrir nada. Una foto sin texto
+ * se anuncia como foto, que es lo que es.
+ */
+export async function pushChatMensaje(mensajeId: string): Promise<void> {
+  const mensaje = await prisma.chatMensaje.findUnique({
+    where: { id: mensajeId },
+    select: {
+      id: true,
+      texto: true,
+      autorId: true,
+      autorNombre: true,
+      chat: {
+        select: {
+          id: true,
+          nombre: true,
+          miembros: {
+            where: { salioEl: null },
+            select: { userId: true },
+          },
+        },
+      },
+      _count: { select: { adjuntos: true } },
+    },
+  });
+  if (!mensaje) return;
+
+  const destinatarios = mensaje.chat.miembros
+    .map((m) => m.userId)
+    .filter((id) => id !== mensaje.autorId);
+  if (destinatarios.length === 0) return;
+
+  const cuerpo = mensaje.texto?.trim()
+    ? mensaje.texto.trim()
+    : mensaje._count.adjuntos === 1
+      ? "📷 Foto"
+      : `📷 ${mensaje._count.adjuntos} fotos`;
+
+  await sendPushToUsers(destinatarios, {
+    // El nombre del chat arriba y quién habló adelante del mensaje: es como se
+    // lee un grupo, y con varios chats abiertos el título solo no alcanza.
+    title: mensaje.chat.nombre,
+    body: `${mensaje.autorNombre}: ${cuerpo}`,
+    data: { type: "chat_mensaje", chatId: mensaje.chat.id, mensajeId },
+  });
+}
+
+/**
+ * Te agregaron a un chat: **solo a quien agregaron**.
+ *
+ * Los que ya estaban no se enteran por una notificación —no cambió nada para
+ * ellos—; lo ven en la lista de miembros del chat.
+ */
+export async function pushChatAgregado(
+  chatId: string,
+  userIds: string[]
+): Promise<void> {
+  if (userIds.length === 0) return;
+  const chat = await prisma.chat.findUnique({
+    where: { id: chatId },
+    select: { id: true, nombre: true },
+  });
+  if (!chat) return;
+
+  await sendPushToUsers(userIds, {
+    title: "Te agregaron a un chat",
+    body: chat.nombre,
+    data: { type: "chat_agregado", chatId: chat.id },
+  });
+}

@@ -243,6 +243,9 @@ model User {
   datosFacturacionCreated       DatoFacturacion[]      @relation("DatoFacturacionCreatedBy")
   datosFacturacionUpdated       DatoFacturacion[]      @relation("DatoFacturacionUpdatedBy")
   visitaMediaSubidas            VisitaMedia[]          @relation("VisitaMediaSubidaPor")
+  chatsCreados                  Chat[]                 @relation("ChatCreatedBy")
+  chats                         ChatMiembro[]          @relation("ChatMiembro")
+  chatMensajes                  ChatMensaje[]          @relation("ChatMensajeAutor")
 }
 
 model Cliente {
@@ -2034,4 +2037,137 @@ model FacturaLinea {
   @@index([facturaId, posicion])
   @@index([productoId])
   @@index([varianteId])
+}
+
+
+// ──────────────────────────────────────────────────────────────────────────
+// Chats internos
+// ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * Una conversación del equipo.
+ *
+ * **Es entre cuentas del vivero, nunca con un cliente.** El cliente tiene la
+ * calificación de su visita para decir lo suyo; hubo un chat por visita entre
+ * la oficina y el cliente y se fue justamente porque pedía a alguien del otro
+ * lado mirando una bandeja. Este es otra cosa: la oficina y la gente de campo
+ * hablando entre ellas, que es lo que hoy pasa por WhatsApp y no queda en
+ * ningún lado.
+ *
+ * **Lo arma el ADMIN.** Crear el chat y decidir quién está adentro es de él —
+ * por ahora—; STAFF y PERSONAL entran a los suyos, leen y escriben. Estar
+ * adentro es lo único que da acceso: un admin que no es miembro tampoco lo ve,
+ * porque una conversación a la que cualquiera puede asomarse no es una
+ * conversación.
+ */
+model Chat {
+  id        String    @id @default(cuid())
+  nombre    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  /// Archivar el chat: sus mensajes no se borran, deja de listarse.
+  deletedAt DateTime?
+
+  createdById String?
+  createdBy   User?   @relation("ChatCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  miembros ChatMiembro[]
+  mensajes ChatMensaje[]
+
+  @@index([deletedAt])
+}
+
+/**
+ * Quién está en un chat.
+ *
+ * Sacar a alguien marca `salioEl` en vez de borrar la fila: los mensajes que
+ * escribió siguen ahí y con la fila se sabe que estuvo. Todo lo que pregunta
+ * "¿puede ver esto?" filtra `salioEl: null`, así que dejar de estar corta el
+ * acceso igual; volver a agregarlo limpia la marca y la conversación vuelve
+ * entera, que es lo que espera quien vuelve a un grupo.
+ */
+model ChatMiembro {
+  id         String    @id @default(cuid())
+  chatId     String
+  userId     String
+  agregadoEl DateTime  @default(now())
+  salioEl    DateTime?
+
+  /**
+   * Hasta cuándo leyó.
+   *
+   * Un instante y no un contador: los mensajes tienen fecha, así que "sin leer"
+   * es contarlos desde acá, y dos pantallas abiertas no pueden desincronizar un
+   * número. `null` = nunca abrió el chat.
+   */
+  leidoEl DateTime?
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation("ChatMiembro", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+  @@index([userId, salioEl])
+}
+
+/**
+ * Un mensaje: texto, imágenes, o las dos cosas.
+ *
+ * El autor va con su **id y una copia de su nombre**, el mismo par que usan
+ * `Factura` y `OrdenLinea`: el id sirve para agrupar y se vacía si la cuenta se
+ * borra, y el texto es lo que se muestra —un mensaje sin firma no se entiende,
+ * y renombrar una cuenta no puede reescribir lo que alguien dijo ayer—.
+ */
+model ChatMensaje {
+  id        String    @id @default(cuid())
+  chatId    String
+  texto     String?   @db.Text
+  createdAt DateTime  @default(now())
+  /// Borrar un mensaje lo tacha, no lo saca: es lo que dijo alguien.
+  deletedAt DateTime?
+
+  autorId     String?
+  autorNombre String
+
+  /**
+   * A qué mensaje contesta, como en WhatsApp.
+   *
+   * Es una relación y no una copia del texto citado: si el mensaje original se
+   * corrige o se tacha, la cita muestra lo que pasó y no una foto de algo que
+   * ya no dice eso. `SetNull` para que la respuesta sobreviva si alguna vez se
+   * borra en duro lo citado.
+   */
+  respondeAId String?
+
+  chat      Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  autor     User?         @relation("ChatMensajeAutor", fields: [autorId], references: [id], onDelete: SetNull)
+  respondeA ChatMensaje?  @relation("ChatRespuesta", fields: [respondeAId], references: [id], onDelete: SetNull)
+  respuestas ChatMensaje[] @relation("ChatRespuesta")
+  adjuntos  ChatAdjunto[]
+
+  /// Por acá entra la lista: los últimos primero, de a páginas.
+  @@index([chatId, createdAt])
+  @@index([autorId])
+  @@index([respondeAId])
+}
+
+/**
+ * Una imagen de un mensaje.
+ *
+ * Tabla propia y prefijo propio en R2, no la biblioteca `Media`: esa es el
+ * catálogo del que los productos eligen fotos, y una foto que alguien mandó en
+ * un chat no tiene nada que hacer ahí. Es la misma decisión que se tomó con las
+ * fotos de una calificación.
+ */
+model ChatAdjunto {
+  id        String   @id @default(cuid())
+  mensajeId String
+  key       String
+  url       String
+  /// "imagen" por ahora. La columna ya está para el día que entre un video.
+  tipo      String   @default("imagen")
+  createdAt DateTime @default(now())
+
+  mensaje ChatMensaje @relation(fields: [mensajeId], references: [id], onDelete: Cascade)
+
+  @@index([mensajeId])
 }
