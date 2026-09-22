@@ -12,7 +12,6 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { apiRequest, mensajeDeError } from "@/lib/api";
@@ -30,6 +29,26 @@ import { tema } from "@/lib/tema";
 
 /** Cada cuánto pregunta si llegó algo nuevo, con la pantalla abierta. */
 const CADA_MS = 5000;
+
+/**
+ * Copiar al portapapeles, **sin que la pantalla dependa de ello**.
+ *
+ * `expo-clipboard` trae código nativo, así que un dev client compilado antes de
+ * instalarlo no lo tiene. Importado arriba, eso no deja sin copiar: revienta al
+ * evaluar el archivo, el módulo se queda sin export por defecto y la ruta entera
+ * desaparece —"Unmatched Route" al abrir el chat—. Cargado acá adentro, el
+ * módulo se evalúa recién al tocar "Copiar", así que lo único que falta hasta
+ * que se reconstruya la app es copiar, y se avisa.
+ */
+async function copiarAlPortapapeles(texto: string): Promise<boolean> {
+  try {
+    const Clipboard = await import("expo-clipboard");
+    await Clipboard.setStringAsync(texto);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Una conversación.
@@ -432,11 +451,17 @@ export default function ChatScreen() {
           {tocado?.texto ? (
             <PressableScale
               onPress={async () => {
-                await Clipboard.setStringAsync(tocado.texto ?? "");
+                const texto = tocado.texto ?? "";
                 setTocado(null);
-                Haptics.notificationAsync(
-                  Haptics.NotificationFeedbackType.Success
-                );
+                if (await copiarAlPortapapeles(texto)) {
+                  Haptics.notificationAsync(
+                    Haptics.NotificationFeedbackType.Success
+                  );
+                } else {
+                  setAviso(
+                    "Para copiar hay que reinstalar la app: el portapapeles necesita una versión nueva."
+                  );
+                }
               }}
               estiloExterno={styles.ancho}
               style={styles.opcion}
