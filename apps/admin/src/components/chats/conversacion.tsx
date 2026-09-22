@@ -386,28 +386,48 @@ export function Conversacion({
    * El navegador solo acepta PNG en el portapapeles, y las fotos son JPEG: se
    * baja la imagen —R2 permite CORS, así que el lienzo no queda "manchado"— y
    * se vuelve a codificar. Un video no se copia: ningún portapapeles lo toma.
+   *
+   * Si la foto no entra —sin HTTPS no hay `navigator.clipboard`, y una imagen
+   * que el navegador ya dibujó en un `<img>` puede negarse a bajar con CORS—
+   * va lo que sí se puede: el texto, o el enlace de la foto. "No hay nada
+   * para copiar" se decía justo en ese caso, con la foto ahí a la vista.
    */
   async function copiar(mensaje: MensajeEnPantalla) {
+    const texto = mensaje.texto ?? "";
+    const foto = mensaje.fotos.find((f) => f.tipo !== "video");
+    if (!texto && !foto) {
+      toast.error("No hay nada para copiar");
+      return;
+    }
     try {
-      const texto = mensaje.texto ?? "";
-      const foto = mensaje.fotos.find((f) => f.tipo !== "video");
-      const partes: Record<string, Blob> = {};
-      if (texto) partes["text/plain"] = new Blob([texto], { type: "text/plain" });
-      if (foto && typeof ClipboardItem !== "undefined") {
-        const png = await aPng(foto.url);
-        if (png) partes["image/png"] = png;
+      if (
+        foto &&
+        typeof ClipboardItem !== "undefined" &&
+        navigator.clipboard?.write
+      ) {
+        // La imagen va como **promesa**, no ya bajada: Safari solo acepta el
+        // `write` dentro del gesto del usuario, y esperar la descarga antes de
+        // llamarlo es salirse de él.
+        const png = aPng(foto.url).then((b) => {
+          if (!b) throw new Error("No se pudo convertir la foto a PNG");
+          return b;
+        });
+        const partes: Record<string, Blob | Promise<Blob>> = { "image/png": png };
+        if (texto) partes["text/plain"] = new Blob([texto], { type: "text/plain" });
+        try {
+          await navigator.clipboard.write([new ClipboardItem(partes)]);
+          toast.success(texto ? "Copiados el texto y la foto" : "Foto copiada");
+          return;
+        } catch (error) {
+          // Que quede en la consola: "no pudimos" sin el motivo es lo que hace
+          // que el siguiente reporte llegue sin nada para mirar.
+          console.warn("No se pudo copiar la foto; va el texto", error);
+        }
       }
-      if (Object.keys(partes).length === 0) {
-        toast.error("No hay nada para copiar");
-        return;
-      }
-      if (typeof ClipboardItem !== "undefined") {
-        await navigator.clipboard.write([new ClipboardItem(partes)]);
-      } else {
-        await navigator.clipboard.writeText(texto);
-      }
-      toast.success("Copiado");
-    } catch {
+      await copiarTexto(texto || foto!.url);
+      toast.success(texto ? "Copiado" : "Copiado el enlace de la foto");
+    } catch (error) {
+      console.warn("No se pudo copiar", error);
       toast.error("No pudimos copiar");
     }
   }
@@ -920,18 +940,39 @@ function Acciones({
 
 /** Baja una imagen y la devuelve como PNG, que es lo único que el portapapeles acepta. */
 async function aPng(url: string): Promise<Blob | null> {
-  try {
-    const res = await fetch(url, { mode: "cors" });
-    if (!res.ok) return null;
-    const bitmap = await createImageBitmap(await res.blob());
-    const lienzo = document.createElement("canvas");
-    lienzo.width = bitmap.width;
-    lienzo.height = bitmap.height;
-    lienzo.getContext("2d")?.drawImage(bitmap, 0, 0);
-    return await new Promise((resolver) =>
-      lienzo.toBlob((b) => resolver(b), "image/png")
-    );
-  } catch {
-    return null;
+  // `no-store`: si el navegador ya tiene esa imagen en caché por haberla
+  // dibujado en un <img> sin `crossorigin`, la copia guardada no trae las
+  // cabeceras CORS y este `fetch` falla contra la caché aunque R2 las mande.
+  const res = await fetch(url, { mode: "cors", cache: "no-store" });
+  if (!res.ok) return null;
+  const bitmap = await createImageBitmap(await res.blob());
+  const lienzo = document.createElement("canvas");
+  lienzo.width = bitmap.width;
+  lienzo.height = bitmap.height;
+  lienzo.getContext("2d")?.drawImage(bitmap, 0, 0);
+  return await new Promise((resolver) =>
+    lienzo.toBlob((b) => resolver(b), "image/png")
+  );
+}
+
+/**
+ * Texto al portapapeles, con o sin `navigator.clipboard`: fuera de HTTPS
+ * (el portal abierto por IP desde otra máquina) no existe, y `execCommand`
+ * sigue funcionando ahí.
+ */
+async function copiarTexto(texto: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(texto);
+    return;
   }
+  const area = document.createElement("textarea");
+  area.value = texto;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  const copiado = document.execCommand("copy");
+  area.remove();
+  if (!copiado) throw new Error("execCommand('copy') devolvió false");
 }
