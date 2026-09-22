@@ -106,8 +106,24 @@ async function sembrar() {
     nombre: [admin.name, admin.apellido].filter(Boolean).join(" ") || "Admin",
   };
 
+  // Dos días seguidos y en el pasado: un informe cuenta lo que ya se hizo.
+  const hoy = new Date();
+  const dia = (atras: number) => {
+    const d = new Date(hoy);
+    d.setUTCDate(d.getUTCDate() - atras);
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  };
+
   // Un cliente con una propiedad con dirección, que es el que mejor se ve en el
   // encabezado del informe; si no hay ninguno así, el primero que aparezca.
+  // Y sin visita viva en los dos días que se van a usar: una visita por cliente
+  // por día es regla del servicio, y con la base ya sembrada el primer cliente
+  // suele tener una justo ahí.
+  const sinVisitaEsosDias = {
+    visitas: {
+      none: { deletedAt: null, fechaProgramada: { in: [dia(9), dia(2)] } },
+    },
+  };
   const conPropiedad = {
     id: true,
     nombre: true,
@@ -125,22 +141,39 @@ async function sembrar() {
       where: {
         deletedAt: null,
         propiedades: { some: { deletedAt: null, direccion: { not: null } } },
+        ...sinVisitaEsosDias,
       },
       select: conPropiedad,
     })) ??
     (await prisma.cliente.findFirst({
-      where: { deletedAt: null },
+      where: { deletedAt: null, ...sinVisitaEsosDias },
       select: conPropiedad,
     }));
   if (!cliente) throw new Error("No hay clientes en la base.");
   const propiedadId = cliente.propiedades[0]?.id;
   if (!propiedadId) throw new Error("Ese cliente no tiene propiedades.");
 
-  const personal = await prisma.personal.findMany({
-    where: { deletedAt: null, estado: "ACTIVO" },
+  // El jardinero con el que se puede entrar a la app va primero: es el que
+  // está en las **dos** visitas, así desde su teléfono se ven las fotos y el
+  // parte que después arman el informe. Si no hay ninguno, dos cualesquiera.
+  const debutante = await prisma.personal.findFirst({
+    where: {
+      deletedAt: null,
+      estado: "ACTIVO",
+      user: { password: { not: null }, accesoRevocadoEl: null },
+    },
     select: { id: true, nombre: true, apellido: true },
-    take: 2,
   });
+  const otros = await prisma.personal.findMany({
+    where: {
+      deletedAt: null,
+      estado: "ACTIVO",
+      ...(debutante ? { id: { not: debutante.id } } : {}),
+    },
+    select: { id: true, nombre: true, apellido: true },
+    take: debutante ? 1 : 2,
+  });
+  const personal = [...(debutante ? [debutante] : []), ...otros];
   if (personal.length < 2) {
     throw new Error("Hacen falta al menos dos personas activas en Personal.");
   }
@@ -158,14 +191,6 @@ async function sembrar() {
   const [compartida, soloEnUna, sinFotos, , soloEtiqueta] = tareas;
 
   const m: Manifiesto = { visitas: [], keys: [] };
-
-  // Dos días seguidos y en el pasado: un informe cuenta lo que ya se hizo.
-  const hoy = new Date();
-  const dia = (atras: number) => {
-    const d = new Date(hoy);
-    d.setUTCDate(d.getUTCDate() - atras);
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  };
 
   /** Una hora concreta de un día, en ISO: las marcas ahora son instantes. */
   const aLaHora = (fecha: Date, hm: string) => {

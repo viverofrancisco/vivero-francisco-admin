@@ -32,3 +32,4 @@ apps/admin/scripts/.visita-con-fotos.json
 # Claude Code local files (ignore everything under .claude EXCEPT the committed docs)
 .claude/*
 !.claude/docs/
+apps/admin/scripts/.propiedades-y-visitas.json

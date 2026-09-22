@@ -109,7 +109,9 @@ npx tsx --env-file=.env scripts/seed-propiedades-y-visitas.ts --limpiar
 
 # Dos visitas cerradas, con partes de dos personas y **fotos reales en R2**,
 # etiquetadas por tarea: el escenario mínimo para probar que el asistente de
-# informes arma sus secciones solo. Sube las imágenes de verdad porque el PDF
+# informes arma sus secciones solo. El jardinero que **puede iniciar sesión**
+# va en las dos, y el cliente se elige sin visita viva en esos días, para
+# correrlo encima de `seed-propiedades-y-visitas` sin chocar con su regla. Sube las imágenes de verdad porque el PDF
 # las descarga; una URL inventada rompe la vista previa. Manifiesto propio
 # (`scripts/.visita-con-fotos.json`) y `--limpiar` que borra también los
 # objetos de R2.
