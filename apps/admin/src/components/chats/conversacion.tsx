@@ -373,9 +373,13 @@ export function Conversacion({
             className="hidden"
             onChange={(e) => elegirFotos(e.target.files)}
           />
+          {/* Los tres del mismo alto: con el `size="icon"` de la casa los
+              botones median 32 contra los 42 del campo, y la fila se veía
+              desalineada apenas el campo estaba vacío. */}
           <Button
             variant="outline"
             size="icon"
+            className="h-10 w-10 flex-none"
             aria-label="Mandar una foto"
             disabled={subiendo || enviando}
             onClick={() => archivos.current?.click()}
@@ -387,7 +391,11 @@ export function Conversacion({
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Escribe un mensaje..."
             rows={1}
-            className="max-h-32 min-h-10 flex-1 resize-none"
+            // `leading-6` y `py-[7px]` para que mida exactamente 40 en los dos
+            // tamaños: la clase base cambia de `text-base` a `text-sm` en `md`,
+            // y con el interlineado de cada una el alto cambiaba con el ancho
+            // de la ventana.
+            className="max-h-32 min-h-10 flex-1 resize-none py-[7px] leading-6"
             onKeyDown={(e) => {
               // Enter manda, Shift+Enter hace un renglón: es lo que hacen los
               // dedos que vienen de WhatsApp.
@@ -399,6 +407,7 @@ export function Conversacion({
           />
           <Button
             size="icon"
+            className="h-10 w-10 flex-none"
             aria-label="Enviar"
             onClick={() => enviar()}
             disabled={enviando || subiendo || !texto.trim()}

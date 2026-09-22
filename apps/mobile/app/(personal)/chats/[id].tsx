@@ -370,12 +370,11 @@ export default function ChatScreen() {
       {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
 
       {/* Lo que se está por mandar */}
-      <View
-        style={[
-          styles.barra,
-          { paddingBottom: Math.max(insets.bottom, 10) },
-        ]}
-      >
+      {/* Sin `insets.bottom`: la barra de pestañas de abajo ya se corrió lo
+          que hay que correrse por el indicador de inicio, así que sumarlo acá
+          dejaba treinta y pico de píxeles en blanco entre el campo y las
+          pestañas. */}
+      <View style={styles.barra}>
         {respondiendo ? (
           <View style={styles.citando}>
             <View style={styles.crece}>
@@ -669,7 +668,7 @@ const styles = StyleSheet.create({
 
   barra: {
     paddingHorizontal: 10,
-    paddingTop: 8,
+    paddingVertical: 8,
     backgroundColor: tema.superficie,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: tema.linea,
@@ -704,11 +703,14 @@ const styles = StyleSheet.create({
   },
   campo: {
     flex: 1,
+    // 40 de mínimo, los mismos que los botones de al lado: con 10 arriba y 10
+    // abajo el alto propio del campo se pasaba de eso —iOS le suma lo suyo en
+    // los multilínea— y la fila quedaba despareja con el campo vacío.
     minHeight: 40,
     maxHeight: 120,
     paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: tema.linea,
