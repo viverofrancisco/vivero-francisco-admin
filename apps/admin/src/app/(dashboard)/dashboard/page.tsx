@@ -10,56 +10,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { Prisma } from "@/generated/prisma/client";
 import { resumenTareas, TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
-import { nombreCliente } from "@vivero/shared";
-import {
-  PanelJardinero,
-  type VisitaDelPanel,
-} from "@/components/dashboard/panel-jardinero";
-
-/** Cuántas visitas futuras caben antes de cansar. */
-const PROXIMAS_VISIBLES = 10;
-
-const VISITA_DEL_PANEL = {
-  cliente: true,
-  // El sector es de la propiedad: es geográfico, así que es del lugar donde se
-  // trabaja y no de la persona a la que se le cobra.
-  propiedad: { select: { sector: { select: { nombre: true } } } },
-  ...TAREAS_DE_VISITA_INCLUDE,
-} as const;
-
-type FilaDeVisita = {
-  id: string;
-  horaEntrada: string | null;
-  fechaProgramada: Date;
-  estado: string;
-  cliente: {
-    nombre: string;
-    apellido: string | null;
-    empresa: string | null;
-  };
-  propiedad: { sector: { nombre: string } | null };
-};
-
-function aFilaDelPanel(
-  v: FilaDeVisita & Parameters<typeof resumenTareas>[0],
-): VisitaDelPanel {
-  return {
-    id: v.id,
-    cliente: nombreCliente(v.cliente),
-    sector: v.propiedad.sector?.nombre ?? null,
-    horaEntrada: v.horaEntrada,
-    fechaProgramada: v.fechaProgramada.toLocaleDateString("es-EC", {
-      day: "2-digit",
-      month: "short",
-      timeZone: "UTC",
-    }),
-    estado: v.estado,
-    tareas: resumenTareas(v),
-  };
-}
-
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -183,64 +136,13 @@ export default async function DashboardPage() {
   const finDia = new Date(anio, mes, dia + 1);
 
   const isAdmin = user.role === "ADMIN" || user.role === "STAFF";
-  const isPersonal = user.role === "PERSONAL";
+  // El jardinero no tiene panel: era una lista de sus visitas con otro nombre,
+  // y su barra —en la app y acá— es Visitas, Chats y Cuenta. Directo a la
+  // primera.
+  if (user.role === "PERSONAL") redirect("/dashboard/visitas");
 
-  // Qué visitas ve cada uno (sin filtro de fecha: eso lo pone cada consulta).
-  //
-  // El jardinero ve **las que tiene asignadas**, no las de su grupo: el grupo
-  // dice con quién suele trabajar, la asignación dice a dónde fue. Eran lo
-  // mismo cuando reportaba el capataz por todos; ahora cada uno carga lo suyo y
-  // lo que importa es dónde estuvo él.
-  let scope: Prisma.VisitaWhereInput = {};
-  if (isPersonal) {
-    const personal = await prisma.personal.findUnique({
-      where: { userId: user.id },
-      select: { id: true },
-    });
-    scope = personal
-      ? { personal: { some: { personalId: personal.id, removedAt: null } } }
-      : { id: "none" };
-
-    // Y hasta acá llega lo compartido: el jardinero tiene su propia pantalla,
-    // así que ni se piden los conteos de la oficina.
-    const suyas = { ...scope, deletedAt: null } as const;
-    const [hoy, proximas] = await Promise.all([
-      prisma.visita.findMany({
-        where: { ...suyas, fechaProgramada: { gte: inicioDia, lt: finDia } },
-        include: VISITA_DEL_PANEL,
-        orderBy: [{ horaEntrada: "asc" }, { createdAt: "asc" }],
-      }),
-      // `gte: finDia` —el arranque de mañana— y no `gt: hoy`, porque
-      // `fechaProgramada` es `@db.Date`: Prisma le manda a Postgres solo la
-      // parte de fecha, así que el corte cae donde tiene que caer. Lo que no
-      // hay que hacer es comparar en JavaScript lo que vuelve: viene como
-      // medianoche **UTC**, y contra una medianoche local (Guayaquil, UTC-5)
-      // una visita de mañana parece de hoy.
-      prisma.visita.findMany({
-        where: { ...suyas, fechaProgramada: { gte: finDia } },
-        include: VISITA_DEL_PANEL,
-        orderBy: [{ fechaProgramada: "asc" }, { horaEntrada: "asc" }],
-        take: PROXIMAS_VISIBLES,
-      }),
-    ]);
-
-    return (
-      <PanelJardinero
-        nombre={
-          [user.name, user.apellido].filter(Boolean).join(" ") || "Usuario"
-        }
-        fechaHoy={capitalize(
-          now.toLocaleDateString("es-EC", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-          }),
-        )}
-        hoy={hoy.map(aFilaDelPanel)}
-        proximas={proximas.map(aFilaDelPanel)}
-      />
-    );
-  }
+  // Sin filtro de fecha: eso lo pone cada consulta. Acá solo llega la oficina.
+  const scope: Prisma.VisitaWhereInput = {};
 
   const mesFilter: Prisma.VisitaWhereInput = {
     ...scope,

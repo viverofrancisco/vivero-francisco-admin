@@ -28,12 +28,15 @@ export function InputFlotante({
   placeholder,
   id,
   className,
+  type = "text",
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   required?: boolean;
   maxLength?: number;
+  /** `password` para las contraseñas; el resto es texto. */
+  type?: "text" | "password" | "email";
   /** Solo se ve con el campo enfocado: con la etiqueta adentro, choca. */
   placeholder?: string;
   id?: string;
@@ -52,6 +55,7 @@ export function InputFlotante({
     <div className={cn("relative pt-2", className)}>
       <input
         id={idCampo}
+        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setEnfocado(true)}

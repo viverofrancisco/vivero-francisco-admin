@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
+  UserCircle,
   MessageCircle,
   LayoutDashboard,
   Users,
@@ -46,7 +47,9 @@ interface NavItem {
 }
 
 const mainItems: NavItem[] = [
-  { label: "Panel", href: "/dashboard", icon: LayoutDashboard },
+  // Sin el jardinero: su panel era una lista de sus visitas con otro nombre,
+  // y `/dashboard` ahora lo manda directo a Visitas.
+  { label: "Panel", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "STAFF"] },
   {
     label: "Clientes",
     href: "/dashboard/clientes",
@@ -116,6 +119,9 @@ const mainItems: NavItem[] = [
       { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion" },
     ],
   },
+  // Para todos, el jardinero incluido: es la tercera de sus tres pestañas en
+  // el teléfono, y acá tiene que estar en el mismo lugar.
+  { label: "Cuenta", href: "/dashboard/cuenta", icon: UserCircle },
 ];
 
 /**
@@ -177,7 +183,12 @@ export function Sidebar({ branding, role }: BrandingProps) {
       pathname === item.href ||
       (item.href !== "/dashboard" && pathname.startsWith(item.href));
     const isExpanded = abierta === item.href;
-    const hasChildren = item.children && item.children.length > 0;
+    // Solo cuentan los hijos que este rol puede ver: "Tareas" es de oficina, y
+    // al jardinero le quedaba una flechita en Visitas sin nada debajo.
+    const hijosVisibles = (item.children ?? []).filter(
+      (c) => !c.roles || c.roles.includes(role)
+    );
+    const hasChildren = hijosVisibles.length > 0;
 
     const baseClasses =
       "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors";

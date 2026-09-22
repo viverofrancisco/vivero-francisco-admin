@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,6 +24,7 @@ interface BrandingProps {
 
 export function Header({ branding }: BrandingProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const cambios = useCambiosPendientes();
   const userName =
     [session?.user?.name, session?.user?.apellido].filter(Boolean).join(" ") ||
@@ -116,9 +118,9 @@ export function Header({ branding }: BrandingProps) {
               </p>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/dashboard/cuenta")}>
               <User className="mr-2 h-4 w-4" />
-              Perfil
+              Mi cuenta
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>

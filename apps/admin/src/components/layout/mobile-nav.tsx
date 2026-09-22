@@ -8,6 +8,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
+  UserCircle,
   MessageCircle,
   LayoutDashboard,
   Receipt,
@@ -44,7 +45,7 @@ interface NavItem {
 
 /** El menú completo — el mismo del sidebar, que es lo que abre "Más". */
 const navItems: NavItem[] = [
-  { label: "Panel", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Panel", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "STAFF"] },
   {
     label: "Clientes",
     href: "/dashboard/clientes",
@@ -112,6 +113,7 @@ const navItems: NavItem[] = [
       { label: "Facturación electrónica", href: "/dashboard/configuracion/facturacion" },
     ],
   },
+  { label: "Cuenta", href: "/dashboard/cuenta", icon: UserCircle },
 ];
 
 /**
@@ -134,27 +136,24 @@ const HREFS_TAB = [
   "/dashboard/informes",
 ];
 
-const CUPOS = HREFS_TAB.length;
-
 /**
- * Qué va en la barra para este rol.
+ * La barra del jardinero: tres cosas y **sin "Más"**, igual que en la app.
  *
- * Son cuatro cupos fijos: un `PERSONAL` no ve Clientes ni Productos ni
- * Órdenes, y dejar el hueco —o peor, un tab que responde 403— es peor que
- * rellenarlo con lo primero que sí puede abrir. El orden preferido manda y el
- * resto entra por el orden del menú.
+ * Es todo lo que puede abrir —sus visitas, sus chats, su cuenta—, así que un
+ * "Más" no tendría nada más que mostrar. Antes los cupos vacíos se rellenaban
+ * con lo primero del menú que pudiera abrir, y eso le ponía "Panel" en la
+ * barra: una lista de sus visitas con otro nombre.
  */
-function tabsVisibles(items: NavItem[]): NavItem[] {
-  const tabs: NavItem[] = [];
-  for (const href of HREFS_TAB) {
-    const item = items.find((i) => i.href === href);
-    if (item) tabs.push(item);
-  }
-  for (const item of items) {
-    if (tabs.length >= CUPOS) break;
-    if (!tabs.includes(item)) tabs.push(item);
-  }
-  return tabs.slice(0, CUPOS);
+const HREFS_TAB_PERSONAL = [
+  "/dashboard/visitas",
+  "/dashboard/chats",
+  "/dashboard/cuenta",
+];
+
+/** Qué va en la barra para este rol, en el orden en que se pidió. */
+function tabsVisibles(items: NavItem[], role: UserRole): NavItem[] {
+  const hrefs = role === "PERSONAL" ? HREFS_TAB_PERSONAL : HREFS_TAB;
+  return hrefs.flatMap((href) => items.filter((i) => i.href === href));
 }
 
 function esActivo(pathname: string, href: string) {
@@ -228,7 +227,9 @@ export function MobileNav({ branding, role }: MobileNavProps) {
   const visibles = navItems.filter(
     (item) => !item.roles || (role && item.roles.includes(role))
   );
-  const tabs = tabsVisibles(visibles);
+  const tabs = tabsVisibles(visibles, role);
+  // El jardinero no tiene "Más": la barra ya es todo lo que puede abrir.
+  const conMas = role !== "PERSONAL";
 
   // La sección de la página actual arranca desplegada; después manda lo que se
   // haya tocado. Al revés —derivarla de la ruta y nada más, como hace el
@@ -290,19 +291,21 @@ export function MobileNav({ branding, role }: MobileNavProps) {
               </Link>
             );
           })}
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            aria-haspopup="dialog"
-            aria-expanded={open}
-            className={claseTab(enOtraParte)}
-          >
-            <Menu
-              className="h-[22px] w-[22px]"
-              strokeWidth={enOtraParte ? 2.4 : 1.9}
-            />
-            <span>Más</span>
-          </button>
+          {conMas ? (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={open}
+              className={claseTab(enOtraParte)}
+            >
+              <Menu
+                className="h-[22px] w-[22px]"
+                strokeWidth={enOtraParte ? 2.4 : 1.9}
+              />
+              <span>Más</span>
+            </button>
+          ) : null}
         </div>
       </nav>
 
