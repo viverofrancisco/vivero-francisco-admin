@@ -58,7 +58,10 @@ export function InputFlotante({
         onBlur={() => setEnfocado(false)}
         maxLength={maxLength}
         placeholder={enfocado ? placeholder : undefined}
-        className="relative h-14 w-full rounded-xl bg-transparent px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
+        // 48 y no 56: al lado de un buscador de 40 y de filas de 44, el campo
+        // de 56 se veía de otra escala. Con `pt-1` el texto baja lo justo para
+        // dejarle aire a la etiqueta de arriba sin descentrarse.
+        className="relative h-12 w-full rounded-xl bg-transparent px-3.5 pt-1 text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
       />
 
       {/* El borde y su muesca. `aria-hidden`: es dibujo, no estructura. */}
