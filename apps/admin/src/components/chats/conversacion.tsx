@@ -22,6 +22,7 @@ import {
   Copy,
   ImageIcon,
   MoreVertical,
+  Play,
   Reply,
   Send,
   SquarePen,
@@ -48,7 +49,42 @@ export interface MensajeEnPantalla {
     texto: string | null;
     borrado: boolean;
     fotos: number;
+    /** La primera foto o video del mensaje citado, para la miniatura. */
+    miniatura: { url: string; tipo: string } | null;
   } | null;
+}
+
+/** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
+function etiquetaDeAdjuntos(tipo: string | undefined, cuantos: number): string {
+  if (cuantos > 1) return `📎 ${cuantos} archivos`;
+  return tipo === "video" ? "🎥 Video" : "📷 Foto";
+}
+
+/**
+ * La miniatura de una foto o un video, del tamaño que se le pida. Un video no
+ * tiene imagen sin reproducirlo, así que va un recuadro oscuro con el
+ * triángulo: es lo que todo el mundo lee como "esto se reproduce".
+ */
+function Miniatura({
+  url,
+  tipo,
+  className,
+}: {
+  url: string;
+  tipo: string;
+  className: string;
+}) {
+  if (tipo === "video") {
+    return (
+      <span
+        className={`flex items-center justify-center bg-foreground/80 text-background ${className}`}
+      >
+        <Play className="h-1/2 w-1/2 fill-current" />
+      </span>
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt="" className={`object-cover ${className}`} />;
 }
 
 export interface ChatCabecera {
@@ -113,7 +149,9 @@ export function Conversacion({
   >([]);
   const [enviando, setEnviando] = useState(false);
   const [editando, setEditando] = useState(false);
-  const [viendo, setViendo] = useState<string | null>(null);
+  const [viendo, setViendo] = useState<{ url: string; tipo: string } | null>(
+    null
+  );
   /** El mensaje que alguien mantuvo apretado, en el teléfono. */
   const [tocado, setTocado] = useState<MensajeEnPantalla | null>(null);
 
@@ -208,7 +246,7 @@ export function Conversacion({
 
   /** Sube lo que esté esperando y devuelve con qué crear el mensaje. */
   async function subirPendientes(): Promise<
-    { key: string; url: string; nombre: string }[]
+    { key: string; url: string; nombre: string; tipo: "imagen" | "video" }[]
   > {
     if (pendientes.length === 0) return [];
     const files = pendientes.map((p) => p.archivo);
@@ -231,13 +269,16 @@ export function Conversacion({
         })
       )
     );
-    return data.uploads.map((u: { key: string; url: string }, i: number) => ({
-      key: u.key,
-      url: u.url,
-      // El nombre del archivo viaja porque es lo único por lo que después se
-      // puede buscar una foto.
-      nombre: files[i].name,
-    }));
+    return data.uploads.map(
+      (u: { key: string; url: string; tipo: "imagen" | "video" }, i: number) => ({
+        key: u.key,
+        url: u.url,
+        // El nombre del archivo viaja porque es lo único por lo que después se
+        // puede buscar una foto.
+        nombre: files[i].name,
+        tipo: u.tipo,
+      })
+    );
   }
 
   async function enviar() {
@@ -274,7 +315,7 @@ export function Conversacion({
   function elegirFotos(lista: FileList | null) {
     if (!lista || lista.length === 0) return;
     const nuevas = Array.from(lista)
-      .filter((f) => f.type.startsWith("image/"))
+      .filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"))
       .map((archivo) => ({ archivo, vista: URL.createObjectURL(archivo) }));
     setPendientes((actuales) => [...actuales, ...nuevas].slice(0, 10));
     if (archivos.current) archivos.current.value = "";
@@ -311,9 +352,34 @@ export function Conversacion({
     }
   }
 
-  async function copiar(texto: string) {
+  /**
+   * Copiar el mensaje **entero**: el texto y, si tiene, su primera imagen,
+   * como hace WhatsApp. Van juntos en un solo `ClipboardItem`, así al pegar en
+   * un correo o un documento entran los dos.
+   *
+   * El navegador solo acepta PNG en el portapapeles, y las fotos son JPEG: se
+   * baja la imagen —R2 permite CORS, así que el lienzo no queda "manchado"— y
+   * se vuelve a codificar. Un video no se copia: ningún portapapeles lo toma.
+   */
+  async function copiar(mensaje: MensajeEnPantalla) {
     try {
-      await navigator.clipboard.writeText(texto);
+      const texto = mensaje.texto ?? "";
+      const foto = mensaje.fotos.find((f) => f.tipo !== "video");
+      const partes: Record<string, Blob> = {};
+      if (texto) partes["text/plain"] = new Blob([texto], { type: "text/plain" });
+      if (foto && typeof ClipboardItem !== "undefined") {
+        const png = await aPng(foto.url);
+        if (png) partes["image/png"] = png;
+      }
+      if (Object.keys(partes).length === 0) {
+        toast.error("No hay nada para copiar");
+        return;
+      }
+      if (typeof ClipboardItem !== "undefined") {
+        await navigator.clipboard.write([new ClipboardItem(partes)]);
+      } else {
+        await navigator.clipboard.writeText(texto);
+      }
       toast.success("Copiado");
     } catch {
       toast.error("No pudimos copiar");
@@ -407,7 +473,7 @@ export function Conversacion({
                 destacado={m.id === destacado}
                 conNombre={!m.mio && !mismoAutor}
                 onResponder={() => setRespondiendo(m)}
-                onCopiar={() => m.texto && copiar(m.texto)}
+                onCopiar={() => copiar(m)}
                 onBorrar={() => borrar(m.id)}
                 onVerFoto={setViendo}
                 onMantener={() => setTocado(m)}
@@ -427,9 +493,20 @@ export function Conversacion({
                 {respondiendo.mio ? "Tú" : respondiendo.autorNombre}
               </p>
               <p className="truncate text-xs text-muted-foreground">
-                {respondiendo.texto ?? "📷 Foto"}
+                {respondiendo.texto ??
+                  etiquetaDeAdjuntos(
+                    respondiendo.fotos[0]?.tipo,
+                    respondiendo.fotos.length
+                  )}
               </p>
             </div>
+            {respondiendo.fotos[0] ? (
+              <Miniatura
+                url={respondiendo.fotos[0].url}
+                tipo={respondiendo.fotos[0].tipo}
+                className="h-10 w-10 flex-none overflow-hidden rounded-md"
+              />
+            ) : null}
             <button
               type="button"
               onClick={() => setRespondiendo(null)}
@@ -450,11 +527,10 @@ export function Conversacion({
                 key={p.vista}
                 className="relative h-14 w-14 overflow-hidden rounded-lg border border-border"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.vista}
-                  alt={p.archivo.name}
-                  className="h-full w-full object-cover"
+                <Miniatura
+                  url={p.vista}
+                  tipo={p.archivo.type.startsWith("video/") ? "video" : "imagen"}
+                  className="h-full w-full"
                 />
                 <button
                   type="button"
@@ -473,7 +549,7 @@ export function Conversacion({
           <input
             ref={archivos}
             type="file"
-            accept="image/*"
+            accept="image/*,video/*"
             multiple
             className="hidden"
             onChange={(e) => elegirFotos(e.target.files)}
@@ -568,18 +644,18 @@ export function Conversacion({
             <Reply className="h-5 w-5 flex-none text-muted-foreground" />
             Responder
           </button>
-          {tocado?.texto ? (
+          {tocado && (tocado.texto || tocado.fotos.some((f) => f.tipo !== "video")) ? (
             <button
               type="button"
               className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left text-sm hover:bg-muted"
               onClick={() => {
-                const texto = tocado.texto ?? "";
+                const m = tocado;
                 setTocado(null);
-                copiar(texto);
+                copiar(m);
               }}
             >
               <Copy className="h-5 w-5 flex-none text-muted-foreground" />
-              Copiar texto
+              Copiar
             </button>
           ) : null}
           {tocado?.mio ? (
@@ -599,10 +675,7 @@ export function Conversacion({
         </SheetContent>
       </Sheet>
 
-      <MediaViewer
-        media={viendo ? { url: viendo, tipo: "imagen" } : null}
-        onClose={() => setViendo(null)}
-      />
+      <MediaViewer media={viendo} onClose={() => setViendo(null)} />
     </div>
   );
 }
@@ -638,7 +711,7 @@ function Burbuja({
   onResponder: () => void;
   onCopiar: () => void;
   onBorrar: () => void;
-  onVerFoto: (url: string) => void;
+  onVerFoto: (media: { url: string; tipo: string }) => void;
   onMantener: () => void;
 }) {
   const mio = mensaje.mio;
@@ -692,21 +765,33 @@ function Burbuja({
 
         {mensaje.respondeA ? (
           <div
-            className={`mb-1 rounded-lg border-l-[3px] px-2 py-1 text-xs ${
+            className={`mb-1 flex items-center gap-2 rounded-lg border-l-[3px] px-2 py-1 text-xs ${
               mio
                 ? "border-primary-foreground/60 bg-primary-foreground/15"
                 : "border-primary bg-muted"
             }`}
           >
-            <p className="font-bold">{mensaje.respondeA.autorNombre}</p>
-            <p className="line-clamp-2 opacity-80">
-              {mensaje.respondeA.borrado
-                ? "Mensaje borrado"
-                : (mensaje.respondeA.texto ??
-                  (mensaje.respondeA.fotos === 1
-                    ? "📷 Foto"
-                    : `📷 ${mensaje.respondeA.fotos} fotos`))}
-            </p>
+            <span className="min-w-0 flex-1">
+              <p className="font-bold">{mensaje.respondeA.autorNombre}</p>
+              <p className="line-clamp-2 opacity-80">
+                {mensaje.respondeA.borrado
+                  ? "Mensaje borrado"
+                  : (mensaje.respondeA.texto ??
+                    etiquetaDeAdjuntos(
+                      mensaje.respondeA.miniatura?.tipo,
+                      mensaje.respondeA.fotos
+                    ))}
+              </p>
+            </span>
+            {/* La miniatura de lo citado, como en WhatsApp: "📷 Foto" no dice
+                cuál de todas. */}
+            {mensaje.respondeA.miniatura ? (
+              <Miniatura
+                url={mensaje.respondeA.miniatura.url}
+                tipo={mensaje.respondeA.miniatura.tipo}
+                className="h-9 w-9 flex-none overflow-hidden rounded-md"
+              />
+            ) : null}
           </div>
         ) : null}
 
@@ -724,16 +809,10 @@ function Burbuja({
                   <button
                     key={f.id}
                     type="button"
-                    onClick={() => onVerFoto(f.url)}
+                    onClick={() => onVerFoto({ url: f.url, tipo: f.tipo })}
                     className="overflow-hidden rounded-lg"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={f.url}
-                      alt=""
-                      className="h-40 w-full object-cover"
-                      loading="lazy"
-                    />
+                    <Miniatura url={f.url} tipo={f.tipo} className="h-40 w-full" />
                   </button>
                 ))}
               </div>
@@ -789,8 +868,8 @@ function Acciones({
           <Reply className="mr-2 h-4 w-4" />
           Responder
         </DropdownMenuItem>
-        {mensaje.texto ? (
-          <DropdownMenuItem onClick={onCopiar}>Copiar texto</DropdownMenuItem>
+        {mensaje.texto || mensaje.fotos.some((f) => f.tipo !== "video") ? (
+          <DropdownMenuItem onClick={onCopiar}>Copiar</DropdownMenuItem>
         ) : null}
         {mensaje.mio ? (
           <DropdownMenuItem onClick={onBorrar}>Borrar</DropdownMenuItem>
@@ -798,4 +877,22 @@ function Acciones({
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+/** Baja una imagen y la devuelve como PNG, que es lo único que el portapapeles acepta. */
+async function aPng(url: string): Promise<Blob | null> {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return null;
+    const bitmap = await createImageBitmap(await res.blob());
+    const lienzo = document.createElement("canvas");
+    lienzo.width = bitmap.width;
+    lienzo.height = bitmap.height;
+    lienzo.getContext("2d")?.drawImage(bitmap, 0, 0);
+    return await new Promise((resolver) =>
+      lienzo.toBlob((b) => resolver(b), "image/png")
+    );
+  } catch {
+    return null;
+  }
 }

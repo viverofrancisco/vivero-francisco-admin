@@ -369,6 +369,8 @@ const MENSAJE_SELECT = {
       autorNombre: true,
       deletedAt: true,
       _count: { select: { adjuntos: true } },
+      // La primera, para la miniatura de la cita: "📷 Foto" no dice cuál.
+      adjuntos: { take: 1, select: { url: true, tipo: true } },
     },
   },
 } as const;
@@ -461,6 +463,7 @@ type MensajeCrudo = {
     autorNombre: string;
     deletedAt: Date | null;
     _count: { adjuntos: number };
+    adjuntos: { url: string; tipo: string }[];
   } | null;
 };
 
@@ -483,6 +486,10 @@ function mensajeParaPantalla(m: MensajeCrudo, viewerId: string) {
           texto: m.respondeA.deletedAt ? null : m.respondeA.texto,
           borrado: m.respondeA.deletedAt !== null,
           fotos: m.respondeA.deletedAt ? 0 : m.respondeA._count.adjuntos,
+          miniatura:
+            !m.respondeA.deletedAt && m.respondeA.adjuntos[0]
+              ? m.respondeA.adjuntos[0]
+              : null,
         }
       : null,
   };
@@ -653,7 +660,7 @@ export async function buscarMensajes(
       autorId: true,
       autorNombre: true,
       chat: { select: { id: true, nombre: true } },
-      adjuntos: { select: { id: true, url: true, nombre: true } },
+      adjuntos: { select: { id: true, url: true, nombre: true, tipo: true } },
     },
   });
 
@@ -672,7 +679,7 @@ export async function buscarMensajes(
       texto: m.texto,
       createdAt: m.createdAt,
       foto: coincide
-        ? { id: coincide.id, url: coincide.url, nombre: coincide.nombre }
+        ? { id: coincide.id, url: coincide.url, nombre: coincide.nombre, tipo: coincide.tipo }
         : null,
       /** Cuántas fotos trae el mensaje, para decirlo cuando no hay texto. */
       fotos: m.adjuntos.length,

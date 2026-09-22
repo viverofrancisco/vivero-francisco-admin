@@ -42,8 +42,8 @@ const fotoDeMensajeSchema = z.object({
    * **buscar** una foto: su clave en R2 es un uuid.
    */
   nombre: z.string().max(200).optional(),
-  /** Por ahora solo imágenes; la columna ya acepta lo que venga después. */
-  tipo: z.literal("imagen").optional(),
+  /** Imagen o video. Lo decide el servidor al firmar la subida, por el tipo de contenido. */
+  tipo: z.enum(["imagen", "video"]).optional(),
 });
 
 /**
@@ -84,9 +84,12 @@ export const chatUploadUrlsSchema = z.object({
         contentType: z
           .string()
           .min(1)
-          // Solo imágenes: el tipo es lo que se **firma**, así que la regla vive
-          // acá y no en la pantalla.
-          .refine((t) => t.startsWith("image/"), "Solo se pueden subir imágenes"),
+          // Imágenes y videos, como en las fotos de una visita: el tipo es lo
+          // que se **firma**, así que la regla vive acá y no en la pantalla.
+          .refine(
+            (t) => t.startsWith("image/") || t.startsWith("video/"),
+            "Solo se pueden subir imágenes o videos"
+          ),
       })
     )
     .min(1)

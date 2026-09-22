@@ -60,6 +60,9 @@ export async function POST(
           url: publicUrlForKey(key),
           uploadUrl: await getUploadUrl(key, file.contentType),
           contentType: file.contentType,
+          // Lo decide el servidor por el tipo de contenido firmado, no la
+          // pantalla: es lo que después dice cómo se dibuja.
+          tipo: file.contentType.startsWith("video/") ? "video" : "imagen",
         };
       })
     );

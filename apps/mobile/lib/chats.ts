@@ -43,7 +43,7 @@ export interface MensajeEncontrado {
   mio: boolean;
   texto: string | null;
   createdAt: string;
-  foto: { id: string; url: string; nombre: string | null } | null;
+  foto: { id: string; url: string; nombre: string | null; tipo: string } | null;
   fotos: number;
 }
 
@@ -62,7 +62,18 @@ export interface MensajeDeChat {
     texto: string | null;
     borrado: boolean;
     fotos: number;
+    /** La primera foto o video del mensaje citado, para la miniatura. */
+    miniatura: { url: string; tipo: string } | null;
   } | null;
+}
+
+/** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
+export function etiquetaDeAdjuntos(
+  tipo: string | undefined,
+  cuantos: number
+): string {
+  if (cuantos > 1) return `📎 ${cuantos} archivos`;
+  return tipo === "video" ? "🎥 Video" : "📷 Foto";
 }
 
 /** Lo que muestra el renglón de la lista cuando el último mensaje es una foto. */

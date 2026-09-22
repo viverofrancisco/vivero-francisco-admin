@@ -186,6 +186,7 @@ export async function pushChatMensaje(mensajeId: string): Promise<void> {
         },
       },
       _count: { select: { adjuntos: true } },
+      adjuntos: { take: 1, select: { tipo: true } },
     },
   });
   if (!mensaje) return;
@@ -195,11 +196,12 @@ export async function pushChatMensaje(mensajeId: string): Promise<void> {
     .filter((id) => id !== mensaje.autorId);
   if (destinatarios.length === 0) return;
 
+  const esVideo = mensaje.adjuntos[0]?.tipo === "video";
   const cuerpo = mensaje.texto?.trim()
     ? mensaje.texto.trim()
     : mensaje._count.adjuntos === 1
-      ? "📷 Foto"
-      : `📷 ${mensaje._count.adjuntos} fotos`;
+      ? (esVideo ? "🎥 Video" : "📷 Foto")
+      : `📎 ${mensaje._count.adjuntos} archivos`;
 
   await sendPushToUsers(destinatarios, {
     // El nombre del chat arriba y quién habló adelante del mensaje: es como se

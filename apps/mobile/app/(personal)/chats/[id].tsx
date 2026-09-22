@@ -20,6 +20,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MediaViewer } from "@/components/MediaViewer";
 import {
+  etiquetaDeAdjuntos,
   horaDeMensaje,
   mismoDia,
   tituloDelDia,
@@ -41,10 +42,27 @@ const CADA_MS = 5000;
  * módulo se evalúa recién al tocar "Copiar", así que lo único que falta hasta
  * que se reconstruya la app es copiar, y se avisa.
  */
-async function copiarAlPortapapeles(texto: string): Promise<boolean> {
+async function copiarAlPortapapeles(mensaje: MensajeDeChat): Promise<boolean> {
   try {
     const Clipboard = await import("expo-clipboard");
-    await Clipboard.setStringAsync(texto);
+    // El portapapeles del teléfono lleva una cosa por vez: el texto si lo hay,
+    // y si no, la imagen —que es lo que hace WhatsApp con una foto sin pie—.
+    // Un video no se copia: ningún portapapeles lo toma.
+    if (mensaje.texto) {
+      await Clipboard.setStringAsync(mensaje.texto);
+      return true;
+    }
+    const foto = mensaje.fotos.find((f) => f.tipo !== "video");
+    if (!foto) return false;
+    const blob = await (await fetch(foto.url)).blob();
+    const base64 = await new Promise<string>((resolver, rechazar) => {
+      const lector = new FileReader();
+      lector.onerror = () => rechazar(lector.error);
+      lector.onload = () =>
+        resolver(String(lector.result).replace(/^data:[^;]+;base64,/, ""));
+      lector.readAsDataURL(blob);
+    });
+    await Clipboard.setImageAsync(base64);
     return true;
   } catch {
     return false;
@@ -103,7 +121,9 @@ export default function ChatScreen() {
     []
   );
   const [tocado, setTocado] = useState<MensajeDeChat | null>(null);
-  const [viendo, setViendo] = useState<string | null>(null);
+  const [viendo, setViendo] = useState<{ url: string; tipo: string } | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -195,17 +215,25 @@ export default function ChatScreen() {
 
   /** Sube lo que esté esperando y devuelve con qué crear el mensaje. */
   async function subirPendientes(): Promise<
-    { key: string; url: string; nombre?: string }[]
+    { key: string; url: string; nombre?: string; tipo: "imagen" | "video" }[]
   > {
     if (pendientes.length === 0) return [];
     const presign = await apiRequest<{
-      uploads: { key: string; url: string; uploadUrl: string; contentType: string }[];
+      uploads: {
+        key: string;
+        url: string;
+        uploadUrl: string;
+        contentType: string;
+        tipo: "imagen" | "video";
+      }[];
     }>(`/api/mobile/chats/${id}/fotos`, {
       method: "POST",
       body: {
         files: pendientes.map((a, i) => ({
-          fileName: a.fileName ?? `foto-${i}.jpg`,
-          contentType: a.mimeType ?? "image/jpeg",
+          fileName:
+            a.fileName ?? (a.type === "video" ? `video-${i}.mp4` : `foto-${i}.jpg`),
+          contentType:
+            a.mimeType ?? (a.type === "video" ? "video/mp4" : "image/jpeg"),
         })),
       },
     });
@@ -228,6 +256,7 @@ export default function ChatScreen() {
       // El nombre del archivo viaja porque es lo único por lo que después se
       // puede buscar una foto.
       nombre: pendientes[i].fileName ?? undefined,
+      tipo: u.tipo,
     }));
   }
 
@@ -268,7 +297,7 @@ export default function ChatScreen() {
 
   async function elegirDeGaleria() {
     const r = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ["images", "videos"],
       allowsMultipleSelection: true,
       selectionLimit: 10,
       quality: 0.7,
@@ -424,9 +453,20 @@ export default function ChatScreen() {
                 {respondiendo.mio ? "Tú" : respondiendo.autorNombre}
               </Text>
               <Text style={styles.citandoTexto} numberOfLines={1}>
-                {respondiendo.texto ?? "📷 Foto"}
+                {respondiendo.texto ??
+                  etiquetaDeAdjuntos(
+                    respondiendo.fotos[0]?.tipo,
+                    respondiendo.fotos.length
+                  )}
               </Text>
             </View>
+            {respondiendo.fotos[0] ? (
+              <MiniaturaAdjunto
+                url={respondiendo.fotos[0].url}
+                tipo={respondiendo.fotos[0].tipo}
+                lado={40}
+              />
+            ) : null}
             <PressableScale
               onPress={() => setRespondiendo(null)}
               style={styles.cerrarCita}
@@ -441,7 +481,13 @@ export default function ChatScreen() {
           <View style={styles.bandeja}>
             {pendientes.map((a, i) => (
               <View key={a.uri} style={styles.miniatura}>
-                <Image source={{ uri: a.uri }} style={styles.miniaturaFoto} />
+                {a.type === "video" ? (
+                  <View style={[styles.miniaturaFoto, styles.videoCaja]}>
+                    <Ionicons name="play" size={22} color="#fff" />
+                  </View>
+                ) : (
+                  <Image source={{ uri: a.uri }} style={styles.miniaturaFoto} />
+                )}
                 <PressableScale
                   onPress={() =>
                     setPendientes((actuales) =>
@@ -513,12 +559,12 @@ export default function ChatScreen() {
             <Ionicons name="arrow-undo" size={20} color={tema.texto2} />
             <Text style={styles.opcionTexto}>Responder</Text>
           </PressableScale>
-          {tocado?.texto ? (
+          {tocado && (tocado.texto || tocado.fotos.some((f) => f.tipo !== "video")) ? (
             <PressableScale
               onPress={async () => {
-                const texto = tocado.texto ?? "";
+                const m = tocado;
                 setTocado(null);
-                if (await copiarAlPortapapeles(texto)) {
+                if (await copiarAlPortapapeles(m)) {
                   Haptics.notificationAsync(
                     Haptics.NotificationFeedbackType.Success
                   );
@@ -532,7 +578,7 @@ export default function ChatScreen() {
               style={styles.opcion}
             >
               <Ionicons name="copy-outline" size={20} color={tema.texto2} />
-              <Text style={styles.opcionTexto}>Copiar texto</Text>
+              <Text style={styles.opcionTexto}>Copiar</Text>
             </PressableScale>
           ) : null}
           {tocado?.mio ? (
@@ -550,10 +596,7 @@ export default function ChatScreen() {
         </View>
       </HojaInferior>
 
-      <MediaViewer
-        media={viendo ? { url: viendo, tipo: "imagen" } : null}
-        onClose={() => setViendo(null)}
-      />
+      <MediaViewer media={viendo} onClose={() => setViendo(null)} />
     </KeyboardAvoidingView>
   );
 }
@@ -574,7 +617,7 @@ function Burbuja({
   destacado?: boolean;
   conNombre: boolean;
   onMantener: () => void;
-  onVerFoto: (url: string) => void;
+  onVerFoto: (media: { url: string; tipo: string }) => void;
 }) {
   const mio = mensaje.mio;
   return (
@@ -594,20 +637,32 @@ function Burbuja({
 
       {mensaje.respondeA ? (
         <View style={[styles.cita, mio ? styles.citaMia : styles.citaAjena]}>
-          <Text style={[styles.citaAutor, mio && styles.textoClaro]}>
-            {mensaje.respondeA.autorNombre}
-          </Text>
-          <Text
-            style={[styles.citaCuerpo, mio && styles.textoClaro]}
-            numberOfLines={2}
-          >
-            {mensaje.respondeA.borrado
-              ? "Mensaje borrado"
-              : (mensaje.respondeA.texto ??
-                (mensaje.respondeA.fotos === 1
-                  ? "📷 Foto"
-                  : `📷 ${mensaje.respondeA.fotos} fotos`))}
-          </Text>
+          <View style={styles.crece}>
+            <Text style={[styles.citaAutor, mio && styles.textoClaro]}>
+              {mensaje.respondeA.autorNombre}
+            </Text>
+            <Text
+              style={[styles.citaCuerpo, mio && styles.textoClaro]}
+              numberOfLines={2}
+            >
+              {mensaje.respondeA.borrado
+                ? "Mensaje borrado"
+                : (mensaje.respondeA.texto ??
+                  etiquetaDeAdjuntos(
+                    mensaje.respondeA.miniatura?.tipo,
+                    mensaje.respondeA.fotos
+                  ))}
+            </Text>
+          </View>
+          {/* La miniatura de lo citado, como en WhatsApp: "📷 Foto" no dice
+              cuál de todas. */}
+          {mensaje.respondeA.miniatura ? (
+            <MiniaturaAdjunto
+              url={mensaje.respondeA.miniatura.url}
+              tipo={mensaje.respondeA.miniatura.tipo}
+              lado={36}
+            />
+          ) : null}
         </View>
       ) : null}
 
@@ -622,19 +677,30 @@ function Burbuja({
               {mensaje.fotos.map((f) => (
                 <PressableScale
                   key={f.id}
-                  onPress={() => onVerFoto(f.url)}
+                  onPress={() => onVerFoto({ url: f.url, tipo: f.tipo })}
                   onLongPress={onMantener}
                   style={styles.fotoCaja}
                 >
                   {/* Medidas fijas y no porcentajes: adentro de una burbuja
                       que se mide por su contenido, un `100%` no tiene contra
                       qué resolverse —quedaba de ancho cero y alto estirado—. */}
-                  <Image
-                    source={{ uri: f.url }}
-                    style={
-                      mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola
-                    }
-                  />
+                  {f.tipo === "video" ? (
+                    <View
+                      style={[
+                        mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola,
+                        styles.videoCaja,
+                      ]}
+                    >
+                      <Ionicons name="play" size={36} color="#fff" />
+                    </View>
+                  ) : (
+                    <Image
+                      source={{ uri: f.url }}
+                      style={
+                        mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola
+                      }
+                    />
+                  )}
                 </PressableScale>
               ))}
             </View>
@@ -651,6 +717,29 @@ function Burbuja({
         {horaDeMensaje(mensaje.createdAt)}
       </Text>
     </PressableScale>
+  );
+}
+
+/** La miniatura chica de una foto o un video, para las citas. */
+function MiniaturaAdjunto({
+  url,
+  tipo,
+  lado,
+}: {
+  url: string;
+  tipo: string;
+  lado: number;
+}) {
+  const caja = { width: lado, height: lado };
+  if (tipo === "video") {
+    return (
+      <View style={[styles.miniaturaCita, styles.videoCaja, caja]}>
+        <Ionicons name="play" size={lado / 2} color="#fff" />
+      </View>
+    );
+  }
+  return (
+    <Image source={{ uri: url }} style={[styles.miniaturaCita, caja]} />
   );
 }
 
@@ -722,12 +811,23 @@ const styles = StyleSheet.create({
   horaMia: { color: "rgba(255,255,255,0.75)" },
 
   cita: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     borderLeftWidth: 3,
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
     marginBottom: 4,
   },
+  /* Un video no tiene imagen sin reproducirlo: un recuadro oscuro con el
+     triángulo es lo que todo el mundo lee como "esto se reproduce". */
+  videoCaja: {
+    backgroundColor: "rgba(20,40,25,0.85)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  miniaturaCita: { borderRadius: 6, overflow: "hidden", backgroundColor: tema.lienzo },
   citaMia: {
     borderLeftColor: "rgba(255,255,255,0.7)",
     backgroundColor: "rgba(255,255,255,0.15)",

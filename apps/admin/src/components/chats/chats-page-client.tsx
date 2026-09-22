@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { FILA_MOVIL } from "@/components/shared/lista-movil";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { aca } from "@/lib/filtros-url";
+import { Play } from "lucide-react";
 import { ChatForm } from "./chat-form";
 import { fechaRelativaCorta } from "./formato";
 
@@ -42,7 +43,7 @@ interface MensajeEncontrado {
   mio: boolean;
   texto: string | null;
   createdAt: string;
-  foto: { id: string; url: string; nombre: string | null } | null;
+  foto: { id: string; url: string; nombre: string | null; tipo: string } | null;
   fotos: number;
 }
 
@@ -210,7 +211,11 @@ export function ChatsPageClient({
                     href={`/dashboard/chats/${m.chatId}?mensaje=${m.id}&from=${aca()}`}
                     className={`${FILA_MOVIL} bg-card`}
                   >
-                    {m.foto ? (
+                    {m.foto?.tipo === "video" ? (
+                      <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-foreground/80 text-background">
+                        <Play className="h-4 w-4 fill-current" />
+                      </span>
+                    ) : m.foto ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={m.foto.url}
@@ -235,7 +240,9 @@ export function ChatsPageClient({
                           ? conMarca(m.texto, busqueda.trim())
                           : m.foto?.nombre
                             ? conMarca(m.foto.nombre, busqueda.trim())
-                            : "📷 Foto"}
+                            : m.foto?.tipo === "video"
+                              ? "🎥 Video"
+                              : "📷 Foto"}
                       </span>
                     </span>
                   </Link>

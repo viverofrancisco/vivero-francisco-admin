@@ -143,7 +143,11 @@ export default function ChatsListScreen() {
                     estiloExterno={styles.ancho}
                     style={FILA_LISTA}
                   >
-                    {m.foto ? (
+                    {m.foto?.tipo === "video" ? (
+                      <View style={[styles.fotoEncontrada, styles.videoCaja]}>
+                        <Ionicons name="play" size={18} color="#fff" />
+                      </View>
+                    ) : m.foto ? (
                       <Image
                         source={{ uri: m.foto.url }}
                         style={styles.fotoEncontrada}
@@ -176,7 +180,9 @@ export default function ChatsListScreen() {
                         numberOfLines={2}
                       >
                         {(m.mio ? "Tú: " : `${m.autorNombre}: `) +
-                          (m.texto ?? m.foto?.nombre ?? "📷 Foto")}
+                          (m.texto ??
+                            m.foto?.nombre ??
+                            (m.foto?.tipo === "video" ? "🎥 Video" : "📷 Foto"))}
                       </Text>
                     </View>
                   </PressableScale>
@@ -293,6 +299,11 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 8,
     backgroundColor: tema.lienzo,
+  },
+  videoCaja: {
+    backgroundColor: "rgba(20,40,25,0.85)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
   vacioTitulo: { color: tema.texto },
