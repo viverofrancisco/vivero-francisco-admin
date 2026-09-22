@@ -31,6 +31,12 @@ export default function PersonalTabsLayout() {
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((res) => {
       const data = res.notification.request.content.data ?? {};
+      // Un aviso de chat abre el chat; el resto, la visita.
+      const chatId = data.chatId;
+      if (typeof chatId === "string") {
+        router.push(`/(personal)/chats/${chatId}`);
+        return;
+      }
       const visitaId = data.visitaId;
       if (typeof visitaId !== "string") return;
       router.push(`/(personal)/visitas/${visitaId}`);
@@ -87,6 +93,18 @@ export default function PersonalTabsLayout() {
           ),
         }}
       />
+      {/* Chats: **para todos**, jardinero incluido. Es de las dos cosas que se
+          abren todos los días, así que va en la barra y no adentro de Más. */}
+      <Tabs.Screen
+        name="chats"
+        options={{
+          title: "Chats",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
       {/* Órdenes e Informes van **en la barra**: son dos de las cosas que la
           oficina abre todos los días —cuánto se le debe a quién, qué informe
           salió— y estaban a dos toques adentro de Más, que es donde se guarda
