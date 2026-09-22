@@ -546,7 +546,7 @@ export async function borrarMensaje(viewer: Viewer, mensajeId: string) {
   }
   await ensureMiembro(viewer, mensaje.chatId);
   if (mensaje.autorId !== viewer.id && viewer.role !== "ADMIN") {
-    throw new ForbiddenError("Solo podés borrar tus propios mensajes.");
+    throw new ForbiddenError("Solo puedes borrar tus propios mensajes.");
   }
   await prisma.chatMensaje.update({
     where: { id: mensajeId },

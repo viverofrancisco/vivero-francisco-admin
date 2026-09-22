@@ -822,7 +822,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   // Rojo y no ámbar: es lo único que impide guardar, y el ámbar de la casa se
-  // usa para "mirá esto", no para "esto te frena".
+  // usa para "mira esto", no para "esto te frena".
   faltaTarea: { color: tema.rojo, fontWeight: "600" },
   miniaturaCaja: { width: 52, height: 52, borderRadius: 8, overflow: "hidden" },
   miniatura: { width: "100%", height: "100%", backgroundColor: "#eee" },

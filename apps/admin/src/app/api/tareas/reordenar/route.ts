@@ -5,7 +5,7 @@ import { reordenarTareas } from "@/lib/services/tarea.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 /**
- * Se manda la lista entera, no "subí esta una". Ver `reordenarTareas`.
+ * Se manda la lista entera, no "sube esta una". Ver `reordenarTareas`.
  */
 const reordenarSchema = z.object({
   ids: z.array(z.string().min(1)).min(1).max(500),

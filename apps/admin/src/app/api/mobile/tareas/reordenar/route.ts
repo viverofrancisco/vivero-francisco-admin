@@ -8,9 +8,9 @@ import {
 } from "@/lib/mobile/route-helpers";
 
 /**
- * El acomodo a mano: se manda **la lista entera**, no "subí esta una".
+ * El acomodo a mano: se manda **la lista entera**, no "sube esta una".
  *
- * Con dos pantallas moviendo al mismo tiempo, "subí esta" deja dos tareas en el
+ * Con dos pantallas moviendo al mismo tiempo, "sube esta" deja dos tareas en el
  * mismo lugar; mandando toda la lista, la última en guardar define un orden
  * completo y coherente. Viaja además el modo —por omisión PERSONALIZADO, que es
  * lo que quiso quien movió las filas—, así acomodar y elegir cómo se ve la

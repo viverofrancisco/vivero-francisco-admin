@@ -4,15 +4,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { InputFlotante } from "@/components/ui/input-flotante";
 import { Search } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 interface Persona {
@@ -97,25 +91,45 @@ export function ChatForm({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent pantallaCompletaEnMovil className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{chat ? "Editar chat" : "Nuevo chat"}</DialogTitle>
-        </DialogHeader>
+      <DialogContent
+        pantallaCompletaEnMovil
+        showCloseButton={false}
+        className="gap-0 sm:max-w-lg"
+      >
+        {/* Cancelar a la izquierda y la acción a la derecha, arriba y no al
+            pie: es donde están en la app, y en un formulario largo el botón no
+            puede quedar a seis gestos de lo último que se escribió. */}
+        <div className="-mx-4 -mt-4 mb-4 flex flex-none items-center gap-3 border-b border-border px-3 py-2.5">
+          <Button variant="ghost" size="sm" onClick={onClose} disabled={guardando}>
+            Cancelar
+          </Button>
+          <DialogTitle className="flex-1 text-center text-base">
+            {chat ? "Editar chat" : "Nuevo chat"}
+          </DialogTitle>
+          <Button
+            size="sm"
+            onClick={guardar}
+            disabled={guardando || !nombre.trim()}
+          >
+            {guardando ? "Guardando..." : chat ? "Guardar" : "Crear"}
+          </Button>
+        </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
-          <div className="space-y-1.5">
-            <Label htmlFor="nombre-chat">Nombre</Label>
-            <Input
-              id="nombre-chat"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder="Cuadrilla 1, Oficina, Urgencias..."
-              maxLength={80}
-            />
-          </div>
+          <InputFlotante
+            id="nombre-chat"
+            label="Nombre"
+            required
+            value={nombre}
+            onChange={setNombre}
+            placeholder="Cuadrilla 1, Oficina, Urgencias..."
+            maxLength={80}
+          />
 
           <div className="space-y-1.5">
-            <Label>Miembros</Label>
+            <p className="px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Miembros
+            </p>
             {personas === null ? (
               <p className="text-sm text-muted-foreground">Cargando...</p>
             ) : personas.length === 0 ? (
@@ -167,14 +181,6 @@ export function ChatForm({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={guardando}>
-            Cancelar
-          </Button>
-          <Button onClick={guardar} disabled={guardando}>
-            {guardando ? "Guardando..." : chat ? "Guardar" : "Crear chat"}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

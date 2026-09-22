@@ -252,7 +252,7 @@ export async function softDeleteTarea(viewer: Viewer, id: string) {
 /**
  * Renumera el catálogo entero con el orden recibido.
  *
- * Recibe **todos** los ids y no "subí este uno": mover una fila es intercambiar
+ * Recibe **todos** los ids y no "sube este uno": mover una fila es intercambiar
  * dos números, y hacerlo de a un extremo deja la lista con dos tareas en el
  * mismo lugar si dos pestañas mueven a la vez. Se reescribe la lista completa,
  * de a diez, y el resultado no depende de en qué estado estaba.

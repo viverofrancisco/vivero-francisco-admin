@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { Campo, PieDeFormulario, Titulo } from "@/components/ui/Formulario";
+import { Campo, Titulo } from "@/components/ui/Formulario";
 import type { ChatDetalle } from "@/lib/chats";
 import { tema } from "@/lib/tema";
 
@@ -32,6 +33,7 @@ const ROL: Record<string, string> = {
 export default function ChatFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const editando = Boolean(id);
 
   const [nombre, setNombre] = useState("");
@@ -114,6 +116,30 @@ export default function ChatFormScreen() {
 
   return (
     <View style={styles.pantalla}>
+      {/* Encabezado propio, sin el nativo: el de la pila decía "‹ index" y
+          repetía el título. Cancelar a la izquierda y la acción a la derecha,
+          que es donde el pulgar espera cada una y donde están siempre a la
+          vista —un formulario largo no puede tener el botón a seis gestos de
+          lo último que se escribió—. */}
+      <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
+        <PressableScale onPress={() => router.back()} style={styles.cancelar}>
+          <Text style={styles.cancelarTexto}>Cancelar</Text>
+        </PressableScale>
+        <Text style={styles.titulo}>{editando ? "Editar chat" : "Nuevo chat"}</Text>
+        <PressableScale
+          onPress={guardar}
+          disabled={guardando || !nombre.trim()}
+          style={[
+            styles.accion,
+            (guardando || !nombre.trim()) && styles.apagado,
+          ]}
+        >
+          <Text style={styles.accionTexto}>
+            {guardando ? "Guardando…" : editando ? "Guardar" : "Crear"}
+          </Text>
+        </PressableScale>
+      </View>
+
       <ScrollView contentContainerStyle={styles.cuerpo}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -182,21 +208,39 @@ export default function ChatFormScreen() {
           </>
         )}
       </ScrollView>
-
-      <PieDeFormulario
-        etiqueta={editando ? "Guardar" : "Crear chat"}
-        onPress={guardar}
-        cargando={guardando}
-        deshabilitado={!nombre.trim()}
-      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: tema.fondo },
+  cabecera: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingBottom: 10,
+    backgroundColor: tema.superficie,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: tema.linea,
+  },
+  titulo: { flex: 1, fontSize: 17, fontWeight: "700", color: tema.texto, textAlign: "center" },
+  cancelar: { paddingVertical: 6, paddingRight: 8 },
+  cancelarTexto: { color: tema.texto2, fontSize: 15, fontWeight: "600" },
+  accion: {
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: tema.verde,
+  },
+  accionTexto: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  apagado: { opacity: 0.4 },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
-  cuerpo: { padding: 16, gap: 12, paddingBottom: 32 },
+  // Sin `gap`: `Campo` y `Titulo` ya traen su propio margen, y sumarlos dejaba
+  // cuarenta píxeles de blanco entre el nombre y la lista.
+  cuerpo: { padding: 16, paddingBottom: 32 },
   ancho: { alignSelf: "stretch" },
   buscador: {
     flexDirection: "row",

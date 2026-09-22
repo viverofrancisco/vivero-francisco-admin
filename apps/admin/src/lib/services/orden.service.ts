@@ -398,7 +398,7 @@ async function validarLineas(
     // una visita tampoco (`visitaProductoId`).
     if (!l.productoId) {
       throw new ValidationError(
-        `"${l.descripcion}" no está vinculada a un producto del catálogo. Creá el producto y agregalo desde ahí.`
+        `"${l.descripcion}" no está vinculada a un producto del catálogo. Crea el producto y agrégalo desde ahí.`
       );
     }
   }

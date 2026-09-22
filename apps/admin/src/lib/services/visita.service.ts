@@ -306,7 +306,7 @@ export async function removeVisitaMediaMuchas(
   });
   if (suyas.length !== mediaIds.length) {
     throw new NotFoundError(
-      "Alguno de los archivos no existe o no lo subiste vos.",
+      "Alguno de los archivos no existe o no lo subiste tú.",
     );
   }
 
@@ -353,7 +353,7 @@ export async function etiquetarVisitaMediaMuchas(
   });
   if (suyas.length !== ids.length) {
     throw new NotFoundError(
-      "Alguno de los archivos no existe o no lo subiste vos.",
+      "Alguno de los archivos no existe o no lo subiste tú.",
     );
   }
 

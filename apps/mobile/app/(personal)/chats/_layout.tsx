@@ -7,7 +7,9 @@ export default function ChatsLayout() {
       {/* La conversación pone su propio encabezado: el nombre del chat y
           quiénes están, que es lo que hace falta ahí adentro. */}
       <Stack.Screen name="[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="nuevo" options={{ title: "Nuevo chat" }} />
+      {/* Sin encabezado nativo: la pantalla pone el suyo, con Cancelar a la
+          izquierda y Crear a la derecha. El de la pila decía "‹ index". */}
+      <Stack.Screen name="nuevo" options={{ headerShown: false }} />
     </Stack>
   );
 }

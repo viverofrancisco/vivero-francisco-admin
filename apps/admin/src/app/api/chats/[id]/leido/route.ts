@@ -3,7 +3,7 @@ import { viewerFromSession } from "@/lib/auth-helpers";
 import { marcarLeido } from "@/lib/services/chat.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
-/** Abrí el chat: hasta acá leí. */
+/** Abrió el chat: hasta aquí leyó. */
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }

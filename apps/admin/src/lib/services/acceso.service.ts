@@ -403,7 +403,7 @@ export function buscarCuentaPorIdentificador(identificador: string) {
  * **Revoca las demás sesiones.** El motivo más común para cambiar una
  * contraseña es que alguien más la sabía; dejar abiertas las sesiones que esa
  * persona tenga sería cambiarla para nada. La del teléfono que la cambia se
- * conserva —si no, cambiarla te echaría a vos—.
+ * conserva —si no, cambiarla te echaría a ti—.
  */
 export async function cambiarContrasenaPropia(
   userId: string,

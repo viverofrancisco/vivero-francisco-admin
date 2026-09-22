@@ -163,7 +163,7 @@ export async function pushPedirCalificacion(visitaId: string): Promise<void> {
 /**
  * Mensaje nuevo: **a todos los del chat menos a quien lo escribió**.
  *
- * El cuerpo es el mensaje, no "tenés un mensaje nuevo": la mitad de las veces
+ * El cuerpo es el mensaje, no "tienes un mensaje nuevo": la mitad de las veces
  * con leer la notificación alcanza y no hay que abrir nada. Una foto sin texto
  * se anuncia como foto, que es lo que es.
  */
