@@ -13,12 +13,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MediaViewer } from "@/components/ui/media-viewer";
 import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   ChevronLeft,
+  Copy,
   ImageIcon,
   MoreVertical,
   Reply,
   Send,
   SquarePen,
+  Trash2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -91,6 +98,8 @@ export function Conversacion({
   const [enviando, setEnviando] = useState(false);
   const [editando, setEditando] = useState(false);
   const [viendo, setViendo] = useState<string | null>(null);
+  /** El mensaje que alguien mantuvo apretado, en el teléfono. */
+  const [tocado, setTocado] = useState<MensajeEnPantalla | null>(null);
 
   const scroll = useRef<HTMLDivElement>(null);
   const archivos = useRef<HTMLInputElement>(null);
@@ -355,6 +364,7 @@ export function Conversacion({
                 onCopiar={() => m.texto && copiar(m.texto)}
                 onBorrar={() => borrar(m.id)}
                 onVerFoto={setViendo}
+                onMantener={() => setTocado(m)}
               />
             </div>
           );
@@ -460,6 +470,59 @@ export function Conversacion({
         />
       ) : null}
 
+      {/* Lo que se puede hacer con un mensaje, en el teléfono: mantenerlo
+          apretado abre un cajón, igual que en la app. El ⋯ es de escritorio,
+          donde hay un mouse que pasa por encima. */}
+      <Sheet open={tocado !== null} onOpenChange={(v) => !v && setTocado(null)}>
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="gap-0 rounded-t-2xl p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] md:hidden"
+        >
+          <SheetTitle className="sr-only">Acciones del mensaje</SheetTitle>
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left text-sm hover:bg-muted"
+            onClick={() => {
+              const m = tocado;
+              setTocado(null);
+              if (m) setRespondiendo(m);
+            }}
+          >
+            <Reply className="h-5 w-5 flex-none text-muted-foreground" />
+            Responder
+          </button>
+          {tocado?.texto ? (
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left text-sm hover:bg-muted"
+              onClick={() => {
+                const texto = tocado.texto ?? "";
+                setTocado(null);
+                copiar(texto);
+              }}
+            >
+              <Copy className="h-5 w-5 flex-none text-muted-foreground" />
+              Copiar texto
+            </button>
+          ) : null}
+          {tocado?.mio ? (
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left text-sm text-destructive hover:bg-muted"
+              onClick={() => {
+                const id = tocado.id;
+                setTocado(null);
+                borrar(id);
+              }}
+            >
+              <Trash2 className="h-5 w-5 flex-none" />
+              Borrar
+            </button>
+          ) : null}
+        </SheetContent>
+      </Sheet>
+
       <MediaViewer
         media={viendo ? { url: viendo, tipo: "imagen" } : null}
         onClose={() => setViendo(null)}
@@ -468,13 +531,19 @@ export function Conversacion({
   );
 }
 
+/** Cuánto hay que sostener el dedo para que aparezcan las acciones. */
+const MANTENER_MS = 400;
+
 /**
  * Un mensaje. Lo mío a la derecha en verde, lo de los demás a la izquierda en
  * blanco — la convención que todo el mundo ya sabe leer.
  *
- * Las acciones viven en un ⋯ que aparece al pasar por encima: responder,
- * copiar y, si es mío, borrar. En el teléfono está siempre, porque no hay
- * "pasar por encima".
+ * **Las acciones se abren distinto según con qué se esté mirando**: en
+ * escritorio, con el ⋯ que aparece al pasar el mouse por encima; en el
+ * teléfono, manteniendo el mensaje apretado, que es lo que hace la app y lo
+ * que hacen los dedos que vienen de WhatsApp. El ⋯ no tiene sentido ahí —no
+ * hay "pasar por encima", así que había que dejarlo visible siempre, un punto
+ * gris al costado de cada mensaje propio—.
  */
 function Burbuja({
   mensaje,
@@ -483,6 +552,7 @@ function Burbuja({
   onCopiar,
   onBorrar,
   onVerFoto,
+  onMantener,
 }: {
   mensaje: MensajeEnPantalla;
   conNombre: boolean;
@@ -490,14 +560,46 @@ function Burbuja({
   onCopiar: () => void;
   onBorrar: () => void;
   onVerFoto: (url: string) => void;
+  onMantener: () => void;
 }) {
   const mio = mensaje.mio;
+  const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function soltar() {
+    if (reloj.current) {
+      clearTimeout(reloj.current);
+      reloj.current = null;
+    }
+  }
+  // Si el mensaje se va mientras el dedo está apoyado, el temporizador
+  // quedaría corriendo contra un componente que ya no está.
+  useEffect(() => soltar, []);
+
+  const gestos = mensaje.borrado
+    ? {}
+    : {
+        onPointerDown: (e: React.PointerEvent) => {
+          // Con mouse no: ahí está el ⋯, y un clic sostenido es cómo se
+          // selecciona texto.
+          if (e.pointerType === "mouse") return;
+          soltar();
+          reloj.current = setTimeout(onMantener, MANTENER_MS);
+        },
+        onPointerUp: soltar,
+        onPointerCancel: soltar,
+        onPointerLeave: soltar,
+        // Sin esto iOS abre su propio menú de copiar encima del nuestro.
+        onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+      };
 
   return (
-    <div className={`group flex gap-1 ${mio ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`group flex gap-1 ${mio ? "justify-end" : "justify-start"}`}
+      {...gestos}
+    >
       {mio ? <Acciones mensaje={mensaje} onResponder={onResponder} onCopiar={onCopiar} onBorrar={onBorrar} /> : null}
       <div
-        className={`max-w-[85%] rounded-2xl px-2.5 py-1.5 text-sm shadow-sm sm:max-w-[70%] ${
+        className={`max-w-[85%] touch-manipulation select-none rounded-2xl px-2.5 py-1.5 text-sm shadow-sm sm:max-w-[70%] sm:select-text ${
           mio
             ? "rounded-br-md bg-primary text-primary-foreground"
             : "rounded-bl-md border border-border bg-card"
@@ -587,7 +689,7 @@ function Acciones({
   onCopiar: () => void;
   onBorrar: () => void;
 }) {
-  if (mensaje.borrado) return <span className="w-7 flex-none" aria-hidden />;
+  if (mensaje.borrado) return <span className="hidden w-7 flex-none sm:block" aria-hidden />;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -595,7 +697,9 @@ function Acciones({
           <button
             type="button"
             aria-label="Acciones del mensaje"
-            className="mt-1 h-7 w-7 flex-none self-end rounded-full text-muted-foreground opacity-100 transition-opacity hover:bg-muted sm:opacity-0 sm:group-hover:opacity-100"
+            // Solo en escritorio: en el teléfono las acciones salen
+            // manteniendo el mensaje apretado.
+            className="mt-1 hidden h-7 w-7 flex-none self-end rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100 sm:block"
           />
         }
       >
