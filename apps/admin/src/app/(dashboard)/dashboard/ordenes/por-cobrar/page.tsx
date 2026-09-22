@@ -8,7 +8,7 @@ export default async function PorCobrarRoute() {
   const ordenes = await listarOrdenesPorCobrar(viewer);
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
+    <div className="flex h-full flex-col gap-3 p-3 md:gap-6 md:p-6">
       <PorCobrarPage
         ordenes={ordenes.map((o) => ({
           ...o,

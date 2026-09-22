@@ -261,10 +261,12 @@ export function PantallaLista({
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: tema.superficie },
+  /* Compacto, como WhatsApp: lo que se vino a ver es la lista, no el aire
+     alrededor del título. Eran 16 de costado, 12 abajo y 12 de separación. */
   cabecera: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 12,
+    paddingHorizontal: 14,
+    paddingBottom: 8,
+    gap: 8,
     backgroundColor: tema.superficie,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tema.linea,
@@ -274,9 +276,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
-    minHeight: 36,
+    minHeight: 32,
   },
-  titulo: { fontSize: 26, fontWeight: "800", color: tema.texto },
+  titulo: { fontSize: 22, fontWeight: "800", color: tema.texto },
   acciones: { flexDirection: "row", alignItems: "center", gap: 8 },
 
   buscarFila: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -285,7 +287,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    height: 44,
+    height: 40,
     paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
@@ -294,8 +296,8 @@ const styles = StyleSheet.create({
   },
   buscadorTexto: { flex: 1, fontSize: 15, color: tema.texto, padding: 0 },
   botonFiltro: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: tema.linea,
@@ -399,8 +401,8 @@ export const FILA_LISTA = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: tema.linea,
     backgroundColor: tema.superficie,
@@ -427,6 +429,6 @@ export function PieDeLista({
 }
 
 const pie = StyleSheet.create({
-  caja: { paddingVertical: 18, alignItems: "center" },
+  caja: { paddingVertical: 14, alignItems: "center" },
   texto: { color: tema.texto3, fontSize: 13 },
 });

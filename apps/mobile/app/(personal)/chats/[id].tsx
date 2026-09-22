@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -68,6 +69,15 @@ export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  /**
+   * Lo que mide la barra de pestañas, para descontárselo al teclado.
+   *
+   * `KeyboardAvoidingView` no sabe que abajo hay una barra que ya ocupa su
+   * lugar, así que empuja de más: con el teclado abierto, por el alto de la
+   * barra; y con teclado físico —el simulador reporta la barrita de
+   * sugerencias como si fuera teclado— deja ese hueco blanco con todo cerrado.
+   */
+  const altoDeLasPestanas = useBottomTabBarHeight();
 
   const [chat, setChat] = useState<ChatDetalle | null>(null);
   const [mensajes, setMensajes] = useState<MensajeDeChat[]>([]);
@@ -277,6 +287,7 @@ export default function ChatScreen() {
     <KeyboardAvoidingView
       style={styles.pantalla}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={altoDeLasPestanas}
     >
       {/* El encabezado: la flecha, el nombre y quiénes están. */}
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
@@ -585,29 +596,30 @@ const styles = StyleSheet.create({
   cabecera: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 8,
-    paddingBottom: 10,
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingBottom: 8,
     backgroundColor: tema.superficie,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tema.linea,
   },
   iconoCabecera: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  titulo: { fontSize: 17, fontWeight: "700", color: tema.texto },
+  titulo: { fontSize: 16, fontWeight: "700", color: tema.texto },
   subtitulo: { fontSize: 12, color: tema.texto3 },
 
-  lista: { paddingHorizontal: 12, paddingVertical: 12, gap: 6 },
+  /* Apretado como WhatsApp: los mensajes seguidos casi se tocan —dos píxeles—
+     y lo que separa es el cambio de quién habla, no el aire. */
+  lista: { paddingHorizontal: 10, paddingVertical: 8, gap: 2 },
   cargandoMas: { paddingVertical: 16 },
   vacio: { paddingVertical: 40, alignItems: "center" },
   vacioTexto: { color: tema.texto3, textAlign: "center" },
-  // La lista está invertida, así que el separador de día también.
-  dia: { alignItems: "center", paddingVertical: 10, transform: [{ scaleY: -1 }] },
+  dia: { alignItems: "center", paddingVertical: 6 },
   diaTexto: {
     fontSize: 11,
     fontWeight: "700",
@@ -619,10 +631,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  fila: { maxWidth: "85%", transform: [{ scaleY: -1 }] },
+  // **Sin `scaleY: -1`.** `inverted` ya da vuelta cada celda por su cuenta;
+  // dar vuelta también el contenido lo dejaba espejado, con el texto al revés.
+  fila: { maxWidth: "85%" },
   aLaDerecha: { alignSelf: "flex-end" },
   aLaIzquierda: { alignSelf: "flex-start" },
-  burbuja: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8 },
+  burbuja: { borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6 },
   mia: { backgroundColor: tema.verde, borderBottomRightRadius: 4 },
   ajena: {
     backgroundColor: tema.superficie,
@@ -631,10 +645,10 @@ const styles = StyleSheet.create({
     borderColor: tema.linea,
   },
   autor: { fontSize: 12, fontWeight: "700", color: tema.verde700, marginBottom: 2 },
-  texto: { fontSize: 15, color: tema.texto, lineHeight: 20 },
+  texto: { fontSize: 15, color: tema.texto, lineHeight: 19 },
   textoClaro: { color: "#fff" },
   borrado: { fontSize: 15, fontStyle: "italic", color: tema.texto3 },
-  hora: { fontSize: 10, color: tema.texto3, alignSelf: "flex-end", marginTop: 2 },
+  hora: { fontSize: 10, color: tema.texto3, alignSelf: "flex-end", marginTop: 1 },
   horaMia: { color: "rgba(255,255,255,0.75)" },
 
   cita: {
@@ -667,8 +681,8 @@ const styles = StyleSheet.create({
   error: { color: tema.rojo, textAlign: "center", padding: 16 },
 
   barra: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     backgroundColor: tema.superficie,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: tema.linea,

@@ -264,14 +264,16 @@ export function Conversacion({
     <div className="flex h-full min-h-0 flex-col">
       {/* El encabezado, con la forma del detalle de la visita: la flecha, el
           nombre y quiénes están. */}
-      <div className="flex flex-none items-center gap-3 border-b border-border pb-3">
+      {/* Compacto, como WhatsApp: una fila baja con la flecha, el nombre y
+          quiénes están. */}
+      <div className="flex flex-none items-center gap-2 border-b border-border pb-2">
         <Link href={hrefDeVuelta(from, "/dashboard/chats")}>
           <Button variant="ghost" size="icon" aria-label="Volver">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-lg font-bold tracking-tight">
+          <h1 className="truncate text-base font-bold tracking-tight md:text-lg">
             {chat.nombre}
           </h1>
           <p className="truncate text-xs text-muted-foreground">
@@ -288,10 +290,15 @@ export function Conversacion({
       </div>
 
       {/* Los mensajes */}
+      {/* Los mensajes se apoyan **abajo**, como en WhatsApp: con pocos, el
+          hueco queda arriba y no debajo del último, que es donde uno mira. */}
       <div
         ref={scroll}
-        className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain py-4"
+        className="flex min-h-0 flex-1 flex-col justify-end overflow-y-auto overscroll-contain py-2"
       >
+        {/* Los mensajes seguidos casi se tocan: lo que separa es el cambio de
+            quién habla, no el aire entre burbujas. */}
+        <div className="space-y-0.5">
         {cursor ? (
           <div className="flex justify-center pb-2">
             <Button
@@ -339,10 +346,11 @@ export function Conversacion({
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Lo que se está por mandar */}
-      <div className="flex-none border-t border-border pt-3">
+      <div className="flex-none border-t border-border pt-2">
         {respondiendo ? (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-4 border-primary bg-muted/60 px-3 py-2">
             <div className="min-w-0 flex-1">
@@ -474,7 +482,7 @@ function Burbuja({
     <div className={`group flex gap-1 ${mio ? "justify-end" : "justify-start"}`}>
       {mio ? <Acciones mensaje={mensaje} onResponder={onResponder} onCopiar={onCopiar} onBorrar={onBorrar} /> : null}
       <div
-        className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm sm:max-w-[70%] ${
+        className={`max-w-[85%] rounded-2xl px-2.5 py-1.5 text-sm shadow-sm sm:max-w-[70%] ${
           mio
             ? "rounded-br-md bg-primary text-primary-foreground"
             : "rounded-bl-md border border-border bg-card"

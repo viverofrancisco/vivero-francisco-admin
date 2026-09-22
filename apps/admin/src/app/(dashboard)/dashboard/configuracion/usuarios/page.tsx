@@ -43,7 +43,7 @@ export default async function UsuariosPage() {
   });
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4 md:gap-6 md:p-6">
+    <div className="flex h-full flex-col gap-3 p-3 md:gap-6 md:p-6">
       {/* El botón a la altura del título, como en el resto del portal. En
           móvil se esconde detrás del ⋯, igual que las demás pantallas: al lado
           del título no entra sin partirlo en dos renglones. */}

@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
   nombre: { color: tema.texto, fontWeight: "500" },
   descripcion: { color: tema.texto3 },
   botonOrden: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: tema.linea,

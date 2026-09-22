@@ -31,10 +31,11 @@ export function ListaMovil({
   children: React.ReactNode;
 }) {
   return (
-    // `-mb-4` además del `-mx-4`: la lista también llega hasta abajo. Con el
+    // `-mb-3` además del `-mx-3`: la lista también llega hasta abajo. Con el
     // padding de la página quedaba una franja gris entre el blanco de la lista
-    // y el nav, que parecía un corte y no el final de nada.
-    <div className="-mx-4 -mb-4 flex min-h-0 flex-1 flex-col overflow-hidden border-t border-border bg-card md:hidden">
+    // y el nav, que parecía un corte y no el final de nada. Los números siguen
+    // al padding de la página, que en el teléfono es 12.
+    <div className="-mx-3 -mb-3 flex min-h-0 flex-1 flex-col overflow-hidden border-t border-border bg-card md:hidden">
       {vacia ? (
         <EmptyState message={mensajeVacio} />
       ) : (
@@ -62,4 +63,4 @@ export function ListaMovil({
  * leerse como una fila vacía. La de la primera la pone el borde del contenedor.
  */
 export const FILA_MOVIL =
-  "flex items-center gap-3 border-t border-border px-4 py-3 first:border-t-0";
+  "flex items-center gap-3 border-t border-border px-3.5 py-2.5 first:border-t-0";

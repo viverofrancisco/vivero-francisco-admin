@@ -19,7 +19,9 @@ interface PageHeaderProps {
 export function PageHeader({ title, actions }: PageHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+      {/* Más chico en el teléfono: un título de 24 al lado de una lista
+          apretada se lleva media pantalla para decir dónde estás. */}
+      <h1 className="text-xl font-bold tracking-tight md:text-2xl">{title}</h1>
       {actions && actions.length > 0 ? (
         <PageHeaderActions actions={actions} />
       ) : null}
