@@ -115,19 +115,19 @@ const navItems: NavItem[] = [
 ];
 
 /**
- * Los cinco atajos de la barra, en orden. El sexto siempre es "Más".
+ * Los cuatro atajos de la barra, en orden. El quinto siempre es "Más".
  *
  * Son los del día a día, y por eso van estos y no los del menú completo: el
  * catálogo se toca de vez en cuando —se carga un producto y no se vuelve—
  * mientras que los informes se consultan seguido. Productos sigue a un toque,
  * en "Más".
  *
- * Chats entró como quinto y no reemplazó a nadie: es lo que más veces por día
- * se abre de todo esto, y esconderlo en "Más" es pedir dos toques para lo que
- * hoy se hace por WhatsApp en uno. La barra es la misma en la app.
+ * **Chats entró y Clientes salió.** Un chat se abre muchas veces por día;
+ * a la ficha de un cliente se entra desde su visita o buscándolo, no desde
+ * abajo, y con los dos eran seis pestañas peleando por 375 px. Clientes sigue
+ * a un toque, en "Más". La barra es la misma en la app.
  */
 const HREFS_TAB = [
-  "/dashboard/clientes",
   "/dashboard/visitas",
   "/dashboard/chats",
   "/dashboard/ordenes",

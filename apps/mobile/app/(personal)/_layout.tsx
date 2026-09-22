@@ -70,15 +70,18 @@ export default function PersonalTabsLayout() {
         tabBarIconStyle: { marginBottom: -2 },
       }}
     >
-      {/* Para la oficina el orden es el del portal —Clientes, Visitas,
-          Órdenes, Informes, Más—; al jardinero, que solo tiene dos, Visitas le
-          queda primera igual. */}
+      {/* El orden es el del portal —Visitas, Chats, Órdenes, Informes, Más—.
+          **Clientes no está en la barra**: se entra a la ficha de un cliente
+          desde su visita o buscándolo, no todos los días desde abajo, y con
+          Chats adentro eran seis pestañas peleando por 375 px. Vive en Más, a
+          un toque. Al jardinero, que solo tiene dos, Visitas le queda primera
+          igual. */}
       <Tabs.Screen
         name="clientes"
         options={{
           title: "Clientes",
           href: esJardinero ? null : undefined,
-          tabBarItemStyle: esJardinero ? { display: "none" } : undefined,
+          tabBarItemStyle: { display: "none" },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),

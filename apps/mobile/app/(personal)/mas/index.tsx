@@ -24,8 +24,10 @@ interface Item {
  * el mismo producto— se veían distintos justo en la pantalla que se usa para
  * saber dónde está uno.
  *
- * Los cuatro atajos de la barra no se repiten acá: están a un toque abajo, y
- * repetirlos haría de esto una lista con todo dos veces.
+ * Los atajos de la barra no se repiten acá: están a un toque abajo, y
+ * repetirlos haría de esto una lista con todo dos veces. Clientes sí está,
+ * porque salió de la barra: se entra a la ficha de un cliente desde su visita
+ * o buscándolo, no todos los días desde abajo.
  */
 export default function MasMenuScreen() {
   const router = useRouter();
@@ -39,6 +41,12 @@ export default function MasMenuScreen() {
   const isAdminOrStaff = role === "ADMIN" || role === "STAFF";
 
   const items: Item[] = [
+    {
+      label: "Clientes",
+      icon: "people-outline",
+      href: "/(personal)/clientes",
+      visible: isAdminOrStaff,
+    },
     {
       label: "Productos",
       icon: "pricetags-outline",
