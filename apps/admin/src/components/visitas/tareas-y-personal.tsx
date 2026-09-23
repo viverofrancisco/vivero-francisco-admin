@@ -3,7 +3,10 @@
 import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Check, Clock, Smartphone } from "lucide-react";
-import { UbicacionDeMarca } from "@/components/visitas/ubicaciones-marcadas";
+import {
+  NotaDeMarcaSinConexion,
+  UbicacionDeMarca,
+} from "@/components/visitas/ubicaciones-marcadas";
 import { fechaYHora } from "@/components/visitas/formato-marca";
 import type { PersonalDeVisita, TareaHecha } from "@/lib/visita-tareas";
 
@@ -222,13 +225,14 @@ function FichaDeParte({
                   centrado con el texto por flexbox, y no por alineación de
                   línea —que con un ícono al lado de texto siempre deja un
                   píxel corrido—. */}
-              <span className="flex items-center gap-1.5">
+              <span className="flex flex-wrap items-center gap-1.5">
                 Entrada {fechaYHora(parte.entradaEl)}
                 {verUbicacion && (
                   <UbicacionDeMarca parte={parte} cual="entrada" />
                 )}
+                {verUbicacion && <NotaDeMarcaSinConexion parte={parte} cual="entrada" />}
               </span>
-              <span className="flex items-center gap-1.5">
+              <span className="flex flex-wrap items-center gap-1.5">
                 Salida{" "}
                 {parte.salidaEl ? (
                   fechaYHora(parte.salidaEl)
@@ -238,6 +242,7 @@ function FichaDeParte({
                 {verUbicacion && parte.salidaEl && (
                   <UbicacionDeMarca parte={parte} cual="salida" />
                 )}
+                {verUbicacion && <NotaDeMarcaSinConexion parte={parte} cual="salida" />}
               </span>
               <span className="text-muted-foreground">
                 Tareas:{" "}

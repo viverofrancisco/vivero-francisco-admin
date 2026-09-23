@@ -34,6 +34,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { Conectando } from "@/components/ui/Conectando";
+import { onHecho, trabajosDe, useColaDeVisitas } from "@/lib/cola-de-visitas";
+import { aplicarCola } from "@/lib/visita-con-cola";
 import { UbicacionPropiedad } from "@/components/UbicacionPropiedad";
 import { tema } from "@/lib/tema";
 import { diaEnEcuador, fechaYHora12, hoyEnEcuador } from "@/lib/hora";
@@ -63,6 +65,15 @@ export default function PersonalVisitaScreen() {
   const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const [visita, setVisita] = useState<VisitaDetail | null>(null);
   const [catalogo, setCatalogo] = useState<TareaDeCatalogo[]>([]);
+  /** Lo que se hizo en esta visita y todavía no llegó al servidor. */
+  const cola = useColaDeVisitas((s) => s.items);
+  const hidratarCola = useColaDeVisitas((s) => s.hidratar);
+  const encolar = useColaDeVisitas((s) => s.encolar);
+  const reintentar = useColaDeVisitas((s) => s.reintentar);
+  const descartar = useColaDeVisitas((s) => s.descartar);
+  useEffect(() => {
+    hidratarCola();
+  }, [hidratarCola]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [videoThumbs, setVideoThumbs] = useState<Record<string, string>>({});
@@ -135,6 +146,22 @@ export default function PersonalVisitaScreen() {
     load();
   }, [load]);
 
+  // Un trabajo de la cola que llegó: la visita como quedó, sin esperar a
+  // volver a la pantalla. Es lo que hace que el ✓ de "esperando señal" se vaya.
+  useEffect(
+    () =>
+      onHecho((visitaId, v) => {
+        if (visitaId !== id) return;
+        if (v) {
+          setVisita(v);
+          guardarVisita(v);
+        } else {
+          load();
+        }
+      }),
+    [id, load]
+  );
+
   /**
    * Las fotos sin guardar viven acá arriba, no adentro de la lista: sus botones
    * de *Guardar* y *Cancelar* son el encabezado de esta pantalla, que es lo
@@ -184,10 +211,15 @@ export default function PersonalVisitaScreen() {
     );
   }
 
+  // La visita con lo que espera en la cola puesto encima: la entrada que se
+  // marcó sin señal ya se ve marcada, y el botón ya ofrece la salida.
+  const { visita: vista, entradaEnCola, salidaEnCola, archivosEnCola } =
+    aplicarCola(visita, personalId, trabajosDe(cola, visita.id), catalogo);
+
   // Una cancelada es de solo lectura; en cualquier otra se puede cargar el
   // parte propio. **No se cierra desde acá**: decir que el trabajo está
   // terminado es mirar lo que cargaron todos, y eso se hace desde el portal.
-  const canAct = visita.estado !== "CANCELADA";
+  const canAct = vista.estado !== "CANCELADA";
   /**
    * El botón dice el próximo paso, no lo que la pantalla hace.
    *
@@ -195,7 +227,7 @@ export default function PersonalVisitaScreen() {
    * marcaran con un botón. Ahora hay tres momentos y cada uno pide algo
    * distinto: llegar, irse, y corregir después.
    */
-  const mio = (visita.personal ?? []).find((p) => p.personalId === personalId);
+  const mio = (vista.personal ?? []).find((p) => p.personalId === personalId);
 
   /**
    * Marcar entrada solo el día de la visita.
@@ -210,7 +242,7 @@ export default function PersonalVisitaScreen() {
    * el día haya cambiado: un turno que cruza la medianoche termina en una fecha
    * distinta a la de la visita, y esconderle el botón lo dejaría adentro.
    */
-  const esDeHoy = mismoDiaQueHoy(visita.fechaProgramada);
+  const esDeHoy = mismoDiaQueHoy(vista.fechaProgramada);
   /**
    * Corregir las tareas dura el día de la visita —o el día en que marcó su
    * salida, que es el mismo turno cuando cruza la medianoche—. Después, lo
@@ -236,6 +268,10 @@ export default function PersonalVisitaScreen() {
    *
    * Era una pantalla completa con un título, un renglón y un botón. Una
    * pantalla es para algo que se llena; esto es una decisión de sí o no.
+   *
+   * **Va a la cola, no al servidor.** La hora es la de este momento, según el
+   * teléfono; con señal sale en el acto y sin señal espera con su ✓. La
+   * pantalla la muestra marcada desde ya (`aplicarCola`).
    */
   async function marcarEntrada() {
     setMarcando(true);
@@ -254,27 +290,25 @@ export default function PersonalVisitaScreen() {
         return;
       }
 
-      await apiRequest(`/api/mobile/visitas/${visita!.id}/marca`, {
-        method: "POST",
-        body: {
-          tipo: "ENTRADA",
-          ubicacion: donde.estado === "ok" ? donde.ubicacion : null,
-          dispositivo: await dispositivoId(),
-        },
+      encolar({
+        tipo: "ENTRADA",
+        visitaId: visita!.id,
+        marcadaEl: new Date().toISOString(),
+        ubicacion: donde.estado === "ok" ? donde.ubicacion : null,
+        dispositivo: await dispositivoId(),
       });
-      // En el mismo momento que el dato queda guardado, no cuando termina de
+      // En el mismo momento que el dato queda anotado, no cuando termina de
       // dibujarse: una háptica que llega tarde se lee como una falla.
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setConfirmandoEntrada(false);
-      // Sin señal se marcó igual, pero se avisa: quien marcó es el único que
-      // puede salir al patio y volver a intentarlo la próxima.
+      // Sin señal de GPS se marcó igual, pero se avisa: quien marcó es el
+      // único que puede salir al patio y volver a intentarlo la próxima.
       if (donde.estado === "sin-senal") {
         Alert.alert(
           "Entrada marcada",
           "No pudimos obtener tu ubicación, así que quedó registrada sin ella."
         );
       }
-      await load();
     } catch (e) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(mensajeDeError(e, "No pudimos marcar"));
@@ -284,9 +318,9 @@ export default function PersonalVisitaScreen() {
     }
   }
 
-  const cliente = visita.cliente;
-  const personalAsignado = visita.personal ?? [];
-  const medidas = medidasDePropiedad(visita.propiedad);
+  const cliente = vista.cliente;
+  const personalAsignado = vista.personal ?? [];
+  const medidas = medidasDePropiedad(vista.propiedad);
   const { obligatorias, extras } = armarFilasDeTareas(visita, personalId);
 
   return (
@@ -353,7 +387,7 @@ export default function PersonalVisitaScreen() {
         <Section>
           {/* El número corto, que es como se nombra la visita en voz alta y
               por teléfono. El cuid de la URL no se dicta. */}
-          <Row label="Visita" value={`#${visita.numero}`} />
+          <Row label="Visita" value={`#${vista.numero}`} />
           {/* El suyo: quien ya marcó su salida ve Completada aunque la visita
               siga En curso esperando el parte de otro. Ver `estadoParaMi`. */}
           <Row
@@ -362,11 +396,11 @@ export default function PersonalVisitaScreen() {
           />
           {/* "Fecha" y no "Programada": arriba dice Estado: Programada, y la
               misma palabra dos veces seguidas parecía un error. */}
-          <Row label="Fecha" value={formatDate(visita.fechaProgramada)} />
-          {visita.fechaRealizada ? (
+          <Row label="Fecha" value={formatDate(vista.fechaProgramada)} />
+          {vista.fechaRealizada ? (
             <Row
               label="Realizada"
-              value={formatDate(visita.fechaRealizada)}
+              value={formatDate(vista.fechaRealizada)}
             />
           ) : null}
           {/* Con fecha, no solo la hora: "5:26 PM" se lee igual si se marcó
@@ -426,18 +460,18 @@ export default function PersonalVisitaScreen() {
           <Text variant="labelMedium" style={styles.sectionLabel}>
             UBICACIÓN
           </Text>
-          <UbicacionPropiedad propiedad={visita.propiedad} />
+          <UbicacionPropiedad propiedad={vista.propiedad} />
         </View>
 
         {/* Lo que hay que mantener ahí. Solo lo que alguien midió: se va
             completando con el tiempo y una fila con un guión no informa. */}
-        {medidas.length > 0 || visita.propiedad.referencia ? (
+        {medidas.length > 0 || vista.propiedad.referencia ? (
           <Section title="Propiedad">
-            {visita.propiedad.nombre ? (
-              <Row label="Nombre" value={visita.propiedad.nombre} />
+            {vista.propiedad.nombre ? (
+              <Row label="Nombre" value={vista.propiedad.nombre} />
             ) : null}
-            {visita.propiedad.referencia ? (
-              <Row label="Referencia" value={visita.propiedad.referencia} />
+            {vista.propiedad.referencia ? (
+              <Row label="Referencia" value={vista.propiedad.referencia} />
             ) : null}
             {medidas.map((m) => (
               <Row key={m.etiqueta} label={m.etiqueta} value={m.valor} />
@@ -471,16 +505,16 @@ export default function PersonalVisitaScreen() {
         ) : null}
 
         {/* Notas */}
-        {visita.notas || visita.notasIncompleto ? (
+        {vista.notas || vista.notasIncompleto ? (
           <Section
             title={
-              visita.estado === "INCOMPLETA" || visita.estado === "CANCELADA"
+              vista.estado === "INCOMPLETA" || vista.estado === "CANCELADA"
                 ? "Motivo"
                 : "Notas"
             }
           >
             <Text variant="bodyMedium" style={styles.notasText}>
-              {visita.notasIncompleto || visita.notas}
+              {vista.notasIncompleto || vista.notas}
             </Text>
           </Section>
         ) : null}
@@ -500,10 +534,13 @@ export default function PersonalVisitaScreen() {
                 marcadas para eliminar, esa línea se convierte en la barra de
                 Cancelar / Eliminar. */}
             <ArchivosVisita
-              archivos={visita.media ?? []}
+              archivos={vista.media ?? []}
+              enCola={archivosEnCola}
               catalogo={catalogo}
               cambios={cambios}
               onVer={setActiveMedia}
+              onReintentar={reintentar}
+              onDescartar={descartar}
             />
           </View>
         ) : null}
@@ -517,6 +554,15 @@ export default function PersonalVisitaScreen() {
 
       {/* Sticky actions */}
       <View style={styles.footer}>
+        {/* La marca que espera: con su ✓ mientras no hay señal, o con el
+            motivo y qué hacer si el servidor la rechazó. */}
+        {salidaEnCola ?? entradaEnCola ? (
+          <EstadoDeMarcaEnCola
+            trabajo={(salidaEnCola ?? entradaEnCola)!}
+            onReintentar={reintentar}
+            onDescartar={descartar}
+          />
+        ) : null}
         {/* Sin botón hay que decir por qué, o parece que algo se rompió. */}
         {canAct && !accion && mio ? (
           <Text style={styles.soloHoy}>
@@ -531,7 +577,7 @@ export default function PersonalVisitaScreen() {
             onPress={() =>
               accion === "Marcar entrada"
                 ? setConfirmandoEntrada(true)
-                : router.push(`/(personal)/visitas/completar/${visita.id}`)
+                : router.push(`/(personal)/visitas/completar/${vista.id}`)
             }
             style={styles.primaryBtn}
             contentStyle={styles.primaryBtnContent}
@@ -556,6 +602,49 @@ export default function PersonalVisitaScreen() {
         media={activeMedia}
         onClose={() => setActiveMedia(null)}
       />
+    </View>
+  );
+}
+
+/**
+ * Lo que dice el pie mientras una marca espera en la cola. Pendiente: un ✓ y
+ * "se envía cuando haya señal", como un mensaje del chat. Rechazada: el motivo
+ * del servidor y los dos botones, porque una marca que el servidor no aceptó
+ * no puede quedar en silencio debajo de un botón que dice otra cosa.
+ */
+function EstadoDeMarcaEnCola({
+  trabajo,
+  onReintentar,
+  onDescartar,
+}: {
+  trabajo: { id: string; tipo: string; estado: "pendiente" | "fallido"; error?: string };
+  onReintentar: (id: string) => void;
+  onDescartar: (id: string) => void;
+}) {
+  const que = trabajo.tipo === "SALIDA" ? "Salida" : "Entrada";
+  if (trabajo.estado === "pendiente") {
+    return (
+      <View style={styles.enCola}>
+        <Ionicons name="checkmark" size={16} color={tema.texto3} />
+        <Text style={styles.enColaTexto}>
+          {que} marcada. Se envía cuando haya señal.
+        </Text>
+      </View>
+    );
+  }
+  return (
+    <View style={styles.enColaFallo}>
+      <Text style={styles.enColaFalloTexto}>
+        {que} rechazada: {trabajo.error ?? "no se pudo guardar"}
+      </Text>
+      <View style={styles.enColaBotones}>
+        <PressableScale onPress={() => onReintentar(trabajo.id)} hitSlop={8}>
+          <Text style={styles.enColaAccion}>Reintentar</Text>
+        </PressableScale>
+        <PressableScale onPress={() => onDescartar(trabajo.id)} hitSlop={8}>
+          <Text style={styles.enColaAccion}>Descartar</Text>
+        </PressableScale>
+      </View>
     </View>
   );
 }
@@ -744,6 +833,18 @@ function tipoLabel(tipo: string): string {
 
 
 const styles = StyleSheet.create({
+  enCola: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingBottom: 8,
+  },
+  enColaTexto: { fontSize: 13, color: tema.texto3 },
+  enColaFallo: { gap: 4, paddingBottom: 8 },
+  enColaFalloTexto: { fontSize: 13, color: tema.rojo, textAlign: "center" },
+  enColaBotones: { flexDirection: "row", justifyContent: "center", gap: 20 },
+  enColaAccion: { fontSize: 13, fontWeight: "700", color: tema.rojo, textDecorationLine: "underline" },
   container: { flex: 1, backgroundColor: "#fff" },
   scroll: { paddingHorizontal: 16, paddingBottom: 32 },
   center: {

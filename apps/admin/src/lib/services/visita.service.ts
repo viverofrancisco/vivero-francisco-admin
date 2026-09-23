@@ -445,9 +445,22 @@ export async function addVisitaMedia(
   // Con la lista vacía igual devuelve lo que hay: se lo llama también cuando la
   // tanda era solo borrar, y responder `[]` ahí le diría a la pantalla que la
   // visita se quedó sin fotos.
-  if (media.length > 0) {
+  //
+  // Una clave que ya está en la visita no se agrega dos veces: la app manda
+  // la tanda de nuevo cuando la conexión se cortó sin respuesta, con las
+  // mismas claves, y eso es la misma tanda y no otra.
+  const yaEstan = new Set(
+    (
+      await prisma.visitaMedia.findMany({
+        where: { visitaId, key: { in: media.map((m) => m.key) } },
+        select: { key: true },
+      })
+    ).map((m) => m.key),
+  );
+  const nuevas = media.filter((m) => !yaEstan.has(m.key));
+  if (nuevas.length > 0) {
     await prisma.visitaMedia.createMany({
-      data: media.map((m) => ({
+      data: nuevas.map((m) => ({
         visitaId,
         key: m.key,
         url: publicUrlForKey(m.key),
@@ -488,6 +501,52 @@ export interface ContextoDeMarca {
   ubicacion?: UbicacionDeMarca;
   /** Identificador de la instalación de la app. Ver `entradaDispositivo`. */
   dispositivo?: string | null;
+  /**
+   * Cuándo se apretó el botón, según el teléfono. Sin esto la marca es
+   * **ahora**; con esto es la hora del teléfono, y se anota aparte cuándo
+   * llegó. Ver `entradaRecibidaEl` en el esquema.
+   */
+  marcadaEl?: string | Date | null;
+  /** El teléfono la marcó sin señal y la mandó después. */
+  sinConexion?: boolean | null;
+}
+
+/** Con cuánto se tolera que el reloj del teléfono vaya adelantado. */
+const TOLERANCIA_DE_RELOJ_MS = 5 * 60 * 1000;
+/** Una marca más vieja que esto no llega tarde: se inventó. */
+const MAXIMO_ATRASO_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * El instante de una marca: el que mandó el teléfono, o ahora.
+ *
+ * Del teléfono se acepta lo razonable: no del futuro —salvo unos minutos de
+ * reloj adelantado— y no de hace más de una semana. Lo demás lo decide el
+ * día de la visita, que se controla contra este instante y no contra hoy.
+ */
+function instanteDeMarca(opciones: ContextoDeMarca): Date {
+  if (!opciones.marcadaEl) return new Date();
+  const instante = new Date(opciones.marcadaEl);
+  if (Number.isNaN(instante.getTime())) {
+    throw new ValidationError("La hora de la marca no se entiende.");
+  }
+  const ahora = Date.now();
+  if (instante.getTime() > ahora + TOLERANCIA_DE_RELOJ_MS) {
+    throw new ValidationError("La hora de la marca está en el futuro. Revisa el reloj del teléfono.");
+  }
+  if (instante.getTime() < ahora - MAXIMO_ATRASO_MS) {
+    throw new ValidationError("La marca es de hace más de una semana.");
+  }
+  return instante;
+}
+
+/**
+ * Un reintento trae la misma marca: el teléfono la mandó, la conexión se
+ * cortó sin respuesta y la vuelve a mandar con la misma hora. Es la misma,
+ * no una segunda; se contesta como si hubiera entrado recién.
+ */
+function esLaMismaMarca(guardada: Date | null, opciones: ContextoDeMarca): boolean {
+  if (!guardada || !opciones.marcadaEl) return false;
+  return Math.abs(guardada.getTime() - new Date(opciones.marcadaEl).getTime()) < 1000;
 }
 
 export interface ParteDeVisitaPayload {
@@ -667,8 +726,10 @@ function ensureQuienMarca(viewer: Viewer) {
  * Quien no marcó el día que correspondía no marca después: eso lo corrige la
  * oficina con `registrarParte`, que es otra cosa y se llama distinto.
  */
-function ensureEsElDiaDeLaVisita(fechaProgramada: Date) {
-  if (!esElDiaDeHoy(fechaProgramada)) {
+function ensureEsElDiaDeLaVisita(fechaProgramada: Date, instante: Date) {
+  // Contra el instante de la marca y no contra hoy: una entrada hecha sin
+  // señal el día de la visita puede llegar recién al día siguiente.
+  if (fechaProgramada.toISOString().slice(0, 10) !== hoyISOEcuador(instante)) {
     throw new ConflictError("La entrada se marca el día de la visita.");
   }
 }
@@ -739,16 +800,22 @@ export async function marcarEntrada(
 ) {
   ensureQuienMarca(viewer);
   const { visita, asignacion } = await miAsignacion(visitaId, viewer);
-  ensureEsElDiaDeLaVisita(visita.fechaProgramada);
   if (asignacion.entradaEl) {
+    if (esLaMismaMarca(asignacion.entradaEl, opciones)) {
+      return getVisitaForViewer(visitaId, viewer);
+    }
     throw new ConflictError("Ya marcaste tu entrada en esta visita.");
   }
+  const instante = instanteDeMarca(opciones);
+  ensureEsElDiaDeLaVisita(visita.fechaProgramada, instante);
 
   await prisma.$transaction(async (tx) => {
     await tx.visitaPersonal.update({
       where: { id: asignacion.id },
       data: {
-        entradaEl: new Date(),
+        entradaEl: instante,
+        entradaRecibidaEl: new Date(),
+        entradaSinConexion: Boolean(opciones.sinConexion),
         ...columnasDeContexto("entrada", opciones),
       },
     });
@@ -793,7 +860,14 @@ export async function marcarSalida(
     throw new ConflictError("Primero marca tu entrada.");
   }
   if (asignacion.salidaEl) {
+    if (esLaMismaMarca(asignacion.salidaEl, payload)) {
+      return getVisitaForViewer(visitaId, viewer);
+    }
     throw new ConflictError("Ya marcaste tu salida en esta visita.");
+  }
+  const instante = instanteDeMarca(payload);
+  if (instante.getTime() < asignacion.entradaEl.getTime()) {
+    throw new ValidationError("La salida no puede ser antes de la entrada.");
   }
 
   const tareaIds = await tareasVivas(payload.tareaIds);
@@ -814,7 +888,9 @@ export async function marcarSalida(
     await tx.visitaPersonal.update({
       where: { id: asignacion.id },
       data: {
-        salidaEl: new Date(),
+        salidaEl: instante,
+        salidaRecibidaEl: new Date(),
+        salidaSinConexion: Boolean(payload.sinConexion),
         ...columnasDeContexto("salida", payload),
         registradoEl: new Date(),
       },

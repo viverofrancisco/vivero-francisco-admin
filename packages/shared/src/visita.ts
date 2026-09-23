@@ -105,17 +105,30 @@ export type UbicacionMarcaBody = z.infer<typeof ubicacionMarcaSchema>;
  *
  * Al salir va al menos una tarea: un parte sin ninguna no dice nada, ni para el
  * informe —que ubica las fotos por tarea— ni para la oficina.
+ *
+ * **`marcadaEl`, la excepción a "el servidor sella el momento"**: sin señal la
+ * marca se hace igual y se manda cuando vuelve la red, y ahí la única hora
+ * verdadera es la que el teléfono anotó al apretar el botón. El servidor la
+ * toma, guarda además cuándo le llegó, y sabe que un reintento con la misma
+ * hora es la misma marca y no otra. Con señal no viaja, o viaja igual a ahora.
  */
+const marcaComunSchema = {
+  ubicacion: ubicacionMarcaSchema.optional().nullable(),
+  dispositivo: z.string().max(64).optional().nullable(),
+  /** Cuándo se apretó el botón, según el teléfono, en ISO. */
+  marcadaEl: z.string().datetime({ offset: true }).optional(),
+  /** El teléfono la marcó sin señal y la mandó después. */
+  sinConexion: z.boolean().optional(),
+};
+
 export const marcaVisitaSchema = z.discriminatedUnion("tipo", [
   z.object({
     tipo: z.literal("ENTRADA"),
-    ubicacion: ubicacionMarcaSchema.optional().nullable(),
-    dispositivo: z.string().max(64).optional().nullable(),
+    ...marcaComunSchema,
   }),
   z.object({
     tipo: z.literal("SALIDA"),
-    ubicacion: ubicacionMarcaSchema.optional().nullable(),
-    dispositivo: z.string().max(64).optional().nullable(),
+    ...marcaComunSchema,
     tareaIds: z
       .array(z.string().min(1))
       .min(1, "Marca al menos una tarea de las que hiciste."),

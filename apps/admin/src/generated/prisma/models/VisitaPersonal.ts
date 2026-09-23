@@ -74,6 +74,10 @@ export type VisitaPersonalMinAggregateOutputType = {
   salidaSimulada: boolean | null
   entradaDispositivo: string | null
   salidaDispositivo: string | null
+  entradaRecibidaEl: Date | null
+  entradaSinConexion: boolean | null
+  salidaRecibidaEl: Date | null
+  salidaSinConexion: boolean | null
   registradoEl: Date | null
 }
 
@@ -97,6 +101,10 @@ export type VisitaPersonalMaxAggregateOutputType = {
   salidaSimulada: boolean | null
   entradaDispositivo: string | null
   salidaDispositivo: string | null
+  entradaRecibidaEl: Date | null
+  entradaSinConexion: boolean | null
+  salidaRecibidaEl: Date | null
+  salidaSinConexion: boolean | null
   registradoEl: Date | null
 }
 
@@ -120,6 +128,10 @@ export type VisitaPersonalCountAggregateOutputType = {
   salidaSimulada: number
   entradaDispositivo: number
   salidaDispositivo: number
+  entradaRecibidaEl: number
+  entradaSinConexion: number
+  salidaRecibidaEl: number
+  salidaSinConexion: number
   registradoEl: number
   _all: number
 }
@@ -163,6 +175,10 @@ export type VisitaPersonalMinAggregateInputType = {
   salidaSimulada?: true
   entradaDispositivo?: true
   salidaDispositivo?: true
+  entradaRecibidaEl?: true
+  entradaSinConexion?: true
+  salidaRecibidaEl?: true
+  salidaSinConexion?: true
   registradoEl?: true
 }
 
@@ -186,6 +202,10 @@ export type VisitaPersonalMaxAggregateInputType = {
   salidaSimulada?: true
   entradaDispositivo?: true
   salidaDispositivo?: true
+  entradaRecibidaEl?: true
+  entradaSinConexion?: true
+  salidaRecibidaEl?: true
+  salidaSinConexion?: true
   registradoEl?: true
 }
 
@@ -209,6 +229,10 @@ export type VisitaPersonalCountAggregateInputType = {
   salidaSimulada?: true
   entradaDispositivo?: true
   salidaDispositivo?: true
+  entradaRecibidaEl?: true
+  entradaSinConexion?: true
+  salidaRecibidaEl?: true
+  salidaSinConexion?: true
   registradoEl?: true
   _all?: true
 }
@@ -319,6 +343,10 @@ export type VisitaPersonalGroupByOutputType = {
   salidaSimulada: boolean | null
   entradaDispositivo: string | null
   salidaDispositivo: string | null
+  entradaRecibidaEl: Date | null
+  entradaSinConexion: boolean
+  salidaRecibidaEl: Date | null
+  salidaSinConexion: boolean
   registradoEl: Date | null
   _count: VisitaPersonalCountAggregateOutputType | null
   _avg: VisitaPersonalAvgAggregateOutputType | null
@@ -365,6 +393,10 @@ export type VisitaPersonalWhereInput = {
   salidaSimulada?: Prisma.BoolNullableFilter<"VisitaPersonal"> | boolean | null
   entradaDispositivo?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
   salidaDispositivo?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  entradaRecibidaEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
+  entradaSinConexion?: Prisma.BoolFilter<"VisitaPersonal"> | boolean
+  salidaRecibidaEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
+  salidaSinConexion?: Prisma.BoolFilter<"VisitaPersonal"> | boolean
   registradoEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   personal?: Prisma.XOR<Prisma.PersonalScalarRelationFilter, Prisma.PersonalWhereInput>
@@ -393,6 +425,10 @@ export type VisitaPersonalOrderByWithRelationInput = {
   salidaSimulada?: Prisma.SortOrderInput | Prisma.SortOrder
   entradaDispositivo?: Prisma.SortOrderInput | Prisma.SortOrder
   salidaDispositivo?: Prisma.SortOrderInput | Prisma.SortOrder
+  entradaRecibidaEl?: Prisma.SortOrderInput | Prisma.SortOrder
+  entradaSinConexion?: Prisma.SortOrder
+  salidaRecibidaEl?: Prisma.SortOrderInput | Prisma.SortOrder
+  salidaSinConexion?: Prisma.SortOrder
   registradoEl?: Prisma.SortOrderInput | Prisma.SortOrder
   visita?: Prisma.VisitaOrderByWithRelationInput
   personal?: Prisma.PersonalOrderByWithRelationInput
@@ -425,6 +461,10 @@ export type VisitaPersonalWhereUniqueInput = Prisma.AtLeast<{
   salidaSimulada?: Prisma.BoolNullableFilter<"VisitaPersonal"> | boolean | null
   entradaDispositivo?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
   salidaDispositivo?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  entradaRecibidaEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
+  entradaSinConexion?: Prisma.BoolFilter<"VisitaPersonal"> | boolean
+  salidaRecibidaEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
+  salidaSinConexion?: Prisma.BoolFilter<"VisitaPersonal"> | boolean
   registradoEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
   visita?: Prisma.XOR<Prisma.VisitaScalarRelationFilter, Prisma.VisitaWhereInput>
   personal?: Prisma.XOR<Prisma.PersonalScalarRelationFilter, Prisma.PersonalWhereInput>
@@ -453,6 +493,10 @@ export type VisitaPersonalOrderByWithAggregationInput = {
   salidaSimulada?: Prisma.SortOrderInput | Prisma.SortOrder
   entradaDispositivo?: Prisma.SortOrderInput | Prisma.SortOrder
   salidaDispositivo?: Prisma.SortOrderInput | Prisma.SortOrder
+  entradaRecibidaEl?: Prisma.SortOrderInput | Prisma.SortOrder
+  entradaSinConexion?: Prisma.SortOrder
+  salidaRecibidaEl?: Prisma.SortOrderInput | Prisma.SortOrder
+  salidaSinConexion?: Prisma.SortOrder
   registradoEl?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.VisitaPersonalCountOrderByAggregateInput
   _avg?: Prisma.VisitaPersonalAvgOrderByAggregateInput
@@ -484,6 +528,10 @@ export type VisitaPersonalScalarWhereWithAggregatesInput = {
   salidaSimulada?: Prisma.BoolNullableWithAggregatesFilter<"VisitaPersonal"> | boolean | null
   entradaDispositivo?: Prisma.StringNullableWithAggregatesFilter<"VisitaPersonal"> | string | null
   salidaDispositivo?: Prisma.StringNullableWithAggregatesFilter<"VisitaPersonal"> | string | null
+  entradaRecibidaEl?: Prisma.DateTimeNullableWithAggregatesFilter<"VisitaPersonal"> | Date | string | null
+  entradaSinConexion?: Prisma.BoolWithAggregatesFilter<"VisitaPersonal"> | boolean
+  salidaRecibidaEl?: Prisma.DateTimeNullableWithAggregatesFilter<"VisitaPersonal"> | Date | string | null
+  salidaSinConexion?: Prisma.BoolWithAggregatesFilter<"VisitaPersonal"> | boolean
   registradoEl?: Prisma.DateTimeNullableWithAggregatesFilter<"VisitaPersonal"> | Date | string | null
 }
 
@@ -503,6 +551,10 @@ export type VisitaPersonalCreateInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
@@ -531,6 +583,10 @@ export type VisitaPersonalUncheckedCreateInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
@@ -551,6 +607,10 @@ export type VisitaPersonalUpdateInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
@@ -579,6 +639,10 @@ export type VisitaPersonalUncheckedUpdateInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
@@ -603,6 +667,10 @@ export type VisitaPersonalCreateManyInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
 }
 
@@ -622,6 +690,10 @@ export type VisitaPersonalUpdateManyMutationInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -645,6 +717,10 @@ export type VisitaPersonalUncheckedUpdateManyInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -683,6 +759,10 @@ export type VisitaPersonalCountOrderByAggregateInput = {
   salidaSimulada?: Prisma.SortOrder
   entradaDispositivo?: Prisma.SortOrder
   salidaDispositivo?: Prisma.SortOrder
+  entradaRecibidaEl?: Prisma.SortOrder
+  entradaSinConexion?: Prisma.SortOrder
+  salidaRecibidaEl?: Prisma.SortOrder
+  salidaSinConexion?: Prisma.SortOrder
   registradoEl?: Prisma.SortOrder
 }
 
@@ -715,6 +795,10 @@ export type VisitaPersonalMaxOrderByAggregateInput = {
   salidaSimulada?: Prisma.SortOrder
   entradaDispositivo?: Prisma.SortOrder
   salidaDispositivo?: Prisma.SortOrder
+  entradaRecibidaEl?: Prisma.SortOrder
+  entradaSinConexion?: Prisma.SortOrder
+  salidaRecibidaEl?: Prisma.SortOrder
+  salidaSinConexion?: Prisma.SortOrder
   registradoEl?: Prisma.SortOrder
 }
 
@@ -738,6 +822,10 @@ export type VisitaPersonalMinOrderByAggregateInput = {
   salidaSimulada?: Prisma.SortOrder
   entradaDispositivo?: Prisma.SortOrder
   salidaDispositivo?: Prisma.SortOrder
+  entradaRecibidaEl?: Prisma.SortOrder
+  entradaSinConexion?: Prisma.SortOrder
+  salidaRecibidaEl?: Prisma.SortOrder
+  salidaSinConexion?: Prisma.SortOrder
   registradoEl?: Prisma.SortOrder
 }
 
@@ -957,6 +1045,10 @@ export type VisitaPersonalCreateWithoutAddedByInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
@@ -983,6 +1075,10 @@ export type VisitaPersonalUncheckedCreateWithoutAddedByInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
@@ -1013,6 +1109,10 @@ export type VisitaPersonalCreateWithoutRemovedByInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
@@ -1039,6 +1139,10 @@ export type VisitaPersonalUncheckedCreateWithoutRemovedByInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
@@ -1092,6 +1196,10 @@ export type VisitaPersonalScalarWhereInput = {
   salidaSimulada?: Prisma.BoolNullableFilter<"VisitaPersonal"> | boolean | null
   entradaDispositivo?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
   salidaDispositivo?: Prisma.StringNullableFilter<"VisitaPersonal"> | string | null
+  entradaRecibidaEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
+  entradaSinConexion?: Prisma.BoolFilter<"VisitaPersonal"> | boolean
+  salidaRecibidaEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
+  salidaSinConexion?: Prisma.BoolFilter<"VisitaPersonal"> | boolean
   registradoEl?: Prisma.DateTimeNullableFilter<"VisitaPersonal"> | Date | string | null
 }
 
@@ -1127,6 +1235,10 @@ export type VisitaPersonalCreateWithoutPersonalInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   addedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalAddedInput
@@ -1153,6 +1265,10 @@ export type VisitaPersonalUncheckedCreateWithoutPersonalInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
@@ -1199,6 +1315,10 @@ export type VisitaPersonalCreateWithoutVisitaInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
   addedBy?: Prisma.UserCreateNestedOneWithoutVisitaPersonalAddedInput
@@ -1225,6 +1345,10 @@ export type VisitaPersonalUncheckedCreateWithoutVisitaInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedCreateNestedManyWithoutVisitaPersonalInput
 }
@@ -1271,6 +1395,10 @@ export type VisitaPersonalCreateWithoutTareasInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
   visita: Prisma.VisitaCreateNestedOneWithoutPersonalInput
   personal: Prisma.PersonalCreateNestedOneWithoutVisitasInput
@@ -1298,6 +1426,10 @@ export type VisitaPersonalUncheckedCreateWithoutTareasInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
 }
 
@@ -1333,6 +1465,10 @@ export type VisitaPersonalUpdateWithoutTareasInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
@@ -1360,6 +1496,10 @@ export type VisitaPersonalUncheckedUpdateWithoutTareasInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -1382,6 +1522,10 @@ export type VisitaPersonalCreateManyAddedByInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
 }
 
@@ -1404,6 +1548,10 @@ export type VisitaPersonalCreateManyRemovedByInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
 }
 
@@ -1423,6 +1571,10 @@ export type VisitaPersonalUpdateWithoutAddedByInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
@@ -1449,6 +1601,10 @@ export type VisitaPersonalUncheckedUpdateWithoutAddedByInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
@@ -1472,6 +1628,10 @@ export type VisitaPersonalUncheckedUpdateManyWithoutAddedByInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -1491,6 +1651,10 @@ export type VisitaPersonalUpdateWithoutRemovedByInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
@@ -1517,6 +1681,10 @@ export type VisitaPersonalUncheckedUpdateWithoutRemovedByInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
@@ -1540,6 +1708,10 @@ export type VisitaPersonalUncheckedUpdateManyWithoutRemovedByInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -1562,6 +1734,10 @@ export type VisitaPersonalCreateManyPersonalInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
 }
 
@@ -1581,6 +1757,10 @@ export type VisitaPersonalUpdateWithoutPersonalInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   visita?: Prisma.VisitaUpdateOneRequiredWithoutPersonalNestedInput
   addedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalAddedNestedInput
@@ -1607,6 +1787,10 @@ export type VisitaPersonalUncheckedUpdateWithoutPersonalInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
@@ -1630,6 +1814,10 @@ export type VisitaPersonalUncheckedUpdateManyWithoutPersonalInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -1652,6 +1840,10 @@ export type VisitaPersonalCreateManyVisitaInput = {
   salidaSimulada?: boolean | null
   entradaDispositivo?: string | null
   salidaDispositivo?: string | null
+  entradaRecibidaEl?: Date | string | null
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: Date | string | null
+  salidaSinConexion?: boolean
   registradoEl?: Date | string | null
 }
 
@@ -1671,6 +1863,10 @@ export type VisitaPersonalUpdateWithoutVisitaInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   personal?: Prisma.PersonalUpdateOneRequiredWithoutVisitasNestedInput
   addedBy?: Prisma.UserUpdateOneWithoutVisitaPersonalAddedNestedInput
@@ -1697,6 +1893,10 @@ export type VisitaPersonalUncheckedUpdateWithoutVisitaInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   tareas?: Prisma.VisitaPersonalTareaUncheckedUpdateManyWithoutVisitaPersonalNestedInput
 }
@@ -1720,6 +1920,10 @@ export type VisitaPersonalUncheckedUpdateManyWithoutVisitaInput = {
   salidaSimulada?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   entradaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salidaDispositivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  entradaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  entradaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  salidaRecibidaEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salidaSinConexion?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registradoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -1774,6 +1978,10 @@ export type VisitaPersonalSelect<ExtArgs extends runtime.Types.Extensions.Intern
   salidaSimulada?: boolean
   entradaDispositivo?: boolean
   salidaDispositivo?: boolean
+  entradaRecibidaEl?: boolean
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: boolean
+  salidaSinConexion?: boolean
   registradoEl?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
@@ -1803,6 +2011,10 @@ export type VisitaPersonalSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   salidaSimulada?: boolean
   entradaDispositivo?: boolean
   salidaDispositivo?: boolean
+  entradaRecibidaEl?: boolean
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: boolean
+  salidaSinConexion?: boolean
   registradoEl?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
@@ -1830,6 +2042,10 @@ export type VisitaPersonalSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   salidaSimulada?: boolean
   entradaDispositivo?: boolean
   salidaDispositivo?: boolean
+  entradaRecibidaEl?: boolean
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: boolean
+  salidaSinConexion?: boolean
   registradoEl?: boolean
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
@@ -1857,10 +2073,14 @@ export type VisitaPersonalSelectScalar = {
   salidaSimulada?: boolean
   entradaDispositivo?: boolean
   salidaDispositivo?: boolean
+  entradaRecibidaEl?: boolean
+  entradaSinConexion?: boolean
+  salidaRecibidaEl?: boolean
+  salidaSinConexion?: boolean
   registradoEl?: boolean
 }
 
-export type VisitaPersonalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "personalId" | "addedAt" | "addedById" | "removedAt" | "removedById" | "entradaEl" | "salidaEl" | "entradaLat" | "entradaLng" | "entradaPrecision" | "entradaSimulada" | "salidaLat" | "salidaLng" | "salidaPrecision" | "salidaSimulada" | "entradaDispositivo" | "salidaDispositivo" | "registradoEl", ExtArgs["result"]["visitaPersonal"]>
+export type VisitaPersonalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "visitaId" | "personalId" | "addedAt" | "addedById" | "removedAt" | "removedById" | "entradaEl" | "salidaEl" | "entradaLat" | "entradaLng" | "entradaPrecision" | "entradaSimulada" | "salidaLat" | "salidaLng" | "salidaPrecision" | "salidaSimulada" | "entradaDispositivo" | "salidaDispositivo" | "entradaRecibidaEl" | "entradaSinConexion" | "salidaRecibidaEl" | "salidaSinConexion" | "registradoEl", ExtArgs["result"]["visitaPersonal"]>
 export type VisitaPersonalInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   visita?: boolean | Prisma.VisitaDefaultArgs<ExtArgs>
   personal?: boolean | Prisma.PersonalDefaultArgs<ExtArgs>
@@ -1951,6 +2171,23 @@ export type $VisitaPersonalPayload<ExtArgs extends runtime.Types.Extensions.Inte
      */
     entradaDispositivo: string | null
     salidaDispositivo: string | null
+    /**
+     * *
+     *    * Cuándo **llegó** la marca al servidor, y si el teléfono la hizo sin señal.
+     *    *
+     *    * `entradaEl` es la hora de la marca. Con señal la pone el servidor; sin
+     *    * señal no hay otra forma que el teléfono la anote al apretar el botón y la
+     *    * mande cuando vuelva a tener red — si no, una entrada de las 8:05 en un
+     *    * jardín sin cobertura quedaría a la hora en que reapareció la señal. Por eso
+     *    * se guarda también cuándo llegó: con señal las dos son casi iguales; sin
+     *    * señal se separan, y esa separación es lo que la oficina mira. Es la única
+     *    * defensa contra el reloj del teléfono cambiado a mano: no bloquea, deja
+     *    * huella, igual que la ubicación.
+     */
+    entradaRecibidaEl: Date | null
+    entradaSinConexion: boolean
+    salidaRecibidaEl: Date | null
+    salidaSinConexion: boolean
     /**
      * Cuándo cargó su parte. `null` = todavía no la cargó, que es lo que la
      * visita muestra como "falta" y lo que impide darla por cerrada sola.
@@ -2406,6 +2643,10 @@ export interface VisitaPersonalFieldRefs {
   readonly salidaSimulada: Prisma.FieldRef<"VisitaPersonal", 'Boolean'>
   readonly entradaDispositivo: Prisma.FieldRef<"VisitaPersonal", 'String'>
   readonly salidaDispositivo: Prisma.FieldRef<"VisitaPersonal", 'String'>
+  readonly entradaRecibidaEl: Prisma.FieldRef<"VisitaPersonal", 'DateTime'>
+  readonly entradaSinConexion: Prisma.FieldRef<"VisitaPersonal", 'Boolean'>
+  readonly salidaRecibidaEl: Prisma.FieldRef<"VisitaPersonal", 'DateTime'>
+  readonly salidaSinConexion: Prisma.FieldRef<"VisitaPersonal", 'Boolean'>
   readonly registradoEl: Prisma.FieldRef<"VisitaPersonal", 'DateTime'>
 }
     

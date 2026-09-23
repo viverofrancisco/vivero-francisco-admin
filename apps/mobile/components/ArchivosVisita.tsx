@@ -7,6 +7,9 @@ import * as Haptics from "expo-haptics";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { apiRequest, mensajeDeError } from "@/lib/api";
+import { useColaDeVisitas } from "@/lib/cola-de-visitas";
+import { useConexion } from "@/lib/conexion";
+import type { ArchivosEnCola } from "@/lib/visita-con-cola";
 import type { VisitaMedia } from "@/lib/types";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
 import { tema } from "@/lib/tema";
@@ -154,10 +157,42 @@ export function useCambiosDeArchivos(
     setError(null);
   }, []);
 
+  /**
+   * Sin señal, la tanda entera va a la cola —lo que entra, lo que sale y lo
+   * que cambió de tarea, junto, como el `PUT`— y sale sola cuando vuelva.
+   * También si la señal se cortó a mitad del guardado: eso no es un error de
+   * la persona, es esperar.
+   */
+  const encolar = useCallback(() => {
+    useColaDeVisitas.getState().encolar({
+      tipo: "ARCHIVOS",
+      visitaId,
+      nuevas: pendientes.map(({ asset, tareaId }) => ({
+        uri: asset.uri,
+        fileName:
+          asset.fileName ?? asset.uri.split("/").pop() ?? `foto-${Date.now()}.jpg`,
+        contentType:
+          asset.mimeType ?? (asset.type === "video" ? "video/mp4" : "image/jpeg"),
+        tareaId: tareaId!,
+      })),
+      eliminar: [...quitadas],
+      etiquetar: [...etiquetas].map(([id, tareaId]) => ({ id, tareaId })),
+    });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPendientes([]);
+    setQuitadas(new Set());
+    setEtiquetas(new Map());
+    onCambio();
+  }, [etiquetas, onCambio, pendientes, quitadas, visitaId]);
+
   const guardar = useCallback(async () => {
     if (!hayCambios || guardando) return;
     if (sinTarea > 0) {
       fallar("Elige la tarea de cada foto nueva antes de guardar.");
+      return;
+    }
+    if (!useConexion.getState().enLinea) {
+      encolar();
       return;
     }
     setGuardando(true);
@@ -235,6 +270,13 @@ export function useCambiosDeArchivos(
       setEtiquetas(new Map());
       onCambio();
     } catch (e) {
+      const status = (e as { status?: unknown })?.status;
+      if (typeof status === "number" && (status === 0 || status >= 500)) {
+        // No llegamos: a la cola, que lo intenta cuando haya señal.
+        setGuardando(false);
+        encolar();
+        return;
+      }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       // Con `fallar` y no `setError`: también acá la pantalla tiene que llevar
       // el ojo hasta el mensaje, y el segundo intento fallido suele traer el
@@ -244,6 +286,7 @@ export function useCambiosDeArchivos(
       setGuardando(false);
     }
   }, [
+    encolar,
     etiquetas,
     guardando,
     hayCambios,
@@ -300,16 +343,23 @@ export function useCambiosDeArchivos(
 
 export function ArchivosVisita({
   archivos,
+  enCola = [],
   catalogo,
   cambios,
   onVer,
+  onReintentar,
+  onDescartar,
 }: {
   archivos: VisitaMedia[];
+  /** Las tandas que esperan señal para subir, con sus fotos del teléfono. */
+  enCola?: ArchivosEnCola[];
   /** El catálogo entero: cualquier tarea sirve de etiqueta. */
   catalogo: TareaDeCatalogo[];
   cambios: CambiosDeArchivos;
   /** Abrir una foto a pantalla completa. */
   onVer: (media: { url: string; tipo: string }) => void;
+  onReintentar?: (id: string) => void;
+  onDescartar?: (id: string) => void;
 }) {
   const [vista, setVista] = useState<Vista | null>(null);
   const { pendientes, quitadas, etiquetas, error, sinTarea } = cambios;
@@ -426,12 +476,54 @@ export function ArchivosVisita({
           encabezado ya lo dice, y está justo donde se acaba de tocar. */}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {archivos.length === 0 && pendientes.length === 0 ? (
+      {archivos.length === 0 && pendientes.length === 0 && enCola.length === 0 ? (
         <Text style={styles.vacio}>
           Todavía no subiste fotos. Sácalas mientras trabajas.
         </Text>
       ) : (
         <View style={styles.lista}>
+          {/* Las que esperan señal: ya están decididas, solo falta que salgan.
+              Un ✓ como el del chat; si el servidor las rechazó, el motivo y
+              qué hacer. */}
+          {enCola.map((tanda) =>
+            tanda.nuevas.map((f, i) => (
+              <View
+                key={`${tanda.id}-${i}`}
+                style={[styles.filaFoto, styles.filaConLinea]}
+              >
+                <View style={styles.miniaturaCaja}>
+                  <Image source={{ uri: f.uri }} style={styles.miniatura} />
+                </View>
+                <View style={styles.filaTexto}>
+                  <Text style={styles.filaNombre}>
+                    {nombreDeTarea(f.tareaId) ?? "Sin tarea"}
+                  </Text>
+                  {tanda.estado === "fallido" ? (
+                    <>
+                      <Text style={styles.filaFallo} numberOfLines={2}>
+                        {tanda.error ?? "No se pudo guardar"}
+                      </Text>
+                      {i === 0 ? (
+                        <View style={styles.filaAcciones}>
+                          <Pressable onPress={() => onReintentar?.(tanda.id)} hitSlop={8}>
+                            <Text style={styles.filaAccion}>Reintentar</Text>
+                          </Pressable>
+                          <Pressable onPress={() => onDescartar?.(tanda.id)} hitSlop={8}>
+                            <Text style={styles.filaAccion}>Descartar</Text>
+                          </Pressable>
+                        </View>
+                      ) : null}
+                    </>
+                  ) : (
+                    <View style={styles.filaEspera}>
+                      <Ionicons name="checkmark" size={14} color={tema.texto3} />
+                      <Text style={styles.filaPendiente}>Se sube cuando haya señal</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            ))
+          )}
           {/* Las que faltan subir van primero: son lo que acaba de pasar, y lo
               que el Guardar de arriba está esperando. */}
           {pendientes.map((p, i) => (
@@ -767,6 +859,10 @@ function FotoEnHoja({
 }
 
 const styles = StyleSheet.create({
+  filaEspera: { flexDirection: "row", alignItems: "center", gap: 4 },
+  filaFallo: { fontSize: 12, color: tema.rojo },
+  filaAcciones: { flexDirection: "row", gap: 16, marginTop: 2 },
+  filaAccion: { fontSize: 12, fontWeight: "700", color: tema.rojo, textDecorationLine: "underline" },
   contenedor: { gap: 12 },
   rotulo: {
     color: "#888",

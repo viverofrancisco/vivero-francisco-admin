@@ -5305,6 +5305,10 @@ export const VisitaPersonalScalarFieldEnum = {
   salidaSimulada: 'salidaSimulada',
   entradaDispositivo: 'entradaDispositivo',
   salidaDispositivo: 'salidaDispositivo',
+  entradaRecibidaEl: 'entradaRecibidaEl',
+  entradaSinConexion: 'entradaSinConexion',
+  salidaRecibidaEl: 'salidaRecibidaEl',
+  salidaSinConexion: 'salidaSinConexion',
   registradoEl: 'registradoEl'
 } as const
 

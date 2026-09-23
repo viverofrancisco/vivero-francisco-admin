@@ -986,6 +986,23 @@ model VisitaPersonal {
    */
   entradaDispositivo String?
   salidaDispositivo  String?
+
+  /**
+   * Cuándo **llegó** la marca al servidor, y si el teléfono la hizo sin señal.
+   *
+   * `entradaEl` es la hora de la marca. Con señal la pone el servidor; sin
+   * señal no hay otra forma que el teléfono la anote al apretar el botón y la
+   * mande cuando vuelva a tener red — si no, una entrada de las 8:05 en un
+   * jardín sin cobertura quedaría a la hora en que reapareció la señal. Por eso
+   * se guarda también cuándo llegó: con señal las dos son casi iguales; sin
+   * señal se separan, y esa separación es lo que la oficina mira. Es la única
+   * defensa contra el reloj del teléfono cambiado a mano: no bloquea, deja
+   * huella, igual que la ubicación.
+   */
+  entradaRecibidaEl  DateTime?
+  entradaSinConexion Boolean   @default(false)
+  salidaRecibidaEl   DateTime?
+  salidaSinConexion  Boolean   @default(false)
   /// Cuándo cargó su parte. `null` = todavía no la cargó, que es lo que la
   /// visita muestra como "falta" y lo que impide darla por cerrada sola.
   ///

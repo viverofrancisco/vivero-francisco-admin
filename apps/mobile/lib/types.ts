@@ -29,6 +29,14 @@ export interface ParteDeVisita {
   /** Cuándo marcó, en ISO. `null` = todavía no marcó esa punta. */
   entradaEl: string | null;
   salidaEl: string | null;
+  /**
+   * Cuándo llegó la marca al servidor, y si se hizo sin señal. Opcionales
+   * porque una copia guardada antes de que existieran no los trae.
+   */
+  entradaRecibidaEl?: string | null;
+  entradaSinConexion?: boolean;
+  salidaRecibidaEl?: string | null;
+  salidaSinConexion?: boolean;
   /** Dónde estaba al marcar. `null` = sin permiso, o sin señal. */
   entradaLat: number | null;
   entradaLng: number | null;

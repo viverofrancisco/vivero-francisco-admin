@@ -3,6 +3,8 @@ import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
+import { leerTareas, leerVisita } from "@/lib/cache-de-visitas";
+import { trabajosDe, useColaDeVisitas } from "@/lib/cola-de-visitas";
 import { ubicacionActual } from "@/lib/ubicacion";
 import type { VisitaDetail } from "@/lib/types";
 import {
@@ -28,20 +30,29 @@ export default function ParteVisitaScreen() {
   const [tareas, setTareas] = useState<TareaDeCatalogo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const cargar = useCallback(() => {
+  // Sin señal, la copia local: la visita y el catálogo de tareas que se
+  // guardaron la última vez. Sin catálogo no hay nada que tildar.
+  const cargar = useCallback(async () => {
     if (!id) return;
-    return Promise.all([
-      apiRequest<VisitaDetail>(`/api/mobile/visitas/${id}`).catch(() => null),
-      apiRequest<{ items: TareaDeCatalogo[] }>("/api/mobile/tareas").catch(
-        () => ({ items: [] as TareaDeCatalogo[] })
-      ),
-    ])
-      .then(([v, t]) => {
-        setVisita(v);
-        setTareas(t.items);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const [v, t] = await Promise.all([
+        apiRequest<VisitaDetail>(`/api/mobile/visitas/${id}`).catch(() => null),
+        apiRequest<{ items: TareaDeCatalogo[] }>("/api/mobile/tareas").catch(
+          () => null
+        ),
+      ]);
+      setVisita(v ?? (await leerVisita(id)));
+      setTareas(t?.items?.length ? t.items : ((await leerTareas()) ?? []));
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  /** La entrada o la salida que esperan en la cola cuentan como marcadas. */
+  const cola = useColaDeVisitas((s) => s.items);
+  const trabajos = trabajosDe(cola, id ?? "");
+  const entradaEnCola = trabajos.some((t) => t.tipo === "ENTRADA");
+  const salidaEnCola = trabajos.some((t) => t.tipo === "SALIDA");
 
   useEffect(() => {
     cargar();
@@ -62,7 +73,7 @@ export default function ParteVisitaScreen() {
   // diálogo en la ficha, no una pantalla. Si igual se llega acá —un aviso
   // viejo, un enlace guardado— se vuelve en vez de mostrar una pantalla que no
   // sirve para nada.
-  if (mio && !mio.entradaEl) {
+  if (mio && !mio.entradaEl && !entradaEnCola) {
     router.back();
     return null;
   }
@@ -73,7 +84,7 @@ export default function ParteVisitaScreen() {
       tareas={tareas}
       obligatorias={visita?.tareasObligatorias?.map((o) => o.tarea.id) ?? []}
       // Ya salió: lo que sigue es corregir, y eso no mueve las marcas.
-      modo={mio?.salidaEl ? "CORRECCION" : "SALIDA"}
+      modo={mio?.salidaEl || salidaEnCola ? "CORRECCION" : "SALIDA"}
       ubicacion={ubicacionActual}
       initialValues={{
         tareaIds: mio?.tareas.map((t) => t.tarea.id) ?? [],

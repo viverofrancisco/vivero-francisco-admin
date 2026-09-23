@@ -1,5 +1,38 @@
-import { MapPin, ShieldAlert } from "lucide-react";
-import { ubicacionDe, type PersonalDeVisita } from "@/lib/visita-tareas";
+import { CloudOff, MapPin, ShieldAlert } from "lucide-react";
+import {
+  notaSinConexion,
+  ubicacionDe,
+  type PersonalDeVisita,
+} from "@/lib/visita-tareas";
+import { fechaYHora } from "@/components/visitas/formato-marca";
+
+/**
+ * Una marca hecha **sin señal**: el teléfono la anotó al apretar el botón y
+ * la mandó cuando volvió la red, así que la hora es la del teléfono. Lo que
+ * se muestra al lado es cuándo llegó de verdad: con esa distancia la oficina
+ * decide si le cree. Es la única huella que deja un reloj cambiado a mano; no
+ * bloquea nada, igual que la ubicación. Cuando la marca llegó en el momento
+ * no se dibuja nada.
+ */
+export function NotaDeMarcaSinConexion({
+  parte,
+  cual,
+}: {
+  parte: PersonalDeVisita;
+  cual: "entrada" | "salida";
+}) {
+  const nota = notaSinConexion(parte, cual);
+  if (!nota) return null;
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700"
+      title={`Marcada sin conexión; llegó al servidor el ${fechaYHora(nota.recibidaEl)}`}
+    >
+      <CloudOff className="h-3 w-3" />
+      sin conexión, llegó {fechaYHora(nota.recibidaEl)}
+    </span>
+  );
+}
 
 /**
  * Dónde estaba una marca, para la oficina.

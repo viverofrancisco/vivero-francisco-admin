@@ -17,6 +17,7 @@ import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiRequest, ApiError } from "@/lib/api";
 import { dispositivoId } from "@/lib/dispositivo";
+import { useColaDeVisitas } from "@/lib/cola-de-visitas";
 import { avisarFaltaUbicacion, type ResultadoUbicacion } from "@/lib/ubicacion";
 import * as Haptics from "expo-haptics";
 import type {
@@ -147,16 +148,16 @@ export function VisitaResultForm({
       }
 
       if (modo === "SALIDA") {
-        // Irse es un solo gesto: sella el momento, guarda lo que hizo y sube
-        // lo que sacó.
-        await apiRequest<VisitaDetail>(`/api/mobile/visitas/${visitaId}/marca`, {
-          method: "POST",
-          body: {
-            tipo: "SALIDA",
-            ubicacion: donde?.estado === "ok" ? donde.ubicacion : null,
-            dispositivo: await dispositivoId(),
-            tareaIds,
-          },
+        // Irse es un solo gesto: la hora de este momento y lo que hizo, a la
+        // cola. Con señal sale en el acto; sin señal espera con su ✓ y la
+        // ficha ya la muestra marcada.
+        useColaDeVisitas.getState().encolar({
+          tipo: "SALIDA",
+          visitaId,
+          marcadaEl: new Date().toISOString(),
+          ubicacion: donde?.estado === "ok" ? donde.ubicacion : null,
+          dispositivo: await dispositivoId(),
+          tareaIds,
         });
       } else {
         // Corregir no mueve las marcas: la hora a la que se fue ya pasó.

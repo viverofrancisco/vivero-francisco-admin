@@ -63,8 +63,34 @@ export interface PersonalDeVisita extends ParteMinimo {
   /** Desde qué instalación de la app se marcó. Ver `entradaDispositivo`. */
   entradaDispositivo: string | null;
   salidaDispositivo: string | null;
+  /**
+   * Cuándo llegó la marca al servidor, y si el teléfono la hizo sin señal.
+   * Sin señal la hora de la marca es la del teléfono, y la diferencia con la
+   * llegada es lo que la oficina mira. Ver `entradaRecibidaEl` en el esquema.
+   */
+  entradaRecibidaEl?: string | Date | null;
+  entradaSinConexion?: boolean;
+  salidaRecibidaEl?: string | Date | null;
+  salidaSinConexion?: boolean;
   /** `null` = todavía no cargó su parte. */
   registradoEl: string | Date | null;
+}
+
+/**
+ * La nota de una marca hecha sin señal: cuándo llegó de verdad al servidor.
+ * `null` cuando la marca llegó en el momento, que es el caso normal y no se
+ * anota.
+ */
+export function notaSinConexion(
+  parte: PersonalDeVisita,
+  cual: "entrada" | "salida"
+): { recibidaEl: Date } | null {
+  const sinConexion =
+    cual === "entrada" ? parte.entradaSinConexion : parte.salidaSinConexion;
+  const recibida =
+    cual === "entrada" ? parte.entradaRecibidaEl : parte.salidaRecibidaEl;
+  if (!sinConexion || !recibida) return null;
+  return { recibidaEl: new Date(recibida) };
 }
 
 /**
@@ -227,6 +253,10 @@ export const TAREAS_DE_VISITA_INCLUDE = {
       salidaPrecision: true,
       salidaSimulada: true,
       salidaDispositivo: true,
+      entradaRecibidaEl: true,
+      entradaSinConexion: true,
+      salidaRecibidaEl: true,
+      salidaSinConexion: true,
       registradoEl: true,
       personal: {
         select: { id: true, nombre: true, apellido: true, tipo: true },
