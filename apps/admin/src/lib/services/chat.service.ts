@@ -4,6 +4,7 @@ import type { EstadoDeMensaje } from "@vivero/shared";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { pushChatAgregado, pushChatMensaje } from "@/lib/push/triggers";
+import { deleteObjects } from "@/lib/s3";
 
 /**
  * Los chats internos del equipo.
@@ -109,6 +110,7 @@ export async function listChats(viewer: Viewer) {
         select: {
           id: true,
           nombre: true,
+          imagenUrl: true,
           createdAt: true,
           _count: { select: { miembros: { where: { salioEl: null } } } },
           mensajes: {
@@ -148,6 +150,7 @@ export async function listChats(viewer: Viewer) {
       return {
         id: m.chat.id,
         nombre: m.chat.nombre,
+        imagenUrl: m.chat.imagenUrl,
         miembros: m.chat._count.miembros,
         sinLeer,
         ultimo: ultimo
@@ -177,6 +180,7 @@ export async function getChat(viewer: Viewer, chatId: string) {
     select: {
       id: true,
       nombre: true,
+      imagenUrl: true,
       createdAt: true,
       miembros: {
         where: { salioEl: null },
@@ -187,11 +191,24 @@ export async function getChat(viewer: Viewer, chatId: string) {
   });
   if (!chat) throw new NotFoundError("Chat no encontrado");
 
+  // Cuánto hay de cada cosa, para los renglones de la info: "Fotos y videos ·
+  // 12", "Enlaces · 3". Dos cuentas por índice; no vale la pena traerlos.
+  const [fotosYVideos, enlaces] = await Promise.all([
+    prisma.chatAdjunto.count({
+      where: { mensaje: { chatId, deletedAt: null } },
+    }),
+    prisma.chatMensaje.count({
+      where: { chatId, deletedAt: null, ...FILTRO_CON_ENLACE },
+    }),
+  ]);
+
   return {
     id: chat.id,
     nombre: chat.nombre,
+    imagenUrl: chat.imagenUrl,
     creadoEl: chat.createdAt,
     leidoEl: miembro.leidoEl,
+    medios: { fotosYVideos, enlaces },
     /** Si puede tocar el nombre y la lista de miembros. */
     puedeEditar: viewer.role === "ADMIN",
     miembros: chat.miembros.map((m) => ({
@@ -201,6 +218,83 @@ export async function getChat(viewer: Viewer, chatId: string) {
       /** Quien pregunta, para no mostrarse a sí mismo como "otro". */
       soyYo: m.user.id === viewer.id,
     })),
+  };
+}
+
+/** Un mensaje con un enlace adentro: `http(s)://` o un `www.`. */
+const FILTRO_CON_ENLACE = {
+  OR: [
+    { texto: { contains: "http://", mode: "insensitive" as const } },
+    { texto: { contains: "https://", mode: "insensitive" as const } },
+    { texto: { contains: "www.", mode: "insensitive" as const } },
+  ],
+};
+
+const REGEX_ENLACE = /\b(?:https?:\/\/|www\.)[^\s<>"')\]]+/gi;
+
+/** Los enlaces que hay en un texto, sin repetir y sin el punto final pegado. */
+export function enlacesEn(texto: string): string[] {
+  const vistos = new Set<string>();
+  for (const m of texto.match(REGEX_ENLACE) ?? []) {
+    vistos.add(m.replace(/[.,;:!?]+$/, ""));
+  }
+  return [...vistos];
+}
+
+/**
+ * Lo que se mandó en el chat, aparte de leerlo: las fotos y videos, o los
+ * mensajes con enlaces. Del más nuevo al más viejo, de a páginas, como los
+ * mensajes. Solo para quien está adentro.
+ */
+export async function mediosDelChat(
+  viewer: Viewer,
+  chatId: string,
+  opciones: { tipo: "archivos" | "enlaces"; cursor?: string; limit?: number }
+) {
+  await ensureMiembro(viewer, chatId);
+  const limit = Math.min(opciones.limit ?? 60, 200);
+
+  if (opciones.tipo === "archivos") {
+    const adjuntos = await prisma.chatAdjunto.findMany({
+      where: { mensaje: { chatId, deletedAt: null } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit + 1,
+      ...(opciones.cursor ? { cursor: { id: opciones.cursor }, skip: 1 } : {}),
+      select: {
+        id: true,
+        mensajeId: true,
+        url: true,
+        tipo: true,
+        nombre: true,
+        createdAt: true,
+      },
+    });
+    const hayMas = adjuntos.length > limit;
+    const pagina = hayMas ? adjuntos.slice(0, limit) : adjuntos;
+    return {
+      items: pagina,
+      cursor: hayMas ? (pagina[pagina.length - 1]?.id ?? null) : null,
+    };
+  }
+
+  const mensajes = await prisma.chatMensaje.findMany({
+    where: { chatId, deletedAt: null, ...FILTRO_CON_ENLACE },
+    orderBy: { createdAt: "desc" },
+    take: limit + 1,
+    ...(opciones.cursor ? { cursor: { id: opciones.cursor }, skip: 1 } : {}),
+    select: { id: true, texto: true, autorNombre: true, createdAt: true },
+  });
+  const hayMas = mensajes.length > limit;
+  const pagina = hayMas ? mensajes.slice(0, limit) : mensajes;
+  return {
+    items: pagina.map((m) => ({
+      mensajeId: m.id,
+      autorNombre: m.autorNombre,
+      texto: m.texto ?? "",
+      urls: enlacesEn(m.texto ?? ""),
+      createdAt: m.createdAt,
+    })),
+    cursor: hayMas ? (pagina[pagina.length - 1]?.id ?? null) : null,
   };
 }
 
@@ -285,12 +379,17 @@ export async function createChat(
 export async function updateChat(
   viewer: Viewer,
   chatId: string,
-  datos: { nombre?: string; miembrosIds?: string[] }
+  datos: {
+    nombre?: string;
+    miembrosIds?: string[];
+    /** La foto del grupo: una clave subida bajo el prefijo del chat, o `null` para quitarla. */
+    imagen?: { key: string; url: string } | null;
+  }
 ) {
   ensureAdmin(viewer);
   const chat = await prisma.chat.findFirst({
     where: { id: chatId, deletedAt: null },
-    select: { id: true },
+    select: { id: true, imagenKey: true },
   });
   if (!chat) throw new NotFoundError("Chat no encontrado");
 
@@ -298,6 +397,28 @@ export async function updateChat(
     const nombre = datos.nombre.trim();
     if (!nombre) throw new ValidationError("El chat necesita un nombre.");
     await prisma.chat.update({ where: { id: chatId }, data: { nombre } });
+  }
+
+  /*
+   * La foto del grupo. Solo una clave del prefijo de **este** chat: la firma
+   * se pidió por `/chats/[id]/fotos`, y aceptar cualquier clave sería dejar
+   * que un chat muestre como suya la foto de otro. La anterior se borra de R2
+   * cuando se reemplaza o se quita: nadie la tiene ya en pantalla.
+   */
+  if (datos.imagen !== undefined) {
+    if (datos.imagen && !datos.imagen.key.startsWith(`chats/${chatId}/`)) {
+      throw new ValidationError("La foto no es de este chat.");
+    }
+    await prisma.chat.update({
+      where: { id: chatId },
+      data: {
+        imagenKey: datos.imagen?.key ?? null,
+        imagenUrl: datos.imagen?.url ?? null,
+      },
+    });
+    if (chat.imagenKey && chat.imagenKey !== datos.imagen?.key) {
+      deleteObjects([chat.imagenKey]).catch(console.error);
+    }
   }
 
   if (datos.miembrosIds === undefined) return;
@@ -826,7 +947,7 @@ export async function buscarMensajes(
       createdAt: true,
       autorId: true,
       autorNombre: true,
-      chat: { select: { id: true, nombre: true } },
+      chat: { select: { id: true, nombre: true, imagenUrl: true } },
       adjuntos: { select: { id: true, url: true, nombre: true, tipo: true } },
     },
   });
@@ -841,6 +962,7 @@ export async function buscarMensajes(
       id: m.id,
       chatId: m.chat.id,
       chatNombre: m.chat.nombre,
+      chatImagenUrl: m.chat.imagenUrl,
       autorNombre: m.autorNombre,
       mio: m.autorId !== null && m.autorId === viewer.id,
       texto: m.texto,

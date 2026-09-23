@@ -12,6 +12,14 @@ import { z } from "zod";
 
 export const MAX_FOTOS_POR_MENSAJE = 10;
 
+/**
+ * La foto del grupo: una clave ya subida a R2 bajo el prefijo del chat, con
+ * su URL pública. `null` quita la que había.
+ */
+export const imagenDeChatSchema = z
+  .object({ key: z.string().min(1), url: z.string().min(1) })
+  .nullable();
+
 export const crearChatSchema = z.object({
   nombre: z.string().trim().min(1, "Ponle un nombre").max(80),
   /**
@@ -27,9 +35,14 @@ export const actualizarChatSchema = z
     nombre: z.string().trim().min(1).max(80).optional(),
     /** Reemplaza a los miembros actuales: lo que llega **es** el chat. */
     miembrosIds: z.array(z.string().min(1)).optional(),
+    /** La foto del grupo. Se sube antes con las URLs firmadas del chat. */
+    imagen: imagenDeChatSchema.optional(),
   })
   .refine(
-    (v) => v.nombre !== undefined || v.miembrosIds !== undefined,
+    (v) =>
+      v.nombre !== undefined ||
+      v.miembrosIds !== undefined ||
+      v.imagen !== undefined,
     "No hay nada que cambiar."
   );
 export type ActualizarChatBody = z.infer<typeof actualizarChatSchema>;
@@ -80,6 +93,37 @@ export const mensajesQuerySchema = z.object({
   alrededorDe: z.string().optional(),
 });
 export type MensajesQuery = z.infer<typeof mensajesQuerySchema>;
+
+/**
+ * Lo que se mandó en un chat, aparte de la conversación: las fotos y videos
+ * en una grilla, y los mensajes con enlaces en una lista. Es la forma rápida
+ * de volver a encontrar un archivo sin scrollear meses, como en WhatsApp.
+ */
+export const mediosDelChatQuerySchema = z.object({
+  tipo: z.enum(["archivos", "enlaces"]),
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(200).optional(),
+});
+export type MediosDelChatQuery = z.infer<typeof mediosDelChatQuerySchema>;
+
+/** Un archivo mandado en el chat, para la grilla. */
+export interface ArchivoDelChat {
+  id: string;
+  mensajeId: string;
+  url: string;
+  tipo: string;
+  nombre: string | null;
+  createdAt: string;
+}
+
+/** Un mensaje con enlaces, para la lista. */
+export interface EnlaceDelChat {
+  mensajeId: string;
+  autorNombre: string;
+  texto: string;
+  urls: string[];
+  createdAt: string;
+}
 
 /** Pedir las URLs firmadas para subir las fotos de un mensaje. */
 export const chatUploadUrlsSchema = z.object({

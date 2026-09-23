@@ -12,6 +12,9 @@ export default function ChatsLayout() {
       <Stack.Screen name="nuevo" options={{ headerShown: false }} />
       {/* Quién leyó un mensaje: pone su propio encabezado, como la conversación. */}
       <Stack.Screen name="info/[mensajeId]" options={{ headerShown: false }} />
+      {/* La info del chat y sus archivos, con encabezado propio también. */}
+      <Stack.Screen name="detalle/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="medios/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

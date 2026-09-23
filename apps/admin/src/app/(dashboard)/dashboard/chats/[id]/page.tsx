@@ -52,6 +52,8 @@ export default async function ChatPage({
         chat={{
           id: chat.id,
           nombre: chat.nombre,
+          imagenUrl: chat.imagenUrl,
+          medios: chat.medios,
           puedeEditar: chat.puedeEditar,
           miembros: chat.miembros,
         }}

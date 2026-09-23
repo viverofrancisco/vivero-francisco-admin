@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { Conectando } from "@/components/ui/Conectando";
+import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColaDeEnvio } from "@/lib/cola-de-envio";
@@ -189,13 +190,7 @@ export default function ChatsListScreen() {
                         style={styles.fotoEncontrada}
                       />
                     ) : (
-                      <View style={styles.avatar}>
-                        <Ionicons
-                          name="chatbubble-ellipses"
-                          size={18}
-                          color={tema.verde700}
-                        />
-                      </View>
+                      <AvatarDeChat imagenUrl={m.chatImagenUrl} lado={40} />
                     )}
                     <View style={styles.texto}>
                       <View style={styles.renglon}>
@@ -253,9 +248,7 @@ export default function ChatsListScreen() {
               estiloExterno={styles.ancho}
               style={FILA_LISTA}
             >
-              <View style={styles.avatar}>
-                <Ionicons name="chatbubbles" size={18} color={tema.verde700} />
-              </View>
+              <AvatarDeChat imagenUrl={item.imagenUrl} lado={40} />
               <View style={styles.texto}>
                 <View style={styles.renglon}>
                   <Text

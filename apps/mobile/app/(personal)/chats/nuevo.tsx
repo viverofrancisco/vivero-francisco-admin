@@ -4,7 +4,9 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { apiRequest, mensajeDeError } from "@/lib/api";
+import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { Campo, Titulo } from "@/components/ui/Formulario";
 import type { ChatDetalle } from "@/lib/chats";
@@ -43,6 +45,52 @@ export default function ChatFormScreen() {
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** La foto que ya tiene, la elegida y todavía no subida, y si se quita. */
+  const [imagenActual, setImagenActual] = useState<string | null>(null);
+  const [foto, setFoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [quitar, setQuitar] = useState(false);
+  const vistaDeFoto = foto?.uri ?? (quitar ? null : imagenActual);
+
+  /**
+   * La foto del grupo, como en WhatsApp. `allowsEditing` con `aspect` 1:1 es
+   * el recorte cuadrado del propio sistema, así no hace falta uno nuestro; y
+   * `quality` baja porque son varios MB para un círculo de 40 px.
+   */
+  async function elegirFoto() {
+    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permiso.granted) return;
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (r.canceled) return;
+    setFoto(r.assets[0]);
+    setQuitar(false);
+  }
+
+  /** Sube la foto bajo el prefijo del chat y la deja como su imagen. */
+  async function subirFoto(chatId: string, asset: ImagePicker.ImagePickerAsset) {
+    const contentType = asset.mimeType ?? "image/jpeg";
+    const { uploads } = await apiRequest<{
+      uploads: { key: string; url: string; uploadUrl: string }[];
+    }>(`/api/mobile/chats/${chatId}/fotos`, {
+      method: "POST",
+      body: { files: [{ fileName: asset.fileName ?? "grupo.jpg", contentType }] },
+    });
+    const blob = await (await fetch(asset.uri)).blob();
+    const res = await fetch(uploads[0].uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: blob,
+    });
+    if (!res.ok) throw new Error("No pudimos subir la foto");
+    await apiRequest(`/api/mobile/chats/${chatId}`, {
+      method: "PUT",
+      body: { imagen: { key: uploads[0].key, url: uploads[0].url } },
+    });
+  }
 
   useEffect(() => {
     let vivo = true;
@@ -59,6 +107,7 @@ export default function ChatFormScreen() {
         if (chat) {
           setNombre(chat.nombre);
           setElegidos(chat.miembros.map((m) => m.id));
+          setImagenActual(chat.imagenUrl ?? null);
         }
       } catch (e) {
         if (vivo) setError(mensajeDeError(e, "No pudimos cargar"));
@@ -79,14 +128,25 @@ export default function ChatFormScreen() {
     setGuardando(true);
     try {
       const body = { nombre: nombre.trim(), miembrosIds: elegidos };
+      // La foto va después, con el chat ya creado: la firma de subida es por
+      // chat, así que antes no hay dónde ponerla.
       if (editando) {
-        await apiRequest(`/api/mobile/chats/${id}`, { method: "PUT", body });
+        // Solo el nombre: la gente se cambia desde la info del chat.
+        await apiRequest(`/api/mobile/chats/${id}`, {
+          method: "PUT",
+          body: { nombre: nombre.trim() },
+        });
+        if (foto) await subirFoto(id!, foto);
+        else if (quitar && imagenActual) {
+          await apiRequest(`/api/mobile/chats/${id}`, { method: "PUT", body: { imagen: null } });
+        }
         router.back();
       } else {
         const chat = await apiRequest<{ id: string }>("/api/mobile/chats", {
           method: "POST",
           body,
         });
+        if (foto) await subirFoto(chat.id, foto);
         // Con `pathname` y `params`, no con la ruta armada a mano: expo-router
         // resuelve el segmento dinámico él mismo. Interpolada quedaba sin
         // resolver y caía en "Unmatched Route" con el chat ya creado.
@@ -149,6 +209,33 @@ export default function ChatFormScreen() {
       <ScrollView contentContainerStyle={styles.cuerpo}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
+        {/* La foto del grupo: el círculo se toca para elegirla, y debajo se
+            puede quitar. Igual que en el portal. */}
+        <View style={styles.fotoBloque}>
+          <PressableScale
+            onPress={elegirFoto}
+            accessibilityLabel={vistaDeFoto ? "Cambiar la foto del grupo" : "Poner una foto al grupo"}
+          >
+            <View>
+              <AvatarDeChat imagenUrl={vistaDeFoto} lado={80} />
+              <View style={styles.camara}>
+                <Ionicons name="camera" size={14} color="#fff" />
+              </View>
+            </View>
+          </PressableScale>
+          {vistaDeFoto ? (
+            <PressableScale
+              onPress={() => {
+                setFoto(null);
+                setQuitar(true);
+              }}
+              hitSlop={8}
+            >
+              <Text style={styles.quitarFoto}>Quitar foto</Text>
+            </PressableScale>
+          ) : null}
+        </View>
+
         <Campo
           label="Nombre"
           required
@@ -157,6 +244,10 @@ export default function ChatFormScreen() {
           placeholder="Cuadrilla 1, Oficina, Urgencias..."
         />
 
+        {/* Al editar, solo el nombre y la foto, como el "Editar grupo" de
+            WhatsApp: la gente se agrega y se quita desde la info del chat. */}
+        {editando ? null : (
+        <>
         <Titulo>Miembros</Titulo>
         {personas === null || personas.length === 0 ? (
           <Text style={styles.vacio}>
@@ -213,6 +304,8 @@ export default function ChatFormScreen() {
           </View>
           </>
         )}
+        </>
+        )}
       </ScrollView>
     </View>
   );
@@ -220,6 +313,21 @@ export default function ChatFormScreen() {
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: tema.fondo },
+  fotoBloque: { alignItems: "center", gap: 6, paddingTop: 4, paddingBottom: 12 },
+  camara: {
+    position: "absolute",
+    right: -2,
+    bottom: -2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: tema.superficie,
+    backgroundColor: tema.verde,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  quitarFoto: { fontSize: 12, fontWeight: "600", color: tema.texto3 },
   cabecera: {
     flexDirection: "row",
     alignItems: "center",

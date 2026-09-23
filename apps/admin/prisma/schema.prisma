@@ -2078,6 +2078,13 @@ model FacturaLinea {
 model Chat {
   id        String    @id @default(cuid())
   nombre    String
+  /**
+   * La foto del grupo, como en WhatsApp. La pone el ADMIN al crear o editar
+   * el chat; vive en R2 bajo el prefijo del chat, como las fotos de sus
+   * mensajes, y se borra al reemplazarla o quitarla.
+   */
+  imagenKey String?
+  imagenUrl String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   /// Archivar el chat: sus mensajes no se borran, deja de listarse.

@@ -9,6 +9,8 @@
 export interface ChatEnLista {
   id: string;
   nombre: string;
+  /** La foto del grupo, si el admin le puso una. */
+  imagenUrl?: string | null;
   miembros: number;
   sinLeer: number;
   ultimo: {
@@ -29,6 +31,9 @@ export interface MiembroDeChat {
 export interface ChatDetalle {
   id: string;
   nombre: string;
+  imagenUrl?: string | null;
+  /** Cuántas fotos y videos y cuántos enlaces hay, para la info. */
+  medios?: { fotosYVideos: number; enlaces: number };
   creadoEl: string;
   puedeEditar: boolean;
   miembros: MiembroDeChat[];
@@ -39,6 +44,7 @@ export interface MensajeEncontrado {
   id: string;
   chatId: string;
   chatNombre: string;
+  chatImagenUrl?: string | null;
   autorNombre: string;
   mio: boolean;
   texto: string | null;
@@ -51,7 +57,13 @@ export interface MensajeEncontrado {
  * Un mensaje, y la info de quién lo leyó: los tipos son los de `@vivero/shared`,
  * porque las dos aplicaciones dibujan lo mismo y el portal manda lo mismo.
  */
-export type { MensajeDeChat, InfoDeMensaje, EstadoDeMensaje } from "@vivero/shared";
+export type {
+  MensajeDeChat,
+  InfoDeMensaje,
+  EstadoDeMensaje,
+  ArchivoDelChat,
+  EnlaceDelChat,
+} from "@vivero/shared";
 
 /** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
 export function etiquetaDeAdjuntos(

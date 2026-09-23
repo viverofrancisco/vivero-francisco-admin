@@ -30,7 +30,6 @@ import {
   Play,
   Reply,
   Send,
-  SquarePen,
   Trash2,
   X,
 } from "lucide-react";
@@ -46,7 +45,8 @@ import {
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Conectando } from "@/components/shared/conectando";
-import { ChatForm } from "./chat-form";
+import { AvatarDeChat } from "./avatar-de-chat";
+import { InfoDelChat } from "./info-del-chat";
 import {
   confirmarLlegada,
   descartar,
@@ -120,8 +120,11 @@ function Vistos({ estado }: { estado: EstadoDeMensaje }) {
 export interface ChatCabecera {
   id: string;
   nombre: string;
+  imagenUrl?: string | null;
   puedeEditar: boolean;
   miembros: { id: string; nombre: string; rol: string; soyYo: boolean }[];
+  /** Cuántas fotos y videos y cuántos enlaces hay, para la info. */
+  medios?: { fotosYVideos: number; enlaces: number };
 }
 
 /** Cada cuánto vuelve a preguntar si hay algo nuevo. */
@@ -189,7 +192,8 @@ export function Conversacion({
   const [pendientes, setPendientes] = useState<
     { archivo: File; vista: string }[]
   >([]);
-  const [editando, setEditando] = useState(false);
+  /** La info del chat, que se abre tocando el nombre. */
+  const [infoAbierta, setInfoAbierta] = useState(false);
   const [viendo, setViendo] = useState<{ url: string; tipo: string } | null>(
     null
   );
@@ -534,27 +538,26 @@ export function Conversacion({
             <ChevronLeft className="h-6 w-6" />
           </Button>
         </Link>
-        <InitialsAvatar name={chat.nombre} size={36} className="hidden md:flex" />
-        <div className="min-w-0 flex-1 md:pl-1">
-          <h1 className="truncate text-base font-bold tracking-tight">
-            {chat.nombre}
-          </h1>
-          <p className="truncate text-xs text-muted-foreground">
-            {otros.length === 0
-              ? "Solo tú"
-              : `Tú y ${otros.map((m) => m.nombre).join(", ")}`}
-          </p>
-        </div>
-        {chat.puedeEditar ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Editar el chat"
-            onClick={() => setEditando(true)}
-          >
-            <SquarePen className="h-5 w-5" />
-          </Button>
-        ) : null}
+        {/* El nombre **es** el botón de la info, como en WhatsApp: tocarlo
+            abre la foto, la gente y los archivos. El lápiz que había vive
+            ahora adentro, como *Editar*. */}
+        <button
+          type="button"
+          onClick={() => setInfoAbierta(true)}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-0.5 pr-2 text-left hover:bg-muted/60 md:pl-1"
+        >
+          <AvatarDeChat nombre={chat.nombre} imagenUrl={chat.imagenUrl} size={36} />
+          <span className="min-w-0 flex-1">
+            <h1 className="truncate text-base font-bold tracking-tight">
+              {chat.nombre}
+            </h1>
+            <p className="truncate text-xs text-muted-foreground">
+              {otros.length === 0
+                ? "Solo tú"
+                : `Tú y ${otros.map((m) => m.nombre).join(", ")}`}
+            </p>
+          </span>
+        </button>
       </div>
 
       <Conectando />
@@ -741,22 +744,17 @@ export function Conversacion({
         </div>
       </div>
 
-      {editando ? (
-        <ChatForm
-          chat={{
-            id: chat.id,
-            nombre: chat.nombre,
-            miembrosIds: chat.miembros.map((m) => m.id),
-          }}
-          onClose={() => setEditando(false)}
-          onGuardado={async () => {
-            setEditando(false);
-            const res = await fetch(`/api/chats/${chat.id}`);
-            if (res.ok) setChat(await res.json());
-            router.refresh();
-          }}
-        />
-      ) : null}
+      <InfoDelChat
+        chat={chat}
+        abierto={infoAbierta}
+        onClose={() => setInfoAbierta(false)}
+        onChatActualizado={async () => {
+          const res = await fetch(`/api/chats/${chat.id}`);
+          if (res.ok) setChat(await res.json());
+          router.refresh();
+        }}
+        onIrAlMensaje={irAlMensaje}
+      />
 
       {/* Lo que se puede hacer con un mensaje, en el teléfono: mantenerlo
           apretado abre un cajón, igual que en la app. El ⋯ es de escritorio,

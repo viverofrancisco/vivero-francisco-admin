@@ -1008,6 +1008,8 @@ export type FacturaLineaScalarFieldEnum = (typeof FacturaLineaScalarFieldEnum)[k
 export const ChatScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
+  imagenKey: 'imagenKey',
+  imagenUrl: 'imagenUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',

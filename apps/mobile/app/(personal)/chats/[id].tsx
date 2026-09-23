@@ -29,6 +29,7 @@ import { Conectando } from "@/components/ui/Conectando";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MediaViewer } from "@/components/MediaViewer";
 import { Burbuja, MiniaturaAdjunto } from "@/components/chats/Burbuja";
+import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
 import {
   etiquetaDeAdjuntos,
@@ -494,30 +495,32 @@ export default function ChatScreen() {
         >
           <Ionicons name="chevron-back" size={24} color={tema.texto} />
         </PressableScale>
-        <View style={styles.crece}>
-          <Text style={styles.titulo} numberOfLines={1}>
-            {chat?.nombre ?? "Chat"}
-          </Text>
-          <Text style={styles.subtitulo} numberOfLines={1}>
-            {otros.length === 0
-              ? "Solo tú"
-              : `Tú y ${otros.map((m) => m.nombre).join(", ")}`}
-          </Text>
-        </View>
-        {chat?.puedeEditar ? (
-          <PressableScale
-            onPress={() =>
-              router.push({
-                pathname: "/(personal)/chats/nuevo",
-                params: { id },
-              })
-            }
-            style={styles.iconoCabecera}
-            accessibilityLabel="Editar el chat"
-          >
-            <Ionicons name="create-outline" size={22} color={tema.texto2} />
-          </PressableScale>
-        ) : null}
+        {/* El nombre **es** el botón de la info, como en WhatsApp: tocarlo
+            abre la foto, la gente y los archivos. El lápiz que había vive
+            ahora adentro, en el ⋯ de la info. */}
+        <PressableScale
+          onPress={() =>
+            router.push({
+              pathname: "/(personal)/chats/detalle/[id]",
+              params: { id },
+            })
+          }
+          estiloExterno={styles.crece}
+          style={styles.cabeceraTocable}
+          accessibilityLabel="Info del chat"
+        >
+          <AvatarDeChat imagenUrl={chat?.imagenUrl} lado={36} />
+          <View style={styles.crece}>
+            <Text style={styles.titulo} numberOfLines={1}>
+              {chat?.nombre ?? "Chat"}
+            </Text>
+            <Text style={styles.subtitulo} numberOfLines={1}>
+              {otros.length === 0
+                ? "Solo tú"
+                : `Tú y ${otros.map((m) => m.nombre).join(", ")}`}
+            </Text>
+          </View>
+        </PressableScale>
       </View>
 
       <Conectando />
@@ -800,6 +803,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  cabeceraTocable: { flexDirection: "row", alignItems: "center", gap: 8, paddingRight: 8 },
   titulo: { fontSize: 16, fontWeight: "700", color: tema.texto },
   subtitulo: { fontSize: 12, color: tema.texto3 },
 

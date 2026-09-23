@@ -10,7 +10,7 @@ import { useAca, useFiltroUrl } from "@/lib/filtros-url";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Conectando } from "@/components/shared/conectando";
 import { FILA_MOVIL } from "@/components/shared/lista-movil";
-import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { AvatarDeChat } from "./avatar-de-chat";
 import { Play } from "lucide-react";
 import { ChatForm } from "./chat-form";
 import { fechaRelativaCorta } from "./formato";
@@ -18,6 +18,7 @@ import { fechaRelativaCorta } from "./formato";
 export interface ChatEnLista {
   id: string;
   nombre: string;
+  imagenUrl?: string | null;
   miembros: number;
   sinLeer: number;
   ultimo: {
@@ -39,6 +40,7 @@ interface MensajeEncontrado {
   id: string;
   chatId: string;
   chatNombre: string;
+  chatImagenUrl?: string | null;
   autorNombre: string;
   mio: boolean;
   texto: string | null;
@@ -199,7 +201,7 @@ export function ChatsPageClient({
                 className={`${FILA_MOVIL} ${c.id === abierto ? "bg-muted" : "bg-card"}`}
                 aria-current={c.id === abierto ? "page" : undefined}
               >
-                <InitialsAvatar name={c.nombre} size={40} />
+                <AvatarDeChat nombre={c.nombre} imagenUrl={c.imagenUrl} size={40} />
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline gap-2">
                     <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
@@ -252,7 +254,7 @@ export function ChatsPageClient({
                         className="h-10 w-10 flex-none rounded-lg object-cover"
                       />
                     ) : (
-                      <InitialsAvatar name={m.chatNombre} size={40} />
+                      <AvatarDeChat nombre={m.chatNombre} imagenUrl={m.chatImagenUrl} size={40} />
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline gap-2">
