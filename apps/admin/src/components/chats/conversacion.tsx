@@ -55,6 +55,7 @@ import {
   reintentar,
   useCola,
 } from "./cola-de-envio";
+import { guardarChat } from "./cache-de-chats";
 import { cuandoLeyo, horaDeMensaje, mismoDia, tituloDelDia } from "./formato";
 
 /** Un mensaje como lo dibuja esta pantalla: el mismo que la app. */
@@ -140,6 +141,9 @@ const CADA_MS = 5000;
  * `cola-de-envio.ts`: la lista que se dibuja es lo que vino del servidor más
  * lo que espera en la cola, y un mensaje que vuelve del servidor con el
  * `idCliente` de uno de la cola es ese mismo, ya llegado.
+ *
+ * **Y deja una copia local** (`cache-de-chats.ts`) cada vez que cambia: es lo
+ * que `loading.tsx` dibuja la próxima vez, mientras la página llega.
  */
 export function Conversacion({
   chat: chatInicial,
@@ -147,6 +151,7 @@ export function Conversacion({
   cursor: cursorInicial,
   from,
   destacado,
+  soloVista = false,
 }: {
   chat: ChatCabecera;
   mensajes: MensajeEnPantalla[];
@@ -154,6 +159,11 @@ export function Conversacion({
   from?: string;
   /** El mensaje al que se llegó desde el buscador: se resalta y se centra. */
   destacado?: string;
+  /**
+   * La copia guardada, mientras llega la de verdad: se lee, no se toca. Sin
+   * sondeo, sin marcar leído, sin mandar — la que viene detrás hace todo eso.
+   */
+  soloVista?: boolean;
 }) {
   const router = useRouter();
   const [chat, setChat] = useState(chatInicial);
@@ -256,22 +266,30 @@ export function Conversacion({
     } else {
       irAlFondo();
     }
+    if (soloVista) return;
     // Abrir el chat **es** leerlo.
     fetch(`/api/chats/${chat.id}/leido`, { method: "POST" }).catch(() => {});
-  }, [chat.id, destacado, irAlFondo]);
+  }, [chat.id, destacado, irAlFondo, soloVista]);
+
+  // La copia local, para la próxima vez: la tanda más nueva, con lo que el
+  // servidor dijo de cada mensaje. Nunca desde el buscador —esa página es
+  // el medio del chat, no el final— ni desde la copia misma.
+  useEffect(() => {
+    if (soloVista || destacado) return;
+    guardarChat(chat.id, chat, mensajes, cursor);
+  }, [soloVista, destacado, chat, mensajes, cursor]);
 
   // Un mensaje de la cola que volvió del servidor se pega a la lista acá, sin
   // esperar al próximo sondeo: es lo que hace que el ✓ pase a ✓✓ al instante.
-  useEffect(
-    () =>
-      onEnviado((chatId, m) => {
-        if (chatId !== chat.id) return;
-        setMensajes((actuales) =>
-          actuales.some((x) => x.id === m.id) ? actuales : [...actuales, m]
-        );
-      }),
-    [chat.id]
-  );
+  useEffect(() => {
+    if (soloVista) return;
+    return onEnviado((chatId, m) => {
+      if (chatId !== chat.id) return;
+      setMensajes((actuales) =>
+        actuales.some((x) => x.id === m.id) ? actuales : [...actuales, m]
+      );
+    });
+  }, [chat.id, soloVista]);
 
   /** Trae la página más nueva y pega lo que no estaba. */
   const buscarNuevos = useCallback(async () => {
@@ -299,6 +317,7 @@ export function Conversacion({
   }, [chat.id]);
 
   useEffect(() => {
+    if (soloVista) return;
     const tic = setInterval(() => {
       if (document.visibilityState === "visible") {
         buscarNuevos();
@@ -308,9 +327,9 @@ export function Conversacion({
       }
     }, CADA_MS);
     return () => clearInterval(tic);
-  }, [buscarNuevos, chat.id]);
+  }, [buscarNuevos, chat.id, soloVista]);
 
-  async function cargarViejos() {
+  const cargarViejos = useCallback(async () => {
     if (!cursor || cargandoViejos) return;
     setCargandoViejos(true);
     const caja = scroll.current;
@@ -335,7 +354,30 @@ export function Conversacion({
     } finally {
       setCargandoViejos(false);
     }
-  }
+  }, [cursor, cargandoViejos, chat.id]);
+
+  /**
+   * Los mensajes anteriores llegan solos al subir, como en la app: un
+   * centinela arriba de todo, y cuando asoma en la caja del scroll se pide la
+   * página anterior. Era un botón, y un botón es una decisión que WhatsApp no
+   * pide. Con pocos mensajes el centinela está a la vista desde el principio,
+   * así que trae páginas hasta llenar la pantalla, que es lo que se quiere.
+   */
+  const centinela = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (soloVista || !cursor) return;
+    const el = centinela.current;
+    const raiz = scroll.current;
+    if (!el || !raiz) return;
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) void cargarViejos();
+      },
+      { root: raiz, rootMargin: "120px 0px 0px 0px" }
+    );
+    observador.observe(el);
+    return () => observador.disconnect();
+  }, [soloVista, cursor, cargarViejos]);
 
   /**
    * Enviar: a la cola, y a la pantalla en el acto. Lo que se escribió se
@@ -516,24 +558,24 @@ export function Conversacion({
 
       {/* Los mensajes */}
       {/* Los mensajes se apoyan **abajo**, como en WhatsApp: con pocos, el
-          hueco queda arriba y no debajo del último, que es donde uno mira. */}
+          hueco queda arriba y no debajo del último, que es donde uno mira.
+          Con `mt-auto` en el contenido y **no** con `justify-end` en la caja:
+          en flexbox, lo que desborda de una caja con `justify-content:
+          flex-end` se va por arriba del origen del scroll y no hay forma de
+          llegar a ello — la conversación se cortaba y no subía. */}
       <div
         ref={scroll}
-        className="flex min-h-0 flex-1 flex-col justify-end overflow-y-auto overscroll-contain px-2.5 py-2 md:px-6"
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2.5 py-2 md:px-6"
       >
         {/* Los mensajes seguidos casi se tocan: lo que separa es el cambio de
             quién habla, no el aire entre burbujas. */}
-        <div className="space-y-0.5">
+        <div className="mt-auto space-y-0.5">
         {cursor ? (
-          <div className="flex justify-center pb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={cargarViejos}
-              disabled={cargandoViejos}
-            >
-              {cargandoViejos ? "Cargando..." : "Ver mensajes anteriores"}
-            </Button>
+          <div
+            ref={centinela}
+            className="flex h-8 items-center justify-center text-xs text-muted-foreground"
+          >
+            {cargandoViejos ? "Cargando..." : null}
           </div>
         ) : null}
 
@@ -657,6 +699,7 @@ export function Conversacion({
             size="icon"
             className="h-9 w-9 flex-none text-muted-foreground"
             aria-label="Mandar una foto"
+            disabled={soloVista}
             onClick={() => archivos.current?.click()}
           >
             <ImageIcon className="h-[22px] w-[22px]" />
@@ -666,6 +709,9 @@ export function Conversacion({
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Escribe un mensaje..."
             rows={1}
+            // La copia guardada no manda: lo que se escriba mientras llega la
+            // página se perdería con ella.
+            readOnly={soloVista}
             // 36 de alto, los mismos que los botones: `leading-6` y `py-[5px]`
             // para que mida lo mismo en los dos tamaños de letra.
             className="max-h-32 min-h-9 flex-1 resize-none rounded-full px-3.5 py-[5px] leading-6"
@@ -685,7 +731,7 @@ export function Conversacion({
             onClick={() => enviar()}
             // Se puede mandar con texto **o** con fotos esperando: una foto
             // sola es un mensaje, y con pie de foto también.
-            disabled={!texto.trim() && pendientes.length === 0}
+            disabled={soloVista || (!texto.trim() && pendientes.length === 0)}
           >
             <Send className="h-[18px] w-[18px]" />
           </Button>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, Image, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -8,6 +8,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColaDeEnvio } from "@/lib/cola-de-envio";
+import { guardarLista, leerLista } from "@/lib/cache-de-chats";
 import {
   cuandoFue,
   resumenDelUltimo,
@@ -39,12 +40,31 @@ export default function ChatsListScreen() {
     hidratarCola();
   }, [hidratarCola]);
 
+  /** Si el servidor ya contestó: la copia local no pisa lo que vino de él. */
+  const delServidor = useRef(false);
+
+  // La copia local primero: la lista se pinta sin esperar, y el servidor la
+  // reemplaza cuando contesta.
+  useEffect(() => {
+    let vivo = true;
+    leerLista().then((copia) => {
+      if (!vivo || !copia || delServidor.current) return;
+      setItems(copia);
+      setCargando(false);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
   const cargar = useCallback(async (inicial = false) => {
     if (inicial) setCargando(true);
     else setRefrescando(true);
     try {
       const res = await apiRequest<{ items: ChatEnLista[] }>("/api/mobile/chats");
+      delServidor.current = true;
       setItems(res.items);
+      guardarLista(res.items);
       setError(null);
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos cargar los chats"));

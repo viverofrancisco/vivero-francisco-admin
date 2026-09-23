@@ -23,6 +23,7 @@ import {
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { onEnviado, useColaDeEnvio } from "@/lib/cola-de-envio";
+import { guardarChat, leerChat } from "@/lib/cache-de-chats";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MediaViewer } from "@/components/MediaViewer";
@@ -95,6 +96,10 @@ async function copiarAlPortapapeles(mensaje: MensajeDeChat): Promise<boolean> {
  * `lib/cola-de-envio.ts`: la lista que se dibuja es lo que vino del servidor
  * más lo que espera en la cola, y un mensaje que vuelve del servidor con el
  * `idCliente` de uno de la cola es ese mismo, ya llegado.
+ *
+ * **Y se abre al instante** con la copia local (`lib/cache-de-chats.ts`): la
+ * última tanda que se guardó se pinta mientras se pregunta, y lo que llega la
+ * reemplaza entera.
  */
 export default function ChatScreen() {
   const { id, mensaje: destacado } = useLocalSearchParams<{
@@ -204,6 +209,8 @@ export default function ChatScreen() {
       }>(`/api/mobile/chats/${id}/mensajes`, {
         query: { alrededorDe: mensajeId },
       });
+      // Desde acá lo que hay en pantalla es el medio del chat, no su final.
+      esElFinal.current = false;
       setMensajes(pagina.items);
       setCursor(pagina.cursor);
       const j = pagina.items.findIndex((m) => m.id === mensajeId);
@@ -235,6 +242,33 @@ export default function ChatScreen() {
   const [aviso, setAviso] = useState<string | null>(null);
 
   const enFoco = useRef(true);
+  /** Si el servidor ya contestó: la copia local no pisa lo que vino de él. */
+  const delServidor = useRef(false);
+  /** Si lo que hay en pantalla es el final del chat, que es lo único que se guarda. */
+  const esElFinal = useRef(!destacado);
+
+  // La copia local primero: se pinta sin esperar, y el spinner no aparece.
+  useEffect(() => {
+    if (destacado) return;
+    let vivo = true;
+    leerChat(id).then((copia) => {
+      if (!vivo || !copia || delServidor.current) return;
+      setChat(copia.chat);
+      setMensajes(copia.items);
+      setCursor(copia.cursor);
+      setCargando(false);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [id, destacado]);
+
+  // Y cada vez que cambia lo que se ve, la copia se vuelve a guardar: con lo
+  // que el servidor dijo de cada mensaje, que es lo que la mantiene honesta.
+  useEffect(() => {
+    if (!delServidor.current || !esElFinal.current || !chat) return;
+    guardarChat(id, chat, mensajes, cursor);
+  }, [id, chat, mensajes, cursor]);
 
   const cargar = useCallback(async () => {
     try {
@@ -248,6 +282,7 @@ export default function ChatScreen() {
           destacado ? { query: { alrededorDe: destacado } } : undefined
         ),
       ]);
+      delServidor.current = true;
       setChat(detalle);
       setMensajes(pagina.items);
       setCursor(pagina.cursor);
@@ -289,6 +324,7 @@ export default function ChatScreen() {
       pagina.items.forEach((m) => {
         if (m.idCliente) confirmarLlegada(m.idCliente);
       });
+      delServidor.current = true;
       setMensajes((actuales) => {
         const conocidos = new Set(actuales.map((m) => m.id));
         const nuevos = pagina.items.filter((m) => !conocidos.has(m.id));
