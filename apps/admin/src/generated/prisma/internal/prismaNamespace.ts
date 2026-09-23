@@ -5875,6 +5875,7 @@ export const ChatAdjuntoScalarFieldEnum = {
   url: 'url',
   nombre: 'nombre',
   tipo: 'tipo',
+  tamano: 'tamano',
   createdAt: 'createdAt'
 } as const
 

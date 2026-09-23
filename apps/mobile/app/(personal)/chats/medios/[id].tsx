@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Image,
@@ -11,76 +11,104 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { extensionDe, tamanoLegible } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
+import {
+  guardarMedios,
+  leerMedios,
+  type MediosEnCache,
+  type TipoDeMedios,
+} from "@/lib/cache-de-chats";
 import { cuandoFue, type ArchivoDelChat, type EnlaceDelChat } from "@/lib/chats";
 import { tema } from "@/lib/tema";
 
-type Tipo = "archivos" | "enlaces";
-
 /**
  * Lo que se mandó en el chat, aparte de leerlo: las fotos y videos en una
- * grilla de cuatro, y los mensajes con enlaces en una lista, del más nuevo
- * al más viejo y trayendo más al llegar abajo. Es la forma rápida de volver
- * a encontrar un archivo sin scrollear meses, como en WhatsApp. La misma
- * pantalla que el portal.
+ * grilla de cuatro, los mensajes con enlaces en una lista y los documentos
+ * en otra, del más nuevo al más viejo y trayendo más al llegar abajo. Es la
+ * forma rápida de volver a encontrar un archivo sin scrollear meses, como en
+ * WhatsApp. La misma pantalla que el portal.
+ *
+ * **Se abre con la copia local**: la primera página de cada pestaña queda
+ * guardada y se pinta al instante; el servidor la reemplaza detrás.
  */
 export default function MediosDelChatScreen() {
-  const { id, tipo: inicial } = useLocalSearchParams<{ id: string; tipo?: Tipo }>();
+  const { id, tipo: inicial } = useLocalSearchParams<{ id: string; tipo?: TipoDeMedios }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const [tipo, setTipo] = useState<Tipo>(inicial === "enlaces" ? "enlaces" : "archivos");
-  const [archivos, setArchivos] = useState<ArchivoDelChat[]>([]);
-  const [enlaces, setEnlaces] = useState<EnlaceDelChat[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const [tipo, setTipo] = useState<TipoDeMedios>(
+    inicial === "enlaces" || inicial === "documentos" ? inicial : "archivos"
+  );
+  /** Lo cargado, con el tipo al que pertenece: si no es el de la pestaña, se está cargando. */
+  const [datos, setDatos] = useState<MediosEnCache | null>(null);
+  const [cargandoMas, setCargandoMas] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viendo, setViendo] = useState<MediaViewerSource | null>(null);
+  /** Para ignorar la respuesta de una pestaña que ya no es la elegida. */
+  const pedido = useRef(0);
 
-  const traer = useCallback(
-    async (cual: Tipo, desde: string | null) => {
-      setCargando(true);
-      try {
-        const pagina = await apiRequest<{
-          items: (ArchivoDelChat | EnlaceDelChat)[];
-          cursor: string | null;
-        }>(`/api/mobile/chats/${id}/medios`, {
-          query: { tipo: cual, cursor: desde ?? undefined },
-        });
-        if (cual === "archivos") {
-          setArchivos((a) => (desde ? [...a, ...(pagina.items as ArchivoDelChat[])] : (pagina.items as ArchivoDelChat[])));
-        } else {
-          setEnlaces((a) => (desde ? [...a, ...(pagina.items as EnlaceDelChat[])] : (pagina.items as EnlaceDelChat[])));
-        }
-        setCursor(pagina.cursor);
-        setError(null);
-      } catch (e) {
-        setError(mensajeDeError(e, "No pudimos traer los archivos"));
-      } finally {
-        setCargando(false);
-      }
-    },
-    [id]
-  );
+  const vigente = datos?.tipo === tipo ? datos : null;
+  const cargando = vigente === null;
 
   useEffect(() => {
-    traer(tipo, null);
-  }, [tipo, traer]);
+    const mio = ++pedido.current;
+    let vivo = true;
+    // La copia local primero, si el servidor todavía no contestó.
+    leerMedios(id, tipo).then((copia) => {
+      if (vivo && copia && mio === pedido.current) {
+        setDatos((actual) => (actual?.tipo === tipo ? actual : copia));
+      }
+    });
+    apiRequest<{ items: (ArchivoDelChat | EnlaceDelChat)[]; cursor: string | null }>(
+      `/api/mobile/chats/${id}/medios`,
+      { query: { tipo } }
+    )
+      .then((pagina) => {
+        if (!vivo || mio !== pedido.current) return;
+        const nuevos = { tipo, items: pagina.items, cursor: pagina.cursor };
+        setDatos(nuevos);
+        guardarMedios(id, nuevos);
+        setError(null);
+      })
+      .catch((e) => vivo && setError(mensajeDeError(e, "No pudimos traer los archivos")));
+    return () => {
+      vivo = false;
+    };
+  }, [id, tipo]);
 
+  const verMas = useCallback(async () => {
+    if (!vigente?.cursor || cargandoMas) return;
+    setCargandoMas(true);
+    try {
+      const pagina = await apiRequest<{
+        items: (ArchivoDelChat | EnlaceDelChat)[];
+        cursor: string | null;
+      }>(`/api/mobile/chats/${id}/medios`, { query: { tipo, cursor: vigente.cursor } });
+      setDatos((actual) =>
+        actual?.tipo === tipo
+          ? { ...actual, items: [...actual.items, ...pagina.items], cursor: pagina.cursor }
+          : actual
+      );
+    } catch (e) {
+      setError(mensajeDeError(e, "No pudimos traer más"));
+    } finally {
+      setCargandoMas(false);
+    }
+  }, [id, tipo, vigente, cargandoMas]);
+
+  const archivos = (vigente?.tipo === "archivos" ? vigente.items : []) as ArchivoDelChat[];
+  const documentos = (vigente?.tipo === "documentos" ? vigente.items : []) as ArchivoDelChat[];
+  const enlaces = (vigente?.tipo === "enlaces" ? vigente.items : []) as EnlaceDelChat[];
   const lado = Math.floor((width - 3) / 4);
   const fotos = archivos.filter((a) => a.tipo !== "video").length;
   const videos = archivos.length - fotos;
 
-  const pestana = (cual: Tipo, etiqueta: string) => (
+  const pestana = (cual: TipoDeMedios, etiqueta: string) => (
     <PressableScale
-      onPress={() => {
-        if (cual !== tipo) {
-          setCursor(null);
-          setTipo(cual);
-        }
-      }}
+      onPress={() => setTipo(cual)}
       style={[styles.pestana, tipo === cual && styles.pestanaActiva]}
     >
       <Text style={[styles.pestanaTexto, tipo === cual && styles.pestanaTextoActiva]}>
@@ -88,6 +116,9 @@ export default function MediosDelChatScreen() {
       </Text>
     </PressableScale>
   );
+
+  const vacio = (texto: string) =>
+    cargando ? <ActivityIndicator style={styles.cargando} /> : <Text style={styles.vacio}>{texto}</Text>;
 
   return (
     <View style={styles.pantalla}>
@@ -102,6 +133,7 @@ export default function MediosDelChatScreen() {
         <View style={styles.pestanas}>
           {pestana("archivos", "Fotos y videos")}
           {pestana("enlaces", "Enlaces")}
+          {pestana("documentos", "Docs")}
         </View>
         <View style={styles.iconoCabecera} />
       </View>
@@ -117,21 +149,13 @@ export default function MediosDelChatScreen() {
           columnWrapperStyle={styles.filaGrilla}
           contentContainerStyle={styles.grilla}
           onEndReachedThreshold={0.4}
-          onEndReached={() => {
-            if (cursor && !cargando) traer("archivos", cursor);
-          }}
-          ListEmptyComponent={
-            cargando ? (
-              <ActivityIndicator style={styles.cargando} />
-            ) : (
-              <Text style={styles.vacio}>Todavía no se mandaron fotos ni videos.</Text>
-            )
-          }
+          onEndReached={verMas}
+          ListEmptyComponent={vacio("Todavía no se mandaron fotos ni videos.")}
           ListFooterComponent={
             archivos.length > 0 ? (
               <Text style={styles.pie}>
                 {fotos} {fotos === 1 ? "foto" : "fotos"}, {videos} {videos === 1 ? "video" : "videos"}
-                {cursor ? " cargados" : ""}
+                {vigente?.cursor ? " cargados" : ""}
               </Text>
             ) : null
           }
@@ -150,6 +174,37 @@ export default function MediosDelChatScreen() {
             </PressableScale>
           )}
         />
+      ) : tipo === "documentos" ? (
+        <FlatList
+          key="documentos"
+          data={documentos}
+          keyExtractor={(d) => d.id}
+          contentContainerStyle={styles.lista}
+          onEndReachedThreshold={0.4}
+          onEndReached={verMas}
+          ListEmptyComponent={vacio("Todavía no se mandaron documentos.")}
+          renderItem={({ item }) => (
+            <PressableScale
+              onPress={() => Linking.openURL(item.url)}
+              estiloExterno={styles.ancho}
+              style={styles.documento}
+            >
+              <View style={styles.documentoIcono}>
+                <Ionicons name="document-text-outline" size={22} color={tema.texto2} />
+              </View>
+              <View style={styles.crece}>
+                <Text style={styles.documentoNombre} numberOfLines={2}>
+                  {item.nombre ?? "Documento"}
+                </Text>
+                <Text style={styles.documentoDetalle}>
+                  {[tamanoLegible(item.tamano), extensionDe(item.nombre), cuandoFue(item.createdAt)]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Text>
+              </View>
+            </PressableScale>
+          )}
+        />
       ) : (
         <FlatList
           key="enlaces"
@@ -157,16 +212,8 @@ export default function MediosDelChatScreen() {
           keyExtractor={(e) => e.mensajeId}
           contentContainerStyle={styles.lista}
           onEndReachedThreshold={0.4}
-          onEndReached={() => {
-            if (cursor && !cargando) traer("enlaces", cursor);
-          }}
-          ListEmptyComponent={
-            cargando ? (
-              <ActivityIndicator style={styles.cargando} />
-            ) : (
-              <Text style={styles.vacio}>Todavía no se mandaron enlaces.</Text>
-            )
-          }
+          onEndReached={verMas}
+          ListEmptyComponent={vacio("Todavía no se mandaron enlaces.")}
           renderItem={({ item }) => (
             <View style={styles.tarjeta}>
               <View style={styles.tarjetaCuerpo}>
@@ -216,6 +263,7 @@ export default function MediosDelChatScreen() {
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: tema.fondo },
   ancho: { alignSelf: "stretch" },
+  crece: { flex: 1 },
   cabecera: {
     flexDirection: "row",
     alignItems: "center",
@@ -239,11 +287,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 2,
     padding: 2,
-    marginHorizontal: 8,
+    marginHorizontal: 4,
     borderRadius: 999,
     backgroundColor: tema.lienzo,
   },
-  pestana: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
+  pestana: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
   pestanaActiva: { backgroundColor: tema.superficie },
   pestanaTexto: { fontSize: 13, fontWeight: "600", color: tema.texto3 },
   pestanaTextoActiva: { color: tema.texto },
@@ -277,4 +325,25 @@ const styles = StyleSheet.create({
     borderTopColor: tema.linea,
   },
   verMensajeTexto: { fontSize: 12, fontWeight: "600", color: tema.texto3 },
+  documento: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: tema.linea,
+    backgroundColor: tema.superficie,
+  },
+  documentoIcono: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: tema.lienzo,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  documentoNombre: { fontSize: 14, fontWeight: "600", color: tema.texto },
+  documentoDetalle: { fontSize: 12, color: tema.texto3, marginTop: 2 },
 });

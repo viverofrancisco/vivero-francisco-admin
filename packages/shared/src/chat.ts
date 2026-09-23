@@ -12,6 +12,67 @@ import { z } from "zod";
 
 export const MAX_FOTOS_POR_MENSAJE = 10;
 
+/** Qué es un adjunto de chat: lo decide el servidor por el tipo de contenido firmado. */
+export type TipoDeAdjunto = "imagen" | "video" | "documento";
+
+/**
+ * Los documentos que se pueden mandar en un chat: lo que la oficina se pasa
+ * hoy por WhatsApp —PDF, Word, Excel, PowerPoint, texto y comprimidos—. Es
+ * una lista y no "todo lo que no sea imagen" porque el tipo es lo que se
+ * **firma**: R2 guarda lo que llegue con la firma que le dimos, y un
+ * ejecutable con nombre de PDF es exactamente lo que no se quiere ahí.
+ */
+const DOCUMENTOS_PERMITIDOS = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain",
+  "text/csv",
+  "application/zip",
+  "application/x-zip-compressed",
+]);
+
+export function esContenidoPermitidoEnChat(contentType: string): boolean {
+  return (
+    contentType.startsWith("image/") ||
+    contentType.startsWith("video/") ||
+    DOCUMENTOS_PERMITIDOS.has(contentType)
+  );
+}
+
+/** El tipo de adjunto que le corresponde a un tipo de contenido. */
+export function tipoDeArchivo(contentType: string): TipoDeAdjunto {
+  if (contentType.startsWith("image/")) return "imagen";
+  if (contentType.startsWith("video/")) return "video";
+  return "documento";
+}
+
+/** "1,7 MB", "185 KB": el tamaño como lo lee una persona. */
+export function tamanoLegible(bytes: number | null | undefined): string | null {
+  if (!bytes || bytes <= 0) return null;
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
+}
+
+/** La extensión de un nombre de archivo, en mayúsculas: "PDF", "DOCX". */
+export function extensionDe(nombre: string | null | undefined): string | null {
+  const ext = nombre?.split(".").pop();
+  return ext && ext.length <= 5 && ext !== nombre ? ext.toUpperCase() : null;
+}
+
+/** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
+export function etiquetaDeAdjuntos(tipo: string | undefined, cuantos: number): string {
+  if (cuantos > 1) return `📎 ${cuantos} archivos`;
+  if (tipo === "video") return "🎥 Video";
+  if (tipo === "documento") return "📄 Documento";
+  return "📷 Foto";
+}
+
 /**
  * La foto del grupo: una clave ya subida a R2 bajo el prefijo del chat, con
  * su URL pública. `null` quita la que había.
@@ -55,8 +116,10 @@ const fotoDeMensajeSchema = z.object({
    * **buscar** una foto: su clave en R2 es un uuid.
    */
   nombre: z.string().max(200).optional(),
-  /** Imagen o video. Lo decide el servidor al firmar la subida, por el tipo de contenido. */
-  tipo: z.enum(["imagen", "video"]).optional(),
+  /** Imagen, video o documento. Lo decide el servidor al firmar la subida, por el tipo de contenido. */
+  tipo: z.enum(["imagen", "video", "documento"]).optional(),
+  /** Bytes, para los documentos. */
+  tamano: z.number().int().min(0).optional().nullable(),
 });
 
 /**
@@ -100,7 +163,7 @@ export type MensajesQuery = z.infer<typeof mensajesQuerySchema>;
  * de volver a encontrar un archivo sin scrollear meses, como en WhatsApp.
  */
 export const mediosDelChatQuerySchema = z.object({
-  tipo: z.enum(["archivos", "enlaces"]),
+  tipo: z.enum(["archivos", "enlaces", "documentos"]),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(200).optional(),
 });
@@ -113,6 +176,7 @@ export interface ArchivoDelChat {
   url: string;
   tipo: string;
   nombre: string | null;
+  tamano?: number | null;
   createdAt: string;
 }
 
@@ -134,11 +198,11 @@ export const chatUploadUrlsSchema = z.object({
         contentType: z
           .string()
           .min(1)
-          // Imágenes y videos, como en las fotos de una visita: el tipo es lo
-          // que se **firma**, así que la regla vive acá y no en la pantalla.
+          // Imágenes, videos y los documentos de la lista: el tipo es lo que
+          // se **firma**, así que la regla vive acá y no en la pantalla.
           .refine(
-            (t) => t.startsWith("image/") || t.startsWith("video/"),
-            "Solo se pueden subir imágenes o videos"
+            esContenidoPermitidoEnChat,
+            "Solo se pueden mandar imágenes, videos y documentos (PDF, Word, Excel, PowerPoint, texto o ZIP)"
           ),
       })
     )
@@ -174,7 +238,8 @@ export type EstadoDeMensaje = "pendiente" | "fallido" | "enviado" | "leido";
 export interface MensajeDeChat {
   id: string;
   texto: string | null;
-  fotos: { id: string; url: string; tipo: string; nombre?: string | null }[];
+  /** Los adjuntos: fotos, videos y documentos. Se llaman `fotos` desde antes de que hubiera otros. */
+  fotos: { id: string; url: string; tipo: string; nombre?: string | null; tamano?: number | null }[];
   createdAt: string;
   borrado: boolean;
   autorId: string | null;
@@ -209,7 +274,9 @@ export interface FotoEnCola {
   uri: string;
   nombre: string;
   contentType: string;
-  tipo: "imagen" | "video";
+  tipo: TipoDeAdjunto;
+  /** Bytes, para los documentos. */
+  tamano?: number | null;
 }
 
 /**
@@ -253,6 +320,7 @@ export function mensajeOptimista(
       url: f.uri,
       tipo: f.tipo,
       nombre: f.nombre,
+      tamano: f.tamano ?? null,
     })),
     createdAt: item.creadoEl,
     borrado: false,

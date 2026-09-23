@@ -14,10 +14,13 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import {
+  esContenidoPermitidoEnChat,
   mezclarConLaCola,
   nuevoIdCliente,
+  type FotoEnCola,
   type MensajeEnCola,
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
@@ -63,7 +66,7 @@ async function copiarAlPortapapeles(mensaje: MensajeDeChat): Promise<boolean> {
       await Clipboard.setStringAsync(mensaje.texto);
       return true;
     }
-    const foto = mensaje.fotos.find((f) => f.tipo !== "video");
+    const foto = mensaje.fotos.find((f) => f.tipo === "imagen");
     if (!foto) return false;
     const blob = await (await fetch(foto.url)).blob();
     const base64 = await new Promise<string>((resolver, rechazar) => {
@@ -129,14 +132,14 @@ export default function ChatScreen() {
   const [texto, setTexto] = useState("");
   const [respondiendo, setRespondiendo] = useState<MensajeDeChat | null>(null);
   /**
-   * Las fotos elegidas que todavía no salieron.
+   * Los adjuntos elegidos que todavía no salieron: fotos, videos y documentos.
    *
    * Esperan acá —con su miniatura arriba del campo— y salen **con lo que se
-   * escriba**, en un solo mensaje, como en WhatsApp.
+   * escriba**, en un solo mensaje, como en WhatsApp. Ya vienen con la forma
+   * que la cola necesita, vengan de la galería, la cámara o el selector de
+   * documentos: un archivo del teléfono, su nombre, su tipo y su peso.
    */
-  const [pendientes, setPendientes] = useState<ImagePicker.ImagePickerAsset[]>(
-    []
-  );
+  const [pendientes, setPendientes] = useState<FotoEnCola[]>([]);
   const [tocado, setTocado] = useState<MensajeDeChat | null>(null);
   /**
    * El mensaje resaltado: el que trajo el buscador, o el que se citó y se
@@ -388,16 +391,7 @@ export default function ChatScreen() {
       idCliente: nuevoIdCliente(),
       chatId: id,
       texto: cuerpo || null,
-      fotos: pendientes.map((a, i) => ({
-        uri: a.uri,
-        // El nombre del archivo viaja porque es lo único por lo que después
-        // se puede buscar una foto.
-        nombre:
-          a.fileName ?? (a.type === "video" ? `video-${i}.mp4` : `foto-${i}.jpg`),
-        contentType:
-          a.mimeType ?? (a.type === "video" ? "video/mp4" : "image/jpeg"),
-        tipo: a.type === "video" ? "video" : "imagen",
-      })),
+      fotos: pendientes,
       respondeA: respondiendo
         ? {
             id: respondiendo.id,
@@ -420,10 +414,57 @@ export default function ChatScreen() {
     setAviso(null);
   }
 
-  /** Elegir **no manda**: la foto espera arriba del campo hasta que se envíe. */
+  /** Elegir **no manda**: el archivo espera arriba del campo hasta que se envíe. */
   function agregar(assets: ImagePicker.ImagePickerAsset[]) {
     if (assets.length === 0) return;
-    setPendientes((actuales) => [...actuales, ...assets].slice(0, 10));
+    const nuevos: FotoEnCola[] = assets.map((a, i) => ({
+      uri: a.uri,
+      // El nombre del archivo viaja porque es lo único por lo que después
+      // se puede buscar una foto.
+      nombre: a.fileName ?? (a.type === "video" ? `video-${i}.mp4` : `foto-${i}.jpg`),
+      contentType: a.mimeType ?? (a.type === "video" ? "video/mp4" : "image/jpeg"),
+      tipo: a.type === "video" ? "video" : "imagen",
+      tamano: a.fileSize ?? null,
+    }));
+    setPendientes((actuales) => [...actuales, ...nuevos].slice(0, 10));
+  }
+
+  /**
+   * Un documento: PDF, Word, Excel, PowerPoint, texto o ZIP. Con copia en la
+   * caché de la app, porque lo que da el selector puede ser un archivo de
+   * otra app que después no se deja leer; y filtrado acá con la misma regla
+   * que el servidor, para avisar antes de subir y no después.
+   */
+  async function elegirDocumento() {
+    const r = await DocumentPicker.getDocumentAsync({
+      multiple: true,
+      copyToCacheDirectory: true,
+    });
+    if (r.canceled) return;
+    const nuevos: FotoEnCola[] = [];
+    let rechazados = 0;
+    for (const a of r.assets) {
+      const contentType = a.mimeType ?? "application/octet-stream";
+      if (!esContenidoPermitidoEnChat(contentType)) {
+        rechazados++;
+        continue;
+      }
+      nuevos.push({
+        uri: a.uri,
+        nombre: a.name,
+        contentType,
+        tipo: contentType.startsWith("image/")
+          ? "imagen"
+          : contentType.startsWith("video/")
+            ? "video"
+            : "documento",
+        tamano: a.size ?? null,
+      });
+    }
+    if (rechazados > 0) {
+      setAviso("Solo se pueden mandar imágenes, videos y documentos (PDF, Word, Excel, PowerPoint, texto o ZIP).");
+    }
+    setPendientes((actuales) => [...actuales, ...nuevos].slice(0, 10));
   }
 
   async function elegirDeGaleria() {
@@ -654,10 +695,14 @@ export default function ChatScreen() {
         {pendientes.length > 0 ? (
           <View style={styles.bandeja}>
             {pendientes.map((a, i) => (
-              <View key={a.uri} style={styles.miniatura}>
-                {a.type === "video" ? (
+              <View key={`${a.uri}-${i}`} style={styles.miniatura}>
+                {a.tipo === "video" ? (
                   <View style={[styles.miniaturaFoto, styles.videoCaja]}>
                     <Ionicons name="play" size={22} color="#fff" />
+                  </View>
+                ) : a.tipo === "documento" ? (
+                  <View style={[styles.miniaturaFoto, styles.documentoCaja]}>
+                    <Ionicons name="document-text-outline" size={22} color={tema.texto2} />
                   </View>
                 ) : (
                   <Image source={{ uri: a.uri }} style={styles.miniaturaFoto} />
@@ -679,6 +724,16 @@ export default function ChatScreen() {
         ) : null}
 
         <View style={styles.escribir}>
+          {/* El clip: un documento. Botón aparte del de la foto porque el
+              selector del sistema filtra por tipo, y uno solo que acepte todo
+              muestra la galería llena de PDFs. */}
+          <PressableScale
+            onPress={elegirDocumento}
+            style={styles.adjuntar}
+            accessibilityLabel="Mandar un documento"
+          >
+            <Ionicons name="attach-outline" size={24} color={tema.texto2} />
+          </PressableScale>
           <PressableScale
             onPress={elegirDeGaleria}
             onLongPress={sacarFoto}
@@ -832,6 +887,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  documentoCaja: { backgroundColor: tema.lienzo, alignItems: "center", justifyContent: "center" },
 
   aviso: {
     color: tema.rojo,
@@ -891,11 +947,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  escribir: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
+  escribir: { flexDirection: "row", alignItems: "flex-end", gap: 4 },
   adjuntar: {
-    width: 40,
+    width: 34,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
   },

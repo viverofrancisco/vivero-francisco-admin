@@ -11,7 +11,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Conectando } from "@/components/shared/conectando";
 import { FILA_MOVIL } from "@/components/shared/lista-movil";
 import { AvatarDeChat } from "./avatar-de-chat";
-import { Play } from "lucide-react";
+import { FileText, Play } from "lucide-react";
+import { etiquetaDeAdjuntos } from "@vivero/shared";
 import { ChatForm } from "./chat-form";
 import { fechaRelativaCorta } from "./formato";
 
@@ -26,6 +27,8 @@ export interface ChatEnLista {
     autorNombre: string;
     createdAt: string;
     fotos: number;
+    /** El tipo del primer adjunto: foto, video o documento. */
+    tipo?: string | null;
   } | null;
 }
 
@@ -217,9 +220,7 @@ export function ChatsPageClient({
                     {c.ultimo
                       ? `${c.ultimo.autorNombre}: ${
                           c.ultimo.texto ??
-                          (c.ultimo.fotos === 1
-                            ? "📷 Foto"
-                            : `📷 ${c.ultimo.fotos} fotos`)
+                          etiquetaDeAdjuntos(c.ultimo.tipo ?? undefined, c.ultimo.fotos)
                         }`
                       : `${c.miembros} ${c.miembros === 1 ? "persona" : "personas"} · sin mensajes`}
                   </span>
@@ -246,6 +247,10 @@ export function ChatsPageClient({
                       <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-foreground/80 text-background">
                         <Play className="h-4 w-4 fill-current" />
                       </span>
+                    ) : m.foto?.tipo === "documento" ? (
+                      <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        <FileText className="h-5 w-5" />
+                      </span>
                     ) : m.foto ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -271,9 +276,7 @@ export function ChatsPageClient({
                           ? conMarca(m.texto, busqueda.trim())
                           : m.foto?.nombre
                             ? conMarca(m.foto.nombre, busqueda.trim())
-                            : m.foto?.tipo === "video"
-                              ? "🎥 Video"
-                              : "📷 Foto"}
+                            : etiquetaDeAdjuntos(m.foto?.tipo, m.fotos)}
                       </span>
                     </span>
                   </Link>

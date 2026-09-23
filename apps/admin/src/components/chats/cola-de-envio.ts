@@ -155,7 +155,7 @@ async function subir(
   chatId: string,
   item: MensajeEnCola,
   files: File[]
-): Promise<{ key: string; url: string; nombre: string; tipo: "imagen" | "video" }[]> {
+): Promise<{ key: string; url: string; nombre: string; tipo: "imagen" | "video" | "documento"; tamano: number | null }[]> {
   const res = await fetch(`/api/chats/${chatId}/fotos`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -182,11 +182,12 @@ async function subir(
     )
   );
   return data.uploads.map(
-    (u: { key: string; url: string; tipo: "imagen" | "video" }, i: number) => ({
+    (u: { key: string; url: string; tipo: "imagen" | "video" | "documento" }, i: number) => ({
       key: u.key,
       url: u.url,
       nombre: item.fotos[i]?.nombre ?? files[i].name,
       tipo: u.tipo,
+      tamano: item.fotos[i]?.tamano ?? files[i].size ?? null,
     })
   );
 }

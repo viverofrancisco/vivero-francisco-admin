@@ -1,5 +1,6 @@
 "use client";
 
+import type { ArchivoDelChat, EnlaceDelChat } from "@vivero/shared";
 import type { ChatCabecera, MensajeEnPantalla } from "./conversacion";
 
 /**
@@ -94,5 +95,57 @@ export function guardarChat(
     window.localStorage.setItem(claveDe(chatId), JSON.stringify(cache));
   } catch {
     // Sin almacenamiento (modo privado, cuota llena) no hay copia, y no pasa nada.
+  }
+}
+
+/**
+ * La primera página de fotos y videos, enlaces o documentos de un chat: se
+ * pinta al abrir la vista y el servidor la reemplaza detrás, igual que la
+ * conversación. Sin esto abrir "Fotos y videos" era mirar un hueco mientras
+ * llegaba lo mismo que se vio ayer.
+ */
+export type TipoDeMedios = "archivos" | "enlaces" | "documentos";
+
+export interface MediosEnCache {
+  tipo: TipoDeMedios;
+  items: (ArchivoDelChat | EnlaceDelChat)[];
+  cursor: string | null;
+}
+
+const claveMedios = (chatId: string, tipo: TipoDeMedios) => `chats:medios:${chatId}:${tipo}`;
+const memoriaMedios = new Map<string, { crudo: string; valor: MediosEnCache | null }>();
+
+export function leerMedios(chatId: string, tipo: TipoDeMedios): MediosEnCache | null {
+  if (typeof window === "undefined") return null;
+  const clave = claveMedios(chatId, tipo);
+  let crudo: string | null;
+  try {
+    crudo = window.localStorage.getItem(clave);
+  } catch {
+    return null;
+  }
+  if (!crudo) return null;
+  const previo = memoriaMedios.get(clave);
+  if (previo && previo.crudo === crudo) return previo.valor;
+  let valor: MediosEnCache | null = null;
+  try {
+    const parseado = JSON.parse(crudo) as MediosEnCache;
+    valor = parseado && Array.isArray(parseado.items) ? parseado : null;
+  } catch {
+    valor = null;
+  }
+  memoriaMedios.set(clave, { crudo, valor });
+  return valor;
+}
+
+export function guardarMedios(chatId: string, datos: MediosEnCache) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      claveMedios(chatId, datos.tipo),
+      JSON.stringify({ ...datos, items: datos.items.slice(0, 60) })
+    );
+  } catch {
+    // Sin almacenamiento no hay copia, y no pasa nada.
   }
 }

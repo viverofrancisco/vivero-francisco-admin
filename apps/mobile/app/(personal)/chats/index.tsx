@@ -13,6 +13,7 @@ import { useColaDeEnvio } from "@/lib/cola-de-envio";
 import { guardarLista, leerLista } from "@/lib/cache-de-chats";
 import {
   cuandoFue,
+  etiquetaDeAdjuntos,
   resumenDelUltimo,
   type ChatEnLista,
   type MensajeEncontrado,
@@ -184,6 +185,10 @@ export default function ChatsListScreen() {
                       <View style={[styles.fotoEncontrada, styles.videoCaja]}>
                         <Ionicons name="play" size={18} color="#fff" />
                       </View>
+                    ) : m.foto?.tipo === "documento" ? (
+                      <View style={[styles.fotoEncontrada, styles.documentoCaja]}>
+                        <Ionicons name="document-text-outline" size={20} color={tema.texto2} />
+                      </View>
                     ) : m.foto ? (
                       <Image
                         source={{ uri: m.foto.url }}
@@ -213,7 +218,7 @@ export default function ChatsListScreen() {
                         {(m.mio ? "Tú: " : `${m.autorNombre}: `) +
                           (m.texto ??
                             m.foto?.nombre ??
-                            (m.foto?.tipo === "video" ? "🎥 Video" : "📷 Foto"))}
+                            etiquetaDeAdjuntos(m.foto?.tipo, m.fotos))}
                       </Text>
                     </View>
                   </PressableScale>
@@ -298,6 +303,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  documentoCaja: { backgroundColor: tema.lienzo, alignItems: "center", justifyContent: "center" },
   texto: { flex: 1, gap: 2 },
   renglon: { flexDirection: "row", alignItems: "baseline", gap: 8 },
   nombre: { flex: 1, color: tema.texto, fontWeight: "700" },

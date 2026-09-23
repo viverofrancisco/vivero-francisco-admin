@@ -196,11 +196,13 @@ export async function pushChatMensaje(mensajeId: string): Promise<void> {
     .filter((id) => id !== mensaje.autorId);
   if (destinatarios.length === 0) return;
 
-  const esVideo = mensaje.adjuntos[0]?.tipo === "video";
+  const primero = mensaje.adjuntos[0]?.tipo;
+  const esVideo = primero === "video";
+  const esDocumento = primero === "documento";
   const cuerpo = mensaje.texto?.trim()
     ? mensaje.texto.trim()
     : mensaje._count.adjuntos === 1
-      ? (esVideo ? "🎥 Video" : "📷 Foto")
+      ? (esVideo ? "🎥 Video" : esDocumento ? "📄 Documento" : "📷 Foto")
       : `📎 ${mensaje._count.adjuntos} archivos`;
 
   await sendPushToUsers(destinatarios, {

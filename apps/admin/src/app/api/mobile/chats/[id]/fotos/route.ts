@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { requireMobileUser, isMobileUser } from "@/lib/mobile/auth";
-import { chatUploadUrlsSchema } from "@vivero/shared";
+import { chatUploadUrlsSchema, tipoDeArchivo } from "@vivero/shared";
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
 import { prisma } from "@/lib/prisma";
 import {
@@ -62,7 +62,7 @@ export async function POST(
           contentType: file.contentType,
           // Lo decide el servidor por el tipo de contenido firmado, no la
           // pantalla: es lo que después dice cómo se dibuja.
-          tipo: file.contentType.startsWith("video/") ? "video" : "imagen",
+          tipo: tipoDeArchivo(file.contentType),
         };
       })
     );

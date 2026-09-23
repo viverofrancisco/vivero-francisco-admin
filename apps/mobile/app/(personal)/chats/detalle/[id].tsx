@@ -121,6 +121,7 @@ export default function InfoDelChatScreen() {
             </Text>
           </View>
 
+          {/* Una sola fila, como en WhatsApp: adentro están las tres pestañas. */}
           <View style={styles.tarjeta}>
             <PressableScale
               onPress={() =>
@@ -133,23 +134,14 @@ export default function InfoDelChatScreen() {
               style={styles.fila}
             >
               <Ionicons name="images-outline" size={20} color={tema.texto2} />
-              <Text style={styles.filaTexto}>Fotos y videos</Text>
-              <Text style={styles.filaValor}>{chat.medios?.fotosYVideos ?? 0}</Text>
-              <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
-            </PressableScale>
-            <PressableScale
-              onPress={() =>
-                router.push({
-                  pathname: "/(personal)/chats/medios/[id]",
-                  params: { id, tipo: "enlaces" },
-                })
-              }
-              estiloExterno={styles.ancho}
-              style={[styles.fila, styles.filaConLinea]}
-            >
-              <Ionicons name="link-outline" size={20} color={tema.texto2} />
-              <Text style={styles.filaTexto}>Enlaces</Text>
-              <Text style={styles.filaValor}>{chat.medios?.enlaces ?? 0}</Text>
+              <Text style={styles.filaTexto} numberOfLines={1}>
+                Fotos, videos, enlaces y documentos
+              </Text>
+              <Text style={styles.filaValor}>
+                {(chat.medios?.fotosYVideos ?? 0) +
+                  (chat.medios?.documentos ?? 0) +
+                  (chat.medios?.enlaces ?? 0)}
+              </Text>
               <Ionicons name="chevron-forward" size={18} color={tema.texto3} />
             </PressableScale>
           </View>

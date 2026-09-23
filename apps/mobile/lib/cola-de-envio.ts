@@ -77,14 +77,14 @@ function esDeRed(e: unknown): boolean {
 
 async function subir(
   item: MensajeEnCola
-): Promise<{ key: string; url: string; nombre?: string; tipo: "imagen" | "video" }[]> {
+): Promise<{ key: string; url: string; nombre?: string; tipo: "imagen" | "video" | "documento"; tamano: number | null }[]> {
   const presign = await apiRequest<{
     uploads: {
       key: string;
       url: string;
       uploadUrl: string;
       contentType: string;
-      tipo: "imagen" | "video";
+      tipo: "imagen" | "video" | "documento";
     }[];
   }>(`/api/mobile/chats/${item.chatId}/fotos`, {
     method: "POST",
@@ -122,6 +122,7 @@ async function subir(
     url: u.url,
     nombre: item.fotos[i].nombre,
     tipo: u.tipo,
+    tamano: item.fotos[i].tamano ?? null,
   }));
 }
 

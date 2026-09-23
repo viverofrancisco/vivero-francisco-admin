@@ -1,6 +1,7 @@
-import { Image, StyleSheet, View } from "react-native";
+import { Image, Linking, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
+import { extensionDe, tamanoLegible } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
 import {
   etiquetaDeAdjuntos,
@@ -71,6 +72,9 @@ export function Burbuja({
   const mio = mensaje.mio;
   const enCola = mensaje.estado === "pendiente" || mensaje.estado === "fallido";
   const mantener = soloLectura || mensaje.borrado || enCola ? undefined : onMantener;
+  // Las fotos y videos van en la grilla; los documentos, cada uno en su tarjeta.
+  const medios = mensaje.fotos.filter((f) => f.tipo !== "documento");
+  const documentos = mensaje.fotos.filter((f) => f.tipo === "documento");
 
   const burbuja = (
     <PressableScale
@@ -131,9 +135,9 @@ export function Burbuja({
         </Text>
       ) : (
         <>
-          {mensaje.fotos.length > 0 ? (
+          {medios.length > 0 ? (
             <View style={styles.fotos}>
-              {mensaje.fotos.map((f) => (
+              {medios.map((f) => (
                 <PressableScale
                   key={f.id}
                   onPress={() => onVerFoto?.({ url: f.url, tipo: f.tipo })}
@@ -146,7 +150,7 @@ export function Burbuja({
                   {f.tipo === "video" ? (
                     <View
                       style={[
-                        mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola,
+                        medios.length > 1 ? styles.fotoChica : styles.fotoSola,
                         styles.videoCaja,
                       ]}
                     >
@@ -155,15 +159,43 @@ export function Burbuja({
                   ) : (
                     <Image
                       source={{ uri: f.url }}
-                      style={
-                        mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola
-                      }
+                      style={medios.length > 1 ? styles.fotoChica : styles.fotoSola}
                     />
                   )}
                 </PressableScale>
               ))}
             </View>
           ) : null}
+          {/* Un documento es una tarjeta con su nombre y su peso, como en
+              WhatsApp: tocarlo lo abre con lo que el teléfono tenga para eso.
+              Uno en la cola todavía es un archivo local, y también se abre. */}
+          {documentos.map((d) => (
+            <PressableScale
+              key={d.id}
+              onPress={soloLectura ? undefined : () => Linking.openURL(d.url)}
+              onLongPress={mantener}
+              estiloExterno={styles.ancho}
+              style={[styles.documento, mio ? styles.documentoMio : styles.documentoAjeno]}
+            >
+              <Ionicons
+                name="document-text"
+                size={26}
+                color={mio ? "#fff" : tema.texto2}
+              />
+              <View style={styles.crece}>
+                <Text
+                  style={[styles.documentoNombre, mio && styles.textoClaro]}
+                  numberOfLines={2}
+                >
+                  {d.nombre ?? "Documento"}
+                </Text>
+                <Text style={[styles.documentoDetalle, mio && styles.textoClaro]}>
+                  {[tamanoLegible(d.tamano), extensionDe(d.nombre)].filter(Boolean).join(" · ") ||
+                    "Documento"}
+                </Text>
+              </View>
+            </PressableScale>
+          ))}
           {mensaje.texto ? (
             <Text style={[styles.texto, mio && styles.textoClaro]}>
               {mensaje.texto}
@@ -295,6 +327,20 @@ const styles = StyleSheet.create({
     maxWidth: 213,
   },
   fotoCaja: { borderRadius: 10, overflow: "hidden" },
+  documento: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    minWidth: 210,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  documentoMio: { backgroundColor: "rgba(255,255,255,0.15)" },
+  documentoAjeno: { backgroundColor: tema.lienzo },
+  documentoNombre: { fontSize: 14, fontWeight: "600", color: tema.texto },
+  documentoDetalle: { fontSize: 11, color: tema.texto3, marginTop: 1, opacity: 0.9 },
   fotoSola: { width: 213, height: 160, backgroundColor: tema.lienzo },
   fotoChica: { width: 105, height: 105, backgroundColor: tema.lienzo },
 

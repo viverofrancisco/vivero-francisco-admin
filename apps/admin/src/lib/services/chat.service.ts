@@ -122,6 +122,8 @@ export async function listChats(viewer: Viewer) {
               autorNombre: true,
               createdAt: true,
               _count: { select: { adjuntos: true } },
+              // El primero, para decir "📄 Documento" y no "📷 Foto".
+              adjuntos: { take: 1, select: { tipo: true } },
             },
           },
         },
@@ -159,6 +161,7 @@ export async function listChats(viewer: Viewer) {
               autorNombre: ultimo.autorNombre,
               createdAt: ultimo.createdAt,
               fotos: ultimo._count.adjuntos,
+              tipo: ultimo.adjuntos[0]?.tipo ?? null,
             }
           : null,
         // Para ordenar: un chat recién creado y sin mensajes va por su fecha.
@@ -191,11 +194,14 @@ export async function getChat(viewer: Viewer, chatId: string) {
   });
   if (!chat) throw new NotFoundError("Chat no encontrado");
 
-  // Cuánto hay de cada cosa, para los renglones de la info: "Fotos y videos ·
-  // 12", "Enlaces · 3". Dos cuentas por índice; no vale la pena traerlos.
-  const [fotosYVideos, enlaces] = await Promise.all([
+  // Cuánto hay de cada cosa, para el renglón de la info. Tres cuentas por
+  // índice; no vale la pena traerlos.
+  const [fotosYVideos, documentos, enlaces] = await Promise.all([
     prisma.chatAdjunto.count({
-      where: { mensaje: { chatId, deletedAt: null } },
+      where: { mensaje: { chatId, deletedAt: null }, tipo: { in: ["imagen", "video"] } },
+    }),
+    prisma.chatAdjunto.count({
+      where: { mensaje: { chatId, deletedAt: null }, tipo: "documento" },
     }),
     prisma.chatMensaje.count({
       where: { chatId, deletedAt: null, ...FILTRO_CON_ENLACE },
@@ -208,7 +214,7 @@ export async function getChat(viewer: Viewer, chatId: string) {
     imagenUrl: chat.imagenUrl,
     creadoEl: chat.createdAt,
     leidoEl: miembro.leidoEl,
-    medios: { fotosYVideos, enlaces },
+    medios: { fotosYVideos, documentos, enlaces },
     /** Si puede tocar el nombre y la lista de miembros. */
     puedeEditar: viewer.role === "ADMIN",
     miembros: chat.miembros.map((m) => ({
@@ -249,14 +255,24 @@ export function enlacesEn(texto: string): string[] {
 export async function mediosDelChat(
   viewer: Viewer,
   chatId: string,
-  opciones: { tipo: "archivos" | "enlaces"; cursor?: string; limit?: number }
+  opciones: {
+    tipo: "archivos" | "enlaces" | "documentos";
+    cursor?: string;
+    limit?: number;
+  }
 ) {
   await ensureMiembro(viewer, chatId);
   const limit = Math.min(opciones.limit ?? 60, 200);
 
-  if (opciones.tipo === "archivos") {
+  if (opciones.tipo === "archivos" || opciones.tipo === "documentos") {
     const adjuntos = await prisma.chatAdjunto.findMany({
-      where: { mensaje: { chatId, deletedAt: null } },
+      where: {
+        mensaje: { chatId, deletedAt: null },
+        tipo:
+          opciones.tipo === "documentos"
+            ? "documento"
+            : { in: ["imagen", "video"] },
+      },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,
       ...(opciones.cursor ? { cursor: { id: opciones.cursor }, skip: 1 } : {}),
@@ -266,6 +282,7 @@ export async function mediosDelChat(
         url: true,
         tipo: true,
         nombre: true,
+        tamano: true,
         createdAt: true,
       },
     });
@@ -487,7 +504,7 @@ const MENSAJE_SELECT = {
   idCliente: true,
   // Quiénes lo leyeron: alcanza con los ids para decir si lo leyeron todos.
   lecturas: { select: { userId: true } },
-  adjuntos: { select: { id: true, url: true, tipo: true, nombre: true } },
+  adjuntos: { select: { id: true, url: true, tipo: true, nombre: true, tamano: true } },
   respondeA: {
     select: {
       id: true,
@@ -598,7 +615,7 @@ type MensajeCrudo = {
   autorNombre: string;
   idCliente: string | null;
   lecturas: { userId: string }[];
-  adjuntos: { id: string; url: string; tipo: string; nombre: string | null }[];
+  adjuntos: { id: string; url: string; tipo: string; nombre: string | null; tamano: number | null }[];
   respondeA: {
     id: string;
     texto: string | null;
@@ -668,7 +685,7 @@ export async function enviarMensaje(
   chatId: string,
   datos: {
     texto?: string | null;
-    fotos?: { key: string; url: string; nombre?: string; tipo?: string }[];
+    fotos?: { key: string; url: string; nombre?: string; tipo?: string; tamano?: number | null }[];
     respondeAId?: string | null;
     idCliente?: string;
   }
@@ -734,6 +751,7 @@ export async function enviarMensaje(
             // la puede buscar.
             nombre: f.nombre ?? null,
             tipo: f.tipo ?? "imagen",
+            tamano: f.tamano ?? null,
           })),
         },
       },

@@ -1,3 +1,4 @@
+import { etiquetaDeAdjuntos } from "@vivero/shared";
 /**
  * Lo que la app necesita saber de un chat, y cómo se dice la hora.
  *
@@ -18,6 +19,8 @@ export interface ChatEnLista {
     autorNombre: string;
     createdAt: string;
     fotos: number;
+    /** El tipo del primer adjunto: foto, video o documento. */
+    tipo?: string | null;
   } | null;
 }
 
@@ -32,8 +35,8 @@ export interface ChatDetalle {
   id: string;
   nombre: string;
   imagenUrl?: string | null;
-  /** Cuántas fotos y videos y cuántos enlaces hay, para la info. */
-  medios?: { fotosYVideos: number; enlaces: number };
+  /** Cuántas fotos y videos, documentos y enlaces hay, para la info. */
+  medios?: { fotosYVideos: number; documentos?: number; enlaces: number };
   creadoEl: string;
   puedeEditar: boolean;
   miembros: MiembroDeChat[];
@@ -65,21 +68,14 @@ export type {
   EnlaceDelChat,
 } from "@vivero/shared";
 
-/** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
-export function etiquetaDeAdjuntos(
-  tipo: string | undefined,
-  cuantos: number
-): string {
-  if (cuantos > 1) return `📎 ${cuantos} archivos`;
-  return tipo === "video" ? "🎥 Video" : "📷 Foto";
-}
+/** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. El mismo que el portal. */
+export { etiquetaDeAdjuntos };
 
-/** Lo que muestra el renglón de la lista cuando el último mensaje es una foto. */
+/** Lo que muestra el renglón de la lista cuando el último mensaje es un adjunto. */
 export function resumenDelUltimo(ultimo: ChatEnLista["ultimo"]): string {
   if (!ultimo) return "Sin mensajes";
   const cuerpo =
-    ultimo.texto ??
-    (ultimo.fotos === 1 ? "📷 Foto" : `📷 ${ultimo.fotos} fotos`);
+    ultimo.texto ?? etiquetaDeAdjuntos(ultimo.tipo ?? undefined, ultimo.fotos);
   return `${ultimo.autorNombre}: ${cuerpo}`;
 }
 

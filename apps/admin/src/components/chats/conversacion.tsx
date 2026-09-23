@@ -24,9 +24,11 @@ import {
   CheckCheck,
   ChevronLeft,
   Copy,
+  FileText,
   ImageIcon,
   Info,
   MoreVertical,
+  Paperclip,
   Play,
   Reply,
   Send,
@@ -35,8 +37,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import {
+  esContenidoPermitidoEnChat,
+  etiquetaDeAdjuntos,
+  extensionDe,
   mezclarConLaCola,
   nuevoIdCliente,
+  tamanoLegible,
+  tipoDeArchivo,
   type EstadoDeMensaje,
   type InfoDeMensaje,
   type MensajeDeChat,
@@ -62,16 +69,11 @@ import { cuandoLeyo, horaDeMensaje, mismoDia, tituloDelDia } from "./formato";
 /** Un mensaje como lo dibuja esta pantalla: el mismo que la app. */
 export type MensajeEnPantalla = MensajeDeChat;
 
-/** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
-function etiquetaDeAdjuntos(tipo: string | undefined, cuantos: number): string {
-  if (cuantos > 1) return `📎 ${cuantos} archivos`;
-  return tipo === "video" ? "🎥 Video" : "📷 Foto";
-}
-
 /**
  * La miniatura de una foto o un video, del tamaño que se le pida. Un video no
  * tiene imagen sin reproducirlo, así que va un recuadro oscuro con el
- * triángulo: es lo que todo el mundo lee como "esto se reproduce".
+ * triángulo: es lo que todo el mundo lee como "esto se reproduce". Un
+ * documento tampoco tiene imagen: va el ícono de hoja.
  */
 function Miniatura({
   url,
@@ -82,6 +84,15 @@ function Miniatura({
   tipo: string;
   className: string;
 }) {
+  if (tipo === "documento") {
+    return (
+      <span
+        className={`flex items-center justify-center bg-muted text-muted-foreground ${className}`}
+      >
+        <FileText className="h-1/2 w-1/2" />
+      </span>
+    );
+  }
   if (tipo === "video") {
     return (
       <span
@@ -248,6 +259,7 @@ export function Conversacion({
 
   const scroll = useRef<HTMLDivElement>(null);
   const archivos = useRef<HTMLInputElement>(null);
+  const documentos = useRef<HTMLInputElement>(null);
 
   const irAlFondo = useCallback((suave = false) => {
     const caja = scroll.current;
@@ -400,7 +412,8 @@ export function Conversacion({
         uri: p.vista,
         nombre: p.archivo.name,
         contentType: p.archivo.type,
-        tipo: p.archivo.type.startsWith("video/") ? "video" : "imagen",
+        tipo: tipoDeArchivo(p.archivo.type),
+        tamano: p.archivo.size,
       })),
       respondeA: respondiendo
         ? {
@@ -428,14 +441,23 @@ export function Conversacion({
     requestAnimationFrame(() => irAlFondo(true));
   }
 
-  /** Elegir **no manda**: la foto espera arriba del campo hasta que se envíe. */
+  /**
+   * Elegir **no manda**: el archivo espera arriba del campo hasta que se
+   * envíe. Fotos, videos y los documentos que el servidor acepta; lo demás
+   * se avisa acá y no después de haberlo subido.
+   */
   function elegirFotos(lista: FileList | null) {
     if (!lista || lista.length === 0) return;
-    const nuevas = Array.from(lista)
-      .filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"))
+    const todos = Array.from(lista);
+    const nuevas = todos
+      .filter((f) => esContenidoPermitidoEnChat(f.type))
       .map((archivo) => ({ archivo, vista: URL.createObjectURL(archivo) }));
+    if (nuevas.length < todos.length) {
+      toast.error("Solo se pueden mandar imágenes, videos y documentos (PDF, Word, Excel, PowerPoint, texto o ZIP)");
+    }
     setPendientes((actuales) => [...actuales, ...nuevas].slice(0, 10));
     if (archivos.current) archivos.current.value = "";
+    if (documentos.current) documentos.current.value = "";
   }
 
   function quitarPendiente(i: number) {
@@ -485,7 +507,7 @@ export function Conversacion({
    */
   async function copiar(mensaje: MensajeEnPantalla) {
     const texto = mensaje.texto ?? "";
-    const foto = mensaje.fotos.find((f) => f.tipo !== "video");
+    const foto = mensaje.fotos.find((f) => f.tipo === "imagen");
     if (!texto && !foto) {
       toast.error("No hay nada para copiar");
       return;
@@ -670,10 +692,11 @@ export function Conversacion({
               <span
                 key={p.vista}
                 className="relative h-14 w-14 overflow-hidden rounded-lg border border-border"
+                title={p.archivo.name}
               >
                 <Miniatura
                   url={p.vista}
-                  tipo={p.archivo.type.startsWith("video/") ? "video" : "imagen"}
+                  tipo={tipoDeArchivo(p.archivo.type)}
                   className="h-full w-full"
                 />
                 <button
@@ -698,6 +721,27 @@ export function Conversacion({
             className="hidden"
             onChange={(e) => elegirFotos(e.target.files)}
           />
+          <input
+            ref={documentos}
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip"
+            multiple
+            className="hidden"
+            onChange={(e) => elegirFotos(e.target.files)}
+          />
+          {/* El clip: un documento. Botón aparte del de la foto porque el
+              selector del sistema filtra por tipo, y uno solo que acepte todo
+              muestra la galería llena de PDFs. */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 flex-none text-muted-foreground"
+            aria-label="Mandar un documento"
+            disabled={soloVista}
+            onClick={() => documentos.current?.click()}
+          >
+            <Paperclip className="h-5 w-5" />
+          </Button>
           {/* Ícono pelado, como en la app: al lado de un campo redondeado, un
               botón con borde compite con él. Los tres del mismo alto. */}
           <Button
@@ -1012,6 +1056,9 @@ function Burbuja({
 }) {
   const mio = mensaje.mio;
   const enCola = mensaje.estado === "pendiente" || mensaje.estado === "fallido";
+  // Las fotos y videos van en la grilla; los documentos, cada uno en su tarjeta.
+  const medios = mensaje.fotos.filter((f) => f.tipo !== "documento");
+  const documentos = mensaje.fotos.filter((f) => f.tipo === "documento");
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fila = useRef<HTMLDivElement>(null);
   const iconoResponder = useRef<HTMLSpanElement>(null);
@@ -1213,13 +1260,13 @@ function Burbuja({
           <p className="italic opacity-70">Mensaje borrado</p>
         ) : (
           <>
-            {mensaje.fotos.length > 0 ? (
+            {medios.length > 0 ? (
               <div
                 className={`grid gap-1 ${
-                  mensaje.fotos.length > 1 ? "grid-cols-2" : "grid-cols-1"
-                } ${mensaje.texto ? "mb-1.5" : ""}`}
+                  medios.length > 1 ? "grid-cols-2" : "grid-cols-1"
+                } ${mensaje.texto || documentos.length > 0 ? "mb-1.5" : ""}`}
               >
-                {mensaje.fotos.map((f) => (
+                {medios.map((f) => (
                   <button
                     key={f.id}
                     type="button"
@@ -1231,6 +1278,30 @@ function Burbuja({
                 ))}
               </div>
             ) : null}
+            {/* Un documento es una tarjeta con su nombre y su peso, como en
+                WhatsApp: se abre en otra pestaña. La URL de R2 es pública. */}
+            {documentos.map((d) => (
+              <a
+                key={d.id}
+                href={d.url}
+                target="_blank"
+                rel="noreferrer"
+                download={d.nombre ?? undefined}
+                className={`mb-1 flex items-center gap-2.5 rounded-lg px-2.5 py-2 ${
+                  mio ? "bg-primary-foreground/15" : "bg-muted"
+                }`}
+              >
+                <FileText className="h-6 w-6 flex-none" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">
+                    {d.nombre ?? "Documento"}
+                  </span>
+                  <span className="block text-[11px] opacity-75">
+                    {[tamanoLegible(d.tamano), extensionDe(d.nombre)].filter(Boolean).join(" · ") || "Documento"}
+                  </span>
+                </span>
+              </a>
+            ))}
             {mensaje.texto ? (
               <p className="whitespace-pre-wrap break-words">{mensaje.texto}</p>
             ) : null}

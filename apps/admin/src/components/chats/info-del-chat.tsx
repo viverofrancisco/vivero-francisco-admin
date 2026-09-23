@@ -7,10 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MediaViewer } from "@/components/ui/media-viewer";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
-import { ChevronLeft, ChevronRight, Images, Link2, Play, Plus, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Images, Play, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
-import type { ArchivoDelChat, EnlaceDelChat } from "@vivero/shared";
+import {
+  extensionDe,
+  tamanoLegible,
+  type ArchivoDelChat,
+  type EnlaceDelChat,
+} from "@vivero/shared";
 import { AvatarDeChat } from "./avatar-de-chat";
+import { guardarMedios, leerMedios, type TipoDeMedios } from "./cache-de-chats";
 import { FormularioDeChat, ROL_LABEL } from "./chat-form";
 import { fechaRelativaCorta } from "./formato";
 
@@ -20,12 +26,12 @@ export interface ChatParaInfo {
   imagenUrl?: string | null;
   puedeEditar: boolean;
   miembros: { id: string; nombre: string; rol: string; soyYo: boolean }[];
-  medios?: { fotosYVideos: number; enlaces: number };
+  medios?: { fotosYVideos: number; documentos?: number; enlaces: number };
 }
 
 type Vista =
   | { paso: "info" }
-  | { paso: "medios"; tipo: "archivos" | "enlaces" }
+  | { paso: "medios"; tipo: TipoDeMedios }
   | { paso: "editar" }
   | { paso: "agregar" };
 
@@ -210,25 +216,18 @@ function VistaInfo({
           </p>
         </div>
 
-        <div className="divide-y rounded-xl border border-border">
+        {/* Una sola fila, como en WhatsApp: adentro están las tres pestañas. */}
+        <div className="rounded-xl border border-border">
           <button
             type="button"
             className={`${FILA} hover:bg-muted`}
             onClick={() => onVer({ paso: "medios", tipo: "archivos" })}
           >
             <Images className="h-5 w-5 flex-none text-muted-foreground" />
-            <span className="flex-1 text-sm font-medium">Fotos y videos</span>
-            <span className="text-sm text-muted-foreground">{chat.medios?.fotosYVideos ?? 0}</span>
-            <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
-          </button>
-          <button
-            type="button"
-            className={`${FILA} hover:bg-muted`}
-            onClick={() => onVer({ paso: "medios", tipo: "enlaces" })}
-          >
-            <Link2 className="h-5 w-5 flex-none text-muted-foreground" />
-            <span className="flex-1 text-sm font-medium">Enlaces</span>
-            <span className="text-sm text-muted-foreground">{chat.medios?.enlaces ?? 0}</span>
+            <span className="flex-1 text-sm font-medium">Fotos, videos, enlaces y documentos</span>
+            <span className="text-sm text-muted-foreground">
+              {(chat.medios?.fotosYVideos ?? 0) + (chat.medios?.documentos ?? 0) + (chat.medios?.enlaces ?? 0)}
+            </span>
             <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
           </button>
         </div>
@@ -317,33 +316,41 @@ function VistaMedios({
   onIrAlMensaje,
 }: {
   chat: ChatParaInfo;
-  tipo: "archivos" | "enlaces";
-  onTipo: (t: "archivos" | "enlaces") => void;
+  tipo: TipoDeMedios;
+  onTipo: (t: TipoDeMedios) => void;
   onVolver: () => void;
   onVerFoto: (m: { url: string; tipo: string }) => void;
   onIrAlMensaje: (mensajeId: string) => void;
 }) {
   /**
-   * Lo cargado, con el tipo al que pertenece: "cargando" es que todavía no
-   * llegó lo de **este** tipo, sin un estado aparte que haya que prender en
-   * el efecto. Se escribe solo cuando la respuesta llega.
+   * Lo cargado, con el tipo al que pertenece; mientras no llegó lo de
+   * **este** tipo se pinta la copia local, si la hay, y si no, "cargando".
+   * Sin un estado aparte que haya que prender en el efecto: se escribe solo
+   * cuando la respuesta llega, y la copia se lee en el render.
    */
   const [datos, setDatos] = useState<{
-    tipo: "archivos" | "enlaces";
+    tipo: TipoDeMedios;
     items: (ArchivoDelChat | EnlaceDelChat)[];
     cursor: string | null;
   } | null>(null);
   const [cargandoMas, setCargandoMas] = useState(false);
-  const cargando = datos === null || datos.tipo !== tipo;
-  const archivos = (datos?.tipo === "archivos" ? datos.items : []) as ArchivoDelChat[];
-  const enlaces = (datos?.tipo === "enlaces" ? datos.items : []) as EnlaceDelChat[];
-  const cursor = datos?.tipo === tipo ? datos.cursor : null;
+  const vigente = datos?.tipo === tipo ? datos : leerMedios(chat.id, tipo);
+  const cargando = vigente === null;
+  const archivos = (vigente?.tipo === "archivos" ? vigente.items : []) as ArchivoDelChat[];
+  const documentos = (vigente?.tipo === "documentos" ? vigente.items : []) as ArchivoDelChat[];
+  const enlaces = (vigente?.tipo === "enlaces" ? vigente.items : []) as EnlaceDelChat[];
+  const cursor = vigente?.cursor ?? null;
 
   useEffect(() => {
     let vivo = true;
     fetch(`/api/chats/${chat.id}/medios?tipo=${tipo}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error())))
-      .then((d) => vivo && setDatos({ tipo, items: d.items, cursor: d.cursor }))
+      .then((d) => {
+        if (!vivo) return;
+        const nuevos = { tipo, items: d.items, cursor: d.cursor };
+        setDatos(nuevos);
+        guardarMedios(chat.id, nuevos);
+      })
       .catch(() => vivo && toast.error("No pudimos traer los archivos"));
     return () => {
       vivo = false;
@@ -369,7 +376,7 @@ function VistaMedios({
     }
   }
 
-  const pestana = (t: "archivos" | "enlaces", etiqueta: string) => (
+  const pestana = (t: TipoDeMedios, etiqueta: string) => (
     <button
       type="button"
       onClick={() => {
@@ -398,6 +405,7 @@ function VistaMedios({
           <span className="inline-flex rounded-full bg-muted p-0.5">
             {pestana("archivos", "Fotos y videos")}
             {pestana("enlaces", "Enlaces")}
+            {pestana("documentos", "Documentos")}
           </span>
         }
       />
@@ -434,6 +442,38 @@ function VistaMedios({
                 {cursor ? " cargados" : ""}
               </p>
             </>
+          )
+        ) : tipo === "documentos" ? (
+          documentos.length === 0 && !cargando ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              Todavía no se mandaron documentos.
+            </p>
+          ) : (
+            <ul className="divide-y rounded-xl border border-border">
+              {documentos.map((d) => (
+                <li key={d.id}>
+                  <a
+                    href={d.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    download={d.nombre ?? undefined}
+                    className={`${FILA} hover:bg-muted`}
+                  >
+                    <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{d.nombre ?? "Documento"}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {[tamanoLegible(d.tamano), extensionDe(d.nombre), fechaRelativaCorta(d.createdAt)]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           )
         ) : enlaces.length === 0 && !cargando ? (
           <p className="py-10 text-center text-sm text-muted-foreground">

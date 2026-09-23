@@ -1,5 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { ChatDetalle, ChatEnLista, MensajeDeChat } from "./chats";
+import type {
+  ArchivoDelChat,
+  ChatDetalle,
+  ChatEnLista,
+  EnlaceDelChat,
+  MensajeDeChat,
+} from "./chats";
 
 /**
  * Una copia local de cada chat para abrirlo **al instante**.
@@ -74,4 +80,37 @@ export function guardarChat(
     guardadoEl: new Date().toISOString(),
   };
   AsyncStorage.setItem(claveDe(chatId), JSON.stringify(cache)).catch(() => {});
+}
+
+/**
+ * La primera página de fotos y videos, enlaces o documentos de un chat: se
+ * pinta al abrir la vista y el servidor la reemplaza detrás, igual que la
+ * conversación. Sin esto abrir "Fotos y videos" era mirar un hueco mientras
+ * llegaba lo mismo que se vio ayer.
+ */
+export type TipoDeMedios = "archivos" | "enlaces" | "documentos";
+
+export interface MediosEnCache {
+  tipo: TipoDeMedios;
+  items: (ArchivoDelChat | EnlaceDelChat)[];
+  cursor: string | null;
+}
+
+const claveMedios = (chatId: string, tipo: TipoDeMedios) => `chats:medios:${chatId}:${tipo}`;
+
+export async function leerMedios(chatId: string, tipo: TipoDeMedios): Promise<MediosEnCache | null> {
+  try {
+    const crudo = await AsyncStorage.getItem(claveMedios(chatId, tipo));
+    const cache = crudo ? (JSON.parse(crudo) as MediosEnCache) : null;
+    return cache && Array.isArray(cache.items) ? cache : null;
+  } catch {
+    return null;
+  }
+}
+
+export function guardarMedios(chatId: string, datos: MediosEnCache) {
+  AsyncStorage.setItem(
+    claveMedios(chatId, datos.tipo),
+    JSON.stringify({ ...datos, items: datos.items.slice(0, 60) })
+  ).catch(() => {});
 }

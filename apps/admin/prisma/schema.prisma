@@ -2221,8 +2221,10 @@ model ChatAdjunto {
    * nombre que le puso la cámara o quien la guardó.
    */
   nombre    String?
-  /// "imagen" por ahora. La columna ya está para el día que entre un video.
+  /// `imagen`, `video` o `documento`. Lo decide el servidor por el tipo de contenido firmado.
   tipo      String   @default("imagen")
+  /// Bytes, para decir "1,7 MB" al lado de un documento. Las fotos no lo necesitan.
+  tamano    Int?
   createdAt DateTime @default(now())
 
   mensaje ChatMensaje @relation(fields: [mensajeId], references: [id], onDelete: Cascade)
