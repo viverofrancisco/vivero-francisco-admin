@@ -25,6 +25,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { onEnviado, useColaDeEnvio } from "@/lib/cola-de-envio";
 import { guardarChat, leerChat } from "@/lib/cache-de-chats";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { Conectando } from "@/components/ui/Conectando";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MediaViewer } from "@/components/MediaViewer";
 import { Burbuja, MiniaturaAdjunto } from "@/components/chats/Burbuja";
@@ -519,6 +520,7 @@ export default function ChatScreen() {
         ) : null}
       </View>
 
+      <Conectando />
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <FlatList

@@ -16,6 +16,12 @@ import {
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import {
+  guardarTareas,
+  guardarVisita,
+  leerTareas,
+  leerVisita,
+} from "@/lib/cache-de-visitas";
+import {
   ArchivosVisita,
   useCambiosDeArchivos,
 } from "@/components/ArchivosVisita";
@@ -27,6 +33,7 @@ import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { Conectando } from "@/components/ui/Conectando";
 import { UbicacionPropiedad } from "@/components/UbicacionPropiedad";
 import { tema } from "@/lib/tema";
 import { diaEnEcuador, fechaYHora12, hoyEnEcuador } from "@/lib/hora";
@@ -84,9 +91,23 @@ export default function PersonalVisitaScreen() {
     };
   }, [visita, videoThumbs]);
 
+  /**
+   * Cargar la ficha: la copia local primero, si la hay, y el servidor detrás.
+   * Sin señal se queda la copia —se puede mirar dónde es, qué hay que hacer,
+   * a qué hora— con el aviso de que es lo último guardado; sin copia, el
+   * error de siempre. Al volver a la pantalla no vuelve el spinner: ya hay
+   * algo que mostrar, y lo nuevo lo reemplaza cuando llega.
+   */
   const load = useCallback(async () => {
     if (!id) return;
-    setLoading(true);
+    const [copia, tareasGuardadas] = await Promise.all([leerVisita(id), leerTareas()]);
+    if (copia) {
+      setVisita((actual) => actual ?? copia);
+      setLoading(false);
+    }
+    if (tareasGuardadas) {
+      setCatalogo((actual) => (actual.length > 0 ? actual : tareasGuardadas));
+    }
     try {
       // El catálogo entero viene con la visita: la etiqueta de una foto puede
       // ser **cualquier** tarea viva, no solo las que uno marcó. En el campo se
@@ -98,9 +119,13 @@ export default function PersonalVisitaScreen() {
         ),
       ]);
       setVisita(v);
-      setCatalogo(t.items);
+      if (t.items.length > 0) setCatalogo(t.items);
+      guardarVisita(v);
+      guardarTareas(t.items);
     } catch (e) {
-      setError(mensajeDeError(e, "No pudimos cargar la visita"));
+      // Con copia, la ficha se queda y el "Conectando…" de arriba dice lo
+      // que pasa; sin copia, el error de siempre.
+      if (!copia) setError(mensajeDeError(e, "No pudimos cargar la visita"));
     } finally {
       setLoading(false);
     }
@@ -320,6 +345,7 @@ export default function PersonalVisitaScreen() {
         )}
       </View>
 
+      <Conectando />
       <ScrollView ref={scroll} contentContainerStyle={styles.scroll}>
         {/* Sin rótulo: "CUÁNDO" arriba de Estado y Programada no agregaba
             nada que las propias filas no dijeran, y gastaba la línea que

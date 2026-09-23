@@ -45,6 +45,7 @@ import {
 } from "@vivero/shared";
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
+import { Conectando } from "@/components/shared/conectando";
 import { ChatForm } from "./chat-form";
 import {
   confirmarLlegada,
@@ -555,6 +556,8 @@ export function Conversacion({
           </Button>
         ) : null}
       </div>
+
+      <Conectando />
 
       {/* Los mensajes */}
       {/* Los mensajes se apoyan **abajo**, como en WhatsApp: con pocos, el

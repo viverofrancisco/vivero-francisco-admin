@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { Conectando } from "@/components/ui/Conectando";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColaDeEnvio } from "@/lib/cola-de-envio";
@@ -143,6 +144,7 @@ export default function ChatsListScreen() {
       onBuscar={setBusqueda}
       placeholder="Buscar chat..."
     >
+      <Conectando />
       {cargando ? (
         <View style={styles.centro}>
           <ActivityIndicator size="large" />

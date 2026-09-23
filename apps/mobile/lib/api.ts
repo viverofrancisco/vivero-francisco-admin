@@ -1,6 +1,7 @@
 import type { TokenPair } from "@vivero/shared";
 import { API_BASE_URL } from "./config";
 import { useAuthStore } from "./auth-store";
+import { useConexion } from "./conexion";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -44,8 +45,13 @@ async function fetchConEspera(
     abortador.abort();
   }, ESPERA_MS);
   try {
-    return await fetch(url, { ...init, signal: abortador.signal });
+    const res = await fetch(url, { ...init, signal: abortador.signal });
+    // Llegó algo, sea lo que sea: hay servidor del otro lado.
+    useConexion.getState().recuperada();
+    return res;
   } catch {
+    // No llegó: se prende el "Conectando…" y se empieza a sondear.
+    useConexion.getState().caida();
     throw errorDeRed(vencio);
   } finally {
     clearTimeout(reloj);

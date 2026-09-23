@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useAca, useFiltroUrl } from "@/lib/filtros-url";
 import { EmptyState } from "@/components/shared/empty-state";
+import { Conectando } from "@/components/shared/conectando";
 import { FILA_MOVIL } from "@/components/shared/lista-movil";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Play } from "lucide-react";
@@ -153,6 +154,8 @@ export function ChatsPageClient({
             : []
         }
       />
+
+      <Conectando />
 
       {/* El buscador, el mismo que en la app: con diez conversaciones no hace
           falta, con cuarenta sí, y es el único filtro que tiene sentido acá. */}

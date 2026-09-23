@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { Conectando } from "@/components/ui/Conectando";
 import { tema, tarjeta, transicion } from "@/lib/tema";
 import { hora12 } from "@/lib/hora";
 import {
@@ -16,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { SelectorFecha } from "@/components/SelectorFecha";
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
+import { guardarDia, leerDia } from "@/lib/cache-de-visitas";
 import { useAuthStore } from "@/lib/auth-store";
 import { estadoParaMi, estadoPildora, visitaTerminada } from "@/lib/estado-visita";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
@@ -102,26 +104,53 @@ export default function PersonalVisitasListScreen() {
   const [items, setItems] = useState<VisitaDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  /** El servidor no contestó y lo que se ve es la copia guardada. */
+  const [sinConexion, setSinConexion] = useState(false);
   const [abrirPicker, setAbrirPicker] = useState(false);
+  /** Para ignorar la respuesta de un día que ya no es el elegido. */
+  const pedido = useRef(0);
   // La pantalla no tiene encabezado, así que el hueco de la barra de estado lo
   // deja ella.
   const insets = useSafeAreaInsets();
 
+  /**
+   * Cargar un día: la copia local primero, si la hay, y el servidor detrás.
+   *
+   * La copia se pinta sin atenuar —es lo que había la última vez, y casi
+   * siempre es lo mismo— y lo que llega la reemplaza. Sin señal se queda la
+   * copia, con el aviso; antes la lista se **vaciaba**, y "hoy no tienes
+   * visitas" en un jardín sin cobertura es una mentira con consecuencias.
+   */
   const load = useCallback(
     async (dia: Date, refrescando = false) => {
+      const mio = ++pedido.current;
+      const iso = comoParametro(dia);
+      const clave = iso.slice(0, 10);
       if (refrescando) setRefreshing(true);
       else setLoading(true);
+      const copia = await leerDia(clave);
+      if (mio !== pedido.current) return;
+      if (copia) {
+        setItems(copia);
+        setLoading(false);
+      }
       try {
-        const iso = comoParametro(dia);
         const res = await apiRequest<VisitasListResponse>("/api/mobile/visitas", {
           query: { from: iso, to: iso, limit: 100 },
         });
+        if (mio !== pedido.current) return;
         setItems(res.items);
+        setSinConexion(false);
+        guardarDia(clave, res.items);
       } catch {
-        setItems([]);
+        if (mio !== pedido.current) return;
+        if (!copia) setItems([]);
+        setSinConexion(true);
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (mio === pedido.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     []
@@ -168,6 +197,8 @@ export default function PersonalVisitasListScreen() {
         </View>
       </View>
 
+      <Conectando />
+
       {/* La lista no se desmonta al cambiar de día: se atenúa mientras llega la
           nueva. Reemplazarla por un spinner a pantalla completa hacía que
           moverse un día pareciera que la app se recargaba sola —y el spinner
@@ -193,7 +224,11 @@ export default function PersonalVisitasListScreen() {
             <View style={styles.empty}>
               <Ionicons name="calendar-outline" size={40} color="#ccc" />
               <Text variant="titleMedium" style={styles.emptyTitle}>
-                {esHoy ? "Hoy no tienes visitas" : "No hay visitas este día"}
+                {sinConexion
+                  ? "Sin conexión"
+                  : esHoy
+                    ? "Hoy no tienes visitas"
+                    : "No hay visitas este día"}
               </Text>
               <Text variant="bodyMedium" style={styles.emptyBody}>
                 {canCreate

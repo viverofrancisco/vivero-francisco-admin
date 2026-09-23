@@ -4,6 +4,7 @@ import { create } from "zustand";
 import type { MensajeDeChat, MensajeEnCola } from "@vivero/shared";
 import { API_BASE_URL } from "./config";
 import { apiRequest } from "./api";
+import { useConexion } from "./conexion";
 
 /**
  * La cola de salida de los chats: lo que se escribió y todavía no llegó.
@@ -250,6 +251,11 @@ export const useColaDeEnvio = create<ColaState>((set, get) => {
 // La app vuelve al frente: lo que esperaba sale ahora, no en el próximo tic.
 AppState.addEventListener("change", (estado) => {
   if (estado === "active") void useColaDeEnvio.getState().procesar();
+});
+
+// Volvió la señal —lo dijo el sondeo del "Conectando…"—: lo mismo.
+useConexion.subscribe((ahora, antes) => {
+  if (ahora.enLinea && !antes.enLinea) void useColaDeEnvio.getState().procesar();
 });
 
 /** Para que el error de red de la cola nombre a dónde se fue, como el resto de la app. */
