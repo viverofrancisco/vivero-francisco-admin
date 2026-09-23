@@ -57,9 +57,17 @@ export default function ChatsListScreen() {
     };
   }, []);
 
-  const cargar = useCallback(async (inicial = false) => {
-    if (inicial) setCargando(true);
-    else setRefrescando(true);
+  /**
+   * Pedir la lista al servidor. **En silencio** salvo que alguien tire hacia
+   * abajo: al volver de una conversación se recargaba con el spinner de
+   * pantalla entera, porque el `useFocusEffect` leía una lista vacía capturada
+   * en el primer render, y eso se veía como "la lista tiene que cargar" aunque
+   * la copia local ya estuviera pintada. El spinner grande es solo del
+   * arranque sin copia, y lo apaga el primero que conteste: la copia o el
+   * servidor.
+   */
+  const cargar = useCallback(async (modo: "silencioso" | "tirando" = "silencioso") => {
+    if (modo === "tirando") setRefrescando(true);
     try {
       const res = await apiRequest<{ items: ChatEnLista[] }>("/api/mobile/chats");
       delServidor.current = true;
@@ -78,8 +86,7 @@ export default function ChatsListScreen() {
   // que llegó mientras tanto, así que se recarga cada vez que entra en foco.
   useFocusEffect(
     useCallback(() => {
-      cargar(items.length === 0);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      cargar();
     }, [cargar])
   );
 
@@ -145,7 +152,7 @@ export default function ChatsListScreen() {
           data={visibles}
           keyExtractor={(c) => c.id}
           refreshControl={
-            <RefreshControl refreshing={refrescando} onRefresh={() => cargar()} />
+            <RefreshControl refreshing={refrescando} onRefresh={() => cargar("tirando")} />
           }
           ListHeaderComponent={
             error ? <Text style={styles.error}>{error}</Text> : null

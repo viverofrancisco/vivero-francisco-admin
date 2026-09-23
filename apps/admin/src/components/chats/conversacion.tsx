@@ -1304,10 +1304,8 @@ function Acciones({
         <MoreVertical className="mx-auto h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40">
-        <DropdownMenuItem onClick={onResponder}>
-          <Reply className="mr-2 h-4 w-4" />
-          Responder
-        </DropdownMenuItem>
+        {/* Sin íconos, como el resto del menú y como los ⋯ de toda la casa. */}
+        <DropdownMenuItem onClick={onResponder}>Responder</DropdownMenuItem>
         {mensaje.texto || mensaje.fotos.some((f) => f.tipo !== "video") ? (
           <DropdownMenuItem onClick={onCopiar}>Copiar</DropdownMenuItem>
         ) : null}
