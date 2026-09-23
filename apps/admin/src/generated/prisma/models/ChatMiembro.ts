@@ -16,7 +16,6 @@ import type * as Prisma from "../internal/prismaNamespace"
  * Model ChatMiembro
  * *
  *  * Quién está en un chat.
- *  *
  *  * Sacar a alguien marca `salioEl` en vez de borrar la fila: los mensajes que
  *  * escribió siguen ahí y con la fila se sabe que estuvo. Todo lo que pregunta
  *  * "¿puede ver esto?" filtra `salioEl: null`, así que dejar de estar corta el
@@ -671,7 +670,6 @@ export type $ChatMiembroPayload<ExtArgs extends runtime.Types.Extensions.Interna
     /**
      * *
      *    * Hasta cuándo leyó.
-     *    *
      *    * Un instante y no un contador: los mensajes tienen fecha, así que "sin leer"
      *    * es contarlos desde acá, y dos pantallas abiertas no pueden desincronizar un
      *    * número. `null` = nunca abrió el chat.

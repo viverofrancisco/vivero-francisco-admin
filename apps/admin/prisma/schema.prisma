@@ -246,16 +246,17 @@ model User {
   chatsCreados                  Chat[]                 @relation("ChatCreatedBy")
   chats                         ChatMiembro[]          @relation("ChatMiembro")
   chatMensajes                  ChatMensaje[]          @relation("ChatMensajeAutor")
+  chatLecturas                  ChatLectura[]          @relation("ChatLectura")
 }
 
 model Cliente {
-  id              String  @id @default(cuid())
-  nombre          String
-  apellido        String?
-  empresa         String?
-  email           String?
-  telefono        String?
-  notas           String? @db.Text
+  id       String  @id @default(cuid())
+  nombre   String
+  apellido String?
+  empresa  String?
+  email    String?
+  telefono String?
+  notas    String? @db.Text
 
   /// Identificación tributaria del contacto. Lo que sale impreso en una
   /// factura no es esto sino `DatoFacturacion`, que puede haber varios.
@@ -301,8 +302,8 @@ model Cliente {
 /// completando a medida que alguien los mide, y una propiedad recién cargada
 /// sirve igual para agendar.
 model Propiedad {
-  id        String @id @default(cuid())
-  clienteId String
+  id         String  @id @default(cuid())
+  clienteId  String
   /// Cómo la llama el cliente: "Casa", "Oficina", "Villa Salinas".
   ///
   /// Con una sola propiedad nadie la nombra, así que la migración puso
@@ -327,17 +328,17 @@ model Propiedad {
   lng Float?
 
   /// Superficie total del terreno.
-  m2Total Float?
+  m2Total              Float?
   /// Si hay jardineras en planta alta: cambia cómo se sube el material.
   jardinerasPlantaAlta Boolean @default(false)
   numeroArboles        Int?
   /// Metros lineales de vegetación, por altura. Son tres números distintos
   /// porque son tres trabajos distintos: no se poda igual un borde de 30 cm
   /// que un seto de dos metros.
-  mlVegetacionBaja  Float?
-  mlVegetacionMedia Float?
-  mlVegetacionAlta  Float?
-  m2Cesped          Float?
+  mlVegetacionBaja     Float?
+  mlVegetacionMedia    Float?
+  mlVegetacionAlta     Float?
+  m2Cesped             Float?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -2039,21 +2040,18 @@ model FacturaLinea {
   @@index([varianteId])
 }
 
-
 // ──────────────────────────────────────────────────────────────────────────
 // Chats internos
 // ──────────────────────────────────────────────────────────────────────────
 
 /**
  * Una conversación del equipo.
- *
  * **Es entre cuentas del vivero, nunca con un cliente.** El cliente tiene la
  * calificación de su visita para decir lo suyo; hubo un chat por visita entre
  * la oficina y el cliente y se fue justamente porque pedía a alguien del otro
  * lado mirando una bandeja. Este es otra cosa: la oficina y la gente de campo
  * hablando entre ellas, que es lo que hoy pasa por WhatsApp y no queda en
  * ningún lado.
- *
  * **Lo arma el ADMIN.** Crear el chat y decidir quién está adentro es de él —
  * por ahora—; STAFF y PERSONAL entran a los suyos, leen y escriben. Estar
  * adentro es lo único que da acceso: un admin que no es miembro tampoco lo ve,
@@ -2079,7 +2077,6 @@ model Chat {
 
 /**
  * Quién está en un chat.
- *
  * Sacar a alguien marca `salioEl` en vez de borrar la fila: los mensajes que
  * escribió siguen ahí y con la fila se sabe que estuvo. Todo lo que pregunta
  * "¿puede ver esto?" filtra `salioEl: null`, así que dejar de estar corta el
@@ -2095,7 +2092,6 @@ model ChatMiembro {
 
   /**
    * Hasta cuándo leyó.
-   *
    * Un instante y no un contador: los mensajes tienen fecha, así que "sin leer"
    * es contarlos desde acá, y dos pantallas abiertas no pueden desincronizar un
    * número. `null` = nunca abrió el chat.
@@ -2111,7 +2107,6 @@ model ChatMiembro {
 
 /**
  * Un mensaje: texto, imágenes, o las dos cosas.
- *
  * El autor va con su **id y una copia de su nombre**, el mismo par que usan
  * `Factura` y `OrdenLinea`: el id sirve para agrupar y se vacía si la cuenta se
  * borra, y el texto es lo que se muestra —un mensaje sin firma no se entiende,
@@ -2130,7 +2125,6 @@ model ChatMensaje {
 
   /**
    * A qué mensaje contesta, como en WhatsApp.
-   *
    * Es una relación y no una copia del texto citado: si el mensaje original se
    * corrige o se tacha, la cita muestra lo que pasó y no una foto de algo que
    * ya no dice eso. `SetNull` para que la respuesta sobreviva si alguna vez se
@@ -2138,12 +2132,24 @@ model ChatMensaje {
    */
   respondeAId String?
 
-  chat      Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  autor     User?         @relation("ChatMensajeAutor", fields: [autorId], references: [id], onDelete: SetNull)
-  respondeA ChatMensaje?  @relation("ChatRespuesta", fields: [respondeAId], references: [id], onDelete: SetNull)
+  chat       Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  autor      User?         @relation("ChatMensajeAutor", fields: [autorId], references: [id], onDelete: SetNull)
+  respondeA  ChatMensaje?  @relation("ChatRespuesta", fields: [respondeAId], references: [id], onDelete: SetNull)
   respuestas ChatMensaje[] @relation("ChatRespuesta")
-  adjuntos  ChatAdjunto[]
+  adjuntos   ChatAdjunto[]
+  lecturas   ChatLectura[]
 
+  /**
+   * El id que le puso **el cliente** al mandarlo, antes de saber si llegó.
+   * El mensaje aparece en la pantalla en el acto y se envía después, como en
+   * WhatsApp; si la conexión se corta a mitad del pedido, el teléfono no sabe
+   * si el servidor lo guardó y lo vuelve a mandar. Con este id el servidor
+   * reconoce el reintento y devuelve el que ya tiene, en vez de escribirlo dos
+   * veces. Único por chat, no global: dos teléfonos no comparten generador.
+   */
+  idCliente String?
+
+  @@unique([chatId, idCliente])
   /// Por acá entra la lista: los últimos primero, de a páginas.
   @@index([chatId, createdAt])
   @@index([autorId])
@@ -2151,8 +2157,28 @@ model ChatMensaje {
 }
 
 /**
+ * Quién leyó cada mensaje, y cuándo.
+ * `ChatMiembro.leidoEl` dice hasta dónde leyó alguien, y con eso alcanza para
+ * contar lo no leído; pero "a qué hora leyó **este** mensaje" no se deriva de
+ * ahí, porque se pisa cada vez que abre el chat. Una fila por mensaje y lector
+ * es lo que WhatsApp muestra en la info del mensaje. Se escribe por tandas al
+ * abrir el chat —solo los mensajes que llegaron desde la última vez—, así que
+ * en el uso normal es cero o un puñado de filas por consulta.
+ */
+model ChatLectura {
+  mensajeId String
+  userId    String
+  leidoEl   DateTime @default(now())
+
+  mensaje ChatMensaje @relation(fields: [mensajeId], references: [id], onDelete: Cascade)
+  user    User        @relation("ChatLectura", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([mensajeId, userId])
+  @@index([userId])
+}
+
+/**
  * Una imagen de un mensaje.
- *
  * Tabla propia y prefijo propio en R2, no la biblioteca `Media`: esa es el
  * catálogo del que los productos eligen fotos, y una foto que alguien mandó en
  * un chat no tiene nada que hacer ahí. Es la misma decisión que se tomó con las
@@ -2165,7 +2191,6 @@ model ChatAdjunto {
   url       String
   /**
    * Cómo se llamaba el archivo cuando lo mandaron.
-   *
    * La clave en R2 es un uuid —tiene que serlo, dos fotos "IMG_0001.jpg" no
    * pueden pisarse—, así que sin esto una foto no tiene ninguna palabra por la
    * cual encontrarla. Es lo único con lo que se puede buscar una imagen: el

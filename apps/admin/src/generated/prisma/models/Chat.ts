@@ -16,14 +16,12 @@ import type * as Prisma from "../internal/prismaNamespace"
  * Model Chat
  * *
  *  * Una conversación del equipo.
- *  *
  *  * **Es entre cuentas del vivero, nunca con un cliente.** El cliente tiene la
  *  * calificación de su visita para decir lo suyo; hubo un chat por visita entre
  *  * la oficina y el cliente y se fue justamente porque pedía a alguien del otro
  *  * lado mirando una bandeja. Este es otra cosa: la oficina y la gente de campo
  *  * hablando entre ellas, que es lo que hoy pasa por WhatsApp y no queda en
  *  * ningún lado.
- *  *
  *  * **Lo arma el ADMIN.** Crear el chat y decidir quién está adentro es de él —
  *  * por ahora—; STAFF y PERSONAL entran a los suyos, leen y escriben. Estar
  *  * adentro es lo único que da acceso: un admin que no es miembro tampoco lo ve,

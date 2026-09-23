@@ -62,3 +62,22 @@ export function tituloDelDia(iso: string | Date): string {
 export function mismoDia(a: string | Date, b: string | Date): boolean {
   return diaDe(enLaZona(a)) === diaDe(enLaZona(b));
 }
+
+/**
+ * Cuándo alguien leyó un mensaje, para la info del mensaje: "Hoy, 9:24 p. m.",
+ * "Ayer, 9:24 p. m." o "22 sept, 9:24 p. m.".
+ */
+export function cuandoLeyo(iso: string | Date): string {
+  const fecha = enLaZona(iso);
+  const hoy = new Date();
+  const ayer = new Date(hoy.getTime() - 24 * 60 * 60 * 1000);
+  const hora = horaDeMensaje(fecha);
+  if (diaDe(fecha) === diaDe(hoy)) return `Hoy, ${hora}`;
+  if (diaDe(fecha) === diaDe(ayer)) return `Ayer, ${hora}`;
+  const dia = fecha.toLocaleDateString("es-EC", {
+    timeZone: ZONA,
+    day: "numeric",
+    month: "short",
+  });
+  return `${dia}, ${hora}`;
+}

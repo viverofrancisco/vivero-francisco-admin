@@ -1,27 +1,14 @@
-import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
-import { listChats } from "@/lib/services/chat.service";
-import { ChatsPageClient } from "@/components/chats/chats-page-client";
+import { MessageCircle } from "lucide-react";
 
 /**
- * Los chats del equipo. **Sin `requireStaff`**: el jardinero también tiene los
- * suyos, y estar adentro es lo único que da acceso a cada uno.
+ * Sin un chat abierto. En el teléfono no se ve —ahí está la lista—; en el
+ * escritorio es la columna de la derecha esperando que se elija uno.
  */
-export default async function ChatsPage() {
-  await requireAuth();
-  const viewer = await viewerFromSession();
-  const chats = await listChats(viewer);
-
+export default function ChatsPage() {
   return (
-    <div className="flex h-full flex-col gap-3 p-3 md:gap-6 md:p-6">
-      <ChatsPageClient
-        chats={chats.map((c) => ({
-          ...c,
-          ultimo: c.ultimo
-            ? { ...c.ultimo, createdAt: c.ultimo.createdAt.toISOString() }
-            : null,
-        }))}
-        puedeCrear={viewer.role === "ADMIN"}
-      />
+    <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+      <MessageCircle className="h-10 w-10 opacity-40" />
+      <p className="text-sm font-medium">Elige un chat para leerlo</p>
     </div>
   );
 }

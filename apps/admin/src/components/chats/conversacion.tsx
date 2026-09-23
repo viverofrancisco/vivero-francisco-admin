@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MediaViewer } from "@/components/ui/media-viewer";
 import {
   Sheet,
@@ -18,9 +19,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  AlertCircle,
+  Check,
+  CheckCheck,
   ChevronLeft,
   Copy,
   ImageIcon,
+  Info,
   MoreVertical,
   Play,
   Reply,
@@ -30,29 +35,30 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  mezclarConLaCola,
+  nuevoIdCliente,
+  type EstadoDeMensaje,
+  type InfoDeMensaje,
+  type MensajeDeChat,
+  type MensajeEnCola,
+} from "@vivero/shared";
 import { hrefDeVuelta } from "@/lib/navegacion";
+import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { ChatForm } from "./chat-form";
-import { horaDeMensaje, mismoDia, tituloDelDia } from "./formato";
+import {
+  confirmarLlegada,
+  descartar,
+  encolar,
+  onEnviado,
+  procesar,
+  reintentar,
+  useCola,
+} from "./cola-de-envio";
+import { cuandoLeyo, horaDeMensaje, mismoDia, tituloDelDia } from "./formato";
 
-export interface MensajeEnPantalla {
-  id: string;
-  texto: string | null;
-  fotos: { id: string; url: string; tipo: string }[];
-  createdAt: string;
-  borrado: boolean;
-  autorId: string | null;
-  autorNombre: string;
-  mio: boolean;
-  respondeA: {
-    id: string;
-    autorNombre: string;
-    texto: string | null;
-    borrado: boolean;
-    fotos: number;
-    /** La primera foto o video del mensaje citado, para la miniatura. */
-    miniatura: { url: string; tipo: string } | null;
-  } | null;
-}
+/** Un mensaje como lo dibuja esta pantalla: el mismo que la app. */
+export type MensajeEnPantalla = MensajeDeChat;
 
 /** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
 function etiquetaDeAdjuntos(tipo: string | undefined, cuantos: number): string {
@@ -87,6 +93,28 @@ function Miniatura({
   return <img src={url} alt="" className={`object-cover ${className}`} />;
 }
 
+/**
+ * Los vistos de WhatsApp, en la esquina de cada mensaje propio: uno mientras
+ * espera, dos cuando el servidor lo tiene, dos azules cuando lo leyeron todos.
+ * Y el signo rojo cuando el servidor dijo que no.
+ */
+function Vistos({ estado }: { estado: EstadoDeMensaje }) {
+  if (estado === "pendiente") {
+    return <Check className="h-3.5 w-3.5 opacity-70" aria-label="Enviando" />;
+  }
+  if (estado === "fallido") {
+    return (
+      <AlertCircle className="h-3.5 w-3.5 text-red-200" aria-label="No se envió" />
+    );
+  }
+  return (
+    <CheckCheck
+      className={`h-3.5 w-3.5 ${estado === "leido" ? "text-sky-300" : "opacity-70"}`}
+      aria-label={estado === "leido" ? "Leído por todos" : "Enviado"}
+    />
+  );
+}
+
 export interface ChatCabecera {
   id: string;
   nombre: string;
@@ -107,6 +135,11 @@ const CADA_MS = 5000;
  * cerrada; esto es para cuando está abierta. Solo pregunta si la pestaña está a
  * la vista, o una computadora olvidada abierta hace un pedido cada cinco
  * segundos toda la noche.
+ *
+ * **Lo que se escribe aparece en el acto y sale después**, por la cola de
+ * `cola-de-envio.ts`: la lista que se dibuja es lo que vino del servidor más
+ * lo que espera en la cola, y un mensaje que vuelve del servidor con el
+ * `idCliente` de uno de la cola es ese mismo, ya llegado.
  */
 export function Conversacion({
   chat: chatInicial,
@@ -136,24 +169,23 @@ export function Conversacion({
   /**
    * Las fotos elegidas que todavía no salieron.
    *
-   * Antes se subían y se mandaban en el acto, así que una foto nunca podía
-   * llevar texto ni juntarse con otra: cada una era su propio mensaje. Ahora
-   * esperan acá —con su miniatura arriba del campo— y salen **con lo que se
-   * escriba**, en un solo mensaje, como en WhatsApp.
-   *
-   * La miniatura es una URL de objeto del navegador, no la foto subida: se ve
-   * al instante y no gasta una subida que todavía puede cancelarse.
+   * Esperan acá —con su miniatura arriba del campo— y salen **con lo que se
+   * escriba**, en un solo mensaje, como en WhatsApp. La miniatura es una URL
+   * de objeto del navegador, no la foto subida: se ve al instante y no gasta
+   * una subida que todavía puede cancelarse. Al enviar, la URL pasa a la cola
+   * —que la dibuja mientras sube— y es la cola la que la suelta.
    */
   const [pendientes, setPendientes] = useState<
     { archivo: File; vista: string }[]
   >([]);
-  const [enviando, setEnviando] = useState(false);
   const [editando, setEditando] = useState(false);
   const [viendo, setViendo] = useState<{ url: string; tipo: string } | null>(
     null
   );
   /** El mensaje que alguien mantuvo apretado, en el teléfono. */
   const [tocado, setTocado] = useState<MensajeEnPantalla | null>(null);
+  /** El mensaje propio del que se está mirando quién lo leyó. */
+  const [infoDe, setInfoDe] = useState<MensajeEnPantalla | null>(null);
   /**
    * El mensaje resaltado: el que trajo el buscador, o el que se citó y se
    * acaba de tocar. Es un destello y no una marca fija —se apaga solo a los
@@ -165,6 +197,24 @@ export function Conversacion({
     const id = setTimeout(() => setResaltado(null), 2000);
     return () => clearTimeout(id);
   }, [resaltado]);
+
+  /** Quien escribe, para dibujar lo suyo antes de que el servidor conteste. */
+  const yo = useMemo(() => {
+    const m = chat.miembros.find((x) => x.soyYo);
+    return { id: m?.id ?? "", nombre: m?.nombre ?? "Tú" };
+  }, [chat.miembros]);
+
+  /** Lo que espera en la cola, de este chat, dibujado al final de la lista. */
+  const cola = useCola();
+  const enPantalla = useMemo(
+    () =>
+      mezclarConLaCola(
+        mensajes,
+        cola.filter((i) => i.chatId === chat.id),
+        yo
+      ),
+    [mensajes, cola, chat.id, yo]
+  );
 
   /**
    * Ir a un mensaje: al que cita una respuesta. Si está cargado se va hasta él
@@ -210,6 +260,19 @@ export function Conversacion({
     fetch(`/api/chats/${chat.id}/leido`, { method: "POST" }).catch(() => {});
   }, [chat.id, destacado, irAlFondo]);
 
+  // Un mensaje de la cola que volvió del servidor se pega a la lista acá, sin
+  // esperar al próximo sondeo: es lo que hace que el ✓ pase a ✓✓ al instante.
+  useEffect(
+    () =>
+      onEnviado((chatId, m) => {
+        if (chatId !== chat.id) return;
+        setMensajes((actuales) =>
+          actuales.some((x) => x.id === m.id) ? actuales : [...actuales, m]
+        );
+      }),
+    [chat.id]
+  );
+
   /** Trae la página más nueva y pega lo que no estaba. */
   const buscarNuevos = useCallback(async () => {
     try {
@@ -217,16 +280,18 @@ export function Conversacion({
       if (!res.ok) return;
       const data = (await res.json()) as { items: MensajeEnPantalla[] };
       const llegaron = [...data.items].reverse();
+      // Lo que estaba en la cola y ya vino por acá, dejó de esperar.
+      llegaron.forEach((m) => {
+        if (m.idCliente) confirmarLlegada(m.idCliente);
+      });
       setMensajes((actuales) => {
         const conocidos = new Set(actuales.map((m) => m.id));
         const nuevos = llegaron.filter((m) => !conocidos.has(m.id));
-        if (nuevos.length === 0) {
-          // Puede haber cambiado algo de los que ya están —uno borrado—, así
-          // que se refrescan los conocidos sin perder los viejos de arriba.
-          const porId = new Map(llegaron.map((m) => [m.id, m]));
-          return actuales.map((m) => porId.get(m.id) ?? m);
-        }
-        return [...actuales, ...nuevos];
+        // Los conocidos se refrescan siempre: cambia el estado —lo leyeron—
+        // o uno se borró, sin perder los viejos de arriba.
+        const porId = new Map(llegaron.map((m) => [m.id, m]));
+        const refrescados = actuales.map((m) => porId.get(m.id) ?? m);
+        return nuevos.length === 0 ? refrescados : [...refrescados, ...nuevos];
       });
     } catch {
       // Un pedido que falla no interrumpe nada: el siguiente lo intenta.
@@ -238,6 +303,8 @@ export function Conversacion({
       if (document.visibilityState === "visible") {
         buscarNuevos();
         fetch(`/api/chats/${chat.id}/leido`, { method: "POST" }).catch(() => {});
+        // Y lo que esté esperando en la cola, que lo vuelva a intentar.
+        void procesar();
       }
     }, CADA_MS);
     return () => clearInterval(tic);
@@ -270,71 +337,48 @@ export function Conversacion({
     }
   }
 
-  /** Sube lo que esté esperando y devuelve con qué crear el mensaje. */
-  async function subirPendientes(): Promise<
-    { key: string; url: string; nombre: string; tipo: "imagen" | "video" }[]
-  > {
-    if (pendientes.length === 0) return [];
-    const files = pendientes.map((p) => p.archivo);
-    const res = await fetch(`/api/chats/${chat.id}/fotos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        files: files.map((f) => ({ fileName: f.name, contentType: f.type })),
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error ?? "No pudimos preparar la subida");
-
-    await Promise.all(
-      data.uploads.map((u: { uploadUrl: string }, i: number) =>
-        fetch(u.uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": files[i].type },
-          body: files[i],
-        })
-      )
-    );
-    return data.uploads.map(
-      (u: { key: string; url: string; tipo: "imagen" | "video" }, i: number) => ({
-        key: u.key,
-        url: u.url,
-        // El nombre del archivo viaja porque es lo único por lo que después se
-        // puede buscar una foto.
-        nombre: files[i].name,
-        tipo: u.tipo,
-      })
-    );
-  }
-
-  async function enviar() {
+  /**
+   * Enviar: a la cola, y a la pantalla en el acto. Lo que se escribió se
+   * limpia ya, porque el mensaje ya está en la conversación con su ✓; si el
+   * servidor lo rechaza, aparece ahí mismo con su motivo y sus dos botones.
+   */
+  function enviar() {
     const cuerpo = texto.trim();
     if (!cuerpo && pendientes.length === 0) return;
-    setEnviando(true);
-    try {
-      const fotos = await subirPendientes();
-      const res = await fetch(`/api/chats/${chat.id}/mensajes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          texto: cuerpo || null,
-          fotos,
-          respondeAId: respondiendo?.id ?? null,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "No pudimos enviar");
-      setMensajes((actuales) => [...actuales, data as MensajeEnPantalla]);
-      setTexto("");
-      setRespondiendo(null);
-      pendientes.forEach((p) => URL.revokeObjectURL(p.vista));
-      setPendientes([]);
-      requestAnimationFrame(() => irAlFondo(true));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos enviar");
-    } finally {
-      setEnviando(false);
-    }
+    const item: MensajeEnCola = {
+      idCliente: nuevoIdCliente(),
+      chatId: chat.id,
+      texto: cuerpo || null,
+      fotos: pendientes.map((p) => ({
+        uri: p.vista,
+        nombre: p.archivo.name,
+        contentType: p.archivo.type,
+        tipo: p.archivo.type.startsWith("video/") ? "video" : "imagen",
+      })),
+      respondeA: respondiendo
+        ? {
+            id: respondiendo.id,
+            autorNombre: respondiendo.autorNombre,
+            texto: respondiendo.texto,
+            borrado: respondiendo.borrado,
+            fotos: respondiendo.fotos.length,
+            miniatura: respondiendo.fotos[0]
+              ? { url: respondiendo.fotos[0].url, tipo: respondiendo.fotos[0].tipo }
+              : null,
+          }
+        : null,
+      creadoEl: new Date().toISOString(),
+      estado: "pendiente",
+    };
+    encolar(
+      item,
+      pendientes.map((p) => p.archivo)
+    );
+    setTexto("");
+    setRespondiendo(null);
+    // Las URLs de objeto pasan a ser de la cola: las suelta ella al terminar.
+    setPendientes([]);
+    requestAnimationFrame(() => irAlFondo(true));
   }
 
   /** Elegir **no manda**: la foto espera arriba del campo hasta que se envíe. */
@@ -355,7 +399,7 @@ export function Conversacion({
   }
 
   // Las URLs de objeto viven hasta que alguien las suelte; si la pantalla se
-  // va con fotos esperando, quedarían colgadas en memoria.
+  // va con fotos esperando (sin enviar), quedarían colgadas en memoria.
   useEffect(
     () => () => pendientes.forEach((p) => URL.revokeObjectURL(p.vista)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -439,14 +483,16 @@ export function Conversacion({
       {/* El encabezado, con la forma de la app: el chevron, el nombre con
           quiénes están debajo, y el lápiz. Una fila baja y de borde a borde:
           en el teléfono la conversación ocupa la pantalla, no una tarjeta
-          adentro de una página con margen. */}
-      <div className="flex flex-none items-center gap-1 border-b border-border px-1 pb-1.5 md:px-0">
-        <Link href={hrefDeVuelta(from, "/dashboard/chats")}>
+          adentro de una página con margen. En el escritorio la lista está al
+          lado, así que el chevron no hace falta. */}
+      <div className="flex flex-none items-center gap-1 border-b border-border px-1 pb-1.5 md:px-4 md:py-2.5">
+        <Link href={hrefDeVuelta(from, "/dashboard/chats")} className="md:hidden">
           <Button variant="ghost" size="icon" aria-label="Volver">
             <ChevronLeft className="h-6 w-6" />
           </Button>
         </Link>
-        <div className="min-w-0 flex-1">
+        <InitialsAvatar name={chat.nombre} size={36} className="hidden md:flex" />
+        <div className="min-w-0 flex-1 md:pl-1">
           <h1 className="truncate text-base font-bold tracking-tight">
             {chat.nombre}
           </h1>
@@ -473,7 +519,7 @@ export function Conversacion({
           hueco queda arriba y no debajo del último, que es donde uno mira. */}
       <div
         ref={scroll}
-        className="flex min-h-0 flex-1 flex-col justify-end overflow-y-auto overscroll-contain px-2.5 py-2 md:px-0"
+        className="flex min-h-0 flex-1 flex-col justify-end overflow-y-auto overscroll-contain px-2.5 py-2 md:px-6"
       >
         {/* Los mensajes seguidos casi se tocan: lo que separa es el cambio de
             quién habla, no el aire entre burbujas. */}
@@ -491,14 +537,14 @@ export function Conversacion({
           </div>
         ) : null}
 
-        {mensajes.length === 0 ? (
+        {enPantalla.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">
             Todavía no hay mensajes. Escribe el primero.
           </p>
         ) : null}
 
-        {mensajes.map((m, i) => {
-          const anterior = mensajes[i - 1];
+        {enPantalla.map((m, i) => {
+          const anterior = enPantalla[i - 1];
           const cambiaElDia =
             !anterior || !mismoDia(anterior.createdAt, m.createdAt);
           // El nombre se repite solo cuando cambia quién habla: una fila de
@@ -522,6 +568,9 @@ export function Conversacion({
                 onResponder={() => setRespondiendo(m)}
                 onCopiar={() => copiar(m)}
                 onBorrar={() => borrar(m.id)}
+                onInfo={() => setInfoDe(m)}
+                onReintentar={() => m.idCliente && reintentar(m.idCliente)}
+                onDescartar={() => m.idCliente && descartar(m.idCliente)}
                 onVerFoto={setViendo}
                 onMantener={() => setTocado(m)}
               />
@@ -532,7 +581,7 @@ export function Conversacion({
       </div>
 
       {/* Lo que se está por mandar */}
-      <div className="flex-none border-t border-border px-2 py-1.5 md:px-0">
+      <div className="flex-none border-t border-border px-2 py-1.5 md:px-4 md:py-2">
         {respondiendo ? (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-4 border-primary bg-muted/60 px-3 py-2">
             <div className="min-w-0 flex-1">
@@ -601,17 +650,13 @@ export function Conversacion({
             className="hidden"
             onChange={(e) => elegirFotos(e.target.files)}
           />
-          {/* Los tres del mismo alto: con el `size="icon"` de la casa los
-              botones median 32 contra los 42 del campo, y la fila se veía
-              desalineada apenas el campo estaba vacío. */}
           {/* Ícono pelado, como en la app: al lado de un campo redondeado, un
-              botón con borde compite con él. */}
+              botón con borde compite con él. Los tres del mismo alto. */}
           <Button
             variant="ghost"
             size="icon"
             className="h-9 w-9 flex-none text-muted-foreground"
             aria-label="Mandar una foto"
-            disabled={enviando}
             onClick={() => archivos.current?.click()}
           >
             <ImageIcon className="h-[22px] w-[22px]" />
@@ -621,13 +666,8 @@ export function Conversacion({
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Escribe un mensaje..."
             rows={1}
-            // `leading-6` y `py-[7px]` para que mida exactamente 40 en los dos
-            // tamaños: la clase base cambia de `text-base` a `text-sm` en `md`,
-            // y con el interlineado de cada una el alto cambiaba con el ancho
-            // de la ventana.
-            // 36 de alto, los mismos que los botones: los tres eran 40 y en el
-            // teléfono la fila de escribir se comía más de lo que hace falta,
-            // con un círculo pesado al lado de un ícono chiquito.
+            // 36 de alto, los mismos que los botones: `leading-6` y `py-[5px]`
+            // para que mida lo mismo en los dos tamaños de letra.
             className="max-h-32 min-h-9 flex-1 resize-none rounded-full px-3.5 py-[5px] leading-6"
             onKeyDown={(e) => {
               // Enter manda, Shift+Enter hace un renglón: es lo que hacen los
@@ -645,7 +685,7 @@ export function Conversacion({
             onClick={() => enviar()}
             // Se puede mandar con texto **o** con fotos esperando: una foto
             // sola es un mensaje, y con pie de foto también.
-            disabled={enviando || (!texto.trim() && pendientes.length === 0)}
+            disabled={!texto.trim() && pendientes.length === 0}
           >
             <Send className="h-[18px] w-[18px]" />
           </Button>
@@ -708,6 +748,20 @@ export function Conversacion({
           {tocado?.mio ? (
             <button
               type="button"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left text-sm hover:bg-muted"
+              onClick={() => {
+                const m = tocado;
+                setTocado(null);
+                setInfoDe(m);
+              }}
+            >
+              <Info className="h-5 w-5 flex-none text-muted-foreground" />
+              Info
+            </button>
+          ) : null}
+          {tocado?.mio ? (
+            <button
+              type="button"
               className="flex w-full items-center gap-3 rounded-xl px-3 py-3.5 text-left text-sm text-destructive hover:bg-muted"
               onClick={() => {
                 const id = tocado.id;
@@ -722,13 +776,147 @@ export function Conversacion({
         </SheetContent>
       </Sheet>
 
+      <InfoDeMensajeDialogo mensaje={infoDe} onClose={() => setInfoDe(null)} />
+
       <MediaViewer media={viendo} onClose={() => setViendo(null)} />
     </div>
   );
 }
 
+/**
+ * Quién leyó un mensaje propio, y cuándo. La pantalla de WhatsApp: el mensaje
+ * arriba, tal cual se ve en la conversación, y debajo la lista de quiénes lo
+ * leyeron —el más reciente primero— y a quiénes les falta. En el teléfono
+ * ocupa la pantalla; en el escritorio es un diálogo.
+ */
+function InfoDeMensajeDialogo({
+  mensaje,
+  onClose,
+}: {
+  mensaje: MensajeEnPantalla | null;
+  onClose: () => void;
+}) {
+  const [cargada, setCargada] = useState<{
+    id: string;
+    info?: InfoDeMensaje;
+    error?: string;
+  } | null>(null);
+  const id = mensaje?.id ?? null;
+
+  useEffect(() => {
+    if (!id) return;
+    let vivo = true;
+    fetch(`/api/chats/mensajes/${id}/info`)
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.error ?? "No pudimos traer la info");
+        return d as InfoDeMensaje;
+      })
+      .then((info) => vivo && setCargada({ id, info }))
+      .catch((e) => vivo && setCargada({ id, error: e.message }));
+    return () => {
+      vivo = false;
+    };
+  }, [id]);
+
+  // Lo cargado para otro mensaje no sirve para este.
+  const actual = cargada?.id === id ? cargada : null;
+  const aDibujar = actual?.info?.mensaje ?? mensaje;
+
+  return (
+    <Dialog open={mensaje !== null} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        pantallaCompletaEnMovil
+        showCloseButton={false}
+        className="gap-0 sm:max-w-md"
+      >
+        <div className="-mx-4 -mt-4 mb-3 flex flex-none items-center gap-1 border-b border-border px-1 py-1.5">
+          <Button variant="ghost" size="icon" aria-label="Volver" onClick={onClose}>
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <DialogTitle className="flex-1 text-center text-base">
+            Info del mensaje
+          </DialogTitle>
+          <span className="h-9 w-9" aria-hidden />
+        </div>
+
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
+          {aDibujar ? (
+            <div className="rounded-xl bg-muted/50 px-2.5 py-3">
+              <div className="flex justify-center pb-3">
+                <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-semibold text-muted-foreground">
+                  {tituloDelDia(aDibujar.createdAt)}
+                </span>
+              </div>
+              <Burbuja mensaje={aDibujar} conNombre={false} soloLectura />
+            </div>
+          ) : null}
+
+          {actual?.error ? (
+            <p className="text-center text-sm text-destructive">{actual.error}</p>
+          ) : null}
+
+          {actual?.info ? (
+            <>
+              <section>
+                <p className="flex items-center gap-1.5 px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <CheckCheck className="h-4 w-4 text-sky-500" />
+                  Leído por
+                </p>
+                {actual.info.leidoPor.length === 0 ? (
+                  <p className="px-1 text-sm text-muted-foreground">
+                    Todavía nadie.
+                  </p>
+                ) : (
+                  <ul className="divide-y rounded-xl border border-border">
+                    {actual.info.leidoPor.map((p) => (
+                      <li key={p.id} className="flex items-center gap-3 px-3 py-2.5">
+                        <InitialsAvatar name={p.nombre} size={36} />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                          {p.nombre}
+                        </span>
+                        <span className="flex-none text-xs text-muted-foreground">
+                          {cuandoLeyo(p.leidoEl)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+              {actual.info.sinLeer.length > 0 ? (
+                <section>
+                  <p className="flex items-center gap-1.5 px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <CheckCheck className="h-4 w-4" />
+                    Sin leer
+                  </p>
+                  <ul className="divide-y rounded-xl border border-border">
+                    {actual.info.sinLeer.map((p) => (
+                      <li key={p.id} className="flex items-center gap-3 px-3 py-2.5">
+                        <InitialsAvatar name={p.nombre} size={36} />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                          {p.nombre}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : null}
+            </>
+          ) : !actual?.error ? (
+            <p className="text-center text-sm text-muted-foreground">Cargando...</p>
+          ) : null}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /** Cuánto hay que sostener el dedo para que aparezcan las acciones. */
 const MANTENER_MS = 400;
+/** Cuánto hay que correr el mensaje con el dedo para que el gesto cuente. */
+const UMBRAL_DESLIZAR = 56;
+/** Hasta dónde acompaña el mensaje al dedo. */
+const TOPE_DESLIZAR = 88;
 
 /**
  * Un mensaje. Lo mío a la derecha en verde, lo de los demás a la izquierda en
@@ -737,17 +925,23 @@ const MANTENER_MS = 400;
  * **Las acciones se abren distinto según con qué se esté mirando**: en
  * escritorio, con el ⋯ que aparece al pasar el mouse por encima; en el
  * teléfono, manteniendo el mensaje apretado, que es lo que hace la app y lo
- * que hacen los dedos que vienen de WhatsApp. El ⋯ no tiene sentido ahí —no
- * hay "pasar por encima", así que había que dejarlo visible siempre, un punto
- * gris al costado de cada mensaje propio—.
+ * que hacen los dedos que vienen de WhatsApp. Y los dos gestos de WhatsApp:
+ * **correr el mensaje a la derecha responde**, y correr uno propio a la
+ * izquierda abre su info. El dedo se distingue del scroll por la primera
+ * dirección en que se mueve: hacia abajo es scroll y el gesto se rinde;
+ * hacia el costado es el gesto y el mensaje acompaña al dedo, con tope.
  */
 function Burbuja({
   mensaje,
   destacado = false,
   conNombre,
+  soloLectura = false,
   onResponder,
   onCopiar,
   onBorrar,
+  onInfo,
+  onReintentar,
+  onDescartar,
   onVerFoto,
   onMantener,
   onIrACita,
@@ -756,16 +950,31 @@ function Burbuja({
   /** El que se vino a ver desde el buscador. */
   destacado?: boolean;
   conNombre: boolean;
-  onResponder: () => void;
-  onCopiar: () => void;
-  onBorrar: () => void;
-  onVerFoto: (media: { url: string; tipo: string }) => void;
-  onMantener: () => void;
+  /** Dibujado en la info del mensaje: sin gestos ni menú. */
+  soloLectura?: boolean;
+  onResponder?: () => void;
+  onCopiar?: () => void;
+  onBorrar?: () => void;
+  onInfo?: () => void;
+  onReintentar?: () => void;
+  onDescartar?: () => void;
+  onVerFoto?: (media: { url: string; tipo: string }) => void;
+  onMantener?: () => void;
   /** Tocar la cita lleva al mensaje citado, como en WhatsApp. */
-  onIrACita: (id: string) => void;
+  onIrACita?: (id: string) => void;
 }) {
   const mio = mensaje.mio;
+  const enCola = mensaje.estado === "pendiente" || mensaje.estado === "fallido";
   const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fila = useRef<HTMLDivElement>(null);
+  const iconoResponder = useRef<HTMLSpanElement>(null);
+  const iconoInfo = useRef<HTMLSpanElement>(null);
+  const gesto = useRef<{
+    x: number;
+    y: number;
+    dx: number;
+    modo: "?" | "deslizar" | "no";
+  } | null>(null);
 
   function soltar() {
     if (reloj.current) {
@@ -777,35 +986,134 @@ function Burbuja({
   // quedaría corriendo contra un componente que ya no está.
   useEffect(() => soltar, []);
 
-  const gestos = mensaje.borrado
-    ? {}
-    : {
-        onPointerDown: (e: React.PointerEvent) => {
-          // Con mouse no: ahí está el ⋯, y un clic sostenido es cómo se
-          // selecciona texto.
-          if (e.pointerType === "mouse") return;
-          soltar();
-          reloj.current = setTimeout(onMantener, MANTENER_MS);
-        },
-        onPointerUp: soltar,
-        onPointerCancel: soltar,
-        onPointerLeave: soltar,
-        // Sin esto iOS abre su propio menú de copiar encima del nuestro.
-        onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
-      };
+  const puedeInfo = mio && !enCola && !mensaje.borrado && Boolean(onInfo);
+  const puedeResponder = !enCola && !mensaje.borrado && Boolean(onResponder);
+
+  function acompanar(dx: number) {
+    const el = fila.current;
+    if (!el) return;
+    const hastaDerecha = puedeResponder ? TOPE_DESLIZAR : 0;
+    const hastaIzquierda = puedeInfo ? -TOPE_DESLIZAR : 0;
+    const t = Math.max(hastaIzquierda, Math.min(hastaDerecha, dx));
+    el.style.transition = "none";
+    el.style.transform = `translateX(${t}px)`;
+    const progreso = Math.min(1, Math.abs(t) / UMBRAL_DESLIZAR);
+    if (iconoResponder.current) {
+      iconoResponder.current.style.opacity = t > 0 ? String(progreso) : "0";
+    }
+    if (iconoInfo.current) {
+      iconoInfo.current.style.opacity = t < 0 ? String(progreso) : "0";
+    }
+  }
+
+  function volver() {
+    const el = fila.current;
+    if (!el) return;
+    el.style.transition = "transform 220ms cubic-bezier(0.23, 1, 0.32, 1)";
+    el.style.transform = "translateX(0)";
+    if (iconoResponder.current) iconoResponder.current.style.opacity = "0";
+    if (iconoInfo.current) iconoInfo.current.style.opacity = "0";
+  }
+
+  const gestos =
+    mensaje.borrado || soloLectura
+      ? {}
+      : {
+          onPointerDown: (e: React.PointerEvent) => {
+            // Con mouse no: ahí está el ⋯, y un clic sostenido es cómo se
+            // selecciona texto.
+            if (e.pointerType === "mouse") return;
+            soltar();
+            gesto.current = { x: e.clientX, y: e.clientY, dx: 0, modo: "?" };
+            if (onMantener && !enCola) {
+              reloj.current = setTimeout(onMantener, MANTENER_MS);
+            }
+          },
+          onPointerMove: (e: React.PointerEvent) => {
+            const g = gesto.current;
+            if (!g) return;
+            const dx = e.clientX - g.x;
+            const dy = e.clientY - g.y;
+            if (g.modo === "?") {
+              // La primera dirección decide: hacia abajo es scroll.
+              if (Math.abs(dy) > 10) {
+                g.modo = "no";
+                return;
+              }
+              if (Math.abs(dx) > 12 && (puedeResponder || puedeInfo)) {
+                g.modo = "deslizar";
+                soltar();
+                e.currentTarget.setPointerCapture(e.pointerId);
+              }
+            }
+            if (g.modo === "deslizar") {
+              g.dx = dx;
+              acompanar(dx);
+            }
+          },
+          onPointerUp: () => {
+            soltar();
+            const g = gesto.current;
+            gesto.current = null;
+            if (g?.modo !== "deslizar") return;
+            if (g.dx >= UMBRAL_DESLIZAR && puedeResponder) onResponder?.();
+            else if (g.dx <= -UMBRAL_DESLIZAR && puedeInfo) onInfo?.();
+            volver();
+          },
+          onPointerCancel: () => {
+            soltar();
+            if (gesto.current?.modo === "deslizar") volver();
+            gesto.current = null;
+          },
+          // Sin esto iOS abre su propio menú de copiar encima del nuestro.
+          onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+        };
 
   return (
     <div
-      className={`group flex gap-1 ${mio ? "justify-end" : "justify-start"}`}
+      className={`group relative flex gap-1 ${mio ? "justify-end" : "justify-start"}`}
+      // `pan-y`: el scroll vertical sigue siendo del navegador; el horizontal
+      // llega acá como movimiento del puntero.
+      style={{ touchAction: "pan-y" }}
       {...gestos}
     >
-      {mio ? <Acciones mensaje={mensaje} onResponder={onResponder} onCopiar={onCopiar} onBorrar={onBorrar} /> : null}
+      {mio && !soloLectura ? (
+        <Acciones
+          mensaje={mensaje}
+          onResponder={onResponder}
+          onCopiar={onCopiar}
+          onBorrar={onBorrar}
+          onInfo={onInfo}
+        />
+      ) : null}
+      <div ref={fila} className={`relative flex max-w-[85%] flex-col sm:max-w-[70%] ${mio ? "items-end" : "items-start"}`}>
+        {/* Los íconos que asoman detrás del mensaje mientras se lo corre. */}
+        {puedeResponder ? (
+          <span
+            ref={iconoResponder}
+            aria-hidden
+            className="pointer-events-none absolute -left-9 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-muted text-muted-foreground opacity-0"
+          >
+            <Reply className="h-4 w-4" />
+          </span>
+        ) : null}
+        {puedeInfo ? (
+          <span
+            ref={iconoInfo}
+            aria-hidden
+            className="pointer-events-none absolute -right-9 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-muted text-muted-foreground opacity-0"
+          >
+            <Info className="h-4 w-4" />
+          </span>
+        ) : null}
       <div
-        className={`max-w-[85%] touch-manipulation select-none rounded-2xl px-2.5 py-1.5 text-sm shadow-sm sm:max-w-[70%] sm:select-text ${
+        className={`w-fit max-w-full touch-manipulation select-none rounded-2xl px-2.5 py-1.5 text-sm shadow-sm sm:select-text ${
           mio
             ? "rounded-br-md bg-primary text-primary-foreground"
             : "rounded-bl-md border border-border bg-card"
-        } transition-shadow duration-500 ${destacado ? "ring-2 ring-amber-400" : ""}`}
+        } transition-shadow duration-500 ${destacado ? "ring-2 ring-amber-400" : ""} ${
+          mensaje.estado === "fallido" ? "opacity-80" : ""
+        }`}
       >
         {conNombre ? (
           <p className="pb-0.5 text-xs font-bold text-primary">
@@ -819,10 +1127,10 @@ function Burbuja({
             tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
-              onIrACita(mensaje.respondeA!.id);
+              onIrACita?.(mensaje.respondeA!.id);
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") onIrACita(mensaje.respondeA!.id);
+              if (e.key === "Enter") onIrACita?.(mensaje.respondeA!.id);
             }}
             className={`mb-1 flex cursor-pointer items-center gap-2 rounded-lg border-l-[3px] px-2 py-1 text-xs ${
               mio
@@ -868,7 +1176,7 @@ function Burbuja({
                   <button
                     key={f.id}
                     type="button"
-                    onClick={() => onVerFoto({ url: f.url, tipo: f.tipo })}
+                    onClick={() => onVerFoto?.({ url: f.url, tipo: f.tipo })}
                     className="overflow-hidden rounded-lg"
                   >
                     <Miniatura url={f.url} tipo={f.tipo} className="h-40 w-full" />
@@ -883,14 +1191,36 @@ function Burbuja({
         )}
 
         <p
-          className={`pt-0.5 text-right text-[10px] ${
+          className={`flex items-center justify-end gap-1 pt-0.5 text-[10px] ${
             mio ? "text-primary-foreground/70" : "text-muted-foreground"
           }`}
         >
           {horaDeMensaje(mensaje.createdAt)}
+          {mio && !mensaje.borrado ? <Vistos estado={mensaje.estado} /> : null}
         </p>
       </div>
-      {mio ? null : <Acciones mensaje={mensaje} onResponder={onResponder} onCopiar={onCopiar} onBorrar={onBorrar} />}
+      {/* El servidor dijo que no: el motivo y qué hacer, al pie del mensaje. */}
+      {mensaje.estado === "fallido" && !soloLectura ? (
+        <p className="flex flex-wrap items-center justify-end gap-x-2 pt-0.5 text-[11px] text-destructive">
+          <span>{mensaje.error ?? "No se envió"}</span>
+          <button type="button" className="font-bold underline" onClick={onReintentar}>
+            Reintentar
+          </button>
+          <button type="button" className="font-bold underline" onClick={onDescartar}>
+            Eliminar
+          </button>
+        </p>
+      ) : null}
+      </div>
+      {mio || soloLectura ? null : (
+        <Acciones
+          mensaje={mensaje}
+          onResponder={onResponder}
+          onCopiar={onCopiar}
+          onBorrar={onBorrar}
+          onInfo={onInfo}
+        />
+      )}
     </div>
   );
 }
@@ -900,13 +1230,18 @@ function Acciones({
   onResponder,
   onCopiar,
   onBorrar,
+  onInfo,
 }: {
   mensaje: MensajeEnPantalla;
-  onResponder: () => void;
-  onCopiar: () => void;
-  onBorrar: () => void;
+  onResponder?: () => void;
+  onCopiar?: () => void;
+  onBorrar?: () => void;
+  onInfo?: () => void;
 }) {
-  if (mensaje.borrado) return <span className="hidden w-7 flex-none sm:block" aria-hidden />;
+  const enCola = mensaje.estado === "pendiente" || mensaje.estado === "fallido";
+  if (mensaje.borrado || enCola) {
+    return <span className="hidden w-7 flex-none sm:block" aria-hidden />;
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -929,6 +1264,9 @@ function Acciones({
         </DropdownMenuItem>
         {mensaje.texto || mensaje.fotos.some((f) => f.tipo !== "video") ? (
           <DropdownMenuItem onClick={onCopiar}>Copiar</DropdownMenuItem>
+        ) : null}
+        {mensaje.mio ? (
+          <DropdownMenuItem onClick={onInfo}>Info</DropdownMenuItem>
         ) : null}
         {mensaje.mio ? (
           <DropdownMenuItem onClick={onBorrar}>Borrar</DropdownMenuItem>

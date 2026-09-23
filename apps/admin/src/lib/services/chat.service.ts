@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
+import type { EstadoDeMensaje } from "@vivero/shared";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { pushChatAgregado, pushChatMensaje } from "@/lib/push/triggers";
@@ -361,6 +363,9 @@ const MENSAJE_SELECT = {
   deletedAt: true,
   autorId: true,
   autorNombre: true,
+  idCliente: true,
+  // Quiénes lo leyeron: alcanza con los ids para decir si lo leyeron todos.
+  lecturas: { select: { userId: true } },
   adjuntos: { select: { id: true, url: true, tipo: true, nombre: true } },
   respondeA: {
     select: {
@@ -388,6 +393,7 @@ export async function listMensajes(
   opciones: { cursor?: string; limit?: number; alrededorDe?: string } = {}
 ) {
   await ensureMiembro(viewer, chatId);
+  const otros = await otrosMiembros(chatId, viewer.id);
   const limit = Math.min(opciones.limit ?? MENSAJES_POR_PAGINA, 100);
 
   /*
@@ -423,7 +429,7 @@ export async function listMensajes(
       ...(hayMasViejos ? viejos.slice(0, limit) : viejos),
     ];
     return {
-      items: pagina.map((m) => mensajeParaPantalla(m, viewer.id)),
+      items: pagina.map((m) => mensajeParaPantalla(m, viewer.id, otros)),
       cursor: hayMasViejos
         ? (pagina[pagina.length - 1]?.id ?? null)
         : null,
@@ -444,9 +450,22 @@ export async function listMensajes(
   const pagina = hayMas ? mensajes.slice(0, limit) : mensajes;
 
   return {
-    items: pagina.map((m) => mensajeParaPantalla(m, viewer.id)),
+    items: pagina.map((m) => mensajeParaPantalla(m, viewer.id, otros)),
     cursor: hayMas ? (pagina[pagina.length - 1]?.id ?? null) : null,
   };
+}
+
+/**
+ * Los demás miembros del chat, hoy: contra ellos se decide si un mensaje
+ * propio "lo leyeron todos". Quien salió del chat no cuenta —no va a leerlo—
+ * y quien entró después sí, hasta que abra la conversación.
+ */
+async function otrosMiembros(chatId: string, viewerId: string) {
+  const miembros = await prisma.chatMiembro.findMany({
+    where: { chatId, salioEl: null, userId: { not: viewerId } },
+    select: { userId: true },
+  });
+  return miembros.map((m) => m.userId);
 }
 
 type MensajeCrudo = {
@@ -456,6 +475,8 @@ type MensajeCrudo = {
   deletedAt: Date | null;
   autorId: string | null;
   autorNombre: string;
+  idCliente: string | null;
+  lecturas: { userId: string }[];
   adjuntos: { id: string; url: string; tipo: string; nombre: string | null }[];
   respondeA: {
     id: string;
@@ -467,7 +488,22 @@ type MensajeCrudo = {
   } | null;
 };
 
-function mensajeParaPantalla(m: MensajeCrudo, viewerId: string) {
+/**
+ * @param otros Los demás miembros de hoy: un mensaje propio está `leido`
+ *   cuando **cada uno** de ellos tiene su lectura. Con nadie más en el chat no
+ *   hay quien lo lea, así que queda en `enviado`.
+ */
+function mensajeParaPantalla(
+  m: MensajeCrudo,
+  viewerId: string,
+  otros: string[]
+) {
+  const mio = m.autorId !== null && m.autorId === viewerId;
+  const leyeron = new Set(m.lecturas.map((l) => l.userId));
+  const estado: EstadoDeMensaje =
+    mio && otros.length > 0 && otros.every((id) => leyeron.has(id))
+      ? "leido"
+      : "enviado";
   return {
     id: m.id,
     // Un mensaje tachado no manda su texto al cliente: borrarlo es que no se
@@ -478,7 +514,9 @@ function mensajeParaPantalla(m: MensajeCrudo, viewerId: string) {
     borrado: m.deletedAt !== null,
     autorId: m.autorId,
     autorNombre: m.autorNombre,
-    mio: m.autorId !== null && m.autorId === viewerId,
+    mio,
+    idCliente: m.idCliente,
+    estado,
     respondeA: m.respondeA
       ? {
           id: m.respondeA.id,
@@ -511,9 +549,29 @@ export async function enviarMensaje(
     texto?: string | null;
     fotos?: { key: string; url: string; nombre?: string; tipo?: string }[];
     respondeAId?: string | null;
+    idCliente?: string;
   }
 ) {
   const { miembro } = await ensureMiembro(viewer, chatId);
+  const otros = await otrosMiembros(chatId, viewer.id);
+
+  /*
+   * El mismo mensaje dos veces es un reintento, no dos mensajes: la pantalla lo
+   * manda apenas se escribe y, si la conexión se cortó sin respuesta, lo
+   * vuelve a mandar con el mismo `idCliente`. Se contesta con el que ya está.
+   */
+  if (datos.idCliente) {
+    const previo = await prisma.chatMensaje.findUnique({
+      where: { chatId_idCliente: { chatId, idCliente: datos.idCliente } },
+      select: MENSAJE_SELECT,
+    });
+    if (previo) {
+      if (previo.autorId !== viewer.id) {
+        throw new ValidationError("Ese id de mensaje ya se usó en este chat.");
+      }
+      return mensajeParaPantalla(previo, viewer.id, otros);
+    }
+  }
 
   const texto = datos.texto?.trim() || null;
   const fotos = datos.fotos ?? [];
@@ -537,46 +595,155 @@ export async function enviarMensaje(
     select: USUARIO_SELECT,
   });
 
-  const mensaje = await prisma.chatMensaje.create({
-    data: {
-      chatId,
-      texto,
-      autorId: viewer.id,
-      autorNombre: autor ? nombreDeUsuario(autor) : "Alguien",
-      respondeAId: datos.respondeAId ?? null,
-      adjuntos: {
-        create: fotos.map((f) => ({
-          key: f.key,
-          url: f.url,
-          // El nombre con el que la mandaron: es por lo único que después se
-          // la puede buscar.
-          nombre: f.nombre ?? null,
-          tipo: f.tipo ?? "imagen",
-        })),
+  let mensaje;
+  try {
+    mensaje = await prisma.chatMensaje.create({
+      data: {
+        chatId,
+        texto,
+        autorId: viewer.id,
+        autorNombre: autor ? nombreDeUsuario(autor) : "Alguien",
+        respondeAId: datos.respondeAId ?? null,
+        idCliente: datos.idCliente ?? null,
+        adjuntos: {
+          create: fotos.map((f) => ({
+            key: f.key,
+            url: f.url,
+            // El nombre con el que la mandaron: es por lo único que después se
+            // la puede buscar.
+            nombre: f.nombre ?? null,
+            tipo: f.tipo ?? "imagen",
+          })),
+        },
       },
-    },
-    select: MENSAJE_SELECT,
-  });
+      select: MENSAJE_SELECT,
+    });
+  } catch (error) {
+    // Dos reintentos a la vez —el segundo salió antes de que volviera el
+    // primero—: el índice único frena al segundo, y la respuesta es la misma.
+    if (
+      datos.idCliente &&
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      const previo = await prisma.chatMensaje.findUnique({
+        where: { chatId_idCliente: { chatId, idCliente: datos.idCliente } },
+        select: MENSAJE_SELECT,
+      });
+      if (previo && previo.autorId === viewer.id) {
+        return mensajeParaPantalla(previo, viewer.id, otros);
+      }
+    }
+    throw error;
+  }
 
-  // Lo propio ya está leído: si no, el chat quedaría con un no leído del que
-  // uno mismo es el autor.
-  await prisma.chatMiembro.update({
-    where: { id: miembro.id },
-    data: { leidoEl: new Date() },
-  });
+  // Escribir es haber leído lo de arriba: si no, el chat quedaría con un no
+  // leído del que uno mismo es el autor, y los mensajes ajenos que estaban a
+  // la vista sin su lectura.
+  await registrarLecturas(chatId, viewer.id, miembro.leidoEl);
 
   pushChatMensaje(mensaje.id).catch(console.error);
 
-  return mensajeParaPantalla(mensaje, viewer.id);
+  return mensajeParaPantalla(mensaje, viewer.id, otros);
 }
 
-/** Marcar lo leído hasta ahora. Lo llama la pantalla al abrir el chat. */
+/**
+ * Anotar lo leído: una fila por cada mensaje ajeno que llegó desde la última
+ * vez, y la marca del miembro corrida hasta el más nuevo.
+ *
+ * La marca queda en la fecha del **último mensaje visto** y no en "ahora": así
+ * un mensaje que entre entre la consulta y la escritura no queda debajo de la
+ * marca sin su lectura, y lo no leído sigue siendo "lo más nuevo que la marca",
+ * que es lo que siempre fue. Sin nada nuevo no se escribe nada, y eso es lo
+ * que hace barato llamarlo cada cinco segundos con el chat abierto.
+ */
+async function registrarLecturas(
+  chatId: string,
+  userId: string,
+  desde: Date | null
+) {
+  const nuevos = await prisma.chatMensaje.findMany({
+    where: { chatId, ...(desde ? { createdAt: { gt: desde } } : {}) },
+    select: { id: true, autorId: true, createdAt: true },
+  });
+  if (nuevos.length === 0) return;
+  const ajenos = nuevos.filter((m) => m.autorId !== userId);
+  const ultimo = nuevos.reduce(
+    (max, m) => (m.createdAt > max ? m.createdAt : max),
+    nuevos[0].createdAt
+  );
+  await prisma.$transaction([
+    ...(ajenos.length > 0
+      ? [
+          prisma.chatLectura.createMany({
+            data: ajenos.map((m) => ({ mensajeId: m.id, userId })),
+            skipDuplicates: true,
+          }),
+        ]
+      : []),
+    prisma.chatMiembro.update({
+      where: { chatId_userId: { chatId, userId } },
+      data: { leidoEl: ultimo },
+    }),
+  ]);
+}
+
+/** Marcar lo leído hasta ahora. Lo llama la pantalla al abrir el chat, y después cada tanto mientras está abierto. */
 export async function marcarLeido(viewer: Viewer, chatId: string) {
   const { miembro } = await ensureMiembro(viewer, chatId);
-  await prisma.chatMiembro.update({
-    where: { id: miembro.id },
-    data: { leidoEl: new Date() },
+  await registrarLecturas(chatId, viewer.id, miembro.leidoEl);
+}
+
+/**
+ * La info de un mensaje: quién lo leyó y cuándo, y a quién le falta. Solo de
+ * los propios —es "¿ya vieron lo que mandé?"—, como en WhatsApp.
+ */
+export async function infoDeMensaje(viewer: Viewer, mensajeId: string) {
+  ensureEnElEquipo(viewer);
+  const mensaje = await prisma.chatMensaje.findUnique({
+    where: { id: mensajeId },
+    select: {
+      ...MENSAJE_SELECT,
+      chatId: true,
+      lecturas: {
+        select: { userId: true, leidoEl: true, user: { select: USUARIO_SELECT } },
+      },
+    },
   });
+  if (!mensaje) throw new NotFoundError("Mensaje no encontrado");
+  await ensureMiembro(viewer, mensaje.chatId);
+  if (mensaje.autorId !== viewer.id) {
+    throw new ForbiddenError("Solo puedes ver la info de tus mensajes.");
+  }
+
+  const miembros = await prisma.chatMiembro.findMany({
+    where: { chatId: mensaje.chatId, salioEl: null, userId: { not: viewer.id } },
+    select: { user: { select: USUARIO_SELECT } },
+    orderBy: { agregadoEl: "asc" },
+  });
+  const lecturaDe = new Map(mensaje.lecturas.map((l) => [l.userId, l]));
+  const leidoPor = miembros
+    .filter((m) => lecturaDe.has(m.user.id))
+    .map((m) => ({
+      id: m.user.id,
+      nombre: nombreDeUsuario(m.user),
+      leidoEl: lecturaDe.get(m.user.id)!.leidoEl,
+    }))
+    // El que lo leyó más recién arriba, como en WhatsApp.
+    .sort((a, b) => b.leidoEl.getTime() - a.leidoEl.getTime());
+  const sinLeer = miembros
+    .filter((m) => !lecturaDe.has(m.user.id))
+    .map((m) => ({ id: m.user.id, nombre: nombreDeUsuario(m.user) }));
+
+  return {
+    mensaje: mensajeParaPantalla(
+      mensaje,
+      viewer.id,
+      miembros.map((m) => m.user.id)
+    ),
+    leidoPor,
+    sinLeer,
+  };
 }
 
 /**

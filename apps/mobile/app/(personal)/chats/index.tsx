@@ -7,6 +7,7 @@ import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
 import { useAuthStore } from "@/lib/auth-store";
+import { useColaDeEnvio } from "@/lib/cola-de-envio";
 import {
   cuandoFue,
   resumenDelUltimo,
@@ -31,6 +32,12 @@ export default function ChatsListScreen() {
   const [cargando, setCargando] = useState(true);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Lo que quedó esperando en la cola sale apenas se abre esta pantalla, sin
+  // tener que entrar al chat: es lo primero que se ve al volver a tener señal.
+  const hidratarCola = useColaDeEnvio((s) => s.hidratar);
+  useEffect(() => {
+    hidratarCola();
+  }, [hidratarCola]);
 
   const cargar = useCallback(async (inicial = false) => {
     if (inicial) setCargando(true);

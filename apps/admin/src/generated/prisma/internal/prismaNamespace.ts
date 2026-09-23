@@ -442,6 +442,7 @@ export const ModelName = {
   Chat: 'Chat',
   ChatMiembro: 'ChatMiembro',
   ChatMensaje: 'ChatMensaje',
+  ChatLectura: 'ChatLectura',
   ChatAdjunto: 'ChatAdjunto'
 } as const
 
@@ -458,7 +459,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatAdjunto"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4754,6 +4755,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChatLectura: {
+      payload: Prisma.$ChatLecturaPayload<ExtArgs>
+      fields: Prisma.ChatLecturaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatLecturaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatLecturaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>
+        }
+        findFirst: {
+          args: Prisma.ChatLecturaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatLecturaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>
+        }
+        findMany: {
+          args: Prisma.ChatLecturaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>[]
+        }
+        create: {
+          args: Prisma.ChatLecturaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>
+        }
+        createMany: {
+          args: Prisma.ChatLecturaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatLecturaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>[]
+        }
+        delete: {
+          args: Prisma.ChatLecturaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>
+        }
+        update: {
+          args: Prisma.ChatLecturaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatLecturaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatLecturaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatLecturaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatLecturaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatLecturaPayload>
+        }
+        aggregate: {
+          args: Prisma.ChatLecturaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatLectura>
+        }
+        groupBy: {
+          args: Prisma.ChatLecturaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatLecturaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatLecturaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatLecturaCountAggregateOutputType> | number
+        }
+      }
+    }
     ChatAdjunto: {
       payload: Prisma.$ChatAdjuntoPayload<ExtArgs>
       fields: Prisma.ChatAdjuntoFieldRefs
@@ -5771,10 +5846,20 @@ export const ChatMensajeScalarFieldEnum = {
   deletedAt: 'deletedAt',
   autorId: 'autorId',
   autorNombre: 'autorNombre',
-  respondeAId: 'respondeAId'
+  respondeAId: 'respondeAId',
+  idCliente: 'idCliente'
 } as const
 
 export type ChatMensajeScalarFieldEnum = (typeof ChatMensajeScalarFieldEnum)[keyof typeof ChatMensajeScalarFieldEnum]
+
+
+export const ChatLecturaScalarFieldEnum = {
+  mensajeId: 'mensajeId',
+  userId: 'userId',
+  leidoEl: 'leidoEl'
+} as const
+
+export type ChatLecturaScalarFieldEnum = (typeof ChatLecturaScalarFieldEnum)[keyof typeof ChatLecturaScalarFieldEnum]
 
 
 export const ChatAdjuntoScalarFieldEnum = {
@@ -6368,6 +6453,7 @@ export type GlobalOmitConfig = {
   chat?: Prisma.ChatOmit
   chatMiembro?: Prisma.ChatMiembroOmit
   chatMensaje?: Prisma.ChatMensajeOmit
+  chatLectura?: Prisma.ChatLecturaOmit
   chatAdjunto?: Prisma.ChatAdjuntoOmit
 }
 

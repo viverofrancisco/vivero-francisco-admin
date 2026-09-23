@@ -485,14 +485,12 @@ export type FacturaLinea = Prisma.FacturaLineaModel
  * Model Chat
  * *
  *  * Una conversación del equipo.
- *  *
  *  * **Es entre cuentas del vivero, nunca con un cliente.** El cliente tiene la
  *  * calificación de su visita para decir lo suyo; hubo un chat por visita entre
  *  * la oficina y el cliente y se fue justamente porque pedía a alguien del otro
  *  * lado mirando una bandeja. Este es otra cosa: la oficina y la gente de campo
  *  * hablando entre ellas, que es lo que hoy pasa por WhatsApp y no queda en
  *  * ningún lado.
- *  *
  *  * **Lo arma el ADMIN.** Crear el chat y decidir quién está adentro es de él —
  *  * por ahora—; STAFF y PERSONAL entran a los suyos, leen y escriben. Estar
  *  * adentro es lo único que da acceso: un admin que no es miembro tampoco lo ve,
@@ -504,7 +502,6 @@ export type Chat = Prisma.ChatModel
  * Model ChatMiembro
  * *
  *  * Quién está en un chat.
- *  *
  *  * Sacar a alguien marca `salioEl` en vez de borrar la fila: los mensajes que
  *  * escribió siguen ahí y con la fila se sabe que estuvo. Todo lo que pregunta
  *  * "¿puede ver esto?" filtra `salioEl: null`, así que dejar de estar corta el
@@ -516,7 +513,6 @@ export type ChatMiembro = Prisma.ChatMiembroModel
  * Model ChatMensaje
  * *
  *  * Un mensaje: texto, imágenes, o las dos cosas.
- *  *
  *  * El autor va con su **id y una copia de su nombre**, el mismo par que usan
  *  * `Factura` y `OrdenLinea`: el id sirve para agrupar y se vacía si la cuenta se
  *  * borra, y el texto es lo que se muestra —un mensaje sin firma no se entiende,
@@ -524,10 +520,21 @@ export type ChatMiembro = Prisma.ChatMiembroModel
  */
 export type ChatMensaje = Prisma.ChatMensajeModel
 /**
+ * Model ChatLectura
+ * *
+ *  * Quién leyó cada mensaje, y cuándo.
+ *  * `ChatMiembro.leidoEl` dice hasta dónde leyó alguien, y con eso alcanza para
+ *  * contar lo no leído; pero "a qué hora leyó **este** mensaje" no se deriva de
+ *  * ahí, porque se pisa cada vez que abre el chat. Una fila por mensaje y lector
+ *  * es lo que WhatsApp muestra en la info del mensaje. Se escribe por tandas al
+ *  * abrir el chat —solo los mensajes que llegaron desde la última vez—, así que
+ *  * en el uso normal es cero o un puñado de filas por consulta.
+ */
+export type ChatLectura = Prisma.ChatLecturaModel
+/**
  * Model ChatAdjunto
  * *
  *  * Una imagen de un mensaje.
- *  *
  *  * Tabla propia y prefijo propio en R2, no la biblioteca `Media`: esa es el
  *  * catálogo del que los productos eligen fotos, y una foto que alguien mandó en
  *  * un chat no tiene nada que hacer ahí. Es la misma decisión que se tomó con las

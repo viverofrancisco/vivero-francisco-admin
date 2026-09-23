@@ -45,7 +45,9 @@ export default async function ChatPage({
   const [chat, mensajes] = datos;
 
   return (
-    <div className="flex h-full flex-col p-4 md:p-6">
+    // En el teléfono el margen es el de cualquier página; en el escritorio la
+    // conversación llena su columna, como en WhatsApp.
+    <div className="flex h-full flex-col p-3 md:p-0">
       <Conversacion
         chat={{
           id: chat.id,

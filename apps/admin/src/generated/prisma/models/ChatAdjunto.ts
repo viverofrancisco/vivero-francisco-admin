@@ -16,7 +16,6 @@ import type * as Prisma from "../internal/prismaNamespace"
  * Model ChatAdjunto
  * *
  *  * Una imagen de un mensaje.
- *  *
  *  * Tabla propia y prefijo propio en R2, no la biblioteca `Media`: esa es el
  *  * catálogo del que los productos eligen fotos, y una foto que alguien mandó en
  *  * un chat no tiene nada que hacer ahí. Es la misma decisión que se tomó con las
@@ -571,7 +570,6 @@ export type $ChatAdjuntoPayload<ExtArgs extends runtime.Types.Extensions.Interna
     /**
      * *
      *    * Cómo se llamaba el archivo cuando lo mandaron.
-     *    *
      *    * La clave en R2 es un uuid —tiene que serlo, dos fotos "IMG_0001.jpg" no
      *    * pueden pisarse—, así que sin esto una foto no tiene ninguna palabra por la
      *    * cual encontrarla. Es lo único con lo que se puede buscar una imagen: el

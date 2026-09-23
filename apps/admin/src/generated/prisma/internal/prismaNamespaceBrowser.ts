@@ -109,6 +109,7 @@ export const ModelName = {
   Chat: 'Chat',
   ChatMiembro: 'ChatMiembro',
   ChatMensaje: 'ChatMensaje',
+  ChatLectura: 'ChatLectura',
   ChatAdjunto: 'ChatAdjunto'
 } as const
 
@@ -1032,10 +1033,20 @@ export const ChatMensajeScalarFieldEnum = {
   deletedAt: 'deletedAt',
   autorId: 'autorId',
   autorNombre: 'autorNombre',
-  respondeAId: 'respondeAId'
+  respondeAId: 'respondeAId',
+  idCliente: 'idCliente'
 } as const
 
 export type ChatMensajeScalarFieldEnum = (typeof ChatMensajeScalarFieldEnum)[keyof typeof ChatMensajeScalarFieldEnum]
+
+
+export const ChatLecturaScalarFieldEnum = {
+  mensajeId: 'mensajeId',
+  userId: 'userId',
+  leidoEl: 'leidoEl'
+} as const
+
+export type ChatLecturaScalarFieldEnum = (typeof ChatLecturaScalarFieldEnum)[keyof typeof ChatLecturaScalarFieldEnum]
 
 
 export const ChatAdjuntoScalarFieldEnum = {

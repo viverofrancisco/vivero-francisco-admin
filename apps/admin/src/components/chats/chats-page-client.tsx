@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useFiltroUrl } from "@/lib/filtros-url";
+import { useAca, useFiltroUrl } from "@/lib/filtros-url";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FILA_MOVIL } from "@/components/shared/lista-movil";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
-import { aca } from "@/lib/filtros-url";
 import { Play } from "lucide-react";
 import { ChatForm } from "./chat-form";
 import { fechaRelativaCorta } from "./formato";
@@ -67,16 +66,42 @@ function conMarca(texto: string, q: string) {
   );
 }
 
+/** Cada cuánto se refresca la lista mientras está a la vista. */
+const CADA_MS = 5000;
+
 export function ChatsPageClient({
-  chats,
+  chats: iniciales,
   puedeCrear,
 }: {
   chats: ChatEnLista[];
   puedeCrear: boolean;
 }) {
   const router = useRouter();
+  // El chat abierto al lado, en el escritorio: se marca en la lista.
+  const { id: abierto } = useParams<{ id?: string }>();
   const [creando, setCreando] = useState(false);
   const [busqueda, setBusqueda] = useFiltroUrl("q", "");
+  // Con el hook y no con `aca()`: el `href` se arma durante el render, y en
+  // el servidor no hay `window` —salía distinto y era un error de hidratación—.
+  const desde = useAca();
+
+  /*
+   * La lista se refresca sola: en el escritorio queda a la vista todo el día
+   * al lado de la conversación, y lo que dice de cada chat —el último
+   * mensaje, cuántos sin leer— cambia sin que nadie navegue. Lo que vino con
+   * el HTML arranca; después pregunta cada tanto, solo con la pestaña visible.
+   */
+  const [chats, setChats] = useState(iniciales);
+  useEffect(() => {
+    const tic = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      fetch("/api/chats")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && setChats(d.items))
+        .catch(() => {});
+    }, CADA_MS);
+    return () => clearInterval(tic);
+  }, []);
 
   const q = busqueda.trim().toLowerCase();
   const visibles = q
@@ -167,8 +192,9 @@ export function ChatsPageClient({
             {visibles.map((c) => (
               <Link
                 key={c.id}
-                href={`/dashboard/chats/${c.id}?from=${aca()}`}
-                className={`${FILA_MOVIL} bg-card`}
+                href={`/dashboard/chats/${c.id}?from=${desde}`}
+                className={`${FILA_MOVIL} ${c.id === abierto ? "bg-muted" : "bg-card"}`}
+                aria-current={c.id === abierto ? "page" : undefined}
               >
                 <InitialsAvatar name={c.nombre} size={40} />
                 <span className="min-w-0 flex-1">
@@ -208,7 +234,7 @@ export function ChatsPageClient({
                 {mensajes.map((m) => (
                   <Link
                     key={m.id}
-                    href={`/dashboard/chats/${m.chatId}?mensaje=${m.id}&from=${aca()}`}
+                    href={`/dashboard/chats/${m.chatId}?mensaje=${m.id}&from=${desde}`}
                     className={`${FILA_MOVIL} bg-card`}
                   >
                     {m.foto?.tipo === "video" ? (

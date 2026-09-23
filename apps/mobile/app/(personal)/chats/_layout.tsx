@@ -10,6 +10,8 @@ export default function ChatsLayout() {
       {/* Sin encabezado nativo: la pantalla pone el suyo, con Cancelar a la
           izquierda y Crear a la derecha. El de la pila decía "‹ index". */}
       <Stack.Screen name="nuevo" options={{ headerShown: false }} />
+      {/* Quién leyó un mensaje: pone su propio encabezado, como la conversación. */}
+      <Stack.Screen name="info/[mensajeId]" options={{ headerShown: false }} />
     </Stack>
   );
 }

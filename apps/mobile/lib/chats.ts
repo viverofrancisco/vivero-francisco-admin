@@ -47,25 +47,11 @@ export interface MensajeEncontrado {
   fotos: number;
 }
 
-export interface MensajeDeChat {
-  id: string;
-  texto: string | null;
-  fotos: { id: string; url: string; tipo: string; nombre?: string | null }[];
-  createdAt: string;
-  borrado: boolean;
-  autorId: string | null;
-  autorNombre: string;
-  mio: boolean;
-  respondeA: {
-    id: string;
-    autorNombre: string;
-    texto: string | null;
-    borrado: boolean;
-    fotos: number;
-    /** La primera foto o video del mensaje citado, para la miniatura. */
-    miniatura: { url: string; tipo: string } | null;
-  } | null;
-}
+/**
+ * Un mensaje, y la info de quién lo leyó: los tipos son los de `@vivero/shared`,
+ * porque las dos aplicaciones dibujan lo mismo y el portal manda lo mismo.
+ */
+export type { MensajeDeChat, InfoDeMensaje, EstadoDeMensaje } from "@vivero/shared";
 
 /** Cómo se nombra un adjunto cuando no hay texto que lo acompañe. */
 export function etiquetaDeAdjuntos(
@@ -140,4 +126,23 @@ export function tituloDelDia(iso: string): string {
 
 export function mismoDia(a: string, b: string): boolean {
   return dia(new Date(a)) === dia(new Date(b));
+}
+
+/**
+ * Cuándo alguien leyó un mensaje, para la info del mensaje: "Hoy, 9:24 p. m.",
+ * "Ayer, 9:24 p. m." o "22 sept, 9:24 p. m.".
+ */
+export function cuandoLeyo(iso: string): string {
+  const fecha = new Date(iso);
+  const hoy = new Date();
+  const ayer = new Date(hoy.getTime() - 86400000);
+  const hora = horaDeMensaje(iso);
+  if (dia(fecha) === dia(hoy)) return `Hoy, ${hora}`;
+  if (dia(fecha) === dia(ayer)) return `Ayer, ${hora}`;
+  const cuando = fecha.toLocaleDateString("es-EC", {
+    timeZone: ZONA,
+    day: "numeric",
+    month: "short",
+  });
+  return `${cuando}, ${hora}`;
 }

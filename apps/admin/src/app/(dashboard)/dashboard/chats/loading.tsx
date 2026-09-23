@@ -1,5 +1,4 @@
-import { SkeletonLista } from "@/components/shared/page-skeletons";
-
+/** El hueco de la derecha mientras se abre: en el teléfono no se ve. */
 export default function Loading() {
-  return <SkeletonLista />;
+  return <div className="h-full" />;
 }

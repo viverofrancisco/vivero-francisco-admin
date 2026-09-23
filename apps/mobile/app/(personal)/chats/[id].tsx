@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   Image,
@@ -15,13 +15,21 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
+import {
+  mezclarConLaCola,
+  nuevoIdCliente,
+  type MensajeEnCola,
+} from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
+import { useAuthStore } from "@/lib/auth-store";
+import { onEnviado, useColaDeEnvio } from "@/lib/cola-de-envio";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MediaViewer } from "@/components/MediaViewer";
+import { Burbuja, MiniaturaAdjunto } from "@/components/chats/Burbuja";
+import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
 import {
   etiquetaDeAdjuntos,
-  horaDeMensaje,
   mismoDia,
   tituloDelDia,
   type ChatDetalle,
@@ -82,6 +90,11 @@ async function copiarAlPortapapeles(mensaje: MensajeDeChat): Promise<boolean> {
  * La lista va **invertida**: así se pega abajo sola —que es donde empieza una
  * conversación— y el orden en que viene del servidor, del más nuevo al más
  * viejo, es justo el que necesita.
+ *
+ * **Lo que se escribe aparece en el acto y sale después**, por la cola de
+ * `lib/cola-de-envio.ts`: la lista que se dibuja es lo que vino del servidor
+ * más lo que espera en la cola, y un mensaje que vuelve del servidor con el
+ * `idCliente` de uno de la cola es ese mismo, ya llegado.
  */
 export default function ChatScreen() {
   const { id, mensaje: destacado } = useLocalSearchParams<{
@@ -108,13 +121,10 @@ export default function ChatScreen() {
   const [cargandoViejos, setCargandoViejos] = useState(false);
   const [texto, setTexto] = useState("");
   const [respondiendo, setRespondiendo] = useState<MensajeDeChat | null>(null);
-  const [enviando, setEnviando] = useState(false);
   /**
    * Las fotos elegidas que todavía no salieron.
    *
-   * Antes se subían y se mandaban en el acto, así que una foto nunca podía
-   * llevar texto ni juntarse con otra: cada una era su propio mensaje. Ahora
-   * esperan acá —con su miniatura arriba del campo— y salen **con lo que se
+   * Esperan acá —con su miniatura arriba del campo— y salen **con lo que se
    * escriba**, en un solo mensaje, como en WhatsApp.
    */
   const [pendientes, setPendientes] = useState<ImagePicker.ImagePickerAsset[]>(
@@ -136,6 +146,44 @@ export default function ChatScreen() {
   /** A dónde había que ir cuando la lista todavía no había medido esa fila. */
   const pendienteDeIr = useRef<number | null>(null);
 
+  /** Quien escribe, para dibujar lo suyo antes de que el servidor conteste. */
+  const usuario = useAuthStore((s) => s.user);
+  const yo = useMemo(
+    () => ({
+      id: usuario?.id ?? "",
+      nombre:
+        [usuario?.name, usuario?.apellido].filter(Boolean).join(" ") ||
+        usuario?.usuario ||
+        usuario?.email ||
+        "Tú",
+    }),
+    [usuario]
+  );
+
+  /** La cola de salida: lo que espera de este chat va al final de la lista. */
+  const cola = useColaDeEnvio((s) => s.items);
+  const hidratarCola = useColaDeEnvio((s) => s.hidratar);
+  const encolar = useColaDeEnvio((s) => s.encolar);
+  const reintentar = useColaDeEnvio((s) => s.reintentar);
+  const descartar = useColaDeEnvio((s) => s.descartar);
+  const confirmarLlegada = useColaDeEnvio((s) => s.confirmarLlegada);
+  const procesarCola = useColaDeEnvio((s) => s.procesar);
+  useEffect(() => {
+    hidratarCola();
+  }, [hidratarCola]);
+
+  // La lista está invertida —del más nuevo al más viejo— y la cola se junta
+  // por el otro lado: se da vuelta, se mezcla, se vuelve a dar vuelta.
+  const enPantalla = useMemo(
+    () =>
+      mezclarConLaCola(
+        [...mensajes].reverse(),
+        cola.filter((i) => i.chatId === id),
+        yo
+      ).reverse(),
+    [mensajes, cola, id, yo]
+  );
+
   /**
    * Ir a un mensaje: al que cita una respuesta. Si está cargado, la lista se
    * desplaza hasta él y se lo hace destellar; si quedó más atrás de lo que se
@@ -143,7 +191,7 @@ export default function ChatScreen() {
    * buscador, y recién entonces se va.
    */
   async function irAlMensaje(mensajeId: string) {
-    const i = mensajes.findIndex((m) => m.id === mensajeId);
+    const i = enPantalla.findIndex((m) => m.id === mensajeId);
     if (i >= 0) {
       lista.current?.scrollToIndex({ index: i, viewPosition: 0.5, animated: true });
       setResaltado(mensajeId);
@@ -218,21 +266,37 @@ export default function ChatScreen() {
     cargar();
   }, [cargar]);
 
+  // Un mensaje de la cola que volvió del servidor se pega a la lista acá, sin
+  // esperar al próximo sondeo: es lo que hace que el ✓ pase a ✓✓ al instante.
+  useEffect(
+    () =>
+      onEnviado((chatId, m) => {
+        if (chatId !== id) return;
+        setMensajes((actuales) =>
+          actuales.some((x) => x.id === m.id) ? actuales : [m, ...actuales]
+        );
+      }),
+    [id]
+  );
+
   /** Trae la página más nueva y pega lo que no estaba. */
   const buscarNuevos = useCallback(async () => {
     try {
       const pagina = await apiRequest<{ items: MensajeDeChat[] }>(
         `/api/mobile/chats/${id}/mensajes`
       );
+      // Lo que estaba en la cola y ya vino por acá, dejó de esperar.
+      pagina.items.forEach((m) => {
+        if (m.idCliente) confirmarLlegada(m.idCliente);
+      });
       setMensajes((actuales) => {
         const conocidos = new Set(actuales.map((m) => m.id));
         const nuevos = pagina.items.filter((m) => !conocidos.has(m.id));
-        if (nuevos.length === 0) {
-          // Puede haber cambiado alguno de los que ya están —uno borrado—.
-          const porId = new Map(pagina.items.map((m) => [m.id, m]));
-          return actuales.map((m) => porId.get(m.id) ?? m);
-        }
-        return [...nuevos, ...actuales];
+        // Los conocidos se refrescan siempre: cambia el estado —lo leyeron—
+        // o uno se borró, sin perder los viejos de abajo.
+        const porId = new Map(pagina.items.map((m) => [m.id, m]));
+        const refrescados = actuales.map((m) => porId.get(m.id) ?? m);
+        return nuevos.length === 0 ? refrescados : [...nuevos, ...refrescados];
       });
       apiRequest(`/api/mobile/chats/${id}/leido`, { method: "POST" }).catch(
         () => {}
@@ -240,7 +304,9 @@ export default function ChatScreen() {
     } catch {
       // Un pedido que falla no interrumpe nada: el siguiente lo intenta.
     }
-  }, [id]);
+    // Y lo que esté esperando en la cola, que lo vuelva a intentar.
+    void procesarCola();
+  }, [id, confirmarLlegada, procesarCola]);
 
   useFocusEffect(
     useCallback(() => {
@@ -272,80 +338,48 @@ export default function ChatScreen() {
     }
   }
 
-  /** Sube lo que esté esperando y devuelve con qué crear el mensaje. */
-  async function subirPendientes(): Promise<
-    { key: string; url: string; nombre?: string; tipo: "imagen" | "video" }[]
-  > {
-    if (pendientes.length === 0) return [];
-    const presign = await apiRequest<{
-      uploads: {
-        key: string;
-        url: string;
-        uploadUrl: string;
-        contentType: string;
-        tipo: "imagen" | "video";
-      }[];
-    }>(`/api/mobile/chats/${id}/fotos`, {
-      method: "POST",
-      body: {
-        files: pendientes.map((a, i) => ({
-          fileName:
-            a.fileName ?? (a.type === "video" ? `video-${i}.mp4` : `foto-${i}.jpg`),
-          contentType:
-            a.mimeType ?? (a.type === "video" ? "video/mp4" : "image/jpeg"),
-        })),
-      },
-    });
-
-    await Promise.all(
-      presign.uploads.map(async (u, i) => {
-        const blob = await (await fetch(pendientes[i].uri)).blob();
-        const res = await fetch(u.uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": u.contentType },
-          body: blob,
-        });
-        if (!res.ok) throw new Error("No pudimos subir una de las fotos.");
-      })
-    );
-
-    return presign.uploads.map((u, i) => ({
-      key: u.key,
-      url: u.url,
-      // El nombre del archivo viaja porque es lo único por lo que después se
-      // puede buscar una foto.
-      nombre: pendientes[i].fileName ?? undefined,
-      tipo: u.tipo,
-    }));
-  }
-
-  async function enviar() {
+  /**
+   * Enviar: a la cola, y a la pantalla en el acto. Lo que se escribió se
+   * limpia ya, porque el mensaje ya está en la conversación con su ✓; si el
+   * servidor lo rechaza, aparece ahí mismo con su motivo y sus dos botones.
+   */
+  function enviar() {
     const cuerpo = texto.trim();
     if (!cuerpo && pendientes.length === 0) return;
-    setEnviando(true);
-    try {
-      const fotos = pendientes.length > 0 ? await subirPendientes() : [];
-      const mensaje = await apiRequest<MensajeDeChat>(
-        `/api/mobile/chats/${id}/mensajes`,
-        {
-          method: "POST",
-          body: {
-            texto: cuerpo || null,
-            fotos,
-            respondeAId: respondiendo?.id ?? null,
-          },
-        }
-      );
-      setMensajes((actuales) => [mensaje, ...actuales]);
-      setTexto("");
-      setRespondiendo(null);
-      setPendientes([]);
-      setAviso(null);
-    } catch (e) {
-      setAviso(mensajeDeError(e, "No pudimos enviar el mensaje"));
-    } finally {
-      setEnviando(false);
-    }
+    const item: MensajeEnCola = {
+      idCliente: nuevoIdCliente(),
+      chatId: id,
+      texto: cuerpo || null,
+      fotos: pendientes.map((a, i) => ({
+        uri: a.uri,
+        // El nombre del archivo viaja porque es lo único por lo que después
+        // se puede buscar una foto.
+        nombre:
+          a.fileName ?? (a.type === "video" ? `video-${i}.mp4` : `foto-${i}.jpg`),
+        contentType:
+          a.mimeType ?? (a.type === "video" ? "video/mp4" : "image/jpeg"),
+        tipo: a.type === "video" ? "video" : "imagen",
+      })),
+      respondeA: respondiendo
+        ? {
+            id: respondiendo.id,
+            autorNombre: respondiendo.autorNombre,
+            texto: respondiendo.texto,
+            borrado: respondiendo.borrado,
+            fotos: respondiendo.fotos.length,
+            miniatura: respondiendo.fotos[0]
+              ? { url: respondiendo.fotos[0].url, tipo: respondiendo.fotos[0].tipo }
+              : null,
+          }
+        : null,
+      creadoEl: new Date().toISOString(),
+      estado: "pendiente",
+    };
+    encolar(item);
+    setTexto("");
+    setRespondiendo(null);
+    setPendientes([]);
+    setAviso(null);
   }
 
   /** Elegir **no manda**: la foto espera arriba del campo hasta que se envíe. */
@@ -389,6 +423,14 @@ export default function ChatScreen() {
     }
   }
 
+  /** La info de un mensaje propio: quién lo leyó y cuándo. */
+  function verInfo(mensaje: MensajeDeChat) {
+    router.push({
+      pathname: "/(personal)/chats/info/[mensajeId]",
+      params: { mensajeId: mensaje.id },
+    });
+  }
+
   if (cargando) {
     return (
       <View style={styles.centro}>
@@ -398,6 +440,7 @@ export default function ChatScreen() {
   }
 
   const otros = chat?.miembros.filter((m) => !m.soyYo) ?? [];
+  const hayQueMandar = Boolean(texto.trim()) || pendientes.length > 0;
 
   return (
     <KeyboardAvoidingView
@@ -444,7 +487,7 @@ export default function ChatScreen() {
 
       <FlatList
         ref={lista}
-        data={mensajes}
+        data={enPantalla}
         keyExtractor={(m) => m.id}
         inverted
         // Las filas miden distinto y la lista no las conoce hasta dibujarlas:
@@ -485,11 +528,14 @@ export default function ChatScreen() {
         renderItem={({ item, index }) => {
           // La lista está invertida: el "siguiente" en pantalla es el que en
           // el arreglo viene después, que es el más viejo.
-          const anterior = mensajes[index + 1];
+          const anterior = enPantalla[index + 1];
           const cambiaElDia =
             !anterior || !mismoDia(anterior.createdAt, item.createdAt);
           const mismoAutor =
             anterior && anterior.autorId === item.autorId && !cambiaElDia;
+          const enCola =
+            item.estado === "pendiente" || item.estado === "fallido";
+          const seMueve = !item.borrado && !enCola;
           return (
             <View>
               {/* El separador va **antes** de la burbuja: `inverted` da vuelta
@@ -501,17 +547,25 @@ export default function ChatScreen() {
                   </Text>
                 </View>
               ) : null}
-              <Burbuja
-                mensaje={item}
-                destacado={item.id === resaltado}
-                conNombre={!item.mio && !mismoAutor}
-                onIrACita={irAlMensaje}
-                onMantener={() => {
-                  Haptics.selectionAsync();
-                  setTocado(item);
-                }}
-                onVerFoto={setViendo}
-              />
+              <FilaDeslizable
+                alineado={item.mio ? "derecha" : "izquierda"}
+                onDerecha={seMueve ? () => setRespondiendo(item) : undefined}
+                onIzquierda={seMueve && item.mio ? () => verInfo(item) : undefined}
+              >
+                <Burbuja
+                  mensaje={item}
+                  destacado={item.id === resaltado}
+                  conNombre={!item.mio && !mismoAutor}
+                  onIrACita={irAlMensaje}
+                  onMantener={() => {
+                    Haptics.selectionAsync();
+                    setTocado(item);
+                  }}
+                  onVerFoto={setViendo}
+                  onReintentar={() => item.idCliente && reintentar(item.idCliente)}
+                  onDescartar={() => item.idCliente && descartar(item.idCliente)}
+                />
+              </FilaDeslizable>
             </View>
           );
         }}
@@ -587,7 +641,6 @@ export default function ChatScreen() {
           <PressableScale
             onPress={elegirDeGaleria}
             onLongPress={sacarFoto}
-            disabled={enviando}
             style={styles.adjuntar}
             accessibilityLabel="Mandar una foto"
           >
@@ -605,19 +658,11 @@ export default function ChatScreen() {
             onPress={() => enviar()}
             // Se puede mandar con texto **o** con fotos esperando: una foto
             // sola es un mensaje, y con pie de foto también.
-            disabled={enviando || (!texto.trim() && pendientes.length === 0)}
-            style={[
-              styles.enviar,
-              (enviando || (!texto.trim() && pendientes.length === 0)) &&
-                styles.apagado,
-            ]}
+            disabled={!hayQueMandar}
+            style={[styles.enviar, !hayQueMandar && styles.apagado]}
             accessibilityLabel="Enviar"
           >
-            {enviando ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Ionicons name="send" size={18} color="#fff" />
-            )}
+            <Ionicons name="send" size={18} color="#fff" />
           </PressableScale>
         </View>
       </View>
@@ -662,6 +707,20 @@ export default function ChatScreen() {
           ) : null}
           {tocado?.mio ? (
             <PressableScale
+              onPress={() => {
+                const m = tocado;
+                setTocado(null);
+                verInfo(m);
+              }}
+              estiloExterno={styles.ancho}
+              style={styles.opcion}
+            >
+              <Ionicons name="information-circle-outline" size={20} color={tema.texto2} />
+              <Text style={styles.opcionTexto}>Info</Text>
+            </PressableScale>
+          ) : null}
+          {tocado?.mio ? (
+            <PressableScale
               onPress={() => tocado && borrar(tocado)}
               estiloExterno={styles.ancho}
               style={styles.opcion}
@@ -677,158 +736,6 @@ export default function ChatScreen() {
 
       <MediaViewer media={viendo} onClose={() => setViendo(null)} />
     </KeyboardAvoidingView>
-  );
-}
-
-/**
- * Un mensaje. Lo mío a la derecha en verde, lo de los demás a la izquierda en
- * blanco: la convención que todo el mundo ya sabe leer.
- */
-function Burbuja({
-  mensaje,
-  destacado = false,
-  conNombre,
-  onMantener,
-  onVerFoto,
-  onIrACita,
-}: {
-  mensaje: MensajeDeChat;
-  /** El que se vino a ver desde el buscador. */
-  destacado?: boolean;
-  conNombre: boolean;
-  onMantener: () => void;
-  onVerFoto: (media: { url: string; tipo: string }) => void;
-  /** Tocar la cita lleva al mensaje citado, como en WhatsApp. */
-  onIrACita: (id: string) => void;
-}) {
-  const mio = mensaje.mio;
-  return (
-    <PressableScale
-      onLongPress={mensaje.borrado ? undefined : onMantener}
-      delayLongPress={300}
-      estiloExterno={[styles.fila, mio ? styles.aLaDerecha : styles.aLaIzquierda]}
-      style={[
-        styles.burbuja,
-        mio ? styles.mia : styles.ajena,
-        destacado && styles.destacada,
-      ]}
-    >
-      {conNombre ? (
-        <Text style={styles.autor}>{mensaje.autorNombre}</Text>
-      ) : null}
-
-      {mensaje.respondeA ? (
-        <PressableScale
-          onPress={() => onIrACita(mensaje.respondeA!.id)}
-          onLongPress={onMantener}
-          estiloExterno={styles.ancho}
-          style={[styles.cita, mio ? styles.citaMia : styles.citaAjena]}
-          accessibilityRole="link"
-          accessibilityLabel="Ir al mensaje citado"
-        >
-          <View style={styles.crece}>
-            <Text style={[styles.citaAutor, mio && styles.textoClaro]}>
-              {mensaje.respondeA.autorNombre}
-            </Text>
-            <Text
-              style={[styles.citaCuerpo, mio && styles.textoClaro]}
-              numberOfLines={2}
-            >
-              {mensaje.respondeA.borrado
-                ? "Mensaje borrado"
-                : (mensaje.respondeA.texto ??
-                  etiquetaDeAdjuntos(
-                    mensaje.respondeA.miniatura?.tipo,
-                    mensaje.respondeA.fotos
-                  ))}
-            </Text>
-          </View>
-          {/* La miniatura de lo citado, como en WhatsApp: "📷 Foto" no dice
-              cuál de todas. */}
-          {mensaje.respondeA.miniatura ? (
-            <MiniaturaAdjunto
-              url={mensaje.respondeA.miniatura.url}
-              tipo={mensaje.respondeA.miniatura.tipo}
-              lado={36}
-            />
-          ) : null}
-        </PressableScale>
-      ) : null}
-
-      {mensaje.borrado ? (
-        <Text style={[styles.borrado, mio && styles.textoClaro]}>
-          Mensaje borrado
-        </Text>
-      ) : (
-        <>
-          {mensaje.fotos.length > 0 ? (
-            <View style={styles.fotos}>
-              {mensaje.fotos.map((f) => (
-                <PressableScale
-                  key={f.id}
-                  onPress={() => onVerFoto({ url: f.url, tipo: f.tipo })}
-                  onLongPress={onMantener}
-                  style={styles.fotoCaja}
-                >
-                  {/* Medidas fijas y no porcentajes: adentro de una burbuja
-                      que se mide por su contenido, un `100%` no tiene contra
-                      qué resolverse —quedaba de ancho cero y alto estirado—. */}
-                  {f.tipo === "video" ? (
-                    <View
-                      style={[
-                        mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola,
-                        styles.videoCaja,
-                      ]}
-                    >
-                      <Ionicons name="play" size={36} color="#fff" />
-                    </View>
-                  ) : (
-                    <Image
-                      source={{ uri: f.url }}
-                      style={
-                        mensaje.fotos.length > 1 ? styles.fotoChica : styles.fotoSola
-                      }
-                    />
-                  )}
-                </PressableScale>
-              ))}
-            </View>
-          ) : null}
-          {mensaje.texto ? (
-            <Text style={[styles.texto, mio && styles.textoClaro]}>
-              {mensaje.texto}
-            </Text>
-          ) : null}
-        </>
-      )}
-
-      <Text style={[styles.hora, mio && styles.horaMia]}>
-        {horaDeMensaje(mensaje.createdAt)}
-      </Text>
-    </PressableScale>
-  );
-}
-
-/** La miniatura chica de una foto o un video, para las citas. */
-function MiniaturaAdjunto({
-  url,
-  tipo,
-  lado,
-}: {
-  url: string;
-  tipo: string;
-  lado: number;
-}) {
-  const caja = { width: lado, height: lado };
-  if (tipo === "video") {
-    return (
-      <View style={[styles.miniaturaCita, styles.videoCaja, caja]}>
-        <Ionicons name="play" size={lado / 2} color="#fff" />
-      </View>
-    );
-  }
-  return (
-    <Image source={{ uri: url }} style={[styles.miniaturaCita, caja]} />
   );
 }
 
@@ -876,44 +783,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  // **Sin `scaleY: -1`.** `inverted` ya da vuelta cada celda por su cuenta;
-  // dar vuelta también el contenido lo dejaba espejado, con el texto al revés.
-  fila: { maxWidth: "85%" },
-  aLaDerecha: { alignSelf: "flex-end" },
-  aLaIzquierda: { alignSelf: "flex-start" },
-  burbuja: { borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6 },
-  mia: { backgroundColor: tema.verde, borderBottomRightRadius: 4 },
-  /* El que se vino a ver: un borde ámbar, que es lo único que lo distingue sin
-     taparle el contenido. */
-  destacada: { borderWidth: 2, borderColor: tema.ambar },
-  ajena: {
-    backgroundColor: tema.superficie,
-    borderBottomLeftRadius: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: tema.linea,
-  },
-  autor: { fontSize: 12, fontWeight: "700", color: tema.verde700, marginBottom: 2 },
-  texto: { fontSize: 15, color: tema.texto, lineHeight: 19 },
-  textoClaro: { color: "#fff" },
-  borrado: { fontSize: 15, fontStyle: "italic", color: tema.texto3 },
-  hora: { fontSize: 10, color: tema.texto3, alignSelf: "flex-end", marginTop: 1 },
-  horaMia: { color: "rgba(255,255,255,0.75)" },
-
-  cita: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    // Ancho mínimo fijo, por lo mismo que las fotos: adentro de una burbuja
-    // que se mide por su contenido, la columna del texto —`flex: 1`— no tiene
-    // contra qué resolverse y quedaba de ancho cero, con la cita estirada a lo
-    // alto y sin una letra a la vista.
-    minWidth: 210,
-    borderLeftWidth: 3,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginBottom: 4,
-  },
   /* Un video no tiene imagen sin reproducirlo: un recuadro oscuro con el
      triángulo es lo que todo el mundo lee como "esto se reproduce". */
   videoCaja: {
@@ -921,26 +790,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  miniaturaCita: { borderRadius: 6, overflow: "hidden", backgroundColor: tema.lienzo },
-  citaMia: {
-    borderLeftColor: "rgba(255,255,255,0.7)",
-    backgroundColor: "rgba(255,255,255,0.15)",
-  },
-  citaAjena: { borderLeftColor: tema.verde, backgroundColor: tema.lienzo },
-  citaAutor: { fontSize: 11, fontWeight: "700", color: tema.verde700 },
-  citaCuerpo: { fontSize: 12, color: tema.texto2 },
-
-  fotos: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 3,
-    marginBottom: 4,
-    // Dos por fila cuando hay varias: 105 + 3 + 105.
-    maxWidth: 213,
-  },
-  fotoCaja: { borderRadius: 10, overflow: "hidden" },
-  fotoSola: { width: 213, height: 160, backgroundColor: tema.lienzo },
-  fotoChica: { width: 105, height: 105, backgroundColor: tema.lienzo },
 
   aviso: {
     color: tema.rojo,
