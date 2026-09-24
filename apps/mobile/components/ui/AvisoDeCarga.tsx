@@ -36,10 +36,11 @@ export function AvisoDeCarga({
 
   let icono: keyof typeof Ionicons.glyphMap;
   let titulo: string;
-  let detalle: string;
+  let detalle: string | null;
   if (estado === 403) {
     icono = "lock-closed-outline";
-    ({ titulo, detalle } = SIN_ACCESO_A[tipo]);
+    titulo = SIN_ACCESO_A[tipo];
+    detalle = null;
   } else if (estado === 404) {
     icono = "help-circle-outline";
     titulo = `No encontramos ${este} ${que}`;
@@ -56,7 +57,7 @@ export function AvisoDeCarga({
     <View style={styles.centro}>
       <Ionicons name={icono} size={32} color={tema.texto3} style={styles.icono} />
       <Text style={styles.titulo}>{titulo}</Text>
-      <Text style={styles.detalle}>{detalle}</Text>
+      {detalle ? <Text style={styles.detalle}>{detalle}</Text> : null}
       <View style={styles.botones}>
         <Button mode="outlined" onPress={onVolver}>
           Volver

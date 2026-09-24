@@ -74,8 +74,7 @@ export function VistaPreviaDeFicha({
   useEffect(() => {
     if (!actual?.sinAcceso || !tipo) return;
     onCerrar();
-    const { titulo, detalle } = SIN_ACCESO_A[tipo];
-    const reloj = setTimeout(() => Alert.alert(titulo, detalle), 350);
+    const reloj = setTimeout(() => Alert.alert(SIN_ACCESO_A[tipo]), 350);
     return () => clearTimeout(reloj);
   }, [actual, tipo, onCerrar]);
 

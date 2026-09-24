@@ -441,8 +441,7 @@ export default function ChatScreen() {
     // La tarjeta se ve igual para todos; la que el rol no abre lo dice acá,
     // al tocarla, sin pedir una vista previa que va a fallar.
     if (!puedeAbrirReferencia(usuario?.role ?? "", ref.tipo)) {
-      const { titulo, detalle } = SIN_ACCESO_A[ref.tipo];
-      Alert.alert(titulo, detalle);
+      Alert.alert(SIN_ACCESO_A[ref.tipo]);
       return;
     }
     setVistaPrevia(ref);

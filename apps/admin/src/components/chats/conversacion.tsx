@@ -258,8 +258,7 @@ export function Conversacion({
     // La tarjeta se ve igual para todos; la que el rol no abre lo dice acá,
     // al tocarla, sin pedir una vista previa que va a fallar.
     if (!puedeAbrirReferencia(yo.rol, ref.tipo)) {
-      const { titulo, detalle } = SIN_ACCESO_A[ref.tipo];
-      toast.error(titulo, { description: detalle });
+      toast.error(SIN_ACCESO_A[ref.tipo]);
       return;
     }
     setVistaPrevia(ref);

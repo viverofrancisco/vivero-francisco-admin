@@ -20,12 +20,10 @@ import { cn } from "@/lib/utils";
  * botón no anda.
  */
 export function SinAcceso({ tipo, backHref }: { tipo: TipoDeReferencia; backHref: string }) {
-  const { titulo, detalle } = SIN_ACCESO_A[tipo];
   return (
     <div className="flex h-full flex-col items-center justify-center gap-1.5 px-6 py-16 text-center">
       <Lock className="mb-2 h-8 w-8 text-muted-foreground" />
-      <p className="text-base font-semibold">{titulo}</p>
-      <p className="max-w-sm text-sm text-muted-foreground">{detalle}</p>
+      <p className="text-base font-semibold">{SIN_ACCESO_A[tipo]}</p>
       <Link href={backHref} className={cn(buttonVariants({ variant: "outline" }), "mt-4")}>
         Volver
       </Link>

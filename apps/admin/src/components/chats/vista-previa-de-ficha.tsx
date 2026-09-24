@@ -73,8 +73,7 @@ export function VistaPreviaDeFicha({
       .then(async (r) => {
         if (!vivo) return;
         if (r.status === 403) {
-          const { titulo, detalle } = SIN_ACCESO_A[tipo];
-          toast.error(titulo, { description: detalle });
+          toast.error(SIN_ACCESO_A[tipo]);
           setCarga({ clave, datos: null, error: null, cerrar: true });
           return;
         }
