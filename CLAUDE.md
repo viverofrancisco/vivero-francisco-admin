@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **The app is in Spanish — Ecuador's Spanish, with *tuteo*.** All UI strings, user-facing text, error messages, and domain vocabulary (cliente, servicio, visita, personal, sector, informe, notificacion) are in Spanish. Write every user-facing string with **tú**: *crea*, *elige*, *prueba*, *agrega*, *escribe*, *pon*, *puedes*. **Never voseo** (*creá*, *elegí*, *probá*, *ponele*, *vos*, *podés*): the vivero is Ecuadorian and its clientes and jardineros are the ones reading it. Match the existing Spanish naming conventions in code.
+> **The app is in Spanish — Ecuador's Spanish, with *tuteo*.** All UI strings, user-facing text, error messages, and domain vocabulary (cliente, servicio, visita, personal, sector, informe, notificacion) are in Spanish. Write every user-facing string with **tú**: *crea*, *elige*, *prueba*, *agrega*, *escribe*, *pon*, *puedes*. **Never voseo** (*creá*, *elegí*, *probá*, *ponele*, *vos*, *podés*): the vivero is Ecuadorian and its clientes and jardineros are the ones reading it. Match the existing Spanish naming conventions in code. **The UI never says "la oficina" for the admin/staff side**: name the role (*Administrador*, *Staff*, *Personal* — `ETIQUETA_DE_ROL` in `@vivero/shared`) or say *un administrador*; "oficina" in this file is shorthand for the docs, not a word the screens use, and "Campo" for a gardener went the same way.
 
 ## Documentation
 
@@ -726,6 +726,7 @@ the source of the price.
 
 **Two things break only in the deployed runtime, never in `next build` or in dev** — both were found the hard way, from Vercel's runtime logs, and both are guarded in `next.config.ts` / the code:
 
+- **`buttonVariants` cannot be called from a server component.** `components/ui/button.tsx` is a `"use client"` module, so from a server component its exports are client references: rendering `<Button>` works, but *calling* `buttonVariants()` to style a `<Link>` throws *Attempted to call buttonVariants() from the server*. It only shows at runtime — `next build` passes — and the page falls into `error.tsx`. A page that needs it is `"use client"` (`sin-acceso.tsx`, `dashboard/not-found.tsx`), and the classes go through `cn()`, or the variant's border loses to the base's `border-transparent`.
 - **Nothing on the server may pull in `jsdom`.** Its dependency chain ends in a `require()` of an ESM module, which throws *while loading the file*, so any page importing it 500s before running a line. That is why `src/lib/html-seguro.ts` sanitizes with `sanitize-html` (no DOM) instead of DOMPurify.
 - **`sharp` opens `libvips-cpp.so` with `dlopen`**, which file tracing cannot see, so the lambda got the binary without the library it needs. `outputFileTracingIncludes` asks for `node_modules/@img/**` explicitly, and `outputFileTracingRoot` points at the monorepo root because npm workspaces installs there.
 
