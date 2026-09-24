@@ -1145,7 +1145,15 @@ function CompartirDialogo({
         }
       }}
     >
-      <DialogContent pantallaCompletaEnMovil showCloseButton={false} className="gap-0 sm:max-w-md">
+      {/* Columna con tope de alto también en el escritorio: la lista de
+          clientes es larga, y sin el tope el diálogo crecía más que la
+          ventana y se llevaba el título y el buscador fuera de la vista. Lo
+          que scrollea es la lista; el buscador queda a la vista. */}
+      <DialogContent
+        pantallaCompletaEnMovil
+        showCloseButton={false}
+        className="flex flex-col gap-0 sm:max-w-md md:max-h-[85dvh]"
+      >
         <div className="-mx-4 -mt-4 mb-3 flex flex-none items-center gap-1 border-b border-border px-1 py-1.5">
           <Button variant="ghost" size="icon" aria-label="Cerrar" onClick={onClose}>
             <X className="h-5 w-5" />
@@ -1153,17 +1161,17 @@ function CompartirDialogo({
           <DialogTitle className="flex-1 text-center text-base">{titulo}</DialogTitle>
           <span className="h-9 w-9 flex-none" aria-hidden />
         </div>
-        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={tipo === "visita" ? "Cliente o número de visita..." : "Buscar..."}
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="pl-9"
-              autoFocus
-            />
-          </div>
+        <div className="relative mb-2 flex-none">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={tipo === "visita" ? "Cliente o número de visita..." : "Buscar..."}
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="pl-9"
+            autoFocus
+          />
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {items === null ? (
             <p className="py-6 text-center text-sm text-muted-foreground">Cargando...</p>
           ) : items.length === 0 ? (
