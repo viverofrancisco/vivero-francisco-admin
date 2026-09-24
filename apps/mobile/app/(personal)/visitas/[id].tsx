@@ -34,6 +34,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { Conectando } from "@/components/ui/Conectando";
+import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
 import { onHecho, trabajosDe, useColaDeVisitas } from "@/lib/cola-de-visitas";
 import { aplicarCola } from "@/lib/visita-con-cola";
 import { UbicacionPropiedad } from "@/components/UbicacionPropiedad";
@@ -76,6 +77,8 @@ export default function PersonalVisitaScreen() {
   }, [hidratarCola]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /** Lo que tiró la carga, tal cual: la pantalla dice si fue acceso, borrado o señal. */
+  const [fallaDeCarga, setFallaDeCarga] = useState<unknown>(null);
   const [videoThumbs, setVideoThumbs] = useState<Record<string, string>>({});
   const [activeMedia, setActiveMedia] = useState<MediaViewerSource | null>(null);
 
@@ -136,7 +139,7 @@ export default function PersonalVisitaScreen() {
     } catch (e) {
       // Con copia, la ficha se queda y el "Conectando…" de arriba dice lo
       // que pasa; sin copia, el error de siempre.
-      if (!copia) setError(mensajeDeError(e, "No pudimos cargar la visita"));
+      if (!copia) setFallaDeCarga(e);
     } finally {
       setLoading(false);
     }
@@ -202,12 +205,12 @@ export default function PersonalVisitaScreen() {
 
   if (!visita) {
     return (
-      <View style={styles.center}>
-        <Text variant="bodyMedium" style={styles.muted}>
-          No pudimos cargar esta visita.
-        </Text>
-        <Button onPress={() => router.back()}>Volver</Button>
-      </View>
+      <AvisoDeCarga
+        error={fallaDeCarga}
+        tipo="visita"
+        onVolver={() => router.back()}
+        onReintentar={load}
+      />
     );
   }
 

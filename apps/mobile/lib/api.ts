@@ -98,7 +98,7 @@ export function mensajeDeError(e: unknown, respaldo: string): string {
  * servidor. Pasa solo en desarrollo, que es justo cuando uno está mirando el
  * mensaje para entender qué falló.
  */
-function esApiError(e: unknown): e is ApiError {
+export function esApiError(e: unknown): e is ApiError {
   return (
     e instanceof Error &&
     typeof (e as { status?: unknown }).status === "number"

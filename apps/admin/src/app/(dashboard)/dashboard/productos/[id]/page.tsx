@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, viewerFromSession } from "@/lib/auth-helpers";
 import { hrefDeVuelta } from "@/lib/navegacion";
+import { isAdminRole } from "@/lib/services/viewer";
+import { SinAcceso } from "@/components/shared/sin-acceso";
 import { getCatalogoDelProducto } from "@/lib/services/variante.service";
 import { listarImagenes } from "@/lib/services/producto-imagen.service";
 import { ServicioDetail } from "@/components/servicios/servicio-detail";
@@ -13,10 +15,16 @@ export default async function EditarServicioPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
-  await requireAuth();
+  const user = await requireAuth();
   const { id } = await params;
   const { from } = await searchParams;
   const backHref = hrefDeVuelta(from, "/dashboard/productos");
+
+  // El catálogo es de la oficina: los servicios de abajo lo rechazan, y sin
+  // esto el rechazo salía como el error genérico de Next, en inglés.
+  if (!isAdminRole(user.role)) {
+    return <SinAcceso tipo="producto" backHref={backHref} />;
+  }
 
   const servicio = await prisma.producto.findUnique({
     where: { id },

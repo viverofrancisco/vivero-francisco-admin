@@ -9,7 +9,8 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
+import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteStaffDetail } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -21,7 +22,8 @@ export default function ClienteDetailScreen() {
   const canEdit = role === "ADMIN" || role === "STAFF";
   const [data, setData] = useState<ClienteStaffDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  /** Lo que tiró la carga, tal cual: la pantalla dice si fue acceso, borrado o señal. */
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async (silencioso = false) => {
     if (!id) return;
@@ -32,9 +34,7 @@ export default function ClienteDetailScreen() {
       );
       setData(res);
     } catch (e) {
-      setError(
-        mensajeDeError(e, "No pudimos cargar el cliente")
-      );
+      setError(e);
     } finally {
       setLoading(false);
     }
@@ -65,11 +65,12 @@ export default function ClienteDetailScreen() {
 
   if (error || !data) {
     return (
-      <View style={styles.center}>
-        <Text variant="bodyMedium" style={styles.muted}>
-          {error ?? "Cliente no encontrado"}
-        </Text>
-      </View>
+      <AvisoDeCarga
+        error={error}
+        tipo="cliente"
+        onVolver={() => router.back()}
+        onReintentar={() => load()}
+      />
     );
   }
 

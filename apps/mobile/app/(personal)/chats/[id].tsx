@@ -20,6 +20,7 @@ import {
   esContenidoPermitidoEnChat,
   mezclarConLaCola,
   nuevoIdCliente,
+  puedeAbrirReferencia,
   type FotoEnCola,
   type MensajeEnCola,
   type ReferenciaEnMensaje,
@@ -697,6 +698,9 @@ export default function ChatScreen() {
                   onReintentar={() => item.idCliente && reintentar(item.idCliente)}
                   onDescartar={() => item.idCliente && descartar(item.idCliente)}
                   onAbrirReferencia={abrirReferencia}
+                  puedeAbrirReferencia={
+                    !item.referencia || puedeAbrirReferencia(usuario?.role ?? "", item.referencia.tipo)
+                  }
                 />
               </FilaDeslizable>
             </View>

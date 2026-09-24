@@ -144,6 +144,44 @@ export interface ReferenciaEnMensaje {
   detalle: string;
 }
 
+/**
+ * Qué ficha compartida puede abrir cada rol, decidido por el rol y nada más:
+ * un cliente y un producto son de la oficina; una visita la abre cualquiera
+ * del equipo, y si es *suya* lo dice el servidor al abrirla. Preguntar por
+ * cada visita en cada sondeo costaría una consulta por tarjeta; lo que sale
+ * gratis es marcar la tarjeta que de entrada no se va a poder abrir.
+ */
+export function puedeAbrirReferencia(rol: string, tipo: TipoDeReferencia): boolean {
+  if (tipo === "visita") return true;
+  return rol === "ADMIN" || rol === "STAFF";
+}
+
+/**
+ * Lo que se dice cuando alguien no puede abrir una ficha: la línea corta va
+ * en la tarjeta del chat, el título y el detalle en la pantalla que se abre
+ * en su lugar. Las mismas palabras en las dos apps.
+ */
+export const SIN_ACCESO_A: Record<
+  TipoDeReferencia,
+  { titulo: string; detalle: string; nota: string }
+> = {
+  visita: {
+    titulo: "No tienes acceso a esta visita",
+    detalle: "Solo la ven las personas asignadas a ella.",
+    nota: "Solo la ven las personas asignadas",
+  },
+  cliente: {
+    titulo: "No tienes acceso a este cliente",
+    detalle: "Los clientes los abre la oficina.",
+    nota: "Solo la oficina lo puede abrir",
+  },
+  producto: {
+    titulo: "No tienes acceso a este producto",
+    detalle: "El catálogo lo abre la oficina.",
+    nota: "Solo la oficina lo puede abrir",
+  },
+};
+
 /** El selector de qué compartir: por tipo, con texto para buscar. */
 export const compartiblesQuerySchema = z.object({
   tipo: z.enum(TIPOS_DE_REFERENCIA),

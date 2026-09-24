@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
 import { isAdminRole } from "@/lib/services/viewer";
+import { SinAcceso } from "@/components/shared/sin-acceso";
 import { listarOrdenes } from "@/lib/services/orden.service";
 import { ClienteDetailTabs } from "@/components/clientes/cliente-detail-tabs";
 import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
@@ -18,6 +19,12 @@ export default async function EditarClientePage({
   const { from } = await searchParams;
   // Solo permitimos volver a rutas internas del dashboard (evita open redirect).
   const backHref = from && from.startsWith("/dashboard/") ? from : "/dashboard/clientes";
+
+  // La agenda es de la oficina. El menú no se la muestra al jardinero, pero
+  // una tarjeta del chat o un enlace pegado llegan igual.
+  if (!isAdminRole(user.role)) {
+    return <SinAcceso tipo="cliente" backHref={backHref} />;
+  }
 
   const [cliente, visitas] = await Promise.all([
     prisma.cliente.findUnique({

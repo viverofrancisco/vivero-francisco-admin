@@ -9,6 +9,7 @@ import {
   urlParaVerGrande,
   type ReferenciaEnMensaje,
   type TipoDeReferencia,
+  SIN_ACCESO_A,
 } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
 import {
@@ -75,6 +76,7 @@ export function Burbuja({
   onReintentar,
   onDescartar,
   onAbrirReferencia,
+  puedeAbrirReferencia = true,
 }: {
   mensaje: MensajeDeChat;
   /** El que se vino a ver desde el buscador. */
@@ -90,6 +92,8 @@ export function Burbuja({
   onDescartar?: () => void;
   /** Tocar una ficha compartida abre la ficha de ahora. */
   onAbrirReferencia?: (ref: ReferenciaEnMensaje) => void;
+  /** Falso cuando el rol de quien mira no abre esa ficha: se ve atenuada y dice por qué. */
+  puedeAbrirReferencia?: boolean;
 }) {
   const mio = mensaje.mio;
   const enCola = mensaje.estado === "pendiente" || mensaje.estado === "fallido";
@@ -215,13 +219,19 @@ export function Burbuja({
           {mensaje.referencia ? (
             <PressableScale
               onPress={
-                soloLectura || !onAbrirReferencia
+                soloLectura || !onAbrirReferencia || !puedeAbrirReferencia
                   ? undefined
                   : () => onAbrirReferencia(mensaje.referencia!)
               }
               onLongPress={mantener}
               estiloExterno={styles.ancho}
-              style={[styles.documento, mio ? styles.documentoMio : styles.documentoAjeno]}
+              // La que no se puede abrir se ve atenuada y dice por qué, en
+              // vez de llevar a una pantalla que lo diga.
+              style={[
+                styles.documento,
+                mio ? styles.documentoMio : styles.documentoAjeno,
+                !puedeAbrirReferencia && styles.atenuado,
+              ]}
             >
               <Ionicons
                 name={ICONO_REFERENCIA[mensaje.referencia.tipo]}
@@ -235,6 +245,11 @@ export function Burbuja({
                 <Text style={[styles.documentoDetalle, mio && styles.textoClaro]} numberOfLines={1}>
                   {mensaje.referencia.detalle || ETIQUETA_REFERENCIA[mensaje.referencia.tipo]}
                 </Text>
+                {!puedeAbrirReferencia ? (
+                  <Text style={[styles.documentoDetalle, styles.nota, mio && styles.textoClaro]} numberOfLines={1}>
+                    {SIN_ACCESO_A[mensaje.referencia.tipo].nota}
+                  </Text>
+                ) : null}
               </View>
             </PressableScale>
           ) : null}
@@ -419,6 +434,8 @@ const styles = StyleSheet.create({
   documentoAjeno: { backgroundColor: tema.lienzo },
   documentoNombre: { fontSize: 14, fontWeight: "600", color: tema.texto },
   documentoDetalle: { fontSize: 11, color: tema.texto3, marginTop: 1, opacity: 0.9 },
+  nota: { fontStyle: "italic" },
+  atenuado: { opacity: 0.6 },
   fotoSola: { width: 213, height: 160, backgroundColor: tema.lienzo },
   fotoChica: { width: 105, height: 105, backgroundColor: tema.lienzo },
 

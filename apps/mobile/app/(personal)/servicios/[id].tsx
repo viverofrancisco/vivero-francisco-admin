@@ -8,7 +8,8 @@ import {
   Text,
 } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiRequest, mensajeDeError } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
+import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
 import type { ServicioDetail } from "@/lib/types";
 
 export default function ServicioDetailScreen() {
@@ -16,7 +17,8 @@ export default function ServicioDetailScreen() {
   const router = useRouter();
   const [data, setData] = useState<ServicioDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  /** Lo que tiró la carga, tal cual: la pantalla dice si fue acceso, borrado o señal. */
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -27,9 +29,7 @@ export default function ServicioDetailScreen() {
       );
       setData(res);
     } catch (e) {
-      setError(
-        mensajeDeError(e, "No pudimos cargar el servicio")
-      );
+      setError(e);
     } finally {
       setLoading(false);
     }
@@ -49,11 +49,12 @@ export default function ServicioDetailScreen() {
 
   if (error || !data) {
     return (
-      <View style={styles.center}>
-        <Text variant="bodyMedium" style={styles.muted}>
-          {error ?? "Servicio no encontrado"}
-        </Text>
-      </View>
+      <AvisoDeCarga
+        error={error}
+        tipo="producto"
+        onVolver={() => router.back()}
+        onReintentar={() => load()}
+      />
     );
   }
 

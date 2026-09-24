@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
+import { SinAcceso } from "@/components/shared/sin-acceso";
 import { VisitaDetail } from "@/components/visitas/visita-detail";
 import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
 
@@ -71,6 +72,16 @@ export default async function VisitaDetailPage({
 
   if (!visita) {
     notFound();
+  }
+
+  // Un jardinero ve solo las visitas que le tocaron. Las listas, el buscador
+  // y la API ya lo cumplían; esta página solo pedía sesión, y una tarjeta
+  // compartida en el chat es justamente una URL a una visita ajena.
+  if (
+    user.role === "PERSONAL" &&
+    !visita.personal.some((p) => p.personalId === user.personalId)
+  ) {
+    return <SinAcceso tipo="visita" backHref={backHref} />;
   }
 
   // El catálogo de tareas, para etiquetar las fotos. Va completo: en el campo
