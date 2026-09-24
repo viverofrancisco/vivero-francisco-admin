@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { EstadoDelCliente } from "@/components/clientes/EstadoDelCliente";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -269,11 +270,7 @@ export default function ClientesListScreen() {
                     >
                       {nombre}
                     </Text>
-                    {item.inactivoDesde ? (
-                      <View style={styles.inactivo}>
-                        <Text style={styles.inactivoTexto}>Inactivo</Text>
-                      </View>
-                    ) : null}
+                    <EstadoDelCliente inactivo={item.inactivoDesde !== null} />
                   </View>
                   <Text variant="bodySmall" style={styles.resumen} numberOfLines={1}>
                     {resumenDeCliente(item)}
@@ -338,13 +335,6 @@ const styles = StyleSheet.create({
   nombre: { color: tema.texto, fontWeight: "600" },
   nombreFila: { flexDirection: "row", alignItems: "center", gap: 6 },
   nombreCrece: { flexShrink: 1 },
-  inactivo: {
-    backgroundColor: tema.lienzo,
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 1,
-  },
-  inactivoTexto: { fontSize: 11, fontWeight: "600", color: tema.texto2 },
   resumen: { color: tema.texto3 },
   /* Claro sobre oscuro, nunca el rojo de la casa: sobre la pastilla oscura
      desaparece. El rojo lo pone la confirmación, que es donde se decide. */

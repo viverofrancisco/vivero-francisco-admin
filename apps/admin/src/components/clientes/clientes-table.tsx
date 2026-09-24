@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
+import { EstadoDelCliente } from "@/components/clientes/cliente-detail-tabs";
 import { ClientesPageHeader } from "./clientes-page-header";
 import {
   ACCION_BARRA_MOVIL,
@@ -338,7 +338,7 @@ export function ClientesTable({
                   <TableHead>Correo</TableHead>
                   <TableHead>Sector</TableHead>
                   <TableHead>Teléfono</TableHead>
-                  <TableHead>Propiedades</TableHead>
+                  <TableHead>Estado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -365,15 +365,8 @@ export function ClientesTable({
                         <div className="flex items-center gap-2.5">
                           <InitialsAvatar name={fullName(cliente)} size={36} />
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="truncate font-bold text-foreground">
-                                {fullName(cliente)}
-                              </span>
-                              {cliente.inactivoDesde ? (
-                                <Badge variant="secondary" className="flex-none">
-                                  Inactivo
-                                </Badge>
-                              ) : null}
+                            <div className="truncate font-bold text-foreground">
+                              {fullName(cliente)}
                             </div>
                             {nombrePersona(cliente) && cliente.empresa ? (
                               <div className="truncate text-xs font-semibold text-muted-foreground">
@@ -395,13 +388,12 @@ export function ClientesTable({
                       <TableCell className="text-muted-foreground">
                         {cliente.telefono ?? "—"}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {cliente.propiedades.length === 0
-                          ? "—"
-                          : cliente.propiedades.length === 1
-                            ? (principal(cliente)?.direccion ??
-                              principal(cliente)?.nombre)
-                            : `${cliente.propiedades.length} propiedades`}
+                      {/* Activo o inactivo. La columna de propiedades que
+                          estaba acá decía la dirección de la primera, que
+                          ya se lee en la ficha y no es lo que se busca en
+                          la lista. */}
+                      <TableCell>
+                        <EstadoDelCliente inactivo={Boolean(cliente.inactivoDesde)} />
                       </TableCell>
                     </TableRow>
                   );
@@ -442,8 +434,12 @@ export function ClientesTable({
           >
             <InitialsAvatar name={fullName(cliente)} size={40} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-bold text-foreground">
-                {fullName(cliente)}
+              {/* En el teléfono no hay columna: el estado va junto al nombre, como en la app. */}
+              <span className="flex items-center gap-2">
+                <span className="truncate text-sm font-bold text-foreground">
+                  {fullName(cliente)}
+                </span>
+                <EstadoDelCliente inactivo={Boolean(cliente.inactivoDesde)} />
               </span>
               <span className="block truncate text-xs font-medium text-muted-foreground">
                 {resumenDeCliente(cliente)}

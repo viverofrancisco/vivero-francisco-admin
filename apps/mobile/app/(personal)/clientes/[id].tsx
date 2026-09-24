@@ -10,6 +10,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
+import { EstadoDelCliente } from "@/components/clientes/EstadoDelCliente";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
 import { useAuthStore } from "@/lib/auth-store";
@@ -116,11 +117,9 @@ export default function ClienteDetailScreen() {
           <Text variant="headlineSmall" style={styles.heroTitle}>
             {displayName}
           </Text>
-          {data.inactivoDesde ? (
-            <View style={styles.inactivo}>
-              <Text style={styles.inactivoTexto}>Inactivo</Text>
-            </View>
-          ) : null}
+          <View style={styles.estado}>
+            <EstadoDelCliente inactivo={data.inactivoDesde !== null} />
+          </View>
           {data.empresa && tienePersona ? (
             <Text variant="bodyMedium" style={styles.heroSubtitle}>
               {data.empresa}
@@ -422,15 +421,7 @@ const styles = StyleSheet.create({
   },
   heroText: { flex: 1, gap: 2 },
   acciones: { flexDirection: "row", alignItems: "center", gap: 6 },
-  inactivo: {
-    alignSelf: "flex-start",
-    backgroundColor: tema.lienzo,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginTop: 2,
-  },
-  inactivoTexto: { fontSize: 11, fontWeight: "600", color: tema.texto2 },
+  estado: { marginTop: 3, flexDirection: "row" },
   heroTitle: { color: "#111", fontWeight: "700" },
   heroSubtitle: { color: "#777" },
 

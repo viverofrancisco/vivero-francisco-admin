@@ -109,6 +109,23 @@ interface ClienteData {
   inactivoDesde: string | null;
 }
 
+/**
+ * Activo o inactivo, siempre al lado del nombre: mostrar solo el inactivo
+ * dejaba al activo sin decir nada, y una insignia que a veces está y a veces
+ * no se lee como un dato que falta.
+ */
+export function EstadoDelCliente({ inactivo }: { inactivo: boolean }) {
+  return inactivo ? (
+    <Badge variant="secondary" className="flex-none">
+      Inactivo
+    </Badge>
+  ) : (
+    <Badge variant="secondary" className="flex-none border-transparent bg-success/12 text-green-700">
+      Activo
+    </Badge>
+  );
+}
+
 interface ClienteDetailTabsProps {
   cliente: ClienteData;
   /** Dónde se trabaja. La dirección y el sector viven acá. */
@@ -301,11 +318,7 @@ export function ClienteDetailTabs({
               <h1 className="text-xl font-extrabold tracking-tight truncate">
                 {nombreCompleto}
               </h1>
-              {cliente.inactivoDesde ? (
-                <Badge variant="secondary" className="flex-none">
-                  Inactivo
-                </Badge>
-              ) : null}
+              <EstadoDelCliente inactivo={cliente.inactivoDesde !== null} />
               {/* El sector es de cada propiedad: con dos casas en dos sectores,
                   uno solo al lado del nombre sería mentira la mitad del
                   tiempo. Se lee en la tarjeta de Propiedades. */}
