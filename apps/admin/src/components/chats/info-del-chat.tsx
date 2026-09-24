@@ -432,8 +432,12 @@ function VistaMedios({
                     aria-label={a.nombre ?? "Ver"}
                   >
                     {a.tipo === "video" ? (
-                      <span className="flex h-full w-full items-center justify-center bg-foreground/80 text-background">
-                        <Play className="h-6 w-6 fill-current" />
+                      <span className="relative flex h-full w-full items-center justify-center bg-foreground/80 text-background">
+                        {a.posterUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={a.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+                        ) : null}
+                        <Play className="relative h-6 w-6 fill-current drop-shadow" />
                       </span>
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element

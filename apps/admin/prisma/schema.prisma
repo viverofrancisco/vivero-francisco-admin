@@ -2242,6 +2242,8 @@ model ChatAdjunto {
   urlMovil      String?
   urlTablet     String?
   urlEscritorio String?
+  /// El cuadro del segundo uno de un video, a 480 px: lo que muestra la burbuja.
+  posterUrl     String?
   createdAt DateTime @default(now())
 
   mensaje ChatMensaje @relation(fields: [mensajeId], references: [id], onDelete: Cascade)

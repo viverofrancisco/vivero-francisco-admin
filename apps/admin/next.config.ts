@@ -24,7 +24,10 @@ const nextConfig: NextConfig = {
    * imagen — el informe las achica al generarse, el catálogo las recorta.
    */
   outputFileTracingIncludes: {
-    "/**": ["node_modules/@img/**"],
+    // `@img`: la libvips que `sharp` abre con dlopen. `ffmpeg-static`: el
+    // binario que transcodifica los videos del chat; se resuelve por ruta,
+    // así que el trazado tampoco lo ve solo.
+    "/**": ["node_modules/@img/**", "node_modules/ffmpeg-static/**"],
   },
 
   /**

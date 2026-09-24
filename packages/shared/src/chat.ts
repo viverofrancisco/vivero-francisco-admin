@@ -210,6 +210,8 @@ export interface ConVersiones {
   urlMovil?: string | null;
   urlTablet?: string | null;
   urlEscritorio?: string | null;
+  /** El cuadro de un video, para la burbuja. Las fotos no lo tienen. */
+  posterUrl?: string | null;
 }
 
 /** La versión para una burbuja o una grilla: la chica, o el original si aún no está. */
@@ -224,7 +226,8 @@ export function urlParaMiniatura(f: ConVersiones): string {
  */
 export function urlParaVerGrande(f: ConVersiones, anchoDePantalla: number): string {
   if (anchoDePantalla >= 1024) return f.urlEscritorio ?? f.urlTablet ?? f.url;
-  return f.urlTablet ?? f.url;
+  // Un video tiene solo la móvil (el 720p): en un teléfono es esa.
+  return f.urlTablet ?? f.urlMovil ?? f.url;
 }
 
 export interface ArchivoDelChat extends ConVersiones {

@@ -296,6 +296,7 @@ export async function mediosDelChat(
         urlMovil: true,
         urlTablet: true,
         urlEscritorio: true,
+        posterUrl: true,
         createdAt: true,
       },
     });
@@ -528,6 +529,7 @@ const MENSAJE_SELECT = {
       urlMovil: true,
       urlTablet: true,
       urlEscritorio: true,
+      posterUrl: true,
     },
   },
   respondeA: {
@@ -538,7 +540,7 @@ const MENSAJE_SELECT = {
       deletedAt: true,
       _count: { select: { adjuntos: true } },
       // La primera, para la miniatura de la cita: "📷 Foto" no dice cuál.
-      adjuntos: { take: 1, select: { url: true, urlMovil: true, tipo: true } },
+      adjuntos: { take: 1, select: { url: true, urlMovil: true, posterUrl: true, tipo: true } },
     },
   },
 } as const;
@@ -650,6 +652,7 @@ type MensajeCrudo = {
     urlMovil: string | null;
     urlTablet: string | null;
     urlEscritorio: string | null;
+    posterUrl: string | null;
   }[];
   respondeA: {
     id: string;
@@ -657,7 +660,7 @@ type MensajeCrudo = {
     autorNombre: string;
     deletedAt: Date | null;
     _count: { adjuntos: number };
-    adjuntos: { url: string; urlMovil: string | null; tipo: string }[];
+    adjuntos: { url: string; urlMovil: string | null; posterUrl: string | null; tipo: string }[];
   } | null;
 };
 
@@ -702,7 +705,11 @@ function mensajeParaPantalla(
           miniatura:
             !m.respondeA.deletedAt && m.respondeA.adjuntos[0]
               ? {
-                  url: m.respondeA.adjuntos[0].urlMovil ?? m.respondeA.adjuntos[0].url,
+                  // La chica si ya está; de un video, su póster.
+                  url:
+                    m.respondeA.adjuntos[0].posterUrl ??
+                    m.respondeA.adjuntos[0].urlMovil ??
+                    m.respondeA.adjuntos[0].url,
                   tipo: m.respondeA.adjuntos[0].tipo,
                 }
               : null,

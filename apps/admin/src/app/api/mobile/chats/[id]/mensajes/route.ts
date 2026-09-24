@@ -1,5 +1,11 @@
 import { NextResponse, after } from "next/server";
 import { generarVariantesDeMensaje } from "@/lib/chats/variantes";
+
+/**
+ * Lo que dura la función, contando lo que corre **después** de contestar: las
+ * versiones de las fotos y el 720p de un video, que es lo que más tarda.
+ */
+export const maxDuration = 300;
 import { requireMobileUser, isMobileUser } from "@/lib/mobile/auth";
 import { enviarMensajeSchema, mensajesQuerySchema } from "@vivero/shared";
 import { enviarMensaje, listMensajes } from "@/lib/services/chat.service";
@@ -55,7 +61,7 @@ export async function POST(request: Request, { params }: Params) {
     );
     // Las tres versiones de cada foto, **después** de contestar: el ✓ no
     // espera a que el servidor baje y achique nada.
-    if (mensaje.fotos.some((f) => f.tipo === "imagen")) {
+    if (mensaje.fotos.some((f) => f.tipo === "imagen" || f.tipo === "video")) {
       after(() => generarVariantesDeMensaje(mensaje.id));
     }
     return NextResponse.json(mensaje, { status: 201 });

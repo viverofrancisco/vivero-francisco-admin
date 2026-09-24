@@ -1,7 +1,15 @@
 import Constants from "expo-constants";
 
-/** El puerto donde corre el portal, que es quien sirve `/api/mobile/*`. */
-const PUERTO_ADMIN = 3000;
+/**
+ * El puerto donde corre el portal, que es quien sirve `/api/mobile/*`.
+ *
+ * 3000 salvo que `EXPO_PUBLIC_API_PORT` diga otro. Y en desarrollo, si en ese
+ * puerto contesta otra cosa, se prueban los siguientes (ver `resolverServidor`):
+ * en una máquina con varios proyectos Next el primero que arranca se queda con
+ * el 3000, y el portal termina en el 3001 sin que nadie lo elija.
+ */
+const PUERTO_ADMIN = Number(process.env.EXPO_PUBLIC_API_PORT) || 3000;
+const PUERTOS_A_PROBAR = [PUERTO_ADMIN, 3000, 3001, 3002, 3003];
 
 /**
  * Dónde está el servidor.
@@ -36,6 +44,41 @@ function hostDeMetro(): string | null {
 
 const configurada = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
 
-export const API_BASE_URL =
+/**
+ * Enlace vivo: `resolverServidor` lo puede cambiar al arrancar, y quien lo
+ * importa ve el valor nuevo porque un `export let` se lee en cada acceso.
+ */
+export let API_BASE_URL =
   (__DEV__ ? hostDeMetro() ?? configurada : configurada) ??
   `http://localhost:${PUERTO_ADMIN}`;
+
+/**
+ * En desarrollo, encontrar en qué puerto está el portal.
+ *
+ * Se le pregunta `/api/mobile/ping` al puerto de siempre y, si no contesta
+ * `ok` —otro proyecto respondiendo 404, o nadie—, a los siguientes. Con dos
+ * o tres Next corriendo en la misma máquina, el portal cae en el 3001 y la
+ * app veía "Solicitud falló (404)" al iniciar sesión: el 404 era del otro.
+ * En producción no se prueba nada: la dirección está configurada.
+ */
+export async function resolverServidor(): Promise<string> {
+  if (!__DEV__ || configurada) return API_BASE_URL;
+  const host = hostDeMetro();
+  if (!host) return API_BASE_URL;
+  const base = host.replace(/:\d+$/, "");
+  for (const puerto of [...new Set(PUERTOS_A_PROBAR)]) {
+    try {
+      const abortador = new AbortController();
+      const reloj = setTimeout(() => abortador.abort(), 1500);
+      const res = await fetch(`${base}:${puerto}/api/mobile/ping`, { signal: abortador.signal });
+      clearTimeout(reloj);
+      if (res.ok && (await res.json().catch(() => null))?.ok === true) {
+        API_BASE_URL = `${base}:${puerto}`;
+        return API_BASE_URL;
+      }
+    } catch {
+      // Ese puerto no: se sigue con el próximo.
+    }
+  }
+  return API_BASE_URL;
+}

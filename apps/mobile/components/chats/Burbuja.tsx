@@ -183,6 +183,16 @@ export function Burbuja({
                         styles.videoCaja,
                       ]}
                     >
+                      {/* El cuadro del video detrás del triángulo, cuando el
+                          servidor ya lo sacó; hasta entonces, el recuadro. */}
+                      {f.posterUrl ? (
+                        <Image
+                          source={{ uri: f.posterUrl }}
+                          style={[StyleSheet.absoluteFill, styles.poster]}
+                          contentFit="cover"
+                          cachePolicy="disk"
+                        />
+                      ) : null}
                       <Ionicons name="play" size={36} color="#fff" />
                     </View>
                   ) : (
@@ -394,6 +404,7 @@ const styles = StyleSheet.create({
     maxWidth: 213,
   },
   fotoCaja: { borderRadius: 10, overflow: "hidden" },
+  poster: { opacity: 0.85 },
   documento: {
     flexDirection: "row",
     alignItems: "center",

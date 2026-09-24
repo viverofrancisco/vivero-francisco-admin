@@ -87,10 +87,13 @@ export type MensajeEnPantalla = MensajeDeChat;
 function Miniatura({
   url,
   tipo,
+  poster,
   className,
 }: {
   url: string;
   tipo: string;
+  /** El cuadro de un video, cuando el servidor ya lo sacó. */
+  poster?: string | null;
   className: string;
 }) {
   if (tipo === "documento") {
@@ -104,10 +107,12 @@ function Miniatura({
   }
   if (tipo === "video") {
     return (
-      <span
-        className={`flex items-center justify-center bg-foreground/80 text-background ${className}`}
-      >
-        <Play className="h-1/2 w-1/2 fill-current" />
+      <span className={`relative flex items-center justify-center bg-foreground/80 text-background ${className}`}>
+        {poster ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+        ) : null}
+        <Play className="relative h-1/2 w-1/2 fill-current drop-shadow" />
       </span>
     );
   }
@@ -1465,7 +1470,7 @@ function Burbuja({
                     }
                     className="overflow-hidden rounded-lg"
                   >
-                    <Miniatura url={urlParaMiniatura(f)} tipo={f.tipo} className="h-40 w-full" />
+                    <Miniatura url={urlParaMiniatura(f)} tipo={f.tipo} poster={f.posterUrl} className="h-40 w-full" />
                   </button>
                 ))}
               </div>

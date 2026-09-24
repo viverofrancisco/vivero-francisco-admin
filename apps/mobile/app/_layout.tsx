@@ -8,6 +8,7 @@ import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAuthStore } from "@/lib/auth-store";
 import { apiRequest } from "@/lib/api";
+import { resolverServidor } from "@/lib/config";
 import type { MeResponse } from "@vivero/shared";
 import { tema } from "@/lib/tema";
 
@@ -45,7 +46,9 @@ function useAuthGate() {
   const router = useRouter();
 
   useEffect(() => {
-    hydrate();
+    // Primero dónde está el portal, después la sesión: en desarrollo el
+    // puerto puede no ser el 3000.
+    resolverServidor().finally(() => hydrate());
   }, [hydrate]);
 
   useEffect(() => {

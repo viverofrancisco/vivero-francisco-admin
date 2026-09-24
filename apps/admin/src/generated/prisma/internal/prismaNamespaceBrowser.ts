@@ -1067,6 +1067,7 @@ export const ChatAdjuntoScalarFieldEnum = {
   urlMovil: 'urlMovil',
   urlTablet: 'urlTablet',
   urlEscritorio: 'urlEscritorio',
+  posterUrl: 'posterUrl',
   createdAt: 'createdAt'
 } as const
 

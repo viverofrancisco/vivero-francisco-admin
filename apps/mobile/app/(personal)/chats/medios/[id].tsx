@@ -173,6 +173,14 @@ export default function MediosDelChatScreen() {
             >
               {item.tipo === "video" ? (
                 <View style={[styles.video, { width: lado, height: lado }]}>
+                  {item.posterUrl ? (
+                    <Image
+                      source={{ uri: item.posterUrl }}
+                      style={[StyleSheet.absoluteFill, styles.poster]}
+                      contentFit="cover"
+                      cachePolicy="disk"
+                    />
+                  ) : null}
                   <Ionicons name="play" size={28} color="#fff" />
                 </View>
               ) : (
@@ -312,6 +320,7 @@ const styles = StyleSheet.create({
   filaGrilla: { gap: 1 },
   celda: { backgroundColor: tema.lienzo, overflow: "hidden" },
   video: { backgroundColor: "rgba(20,40,25,0.85)", alignItems: "center", justifyContent: "center" },
+  poster: { opacity: 0.85 },
   cargando: { padding: 24 },
   vacio: { color: tema.texto3, textAlign: "center", padding: 40 },
   pie: { color: tema.texto3, textAlign: "center", fontSize: 12, paddingVertical: 12 },
