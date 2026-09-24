@@ -6,10 +6,14 @@ import {
   type EstadoDeMensaje,
   type ReferenciaEnMensaje,
   type TipoDeReferencia,
+  nombrePersona,
+  type VistaPreviaDeReferencia,
 } from "@vivero/shared";
 import { getVisitaForViewer, listVisitas } from "./visita.service";
 import { getClienteForStaff, listClientes } from "./cliente.service";
 import { getServicio, listServicios } from "./servicio.service";
+import { getCatalogoDelProducto } from "./variante.service";
+import { textoPlano } from "@/lib/html-seguro";
 import { globalSearch } from "./search.service";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
@@ -767,6 +771,129 @@ async function tarjetaDeReferencia(
     id: p.id,
     titulo: p.nombre,
     detalle: p.tipo === "SERVICIO" ? "Servicio" : "Producto",
+  };
+}
+
+const ESTADO_DE_VISITA: Record<string, string> = {
+  PROGRAMADA: "Programada",
+  EN_CURSO: "En curso",
+  COMPLETADA: "Completada",
+  INCOMPLETA: "Incompleta",
+  CANCELADA: "Cancelada",
+};
+const FECHA_LARGA: Intl.DateTimeFormatOptions = {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+};
+const MONEDA = new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" });
+
+function direccionDe(
+  p: { direccion?: string | null; numeroCasa?: string | number | null; ciudad?: string | null } | null | undefined
+): string | null {
+  if (!p) return null;
+  return [p.direccion, p.numeroCasa, p.ciudad].filter(Boolean).map(String).join(", ") || null;
+}
+
+function recortar(texto: string | null, maximo: number): string | null {
+  if (!texto) return null;
+  return texto.length > maximo ? `${texto.slice(0, maximo - 1).trimEnd()}…` : texto;
+}
+
+/**
+ * La vista previa de una ficha compartida: lo esencial, en filas de etiqueta
+ * y valor, para leerla **sin salir del chat**. Pasa por el servicio de cada
+ * cosa, que es lo que aplica quién la ve —un jardinero recibe 403 por la
+ * visita que no le tocó, y por cualquier cliente o producto—, y devuelve
+ * texto ya armado: la pantalla es una sola para los tres tipos y no sabe de
+ * fechas ni de precios. Una fila sin valor no se manda; la pantalla no tiene
+ * que dibujar rayas.
+ */
+export async function vistaPreviaDeReferencia(
+  viewer: Viewer,
+  ref: { tipo: TipoDeReferencia; id: string }
+): Promise<VistaPreviaDeReferencia> {
+  ensureEnElEquipo(viewer);
+  const filas: VistaPreviaDeReferencia["filas"] = [];
+  const fila = (etiqueta: string, valor: string | null | undefined) => {
+    if (valor && valor.trim()) filas.push({ etiqueta, valor: valor.trim() });
+  };
+
+  if (ref.tipo === "visita") {
+    const v = await getVisitaForViewer(ref.id, viewer);
+    fila("Fecha", fechaSola(v.fechaProgramada, FECHA_LARGA));
+    fila(
+      "Horario",
+      v.horaEntrada && v.horaSalida
+        ? `${v.horaEntrada} – ${v.horaSalida}`
+        : v.horaEntrada
+          ? `Desde ${v.horaEntrada}`
+          : null
+    );
+    fila("Propiedad", [v.propiedad?.nombre, direccionDe(v.propiedad)].filter(Boolean).join("\n"));
+    fila("Sector", v.propiedad?.sector?.nombre);
+    fila("Personal", v.personal.map((p) => nombrePersona(p.personal)).join("\n") || "Sin asignar");
+    fila("Grupo", v.grupo?.nombre);
+    fila("Tareas", v.tareasObligatorias.map((t) => t.tarea.nombre).join("\n"));
+    fila("Notas", v.notas);
+    return {
+      tipo: "visita",
+      id: v.id,
+      titulo: `Visita #${v.numero}`,
+      subtitulo: nombreCliente(v.cliente),
+      estado: ESTADO_DE_VISITA[v.estado] ?? v.estado,
+      filas,
+    };
+  }
+
+  if (ref.tipo === "cliente") {
+    const c = await getClienteForStaff(ref.id, viewer);
+    fila("Teléfono", c.telefono);
+    fila("Correo", c.email);
+    fila(
+      "Propiedades",
+      c.propiedades.map((p) => [p.nombre, direccionDe(p)].filter(Boolean).join(" · ")).join("\n")
+    );
+    fila(
+      "Planes",
+      c.suscripciones
+        .map((s) => s.items.map((i) => i.producto.nombre).join(", "))
+        .filter(Boolean)
+        .join("\n")
+    );
+    fila("Notas", c.notas);
+    const nombre = nombreCliente(c);
+    return {
+      tipo: "cliente",
+      id: c.id,
+      titulo: nombre,
+      subtitulo: c.empresa && c.empresa !== nombre ? c.empresa : "Cliente",
+      filas,
+    };
+  }
+
+  const p = await getServicio(ref.id, viewer);
+  const catalogo = await getCatalogoDelProducto(viewer, ref.id);
+  fila("Descripción", recortar(textoPlano(p.descripcion), 240));
+  const [unica] = catalogo.variantes;
+  if (catalogo.variantes.length === 1 && unica) {
+    fila("SKU", unica.sku);
+    if (p.tipo === "BIEN") {
+      fila("Precio", unica.precio === 0 ? "Gratis" : MONEDA.format(unica.precio));
+      if (unica.manejaInventario) fila("Stock", String(unica.stock));
+    }
+  } else {
+    fila("Variantes", String(catalogo.variantes.length));
+  }
+  const enPlanes = p._count.suscripcionItems;
+  fila("En planes", enPlanes > 0 ? `${enPlanes} ${enPlanes === 1 ? "cliente" : "clientes"}` : null);
+  return {
+    tipo: "producto",
+    id: p.id,
+    titulo: p.nombre,
+    subtitulo: p.tipo === "SERVICIO" ? "Servicio" : "Producto",
+    filas,
   };
 }
 

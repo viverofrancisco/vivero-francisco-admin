@@ -45,6 +45,7 @@ import {
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
 import { PanelAdjuntar, type OpcionDeAdjuntar } from "@/components/chats/PanelAdjuntar";
+import { VistaPreviaDeFicha } from "@/components/chats/VistaPreviaDeFicha";
 import {
   etiquetaDeAdjuntos,
   mismoDia,
@@ -157,6 +158,8 @@ export default function ChatScreen() {
   /** El menú del clip, y el selector abierto con su tipo. */
   const [menuAdjuntar, setMenuAdjuntar] = useState(false);
   const [compartiendo, setCompartiendo] = useState<TipoDeReferencia | null>(null);
+  /** La ficha compartida que se está mirando sin salir del chat. */
+  const [vistaPrevia, setVistaPrevia] = useState<ReferenciaEnMensaje | null>(null);
   /**
    * El mensaje resaltado: el que trajo el buscador, o el que se citó y se
    * acaba de tocar. Es un destello y no una marca fija —se apaga solo a los
@@ -433,14 +436,19 @@ export default function ChatScreen() {
   }
 
   /** Tocar una ficha compartida abre la ficha de ahora, si se puede ver. */
+  /** Tocar la tarjeta abre la vista previa; la ficha entera es *Ver ficha* desde ahí. */
   function abrirReferencia(ref: ReferenciaEnMensaje) {
-    // La tarjeta se ve igual para todos; la que no se puede abrir lo dice
-    // acá, al tocarla, en vez de llevar a una pantalla que lo diga.
+    // La tarjeta se ve igual para todos; la que el rol no abre lo dice acá,
+    // al tocarla, sin pedir una vista previa que va a fallar.
     if (!puedeAbrirReferencia(usuario?.role ?? "", ref.tipo)) {
       const { titulo, detalle } = SIN_ACCESO_A[ref.tipo];
       Alert.alert(titulo, detalle);
       return;
     }
+    setVistaPrevia(ref);
+  }
+
+  function irAFicha(ref: ReferenciaEnMensaje) {
     if (ref.tipo === "visita") {
       router.push({ pathname: "/(personal)/visitas/[id]", params: { id: ref.id } });
     } else if (ref.tipo === "cliente") {
@@ -918,6 +926,16 @@ export default function ChatScreen() {
         esOficina={esOficina}
         onCerrar={() => setMenuAdjuntar(false)}
         onElegir={alElegirAdjunto}
+      />
+
+      <VistaPreviaDeFicha
+        referencia={vistaPrevia}
+        onCerrar={() => setVistaPrevia(null)}
+        onIrAFicha={(ref) => {
+          setVistaPrevia(null);
+          // Navegar encima de un Modal que se está cerrando se pierde en iOS.
+          setTimeout(() => irAFicha(ref), 150);
+        }}
       />
 
       <CompartirHoja

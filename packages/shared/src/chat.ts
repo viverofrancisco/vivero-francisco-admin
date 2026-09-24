@@ -178,6 +178,25 @@ export const SIN_ACCESO_A: Record<TipoDeReferencia, { titulo: string; detalle: s
   },
 };
 
+/**
+ * La vista previa de una ficha compartida: lo que se lee **sin salir del
+ * chat**. Tocar la tarjeta abría la ficha entera, y volver era perder el
+ * hilo; ahora abre esto —un diálogo en el escritorio, una hoja en el
+ * teléfono— con lo esencial en filas de etiqueta y valor, y un *Ver ficha*
+ * para quien sí quiere irse. Filas genéricas a propósito: una sola pantalla
+ * sirve para los tres tipos, y el servidor decide qué vale la pena mostrar.
+ */
+export interface VistaPreviaDeReferencia {
+  tipo: TipoDeReferencia;
+  id: string;
+  titulo: string;
+  subtitulo: string;
+  /** Un estado, si lo tiene: "Programada", "En curso"... */
+  estado?: string;
+  /** Un valor puede traer saltos de línea (una propiedad por renglón). */
+  filas: { etiqueta: string; valor: string }[];
+}
+
 /** El selector de qué compartir: por tipo, con texto para buscar. */
 export const compartiblesQuerySchema = z.object({
   tipo: z.enum(TIPOS_DE_REFERENCIA),

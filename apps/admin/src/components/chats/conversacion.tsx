@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/sheet";
 import {
   AlertCircle,
-  CalendarDays,
   Camera,
   Check,
   CheckCheck,
@@ -33,9 +32,7 @@ import {
   Reply,
   Search,
   Send,
-  Tag,
   Trash2,
-  Users,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -60,12 +57,13 @@ import {
 } from "@vivero/shared";
 import { Input } from "@/components/ui/input";
 import { hrefDeVuelta } from "@/lib/navegacion";
-import { useAca } from "@/lib/filtros-url";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Conectando } from "@/components/shared/conectando";
 import { AvatarDeChat } from "./avatar-de-chat";
 import { InfoDelChat } from "./info-del-chat";
 import { PanelAdjuntar } from "./panel-adjuntar";
+import { ETIQUETA_REFERENCIA, IconoDeReferencia } from "./referencias";
+import { VistaPreviaDeFicha } from "./vista-previa-de-ficha";
 import {
   confirmarLlegada,
   descartar,
@@ -254,6 +252,18 @@ export function Conversacion({
   // oficina, y el servidor lo rechazaría igual: la pantalla no ofrece lo que
   // después va a negar.
   const esOficina = yo.rol === "ADMIN" || yo.rol === "STAFF";
+  /** La ficha compartida que se está mirando sin salir del chat. */
+  const [vistaPrevia, setVistaPrevia] = useState<ReferenciaEnMensaje | null>(null);
+  function abrirReferencia(ref: ReferenciaEnMensaje) {
+    // La tarjeta se ve igual para todos; la que el rol no abre lo dice acá,
+    // al tocarla, sin pedir una vista previa que va a fallar.
+    if (!puedeAbrirReferencia(yo.rol, ref.tipo)) {
+      const { titulo, detalle } = SIN_ACCESO_A[ref.tipo];
+      toast.error(titulo, { description: detalle });
+      return;
+    }
+    setVistaPrevia(ref);
+  }
 
   /** Lo que espera en la cola, de este chat, dibujado al final de la lista. */
   const cola = useCola();
@@ -672,7 +682,7 @@ export function Conversacion({
                 onDescartar={() => m.idCliente && descartar(m.idCliente)}
                 onVerFoto={setViendo}
                 onMantener={() => setTocado(m)}
-                puedeAbrirReferencia={!m.referencia || puedeAbrirReferencia(yo.rol, m.referencia.tipo)}
+                onAbrirReferencia={abrirReferencia}
               />
             </div>
           );
@@ -849,6 +859,8 @@ export function Conversacion({
           </Button>
         </div>
       </div>
+
+      <VistaPreviaDeFicha referencia={vistaPrevia} onClose={() => setVistaPrevia(null)} />
 
       <CompartirDialogo
         tipo={compartiendo}
@@ -1073,19 +1085,7 @@ function InfoDeMensajeDialogo({
   );
 }
 
-const ETIQUETA_REFERENCIA: Record<TipoDeReferencia, string> = {
-  visita: "Visita",
-  cliente: "Cliente",
-  producto: "Producto",
-};
-
 /** A dónde lleva la tarjeta: la ficha de ahora, si quien la toca puede verla. */
-function hrefDeReferencia(ref: ReferenciaEnMensaje, from: string): string {
-  const base = { visita: "visitas", cliente: "clientes", producto: "productos" }[ref.tipo];
-  // `from` ya viene codificado por `useAca`.
-  return `/dashboard/${base}/${ref.id}?from=${from}`;
-}
-
 const CLASE_FICHA = "mb-1 flex items-center gap-2.5 rounded-lg px-2.5 py-2";
 
 /** Lo de adentro de la tarjeta de una ficha: ícono, título y detalle. */
@@ -1101,12 +1101,6 @@ function ContenidoDeFicha({ referencia }: { referencia: ReferenciaEnMensaje }) {
       </span>
     </>
   );
-}
-
-function IconoDeReferencia({ tipo, className }: { tipo: TipoDeReferencia; className: string }) {
-  if (tipo === "visita") return <CalendarDays className={className} />;
-  if (tipo === "cliente") return <Users className={className} />;
-  return <Tag className={className} />;
 }
 
 /**
@@ -1257,7 +1251,7 @@ function Burbuja({
   onVerFoto,
   onMantener,
   onIrACita,
-  puedeAbrirReferencia = true,
+  onAbrirReferencia,
 }: {
   mensaje: MensajeEnPantalla;
   /** El que se vino a ver desde el buscador. */
@@ -1275,12 +1269,10 @@ function Burbuja({
   onMantener?: () => void;
   /** Tocar la cita lleva al mensaje citado, como en WhatsApp. */
   onIrACita?: (id: string) => void;
-  /** Falso cuando el rol de quien mira no abre esa ficha: tocarla avisa en vez de navegar. */
-  puedeAbrirReferencia?: boolean;
+  /** Tocar una ficha compartida abre su vista previa. */
+  onAbrirReferencia?: (ref: ReferenciaEnMensaje) => void;
 }) {
   const mio = mensaje.mio;
-  // Para volver al chat desde la ficha con su flecha, como desde cualquier lista.
-  const aca = useAca();
   const enCola = mensaje.estado === "pendiente" || mensaje.estado === "fallido";
   // Las fotos y videos van en la grilla; los documentos, cada uno en su tarjeta.
   const medios = mensaje.fotos.filter((f) => f.tipo !== "documento");
@@ -1511,20 +1503,16 @@ function Burbuja({
             {/* Una ficha compartida —visita, cliente, producto—: una tarjeta
                 con lo que era ese día, que lleva a la ficha de ahora. */}
             {mensaje.referencia ? (
-              <Link
-                href={hrefDeReferencia(mensaje.referencia, aca)}
-                className={`${CLASE_FICHA} ${mio ? "bg-primary-foreground/15" : "bg-muted"}`}
-                // La que no se puede abrir se ve igual que las demás y lo
-                // dice al tocarla, como un aviso: no lleva a ningún lado.
-                onClick={(e) => {
-                  if (puedeAbrirReferencia || !mensaje.referencia) return;
-                  e.preventDefault();
-                  const { titulo, detalle } = SIN_ACCESO_A[mensaje.referencia.tipo];
-                  toast.error(titulo, { description: detalle });
-                }}
+              // Abre la vista previa, sin salir del chat; la ficha entera
+              // queda a un enlace de distancia desde ahí.
+              <button
+                type="button"
+                disabled={!onAbrirReferencia}
+                onClick={() => onAbrirReferencia?.(mensaje.referencia!)}
+                className={`${CLASE_FICHA} w-full text-left ${mio ? "bg-primary-foreground/15" : "bg-muted"}`}
               >
                 <ContenidoDeFicha referencia={mensaje.referencia} />
-              </Link>
+              </button>
             ) : null}
             {/* Un documento es una tarjeta con su nombre y su peso, como en
                 WhatsApp: se abre en otra pestaña. La URL de R2 es pública. */}
