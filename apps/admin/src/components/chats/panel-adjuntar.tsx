@@ -35,7 +35,7 @@ const OPCIONES: {
   soloOficina?: boolean;
 }[] = [
   { clave: "camara", etiqueta: "Cámara", Icono: Camera, color: "text-muted-foreground", soloMovil: true },
-  { clave: "fotos", etiqueta: "Fotos y videos", Icono: Images, color: "text-chart-2" },
+  { clave: "fotos", etiqueta: "Multimedia", Icono: Images, color: "text-chart-2" },
   { clave: "documento", etiqueta: "Documento", Icono: FileText, color: "text-chart-5" },
   { clave: "visita", etiqueta: "Visita", Icono: CalendarDays, color: "text-chart-1" },
   { clave: "cliente", etiqueta: "Cliente", Icono: Users, color: "text-chart-3", soloOficina: true },

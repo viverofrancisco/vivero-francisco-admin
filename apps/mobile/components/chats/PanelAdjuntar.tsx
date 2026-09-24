@@ -27,7 +27,7 @@ const OPCIONES: {
   soloOficina?: boolean;
 }[] = [
   { clave: "camara", etiqueta: "Cámara", icono: "camera", color: tema.texto2 },
-  { clave: "fotos", etiqueta: "Fotos y videos", icono: "images", color: tema.cielo },
+  { clave: "fotos", etiqueta: "Multimedia", icono: "images", color: tema.cielo },
   { clave: "documento", etiqueta: "Documento", icono: "document-text", color: tema.violeta },
   { clave: "visita", etiqueta: "Visita", icono: "calendar", color: tema.verde },
   { clave: "cliente", etiqueta: "Cliente", icono: "people", color: tema.arcilla, soloOficina: true },
