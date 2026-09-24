@@ -38,7 +38,13 @@ import { CustomSelect } from "@/components/ui/custom-select";
 import { BarraFiltros } from "@/components/shared/barra-filtros";
 import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
-import { Search } from "lucide-react";
+import { MoreVertical, Search } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import {
   nombreCliente,
@@ -95,6 +101,8 @@ export function ClientesTable({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useFiltroUrl("q", "");
   const [sectorFilter, setSectorFilter] = useFiltroUrl<string | null>("sector", null);
+  /** "" todos, "activos" o "inactivos". */
+  const [estadoFilter, setEstadoFilter] = useFiltroUrl<string>("estado", "");
   const [page, setPage] = useFiltroUrl("pagina", 1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<null | "soft" | "hard">(null);
@@ -105,6 +113,7 @@ export function ClientesTable({
    */
   const [seleccionandoMovil, setSeleccionandoMovil] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const sectors = useMemo(() => {
     const map = new Map<string, string>();
     for (const c of clientes) {
@@ -126,6 +135,8 @@ export function ClientesTable({
         c.propiedades.some((p) => p.sector?.id === sectorFilter)
       );
     }
+    if (estadoFilter === "activos") result = result.filter((c) => !c.inactivoDesde);
+    if (estadoFilter === "inactivos") result = result.filter((c) => Boolean(c.inactivoDesde));
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -141,7 +152,7 @@ export function ClientesTable({
       );
     }
     return result;
-  }, [clientes, sectorFilter, searchQuery]);
+  }, [clientes, sectorFilter, estadoFilter, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / FILAS_POR_PAGINA));
   const pagina = Math.min(page, totalPages);
@@ -173,6 +184,33 @@ export function ClientesTable({
 
   const clearSelection = () => setSelected(new Set());
 
+  /** Marcar la selección como inactiva, o reactivarla. Reversible: sin confirmación. */
+  const cambiarEstado = async (inactivo: boolean) => {
+    setCambiandoEstado(true);
+    try {
+      const res = await fetch("/api/clientes/inactivo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selected), inactivo }),
+      });
+      const data = (await res.json().catch(() => null)) as { count?: number; error?: string } | null;
+      if (!res.ok || !data) throw new Error(data?.error || "No se pudo guardar");
+      const n = data.count ?? 0;
+      toast.success(
+        inactivo
+          ? n === 1 ? "1 cliente marcado como inactivo" : `${n} clientes marcados como inactivos`
+          : n === 1 ? "1 cliente reactivado" : `${n} clientes reactivados`
+      );
+      clearSelection();
+      setSeleccionandoMovil(false);
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar");
+    } finally {
+      setCambiandoEstado(false);
+    }
+  };
+
   const runDelete = async (hard: boolean) => {
     setDeleting(true);
     try {
@@ -203,7 +241,7 @@ export function ClientesTable({
   // filtros: si cambian, vuelve a la primera tanda.
   const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
     filtered.length,
-    `${searchQuery}|${sectorFilter ?? ""}`
+    `${searchQuery}|${sectorFilter ?? ""}|${estadoFilter}`
   );
   const enLista = filtered.slice(0, visibles);
   const aqui = useAca();
@@ -228,9 +266,10 @@ export function ClientesTable({
       />
 
       <BarraFiltros
-        activos={sectorFilter ? 1 : 0}
+        activos={(sectorFilter ? 1 : 0) + (estadoFilter ? 1 : 0)}
         onLimpiar={() => {
           setSectorFilter(null);
+          setEstadoFilter("");
           setPage(1);
         }}
         busqueda={
@@ -269,6 +308,21 @@ export function ClientesTable({
             />
           </div>
         )}
+        <div className="w-44">
+          <CustomSelect
+            value={estadoFilter}
+            onChange={(v) => {
+              setEstadoFilter(v);
+              setPage(1);
+            }}
+            options={[
+              { value: "", label: "Todos los estados" },
+              { value: "activos", label: "Activos" },
+              { value: "inactivos", label: "Inactivos" },
+            ]}
+            placeholder="Todos los estados"
+          />
+        </div>
       </BarraFiltros>
 
       {/* Scrollean las filas, no la página: el encabezado y la paginación
@@ -311,6 +365,22 @@ export function ClientesTable({
                     Eliminar permanentemente
                   </Button>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={cambiandoEstado}
+                  onClick={() => cambiarEstado(true)}
+                >
+                  Marcar inactivos
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={cambiandoEstado}
+                  onClick={() => cambiarEstado(false)}
+                >
+                  Reactivar
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -467,6 +537,25 @@ export function ClientesTable({
           >
             Archivar
           </Button>
+          {/* Con más de una acción, el resto va detrás de un ⋯ al lado. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  size="sm"
+                  className={ACCION_BARRA_MOVIL}
+                  disabled={selected.size === 0 || cambiandoEstado}
+                  aria-label="Más acciones"
+                />
+              }
+            >
+              <MoreVertical className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top" className="min-w-48">
+              <DropdownMenuItem onClick={() => cambiarEstado(true)}>Marcar como inactivos</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => cambiarEstado(false)}>Reactivar</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </BarraSeleccionMovil>
       ) : null}
 

@@ -116,6 +116,16 @@ export type UpdateClienteBody = z.infer<typeof updateClienteSchema>;
 export const clienteInactivoSchema = z.object({ inactivo: z.boolean() });
 export type ClienteInactivoBody = z.infer<typeof clienteInactivoSchema>;
 
+/** Lo mismo, de a varios: desde la selección de la lista. */
+export const clientesInactivoEnLoteSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(500),
+  inactivo: z.boolean(),
+});
+
+/** El filtro de la lista: todos, solo activos o solo inactivos. */
+export const ESTADOS_DE_CLIENTE = ["activos", "inactivos"] as const;
+export type EstadoDeCliente = (typeof ESTADOS_DE_CLIENTE)[number];
+
 // ──────────────────────────────────────────────
 // Nombre para mostrar (persona o empresa)
 // ──────────────────────────────────────────────

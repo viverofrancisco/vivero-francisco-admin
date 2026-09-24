@@ -35,9 +35,21 @@ export interface OpcionDeMenu {
  * letra del sistema. Va adentro de un `Modal` transparente porque si no lo
  * recorta la cabecera, que es la que lo contiene.
  */
-export function MenuDeEncabezado({ opciones }: { opciones: OpcionDeMenu[] }) {
+export function MenuDeEncabezado({
+  opciones,
+  oscuro = false,
+  haciaArriba = false,
+  etiqueta = "Acciones",
+}: {
+  opciones: OpcionDeMenu[];
+  /** Sobre la pastilla oscura de la barra de selección: sin borde, ícono claro. */
+  oscuro?: boolean;
+  /** Para un botón al pie de la pantalla: el menú se abre por encima. */
+  haciaArriba?: boolean;
+  etiqueta?: string;
+}) {
   const ancla = useRef<View>(null);
-  const [desde, setDesde] = useState<{ top: number; right: number } | null>(
+  const [desde, setDesde] = useState<{ top?: number; bottom?: number; right: number } | null>(
     null
   );
 
@@ -45,11 +57,12 @@ export function MenuDeEncabezado({ opciones }: { opciones: OpcionDeMenu[] }) {
 
   function abrir() {
     ancla.current?.measureInWindow((x, y, ancho, alto) => {
+      const ventana = Dimensions.get("window");
       setDesde({
-        top: y + alto + 6,
+        ...(haciaArriba ? { bottom: ventana.height - y + 6 } : { top: y + alto + 6 }),
         // Anclado por la derecha: el botón vive en esa esquina y el menú es más
         // ancho que él, así que crece hacia adentro de la pantalla.
-        right: Dimensions.get("window").width - (x + ancho),
+        right: ventana.width - (x + ancho),
       });
     });
   }
@@ -61,10 +74,14 @@ export function MenuDeEncabezado({ opciones }: { opciones: OpcionDeMenu[] }) {
       <View ref={ancla} collapsable={false}>
         <PressableScale
           onPress={abrir}
-          style={styles.boton}
-          accessibilityLabel="Acciones"
+          style={[styles.boton, oscuro && styles.botonOscuro]}
+          accessibilityLabel={etiqueta}
         >
-          <Ionicons name="ellipsis-horizontal" size={20} color={tema.texto2} />
+          <Ionicons
+            name="ellipsis-horizontal"
+            size={20}
+            color={oscuro ? tema.superficie : tema.texto2}
+          />
         </PressableScale>
       </View>
 
@@ -111,6 +128,12 @@ const styles = StyleSheet.create({
     borderColor: tema.linea,
     alignItems: "center",
     justifyContent: "center",
+  },
+  botonOscuro: {
+    width: 34,
+    height: 34,
+    borderWidth: 0,
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
   menu: {
     position: "absolute",

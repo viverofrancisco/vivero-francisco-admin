@@ -5,7 +5,7 @@ import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { formatForWhatsApp } from "@/lib/whatsapp/phone";
 import { clienteImportRowSchema } from "@/lib/validations/cliente";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, type EstadoDeCliente } from "@vivero/shared";
 
 /**
  * Lo que se muestra de una propiedad donde sea que aparezca.
@@ -109,6 +109,8 @@ async function buildClienteWhereForStaff(viewer: Viewer) {
 
 export interface ListClientesFilters {
   search?: string;
+  /** Solo activos o solo inactivos; sin esto, todos. */
+  estado?: EstadoDeCliente;
   cursor?: string;
   limit?: number;
 }
@@ -125,6 +127,8 @@ export async function listClientes(
     { telefono: { contains: palabra } },
   ]);
   if (porTexto) Object.assign(where, porTexto);
+  if (filters.estado === "activos") Object.assign(where, { inactivoDesde: null });
+  if (filters.estado === "inactivos") Object.assign(where, { inactivoDesde: { not: null } });
 
   const limit = Math.min(Math.max(filters.limit ?? 50, 1), 200);
   const items = await prisma.cliente.findMany({
@@ -469,6 +473,26 @@ export async function marcarClienteInactivo(
     data: { inactivoDesde: inactivo ? new Date() : null, updatedById: viewer.id },
     select: { id: true, inactivoDesde: true },
   });
+}
+
+/**
+ * Lo mismo de a varios, desde la selección de la lista. Es un `updateMany`:
+ * marcar inactivo no tiene nada que revisar por ficha, así que no hay fallas
+ * que nombrar; devuelve cuántos cambiaron.
+ */
+export async function marcarVariosClientesInactivos(
+  viewer: Viewer,
+  ids: string[],
+  inactivo: boolean
+): Promise<{ count: number }> {
+  ensureCanWrite(viewer);
+  if (ids.length === 0) return { count: 0 };
+  const where = await buildClienteWhereForStaff(viewer);
+  const res = await prisma.cliente.updateMany({
+    where: { ...where, id: { in: ids } },
+    data: { inactivoDesde: inactivo ? new Date() : null, updatedById: viewer.id },
+  });
+  return { count: res.count };
 }
 
 // ──────────────────────────────────────────────

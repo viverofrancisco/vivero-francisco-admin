@@ -6,6 +6,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { nombreCliente, resumenDeCliente } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
 import {
   FILA_LISTA,
   PantallaLista,
@@ -42,6 +43,10 @@ export default function ClientesListScreen() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [sector, setSector] = useState("");
+  /** "" todos, "activos" o "inactivos". Viaja al servidor, como la búsqueda. */
+  const [estado, setEstado] = useState("");
+  const estadoRef = useRef("");
+  const [cambiandoEstado, setCambiandoEstado] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
@@ -65,6 +70,7 @@ export default function ClientesListScreen() {
           {
             query: {
               search: q || undefined,
+              estado: estadoRef.current || undefined,
               limit: POR_PAGINA,
               cursor: desde ?? undefined,
             },
@@ -98,6 +104,30 @@ export default function ClientesListScreen() {
   function buscar(v: string) {
     setBusqueda(v);
     traer(v, null, "refrescar");
+  }
+
+  function filtrarPorEstado(v: string) {
+    setEstado(v);
+    estadoRef.current = v;
+    traer(busqueda, null, "refrescar");
+  }
+
+  /** Marcar la selección como inactiva, o reactivarla. Reversible: sin confirmación. */
+  async function cambiarEstado(inactivo: boolean) {
+    setCambiandoEstado(true);
+    try {
+      await apiRequest("/api/mobile/clientes/inactivo", {
+        method: "POST",
+        body: { ids: elegidos, inactivo },
+      });
+      setSeleccionando(false);
+      setMarcados([]);
+      await traer(busqueda, null, "refrescar");
+    } catch (e) {
+      setError(mensajeDeError(e, "No se pudo guardar"));
+    } finally {
+      setCambiandoEstado(false);
+    }
   }
 
   const sectores = [
@@ -143,8 +173,8 @@ export default function ClientesListScreen() {
   }
 
   // Sin sectores cargados el filtro no filtra nada, así que no se ofrece.
-  const grupos: GrupoDeFiltro[] =
-    sectores.length > 1
+  const grupos: GrupoDeFiltro[] = [
+    ...(sectores.length > 1
       ? [
           {
             id: "sector",
@@ -157,7 +187,19 @@ export default function ClientesListScreen() {
             ],
           },
         ]
-      : [];
+      : []),
+    {
+      id: "estado",
+      titulo: "Estado",
+      valor: estado,
+      onElegir: filtrarPorEstado,
+      opciones: [
+        { clave: "", etiqueta: "Todos" },
+        { clave: "activos", etiqueta: "Activos" },
+        { clave: "inactivos", etiqueta: "Inactivos" },
+      ],
+    },
+  ];
 
   return (
     <PantallaLista
@@ -297,6 +339,18 @@ export default function ClientesListScreen() {
           >
             <Text style={styles.accionBarraTexto}>Archivar</Text>
           </PressableScale>
+          {/* Con más de una acción, el resto va detrás de un ⋯ al lado. */}
+          {elegidos.length > 0 && !cambiandoEstado ? (
+            <MenuDeEncabezado
+              oscuro
+              haciaArriba
+              etiqueta="Más acciones"
+              opciones={[
+                { etiqueta: "Marcar como inactivos", onPress: () => cambiarEstado(true) },
+                { etiqueta: "Reactivar", onPress: () => cambiarEstado(false) },
+              ]}
+            />
+          ) : null}
         </BarraSeleccion>
       ) : null}
 

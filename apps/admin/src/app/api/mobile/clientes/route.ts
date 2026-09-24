@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ESTADOS_DE_CLIENTE } from "@vivero/shared";
 import { createClienteSchema } from "@vivero/shared";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 import {
@@ -20,6 +21,8 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const search = url.searchParams.get("search") ?? undefined;
+  const estadoParam = url.searchParams.get("estado");
+  const estado = ESTADOS_DE_CLIENTE.find((e) => e === estadoParam);
   const cursor = url.searchParams.get("cursor") ?? undefined;
   const limitParam = url.searchParams.get("limit");
   const limit = limitParam ? Number(limitParam) : undefined;
@@ -27,6 +30,7 @@ export async function GET(request: Request) {
   try {
     const result = await listClientes(viewerFromMobileUser(userOrResponse), {
       search,
+      estado,
       cursor,
       limit: Number.isFinite(limit) ? limit : undefined,
     });
