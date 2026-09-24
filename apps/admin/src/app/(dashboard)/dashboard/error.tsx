@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * Un error sin atrapar dentro del panel. Sin esto salía "Application error"
@@ -30,7 +31,7 @@ export default function ErrorDelPanel({
         <Button variant="outline" onClick={reset}>
           Reintentar
         </Button>
-        <Link href="/dashboard" className={buttonVariants({ variant: "ghost" })}>
+        <Link href="/dashboard" className={cn(buttonVariants({ variant: "ghost" }))}>
           Ir al inicio
         </Link>
       </div>

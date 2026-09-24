@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Lock } from "lucide-react";
 import { SIN_ACCESO_A, type TipoDeReferencia } from "@vivero/shared";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * La ficha que quien mira no puede abrir: una visita que no le tocó, un
@@ -25,7 +26,7 @@ export function SinAcceso({ tipo, backHref }: { tipo: TipoDeReferencia; backHref
       <Lock className="mb-2 h-8 w-8 text-muted-foreground" />
       <p className="text-base font-semibold">{titulo}</p>
       <p className="max-w-sm text-sm text-muted-foreground">{detalle}</p>
-      <Link href={backHref} className={buttonVariants({ variant: "outline", className: "mt-4" })}>
+      <Link href={backHref} className={cn(buttonVariants({ variant: "outline" }), "mt-4")}>
         Volver
       </Link>
     </div>

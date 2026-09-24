@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * Lo que `notFound()` muestra dentro del panel: una visita borrada, un enlace
@@ -16,7 +17,7 @@ export default function NoEncontrada() {
       <p className="max-w-sm text-sm text-muted-foreground">
         Puede que lo que buscas se haya borrado, o que el enlace esté mal.
       </p>
-      <Link href="/dashboard" className={buttonVariants({ variant: "outline", className: "mt-4" })}>
+      <Link href="/dashboard" className={cn(buttonVariants({ variant: "outline" }), "mt-4")}>
         Ir al inicio
       </Link>
     </div>
