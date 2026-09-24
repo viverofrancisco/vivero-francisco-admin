@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import { signOut } from "next-auth/react";
 import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -9,12 +10,7 @@ import { InputFlotante } from "@/components/ui/input-flotante";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 
-const ROL: Record<string, string> = {
-  ADMIN: "Administrador",
-  STAFF: "Staff",
-  PERSONAL: "Personal",
-  CLIENTE: "Cliente",
-};
+const ROL: Record<string, string> = ETIQUETA_DE_ROL;
 
 /**
  * Mi cuenta: la misma pantalla que la app.

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -13,11 +14,7 @@ import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import type { ChatDetalle, MiembroDeChat } from "@/lib/chats";
 import { tema } from "@/lib/tema";
 
-const ROL: Record<string, string> = {
-  ADMIN: "Admin",
-  STAFF: "Oficina",
-  PERSONAL: "Campo",
-};
+const ROL: Record<string, string> = ETIQUETA_DE_ROL;
 
 interface Persona {
   id: string;

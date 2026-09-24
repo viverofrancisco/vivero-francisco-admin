@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,11 +19,7 @@ interface Persona {
   rol: string;
 }
 
-const ROL: Record<string, string> = {
-  ADMIN: "Admin",
-  STAFF: "Oficina",
-  PERSONAL: "Campo",
-};
+const ROL: Record<string, string> = ETIQUETA_DE_ROL;
 
 /**
  * Armar un chat o cambiarle la gente. **Solo el ADMIN llega acá** — el servicio
@@ -241,7 +238,7 @@ export default function ChatFormScreen() {
           required
           value={nombre}
           onChangeText={setNombre}
-          placeholder="Cuadrilla 1, Oficina, Urgencias..."
+          placeholder="Cuadrilla 1, Administración, Urgencias..."
         />
 
         {/* Al editar, solo el nombre y la foto, como el "Editar grupo" de

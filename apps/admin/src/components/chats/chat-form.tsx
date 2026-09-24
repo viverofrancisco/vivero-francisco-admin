@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -16,11 +17,7 @@ interface Persona {
   rol: string;
 }
 
-export const ROL_LABEL: Record<string, string> = {
-  ADMIN: "Admin",
-  STAFF: "Oficina",
-  PERSONAL: "Campo",
-};
+export const ROL_LABEL: Record<string, string> = ETIQUETA_DE_ROL;
 
 /**
  * La foto del grupo, achicada y cuadrada **antes** de subirla: 512 px de
@@ -259,7 +256,7 @@ export function FormularioDeChat({
           required
           value={nombre}
           onChange={setNombre}
-          placeholder="Cuadrilla 1, Oficina, Urgencias..."
+          placeholder="Cuadrilla 1, Administración, Urgencias..."
           maxLength={80}
         />
 

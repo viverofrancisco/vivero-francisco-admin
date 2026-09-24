@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import { Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { useFocusEffect } from "expo-router";
@@ -14,12 +15,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useBranding } from "@/lib/branding";
 import { tema } from "@/lib/tema";
 
-const ROLE_LABEL: Record<string, string> = {
-  ADMIN: "Administrador",
-  STAFF: "Staff",
-  PERSONAL: "Personal",
-  CLIENTE: "Cliente",
-};
+const ROLE_LABEL: Record<string, string> = ETIQUETA_DE_ROL;
 
 /**
  * Los permisos del sistema, leídos cada vez que se entra.

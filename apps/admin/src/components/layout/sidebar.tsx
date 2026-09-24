@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -25,12 +26,7 @@ import { Brand } from "./brand";
 
 /** Lo que va debajo del nombre cuando no hay correo. Las mismas palabras
  *  que la página de Cuenta. */
-const ROL: Record<string, string> = {
-  ADMIN: "Administrador",
-  STAFF: "Staff",
-  PERSONAL: "Personal",
-  CLIENTE: "Cliente",
-};
+const ROL: Record<string, string> = ETIQUETA_DE_ROL;
 
 interface NavChild {
   label: string;

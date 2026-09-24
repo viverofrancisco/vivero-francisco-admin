@@ -3,6 +3,18 @@ import { z } from "zod";
 export const userRoleSchema = z.enum(["ADMIN", "STAFF", "PERSONAL", "CLIENTE"]);
 export type UserRole = z.infer<typeof userRoleSchema>;
 
+/**
+ * Cómo se llama cada rol en pantalla. Un solo lugar: había cuatro mapas, y
+ * dos decían "Oficina" y "Campo", que no es como nadie en el vivero llama a
+ * la gente. Lo que se ve al lado de un nombre es su rol, con su nombre.
+ */
+export const ETIQUETA_DE_ROL: Record<UserRole, string> = {
+  ADMIN: "Administrador",
+  STAFF: "Staff",
+  PERSONAL: "Personal",
+  CLIENTE: "Cliente",
+};
+
 // El campo dice `email` por historia, pero acepta un correo **o** un usuario:
 // quien trabaja en el jardín no tiene correo y entra con un nombre corto que le
 // dictó un administrador. Por eso no se valida como dirección — el servidor

@@ -78,8 +78,8 @@ export default function SolicitarAccesoScreen() {
                   oficina, y conviene decirlo acá antes de que espere un mail
                   que no va a llegar. */}
               <Text variant="bodySmall" style={styles.nota}>
-                Si trabajas en el vivero, pídele el enlace a la oficina: el tuyo
-                se emite desde tu ficha.
+                Si trabajas en el vivero, pídele el enlace a un administrador:
+                el tuyo se emite desde tu ficha.
               </Text>
               <TextInput
                 mode="outlined"
