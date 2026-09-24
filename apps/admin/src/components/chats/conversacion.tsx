@@ -21,15 +21,14 @@ import {
 import {
   AlertCircle,
   CalendarDays,
+  Camera,
   Check,
   CheckCheck,
   ChevronLeft,
   Copy,
   FileText,
-  ImageIcon,
   Info,
   MoreVertical,
-  Paperclip,
   Play,
   Reply,
   Search,
@@ -63,6 +62,7 @@ import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Conectando } from "@/components/shared/conectando";
 import { AvatarDeChat } from "./avatar-de-chat";
 import { InfoDelChat } from "./info-del-chat";
+import { PanelAdjuntar } from "./panel-adjuntar";
 import {
   confirmarLlegada,
   descartar,
@@ -282,6 +282,7 @@ export function Conversacion({
   const scroll = useRef<HTMLDivElement>(null);
   const archivos = useRef<HTMLInputElement>(null);
   const documentos = useRef<HTMLInputElement>(null);
+  const camara = useRef<HTMLInputElement>(null);
 
   const irAlFondo = useCallback((suave = false) => {
     const caja = scroll.current;
@@ -482,6 +483,7 @@ export function Conversacion({
     setPendientes((actuales) => [...actuales, ...nuevas].slice(0, 10));
     if (archivos.current) archivos.current.value = "";
     if (documentos.current) documentos.current.value = "";
+    if (camara.current) camara.current.value = "";
   }
 
   function quitarPendiente(i: number) {
@@ -773,47 +775,31 @@ export function Conversacion({
             className="hidden"
             onChange={(e) => elegirFotos(e.target.files)}
           />
-          {/* El clip: un documento, o una ficha para compartir —una visita,
-              un cliente, un producto— como un contacto en WhatsApp. Un menú
-              corto colgado del botón, en los dos tamaños. Aparte del botón de
-              la foto porque el selector del sistema filtra por tipo. */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 flex-none text-muted-foreground"
-                  aria-label="Adjuntar"
-                  disabled={soloVista}
-                />
-              }
-            >
-              <Paperclip className="h-5 w-5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="min-w-40">
-              <DropdownMenuItem onClick={() => documentos.current?.click()}>Documento</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCompartiendo("visita")}>Visita</DropdownMenuItem>
-              {esOficina ? (
-                <DropdownMenuItem onClick={() => setCompartiendo("cliente")}>Cliente</DropdownMenuItem>
-              ) : null}
-              {esOficina ? (
-                <DropdownMenuItem onClick={() => setCompartiendo("producto")}>Producto</DropdownMenuItem>
-              ) : null}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {/* Ícono pelado, como en la app: al lado de un campo redondeado, un
-              botón con borde compite con él. Los tres del mismo alto. */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 flex-none text-muted-foreground"
-            aria-label="Mandar una foto"
+          {/* La cámara del teléfono: `capture` abre la cámara en vez de la
+              galería, y en el escritorio no hace nada, por eso el botón que
+              lo dispara solo existe abajo de `md`. */}
+          <input
+            ref={camara}
+            type="file"
+            accept="image/*,video/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => elegirFotos(e.target.files)}
+          />
+          {/* El +: fotos, documento, o una ficha para compartir —una visita,
+              un cliente, un producto— como un contacto en WhatsApp. Un solo
+              botón para todo; los `input` siguen siendo dos porque el
+              selector del sistema filtra por tipo. */}
+          <PanelAdjuntar
+            esOficina={esOficina}
             disabled={soloVista}
-            onClick={() => archivos.current?.click()}
-          >
-            <ImageIcon className="h-[22px] w-[22px]" />
-          </Button>
+            onElegir={(o) => {
+              if (o === "camara") camara.current?.click();
+              else if (o === "fotos") archivos.current?.click();
+              else if (o === "documento") documentos.current?.click();
+              else setCompartiendo(o);
+            }}
+          />
           <Textarea
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
@@ -834,6 +820,18 @@ export function Conversacion({
               }
             }}
           />
+          {/* La cámara al lado del campo, como en WhatsApp: la foto del
+              jardín se saca en el momento, y para eso no se abre un menú. */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 flex-none text-muted-foreground md:hidden"
+            aria-label="Tomar una foto o un video"
+            disabled={soloVista}
+            onClick={() => camara.current?.click()}
+          >
+            <Camera className="h-[22px] w-[22px]" />
+          </Button>
           <Button
             size="icon"
             className="h-9 w-9 flex-none rounded-full"

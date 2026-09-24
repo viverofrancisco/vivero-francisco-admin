@@ -41,6 +41,7 @@ import {
 } from "@/components/chats/Burbuja";
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
+import { PanelAdjuntar, type OpcionDeAdjuntar } from "@/components/chats/PanelAdjuntar";
 import {
   etiquetaDeAdjuntos,
   mismoDia,
@@ -502,11 +503,32 @@ export default function ChatScreen() {
     if (!r.canceled) agregar(r.assets);
   }
 
+  /**
+   * La cámara del sistema. Con fotos y videos juntos, iOS abre la cámara con
+   * el selector de foto/video; Android (`toCameraIntentAction` en
+   * expo-image-picker) solo graba video cuando se le pide *únicamente* video,
+   * así que ahí saca fotos y el video se manda desde la galería.
+   */
   async function sacarFoto() {
     const permiso = await ImagePicker.requestCameraPermissionsAsync();
     if (!permiso.granted) return;
-    const r = await ImagePicker.launchCameraAsync({ quality: 0.7 });
+    const r = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images", "videos"],
+      quality: 0.7,
+    });
     if (!r.canceled) agregar(r.assets);
+  }
+
+  /**
+   * Lo elegido en el + . Los selectores del sistema esperan un instante: se
+   * presentan sobre la pantalla, y si la hoja todavía se está yendo iOS los
+   * rechaza sin decir nada.
+   */
+  function alElegirAdjunto(opcion: OpcionDeAdjuntar) {
+    if (opcion === "camara") setTimeout(sacarFoto, 150);
+    else if (opcion === "fotos") setTimeout(elegirDeGaleria, 150);
+    else if (opcion === "documento") setTimeout(elegirDocumento, 150);
+    else setCompartiendo(opcion);
   }
 
   async function borrar(mensaje: MensajeDeChat) {
@@ -775,23 +797,14 @@ export default function ChatScreen() {
         ) : null}
 
         <View style={styles.escribir}>
-          {/* El clip: un documento. Botón aparte del de la foto porque el
-              selector del sistema filtra por tipo, y uno solo que acepte todo
-              muestra la galería llena de PDFs. */}
+          {/* El +: fotos, documento, o una ficha para compartir —una visita,
+              un cliente, un producto— como un contacto en WhatsApp. */}
           <PressableScale
             onPress={() => setMenuAdjuntar(true)}
             style={styles.adjuntar}
             accessibilityLabel="Adjuntar"
           >
-            <Ionicons name="attach-outline" size={24} color={tema.texto2} />
-          </PressableScale>
-          <PressableScale
-            onPress={elegirDeGaleria}
-            onLongPress={sacarFoto}
-            style={styles.adjuntar}
-            accessibilityLabel="Mandar una foto"
-          >
-            <Ionicons name="image-outline" size={22} color={tema.texto2} />
+            <Ionicons name="add" size={28} color={tema.texto2} />
           </PressableScale>
           <TextInput
             value={texto}
@@ -801,6 +814,15 @@ export default function ChatScreen() {
             style={styles.campo}
             multiline
           />
+          {/* La cámara al lado del campo, como en WhatsApp: la foto del
+              jardín se saca en el momento, y para eso no se abre un menú. */}
+          <PressableScale
+            onPress={sacarFoto}
+            style={styles.adjuntar}
+            accessibilityLabel="Tomar una foto o un video"
+          >
+            <Ionicons name="camera-outline" size={24} color={tema.texto2} />
+          </PressableScale>
           <PressableScale
             onPress={() => enviar()}
             // Se puede mandar con texto **o** con fotos esperando: una foto
@@ -881,37 +903,12 @@ export default function ChatScreen() {
         </View>
       </HojaInferior>
 
-      {/* Qué adjuntar: un documento, o una ficha —visita, cliente, producto—
-          como un contacto en WhatsApp. Filas grandes, para el pulgar. */}
-      <HojaInferior visible={menuAdjuntar} onCerrar={() => setMenuAdjuntar(false)}>
-        <View style={styles.hoja}>
-          {(
-            [
-              { etiqueta: "Documento", icono: "document-text-outline", accion: () => elegirDocumento() },
-              { etiqueta: "Visita", icono: ICONO_REFERENCIA.visita, accion: () => setCompartiendo("visita") },
-              ...(esOficina
-                ? ([
-                    { etiqueta: "Cliente", icono: ICONO_REFERENCIA.cliente, accion: () => setCompartiendo("cliente") },
-                    { etiqueta: "Producto", icono: ICONO_REFERENCIA.producto, accion: () => setCompartiendo("producto") },
-                  ] as const)
-                : []),
-            ] as const
-          ).map((o) => (
-            <PressableScale
-              key={o.etiqueta}
-              onPress={() => {
-                setMenuAdjuntar(false);
-                o.accion();
-              }}
-              estiloExterno={styles.ancho}
-              style={styles.opcion}
-            >
-              <Ionicons name={o.icono} size={20} color={tema.texto2} />
-              <Text style={styles.opcionTexto}>{o.etiqueta}</Text>
-            </PressableScale>
-          ))}
-        </View>
-      </HojaInferior>
+      <PanelAdjuntar
+        visible={menuAdjuntar}
+        esOficina={esOficina}
+        onCerrar={() => setMenuAdjuntar(false)}
+        onElegir={alElegirAdjunto}
+      />
 
       <CompartirHoja
         tipo={compartiendo}
