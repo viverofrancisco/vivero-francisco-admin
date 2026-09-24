@@ -131,9 +131,9 @@ export default function MediosDelChatScreen() {
           <Ionicons name="chevron-back" size={24} color={tema.texto} />
         </PressableScale>
         <View style={styles.pestanas}>
-          {pestana("archivos", "Fotos y videos")}
+          {pestana("archivos", "Multimedia")}
+          {pestana("documentos", "Documentos")}
           {pestana("enlaces", "Enlaces")}
-          {pestana("documentos", "Docs")}
         </View>
         <View style={styles.iconoCabecera} />
       </View>

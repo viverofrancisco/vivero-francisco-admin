@@ -135,7 +135,7 @@ export default function InfoDelChatScreen() {
             >
               <Ionicons name="images-outline" size={20} color={tema.texto2} />
               <Text style={styles.filaTexto} numberOfLines={1}>
-                Fotos, videos, enlaces y documentos
+                Multimedia, documentos y enlaces
               </Text>
               <Text style={styles.filaValor}>
                 {(chat.medios?.fotosYVideos ?? 0) +

@@ -216,7 +216,8 @@ function VistaInfo({
           </p>
         </div>
 
-        {/* Una sola fila, como en WhatsApp: adentro están las tres pestañas. */}
+        {/* Una sola fila, como en WhatsApp: adentro están las tres pestañas,
+            en ese orden —multimedia, documentos, enlaces—. */}
         <div className="rounded-xl border border-border">
           <button
             type="button"
@@ -224,7 +225,7 @@ function VistaInfo({
             onClick={() => onVer({ paso: "medios", tipo: "archivos" })}
           >
             <Images className="h-5 w-5 flex-none text-muted-foreground" />
-            <span className="flex-1 text-sm font-medium">Fotos, videos, enlaces y documentos</span>
+            <span className="flex-1 text-sm font-medium">Multimedia, documentos y enlaces</span>
             <span className="text-sm text-muted-foreground">
               {(chat.medios?.fotosYVideos ?? 0) + (chat.medios?.documentos ?? 0) + (chat.medios?.enlaces ?? 0)}
             </span>
@@ -403,9 +404,9 @@ function VistaMedios({
         }
         titulo={
           <span className="inline-flex rounded-full bg-muted p-0.5">
-            {pestana("archivos", "Fotos y videos")}
-            {pestana("enlaces", "Enlaces")}
+            {pestana("archivos", "Multimedia")}
             {pestana("documentos", "Documentos")}
+            {pestana("enlaces", "Enlaces")}
           </span>
         }
       />
