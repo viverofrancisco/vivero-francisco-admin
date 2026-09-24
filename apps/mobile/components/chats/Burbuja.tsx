@@ -1,7 +1,12 @@
 import { Image, Linking, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { extensionDe, tamanoLegible } from "@vivero/shared";
+import {
+  extensionDe,
+  tamanoLegible,
+  type ReferenciaEnMensaje,
+  type TipoDeReferencia,
+} from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
 import {
   etiquetaDeAdjuntos,
@@ -36,6 +41,17 @@ export function Vistos({ estado }: { estado: EstadoDeMensaje }) {
 }
 
 const CLARO = "rgba(255,255,255,0.75)";
+
+export const ICONO_REFERENCIA: Record<TipoDeReferencia, "calendar-outline" | "people-outline" | "pricetag-outline"> = {
+  visita: "calendar-outline",
+  cliente: "people-outline",
+  producto: "pricetag-outline",
+};
+export const ETIQUETA_REFERENCIA: Record<TipoDeReferencia, string> = {
+  visita: "Visita",
+  cliente: "Cliente",
+  producto: "Producto",
+};
 /** El azul de WhatsApp, sobre el verde de la burbuja. */
 const AZUL = "#7dd3fc";
 
@@ -55,6 +71,7 @@ export function Burbuja({
   onIrACita,
   onReintentar,
   onDescartar,
+  onAbrirReferencia,
 }: {
   mensaje: MensajeDeChat;
   /** El que se vino a ver desde el buscador. */
@@ -68,6 +85,8 @@ export function Burbuja({
   onIrACita?: (id: string) => void;
   onReintentar?: () => void;
   onDescartar?: () => void;
+  /** Tocar una ficha compartida abre la ficha de ahora. */
+  onAbrirReferencia?: (ref: ReferenciaEnMensaje) => void;
 }) {
   const mio = mensaje.mio;
   const enCola = mensaje.estado === "pendiente" || mensaje.estado === "fallido";
@@ -165,6 +184,34 @@ export function Burbuja({
                 </PressableScale>
               ))}
             </View>
+          ) : null}
+          {/* Una ficha compartida —visita, cliente, producto—: una tarjeta
+              con lo que era ese día, que lleva a la ficha de ahora. */}
+          {mensaje.referencia ? (
+            <PressableScale
+              onPress={
+                soloLectura || !onAbrirReferencia
+                  ? undefined
+                  : () => onAbrirReferencia(mensaje.referencia!)
+              }
+              onLongPress={mantener}
+              estiloExterno={styles.ancho}
+              style={[styles.documento, mio ? styles.documentoMio : styles.documentoAjeno]}
+            >
+              <Ionicons
+                name={ICONO_REFERENCIA[mensaje.referencia.tipo]}
+                size={24}
+                color={mio ? "#fff" : tema.texto2}
+              />
+              <View style={styles.crece}>
+                <Text style={[styles.documentoNombre, mio && styles.textoClaro]} numberOfLines={2}>
+                  {mensaje.referencia.titulo}
+                </Text>
+                <Text style={[styles.documentoDetalle, mio && styles.textoClaro]} numberOfLines={1}>
+                  {mensaje.referencia.detalle || ETIQUETA_REFERENCIA[mensaje.referencia.tipo]}
+                </Text>
+              </View>
+            </PressableScale>
           ) : null}
           {/* Un documento es una tarjeta con su nombre y su peso, como en
               WhatsApp: tocarlo lo abre con lo que el teléfono tenga para eso.

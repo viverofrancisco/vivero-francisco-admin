@@ -187,6 +187,7 @@ export async function pushChatMensaje(mensajeId: string): Promise<void> {
       },
       _count: { select: { adjuntos: true } },
       adjuntos: { take: 1, select: { tipo: true } },
+      referencia: true,
     },
   });
   if (!mensaje) return;
@@ -199,9 +200,12 @@ export async function pushChatMensaje(mensajeId: string): Promise<void> {
   const primero = mensaje.adjuntos[0]?.tipo;
   const esVideo = primero === "video";
   const esDocumento = primero === "documento";
+  const ficha = mensaje.referencia as { titulo?: string } | null;
   const cuerpo = mensaje.texto?.trim()
     ? mensaje.texto.trim()
-    : mensaje._count.adjuntos === 1
+    : ficha?.titulo
+      ? `📌 ${ficha.titulo}`
+      : mensaje._count.adjuntos === 1
       ? (esVideo ? "🎥 Video" : esDocumento ? "📄 Documento" : "📷 Foto")
       : `📎 ${mensaje._count.adjuntos} archivos`;
 

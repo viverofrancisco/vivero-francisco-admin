@@ -2173,6 +2173,15 @@ model ChatMensaje {
    */
   idCliente String?
 
+  /**
+   * Una ficha compartida —una visita, un cliente o un producto—, como un
+   * contacto en WhatsApp: `{ tipo, id, titulo, detalle }`. El título y el
+   * detalle son una **copia** hecha al mandar, por lo mismo que `autorNombre`:
+   * la tarjeta dice lo que se compartió ese día aunque la ficha cambie o se
+   * archive después. El id es para abrirla, si quien la toca puede verla.
+   */
+  referencia Json?
+
   @@unique([chatId, idCliente])
   /// Por acá entra la lista: los últimos primero, de a páginas.
   @@index([chatId, createdAt])

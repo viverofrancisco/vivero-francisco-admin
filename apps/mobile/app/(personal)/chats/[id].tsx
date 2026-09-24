@@ -22,6 +22,8 @@ import {
   nuevoIdCliente,
   type FotoEnCola,
   type MensajeEnCola,
+  type ReferenciaEnMensaje,
+  type TipoDeReferencia,
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
@@ -31,7 +33,12 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { Conectando } from "@/components/ui/Conectando";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MediaViewer } from "@/components/MediaViewer";
-import { Burbuja, MiniaturaAdjunto } from "@/components/chats/Burbuja";
+import {
+  Burbuja,
+  ETIQUETA_REFERENCIA,
+  ICONO_REFERENCIA,
+  MiniaturaAdjunto,
+} from "@/components/chats/Burbuja";
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
 import {
@@ -141,6 +148,11 @@ export default function ChatScreen() {
    */
   const [pendientes, setPendientes] = useState<FotoEnCola[]>([]);
   const [tocado, setTocado] = useState<MensajeDeChat | null>(null);
+  /** La ficha para compartir —visita, cliente o producto—, esperando arriba del campo. */
+  const [referencia, setReferencia] = useState<ReferenciaEnMensaje | null>(null);
+  /** El menú del clip, y el selector abierto con su tipo. */
+  const [menuAdjuntar, setMenuAdjuntar] = useState(false);
+  const [compartiendo, setCompartiendo] = useState<TipoDeReferencia | null>(null);
   /**
    * El mensaje resaltado: el que trajo el buscador, o el que se citó y se
    * acaba de tocar. Es un destello y no una marca fija —se apaga solo a los
@@ -386,7 +398,7 @@ export default function ChatScreen() {
    */
   function enviar() {
     const cuerpo = texto.trim();
-    if (!cuerpo && pendientes.length === 0) return;
+    if (!cuerpo && pendientes.length === 0 && !referencia) return;
     const item: MensajeEnCola = {
       idCliente: nuevoIdCliente(),
       chatId: id,
@@ -404,14 +416,27 @@ export default function ChatScreen() {
               : null,
           }
         : null,
+      referencia,
       creadoEl: new Date().toISOString(),
       estado: "pendiente",
     };
     encolar(item);
     setTexto("");
     setRespondiendo(null);
+    setReferencia(null);
     setPendientes([]);
     setAviso(null);
+  }
+
+  /** Tocar una ficha compartida abre la ficha de ahora, si se puede ver. */
+  function abrirReferencia(ref: ReferenciaEnMensaje) {
+    if (ref.tipo === "visita") {
+      router.push({ pathname: "/(personal)/visitas/[id]", params: { id: ref.id } });
+    } else if (ref.tipo === "cliente") {
+      router.push({ pathname: "/(personal)/clientes/[id]", params: { id: ref.id } });
+    } else {
+      router.push({ pathname: "/(personal)/servicios/[id]", params: { id: ref.id } });
+    }
   }
 
   /** Elegir **no manda**: el archivo espera arriba del campo hasta que se envíe. */
@@ -519,7 +544,10 @@ export default function ChatScreen() {
   }
 
   const otros = chat?.miembros.filter((m) => !m.soyYo) ?? [];
-  const hayQueMandar = Boolean(texto.trim()) || pendientes.length > 0;
+  const hayQueMandar = Boolean(texto.trim()) || pendientes.length > 0 || referencia !== null;
+  // Un jardinero comparte sus visitas; los clientes y el catálogo son de la
+  // oficina, y el servidor lo rechazaría igual.
+  const esOficina = usuario?.role === "ADMIN" || usuario?.role === "STAFF";
 
   return (
     <KeyboardAvoidingView
@@ -646,6 +674,7 @@ export default function ChatScreen() {
                   onVerFoto={setViendo}
                   onReintentar={() => item.idCliente && reintentar(item.idCliente)}
                   onDescartar={() => item.idCliente && descartar(item.idCliente)}
+                  onAbrirReferencia={abrirReferencia}
                 />
               </FilaDeslizable>
             </View>
@@ -692,6 +721,28 @@ export default function ChatScreen() {
           </View>
         ) : null}
 
+        {/* La ficha que se va a compartir, esperando como una foto. */}
+        {referencia ? (
+          <View style={styles.citando}>
+            <Ionicons name={ICONO_REFERENCIA[referencia.tipo]} size={20} color={tema.verde700} />
+            <View style={styles.crece}>
+              <Text style={styles.citandoAutor} numberOfLines={1}>
+                {referencia.titulo}
+              </Text>
+              <Text style={styles.citandoTexto} numberOfLines={1}>
+                {referencia.detalle || ETIQUETA_REFERENCIA[referencia.tipo]}
+              </Text>
+            </View>
+            <PressableScale
+              onPress={() => setReferencia(null)}
+              style={styles.cerrarCita}
+              accessibilityLabel="Quitar la ficha"
+            >
+              <Ionicons name="close" size={18} color={tema.texto3} />
+            </PressableScale>
+          </View>
+        ) : null}
+
         {pendientes.length > 0 ? (
           <View style={styles.bandeja}>
             {pendientes.map((a, i) => (
@@ -728,9 +779,9 @@ export default function ChatScreen() {
               selector del sistema filtra por tipo, y uno solo que acepte todo
               muestra la galería llena de PDFs. */}
           <PressableScale
-            onPress={elegirDocumento}
+            onPress={() => setMenuAdjuntar(true)}
             style={styles.adjuntar}
-            accessibilityLabel="Mandar un documento"
+            accessibilityLabel="Adjuntar"
           >
             <Ionicons name="attach-outline" size={24} color={tema.texto2} />
           </PressableScale>
@@ -830,8 +881,155 @@ export default function ChatScreen() {
         </View>
       </HojaInferior>
 
+      {/* Qué adjuntar: un documento, o una ficha —visita, cliente, producto—
+          como un contacto en WhatsApp. Filas grandes, para el pulgar. */}
+      <HojaInferior visible={menuAdjuntar} onCerrar={() => setMenuAdjuntar(false)}>
+        <View style={styles.hoja}>
+          {(
+            [
+              { etiqueta: "Documento", icono: "document-text-outline", accion: () => elegirDocumento() },
+              { etiqueta: "Visita", icono: ICONO_REFERENCIA.visita, accion: () => setCompartiendo("visita") },
+              ...(esOficina
+                ? ([
+                    { etiqueta: "Cliente", icono: ICONO_REFERENCIA.cliente, accion: () => setCompartiendo("cliente") },
+                    { etiqueta: "Producto", icono: ICONO_REFERENCIA.producto, accion: () => setCompartiendo("producto") },
+                  ] as const)
+                : []),
+            ] as const
+          ).map((o) => (
+            <PressableScale
+              key={o.etiqueta}
+              onPress={() => {
+                setMenuAdjuntar(false);
+                o.accion();
+              }}
+              estiloExterno={styles.ancho}
+              style={styles.opcion}
+            >
+              <Ionicons name={o.icono} size={20} color={tema.texto2} />
+              <Text style={styles.opcionTexto}>{o.etiqueta}</Text>
+            </PressableScale>
+          ))}
+        </View>
+      </HojaInferior>
+
+      <CompartirHoja
+        tipo={compartiendo}
+        onCerrar={() => setCompartiendo(null)}
+        onElegir={(ref) => {
+          setReferencia(ref);
+          setCompartiendo(null);
+        }}
+      />
+
       <MediaViewer media={viendo} onClose={() => setViendo(null)} />
     </KeyboardAvoidingView>
+  );
+}
+
+/**
+ * Elegir qué compartir: una visita, un cliente o un producto, con buscador.
+ * La lista viene del servidor ya filtrada por quién pregunta —un jardinero
+ * ve sus visitas, no todas—, y sin escribir muestra lo cercano: la semana,
+ * los primeros clientes, el catálogo. La misma hoja que el diálogo del portal.
+ */
+function CompartirHoja({
+  tipo,
+  onCerrar,
+  onElegir,
+}: {
+  tipo: TipoDeReferencia | null;
+  onCerrar: () => void;
+  onElegir: (ref: ReferenciaEnMensaje) => void;
+}) {
+  const [busqueda, setBusqueda] = useState("");
+  /**
+   * Lo cargado, con el tipo y la búsqueda a los que pertenece: si no son los
+   * de ahora, se está cargando. Sin esto, reabrir el selector para un producto
+   * mostraba la lista de visitas de la vez anterior hasta que llegaba la nueva.
+   */
+  const [datos, setDatos] = useState<{
+    tipo: TipoDeReferencia;
+    q: string;
+    items: ReferenciaEnMensaje[];
+  } | null>(null);
+  const q = busqueda.trim();
+  const items = datos && datos.tipo === tipo && datos.q === q ? datos.items : null;
+
+  useEffect(() => {
+    if (!tipo) return;
+    let vivo = true;
+    const t = setTimeout(() => {
+      apiRequest<{ items: ReferenciaEnMensaje[] }>("/api/mobile/chats/compartibles", {
+        query: { tipo, q: q || undefined },
+      })
+        .then((d) => vivo && setDatos({ tipo, q, items: d.items }))
+        .catch(() => vivo && setDatos({ tipo, q, items: [] }));
+    }, q ? 250 : 0);
+    return () => {
+      vivo = false;
+      clearTimeout(t);
+    };
+  }, [tipo, q]);
+
+  const titulo = tipo
+    ? `Compartir ${tipo === "visita" ? "una visita" : tipo === "cliente" ? "un cliente" : "un producto"}`
+    : "";
+
+  return (
+    <HojaInferior
+      visible={tipo !== null}
+      onCerrar={() => {
+        setBusqueda("");
+        onCerrar();
+      }}
+    >
+      <View style={styles.compartirCabecera}>
+        <Text style={styles.compartirTitulo}>{titulo}</Text>
+      </View>
+      <View style={styles.compartirBuscador}>
+        <Ionicons name="search" size={18} color={tema.texto3} />
+        <TextInput
+          value={busqueda}
+          onChangeText={setBusqueda}
+          placeholder={tipo === "visita" ? "Cliente o número de visita..." : "Buscar..."}
+          placeholderTextColor={tema.texto3}
+          style={styles.compartirBuscadorTexto}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      </View>
+      <FlatList
+        data={items ?? []}
+        keyExtractor={(r) => r.id}
+        style={styles.compartirLista}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          items === null ? (
+            <ActivityIndicator style={styles.compartirCargando} />
+          ) : (
+            <Text style={styles.compartirVacio}>Sin coincidencias</Text>
+          )
+        }
+        renderItem={({ item }) => (
+          <PressableScale
+            onPress={() => onElegir(item)}
+            estiloExterno={styles.ancho}
+            style={styles.compartirFila}
+          >
+            <Ionicons name={ICONO_REFERENCIA[item.tipo]} size={20} color={tema.texto2} />
+            <View style={styles.crece}>
+              <Text style={styles.compartirNombre} numberOfLines={1}>
+                {item.titulo}
+              </Text>
+              <Text style={styles.compartirDetalle} numberOfLines={1}>
+                {item.detalle}
+              </Text>
+            </View>
+          </PressableScale>
+        )}
+      />
+    </HojaInferior>
   );
 }
 
@@ -993,4 +1191,35 @@ const styles = StyleSheet.create({
   },
   opcionTexto: { fontSize: 15, fontWeight: "600", color: tema.texto },
   borrarTexto: { color: tema.rojo },
+
+  compartirCabecera: { alignItems: "center", paddingBottom: 10 },
+  compartirTitulo: { fontSize: 16, fontWeight: "700", color: tema.texto },
+  compartirBuscador: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    height: 44,
+    marginHorizontal: 14,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: tema.linea,
+    backgroundColor: tema.superficie,
+  },
+  compartirBuscadorTexto: { flex: 1, fontSize: 15, color: tema.texto, padding: 0 },
+  compartirLista: { maxHeight: 400, paddingHorizontal: 14 },
+  compartirCargando: { padding: 16 },
+  compartirVacio: { color: tema.texto3, padding: 14, fontSize: 14 },
+  compartirFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 4,
+    paddingVertical: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: tema.linea2,
+  },
+  compartirNombre: { fontSize: 15, fontWeight: "500", color: tema.texto },
+  compartirDetalle: { fontSize: 12, color: tema.texto3 },
 });

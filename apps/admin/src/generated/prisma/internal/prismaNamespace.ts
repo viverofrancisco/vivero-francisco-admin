@@ -5853,7 +5853,8 @@ export const ChatMensajeScalarFieldEnum = {
   autorId: 'autorId',
   autorNombre: 'autorNombre',
   respondeAId: 'respondeAId',
-  idCliente: 'idCliente'
+  idCliente: 'idCliente',
+  referencia: 'referencia'
 } as const
 
 export type ChatMensajeScalarFieldEnum = (typeof ChatMensajeScalarFieldEnum)[keyof typeof ChatMensajeScalarFieldEnum]

@@ -1,6 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
-import type { EstadoDeMensaje } from "@vivero/shared";
+import {
+  fechaSola,
+  nombreCliente,
+  type EstadoDeMensaje,
+  type ReferenciaEnMensaje,
+  type TipoDeReferencia,
+} from "@vivero/shared";
+import { getVisitaForViewer, listVisitas } from "./visita.service";
+import { getClienteForStaff, listClientes } from "./cliente.service";
+import { getServicio, listServicios } from "./servicio.service";
+import { globalSearch } from "./search.service";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { pushChatAgregado, pushChatMensaje } from "@/lib/push/triggers";
@@ -502,6 +512,7 @@ const MENSAJE_SELECT = {
   autorId: true,
   autorNombre: true,
   idCliente: true,
+  referencia: true,
   // Quiénes lo leyeron: alcanza con los ids para decir si lo leyeron todos.
   lecturas: { select: { userId: true } },
   adjuntos: { select: { id: true, url: true, tipo: true, nombre: true, tamano: true } },
@@ -614,6 +625,7 @@ type MensajeCrudo = {
   autorId: string | null;
   autorNombre: string;
   idCliente: string | null;
+  referencia: unknown;
   lecturas: { userId: string }[];
   adjuntos: { id: string; url: string; tipo: string; nombre: string | null; tamano: number | null }[];
   respondeA: {
@@ -655,6 +667,7 @@ function mensajeParaPantalla(
     mio,
     idCliente: m.idCliente,
     estado,
+    referencia: m.deletedAt ? null : referenciaGuardada(m.referencia),
     respondeA: m.respondeA
       ? {
           id: m.respondeA.id,
@@ -673,6 +686,120 @@ function mensajeParaPantalla(
 
 export type MensajeDeChat = ReturnType<typeof mensajeParaPantalla>;
 
+/** "mié 23 sept": la fecha de una visita en una tarjeta, donde no hay lugar para el año. */
+const FECHA_CORTA: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" };
+
+/** Lo que hay en la columna `referencia`, si tiene la forma esperada. */
+function referenciaGuardada(crudo: unknown): ReferenciaEnMensaje | null {
+  if (!crudo || typeof crudo !== "object") return null;
+  const r = crudo as Partial<ReferenciaEnMensaje>;
+  if (!r.tipo || !r.id || typeof r.titulo !== "string") return null;
+  return { tipo: r.tipo, id: r.id, titulo: r.titulo, detalle: r.detalle ?? "" };
+}
+
+/**
+ * La tarjeta de una ficha compartida, armada **del lado del servidor** con lo
+ * que quien la manda puede leer: pasar por el servicio de cada cosa es lo que
+ * aplica sus reglas de acceso —un jardinero comparte una visita suya, no
+ * cualquiera—. El título y el detalle quedan copiados en el mensaje.
+ */
+async function tarjetaDeReferencia(
+  viewer: Viewer,
+  ref: { tipo: TipoDeReferencia; id: string }
+): Promise<ReferenciaEnMensaje> {
+  if (ref.tipo === "visita") {
+    const v = await getVisitaForViewer(ref.id, viewer);
+    return {
+      tipo: "visita",
+      id: v.id,
+      titulo: `Visita #${v.numero} · ${nombreCliente(v.cliente)}`,
+      detalle: [fechaSola(v.fechaProgramada, FECHA_CORTA), v.propiedad?.nombre]
+        .filter(Boolean)
+        .join(" · "),
+    };
+  }
+  if (ref.tipo === "cliente") {
+    const c = await getClienteForStaff(ref.id, viewer);
+    return {
+      tipo: "cliente",
+      id: c.id,
+      titulo: nombreCliente(c),
+      detalle: c.telefono ?? "",
+    };
+  }
+  const p = await getServicio(ref.id, viewer);
+  return {
+    tipo: "producto",
+    id: p.id,
+    titulo: p.nombre,
+    detalle: p.tipo === "SERVICIO" ? "Servicio" : "Producto",
+  };
+}
+
+/**
+ * Qué se puede compartir: visitas, clientes o productos, con un texto para
+ * buscar. Sin texto, lo cercano —las visitas de esta semana, los primeros
+ * clientes y productos—; con texto, el buscador global para visitas y
+ * clientes (ya sabe de números y de nombre-apellido) y el catálogo para los
+ * productos. Todo pasa por los servicios de cada cosa, que aplican quién ve qué.
+ */
+export async function compartibles(
+  viewer: Viewer,
+  tipo: TipoDeReferencia,
+  q?: string
+): Promise<ReferenciaEnMensaje[]> {
+  ensureEnElEquipo(viewer);
+  const texto = (q ?? "").trim();
+
+  if (tipo === "producto") {
+    const { items } = await listServicios(viewer, {
+      search: texto || undefined,
+      limit: 30,
+    });
+    return items.map((p) => ({
+      tipo,
+      id: p.id,
+      titulo: p.nombre,
+      detalle: p.tipo === "SERVICIO" ? "Servicio" : "Producto",
+    }));
+  }
+
+  if (texto.length > 0) {
+    const r = await globalSearch(viewer, texto, 30);
+    const grupo = tipo === "visita" ? r.visitas : r.clientes;
+    return grupo.items.map((i) => ({
+      tipo,
+      id: i.id,
+      titulo: i.title,
+      detalle: [i.subtitle, i.detalle].filter(Boolean).join(" · "),
+    }));
+  }
+
+  if (tipo === "cliente") {
+    const { items } = await listClientes(viewer, { limit: 30 });
+    return items.map((c) => ({
+      tipo,
+      id: c.id,
+      titulo: nombreCliente(c),
+      detalle: c.telefono ?? "",
+    }));
+  }
+
+  // Visitas sin texto: la semana alrededor de hoy, que es lo que se comparte.
+  const hoy = new Date();
+  const desde = new Date(hoy.getTime() - 7 * 86400000);
+  const hasta = new Date(hoy.getTime() + 7 * 86400000);
+  const { items } = await listVisitas(viewer, { from: desde, to: hasta, limit: 30 });
+  return items.map((v) => ({
+    tipo,
+    id: v.id,
+    titulo: `Visita #${v.numero} · ${nombreCliente(v.cliente)}`,
+    detalle: [fechaSola(v.fechaProgramada, FECHA_CORTA), v.propiedad?.nombre]
+      .filter(Boolean)
+      .join(" · "),
+  }));
+}
+
 /**
  * Mandar un mensaje: texto, fotos, o las dos cosas.
  *
@@ -688,6 +815,8 @@ export async function enviarMensaje(
     fotos?: { key: string; url: string; nombre?: string; tipo?: string; tamano?: number | null }[];
     respondeAId?: string | null;
     idCliente?: string;
+    /** Una ficha para compartir: el servidor arma la tarjeta. */
+    referencia?: { tipo: TipoDeReferencia; id: string } | null;
   }
 ) {
   const { miembro } = await ensureMiembro(viewer, chatId);
@@ -713,7 +842,10 @@ export async function enviarMensaje(
 
   const texto = datos.texto?.trim() || null;
   const fotos = datos.fotos ?? [];
-  if (!texto && fotos.length === 0) {
+  const referencia = datos.referencia
+    ? await tarjetaDeReferencia(viewer, datos.referencia)
+    : null;
+  if (!texto && fotos.length === 0 && !referencia) {
     throw new ValidationError("El mensaje no puede estar vacío.");
   }
 
@@ -743,6 +875,11 @@ export async function enviarMensaje(
         autorNombre: autor ? nombreDeUsuario(autor) : "Alguien",
         respondeAId: datos.respondeAId ?? null,
         idCliente: datos.idCliente ?? null,
+        // `InputJsonObject` pide una firma de índice que una interfaz no
+        // tiene; es un objeto plano de cuatro textos, así que el cast es honesto.
+        referencia: referencia
+          ? (referencia as unknown as Prisma.InputJsonObject)
+          : Prisma.JsonNull,
         adjuntos: {
           create: fotos.map((f) => ({
             key: f.key,

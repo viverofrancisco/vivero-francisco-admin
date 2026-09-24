@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   AlertCircle,
+  CalendarDays,
   Check,
   CheckCheck,
   ChevronLeft,
@@ -31,8 +32,11 @@ import {
   Paperclip,
   Play,
   Reply,
+  Search,
   Send,
+  Tag,
   Trash2,
+  Users,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -48,7 +52,10 @@ import {
   type InfoDeMensaje,
   type MensajeDeChat,
   type MensajeEnCola,
+  type ReferenciaEnMensaje,
+  type TipoDeReferencia,
 } from "@vivero/shared";
+import { Input } from "@/components/ui/input";
 import { hrefDeVuelta } from "@/lib/navegacion";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { Conectando } from "@/components/shared/conectando";
@@ -205,6 +212,10 @@ export function Conversacion({
   >([]);
   /** La info del chat, que se abre tocando el nombre. */
   const [infoAbierta, setInfoAbierta] = useState(false);
+  /** La ficha para compartir —visita, cliente o producto—, esperando arriba del campo. */
+  const [referencia, setReferencia] = useState<ReferenciaEnMensaje | null>(null);
+  /** El selector abierto, y de qué. */
+  const [compartiendo, setCompartiendo] = useState<TipoDeReferencia | null>(null);
   const [viendo, setViendo] = useState<{ url: string; tipo: string } | null>(
     null
   );
@@ -227,8 +238,12 @@ export function Conversacion({
   /** Quien escribe, para dibujar lo suyo antes de que el servidor conteste. */
   const yo = useMemo(() => {
     const m = chat.miembros.find((x) => x.soyYo);
-    return { id: m?.id ?? "", nombre: m?.nombre ?? "Tú" };
+    return { id: m?.id ?? "", nombre: m?.nombre ?? "Tú", rol: m?.rol ?? "" };
   }, [chat.miembros]);
+  // Un jardinero comparte sus visitas; los clientes y el catálogo son de la
+  // oficina, y el servidor lo rechazaría igual: la pantalla no ofrece lo que
+  // después va a negar.
+  const esOficina = yo.rol === "ADMIN" || yo.rol === "STAFF";
 
   /** Lo que espera en la cola, de este chat, dibujado al final de la lista. */
   const cola = useCola();
@@ -403,7 +418,7 @@ export function Conversacion({
    */
   function enviar() {
     const cuerpo = texto.trim();
-    if (!cuerpo && pendientes.length === 0) return;
+    if (!cuerpo && pendientes.length === 0 && !referencia) return;
     const item: MensajeEnCola = {
       idCliente: nuevoIdCliente(),
       chatId: chat.id,
@@ -427,6 +442,7 @@ export function Conversacion({
               : null,
           }
         : null,
+      referencia,
       creadoEl: new Date().toISOString(),
       estado: "pendiente",
     };
@@ -436,6 +452,7 @@ export function Conversacion({
     );
     setTexto("");
     setRespondiendo(null);
+    setReferencia(null);
     // Las URLs de objeto pasan a ser de la cola: las suelta ella al terminar.
     setPendientes([]);
     requestAnimationFrame(() => irAlFondo(true));
@@ -684,6 +701,26 @@ export function Conversacion({
           </div>
         ) : null}
 
+        {/* La ficha que se va a compartir, esperando como una foto: se ve,
+            se saca con su ✕, y sale con lo que se escriba. */}
+        {referencia ? (
+          <div className="mb-2 flex items-center gap-2.5 rounded-lg border border-border bg-muted/60 px-3 py-2">
+            <IconoDeReferencia tipo={referencia.tipo} className="h-5 w-5 flex-none text-primary" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{referencia.titulo}</p>
+              <p className="truncate text-xs text-muted-foreground">{referencia.detalle}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReferencia(null)}
+              aria-label="Quitar la ficha"
+              className="flex-none rounded p-1 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
+
         {/* Las fotos que están por salir: se ven, se sacan de la tanda con su
             ✕, y recién salen cuando alguien toca enviar. */}
         {pendientes.length > 0 ? (
@@ -729,19 +766,35 @@ export function Conversacion({
             className="hidden"
             onChange={(e) => elegirFotos(e.target.files)}
           />
-          {/* El clip: un documento. Botón aparte del de la foto porque el
-              selector del sistema filtra por tipo, y uno solo que acepte todo
-              muestra la galería llena de PDFs. */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 flex-none text-muted-foreground"
-            aria-label="Mandar un documento"
-            disabled={soloVista}
-            onClick={() => documentos.current?.click()}
-          >
-            <Paperclip className="h-5 w-5" />
-          </Button>
+          {/* El clip: un documento, o una ficha para compartir —una visita,
+              un cliente, un producto— como un contacto en WhatsApp. Un menú
+              corto colgado del botón, en los dos tamaños. Aparte del botón de
+              la foto porque el selector del sistema filtra por tipo. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 flex-none text-muted-foreground"
+                  aria-label="Adjuntar"
+                  disabled={soloVista}
+                />
+              }
+            >
+              <Paperclip className="h-5 w-5" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" className="min-w-40">
+              <DropdownMenuItem onClick={() => documentos.current?.click()}>Documento</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCompartiendo("visita")}>Visita</DropdownMenuItem>
+              {esOficina ? (
+                <DropdownMenuItem onClick={() => setCompartiendo("cliente")}>Cliente</DropdownMenuItem>
+              ) : null}
+              {esOficina ? (
+                <DropdownMenuItem onClick={() => setCompartiendo("producto")}>Producto</DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
           {/* Ícono pelado, como en la app: al lado de un campo redondeado, un
               botón con borde compite con él. Los tres del mismo alto. */}
           <Button
@@ -781,12 +834,21 @@ export function Conversacion({
             onClick={() => enviar()}
             // Se puede mandar con texto **o** con fotos esperando: una foto
             // sola es un mensaje, y con pie de foto también.
-            disabled={soloVista || (!texto.trim() && pendientes.length === 0)}
+            disabled={soloVista || (!texto.trim() && pendientes.length === 0 && !referencia)}
           >
             <Send className="h-[18px] w-[18px]" />
           </Button>
         </div>
       </div>
+
+      <CompartirDialogo
+        tipo={compartiendo}
+        onClose={() => setCompartiendo(null)}
+        onElegir={(ref) => {
+          setReferencia(ref);
+          setCompartiendo(null);
+        }}
+      />
 
       <InfoDelChat
         chat={chat}
@@ -996,6 +1058,130 @@ function InfoDeMensajeDialogo({
           ) : !actual?.error ? (
             <p className="text-center text-sm text-muted-foreground">Cargando...</p>
           ) : null}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const ETIQUETA_REFERENCIA: Record<TipoDeReferencia, string> = {
+  visita: "Visita",
+  cliente: "Cliente",
+  producto: "Producto",
+};
+
+/** A dónde lleva la tarjeta: la ficha de ahora, si quien la toca puede verla. */
+function hrefDeReferencia(ref: ReferenciaEnMensaje): string {
+  const base = { visita: "visitas", cliente: "clientes", producto: "productos" }[ref.tipo];
+  return `/dashboard/${base}/${ref.id}`;
+}
+
+function IconoDeReferencia({ tipo, className }: { tipo: TipoDeReferencia; className: string }) {
+  if (tipo === "visita") return <CalendarDays className={className} />;
+  if (tipo === "cliente") return <Users className={className} />;
+  return <Tag className={className} />;
+}
+
+/**
+ * Elegir qué compartir: una visita, un cliente o un producto, con buscador.
+ * La lista viene del servidor ya filtrada por quién pregunta —un jardinero
+ * ve sus visitas, no todas—, y sin escribir muestra lo cercano: la semana,
+ * los primeros clientes, el catálogo.
+ */
+function CompartirDialogo({
+  tipo,
+  onClose,
+  onElegir,
+}: {
+  tipo: TipoDeReferencia | null;
+  onClose: () => void;
+  onElegir: (ref: ReferenciaEnMensaje) => void;
+}) {
+  const [busqueda, setBusqueda] = useState("");
+  /**
+   * Lo cargado, con el tipo y la búsqueda a los que pertenece: si no son los
+   * de ahora, se está cargando. Sin esto, reabrir el selector para un producto
+   * mostraba la lista de visitas de la vez anterior hasta que llegaba la nueva,
+   * y el primer toque elegía una visita.
+   */
+  const [datos, setDatos] = useState<{
+    tipo: TipoDeReferencia;
+    q: string;
+    items: ReferenciaEnMensaje[];
+  } | null>(null);
+  const q = busqueda.trim();
+  const items = datos && datos.tipo === tipo && datos.q === q ? datos.items : null;
+
+  useEffect(() => {
+    if (!tipo) return;
+    let vivo = true;
+    // Un respiro antes de preguntar: si no, cada letra es una consulta.
+    const id = setTimeout(() => {
+      fetch(`/api/chats/compartibles?tipo=${tipo}&q=${encodeURIComponent(q)}`)
+        .then((r) => (r.ok ? r.json() : { items: [] }))
+        .then((d) => vivo && setDatos({ tipo, q, items: d.items }))
+        .catch(() => vivo && setDatos({ tipo, q, items: [] }));
+    }, q ? 250 : 0);
+    return () => {
+      vivo = false;
+      clearTimeout(id);
+    };
+  }, [tipo, q]);
+
+  const titulo = tipo ? `Compartir ${tipo === "visita" ? "una visita" : tipo === "cliente" ? "un cliente" : "un producto"}` : "";
+
+  return (
+    <Dialog
+      open={tipo !== null}
+      onOpenChange={(o) => {
+        if (!o) {
+          setBusqueda("");
+          onClose();
+        }
+      }}
+    >
+      <DialogContent pantallaCompletaEnMovil showCloseButton={false} className="gap-0 sm:max-w-md">
+        <div className="-mx-4 -mt-4 mb-3 flex flex-none items-center gap-1 border-b border-border px-1 py-1.5">
+          <Button variant="ghost" size="icon" aria-label="Cerrar" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
+          <DialogTitle className="flex-1 text-center text-base">{titulo}</DialogTitle>
+          <span className="h-9 w-9 flex-none" aria-hidden />
+        </div>
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={tipo === "visita" ? "Cliente o número de visita..." : "Buscar..."}
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="pl-9"
+              autoFocus
+            />
+          </div>
+          {items === null ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">Cargando...</p>
+          ) : items.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">Sin coincidencias</p>
+          ) : (
+            <ul className="divide-y rounded-xl border border-border">
+              {items.map((r) => (
+                <li key={r.id}>
+                  <button
+                    type="button"
+                    onClick={() => onElegir(r)}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-muted"
+                  >
+                    <IconoDeReferencia tipo={r.tipo} className="h-5 w-5 flex-none text-muted-foreground" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{r.titulo}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{r.detalle}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </DialogContent>
     </Dialog>
@@ -1277,6 +1463,26 @@ function Burbuja({
                   </button>
                 ))}
               </div>
+            ) : null}
+            {/* Una ficha compartida —visita, cliente, producto—: una tarjeta
+                con lo que era ese día, que lleva a la ficha de ahora. */}
+            {mensaje.referencia ? (
+              <Link
+                href={hrefDeReferencia(mensaje.referencia)}
+                className={`mb-1 flex items-center gap-2.5 rounded-lg px-2.5 py-2 ${
+                  mio ? "bg-primary-foreground/15" : "bg-muted"
+                }`}
+              >
+                <IconoDeReferencia tipo={mensaje.referencia.tipo} className="h-6 w-6 flex-none" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">
+                    {mensaje.referencia.titulo}
+                  </span>
+                  <span className="block truncate text-[11px] opacity-75">
+                    {mensaje.referencia.detalle || ETIQUETA_REFERENCIA[mensaje.referencia.tipo]}
+                  </span>
+                </span>
+              </Link>
             ) : null}
             {/* Un documento es una tarjeta con su nombre y su peso, como en
                 WhatsApp: se abre en otra pestaña. La URL de R2 es pública. */}

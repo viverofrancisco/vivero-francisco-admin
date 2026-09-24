@@ -122,14 +122,45 @@ const fotoDeMensajeSchema = z.object({
   tamano: z.number().int().min(0).optional().nullable(),
 });
 
+/** Qué se puede compartir en un chat, como un contacto en WhatsApp. */
+export const TIPOS_DE_REFERENCIA = ["visita", "cliente", "producto"] as const;
+export type TipoDeReferencia = (typeof TIPOS_DE_REFERENCIA)[number];
+
+/** Lo que manda la pantalla: qué es y cuál. El servidor arma la tarjeta. */
+export const referenciaDeMensajeSchema = z.object({
+  tipo: z.enum(TIPOS_DE_REFERENCIA),
+  id: z.string().min(1),
+});
+
 /**
- * Un mensaje es texto, fotos, o las dos cosas — pero **algo tiene que traer**:
- * un mensaje vacío ocupa un renglón en la conversación de todos y no dice nada.
+ * La tarjeta como se dibuja: el tipo y el id para abrir la ficha, y el título
+ * y el detalle copiados al mandar. La ficha puede cambiar o archivarse
+ * después; la tarjeta dice lo que se compartió ese día.
+ */
+export interface ReferenciaEnMensaje {
+  tipo: TipoDeReferencia;
+  id: string;
+  titulo: string;
+  detalle: string;
+}
+
+/** El selector de qué compartir: por tipo, con texto para buscar. */
+export const compartiblesQuerySchema = z.object({
+  tipo: z.enum(TIPOS_DE_REFERENCIA),
+  q: z.string().trim().max(100).optional(),
+});
+
+/**
+ * Un mensaje es texto, fotos, una ficha compartida, o varias de esas cosas —
+ * pero **algo tiene que traer**: un mensaje vacío ocupa un renglón en la
+ * conversación de todos y no dice nada.
  */
 export const enviarMensajeSchema = z
   .object({
     texto: z.string().max(4000).optional().nullable(),
     fotos: z.array(fotoDeMensajeSchema).max(MAX_FOTOS_POR_MENSAJE).optional(),
+    /** Una visita, un cliente o un producto, compartidos como tarjeta. */
+    referencia: referenciaDeMensajeSchema.optional().nullable(),
     /** A cuál contesta, como en WhatsApp. Tiene que ser del mismo chat. */
     respondeAId: z.string().min(1).optional().nullable(),
     /**
@@ -140,7 +171,10 @@ export const enviarMensajeSchema = z
     idCliente: z.string().min(8).max(80).optional(),
   })
   .refine(
-    (v) => Boolean(v.texto && v.texto.trim()) || (v.fotos?.length ?? 0) > 0,
+    (v) =>
+      Boolean(v.texto && v.texto.trim()) ||
+      (v.fotos?.length ?? 0) > 0 ||
+      Boolean(v.referencia),
     { message: "El mensaje no puede estar vacío." }
   );
 export type EnviarMensajeBody = z.infer<typeof enviarMensajeSchema>;
@@ -254,6 +288,8 @@ export interface MensajeDeChat {
     /** La primera foto o video del mensaje citado, para la miniatura. */
     miniatura: { url: string; tipo: string } | null;
   } | null;
+  /** Una visita, un cliente o un producto compartidos, como tarjeta. */
+  referencia?: ReferenciaEnMensaje | null;
   /** El id que le puso la pantalla al mandarlo, para reconocerlo al volver. */
   idCliente: string | null;
   estado: EstadoDeMensaje;
@@ -293,6 +329,8 @@ export interface MensajeEnCola {
   fotos: FotoEnCola[];
   /** Lo citado, copiado, para dibujar la cita antes de que el servidor conteste. */
   respondeA: MensajeDeChat["respondeA"];
+  /** La ficha compartida, con su tarjeta ya armada por el selector. */
+  referencia?: ReferenciaEnMensaje | null;
   creadoEl: string;
   estado: "pendiente" | "fallido";
   error?: string;
@@ -328,6 +366,7 @@ export function mensajeOptimista(
     autorNombre: autor.nombre,
     mio: true,
     respondeA: item.respondeA,
+    referencia: item.referencia ?? null,
     idCliente: item.idCliente,
     estado: item.estado,
     error: item.error,

@@ -235,6 +235,9 @@ export async function procesar() {
             fotos,
             respondeAId: item.respondeA?.id ?? null,
             idCliente: item.idCliente,
+            referencia: item.referencia
+              ? { tipo: item.referencia.tipo, id: item.referencia.id }
+              : null,
           }),
         });
         const data = await res.json().catch(() => ({}));
