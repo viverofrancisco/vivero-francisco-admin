@@ -1088,8 +1088,8 @@ function hrefDeReferencia(ref: ReferenciaEnMensaje, from: string): string {
 
 const CLASE_FICHA = "mb-1 flex items-center gap-2.5 rounded-lg px-2.5 py-2";
 
-/** Lo de adentro de la tarjeta de una ficha: ícono, título, detalle y, si no se puede abrir, por qué. */
-function ContenidoDeFicha({ referencia, nota }: { referencia: ReferenciaEnMensaje; nota?: string }) {
+/** Lo de adentro de la tarjeta de una ficha: ícono, título y detalle. */
+function ContenidoDeFicha({ referencia }: { referencia: ReferenciaEnMensaje }) {
   return (
     <>
       <IconoDeReferencia tipo={referencia.tipo} className="h-6 w-6 flex-none" />
@@ -1098,7 +1098,6 @@ function ContenidoDeFicha({ referencia, nota }: { referencia: ReferenciaEnMensaj
         <span className="block truncate text-[11px] opacity-75">
           {referencia.detalle || ETIQUETA_REFERENCIA[referencia.tipo]}
         </span>
-        {nota ? <span className="block truncate text-[11px] italic opacity-75">{nota}</span> : null}
       </span>
     </>
   );
@@ -1276,7 +1275,7 @@ function Burbuja({
   onMantener?: () => void;
   /** Tocar la cita lleva al mensaje citado, como en WhatsApp. */
   onIrACita?: (id: string) => void;
-  /** Falso cuando el rol de quien mira no abre esa ficha: se ve atenuada y dice por qué. */
+  /** Falso cuando el rol de quien mira no abre esa ficha: tocarla avisa en vez de navegar. */
   puedeAbrirReferencia?: boolean;
 }) {
   const mio = mensaje.mio;
@@ -1512,23 +1511,20 @@ function Burbuja({
             {/* Una ficha compartida —visita, cliente, producto—: una tarjeta
                 con lo que era ese día, que lleva a la ficha de ahora. */}
             {mensaje.referencia ? (
-              puedeAbrirReferencia ? (
-                <Link
-                  href={hrefDeReferencia(mensaje.referencia, aca)}
-                  className={`${CLASE_FICHA} ${mio ? "bg-primary-foreground/15" : "bg-muted"}`}
-                >
-                  <ContenidoDeFicha referencia={mensaje.referencia} />
-                </Link>
-              ) : (
-                // La que no se puede abrir se ve atenuada y dice por qué,
-                // en vez de llevar a una pantalla que lo diga.
-                <div className={`${CLASE_FICHA} opacity-60 ${mio ? "bg-primary-foreground/15" : "bg-muted"}`}>
-                  <ContenidoDeFicha
-                    referencia={mensaje.referencia}
-                    nota={SIN_ACCESO_A[mensaje.referencia.tipo].nota}
-                  />
-                </div>
-              )
+              <Link
+                href={hrefDeReferencia(mensaje.referencia, aca)}
+                className={`${CLASE_FICHA} ${mio ? "bg-primary-foreground/15" : "bg-muted"}`}
+                // La que no se puede abrir se ve igual que las demás y lo
+                // dice al tocarla, como un aviso: no lleva a ningún lado.
+                onClick={(e) => {
+                  if (puedeAbrirReferencia || !mensaje.referencia) return;
+                  e.preventDefault();
+                  const { titulo, detalle } = SIN_ACCESO_A[mensaje.referencia.tipo];
+                  toast.error(titulo, { description: detalle });
+                }}
+              >
+                <ContenidoDeFicha referencia={mensaje.referencia} />
+              </Link>
             ) : null}
             {/* Un documento es una tarjeta con su nombre y su peso, como en
                 WhatsApp: se abre en otra pestaña. La URL de R2 es pública. */}

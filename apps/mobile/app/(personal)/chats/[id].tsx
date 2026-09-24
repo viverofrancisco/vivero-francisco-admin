@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -21,6 +22,7 @@ import {
   mezclarConLaCola,
   nuevoIdCliente,
   puedeAbrirReferencia,
+  SIN_ACCESO_A,
   type FotoEnCola,
   type MensajeEnCola,
   type ReferenciaEnMensaje,
@@ -432,6 +434,13 @@ export default function ChatScreen() {
 
   /** Tocar una ficha compartida abre la ficha de ahora, si se puede ver. */
   function abrirReferencia(ref: ReferenciaEnMensaje) {
+    // La tarjeta se ve igual para todos; la que no se puede abrir lo dice
+    // acá, al tocarla, en vez de llevar a una pantalla que lo diga.
+    if (!puedeAbrirReferencia(usuario?.role ?? "", ref.tipo)) {
+      const { titulo, detalle } = SIN_ACCESO_A[ref.tipo];
+      Alert.alert(titulo, detalle);
+      return;
+    }
     if (ref.tipo === "visita") {
       router.push({ pathname: "/(personal)/visitas/[id]", params: { id: ref.id } });
     } else if (ref.tipo === "cliente") {
@@ -698,9 +707,6 @@ export default function ChatScreen() {
                   onReintentar={() => item.idCliente && reintentar(item.idCliente)}
                   onDescartar={() => item.idCliente && descartar(item.idCliente)}
                   onAbrirReferencia={abrirReferencia}
-                  puedeAbrirReferencia={
-                    !item.referencia || puedeAbrirReferencia(usuario?.role ?? "", item.referencia.tipo)
-                  }
                 />
               </FilaDeslizable>
             </View>

@@ -157,28 +157,24 @@ export function puedeAbrirReferencia(rol: string, tipo: TipoDeReferencia): boole
 }
 
 /**
- * Lo que se dice cuando alguien no puede abrir una ficha: la línea corta va
- * en la tarjeta del chat, el título y el detalle en la pantalla que se abre
- * en su lugar. Las mismas palabras en las dos apps.
+ * Lo que se dice cuando alguien no puede abrir una ficha: el aviso al tocar
+ * la tarjeta del chat, y la pantalla que se abre en su lugar cuando se llega
+ * por la URL. Las mismas palabras en las dos apps. La tarjeta en sí se ve
+ * como cualquier otra: atenuarla y explicarla antes de tocarla era ruido en
+ * un mensaje que casi siempre se lee y no se abre.
  */
-export const SIN_ACCESO_A: Record<
-  TipoDeReferencia,
-  { titulo: string; detalle: string; nota: string }
-> = {
+export const SIN_ACCESO_A: Record<TipoDeReferencia, { titulo: string; detalle: string }> = {
   visita: {
     titulo: "No tienes acceso a esta visita",
     detalle: "Solo la ven las personas asignadas a ella.",
-    nota: "Solo la ven las personas asignadas",
   },
   cliente: {
     titulo: "No tienes acceso a este cliente",
     detalle: "Los clientes los abre la oficina.",
-    nota: "Solo la oficina lo puede abrir",
   },
   producto: {
     titulo: "No tienes acceso a este producto",
     detalle: "El catálogo lo abre la oficina.",
-    nota: "Solo la oficina lo puede abrir",
   },
 };
 
