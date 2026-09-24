@@ -1,17 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
-  Image,
   Linking,
   StyleSheet,
   View,
   useWindowDimensions,
 } from "react-native";
+import { Image } from "expo-image";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { extensionDe, tamanoLegible } from "@vivero/shared";
+import {
+  extensionDe,
+  tamanoLegible,
+  urlParaMiniatura,
+  urlParaVerGrande,
+} from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
@@ -161,7 +166,9 @@ export default function MediosDelChatScreen() {
           }
           renderItem={({ item }) => (
             <PressableScale
-              onPress={() => setViendo({ url: item.url, tipo: item.tipo })}
+              onPress={() =>
+                setViendo({ url: urlParaVerGrande(item, width), tipo: item.tipo })
+              }
               style={[styles.celda, { width: lado, height: lado }]}
             >
               {item.tipo === "video" ? (
@@ -169,7 +176,12 @@ export default function MediosDelChatScreen() {
                   <Ionicons name="play" size={28} color="#fff" />
                 </View>
               ) : (
-                <Image source={{ uri: item.url }} style={{ width: lado, height: lado }} />
+                <Image
+                  source={{ uri: urlParaMiniatura(item) }}
+                  style={{ width: lado, height: lado }}
+                  contentFit="cover"
+                  cachePolicy="disk"
+                />
               )}
             </PressableScale>
           )}

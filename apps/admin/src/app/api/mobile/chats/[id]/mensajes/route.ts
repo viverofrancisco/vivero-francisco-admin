@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { generarVariantesDeMensaje } from "@/lib/chats/variantes";
 import { requireMobileUser, isMobileUser } from "@/lib/mobile/auth";
 import { enviarMensajeSchema, mensajesQuerySchema } from "@vivero/shared";
 import { enviarMensaje, listMensajes } from "@/lib/services/chat.service";
@@ -52,6 +53,11 @@ export async function POST(request: Request, { params }: Params) {
       id,
       parsed.data
     );
+    // Las tres versiones de cada foto, **después** de contestar: el ✓ no
+    // espera a que el servidor baje y achique nada.
+    if (mensaje.fotos.some((f) => f.tipo === "imagen")) {
+      after(() => generarVariantesDeMensaje(mensaje.id));
+    }
     return NextResponse.json(mensaje, { status: 201 });
   } catch (error) {
     return serviceErrorResponse(error);

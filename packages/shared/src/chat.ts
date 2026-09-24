@@ -204,10 +204,32 @@ export const mediosDelChatQuerySchema = z.object({
 export type MediosDelChatQuery = z.infer<typeof mediosDelChatQuerySchema>;
 
 /** Un archivo mandado en el chat, para la grilla. */
-export interface ArchivoDelChat {
+/** Una foto con sus versiones; `null` mientras no estén, y siempre para videos y documentos. */
+export interface ConVersiones {
+  url: string;
+  urlMovil?: string | null;
+  urlTablet?: string | null;
+  urlEscritorio?: string | null;
+}
+
+/** La versión para una burbuja o una grilla: la chica, o el original si aún no está. */
+export function urlParaMiniatura(f: ConVersiones): string {
+  return f.urlMovil ?? f.url;
+}
+
+/**
+ * La versión para ver la foto grande, según el ancho de la pantalla que la
+ * abre: en un teléfono o una tablet la de 1024; en un escritorio la de 2048.
+ * El original si todavía no están.
+ */
+export function urlParaVerGrande(f: ConVersiones, anchoDePantalla: number): string {
+  if (anchoDePantalla >= 1024) return f.urlEscritorio ?? f.urlTablet ?? f.url;
+  return f.urlTablet ?? f.url;
+}
+
+export interface ArchivoDelChat extends ConVersiones {
   id: string;
   mensajeId: string;
-  url: string;
   tipo: string;
   nombre: string | null;
   tamano?: number | null;
@@ -273,7 +295,7 @@ export interface MensajeDeChat {
   id: string;
   texto: string | null;
   /** Los adjuntos: fotos, videos y documentos. Se llaman `fotos` desde antes de que hubiera otros. */
-  fotos: { id: string; url: string; tipo: string; nombre?: string | null; tamano?: number | null }[];
+  fotos: (ConVersiones & { id: string; tipo: string; nombre?: string | null; tamano?: number | null })[];
   createdAt: string;
   borrado: boolean;
   autorId: string | null;

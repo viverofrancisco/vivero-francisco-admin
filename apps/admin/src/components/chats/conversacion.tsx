@@ -48,6 +48,8 @@ import {
   nuevoIdCliente,
   tamanoLegible,
   tipoDeArchivo,
+  urlParaMiniatura,
+  urlParaVerGrande,
   type EstadoDeMensaje,
   type InfoDeMensaje,
   type MensajeDeChat,
@@ -1456,10 +1458,14 @@ function Burbuja({
                   <button
                     key={f.id}
                     type="button"
-                    onClick={() => onVerFoto?.({ url: f.url, tipo: f.tipo })}
+                    // La chica en la burbuja, y la que le toca a esta pantalla
+                    // al abrirla: 1024 en un teléfono, 2048 en un escritorio.
+                    onClick={() =>
+                      onVerFoto?.({ url: urlParaVerGrande(f, window.innerWidth), tipo: f.tipo })
+                    }
                     className="overflow-hidden rounded-lg"
                   >
-                    <Miniatura url={f.url} tipo={f.tipo} className="h-40 w-full" />
+                    <Miniatura url={urlParaMiniatura(f)} tipo={f.tipo} className="h-40 w-full" />
                   </button>
                 ))}
               </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, Image, RefreshControl, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -193,6 +194,8 @@ export default function ChatsListScreen() {
                       <Image
                         source={{ uri: m.foto.url }}
                         style={styles.fotoEncontrada}
+                        contentFit="cover"
+                        cachePolicy="disk"
                       />
                     ) : (
                       <AvatarDeChat imagenUrl={m.chatImagenUrl} lado={40} />

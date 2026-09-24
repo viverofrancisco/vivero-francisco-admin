@@ -210,3 +210,21 @@ Dos reglas para estos scripts:
   cambiar el precio.
 - **Fechas sin hora** (`fechaProgramada`, `periodoInicio`) con `@db.Date`, y se
   construyen en UTC (`Date.UTC(...)`) para que no se corran por zona horaria.
+
+## Si `migrate deploy` se queda esperando un candado (P1002)
+
+`prisma migrate` toma un *advisory lock* de Postgres (`pg_advisory_lock(72707369)`) antes de aplicar nada, y lo suelta al terminar. El `DATABASE_URL` del `.env` apunta al **pooler** de Neon (PgBouncer), y un advisory lock es de la **sesión**: si un `migrate deploy` se corta a mitad de camino —una conexión que se cae, un proceso matado—, el candado puede quedar en una sesión del pool que después le toca a otro cliente, por ejemplo al servidor de desarrollo, que la mantiene abierta y sin saberlo lo sigue teniendo. El siguiente `migrate deploy` da `P1002: Timed out trying to acquire a postgres advisory lock` y nada de lo que se reintente lo destraba.
+
+Para verlo y soltarlo, desde `apps/admin`:
+
+```ts
+// npx tsx --env-file=.env scripts/_lock.tmp.ts
+import { prisma } from "@/lib/prisma";
+const filas = await prisma.$queryRawUnsafe<{ pid: number; state: string }[]>(
+  `SELECT a.pid, a.state FROM pg_locks l JOIN pg_stat_activity a ON a.pid = l.pid
+   WHERE l.locktype = 'advisory' AND l.objid = 72707369`
+);
+for (const f of filas) await prisma.$queryRawUnsafe(`SELECT pg_terminate_backend(${f.pid})`);
+```
+
+La sesión `idle` con el candado es la que hay que terminar (la `active` que dice `SELECT pg_advisory_lock` es el propio `migrate` esperando, y a esa Postgres no deja matarla desde otra sesión del mismo usuario mientras espera). Terminada la idle, el `migrate deploy` siguiente pasa. Pasó el 24 de septiembre de 2026 dos veces seguidas, con el dev server abierto.

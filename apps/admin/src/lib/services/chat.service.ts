@@ -293,6 +293,9 @@ export async function mediosDelChat(
         tipo: true,
         nombre: true,
         tamano: true,
+        urlMovil: true,
+        urlTablet: true,
+        urlEscritorio: true,
         createdAt: true,
       },
     });
@@ -515,7 +518,18 @@ const MENSAJE_SELECT = {
   referencia: true,
   // Quiénes lo leyeron: alcanza con los ids para decir si lo leyeron todos.
   lecturas: { select: { userId: true } },
-  adjuntos: { select: { id: true, url: true, tipo: true, nombre: true, tamano: true } },
+  adjuntos: {
+    select: {
+      id: true,
+      url: true,
+      tipo: true,
+      nombre: true,
+      tamano: true,
+      urlMovil: true,
+      urlTablet: true,
+      urlEscritorio: true,
+    },
+  },
   respondeA: {
     select: {
       id: true,
@@ -524,7 +538,7 @@ const MENSAJE_SELECT = {
       deletedAt: true,
       _count: { select: { adjuntos: true } },
       // La primera, para la miniatura de la cita: "📷 Foto" no dice cuál.
-      adjuntos: { take: 1, select: { url: true, tipo: true } },
+      adjuntos: { take: 1, select: { url: true, urlMovil: true, tipo: true } },
     },
   },
 } as const;
@@ -627,14 +641,23 @@ type MensajeCrudo = {
   idCliente: string | null;
   referencia: unknown;
   lecturas: { userId: string }[];
-  adjuntos: { id: string; url: string; tipo: string; nombre: string | null; tamano: number | null }[];
+  adjuntos: {
+    id: string;
+    url: string;
+    tipo: string;
+    nombre: string | null;
+    tamano: number | null;
+    urlMovil: string | null;
+    urlTablet: string | null;
+    urlEscritorio: string | null;
+  }[];
   respondeA: {
     id: string;
     texto: string | null;
     autorNombre: string;
     deletedAt: Date | null;
     _count: { adjuntos: number };
-    adjuntos: { url: string; tipo: string }[];
+    adjuntos: { url: string; urlMovil: string | null; tipo: string }[];
   } | null;
 };
 
@@ -675,9 +698,13 @@ function mensajeParaPantalla(
           texto: m.respondeA.deletedAt ? null : m.respondeA.texto,
           borrado: m.respondeA.deletedAt !== null,
           fotos: m.respondeA.deletedAt ? 0 : m.respondeA._count.adjuntos,
+          // La chica, si ya está: es una miniatura de 36 px.
           miniatura:
             !m.respondeA.deletedAt && m.respondeA.adjuntos[0]
-              ? m.respondeA.adjuntos[0]
+              ? {
+                  url: m.respondeA.adjuntos[0].urlMovil ?? m.respondeA.adjuntos[0].url,
+                  tipo: m.respondeA.adjuntos[0].tipo,
+                }
               : null,
         }
       : null,
@@ -1103,7 +1130,7 @@ export async function buscarMensajes(
       autorId: true,
       autorNombre: true,
       chat: { select: { id: true, nombre: true, imagenUrl: true } },
-      adjuntos: { select: { id: true, url: true, nombre: true, tipo: true } },
+      adjuntos: { select: { id: true, url: true, urlMovil: true, nombre: true, tipo: true } },
     },
   });
 
@@ -1123,7 +1150,13 @@ export async function buscarMensajes(
       texto: m.texto,
       createdAt: m.createdAt,
       foto: coincide
-        ? { id: coincide.id, url: coincide.url, nombre: coincide.nombre, tipo: coincide.tipo }
+        ? {
+            id: coincide.id,
+            // La chica para el renglón del resultado, si ya está.
+            url: coincide.urlMovil ?? coincide.url,
+            nombre: coincide.nombre,
+            tipo: coincide.tipo,
+          }
         : null,
       /** Cuántas fotos trae el mensaje, para decirlo cuando no hay texto. */
       fotos: m.adjuntos.length,

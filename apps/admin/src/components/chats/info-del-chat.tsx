@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import {
   extensionDe,
   tamanoLegible,
+  urlParaMiniatura,
+  urlParaVerGrande,
   type ArchivoDelChat,
   type EnlaceDelChat,
 } from "@vivero/shared";
@@ -423,7 +425,9 @@ function VistaMedios({
                   <button
                     key={a.id}
                     type="button"
-                    onClick={() => onVerFoto({ url: a.url, tipo: a.tipo })}
+                    onClick={() =>
+                      onVerFoto({ url: urlParaVerGrande(a, window.innerWidth), tipo: a.tipo })
+                    }
                     className="relative aspect-square overflow-hidden bg-muted"
                     aria-label={a.nombre ?? "Ver"}
                   >
@@ -433,7 +437,7 @@ function VistaMedios({
                       </span>
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={a.url} alt="" className="h-full w-full object-cover" />
+                      <img src={urlParaMiniatura(a)} alt="" className="h-full w-full object-cover" />
                     )}
                   </button>
                 ))}

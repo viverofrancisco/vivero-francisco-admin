@@ -1,4 +1,5 @@
-import { Image, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { tema } from "@/lib/tema";
 
@@ -15,7 +16,14 @@ export function AvatarDeChat({
 }) {
   const caja = { width: lado, height: lado, borderRadius: lado / 2 };
   if (imagenUrl) {
-    return <Image source={{ uri: imagenUrl }} style={[styles.foto, caja]} />;
+    return (
+      <Image
+        source={{ uri: imagenUrl }}
+        style={[styles.foto, caja]}
+        contentFit="cover"
+        cachePolicy="disk"
+      />
+    );
   }
   return (
     <View style={[styles.vacio, caja]}>

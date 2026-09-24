@@ -47,6 +47,9 @@ export type ChatAdjuntoMinAggregateOutputType = {
   nombre: string | null
   tipo: string | null
   tamano: number | null
+  urlMovil: string | null
+  urlTablet: string | null
+  urlEscritorio: string | null
   createdAt: Date | null
 }
 
@@ -58,6 +61,9 @@ export type ChatAdjuntoMaxAggregateOutputType = {
   nombre: string | null
   tipo: string | null
   tamano: number | null
+  urlMovil: string | null
+  urlTablet: string | null
+  urlEscritorio: string | null
   createdAt: Date | null
 }
 
@@ -69,6 +75,9 @@ export type ChatAdjuntoCountAggregateOutputType = {
   nombre: number
   tipo: number
   tamano: number
+  urlMovil: number
+  urlTablet: number
+  urlEscritorio: number
   createdAt: number
   _all: number
 }
@@ -90,6 +99,9 @@ export type ChatAdjuntoMinAggregateInputType = {
   nombre?: true
   tipo?: true
   tamano?: true
+  urlMovil?: true
+  urlTablet?: true
+  urlEscritorio?: true
   createdAt?: true
 }
 
@@ -101,6 +113,9 @@ export type ChatAdjuntoMaxAggregateInputType = {
   nombre?: true
   tipo?: true
   tamano?: true
+  urlMovil?: true
+  urlTablet?: true
+  urlEscritorio?: true
   createdAt?: true
 }
 
@@ -112,6 +127,9 @@ export type ChatAdjuntoCountAggregateInputType = {
   nombre?: true
   tipo?: true
   tamano?: true
+  urlMovil?: true
+  urlTablet?: true
+  urlEscritorio?: true
   createdAt?: true
   _all?: true
 }
@@ -210,6 +228,9 @@ export type ChatAdjuntoGroupByOutputType = {
   nombre: string | null
   tipo: string
   tamano: number | null
+  urlMovil: string | null
+  urlTablet: string | null
+  urlEscritorio: string | null
   createdAt: Date
   _count: ChatAdjuntoCountAggregateOutputType | null
   _avg: ChatAdjuntoAvgAggregateOutputType | null
@@ -244,6 +265,9 @@ export type ChatAdjuntoWhereInput = {
   nombre?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
   tipo?: Prisma.StringFilter<"ChatAdjunto"> | string
   tamano?: Prisma.IntNullableFilter<"ChatAdjunto"> | number | null
+  urlMovil?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
+  urlTablet?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
+  urlEscritorio?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChatAdjunto"> | Date | string
   mensaje?: Prisma.XOR<Prisma.ChatMensajeScalarRelationFilter, Prisma.ChatMensajeWhereInput>
 }
@@ -256,6 +280,9 @@ export type ChatAdjuntoOrderByWithRelationInput = {
   nombre?: Prisma.SortOrderInput | Prisma.SortOrder
   tipo?: Prisma.SortOrder
   tamano?: Prisma.SortOrderInput | Prisma.SortOrder
+  urlMovil?: Prisma.SortOrderInput | Prisma.SortOrder
+  urlTablet?: Prisma.SortOrderInput | Prisma.SortOrder
+  urlEscritorio?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   mensaje?: Prisma.ChatMensajeOrderByWithRelationInput
 }
@@ -271,6 +298,9 @@ export type ChatAdjuntoWhereUniqueInput = Prisma.AtLeast<{
   nombre?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
   tipo?: Prisma.StringFilter<"ChatAdjunto"> | string
   tamano?: Prisma.IntNullableFilter<"ChatAdjunto"> | number | null
+  urlMovil?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
+  urlTablet?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
+  urlEscritorio?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChatAdjunto"> | Date | string
   mensaje?: Prisma.XOR<Prisma.ChatMensajeScalarRelationFilter, Prisma.ChatMensajeWhereInput>
 }, "id">
@@ -283,6 +313,9 @@ export type ChatAdjuntoOrderByWithAggregationInput = {
   nombre?: Prisma.SortOrderInput | Prisma.SortOrder
   tipo?: Prisma.SortOrder
   tamano?: Prisma.SortOrderInput | Prisma.SortOrder
+  urlMovil?: Prisma.SortOrderInput | Prisma.SortOrder
+  urlTablet?: Prisma.SortOrderInput | Prisma.SortOrder
+  urlEscritorio?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ChatAdjuntoCountOrderByAggregateInput
   _avg?: Prisma.ChatAdjuntoAvgOrderByAggregateInput
@@ -302,6 +335,9 @@ export type ChatAdjuntoScalarWhereWithAggregatesInput = {
   nombre?: Prisma.StringNullableWithAggregatesFilter<"ChatAdjunto"> | string | null
   tipo?: Prisma.StringWithAggregatesFilter<"ChatAdjunto"> | string
   tamano?: Prisma.IntNullableWithAggregatesFilter<"ChatAdjunto"> | number | null
+  urlMovil?: Prisma.StringNullableWithAggregatesFilter<"ChatAdjunto"> | string | null
+  urlTablet?: Prisma.StringNullableWithAggregatesFilter<"ChatAdjunto"> | string | null
+  urlEscritorio?: Prisma.StringNullableWithAggregatesFilter<"ChatAdjunto"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ChatAdjunto"> | Date | string
 }
 
@@ -312,6 +348,9 @@ export type ChatAdjuntoCreateInput = {
   nombre?: string | null
   tipo?: string
   tamano?: number | null
+  urlMovil?: string | null
+  urlTablet?: string | null
+  urlEscritorio?: string | null
   createdAt?: Date | string
   mensaje: Prisma.ChatMensajeCreateNestedOneWithoutAdjuntosInput
 }
@@ -324,6 +363,9 @@ export type ChatAdjuntoUncheckedCreateInput = {
   nombre?: string | null
   tipo?: string
   tamano?: number | null
+  urlMovil?: string | null
+  urlTablet?: string | null
+  urlEscritorio?: string | null
   createdAt?: Date | string
 }
 
@@ -334,6 +376,9 @@ export type ChatAdjuntoUpdateInput = {
   nombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   tamano?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  urlMovil?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlTablet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlEscritorio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mensaje?: Prisma.ChatMensajeUpdateOneRequiredWithoutAdjuntosNestedInput
 }
@@ -346,6 +391,9 @@ export type ChatAdjuntoUncheckedUpdateInput = {
   nombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   tamano?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  urlMovil?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlTablet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlEscritorio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -357,6 +405,9 @@ export type ChatAdjuntoCreateManyInput = {
   nombre?: string | null
   tipo?: string
   tamano?: number | null
+  urlMovil?: string | null
+  urlTablet?: string | null
+  urlEscritorio?: string | null
   createdAt?: Date | string
 }
 
@@ -367,6 +418,9 @@ export type ChatAdjuntoUpdateManyMutationInput = {
   nombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   tamano?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  urlMovil?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlTablet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlEscritorio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -378,6 +432,9 @@ export type ChatAdjuntoUncheckedUpdateManyInput = {
   nombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   tamano?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  urlMovil?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlTablet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlEscritorio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -399,6 +456,9 @@ export type ChatAdjuntoCountOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   tamano?: Prisma.SortOrder
+  urlMovil?: Prisma.SortOrder
+  urlTablet?: Prisma.SortOrder
+  urlEscritorio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -414,6 +474,9 @@ export type ChatAdjuntoMaxOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   tamano?: Prisma.SortOrder
+  urlMovil?: Prisma.SortOrder
+  urlTablet?: Prisma.SortOrder
+  urlEscritorio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -425,6 +488,9 @@ export type ChatAdjuntoMinOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   tamano?: Prisma.SortOrder
+  urlMovil?: Prisma.SortOrder
+  urlTablet?: Prisma.SortOrder
+  urlEscritorio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -481,6 +547,9 @@ export type ChatAdjuntoCreateWithoutMensajeInput = {
   nombre?: string | null
   tipo?: string
   tamano?: number | null
+  urlMovil?: string | null
+  urlTablet?: string | null
+  urlEscritorio?: string | null
   createdAt?: Date | string
 }
 
@@ -491,6 +560,9 @@ export type ChatAdjuntoUncheckedCreateWithoutMensajeInput = {
   nombre?: string | null
   tipo?: string
   tamano?: number | null
+  urlMovil?: string | null
+  urlTablet?: string | null
+  urlEscritorio?: string | null
   createdAt?: Date | string
 }
 
@@ -531,6 +603,9 @@ export type ChatAdjuntoScalarWhereInput = {
   nombre?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
   tipo?: Prisma.StringFilter<"ChatAdjunto"> | string
   tamano?: Prisma.IntNullableFilter<"ChatAdjunto"> | number | null
+  urlMovil?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
+  urlTablet?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
+  urlEscritorio?: Prisma.StringNullableFilter<"ChatAdjunto"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ChatAdjunto"> | Date | string
 }
 
@@ -541,6 +616,9 @@ export type ChatAdjuntoCreateManyMensajeInput = {
   nombre?: string | null
   tipo?: string
   tamano?: number | null
+  urlMovil?: string | null
+  urlTablet?: string | null
+  urlEscritorio?: string | null
   createdAt?: Date | string
 }
 
@@ -551,6 +629,9 @@ export type ChatAdjuntoUpdateWithoutMensajeInput = {
   nombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   tamano?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  urlMovil?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlTablet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlEscritorio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -561,6 +642,9 @@ export type ChatAdjuntoUncheckedUpdateWithoutMensajeInput = {
   nombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   tamano?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  urlMovil?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlTablet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlEscritorio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -571,6 +655,9 @@ export type ChatAdjuntoUncheckedUpdateManyWithoutMensajeInput = {
   nombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   tamano?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  urlMovil?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlTablet?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  urlEscritorio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -584,6 +671,9 @@ export type ChatAdjuntoSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   nombre?: boolean
   tipo?: boolean
   tamano?: boolean
+  urlMovil?: boolean
+  urlTablet?: boolean
+  urlEscritorio?: boolean
   createdAt?: boolean
   mensaje?: boolean | Prisma.ChatMensajeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["chatAdjunto"]>
@@ -596,6 +686,9 @@ export type ChatAdjuntoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   nombre?: boolean
   tipo?: boolean
   tamano?: boolean
+  urlMovil?: boolean
+  urlTablet?: boolean
+  urlEscritorio?: boolean
   createdAt?: boolean
   mensaje?: boolean | Prisma.ChatMensajeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["chatAdjunto"]>
@@ -608,6 +701,9 @@ export type ChatAdjuntoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   nombre?: boolean
   tipo?: boolean
   tamano?: boolean
+  urlMovil?: boolean
+  urlTablet?: boolean
+  urlEscritorio?: boolean
   createdAt?: boolean
   mensaje?: boolean | Prisma.ChatMensajeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["chatAdjunto"]>
@@ -620,10 +716,13 @@ export type ChatAdjuntoSelectScalar = {
   nombre?: boolean
   tipo?: boolean
   tamano?: boolean
+  urlMovil?: boolean
+  urlTablet?: boolean
+  urlEscritorio?: boolean
   createdAt?: boolean
 }
 
-export type ChatAdjuntoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mensajeId" | "key" | "url" | "nombre" | "tipo" | "tamano" | "createdAt", ExtArgs["result"]["chatAdjunto"]>
+export type ChatAdjuntoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mensajeId" | "key" | "url" | "nombre" | "tipo" | "tamano" | "urlMovil" | "urlTablet" | "urlEscritorio" | "createdAt", ExtArgs["result"]["chatAdjunto"]>
 export type ChatAdjuntoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mensaje?: boolean | Prisma.ChatMensajeDefaultArgs<ExtArgs>
 }
@@ -661,6 +760,15 @@ export type $ChatAdjuntoPayload<ExtArgs extends runtime.Types.Extensions.Interna
      * Bytes, para decir "1,7 MB" al lado de un documento. Las fotos no lo necesitan.
      */
     tamano: number | null
+    /**
+     * *
+     *    * Las tres versiones de una foto —480, 1024 y 2048 px de lado mayor— que se
+     *    * escriben después de mandarla (`lib/chats/variantes.ts`). `null` hasta que
+     *    * están, y siempre para videos y documentos: ahí se usa `url`.
+     */
+    urlMovil: string | null
+    urlTablet: string | null
+    urlEscritorio: string | null
     createdAt: Date
   }, ExtArgs["result"]["chatAdjunto"]>
   composites: {}
@@ -1093,6 +1201,9 @@ export interface ChatAdjuntoFieldRefs {
   readonly nombre: Prisma.FieldRef<"ChatAdjunto", 'String'>
   readonly tipo: Prisma.FieldRef<"ChatAdjunto", 'String'>
   readonly tamano: Prisma.FieldRef<"ChatAdjunto", 'Int'>
+  readonly urlMovil: Prisma.FieldRef<"ChatAdjunto", 'String'>
+  readonly urlTablet: Prisma.FieldRef<"ChatAdjunto", 'String'>
+  readonly urlEscritorio: Prisma.FieldRef<"ChatAdjunto", 'String'>
   readonly createdAt: Prisma.FieldRef<"ChatAdjunto", 'DateTime'>
 }
     

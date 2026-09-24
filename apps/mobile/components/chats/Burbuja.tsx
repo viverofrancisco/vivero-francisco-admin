@@ -1,9 +1,12 @@
-import { Image, Linking, StyleSheet, View } from "react-native";
+import { Dimensions, Linking, StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import {
   extensionDe,
   tamanoLegible,
+  urlParaMiniatura,
+  urlParaVerGrande,
   type ReferenciaEnMensaje,
   type TipoDeReferencia,
 } from "@vivero/shared";
@@ -159,7 +162,14 @@ export function Burbuja({
               {medios.map((f) => (
                 <PressableScale
                   key={f.id}
-                  onPress={() => onVerFoto?.({ url: f.url, tipo: f.tipo })}
+                  // La chica en la burbuja, y la de 1024 al abrirla: la de
+                  // 2048 es para un escritorio, no para un teléfono.
+                  onPress={() =>
+                    onVerFoto?.({
+                      url: urlParaVerGrande(f, Dimensions.get("window").width),
+                      tipo: f.tipo,
+                    })
+                  }
                   onLongPress={mantener}
                   style={styles.fotoCaja}
                 >
@@ -176,9 +186,14 @@ export function Burbuja({
                       <Ionicons name="play" size={36} color="#fff" />
                     </View>
                   ) : (
+                    // `expo-image` y no la `Image` de RN: guarda en disco lo
+                    // que bajó, así la foto de ayer no se vuelve a pedir.
                     <Image
-                      source={{ uri: f.url }}
+                      source={{ uri: urlParaMiniatura(f) }}
                       style={medios.length > 1 ? styles.fotoChica : styles.fotoSola}
+                      contentFit="cover"
+                      cachePolicy="disk"
+                      transition={120}
                     />
                   )}
                 </PressableScale>
@@ -300,7 +315,12 @@ export function MiniaturaAdjunto({
     );
   }
   return (
-    <Image source={{ uri: url }} style={[styles.miniaturaCita, caja]} />
+    <Image
+      source={{ uri: url }}
+      style={[styles.miniaturaCita, caja]}
+      contentFit="cover"
+      cachePolicy="disk"
+    />
   );
 }
 
