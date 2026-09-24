@@ -356,15 +356,6 @@ export function ClientesTable({
               </button>
               <span className="flex-1" />
               <div className="flex items-center gap-2">
-                {devTools && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setConfirm("hard")}
-                  >
-                    Eliminar permanentemente
-                  </Button>
-                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -388,6 +379,16 @@ export function ClientesTable({
                 >
                   Archivar
                 </Button>
+                {/* Lo irreversible va al final, lejos de lo que se toca seguido. */}
+                {devTools && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setConfirm("hard")}
+                  >
+                    Eliminar permanentemente
+                  </Button>
+                )}
               </div>
             </div>
           ) : null}
