@@ -200,6 +200,7 @@ export const ClienteScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
+  inactivoDesde: 'inactivoDesde',
   createdById: 'createdById',
   updatedById: 'updatedById',
   userId: 'userId'

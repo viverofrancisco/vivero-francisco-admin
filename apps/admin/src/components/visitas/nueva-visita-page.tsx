@@ -44,6 +44,8 @@ interface Cliente {
   nombre: string;
   apellido?: string | null;
   empresa?: string | null;
+  /** Marcado como inactivo: se ve, atenuado, y no se puede elegir. */
+  inactivoDesde: string | null;
   /** Dónde se le trabaja. Casi siempre una; a veces dos o tres. */
   propiedades: { id: string; nombre: string; direccion: string | null }[];
   suscripciones: SuscripcionOpcion[];
@@ -345,9 +347,13 @@ export function NuevaVisitaPage({
               <CustomSelect
                 value={clienteId}
                 onChange={elegirCliente}
+                // El inactivo se ve, atenuado y sin poder elegirse: saberlo
+                // ahí mismo es mejor que no encontrarlo.
                 options={clientes.map((c) => ({
                   value: c.id,
                   label: nombreCliente(c),
+                  disabled: c.inactivoDesde !== null,
+                  hint: c.inactivoDesde !== null ? "Inactivo" : undefined,
                 }))}
                 placeholder="Seleccionar cliente"
                 searchable

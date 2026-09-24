@@ -269,6 +269,11 @@ model Cliente {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   deletedAt             DateTime?
+  /// Marcado como inactivo desde cuándo; `null` = activo. Un inactivo sigue
+  /// en las listas y conserva todo su historial, pero sale atenuado en los
+  /// selectores y no se le agendan visitas hasta reactivarlo. Distinto de
+  /// archivar (`deletedAt`), que lo saca de todos lados.
+  inactivoDesde         DateTime?
 
   createdById String?
   updatedById String?

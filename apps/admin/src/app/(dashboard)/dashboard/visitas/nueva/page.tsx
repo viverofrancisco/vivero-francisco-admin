@@ -25,6 +25,7 @@ export default async function NuevaVisitaRoute({
         nombre: true,
         apellido: true,
         empresa: true,
+        inactivoDesde: true,
         // Dónde se le trabaja. Con una sola, el formulario la elige solo.
         propiedades: {
           where: { deletedAt: null },
@@ -74,6 +75,7 @@ export default async function NuevaVisitaRoute({
   ]);
 
   const clientesSerialized = clientes.map((c) => ({
+    inactivoDesde: c.inactivoDesde?.toISOString() ?? null,
     id: c.id,
     nombre: c.nombre,
     apellido: c.apellido,

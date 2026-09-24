@@ -1339,9 +1339,16 @@ export async function createVisitasBatch(
 
   const cliente = await prisma.cliente.findFirst({
     where: { id: payload.clienteId, deletedAt: null },
-    select: { id: true },
+    select: { id: true, inactivoDesde: true },
   });
   if (!cliente) throw new NotFoundError("Cliente no encontrado");
+  // El selector ya lo muestra atenuado; esto es para que la regla no dependa
+  // de la pantalla.
+  if (cliente.inactivoDesde) {
+    throw new ValidationError(
+      "Este cliente está marcado como inactivo. Reactívalo desde su ficha para agendarle visitas."
+    );
+  }
 
   const propiedadId = await validarPropiedadDelCliente(
     payload.propiedadId,

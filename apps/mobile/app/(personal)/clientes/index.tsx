@@ -261,9 +261,20 @@ export default function ClientesListScreen() {
                   <Text style={styles.avatarTexto}>{iniciales}</Text>
                 </View>
                 <View style={styles.texto}>
-                  <Text variant="bodyLarge" style={styles.nombre} numberOfLines={1}>
-                    {nombre}
-                  </Text>
+                  <View style={styles.nombreFila}>
+                    <Text
+                      variant="bodyLarge"
+                      style={[styles.nombre, styles.nombreCrece]}
+                      numberOfLines={1}
+                    >
+                      {nombre}
+                    </Text>
+                    {item.inactivoDesde ? (
+                      <View style={styles.inactivo}>
+                        <Text style={styles.inactivoTexto}>Inactivo</Text>
+                      </View>
+                    ) : null}
+                  </View>
                   <Text variant="bodySmall" style={styles.resumen} numberOfLines={1}>
                     {resumenDeCliente(item)}
                   </Text>
@@ -325,6 +336,15 @@ const styles = StyleSheet.create({
   texto: { flex: 1, gap: 1 },
   filaMarcada: { backgroundColor: tema.verde50 },
   nombre: { color: tema.texto, fontWeight: "600" },
+  nombreFila: { flexDirection: "row", alignItems: "center", gap: 6 },
+  nombreCrece: { flexShrink: 1 },
+  inactivo: {
+    backgroundColor: tema.lienzo,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+  },
+  inactivoTexto: { fontSize: 11, fontWeight: "600", color: tema.texto2 },
   resumen: { color: tema.texto3 },
   /* Claro sobre oscuro, nunca el rojo de la casa: sobre la pastilla oscura
      desaparece. El rojo lo pone la confirmación, que es donde se decide. */

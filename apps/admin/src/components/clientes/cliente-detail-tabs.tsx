@@ -23,6 +23,12 @@ import {
 } from "@/components/clientes/datos-facturacion-card";
 import { Badge } from "@/components/ui/badge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   estadoLabel as estadoOrdenLabel,
   estadoVariant as estadoOrdenVariant,
 } from "@/components/ordenes/formato";
@@ -54,6 +60,7 @@ import {
   ArrowRight,
   Pencil,
   Eye,
+  MoreVertical,
 } from "lucide-react";
 
 interface ProductoCatalogo {
@@ -98,6 +105,8 @@ interface ClienteData {
   recibirRecordatorios: boolean;
   recibirConfirmaciones: boolean;
   createdAt: string;
+  /** Marcado como inactivo desde cuándo; `null` = activo. */
+  inactivoDesde: string | null;
 }
 
 interface ClienteDetailTabsProps {
@@ -160,6 +169,31 @@ export function ClienteDetailTabs({
   // Las pantallas de suscripción vuelven acá, no siempre a su propia lista.
   const volverAca = encodeURIComponent(usePathname());
   const [cardsEditing, setCardsEditing] = useState(false);
+  const [cambiandoActividad, setCambiandoActividad] = useState(false);
+  /**
+   * Inactivo: no se le agendan visitas y sale atenuado en los selectores,
+   * con todo su historial en su lugar. Reactivar es lo mismo al revés.
+   */
+  async function cambiarActividad(inactivo: boolean) {
+    setCambiandoActividad(true);
+    try {
+      const res = await fetch(`/api/clientes/${cliente.id}/inactivo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inactivo }),
+      });
+      if (!res.ok) {
+        const cuerpo = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(cuerpo?.error ?? "No se pudo guardar");
+      }
+      toast.success(inactivo ? "Cliente marcado como inactivo" : "Cliente reactivado");
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo guardar");
+    } finally {
+      setCambiandoActividad(false);
+    }
+  }
   const [recibirRecordatorios, setRecibirRecordatorios] = useState(
     cliente.recibirRecordatorios
   );
@@ -267,6 +301,11 @@ export function ClienteDetailTabs({
               <h1 className="text-xl font-extrabold tracking-tight truncate">
                 {nombreCompleto}
               </h1>
+              {cliente.inactivoDesde ? (
+                <Badge variant="secondary" className="flex-none">
+                  Inactivo
+                </Badge>
+              ) : null}
               {/* El sector es de cada propiedad: con dos casas en dos sectores,
                   uno solo al lado del nombre sería mentira la mitad del
                   tiempo. Se lee en la tarjeta de Propiedades. */}
@@ -294,14 +333,32 @@ export function ClienteDetailTabs({
               </Button>
             </div>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCardsEditing(true)}
-            >
-              <Pencil className="mr-1.5 h-3.5 w-3.5" />
-              Editar
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCardsEditing(true)}
+              >
+                <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                Editar
+              </Button>
+              {/* Lo que se hace una vez por cliente va detrás del ⋯, como en
+                  la ficha del personal. */}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="outline" size="icon-sm" aria-label="Acciones" disabled={cambiandoActividad} />
+                  }
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-48">
+                  <DropdownMenuItem onClick={() => cambiarActividad(!cliente.inactivoDesde)}>
+                    {cliente.inactivoDesde ? "Reactivar cliente" : "Marcar como inactivo"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
         </div>
       </div>

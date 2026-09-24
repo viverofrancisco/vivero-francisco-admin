@@ -134,6 +134,7 @@ export default async function EditarClientePage({
           recibirRecordatorios: cliente.recibirRecordatorios,
           recibirConfirmaciones: cliente.recibirConfirmaciones,
           createdAt: cliente.createdAt.toISOString(),
+          inactivoDesde: cliente.inactivoDesde?.toISOString() ?? null,
         }}
         propiedades={cliente.propiedades.map((p) => ({
           id: p.id,

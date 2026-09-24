@@ -9,7 +9,8 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { apiRequest } from "@/lib/api";
+import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteStaffDetail } from "@/lib/types";
@@ -39,6 +40,22 @@ export default function ClienteDetailScreen() {
       setLoading(false);
     }
   }, [id]);
+
+  /**
+   * Inactivo: no se le agendan visitas y sale atenuado en los selectores,
+   * con todo su historial en su lugar. Reactivar es lo mismo al revés.
+   */
+  async function cambiarActividad(inactivo: boolean) {
+    try {
+      await apiRequest(`/api/mobile/clientes/${id}/inactivo`, {
+        method: "POST",
+        body: JSON.stringify({ inactivo }),
+      });
+      await load(true);
+    } catch (e) {
+      setError(e instanceof Error ? e : new Error(mensajeDeError(e, "No se pudo guardar")));
+    }
+  }
 
   useEffect(() => {
     load();
@@ -99,6 +116,11 @@ export default function ClienteDetailScreen() {
           <Text variant="headlineSmall" style={styles.heroTitle}>
             {displayName}
           </Text>
+          {data.inactivoDesde ? (
+            <View style={styles.inactivo}>
+              <Text style={styles.inactivoTexto}>Inactivo</Text>
+            </View>
+          ) : null}
           {data.empresa && tienePersona ? (
             <Text variant="bodyMedium" style={styles.heroSubtitle}>
               {data.empresa}
@@ -111,13 +133,24 @@ export default function ClienteDetailScreen() {
           ) : null}
         </View>
         {canEdit ? (
-          <Button
-            mode="text"
-            compact
-            onPress={() => router.push(`/(personal)/clientes/editar/${id}`)}
-          >
-            Editar
-          </Button>
+          <View style={styles.acciones}>
+            <Button
+              mode="text"
+              compact
+              onPress={() => router.push(`/(personal)/clientes/editar/${id}`)}
+            >
+              Editar
+            </Button>
+            {/* Lo que se hace una vez por cliente va detrás del ⋯. */}
+            <MenuDeEncabezado
+              opciones={[
+                {
+                  etiqueta: data.inactivoDesde ? "Reactivar cliente" : "Marcar como inactivo",
+                  onPress: () => cambiarActividad(!data.inactivoDesde),
+                },
+              ]}
+            />
+          </View>
         ) : null}
       </View>
 
@@ -388,6 +421,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   heroText: { flex: 1, gap: 2 },
+  acciones: { flexDirection: "row", alignItems: "center", gap: 6 },
+  inactivo: {
+    alignSelf: "flex-start",
+    backgroundColor: tema.lienzo,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginTop: 2,
+  },
+  inactivoTexto: { fontSize: 11, fontWeight: "600", color: tema.texto2 },
   heroTitle: { color: "#111", fontWeight: "700" },
   heroSubtitle: { color: "#777" },
 

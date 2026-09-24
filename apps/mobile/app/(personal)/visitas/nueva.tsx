@@ -395,19 +395,23 @@ function ClienteStep({
       <View style={styles.list}>
         {filtered.map((c) => {
           const selected = c.id === selectedId;
+          // El inactivo se ve, atenuado y sin poder elegirse: saberlo ahí
+          // mismo es mejor que no encontrarlo.
+          const inactivo = c.inactivoDesde !== null;
           return (
             <Pressable
               key={c.id}
               onPress={() => onSelect(c.id)}
-              style={[styles.row, selected && styles.rowSelected]}
+              disabled={inactivo}
+              style={[styles.row, selected && styles.rowSelected, inactivo && styles.rowInactiva]}
             >
               <View style={styles.rowText}>
                 <Text variant="bodyLarge" style={styles.rowTitle}>
                   {nombreCliente(c)}
                 </Text>
-                {c.telefono || c.propiedades[0]?.sector?.nombre ? (
+                {inactivo || c.telefono || c.propiedades[0]?.sector?.nombre ? (
                   <Text variant="bodySmall" style={styles.muted}>
-                    {[c.telefono, c.propiedades[0]?.sector?.nombre]
+                    {[inactivo ? "Inactivo" : null, c.telefono, c.propiedades[0]?.sector?.nombre]
                       .filter(Boolean)
                       .join(" · ")}
                   </Text>
@@ -1024,6 +1028,7 @@ const styles = StyleSheet.create({
   rowSelected: {
     backgroundColor: "#e8f5e9",
   },
+  rowInactiva: { opacity: 0.45 },
   groupLabel: {
     color: "#888",
     letterSpacing: 0.6,

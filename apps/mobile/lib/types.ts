@@ -242,6 +242,8 @@ export interface ClienteListItem {
   apellido: string | null;
   empresa: string | null;
   telefono: string | null;
+  /** Marcado como inactivo desde cuándo; `null` = activo. */
+  inactivoDesde: string | null;
   propiedades: PropiedadResumen[];
 }
 

@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { ClientesPageHeader } from "./clientes-page-header";
 import {
   ACCION_BARRA_MOVIL,
@@ -53,6 +54,8 @@ interface Cliente {
   empresa: string | null;
   email: string | null;
   telefono: string | null;
+  /** Marcado como inactivo: la fila lo dice, y sigue abriéndose. */
+  inactivoDesde?: Date | string | null;
   /**
    * Dónde trabaja: sus propiedades vivas.
    *
@@ -362,8 +365,15 @@ export function ClientesTable({
                         <div className="flex items-center gap-2.5">
                           <InitialsAvatar name={fullName(cliente)} size={36} />
                           <div className="min-w-0">
-                            <div className="truncate font-bold text-foreground">
-                              {fullName(cliente)}
+                            <div className="flex items-center gap-2">
+                              <span className="truncate font-bold text-foreground">
+                                {fullName(cliente)}
+                              </span>
+                              {cliente.inactivoDesde ? (
+                                <Badge variant="secondary" className="flex-none">
+                                  Inactivo
+                                </Badge>
+                              ) : null}
                             </div>
                             {nombrePersona(cliente) && cliente.empresa ? (
                               <div className="truncate text-xs font-semibold text-muted-foreground">

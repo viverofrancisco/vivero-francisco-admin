@@ -40,6 +40,7 @@ export type ClienteMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  inactivoDesde: Date | null
   createdById: string | null
   updatedById: string | null
   userId: string | null
@@ -61,6 +62,7 @@ export type ClienteMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  inactivoDesde: Date | null
   createdById: string | null
   updatedById: string | null
   userId: string | null
@@ -82,6 +84,7 @@ export type ClienteCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   deletedAt: number
+  inactivoDesde: number
   createdById: number
   updatedById: number
   userId: number
@@ -105,6 +108,7 @@ export type ClienteMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  inactivoDesde?: true
   createdById?: true
   updatedById?: true
   userId?: true
@@ -126,6 +130,7 @@ export type ClienteMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  inactivoDesde?: true
   createdById?: true
   updatedById?: true
   userId?: true
@@ -147,6 +152,7 @@ export type ClienteCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  inactivoDesde?: true
   createdById?: true
   updatedById?: true
   userId?: true
@@ -241,6 +247,7 @@ export type ClienteGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+  inactivoDesde: Date | null
   createdById: string | null
   updatedById: string | null
   userId: string | null
@@ -283,6 +290,7 @@ export type ClienteWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
+  inactivoDesde?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
   createdById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   userId?: Prisma.StringNullableFilter<"Cliente"> | string | null
@@ -315,6 +323,7 @@ export type ClienteOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  inactivoDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -351,6 +360,7 @@ export type ClienteWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
+  inactivoDesde?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
   createdById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
@@ -382,6 +392,7 @@ export type ClienteOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  inactivoDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -409,6 +420,7 @@ export type ClienteScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Cliente"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Cliente"> | Date | string | null
+  inactivoDesde?: Prisma.DateTimeNullableWithAggregatesFilter<"Cliente"> | Date | string | null
   createdById?: Prisma.StringNullableWithAggregatesFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableWithAggregatesFilter<"Cliente"> | string | null
   userId?: Prisma.StringNullableWithAggregatesFilter<"Cliente"> | string | null
@@ -430,6 +442,7 @@ export type ClienteCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -459,6 +472,7 @@ export type ClienteUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -488,6 +502,7 @@ export type ClienteUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -517,6 +532,7 @@ export type ClienteUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -546,6 +562,7 @@ export type ClienteCreateManyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -567,6 +584,7 @@ export type ClienteUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ClienteUncheckedUpdateManyInput = {
@@ -585,6 +603,7 @@ export type ClienteUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -621,6 +640,7 @@ export type ClienteCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  inactivoDesde?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -642,6 +662,7 @@ export type ClienteMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  inactivoDesde?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -663,6 +684,7 @@ export type ClienteMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  inactivoDesde?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -929,6 +951,7 @@ export type ClienteCreateWithoutCreatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
@@ -957,6 +980,7 @@ export type ClienteUncheckedCreateWithoutCreatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   updatedById?: string | null
   userId?: string | null
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
@@ -995,6 +1019,7 @@ export type ClienteCreateWithoutUpdatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
@@ -1023,6 +1048,7 @@ export type ClienteUncheckedCreateWithoutUpdatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   userId?: string | null
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
@@ -1061,6 +1087,7 @@ export type ClienteCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
@@ -1089,6 +1116,7 @@ export type ClienteUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
@@ -1141,6 +1169,7 @@ export type ClienteScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Cliente"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
+  inactivoDesde?: Prisma.DateTimeNullableFilter<"Cliente"> | Date | string | null
   createdById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Cliente"> | string | null
   userId?: Prisma.StringNullableFilter<"Cliente"> | string | null
@@ -1189,6 +1218,7 @@ export type ClienteUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
@@ -1217,6 +1247,7 @@ export type ClienteUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
@@ -1245,6 +1276,7 @@ export type ClienteCreateWithoutPropiedadesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -1273,6 +1305,7 @@ export type ClienteUncheckedCreateWithoutPropiedadesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -1317,6 +1350,7 @@ export type ClienteUpdateWithoutPropiedadesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -1345,6 +1379,7 @@ export type ClienteUncheckedUpdateWithoutPropiedadesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1373,6 +1408,7 @@ export type ClienteCreateWithoutSuscripcionesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -1401,6 +1437,7 @@ export type ClienteUncheckedCreateWithoutSuscripcionesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -1445,6 +1482,7 @@ export type ClienteUpdateWithoutSuscripcionesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -1473,6 +1511,7 @@ export type ClienteUncheckedUpdateWithoutSuscripcionesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1501,6 +1540,7 @@ export type ClienteCreateWithoutVisitasInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -1529,6 +1569,7 @@ export type ClienteUncheckedCreateWithoutVisitasInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -1573,6 +1614,7 @@ export type ClienteUpdateWithoutVisitasInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -1601,6 +1643,7 @@ export type ClienteUncheckedUpdateWithoutVisitasInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1629,6 +1672,7 @@ export type ClienteCreateWithoutSetPasswordTokensInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -1657,6 +1701,7 @@ export type ClienteUncheckedCreateWithoutSetPasswordTokensInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -1701,6 +1746,7 @@ export type ClienteUpdateWithoutSetPasswordTokensInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -1729,6 +1775,7 @@ export type ClienteUncheckedUpdateWithoutSetPasswordTokensInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1757,6 +1804,7 @@ export type ClienteCreateWithoutInformesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -1785,6 +1833,7 @@ export type ClienteUncheckedCreateWithoutInformesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -1829,6 +1878,7 @@ export type ClienteUpdateWithoutInformesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -1857,6 +1907,7 @@ export type ClienteUncheckedUpdateWithoutInformesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1885,6 +1936,7 @@ export type ClienteCreateWithoutInformeBorradoresInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -1913,6 +1965,7 @@ export type ClienteUncheckedCreateWithoutInformeBorradoresInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -1957,6 +2010,7 @@ export type ClienteUpdateWithoutInformeBorradoresInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -1985,6 +2039,7 @@ export type ClienteUncheckedUpdateWithoutInformeBorradoresInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2013,6 +2068,7 @@ export type ClienteCreateWithoutOrdenesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -2041,6 +2097,7 @@ export type ClienteUncheckedCreateWithoutOrdenesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -2085,6 +2142,7 @@ export type ClienteUpdateWithoutOrdenesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -2113,6 +2171,7 @@ export type ClienteUncheckedUpdateWithoutOrdenesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2141,6 +2200,7 @@ export type ClienteCreateWithoutDatosFacturacionInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutClienteInput
@@ -2169,6 +2229,7 @@ export type ClienteUncheckedCreateWithoutDatosFacturacionInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   updatedById?: string | null
   userId?: string | null
@@ -2213,6 +2274,7 @@ export type ClienteUpdateWithoutDatosFacturacionInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
@@ -2241,6 +2303,7 @@ export type ClienteUncheckedUpdateWithoutDatosFacturacionInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2269,6 +2332,7 @@ export type ClienteCreateManyCreatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   updatedById?: string | null
   userId?: string | null
 }
@@ -2289,6 +2353,7 @@ export type ClienteCreateManyUpdatedByInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
   createdById?: string | null
   userId?: string | null
 }
@@ -2309,6 +2374,7 @@ export type ClienteUpdateWithoutCreatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
@@ -2337,6 +2403,7 @@ export type ClienteUncheckedUpdateWithoutCreatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
@@ -2365,6 +2432,7 @@ export type ClienteUncheckedUpdateManyWithoutCreatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -2385,6 +2453,7 @@ export type ClienteUpdateWithoutUpdatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
   user?: Prisma.UserUpdateOneWithoutClienteNestedInput
   propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
@@ -2413,6 +2482,7 @@ export type ClienteUncheckedUpdateWithoutUpdatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
@@ -2441,6 +2511,7 @@ export type ClienteUncheckedUpdateManyWithoutUpdatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -2555,6 +2626,7 @@ export type ClienteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  inactivoDesde?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
@@ -2588,6 +2660,7 @@ export type ClienteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  inactivoDesde?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
@@ -2612,6 +2685,7 @@ export type ClienteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  inactivoDesde?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
@@ -2636,12 +2710,13 @@ export type ClienteSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  inactivoDesde?: boolean
   createdById?: boolean
   updatedById?: boolean
   userId?: boolean
 }
 
-export type ClienteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "apellido" | "empresa" | "email" | "telefono" | "notas" | "cedula" | "ruc" | "tipoPersona" | "recibirRecordatorios" | "recibirConfirmaciones" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById" | "userId", ExtArgs["result"]["cliente"]>
+export type ClienteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "apellido" | "empresa" | "email" | "telefono" | "notas" | "cedula" | "ruc" | "tipoPersona" | "recibirRecordatorios" | "recibirConfirmaciones" | "createdAt" | "updatedAt" | "deletedAt" | "inactivoDesde" | "createdById" | "updatedById" | "userId", ExtArgs["result"]["cliente"]>
 export type ClienteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   createdBy?: boolean | Prisma.Cliente$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Cliente$updatedByArgs<ExtArgs>
@@ -2702,6 +2777,13 @@ export type $ClientePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
+    /**
+     * Marcado como inactivo desde cuándo; `null` = activo. Un inactivo sigue
+     * en las listas y conserva todo su historial, pero sale atenuado en los
+     * selectores y no se le agendan visitas hasta reactivarlo. Distinto de
+     * archivar (`deletedAt`), que lo saca de todos lados.
+     */
+    inactivoDesde: Date | null
     createdById: string | null
     updatedById: string | null
     userId: string | null
@@ -3154,6 +3236,7 @@ export interface ClienteFieldRefs {
   readonly createdAt: Prisma.FieldRef<"Cliente", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Cliente", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Cliente", 'DateTime'>
+  readonly inactivoDesde: Prisma.FieldRef<"Cliente", 'DateTime'>
   readonly createdById: Prisma.FieldRef<"Cliente", 'String'>
   readonly updatedById: Prisma.FieldRef<"Cliente", 'String'>
   readonly userId: Prisma.FieldRef<"Cliente", 'String'>

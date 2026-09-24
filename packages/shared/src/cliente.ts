@@ -112,6 +112,10 @@ export type CreateClienteBody = z.infer<typeof createClienteSchema>;
 export const updateClienteSchema = clienteBaseSchema.partial();
 export type UpdateClienteBody = z.infer<typeof updateClienteSchema>;
 
+/** Marcar un cliente como inactivo, o reactivarlo. */
+export const clienteInactivoSchema = z.object({ inactivo: z.boolean() });
+export type ClienteInactivoBody = z.infer<typeof clienteInactivoSchema>;
+
 // ──────────────────────────────────────────────
 // Nombre para mostrar (persona o empresa)
 // ──────────────────────────────────────────────

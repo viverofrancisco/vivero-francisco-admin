@@ -95,6 +95,7 @@ const CLIENTE_LIST_SELECT = {
   apellido: true,
   empresa: true,
   telefono: true,
+  inactivoDesde: true,
   // La lista muestra dónde está: con una propiedad, la suya; con varias, la
   // primera y cuántas más. Contarlas de a una es lo que evita que la fila
   // mienta cuando alguien tiene casa en dos sectores.
@@ -154,6 +155,7 @@ export async function getClienteForStaff(clienteId: string, viewer: Viewer) {
       email: true,
       telefono: true,
       notas: true,
+      inactivoDesde: true,
       propiedades: PROPIEDADES_DEL_CLIENTE,
       suscripciones: {
         where: { estado: { not: "CANCELADO" } },
@@ -445,6 +447,28 @@ export async function updateCliente(
   } catch {
     throw new NotFoundError("Cliente no encontrado");
   }
+}
+
+/**
+ * Marcar un cliente como inactivo, o reactivarlo.
+ *
+ * Es distinto de archivar: el inactivo sigue en las listas y en su ficha con
+ * todo su historial, lo que cambia es que **no se le agendan visitas**
+ * (`createVisitasBatch` lo rechaza) y los selectores lo muestran atenuado.
+ * Es para el que dejó de contratar pero puede volver, que es lo más común.
+ */
+export async function marcarClienteInactivo(
+  viewer: Viewer,
+  clienteId: string,
+  inactivo: boolean
+) {
+  ensureCanWrite(viewer);
+  await getClienteForStaff(clienteId, viewer);
+  return prisma.cliente.update({
+    where: { id: clienteId },
+    data: { inactivoDesde: inactivo ? new Date() : null, updatedById: viewer.id },
+    select: { id: true, inactivoDesde: true },
+  });
 }
 
 // ──────────────────────────────────────────────
