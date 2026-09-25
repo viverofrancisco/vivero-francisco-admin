@@ -24,14 +24,35 @@ export const informeSeccionFotoSchema = z
   );
 
 export const informeSeccionSchema = z.object({
-  /** Servicio que origina la sección. Null u omitido = sección personalizada. */
-  productoId: z.string().nullable().optional(),
-  titulo: z.string().min(1).max(200),
-  descripcion: z.string().max(4000).nullable().optional(),
+  /**
+   * La tarea que origina la sección. Null u omitido = sección personalizada.
+   *
+   * Decía `productoId`, de cuando las secciones salían de los productos de
+   * la visita, y `z.object` **descarta** las claves que no declara: el
+   * `tareaId` que mandaban el portal y la app llegaba al servicio como
+   * `undefined`, y toda sección se guardaba sin su tarea.
+   */
+  tareaId: z.string().nullable().optional(),
+  /**
+   * Con formato son HTML, y un `<span style="…">` por pedazo abulta: los
+   * topes son para un texto escrito con el editor, no para el título de una
+   * línea.
+   */
+  titulo: z.string().min(1).max(4000),
+  descripcion: z.string().max(20000).nullable().optional(),
   fotos: z.array(informeSeccionFotoSchema).default([]),
   /** Cómo se imprime. Los defaults son lo que se venía imprimiendo. */
   saltoDePagina: z.boolean().default(false),
-  fotosPorFila: z.union([z.literal(2), z.literal(3), z.literal(4)]).default(3),
+  fotosPorFila: z
+    .union([z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)])
+    .default(3),
+  /**
+   * Hacia dónde se arriman las fotos de la última fila. **Sin default a
+   * propósito**: el asistente lo manda solo cuando no es la izquierda, y así
+   * un informe anterior a este campo, reabierto y guardado sin tocar, compara
+   * igual contra su versión y no nace una versión de más.
+   */
+  fotosAlineacion: z.enum(["IZQUIERDA", "CENTRO", "DERECHA"]).optional(),
 });
 
 export const informeFirmanteSchema = z.object({

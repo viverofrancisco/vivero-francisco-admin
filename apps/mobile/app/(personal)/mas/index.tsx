@@ -48,6 +48,12 @@ export default function MasMenuScreen() {
       visible: isAdminOrStaff,
     },
     {
+      label: "Suscripciones",
+      icon: "sync-outline",
+      href: "/(personal)/suscripciones",
+      visible: isAdminOrStaff,
+    },
+    {
       label: "Productos",
       icon: "pricetags-outline",
       href: "/(personal)/servicios",

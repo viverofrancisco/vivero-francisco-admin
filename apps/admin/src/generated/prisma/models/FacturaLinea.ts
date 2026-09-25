@@ -68,6 +68,7 @@ export type FacturaLineaMinAggregateOutputType = {
   subtotal: runtime.Decimal | null
   iva: runtime.Decimal | null
   total: runtime.Decimal | null
+  codigo: string | null
   productoId: string | null
   varianteId: string | null
 }
@@ -83,6 +84,7 @@ export type FacturaLineaMaxAggregateOutputType = {
   subtotal: runtime.Decimal | null
   iva: runtime.Decimal | null
   total: runtime.Decimal | null
+  codigo: string | null
   productoId: string | null
   varianteId: string | null
 }
@@ -98,6 +100,7 @@ export type FacturaLineaCountAggregateOutputType = {
   subtotal: number
   iva: number
   total: number
+  codigo: number
   productoId: number
   varianteId: number
   _all: number
@@ -135,6 +138,7 @@ export type FacturaLineaMinAggregateInputType = {
   subtotal?: true
   iva?: true
   total?: true
+  codigo?: true
   productoId?: true
   varianteId?: true
 }
@@ -150,6 +154,7 @@ export type FacturaLineaMaxAggregateInputType = {
   subtotal?: true
   iva?: true
   total?: true
+  codigo?: true
   productoId?: true
   varianteId?: true
 }
@@ -165,6 +170,7 @@ export type FacturaLineaCountAggregateInputType = {
   subtotal?: true
   iva?: true
   total?: true
+  codigo?: true
   productoId?: true
   varianteId?: true
   _all?: true
@@ -267,8 +273,9 @@ export type FacturaLineaGroupByOutputType = {
   subtotal: runtime.Decimal
   iva: runtime.Decimal
   total: runtime.Decimal
-  productoId: string
-  varianteId: string
+  codigo: string
+  productoId: string | null
+  varianteId: string | null
   _count: FacturaLineaCountAggregateOutputType | null
   _avg: FacturaLineaAvgAggregateOutputType | null
   _sum: FacturaLineaSumAggregateOutputType | null
@@ -305,11 +312,12 @@ export type FacturaLineaWhereInput = {
   subtotal?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFilter<"FacturaLinea"> | string
-  varianteId?: Prisma.StringFilter<"FacturaLinea"> | string
+  codigo?: Prisma.StringFilter<"FacturaLinea"> | string
+  productoId?: Prisma.StringNullableFilter<"FacturaLinea"> | string | null
+  varianteId?: Prisma.StringNullableFilter<"FacturaLinea"> | string | null
   factura?: Prisma.XOR<Prisma.FacturaScalarRelationFilter, Prisma.FacturaWhereInput>
-  variante?: Prisma.XOR<Prisma.VarianteScalarRelationFilter, Prisma.VarianteWhereInput>
-  producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
+  variante?: Prisma.XOR<Prisma.VarianteNullableScalarRelationFilter, Prisma.VarianteWhereInput> | null
+  producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
 }
 
 export type FacturaLineaOrderByWithRelationInput = {
@@ -323,8 +331,9 @@ export type FacturaLineaOrderByWithRelationInput = {
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
-  productoId?: Prisma.SortOrder
-  varianteId?: Prisma.SortOrder
+  codigo?: Prisma.SortOrder
+  productoId?: Prisma.SortOrderInput | Prisma.SortOrder
+  varianteId?: Prisma.SortOrderInput | Prisma.SortOrder
   factura?: Prisma.FacturaOrderByWithRelationInput
   variante?: Prisma.VarianteOrderByWithRelationInput
   producto?: Prisma.ProductoOrderByWithRelationInput
@@ -344,11 +353,12 @@ export type FacturaLineaWhereUniqueInput = Prisma.AtLeast<{
   subtotal?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFilter<"FacturaLinea"> | string
-  varianteId?: Prisma.StringFilter<"FacturaLinea"> | string
+  codigo?: Prisma.StringFilter<"FacturaLinea"> | string
+  productoId?: Prisma.StringNullableFilter<"FacturaLinea"> | string | null
+  varianteId?: Prisma.StringNullableFilter<"FacturaLinea"> | string | null
   factura?: Prisma.XOR<Prisma.FacturaScalarRelationFilter, Prisma.FacturaWhereInput>
-  variante?: Prisma.XOR<Prisma.VarianteScalarRelationFilter, Prisma.VarianteWhereInput>
-  producto?: Prisma.XOR<Prisma.ProductoScalarRelationFilter, Prisma.ProductoWhereInput>
+  variante?: Prisma.XOR<Prisma.VarianteNullableScalarRelationFilter, Prisma.VarianteWhereInput> | null
+  producto?: Prisma.XOR<Prisma.ProductoNullableScalarRelationFilter, Prisma.ProductoWhereInput> | null
 }, "id">
 
 export type FacturaLineaOrderByWithAggregationInput = {
@@ -362,8 +372,9 @@ export type FacturaLineaOrderByWithAggregationInput = {
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
-  productoId?: Prisma.SortOrder
-  varianteId?: Prisma.SortOrder
+  codigo?: Prisma.SortOrder
+  productoId?: Prisma.SortOrderInput | Prisma.SortOrder
+  varianteId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.FacturaLineaCountOrderByAggregateInput
   _avg?: Prisma.FacturaLineaAvgOrderByAggregateInput
   _max?: Prisma.FacturaLineaMaxOrderByAggregateInput
@@ -385,8 +396,9 @@ export type FacturaLineaScalarWhereWithAggregatesInput = {
   subtotal?: Prisma.DecimalWithAggregatesFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalWithAggregatesFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalWithAggregatesFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringWithAggregatesFilter<"FacturaLinea"> | string
-  varianteId?: Prisma.StringWithAggregatesFilter<"FacturaLinea"> | string
+  codigo?: Prisma.StringWithAggregatesFilter<"FacturaLinea"> | string
+  productoId?: Prisma.StringNullableWithAggregatesFilter<"FacturaLinea"> | string | null
+  varianteId?: Prisma.StringNullableWithAggregatesFilter<"FacturaLinea"> | string | null
 }
 
 export type FacturaLineaCreateInput = {
@@ -399,9 +411,10 @@ export type FacturaLineaCreateInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
+  codigo: string
   factura: Prisma.FacturaCreateNestedOneWithoutLineasInput
-  variante: Prisma.VarianteCreateNestedOneWithoutFacturaLineasInput
-  producto: Prisma.ProductoCreateNestedOneWithoutFacturaLineasInput
+  variante?: Prisma.VarianteCreateNestedOneWithoutFacturaLineasInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutFacturaLineasInput
 }
 
 export type FacturaLineaUncheckedCreateInput = {
@@ -415,8 +428,9 @@ export type FacturaLineaUncheckedCreateInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId: string
-  varianteId: string
+  codigo: string
+  productoId?: string | null
+  varianteId?: string | null
 }
 
 export type FacturaLineaUpdateInput = {
@@ -429,9 +443,10 @@ export type FacturaLineaUpdateInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
   factura?: Prisma.FacturaUpdateOneRequiredWithoutLineasNestedInput
-  variante?: Prisma.VarianteUpdateOneRequiredWithoutFacturaLineasNestedInput
-  producto?: Prisma.ProductoUpdateOneRequiredWithoutFacturaLineasNestedInput
+  variante?: Prisma.VarianteUpdateOneWithoutFacturaLineasNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutFacturaLineasNestedInput
 }
 
 export type FacturaLineaUncheckedUpdateInput = {
@@ -445,8 +460,9 @@ export type FacturaLineaUncheckedUpdateInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type FacturaLineaCreateManyInput = {
@@ -460,8 +476,9 @@ export type FacturaLineaCreateManyInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId: string
-  varianteId: string
+  codigo: string
+  productoId?: string | null
+  varianteId?: string | null
 }
 
 export type FacturaLineaUpdateManyMutationInput = {
@@ -474,6 +491,7 @@ export type FacturaLineaUpdateManyMutationInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type FacturaLineaUncheckedUpdateManyInput = {
@@ -487,8 +505,9 @@ export type FacturaLineaUncheckedUpdateManyInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type FacturaLineaListRelationFilter = {
@@ -512,6 +531,7 @@ export type FacturaLineaCountOrderByAggregateInput = {
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
+  codigo?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   varianteId?: Prisma.SortOrder
 }
@@ -537,6 +557,7 @@ export type FacturaLineaMaxOrderByAggregateInput = {
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
+  codigo?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   varianteId?: Prisma.SortOrder
 }
@@ -552,6 +573,7 @@ export type FacturaLineaMinOrderByAggregateInput = {
   subtotal?: Prisma.SortOrder
   iva?: Prisma.SortOrder
   total?: Prisma.SortOrder
+  codigo?: Prisma.SortOrder
   productoId?: Prisma.SortOrder
   varianteId?: Prisma.SortOrder
 }
@@ -702,8 +724,9 @@ export type FacturaLineaCreateWithoutProductoInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
+  codigo: string
   factura: Prisma.FacturaCreateNestedOneWithoutLineasInput
-  variante: Prisma.VarianteCreateNestedOneWithoutFacturaLineasInput
+  variante?: Prisma.VarianteCreateNestedOneWithoutFacturaLineasInput
 }
 
 export type FacturaLineaUncheckedCreateWithoutProductoInput = {
@@ -717,7 +740,8 @@ export type FacturaLineaUncheckedCreateWithoutProductoInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId: string
+  codigo: string
+  varianteId?: string | null
 }
 
 export type FacturaLineaCreateOrConnectWithoutProductoInput = {
@@ -760,8 +784,9 @@ export type FacturaLineaScalarWhereInput = {
   subtotal?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFilter<"FacturaLinea"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFilter<"FacturaLinea"> | string
-  varianteId?: Prisma.StringFilter<"FacturaLinea"> | string
+  codigo?: Prisma.StringFilter<"FacturaLinea"> | string
+  productoId?: Prisma.StringNullableFilter<"FacturaLinea"> | string | null
+  varianteId?: Prisma.StringNullableFilter<"FacturaLinea"> | string | null
 }
 
 export type FacturaLineaCreateWithoutVarianteInput = {
@@ -774,8 +799,9 @@ export type FacturaLineaCreateWithoutVarianteInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
+  codigo: string
   factura: Prisma.FacturaCreateNestedOneWithoutLineasInput
-  producto: Prisma.ProductoCreateNestedOneWithoutFacturaLineasInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutFacturaLineasInput
 }
 
 export type FacturaLineaUncheckedCreateWithoutVarianteInput = {
@@ -789,7 +815,8 @@ export type FacturaLineaUncheckedCreateWithoutVarianteInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId: string
+  codigo: string
+  productoId?: string | null
 }
 
 export type FacturaLineaCreateOrConnectWithoutVarianteInput = {
@@ -828,8 +855,9 @@ export type FacturaLineaCreateWithoutFacturaInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  variante: Prisma.VarianteCreateNestedOneWithoutFacturaLineasInput
-  producto: Prisma.ProductoCreateNestedOneWithoutFacturaLineasInput
+  codigo: string
+  variante?: Prisma.VarianteCreateNestedOneWithoutFacturaLineasInput
+  producto?: Prisma.ProductoCreateNestedOneWithoutFacturaLineasInput
 }
 
 export type FacturaLineaUncheckedCreateWithoutFacturaInput = {
@@ -842,8 +870,9 @@ export type FacturaLineaUncheckedCreateWithoutFacturaInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId: string
-  varianteId: string
+  codigo: string
+  productoId?: string | null
+  varianteId?: string | null
 }
 
 export type FacturaLineaCreateOrConnectWithoutFacturaInput = {
@@ -883,7 +912,8 @@ export type FacturaLineaCreateManyProductoInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId: string
+  codigo: string
+  varianteId?: string | null
 }
 
 export type FacturaLineaUpdateWithoutProductoInput = {
@@ -896,8 +926,9 @@ export type FacturaLineaUpdateWithoutProductoInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
   factura?: Prisma.FacturaUpdateOneRequiredWithoutLineasNestedInput
-  variante?: Prisma.VarianteUpdateOneRequiredWithoutFacturaLineasNestedInput
+  variante?: Prisma.VarianteUpdateOneWithoutFacturaLineasNestedInput
 }
 
 export type FacturaLineaUncheckedUpdateWithoutProductoInput = {
@@ -911,7 +942,8 @@ export type FacturaLineaUncheckedUpdateWithoutProductoInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type FacturaLineaUncheckedUpdateManyWithoutProductoInput = {
@@ -925,7 +957,8 @@ export type FacturaLineaUncheckedUpdateManyWithoutProductoInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type FacturaLineaCreateManyVarianteInput = {
@@ -939,7 +972,8 @@ export type FacturaLineaCreateManyVarianteInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId: string
+  codigo: string
+  productoId?: string | null
 }
 
 export type FacturaLineaUpdateWithoutVarianteInput = {
@@ -952,8 +986,9 @@ export type FacturaLineaUpdateWithoutVarianteInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
   factura?: Prisma.FacturaUpdateOneRequiredWithoutLineasNestedInput
-  producto?: Prisma.ProductoUpdateOneRequiredWithoutFacturaLineasNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutFacturaLineasNestedInput
 }
 
 export type FacturaLineaUncheckedUpdateWithoutVarianteInput = {
@@ -967,7 +1002,8 @@ export type FacturaLineaUncheckedUpdateWithoutVarianteInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type FacturaLineaUncheckedUpdateManyWithoutVarianteInput = {
@@ -981,7 +1017,8 @@ export type FacturaLineaUncheckedUpdateManyWithoutVarianteInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type FacturaLineaCreateManyFacturaInput = {
@@ -994,8 +1031,9 @@ export type FacturaLineaCreateManyFacturaInput = {
   subtotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   iva: runtime.Decimal | runtime.DecimalJsLike | number | string
   total: runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId: string
-  varianteId: string
+  codigo: string
+  productoId?: string | null
+  varianteId?: string | null
 }
 
 export type FacturaLineaUpdateWithoutFacturaInput = {
@@ -1008,8 +1046,9 @@ export type FacturaLineaUpdateWithoutFacturaInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  variante?: Prisma.VarianteUpdateOneRequiredWithoutFacturaLineasNestedInput
-  producto?: Prisma.ProductoUpdateOneRequiredWithoutFacturaLineasNestedInput
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  variante?: Prisma.VarianteUpdateOneWithoutFacturaLineasNestedInput
+  producto?: Prisma.ProductoUpdateOneWithoutFacturaLineasNestedInput
 }
 
 export type FacturaLineaUncheckedUpdateWithoutFacturaInput = {
@@ -1022,8 +1061,9 @@ export type FacturaLineaUncheckedUpdateWithoutFacturaInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type FacturaLineaUncheckedUpdateManyWithoutFacturaInput = {
@@ -1036,8 +1076,9 @@ export type FacturaLineaUncheckedUpdateManyWithoutFacturaInput = {
   subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   iva?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  productoId?: Prisma.StringFieldUpdateOperationsInput | string
-  varianteId?: Prisma.StringFieldUpdateOperationsInput | string
+  codigo?: Prisma.StringFieldUpdateOperationsInput | string
+  productoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  varianteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1053,11 +1094,12 @@ export type FacturaLineaSelect<ExtArgs extends runtime.Types.Extensions.Internal
   subtotal?: boolean
   iva?: boolean
   total?: boolean
+  codigo?: boolean
   productoId?: boolean
   varianteId?: boolean
   factura?: boolean | Prisma.FacturaDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
-  producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
+  variante?: boolean | Prisma.FacturaLinea$varianteArgs<ExtArgs>
+  producto?: boolean | Prisma.FacturaLinea$productoArgs<ExtArgs>
 }, ExtArgs["result"]["facturaLinea"]>
 
 export type FacturaLineaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1071,11 +1113,12 @@ export type FacturaLineaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   subtotal?: boolean
   iva?: boolean
   total?: boolean
+  codigo?: boolean
   productoId?: boolean
   varianteId?: boolean
   factura?: boolean | Prisma.FacturaDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
-  producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
+  variante?: boolean | Prisma.FacturaLinea$varianteArgs<ExtArgs>
+  producto?: boolean | Prisma.FacturaLinea$productoArgs<ExtArgs>
 }, ExtArgs["result"]["facturaLinea"]>
 
 export type FacturaLineaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1089,11 +1132,12 @@ export type FacturaLineaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   subtotal?: boolean
   iva?: boolean
   total?: boolean
+  codigo?: boolean
   productoId?: boolean
   varianteId?: boolean
   factura?: boolean | Prisma.FacturaDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
-  producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
+  variante?: boolean | Prisma.FacturaLinea$varianteArgs<ExtArgs>
+  producto?: boolean | Prisma.FacturaLinea$productoArgs<ExtArgs>
 }, ExtArgs["result"]["facturaLinea"]>
 
 export type FacturaLineaSelectScalar = {
@@ -1107,37 +1151,38 @@ export type FacturaLineaSelectScalar = {
   subtotal?: boolean
   iva?: boolean
   total?: boolean
+  codigo?: boolean
   productoId?: boolean
   varianteId?: boolean
 }
 
-export type FacturaLineaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "facturaId" | "posicion" | "descripcion" | "cantidad" | "precioUnitario" | "ivaTasa" | "subtotal" | "iva" | "total" | "productoId" | "varianteId", ExtArgs["result"]["facturaLinea"]>
+export type FacturaLineaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "facturaId" | "posicion" | "descripcion" | "cantidad" | "precioUnitario" | "ivaTasa" | "subtotal" | "iva" | "total" | "codigo" | "productoId" | "varianteId", ExtArgs["result"]["facturaLinea"]>
 export type FacturaLineaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   factura?: boolean | Prisma.FacturaDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
-  producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
+  variante?: boolean | Prisma.FacturaLinea$varianteArgs<ExtArgs>
+  producto?: boolean | Prisma.FacturaLinea$productoArgs<ExtArgs>
 }
 export type FacturaLineaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   factura?: boolean | Prisma.FacturaDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
-  producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
+  variante?: boolean | Prisma.FacturaLinea$varianteArgs<ExtArgs>
+  producto?: boolean | Prisma.FacturaLinea$productoArgs<ExtArgs>
 }
 export type FacturaLineaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   factura?: boolean | Prisma.FacturaDefaultArgs<ExtArgs>
-  variante?: boolean | Prisma.VarianteDefaultArgs<ExtArgs>
-  producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
+  variante?: boolean | Prisma.FacturaLinea$varianteArgs<ExtArgs>
+  producto?: boolean | Prisma.FacturaLinea$productoArgs<ExtArgs>
 }
 
 export type $FacturaLineaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "FacturaLinea"
   objects: {
     factura: Prisma.$FacturaPayload<ExtArgs>
-    variante: Prisma.$VariantePayload<ExtArgs>
+    variante: Prisma.$VariantePayload<ExtArgs> | null
     /**
      * `Restrict` como en `OrdenLinea`: un producto ya facturado no se borra, o
      * la factura se queda sin con qué reconciliarse.
      */
-    producto: Prisma.$ProductoPayload<ExtArgs>
+    producto: Prisma.$ProductoPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1155,14 +1200,24 @@ export type $FacturaLineaPayload<ExtArgs extends runtime.Types.Extensions.Intern
     iva: runtime.Decimal
     total: runtime.Decimal
     /**
-     * De dónde sale el `codigoPrincipal`, y con qué queda asociada la venta.
+     * El `codigoPrincipal` que salió impreso en el detalle, congelado.
+     * 
+     * Se derivaba al vuelo del SKU de la variante, y una nota de crédito
+     * emitida meses después imprimía el SKU de **hoy**, no el del comprobante
+     * que corrige. Y la línea de un plan no tiene variante de dónde sacarlo:
+     * su código sale del número del plan (`SUS-12`).
      */
-    productoId: string
+    codigo: string
     /**
-     * Qué variante salió. Siempre hay una: su SKU es lo que se imprime como
-     * `codigoPrincipal`, y es de dónde se descontó el stock.
+     * Con qué queda asociada la venta, cuando es algo del catálogo. La línea de
+     * un período de plan no tiene producto: un plan es un precio por un jardín.
      */
-    varianteId: string
+    productoId: string | null
+    /**
+     * Qué variante salió: su SKU es el código impreso, y es de dónde se descontó
+     * el stock. Con producto siempre hay una; sin producto, ninguna.
+     */
+    varianteId: string | null
   }, ExtArgs["result"]["facturaLinea"]>
   composites: {}
 }
@@ -1558,8 +1613,8 @@ readonly fields: FacturaLineaFieldRefs;
 export interface Prisma__FacturaLineaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   factura<T extends Prisma.FacturaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FacturaDefaultArgs<ExtArgs>>): Prisma.Prisma__FacturaClient<runtime.Types.Result.GetResult<Prisma.$FacturaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  variante<T extends Prisma.VarianteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VarianteDefaultArgs<ExtArgs>>): Prisma.Prisma__VarianteClient<runtime.Types.Result.GetResult<Prisma.$VariantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  producto<T extends Prisma.ProductoDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductoDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  variante<T extends Prisma.FacturaLinea$varianteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FacturaLinea$varianteArgs<ExtArgs>>): Prisma.Prisma__VarianteClient<runtime.Types.Result.GetResult<Prisma.$VariantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  producto<T extends Prisma.FacturaLinea$productoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FacturaLinea$productoArgs<ExtArgs>>): Prisma.Prisma__ProductoClient<runtime.Types.Result.GetResult<Prisma.$ProductoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1599,6 +1654,7 @@ export interface FacturaLineaFieldRefs {
   readonly subtotal: Prisma.FieldRef<"FacturaLinea", 'Decimal'>
   readonly iva: Prisma.FieldRef<"FacturaLinea", 'Decimal'>
   readonly total: Prisma.FieldRef<"FacturaLinea", 'Decimal'>
+  readonly codigo: Prisma.FieldRef<"FacturaLinea", 'String'>
   readonly productoId: Prisma.FieldRef<"FacturaLinea", 'String'>
   readonly varianteId: Prisma.FieldRef<"FacturaLinea", 'String'>
 }
@@ -1999,6 +2055,44 @@ export type FacturaLineaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many FacturaLineas to delete.
    */
   limit?: number
+}
+
+/**
+ * FacturaLinea.variante
+ */
+export type FacturaLinea$varianteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Variante
+   */
+  select?: Prisma.VarianteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Variante
+   */
+  omit?: Prisma.VarianteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VarianteInclude<ExtArgs> | null
+  where?: Prisma.VarianteWhereInput
+}
+
+/**
+ * FacturaLinea.producto
+ */
+export type FacturaLinea$productoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Producto
+   */
+  select?: Prisma.ProductoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Producto
+   */
+  omit?: Prisma.ProductoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductoInclude<ExtArgs> | null
+  where?: Prisma.ProductoWhereInput
 }
 
 /**

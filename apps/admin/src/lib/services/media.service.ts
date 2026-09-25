@@ -213,6 +213,10 @@ export interface EdicionImagen {
   redimensionar?: { ancho: number; alto: number };
   /** Recorta en círculo. Sale PNG, porque necesita transparencia. */
   circulo?: boolean;
+  /** Cuartos de vuelta a la derecha, antes del recorte. */
+  rotar?: 0 | 90 | 180 | 270;
+  /** Espejada de izquierda a derecha, antes de girar y de recortar. */
+  voltear?: boolean;
 }
 
 /**
@@ -283,7 +287,14 @@ async function aplicarEdicion(
   original: { key: string; nombre: string; alt: string | null },
   edicion: EdicionImagen
 ): Promise<MediaResumen> {
-  if (!edicion.recorte && !edicion.redimensionar && !edicion.circulo) {
+  const rotar = edicion.rotar ?? 0;
+  if (
+    !edicion.recorte &&
+    !edicion.redimensionar &&
+    !edicion.circulo &&
+    !rotar &&
+    !edicion.voltear
+  ) {
     throw new ValidationError("No hay nada que cambiarle a la imagen.");
   }
 
@@ -292,10 +303,23 @@ async function aplicarEdicion(
   );
   const entrada = Buffer.from(await objeto.Body!.transformToByteArray());
 
+  // El orden es el de sharp y no el de estas llamadas: cuando se le piden
+  // antes que `extract`, orienta por el EXIF, **voltea, gira y recién
+  // después recorta** (`rotateBefore` en su pipeline). El rectángulo que
+  // llega está por eso en píxeles de la imagen ya volteada y girada, que es
+  // la que quien recorta tiene delante.
   let img = sharp(entrada, { failOn: "none" }).rotate();
+  if (edicion.voltear) img = img.flop();
+  if (rotar) img = img.rotate(rotar);
   const meta = await sharp(entrada).metadata();
-  const anchoOriginal = meta.width ?? 0;
-  const altoOriginal = meta.height ?? 0;
+  // Las medidas de lo que se recorta: las del original orientado —un EXIF de
+  // lado intercambia ancho y alto— y girado.
+  const deLado = (meta.orientation ?? 1) >= 5;
+  const [ancho0, alto0] = deLado
+    ? [meta.height ?? 0, meta.width ?? 0]
+    : [meta.width ?? 0, meta.height ?? 0];
+  const [anchoOriginal, altoOriginal] =
+    rotar % 180 === 0 ? [ancho0, alto0] : [alto0, ancho0];
 
   if (edicion.recorte) {
     const r = edicion.recorte;

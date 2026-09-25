@@ -41,7 +41,6 @@ const SERVICIO_LIST_SELECT = {
     take: 1,
     select: { media: { select: { key: true } } },
   },
-  _count: { select: { suscripcionItems: true } },
 } as const;
 
 export interface ListServiciosFilters {
@@ -288,7 +287,6 @@ export async function getServicio(productoId: string, viewer: Viewer) {
       descripcion: true,
       tipo: true,
       createdAt: true,
-      _count: { select: { suscripcionItems: true } },
     },
   });
   if (!servicio) throw new NotFoundError("Servicio no encontrado");
@@ -299,10 +297,9 @@ export async function getServicio(productoId: string, viewer: Viewer) {
  * Archivar un producto: sale del catálogo y deja de ofrecerse.
  *
  * **Es soft delete y no puede ser otra cosa**: sus variantes están citadas por
- * `OrdenLinea` y `FacturaLinea`, que son documentos ya emitidos. Y se refuse
- * mientras esté en el plan de algún cliente: una suscripción que renueva sola
- * no puede quedar apuntando a algo que ya no está en el catálogo. La regla
- * vivía suelta adentro de la ruta web, donde la app no la veía.
+ * `OrdenLinea` y `FacturaLinea`, que son documentos ya emitidos. Se rechazaba
+ * además mientras estuviera en el plan de algún cliente; un plan ya no lleva
+ * productos —es un precio por un jardín—, así que esa regla se fue.
  */
 export async function archivarProducto(viewer: Viewer, id: string) {
   ensureAdmin(viewer);
@@ -312,15 +309,6 @@ export async function archivarProducto(viewer: Viewer, id: string) {
   });
   if (!producto) throw new NotFoundError("Producto no encontrado");
 
-  const enPlanes = await prisma.suscripcionItem.count({
-    where: { productoId: id },
-  });
-  if (enPlanes > 0) {
-    throw new ConflictError(
-      "Está en el plan de algún cliente. Sacalo de la suscripción primero."
-    );
-  }
-
   await prisma.producto.update({
     where: { id },
     data: { deletedAt: new Date() },
@@ -328,9 +316,8 @@ export async function archivarProducto(viewer: Viewer, id: string) {
 }
 
 /**
- * Archivar de a varios. Uno por uno, porque cada producto tiene su propia
- * regla que revisar —estar o no en un plan— y que uno falle no puede cancelar
- * a los demás. Ver `ResultadoEnLote`.
+ * Archivar de a varios. Uno por uno, para que uno que no exista no cancele a
+ * los demás. Ver `ResultadoEnLote`.
  */
 export async function archivarVariosProductos(
   viewer: Viewer,

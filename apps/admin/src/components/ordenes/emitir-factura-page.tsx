@@ -16,7 +16,6 @@ import { ArrowLeft, Loader2, Trash2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { useCatalogo } from "./use-catalogo";
 import { money, fecha } from "./formato";
-import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 import {
   SelectorVariante,
   type VarianteVendible,
@@ -36,8 +35,11 @@ interface LineaOrden {
   cantidad: number;
   precioUnitario: number;
   ivaTasa: number;
-  productoId: string;
+  /** `null` en la línea de un plan o en una personalizada. */
+  productoId: string | null;
   varianteId: string | null;
+  /** De qué plan es, si es la línea de un plan: imprime `SUS-N`. */
+  suscripcionId: string | null;
 }
 
 export interface OrdenAEmitir {
@@ -54,13 +56,17 @@ export interface OrdenAEmitir {
     empresa: string | null;
   };
   lineas: LineaOrden[];
+  /** El plan de la orden, si es de uno: de ahí sale el código de su línea. */
+  suscripcion: { numero: number; propiedad: string } | null;
 }
 
 /** Una línea del documento mientras se la arma. Los montos van como texto. */
 interface LineaDocumento {
   uid: string;
-  productoId: string;
+  /** `null` en la línea del plan (imprime `SUS-N`) y en una personalizada. */
+  productoId: string | null;
   varianteId: string | null;
+  suscripcionId: string | null;
   descripcion: string;
   cantidad: string;
   precioUnitario: string;
@@ -137,14 +143,14 @@ export function EmitirFacturaPage({
       datosFacturacion[0]?.id ??
       null
   );
-  const [emitiendo, setEmitiendo] = useState<null | "solo" | "cobrar">(null);
-  const [cobrando, setCobrando] = useState<FacturaCobrable | null>(null);
+  const [emitiendo, setEmitiendo] = useState(false);
 
   const [lineas, setLineas] = useState<LineaDocumento[]>(() =>
     orden.lineas.map((l) => ({
       uid: `linea-${contador++}`,
       productoId: l.productoId,
       varianteId: l.varianteId,
+      suscripcionId: l.suscripcionId,
       descripcion: l.descripcion,
       cantidad: String(l.cantidad),
       precioUnitario: String(l.precioUnitario),
@@ -182,6 +188,7 @@ export function EmitirFacturaPage({
         productoId: p.id,
         // Con una sola no hay nada que preguntar; con varias, el selector.
         varianteId: p.variantes.length === 1 ? p.variantes[0].id : null,
+        suscripcionId: null,
         descripcion: p.nombre,
         cantidad: "1",
         // **Sin precio de lista acá, a diferencia de la orden.** Una línea del
@@ -232,7 +239,10 @@ export function EmitirFacturaPage({
   const sinDescripcion = lineas.some((l) => l.descripcion.trim() === "");
   /** Un bien con varias variantes necesita que alguien diga cuál salió. */
   const sinVariante = lineas.some(
-    (l) => (porId.get(l.productoId)?.variantes.length ?? 0) > 1 && !l.varianteId
+    (l) =>
+      l.productoId !== null &&
+      (porId.get(l.productoId)?.variantes.length ?? 0) > 1 &&
+      !l.varianteId
   );
 
   const motivoBloqueo =
@@ -252,8 +262,15 @@ export function EmitirFacturaPage({
                 ? "Falta elegir a nombre de quién se emite."
                 : null;
 
-  const emitir = async (yCobrar: boolean) => {
-    setEmitiendo(yCobrar ? "cobrar" : "solo");
+  /**
+   * Emitir, y volver a la orden. Cobrar es el paso siguiente, desde su ficha:
+   * hubo un *Emitir y cobrar* que abría el diálogo de cobro sobre el documento
+   * recién nacido, y mezclaba dos decisiones —qué sale impreso y cómo entró la
+   * plata— en un botón. El cobro se registra contra el comprobante, así que
+   * primero tiene que existir.
+   */
+  const emitir = async () => {
+    setEmitiendo(true);
     try {
       const res = await fetch(`/api/ordenes/${orden.id}/facturar`, {
         method: "POST",
@@ -264,6 +281,7 @@ export function EmitirFacturaPage({
           lineas: lineas.map((l) => ({
             productoId: l.productoId,
             varianteId: l.varianteId,
+            suscripcionId: l.suscripcionId,
             descripcion: l.descripcion.trim(),
             cantidad: Number(l.cantidad),
             precioUnitario: Number(l.precioUnitario),
@@ -280,21 +298,12 @@ export function EmitirFacturaPage({
         return;
       }
       toast.success(`${body.factura.numero} emitida`);
-      if (yCobrar) {
-        setCobrando({
-          id: body.factura.facturaId,
-          numero: body.factura.numero,
-          total: totales.total,
-          saldo: totales.total,
-        });
-        return;
-      }
       router.push(`/dashboard/ordenes/${orden.id}`);
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Error");
     } finally {
-      setEmitiendo(null);
+      setEmitiendo(false);
     }
   };
 
@@ -316,32 +325,18 @@ export function EmitirFacturaPage({
         </div>
         <div className="flex flex-none items-center gap-2">
           <Link href={backHref}>
-            <Button type="button" variant="outline" disabled={emitiendo !== null}>
+            <Button type="button" variant="outline" disabled={emitiendo}>
               Cancelar
             </Button>
           </Link>
           <Button
             type="button"
-            variant="outline"
-            onClick={() => emitir(false)}
-            disabled={emitiendo !== null || motivoBloqueo !== null}
+            onClick={emitir}
+            disabled={emitiendo || motivoBloqueo !== null}
             title={motivoBloqueo ?? undefined}
           >
-            {emitiendo === "solo" && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {emitiendo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Emitir
-          </Button>
-          <Button
-            type="button"
-            onClick={() => emitir(true)}
-            disabled={emitiendo !== null || motivoBloqueo !== null}
-            title={motivoBloqueo ?? undefined}
-          >
-            {emitiendo === "cobrar" && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            Emitir y cobrar
           </Button>
         </div>
       </div>
@@ -383,9 +378,19 @@ export function EmitirFacturaPage({
                           <div className="space-y-1">
                             <Label className="text-xs">Producto *</Label>
                             {/* Es de dónde sale el `codigoPrincipal` de la
-                                línea, y con qué queda asociada la venta. */}
+                                línea, y con qué queda asociada la venta. La
+                                línea de un plan no tiene: imprime el número
+                                del plan. La personalizada tampoco: imprime
+                                un código genérico. */}
+                            {l.productoId === null ? (
+                              <p className="flex h-9 items-center rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground">
+                                {l.suscripcionId && orden.suscripcion
+                                  ? `Suscripción #${orden.suscripcion.numero} · ${orden.suscripcion.propiedad}`
+                                  : "Ítem personalizado"}
+                              </p>
+                            ) : (
                             <CustomSelect
-                              value={l.productoId}
+                              value={l.productoId ?? ""}
                               onChange={(id) => {
                                 const p = porId.get(id);
                                 actualizar(l.uid, {
@@ -409,6 +414,7 @@ export function EmitirFacturaPage({
                               searchable
                               searchPlaceholder="Buscar producto..."
                             />
+                            )}
                           </div>
                         </div>
                         <Button
@@ -423,14 +429,16 @@ export function EmitirFacturaPage({
 
                       <div className="flex flex-wrap items-end gap-3">
                         {/* De la variante sale el SKU que se imprime y el
-                            stock que baja al autorizar. */}
-                        <SelectorVariante
-                          variantes={porId.get(l.productoId)?.variantes ?? []}
-                          value={l.varianteId}
-                          onChange={(varianteId) =>
-                            actualizar(l.uid, { varianteId })
-                          }
-                        />
+                            stock que baja al autorizar. Sin producto, nada. */}
+                        {l.productoId && (
+                          <SelectorVariante
+                            variantes={porId.get(l.productoId)?.variantes ?? []}
+                            value={l.varianteId}
+                            onChange={(varianteId) =>
+                              actualizar(l.uid, { varianteId })
+                            }
+                          />
+                        )}
                         <div className="w-20 space-y-1">
                           <Label className="text-xs">Cant.</Label>
                           <Input
@@ -611,16 +619,6 @@ export function EmitirFacturaPage({
         </div>
       </div>
 
-      {/* Emitir y cobrar es un solo movimiento para quien cobra, pero por debajo
-          son dos: el cobro se registra contra el documento que acaba de nacer. */}
-      <CobroDialog
-        factura={cobrando}
-        onClose={() => {
-          setCobrando(null);
-          router.push(`/dashboard/ordenes/${orden.id}`);
-          router.refresh();
-        }}
-      />
     </div>
   );
 }

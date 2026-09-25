@@ -29,10 +29,13 @@ export const actualizarVisitaSchema = z.object({
   fechaProgramada: z.string().min(1).optional(),
   /// Cadena vacía = borrarla. Una visita que se reabre deja de tener fecha real.
   fechaRealizada: z.string().nullable().optional(),
+  /// Otra propiedad del mismo cliente. La pantalla lo mandaba y Zod lo
+  /// descartaba en silencio: mover una visita de casa no hacía nada.
+  propiedadId: z.string().min(1).optional(),
   /// Reemplaza el juego entero de obligatorias.
   tareasObligatoriasIds: z.array(z.string().min(1)).optional(),
   grupoId: z.string().nullable().optional(),
-  /// `null` la desvincula del plan.
+  /// `null` la desvincula del plan. Tiene que ser de la propiedad de la visita.
   suscripcionId: z.string().nullable().optional(),
   notas: z.string().nullable().optional(),
   /// Va en el mismo PUT que el resto: la pantalla de edición guarda todo junto.

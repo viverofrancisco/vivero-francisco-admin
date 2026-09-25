@@ -15,6 +15,7 @@ import { getServicio, listServicios } from "./servicio.service";
 import { getCatalogoDelProducto } from "./variante.service";
 import { textoPlano } from "@/lib/html-seguro";
 import { globalSearch } from "./search.service";
+import { PERIODICIDAD_LABEL, unidadDePeriodo } from "@/lib/periodos";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { pushChatAgregado, pushChatMensaje } from "@/lib/push/triggers";
@@ -858,8 +859,10 @@ export async function vistaPreviaDeReferencia(
     fila(
       "Planes",
       c.suscripciones
-        .map((s) => s.items.map((i) => i.producto.nombre).join(", "))
-        .filter(Boolean)
+        .map(
+          (s) =>
+            `${PERIODICIDAD_LABEL[s.periodicidad] ?? s.periodicidad} · ${s.propiedad.nombre} · ${s.visitasPorPeriodo} visita${s.visitasPorPeriodo === 1 ? "" : "s"}/${unidadDePeriodo(s.periodicidad)}`
+        )
         .join("\n")
     );
     fila("Notas", c.notas);
@@ -886,8 +889,6 @@ export async function vistaPreviaDeReferencia(
   } else {
     fila("Variantes", String(catalogo.variantes.length));
   }
-  const enPlanes = p._count.suscripcionItems;
-  fila("En planes", enPlanes > 0 ? `${enPlanes} ${enPlanes === 1 ? "cliente" : "clientes"}` : null);
   return {
     tipo: "producto",
     id: p.id,

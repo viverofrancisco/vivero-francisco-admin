@@ -51,13 +51,12 @@ interface SuscripcionRow {
     apellido: string | null;
     empresa: string | null;
   };
-  items: {
-    id: string;
-    precio?: number;
-    ivaTasa?: number;
-    visitasPorPeriodo: number | null;
-    producto: { id: string; nombre: string };
-  }[];
+  /** De qué jardín es el plan. */
+  propiedad: { id: string; nombre: string };
+  visitasPorPeriodo: number;
+  /** Sin IVA. Ausentes para quien no ve precios. */
+  precio?: number;
+  ivaTasa?: number;
   /**
    * Períodos vencidos que todavía no tienen orden. Con el cron sano, 0.
    * Ausente para quien no ve precios: es un pendiente de facturación.
@@ -146,7 +145,7 @@ export function SuscripcionesTable({
         (s) =>
           String(s.numero).includes(q) ||
           nombreCliente(s.cliente).toLowerCase().includes(q) ||
-          s.items.some((i) => i.producto.nombre.toLowerCase().includes(q)),
+          s.propiedad.nombre.toLowerCase().includes(q),
       );
     }
     return r;
@@ -225,7 +224,7 @@ export function SuscripcionesTable({
             <div className="relative min-w-0 flex-1 md:min-w-[220px] md:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar por cliente o producto..."
+                placeholder="Buscar por cliente o propiedad..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-9"
@@ -320,10 +319,10 @@ export function SuscripcionesTable({
                 <TableRow>
                   <TableHead className="w-20">N.º</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Productos</TableHead>
                   {verPrecios && (
                     <TableHead className="text-right">Precio</TableHead>
                   )}
+                  <TableHead className="text-right">Visitas</TableHead>
                   <TableHead>Período</TableHead>
                   <TableHead>Desde</TableHead>
                   <TableHead className="text-right">Estado</TableHead>
@@ -345,29 +344,31 @@ export function SuscripcionesTable({
                     </TableCell>
                     <TableCell className="font-medium">
                       {nombreCliente(s.cliente)}
+                      {/* De qué jardín es, debajo del nombre y no en una
+                          columna propia: es el mismo "dónde" que el cliente,
+                          y una columna se paga en ancho todo el tiempo. */}
+                      <span className="block text-xs font-normal text-muted-foreground">
+                        {s.propiedad.nombre}
+                      </span>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      <div className="flex flex-col gap-0.5">
-                        {s.items.map((i) => (
-                          <span key={i.id} className="truncate">
-                            {i.producto.nombre}
-                            {verPrecios && (
-                              <span className="ml-2 text-xs tabular-nums">
-                                {money(i.precio ?? 0)}
-                                {(i.ivaTasa ?? 0) > 0 && ` +${i.ivaTasa}%`}
-                              </span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                    {/* Sin el sufijo: la columna de al lado dice el período,
-                        y repetirlo en cada fila era leer dos veces lo mismo. */}
+                    {/* Con IVA, y sin el sufijo: la columna de al lado dice
+                        el período, y repetirlo en cada fila era leer dos
+                        veces lo mismo. */}
                     {verPrecios && (
-                      <TableCell className="text-right font-semibold tabular-nums">
-                        {money(s.totalPeriodo ?? 0)}
+                      <TableCell className="text-right tabular-nums">
+                        <span className="font-semibold">
+                          {money(s.totalPeriodo ?? 0)}
+                        </span>
+                        {(s.ivaTasa ?? 0) > 0 && (
+                          <span className="block text-xs text-muted-foreground">
+                            {money(s.precio ?? 0)} + {s.ivaTasa}%
+                          </span>
+                        )}
                       </TableCell>
                     )}
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                      {s.visitasPorPeriodo}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {PERIODICIDAD_LABEL[s.periodicidad]}
                     </TableCell>
@@ -395,10 +396,9 @@ export function SuscripcionesTable({
         />
       </div>
 
-      {/* Móvil: cliente y estado arriba; debajo, los productos del plan con su
-          período. El precio va al final del renglón y solo si esta persona ve
-          plata — un PERSONAL_ADMIN ve sus planes sin importes, y eso se decide
-          en el servidor, no con CSS. */}
+      {/* Móvil: cliente y estado arriba; debajo, de qué propiedad es y qué
+          incluye. El precio va en el renglón y solo si esta persona ve plata:
+          eso se decide en el servidor, no con CSS. */}
       <ListaMovil
         vacia={filtradas.length === 0}
         mensajeVacio="No hay suscripciones que coincidan"
@@ -418,7 +418,7 @@ export function SuscripcionesTable({
                 {nombreCliente(s.cliente)}
               </span>
               <span className="block truncate text-xs font-medium text-muted-foreground">
-                {s.items.map((i) => i.producto.nombre).join(", ")}
+                {s.propiedad.nombre}
               </span>
               <span className="block truncate text-xs font-medium text-muted-foreground">
                 {PERIODICIDAD_LABEL[s.periodicidad]}
@@ -430,6 +430,9 @@ export function SuscripcionesTable({
                     </span>
                   </>
                 )}
+                {" · "}
+                <span className="tabular-nums">{s.visitasPorPeriodo}</span>
+                {` visita${s.visitasPorPeriodo === 1 ? "" : "s"}`}
                 {" · desde "}
                 <span className="tabular-nums">{fecha(s.fechaInicio)}</span>
               </span>

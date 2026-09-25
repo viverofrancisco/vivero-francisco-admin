@@ -42,10 +42,21 @@ export default async function EditarClientePage({
           where: { archivado: false },
           orderBy: [{ esPredeterminado: "desc" }, { createdAt: "asc" }],
         },
+        // Sus planes: de qué jardín, cuánto y cuántas visitas.
         suscripciones: {
           where: { estado: { not: "CANCELADO" } },
-          include: { items: { include: { producto: true } } },
-          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            numero: true,
+            estado: true,
+            periodicidad: true,
+            fechaInicio: true,
+            precio: true,
+            ivaTasa: true,
+            visitasPorPeriodo: true,
+            propiedad: { select: { id: true, nombre: true } },
+          },
+          orderBy: { numero: "asc" },
         },
       },
     }),
@@ -77,28 +88,19 @@ export default async function EditarClientePage({
    */
   const verPlata = isAdminRole(user.role);
 
-  // La ficha muestra los ítems de todas sus suscripciones: es lo que el cliente
-  // tiene contratado, sin importar en qué suscripción esté agrupado.
-  const asignaciones = cliente.suscripciones.flatMap((s) =>
-    s.items.map((i) => ({
-      id: i.id,
-      suscripcionId: s.id,
-      productoId: i.productoId,
-      // El precio solo viaja si quien mira puede verlo.
-      ...(verPlata
-        ? { precio: Number(i.precio), ivaTasa: Number(i.ivaTasa) }
-        : {}),
-      visitasPorPeriodo: i.visitasPorPeriodo,
-      estado: s.estado,
-      periodicidad: s.periodicidad,
-      fechaInicio: s.fechaInicio.toISOString(),
-      producto: {
-        id: i.producto.id,
-        nombre: i.producto.nombre,
-        tipo: i.producto.tipo,
-      },
-    }))
-  );
+  const suscripciones = cliente.suscripciones.map((s) => ({
+    id: s.id,
+    numero: s.numero,
+    estado: s.estado,
+    periodicidad: s.periodicidad,
+    fechaInicio: s.fechaInicio.toISOString(),
+    visitasPorPeriodo: s.visitasPorPeriodo,
+    propiedad: s.propiedad,
+    // El precio solo viaja si quien mira puede verlo.
+    ...(verPlata
+      ? { precio: Number(s.precio), ivaTasa: Number(s.ivaTasa) }
+      : {}),
+  }));
 
   const visitasSerialized = visitas.map((v) => ({
     id: v.id,
@@ -157,7 +159,7 @@ export default async function EditarClientePage({
           m2Cesped: p.m2Cesped,
           visitas: p._count.visitas,
         }))}
-        asignaciones={asignaciones}
+        suscripciones={suscripciones}
         ordenes={ordenes.map((o) => ({
           id: o.id,
           numero: o.numero,

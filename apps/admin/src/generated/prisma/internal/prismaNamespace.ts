@@ -401,7 +401,6 @@ export const ModelName = {
   ProductoImagen: 'ProductoImagen',
   MovimientoInventario: 'MovimientoInventario',
   Suscripcion: 'Suscripcion',
-  SuscripcionItem: 'SuscripcionItem',
   Personal: 'Personal',
   Grupo: 'Grupo',
   Tarea: 'Tarea',
@@ -459,7 +458,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "suscripcionItem" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1718,80 +1717,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SuscripcionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SuscripcionCountAggregateOutputType> | number
-        }
-      }
-    }
-    SuscripcionItem: {
-      payload: Prisma.$SuscripcionItemPayload<ExtArgs>
-      fields: Prisma.SuscripcionItemFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.SuscripcionItemFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.SuscripcionItemFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>
-        }
-        findFirst: {
-          args: Prisma.SuscripcionItemFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.SuscripcionItemFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>
-        }
-        findMany: {
-          args: Prisma.SuscripcionItemFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>[]
-        }
-        create: {
-          args: Prisma.SuscripcionItemCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>
-        }
-        createMany: {
-          args: Prisma.SuscripcionItemCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.SuscripcionItemCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>[]
-        }
-        delete: {
-          args: Prisma.SuscripcionItemDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>
-        }
-        update: {
-          args: Prisma.SuscripcionItemUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>
-        }
-        deleteMany: {
-          args: Prisma.SuscripcionItemDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.SuscripcionItemUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.SuscripcionItemUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>[]
-        }
-        upsert: {
-          args: Prisma.SuscripcionItemUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SuscripcionItemPayload>
-        }
-        aggregate: {
-          args: Prisma.SuscripcionItemAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateSuscripcionItem>
-        }
-        groupBy: {
-          args: Prisma.SuscripcionItemGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SuscripcionItemGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.SuscripcionItemCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SuscripcionItemCountAggregateOutputType> | number
         }
       }
     }
@@ -5179,10 +5104,14 @@ export const SuscripcionScalarFieldEnum = {
   id: 'id',
   numero: 'numero',
   clienteId: 'clienteId',
+  propiedadId: 'propiedadId',
   estado: 'estado',
   periodicidad: 'periodicidad',
   fechaInicio: 'fechaInicio',
   fechaFin: 'fechaFin',
+  precio: 'precio',
+  ivaTasa: 'ivaTasa',
+  visitasPorPeriodo: 'visitasPorPeriodo',
   notas: 'notas',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -5191,18 +5120,6 @@ export const SuscripcionScalarFieldEnum = {
 } as const
 
 export type SuscripcionScalarFieldEnum = (typeof SuscripcionScalarFieldEnum)[keyof typeof SuscripcionScalarFieldEnum]
-
-
-export const SuscripcionItemScalarFieldEnum = {
-  id: 'id',
-  suscripcionId: 'suscripcionId',
-  productoId: 'productoId',
-  precio: 'precio',
-  ivaTasa: 'ivaTasa',
-  visitasPorPeriodo: 'visitasPorPeriodo'
-} as const
-
-export type SuscripcionItemScalarFieldEnum = (typeof SuscripcionItemScalarFieldEnum)[keyof typeof SuscripcionItemScalarFieldEnum]
 
 
 export const PersonalScalarFieldEnum = {
@@ -5597,7 +5514,8 @@ export const InformeSeccionScalarFieldEnum = {
   descripcion: 'descripcion',
   orden: 'orden',
   saltoDePagina: 'saltoDePagina',
-  fotosPorFila: 'fotosPorFila'
+  fotosPorFila: 'fotosPorFila',
+  fotosAlineacion: 'fotosAlineacion'
 } as const
 
 export type InformeSeccionScalarFieldEnum = (typeof InformeSeccionScalarFieldEnum)[keyof typeof InformeSeccionScalarFieldEnum]
@@ -5721,7 +5639,7 @@ export const OrdenLineaScalarFieldEnum = {
   total: 'total',
   productoId: 'productoId',
   varianteId: 'varianteId',
-  suscripcionItemId: 'suscripcionItemId',
+  suscripcionId: 'suscripcionId',
   periodoInicio: 'periodoInicio',
   periodoFin: 'periodoFin'
 } as const
@@ -5812,6 +5730,7 @@ export const FacturaLineaScalarFieldEnum = {
   subtotal: 'subtotal',
   iva: 'iva',
   total: 'total',
+  codigo: 'codigo',
   productoId: 'productoId',
   varianteId: 'varianteId'
 } as const
@@ -6188,6 +6107,20 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'AlineacionDeFotos'
+ */
+export type EnumAlineacionDeFotosFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AlineacionDeFotos'>
+    
+
+
+/**
+ * Reference to a field of type 'AlineacionDeFotos[]'
+ */
+export type ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AlineacionDeFotos[]'>
+    
+
+
+/**
  * Reference to a field of type 'OrdenTareas'
  */
 export type EnumOrdenTareasFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrdenTareas'>
@@ -6425,7 +6358,6 @@ export type GlobalOmitConfig = {
   productoImagen?: Prisma.ProductoImagenOmit
   movimientoInventario?: Prisma.MovimientoInventarioOmit
   suscripcion?: Prisma.SuscripcionOmit
-  suscripcionItem?: Prisma.SuscripcionItemOmit
   personal?: Prisma.PersonalOmit
   grupo?: Prisma.GrupoOmit
   tarea?: Prisma.TareaOmit

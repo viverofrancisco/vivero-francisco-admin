@@ -45,6 +45,7 @@ export type InformeSeccionMinAggregateOutputType = {
   orden: number | null
   saltoDePagina: boolean | null
   fotosPorFila: number | null
+  fotosAlineacion: $Enums.AlineacionDeFotos | null
 }
 
 export type InformeSeccionMaxAggregateOutputType = {
@@ -56,6 +57,7 @@ export type InformeSeccionMaxAggregateOutputType = {
   orden: number | null
   saltoDePagina: boolean | null
   fotosPorFila: number | null
+  fotosAlineacion: $Enums.AlineacionDeFotos | null
 }
 
 export type InformeSeccionCountAggregateOutputType = {
@@ -67,6 +69,7 @@ export type InformeSeccionCountAggregateOutputType = {
   orden: number
   saltoDePagina: number
   fotosPorFila: number
+  fotosAlineacion: number
   _all: number
 }
 
@@ -90,6 +93,7 @@ export type InformeSeccionMinAggregateInputType = {
   orden?: true
   saltoDePagina?: true
   fotosPorFila?: true
+  fotosAlineacion?: true
 }
 
 export type InformeSeccionMaxAggregateInputType = {
@@ -101,6 +105,7 @@ export type InformeSeccionMaxAggregateInputType = {
   orden?: true
   saltoDePagina?: true
   fotosPorFila?: true
+  fotosAlineacion?: true
 }
 
 export type InformeSeccionCountAggregateInputType = {
@@ -112,6 +117,7 @@ export type InformeSeccionCountAggregateInputType = {
   orden?: true
   saltoDePagina?: true
   fotosPorFila?: true
+  fotosAlineacion?: true
   _all?: true
 }
 
@@ -210,6 +216,7 @@ export type InformeSeccionGroupByOutputType = {
   orden: number
   saltoDePagina: boolean
   fotosPorFila: number
+  fotosAlineacion: $Enums.AlineacionDeFotos
   _count: InformeSeccionCountAggregateOutputType | null
   _avg: InformeSeccionAvgAggregateOutputType | null
   _sum: InformeSeccionSumAggregateOutputType | null
@@ -244,6 +251,7 @@ export type InformeSeccionWhereInput = {
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntFilter<"InformeSeccion"> | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFilter<"InformeSeccion"> | $Enums.AlineacionDeFotos
   informe?: Prisma.XOR<Prisma.InformeScalarRelationFilter, Prisma.InformeWhereInput>
   tarea?: Prisma.XOR<Prisma.TareaNullableScalarRelationFilter, Prisma.TareaWhereInput> | null
   fotos?: Prisma.InformeSeccionFotoListRelationFilter
@@ -258,6 +266,7 @@ export type InformeSeccionOrderByWithRelationInput = {
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
+  fotosAlineacion?: Prisma.SortOrder
   informe?: Prisma.InformeOrderByWithRelationInput
   tarea?: Prisma.TareaOrderByWithRelationInput
   fotos?: Prisma.InformeSeccionFotoOrderByRelationAggregateInput
@@ -275,6 +284,7 @@ export type InformeSeccionWhereUniqueInput = Prisma.AtLeast<{
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntFilter<"InformeSeccion"> | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFilter<"InformeSeccion"> | $Enums.AlineacionDeFotos
   informe?: Prisma.XOR<Prisma.InformeScalarRelationFilter, Prisma.InformeWhereInput>
   tarea?: Prisma.XOR<Prisma.TareaNullableScalarRelationFilter, Prisma.TareaWhereInput> | null
   fotos?: Prisma.InformeSeccionFotoListRelationFilter
@@ -289,6 +299,7 @@ export type InformeSeccionOrderByWithAggregationInput = {
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
+  fotosAlineacion?: Prisma.SortOrder
   _count?: Prisma.InformeSeccionCountOrderByAggregateInput
   _avg?: Prisma.InformeSeccionAvgOrderByAggregateInput
   _max?: Prisma.InformeSeccionMaxOrderByAggregateInput
@@ -308,6 +319,7 @@ export type InformeSeccionScalarWhereWithAggregatesInput = {
   orden?: Prisma.IntWithAggregatesFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolWithAggregatesFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntWithAggregatesFilter<"InformeSeccion"> | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosWithAggregatesFilter<"InformeSeccion"> | $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionCreateInput = {
@@ -317,6 +329,7 @@ export type InformeSeccionCreateInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
   tarea?: Prisma.TareaCreateNestedOneWithoutSeccionesInput
   fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
@@ -331,6 +344,7 @@ export type InformeSeccionUncheckedCreateInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
   fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
 
@@ -341,6 +355,7 @@ export type InformeSeccionUpdateInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
   tarea?: Prisma.TareaUpdateOneWithoutSeccionesNestedInput
   fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
@@ -355,6 +370,7 @@ export type InformeSeccionUncheckedUpdateInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
   fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
 
@@ -367,6 +383,7 @@ export type InformeSeccionCreateManyInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionUpdateManyMutationInput = {
@@ -376,6 +393,7 @@ export type InformeSeccionUpdateManyMutationInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionUncheckedUpdateManyInput = {
@@ -387,6 +405,7 @@ export type InformeSeccionUncheckedUpdateManyInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionListRelationFilter = {
@@ -408,6 +427,7 @@ export type InformeSeccionCountOrderByAggregateInput = {
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
+  fotosAlineacion?: Prisma.SortOrder
 }
 
 export type InformeSeccionAvgOrderByAggregateInput = {
@@ -424,6 +444,7 @@ export type InformeSeccionMaxOrderByAggregateInput = {
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
+  fotosAlineacion?: Prisma.SortOrder
 }
 
 export type InformeSeccionMinOrderByAggregateInput = {
@@ -435,6 +456,7 @@ export type InformeSeccionMinOrderByAggregateInput = {
   orden?: Prisma.SortOrder
   saltoDePagina?: Prisma.SortOrder
   fotosPorFila?: Prisma.SortOrder
+  fotosAlineacion?: Prisma.SortOrder
 }
 
 export type InformeSeccionSumOrderByAggregateInput = {
@@ -531,6 +553,10 @@ export type InformeSeccionUncheckedUpdateManyWithoutInformeNestedInput = {
   deleteMany?: Prisma.InformeSeccionScalarWhereInput | Prisma.InformeSeccionScalarWhereInput[]
 }
 
+export type EnumAlineacionDeFotosFieldUpdateOperationsInput = {
+  set?: $Enums.AlineacionDeFotos
+}
+
 export type InformeSeccionCreateNestedOneWithoutFotosInput = {
   create?: Prisma.XOR<Prisma.InformeSeccionCreateWithoutFotosInput, Prisma.InformeSeccionUncheckedCreateWithoutFotosInput>
   connectOrCreate?: Prisma.InformeSeccionCreateOrConnectWithoutFotosInput
@@ -552,6 +578,7 @@ export type InformeSeccionCreateWithoutTareaInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
   fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
 }
@@ -564,6 +591,7 @@ export type InformeSeccionUncheckedCreateWithoutTareaInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
   fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
 
@@ -605,6 +633,7 @@ export type InformeSeccionScalarWhereInput = {
   orden?: Prisma.IntFilter<"InformeSeccion"> | number
   saltoDePagina?: Prisma.BoolFilter<"InformeSeccion"> | boolean
   fotosPorFila?: Prisma.IntFilter<"InformeSeccion"> | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFilter<"InformeSeccion"> | $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionCreateWithoutInformeInput = {
@@ -614,6 +643,7 @@ export type InformeSeccionCreateWithoutInformeInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
   tarea?: Prisma.TareaCreateNestedOneWithoutSeccionesInput
   fotos?: Prisma.InformeSeccionFotoCreateNestedManyWithoutSeccionInput
 }
@@ -626,6 +656,7 @@ export type InformeSeccionUncheckedCreateWithoutInformeInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
   fotos?: Prisma.InformeSeccionFotoUncheckedCreateNestedManyWithoutSeccionInput
 }
 
@@ -662,6 +693,7 @@ export type InformeSeccionCreateWithoutFotosInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
   informe: Prisma.InformeCreateNestedOneWithoutSeccionesInput
   tarea?: Prisma.TareaCreateNestedOneWithoutSeccionesInput
 }
@@ -675,6 +707,7 @@ export type InformeSeccionUncheckedCreateWithoutFotosInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionCreateOrConnectWithoutFotosInput = {
@@ -700,6 +733,7 @@ export type InformeSeccionUpdateWithoutFotosInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
   tarea?: Prisma.TareaUpdateOneWithoutSeccionesNestedInput
 }
@@ -713,6 +747,7 @@ export type InformeSeccionUncheckedUpdateWithoutFotosInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionCreateManyTareaInput = {
@@ -723,6 +758,7 @@ export type InformeSeccionCreateManyTareaInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionUpdateWithoutTareaInput = {
@@ -732,6 +768,7 @@ export type InformeSeccionUpdateWithoutTareaInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
   informe?: Prisma.InformeUpdateOneRequiredWithoutSeccionesNestedInput
   fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
 }
@@ -744,6 +781,7 @@ export type InformeSeccionUncheckedUpdateWithoutTareaInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
   fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
 
@@ -755,6 +793,7 @@ export type InformeSeccionUncheckedUpdateManyWithoutTareaInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionCreateManyInformeInput = {
@@ -765,6 +804,7 @@ export type InformeSeccionCreateManyInformeInput = {
   orden: number
   saltoDePagina?: boolean
   fotosPorFila?: number
+  fotosAlineacion?: $Enums.AlineacionDeFotos
 }
 
 export type InformeSeccionUpdateWithoutInformeInput = {
@@ -774,6 +814,7 @@ export type InformeSeccionUpdateWithoutInformeInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
   tarea?: Prisma.TareaUpdateOneWithoutSeccionesNestedInput
   fotos?: Prisma.InformeSeccionFotoUpdateManyWithoutSeccionNestedInput
 }
@@ -786,6 +827,7 @@ export type InformeSeccionUncheckedUpdateWithoutInformeInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
   fotos?: Prisma.InformeSeccionFotoUncheckedUpdateManyWithoutSeccionNestedInput
 }
 
@@ -797,6 +839,7 @@ export type InformeSeccionUncheckedUpdateManyWithoutInformeInput = {
   orden?: Prisma.IntFieldUpdateOperationsInput | number
   saltoDePagina?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fotosPorFila?: Prisma.IntFieldUpdateOperationsInput | number
+  fotosAlineacion?: Prisma.EnumAlineacionDeFotosFieldUpdateOperationsInput | $Enums.AlineacionDeFotos
 }
 
 
@@ -839,6 +882,7 @@ export type InformeSeccionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   orden?: boolean
   saltoDePagina?: boolean
   fotosPorFila?: boolean
+  fotosAlineacion?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   tarea?: boolean | Prisma.InformeSeccion$tareaArgs<ExtArgs>
   fotos?: boolean | Prisma.InformeSeccion$fotosArgs<ExtArgs>
@@ -854,6 +898,7 @@ export type InformeSeccionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   orden?: boolean
   saltoDePagina?: boolean
   fotosPorFila?: boolean
+  fotosAlineacion?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   tarea?: boolean | Prisma.InformeSeccion$tareaArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccion"]>
@@ -867,6 +912,7 @@ export type InformeSeccionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   orden?: boolean
   saltoDePagina?: boolean
   fotosPorFila?: boolean
+  fotosAlineacion?: boolean
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   tarea?: boolean | Prisma.InformeSeccion$tareaArgs<ExtArgs>
 }, ExtArgs["result"]["informeSeccion"]>
@@ -880,9 +926,10 @@ export type InformeSeccionSelectScalar = {
   orden?: boolean
   saltoDePagina?: boolean
   fotosPorFila?: boolean
+  fotosAlineacion?: boolean
 }
 
-export type InformeSeccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "informeId" | "tareaId" | "titulo" | "descripcion" | "orden" | "saltoDePagina" | "fotosPorFila", ExtArgs["result"]["informeSeccion"]>
+export type InformeSeccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "informeId" | "tareaId" | "titulo" | "descripcion" | "orden" | "saltoDePagina" | "fotosPorFila" | "fotosAlineacion", ExtArgs["result"]["informeSeccion"]>
 export type InformeSeccionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   informe?: boolean | Prisma.InformeDefaultArgs<ExtArgs>
   tarea?: boolean | Prisma.InformeSeccion$tareaArgs<ExtArgs>
@@ -929,6 +976,11 @@ export type $InformeSeccionPayload<ExtArgs extends runtime.Types.Extensions.Inte
      * dejan corta.
      */
     fotosPorFila: number
+    /**
+     * Hacia dónde se arriman las fotos en una fila incompleta. Solo se nota en
+     * la última fila de la sección: las llenas ocupan todo el ancho igual.
+     */
+    fotosAlineacion: $Enums.AlineacionDeFotos
   }, ExtArgs["result"]["informeSeccion"]>
   composites: {}
 }
@@ -1363,6 +1415,7 @@ export interface InformeSeccionFieldRefs {
   readonly orden: Prisma.FieldRef<"InformeSeccion", 'Int'>
   readonly saltoDePagina: Prisma.FieldRef<"InformeSeccion", 'Boolean'>
   readonly fotosPorFila: Prisma.FieldRef<"InformeSeccion", 'Int'>
+  readonly fotosAlineacion: Prisma.FieldRef<"InformeSeccion", 'AlineacionDeFotos'>
 }
     
 

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { esFotosPorFila } from "@/lib/informes/template-data";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireStaff, viewerFromSession } from "@/lib/auth-helpers";
 import {
@@ -87,9 +88,8 @@ export default async function EditarInformePage({
       titulo: sec.titulo,
       descripcion: sec.descripcion ?? "",
       saltoDePagina: sec.saltoDePagina,
-      fotosPorFila: (sec.fotosPorFila === 2 || sec.fotosPorFila === 4
-        ? sec.fotosPorFila
-        : 3) as 2 | 3 | 4,
+      fotosPorFila: esFotosPorFila(sec.fotosPorFila) ? sec.fotosPorFila : 3,
+      fotosAlineacion: sec.fotosAlineacion,
       fotos: sec.fotos.map((f) => ({
         visitaMediaId: f.visitaMediaId,
         mediaId: f.mediaId,

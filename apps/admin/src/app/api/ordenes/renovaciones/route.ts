@@ -9,18 +9,14 @@ import { ForbiddenError } from "@/lib/services/errors";
  * Dispara la generación de renovaciones a mano.
  *
  * Es la misma función que corre el cron, así que es igual de idempotente. Existe
- * para poder ponerse al día sin esperar al día siguiente cuando el cron falló, o
- * después de vincular un producto que había quedado suelto.
+ * para poder ponerse al día sin esperar al día siguiente cuando el cron falló.
  */
 export async function POST() {
   const viewer = await viewerFromSession();
   try {
     if (!isAdminRole(viewer.role)) throw new ForbiddenError();
     const resultado = await generarRenovaciones();
-    return NextResponse.json({
-      creadas: resultado.creadas.length,
-      omitidas: resultado.omitidas,
-    });
+    return NextResponse.json({ creadas: resultado.creadas.length });
   } catch (error) {
     return serviceErrorResponse(error);
   }

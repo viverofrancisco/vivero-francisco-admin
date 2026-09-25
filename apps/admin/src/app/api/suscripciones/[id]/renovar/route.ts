@@ -18,10 +18,7 @@ export async function POST(
   const { id } = await params;
   try {
     const r = await generarRenovaciones(new Date(), id);
-    return NextResponse.json({
-      creadas: r.creadas.length,
-      omitidas: r.omitidas,
-    });
+    return NextResponse.json({ creadas: r.creadas.length });
   } catch (error) {
     return serviceErrorResponse(error);
   }

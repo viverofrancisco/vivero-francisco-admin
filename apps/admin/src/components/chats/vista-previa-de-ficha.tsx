@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
+import { useEsMovil } from "@/lib/use-es-movil";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -25,21 +26,6 @@ import { ETIQUETA_REFERENCIA, hrefDeReferencia, IconoDeReferencia } from "./refe
  * acceso de quien mira: un 403 se convierte en el aviso de siempre y la
  * hoja se cierra sola. La app tiene la misma hoja (`VistaPreviaDeFicha`).
  */
-const MOVIL = "(max-width: 767px)";
-
-/** Debajo de `md`, el mismo corte que decide tabla o lista. */
-function useEsMovil() {
-  return useSyncExternalStore(
-    (avisar) => {
-      const mq = window.matchMedia(MOVIL);
-      mq.addEventListener("change", avisar);
-      return () => mq.removeEventListener("change", avisar);
-    },
-    () => window.matchMedia(MOVIL).matches,
-    () => false
-  );
-}
-
 type Carga = {
   clave: string;
   datos: VistaPreviaDeReferencia | null;

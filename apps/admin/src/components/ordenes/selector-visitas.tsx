@@ -19,9 +19,11 @@ import { fecha } from "./formato";
  */
 export interface Pendiente {
   tipo: "suscripcion";
-  suscripcionItemId: string;
   suscripcionId: string;
-  productoId: string;
+  /** Para nombrarlo en la lista: "Suscripción #12 · Casa". */
+  suscripcionNumero: number;
+  propiedad: string;
+  /** Con lo que nace la línea: "Plan mensual · Casa · septiembre 2026". */
   descripcion: string;
   precio: string;
   ivaTasa: string;
@@ -43,14 +45,14 @@ export interface LineaEditable {
   cantidad: string;
   precioUnitario: string;
   ivaTasa: string;
-  productoId: string;
+  /** `null` solo en la línea de un período de plan: no vende un producto. */
+  productoId: string | null;
   /**
-   * Qué variante se vende. Solo en un bien: un servicio no tiene ninguna, y un
-   * bien con una sola la trae elegida — preguntar por una decisión que no
-   * existe es ruido.
+   * Qué variante se vende. Un bien con una sola la trae elegida — preguntar
+   * por una decisión que no existe es ruido. Sin producto, ninguna.
    */
   varianteId: string | null;
-  suscripcionItemId: string | null;
+  suscripcionId: string | null;
   periodoInicio: string | null;
   periodoFin: string | null;
 }
@@ -63,7 +65,36 @@ export function origenDeLinea(l: LineaEditable): string | null {
   if (l.periodoInicio && l.periodoFin) {
     return `Suscripción · ${fecha(l.periodoInicio)} → ${fecha(l.periodoFin)}`;
   }
+  if (esPersonalizada(l)) return "Ítem personalizado";
   return null;
+}
+
+/**
+ * Una línea sin producto ni plan: un trabajo puntual escrito a mano, el "ítem
+ * personalizado" de Shopify. Es la única cuya descripción se edita en la
+ * orden, porque no hay catálogo del que tomarla.
+ */
+export function esPersonalizada(l: {
+  productoId: string | null;
+  suscripcionId: string | null;
+}): boolean {
+  return !l.productoId && !l.suscripcionId;
+}
+
+/** Una línea personalizada recién agregada: vacía, para escribirla. */
+export function lineaPersonalizada(): LineaEditable {
+  return {
+    uid: nuevoUid(),
+    descripcion: "",
+    cantidad: "1",
+    precioUnitario: "",
+    ivaTasa: "15",
+    productoId: null,
+    varianteId: null,
+    suscripcionId: null,
+    periodoInicio: null,
+    periodoFin: null,
+  };
 }
 
 /** Una visita del cliente que la orden puede decir que cubre. */

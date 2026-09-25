@@ -151,13 +151,6 @@ export type MovimientoInventario = Prisma.MovimientoInventarioModel
  */
 export type Suscripcion = Prisma.SuscripcionModel
 /**
- * Model SuscripcionItem
- * Un producto dentro de una suscripción, con su propio precio e IVA. La tasa
- * va acá y no en la cabecera porque una misma factura puede mezclar líneas al
- * 0% y al 15%.
- */
-export type SuscripcionItem = Prisma.SuscripcionItemModel
-/**
  * Model Personal
  * 
  */

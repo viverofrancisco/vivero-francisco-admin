@@ -62,7 +62,6 @@ async function main() {
       ["VisitaPersonal", () => prisma.visitaPersonal.deleteMany()],
       ["VisitaTareaObligatoria", () => prisma.visitaTareaObligatoria.deleteMany()],
       ["Visita", () => prisma.visita.deleteMany()],
-      ["SuscripcionItem", () => prisma.suscripcionItem.deleteMany()],
       ["Suscripcion", () => prisma.suscripcion.deleteMany()],
       ["NotificacionLog", () => prisma.notificacionLog.deleteMany()],
     ];
@@ -84,7 +83,6 @@ async function main() {
         VisitaPersonal: await prisma.visitaPersonal.count(),
         VisitaTareaObligatoria: await prisma.visitaTareaObligatoria.count(),
         Visita: await prisma.visita.count(),
-        SuscripcionItem: await prisma.suscripcionItem.count(),
         Suscripcion: await prisma.suscripcion.count(),
         NotificacionLog: await prisma.notificacionLog.count(),
       };

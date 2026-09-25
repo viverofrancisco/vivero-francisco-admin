@@ -46,13 +46,12 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
       lineas: {
         orderBy: { posicion: "asc" },
         select: {
+          codigo: true,
           descripcion: true,
           cantidad: true,
           precioUnitario: true,
           subtotal: true,
           total: true,
-          producto: { select: { id: true } },
-          variante: { select: { sku: true } },
         },
       },
     },
@@ -88,8 +87,9 @@ export async function datosDelRide(facturaId: string): Promise<RideDatos> {
       direccion: factura.datoFacturacion?.direccion ?? null,
     },
     lineas: factura.lineas.map((l) => ({
-      // El SKU de la variante: es donde vive el código del catálogo.
-      codigo: l.variante.sku ?? l.producto.id.slice(-10).toUpperCase(),
+      // El código que salió impreso, congelado en la línea: el RIDE es el
+      // comprobante en papel y tiene que decir lo mismo que el XML.
+      codigo: l.codigo,
       descripcion: l.descripcion,
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),

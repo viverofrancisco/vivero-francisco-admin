@@ -128,6 +128,7 @@ export async function PUT(
     const {
       fechaProgramada,
       fechaRealizada,
+      propiedadId,
       grupoId,
       notas,
       tareasObligatoriasIds,
@@ -136,6 +137,7 @@ export async function PUT(
     const soloPersonal =
       fechaProgramada === undefined &&
       fechaRealizada === undefined &&
+      propiedadId === undefined &&
       grupoId === undefined &&
       notas === undefined &&
       tareasObligatoriasIds === undefined &&
@@ -154,6 +156,7 @@ export async function PUT(
               : null,
           }
         : {}),
+      ...(propiedadId !== undefined ? { propiedadId } : {}),
       ...(grupoId !== undefined ? { grupoId: grupoId || null } : {}),
       ...(notas !== undefined ? { notas: notas || null } : {}),
       ...(tareasObligatoriasIds !== undefined

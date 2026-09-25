@@ -28,6 +28,8 @@ export function Campo({
   autoCapitalize,
   multiline,
   placeholder,
+  prefijo,
+  autoFocus,
 }: {
   label: string;
   required?: boolean;
@@ -37,11 +39,16 @@ export function Campo({
   autoCapitalize?: "none" | "sentences" | "words";
   multiline?: boolean;
   placeholder?: string;
+  /** Un signo pegado al valor: "$" en un precio. */
+  prefijo?: string;
+  autoFocus?: boolean;
 }) {
   return (
     <TextInput
       mode="outlined"
       label={required ? `${label} *` : label}
+      left={prefijo ? <TextInput.Affix text={prefijo} /> : undefined}
+      autoFocus={autoFocus}
       value={value}
       onChangeText={onChangeText}
       keyboardType={keyboardType}

@@ -135,7 +135,8 @@ interface VisitaDetailData {
     numero: number;
     periodicidad: string;
     estado: string;
-    cliente: { nombre: string; apellido: string | null; empresa: string | null };
+    /** De qué jardín es el plan: el mismo que el de la visita. */
+    propiedad: { nombre: string };
   } | null;
 }
 
@@ -422,7 +423,7 @@ export function VisitaDetail({
                   Suscripción #{plan.numero}
                 </span>
                 <span className="block truncate text-xs font-semibold text-muted-foreground">
-                  {nombreCliente(plan.cliente)} ·{" "}
+                  {plan.propiedad.nombre} ·{" "}
                   {PERIODICIDAD_LABEL[plan.periodicidad] ?? plan.periodicidad}
                 </span>
               </span>

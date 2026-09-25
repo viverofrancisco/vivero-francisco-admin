@@ -9,13 +9,19 @@ import { z } from "zod/v4";
  * encarga el servicio: es una regla del negocio, no de la forma del cuerpo.
  */
 export const lineaFacturaSchema = z.object({
-  /** Con qué queda asociada la venta. */
-  productoId: z.string().min(1),
+  /**
+   * Con qué queda asociada la venta. `null` solo en la línea de un plan: su
+   * código impreso sale del número del plan, y eso lo comprueba el servicio.
+   */
+  productoId: z.string().min(1).nullable(),
   /**
    * Qué variante sale. **Su SKU es el `codigoPrincipal`** impreso, y es de
-   * dónde se descuenta el stock al autorizar. Todo producto tiene una.
+   * dónde se descuenta el stock al autorizar. Todo producto tiene una; sin
+   * producto, ninguna.
    */
-  varianteId: z.string().min(1),
+  varianteId: z.string().min(1).nullable(),
+  /** De qué plan es el período, si la línea es la de un plan: imprime `SUS-N`. */
+  suscripcionId: z.string().min(1).nullable().optional(),
   /** Lo que sale impreso, tal cual: va al `descripcion` del detalle del XML. */
   descripcion: z.string().min(1, "La línea necesita una descripción"),
   cantidad: z.number().positive(),

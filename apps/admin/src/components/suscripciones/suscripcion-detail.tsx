@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,15 @@ import {
 } from "@/components/ui/card";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { ResumenSuscripcion } from "./resumen-suscripcion";
-import { ArrowLeft, Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { useRegistrarCambios } from "@/components/shared/cambios-pendientes";
+import { ArrowLeft, Loader2, Navigation, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { nombreCliente } from "@vivero/shared";
+import {
+  direccionDePropiedad,
+  enlaceParaLlegar,
+  nombreCliente,
+  zonaDePropiedad,
+} from "@vivero/shared";
 import {
   PERIODICIDAD_LABEL,
   PERIODICIDAD_SUFIJO,
@@ -28,13 +34,17 @@ import {
   money,
 } from "./formato";
 
-interface ItemData {
+/** Una propiedad del cliente, con lo que hace falta para decir dónde queda. */
+interface PropiedadOpcion {
   id: string;
-  productoId: string;
   nombre: string;
-  precio: number;
-  ivaTasa: number;
-  visitasPorPeriodo: number | null;
+  ciudad: string | null;
+  direccion: string | null;
+  numeroCasa: string | null;
+  referencia: string | null;
+  lat: number | null;
+  lng: number | null;
+  sector: { id: string; nombre: string } | null;
 }
 
 interface SuscripcionData {
@@ -45,32 +55,83 @@ interface SuscripcionData {
   periodicidad: string;
   fechaInicio: string;
   notas: string | null;
+  /** Sin IVA, por período. Cero para quien no ve precios. */
+  precio: number;
+  ivaTasa: number;
+  visitasPorPeriodo: number;
   cliente: {
     id: string;
     nombre: string;
     apellido: string | null;
     empresa: string | null;
   };
-  items: ItemData[];
-}
-
-interface ProductoSuscribible {
-  id: string;
-  nombre: string;
-  ivaTasa: number | null;
-}
-
-/** Un ítem mientras se edita: los importes van como texto para no pelear con el input. */
-interface ItemDraft {
-  productoId: string;
-  nombre: string;
-  precio: string;
-  ivaTasa: string;
-  visitasPorPeriodo: string;
+  /** De qué jardín es el plan. */
+  propiedad: PropiedadOpcion;
+  /** Entre cuáles se puede mover: las propiedades vivas del cliente. */
+  propiedades: PropiedadOpcion[];
 }
 
 const PERIODICIDADES = ["MENSUAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL"];
 const ESTADOS = ["ACTIVO", "PAUSADO", "CANCELADO"];
+
+/**
+ * Dónde queda el jardín del plan: dirección, zona, referencia y cómo llegar.
+ *
+ * Es el mismo renglón que encabeza la ficha de la visita, sin el mapa: acá se
+ * decide de qué jardín es el plan, no se maneja hasta él. La referencia entra
+ * porque es lo que distingue dos casas de la misma urbanización.
+ */
+function UbicacionDelPlan({
+  propiedad,
+  clienteId,
+}: {
+  propiedad: PropiedadOpcion;
+  clienteId: string;
+}) {
+  const direccion = direccionDePropiedad(propiedad);
+  const zona = zonaDePropiedad(propiedad);
+  const tienePunto = propiedad.lat !== null && propiedad.lng !== null;
+  return (
+    <div className="flex items-start gap-3 rounded-md border bg-muted/30 px-3 py-2.5">
+      <div className="min-w-0 flex-1 text-sm">
+        <p className="truncate font-medium">
+          {direccion || propiedad.nombre}
+        </p>
+        <p className="truncate text-xs text-muted-foreground">
+          {zona || (tienePunto ? propiedad.nombre : "Sin ubicación en el mapa")}
+        </p>
+        {propiedad.referencia && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {propiedad.referencia}
+          </p>
+        )}
+        <Link
+          href={`/dashboard/clientes/${clienteId}/propiedades/${propiedad.id}`}
+          className="mt-1 inline-block text-xs text-primary hover:underline"
+        >
+          Ver propiedad
+        </Link>
+      </div>
+      {tienePunto && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-none"
+          render={
+            <a
+              href={enlaceParaLlegar(propiedad.lat!, propiedad.lng!)}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          }
+        >
+          <Navigation className="mr-1.5 h-3.5 w-3.5" />
+          Llegar
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export function SuscripcionDetail({
   suscripcion,
@@ -94,7 +155,7 @@ export function SuscripcionDetail({
     periodos: number;
     factura: { numero: string; estado: string; saldo: number | null } | null;
   }[];
-  /** Visitas donde este plan cubrió al menos un producto. */
+  /** Las visitas de este plan. */
   visitas: {
     id: string;
     numero: number;
@@ -106,9 +167,9 @@ export function SuscripcionDetail({
   /** A dónde vuelve la flecha: de donde vino, no siempre a la lista. */
   backHref: string;
   /**
-   * Un admin de sector entra a ver de qué se trata el plan —qué productos
-   * cubre y cuántas visitas por período— para agendar. No ve precios ni
-   * órdenes, y no puede cambiar nada.
+   * Quien no ve plata entra a ver de qué se trata el plan —de qué propiedad
+   * es y cuántas visitas incluye— para agendar. No ve precios ni órdenes, y
+   * no puede cambiar nada.
    */
   soloLectura?: boolean;
 }) {
@@ -135,7 +196,6 @@ export function SuscripcionDetail({
           ? "No había períodos por generar"
           : `${body.creadas} ${body.creadas === 1 ? "orden creada" : "órdenes creadas"} en borrador`
       );
-      for (const o of body.omitidas ?? []) toast.warning(o.motivo);
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos generar");
@@ -143,77 +203,26 @@ export function SuscripcionDetail({
       setGenerando(false);
     }
   };
-  const [disponibles, setDisponibles] = useState<ProductoSuscribible[]>([]);
 
+  const [propiedadId, setPropiedadId] = useState(suscripcion.propiedad.id);
   const [periodicidad, setPeriodicidad] = useState(suscripcion.periodicidad);
   const [estado, setEstado] = useState(suscripcion.estado);
   const [fechaInicio, setFechaInicio] = useState(
     suscripcion.fechaInicio.slice(0, 10)
   );
   const [notas, setNotas] = useState(suscripcion.notas ?? "");
-  const [items, setItems] = useState<ItemDraft[]>(
-    suscripcion.items.map((i) => ({
-      productoId: i.productoId,
-      nombre: i.nombre,
-      precio: String(i.precio),
-      ivaTasa: String(i.ivaTasa),
-      visitasPorPeriodo: i.visitasPorPeriodo ? String(i.visitasPorPeriodo) : "",
-    }))
+  const [precio, setPrecio] = useState(String(suscripcion.precio));
+  const [ivaTasa, setIvaTasa] = useState(String(suscripcion.ivaTasa));
+  const [visitasPorPeriodo, setVisitasPorPeriodo] = useState(
+    String(suscripcion.visitasPorPeriodo)
   );
-
-  useEffect(() => {
-    fetch(
-      `/api/suscripciones/productos?clienteId=${suscripcion.cliente.id}&exceptoSuscripcionId=${suscripcion.id}`,
-      { cache: "no-store" }
-    )
-      .then((r) => r.json())
-      .then((d) => setDisponibles(d.items ?? []))
-      .catch(() => setDisponibles([]));
-  }, [suscripcion.cliente.id, suscripcion.id]);
-
-  const sinAgregar = disponibles.filter(
-    (p) => !items.some((i) => i.productoId === p.id)
-  );
-
-  const agregar = (productoId: string) => {
-    const p = disponibles.find((x) => x.id === productoId);
-    if (!p) return;
-    setItems((prev) => [
-      ...prev,
-      {
-        productoId: p.id,
-        nombre: p.nombre,
-        precio: "",
-        ivaTasa: p.ivaTasa != null ? String(p.ivaTasa) : "",
-        visitasPorPeriodo: "",
-      },
-    ]);
-  };
-
-  const actualizar = (productoId: string, patch: Partial<ItemDraft>) =>
-    setItems((prev) =>
-      prev.map((i) => (i.productoId === productoId ? { ...i, ...patch } : i))
-    );
-
-  const quitar = (productoId: string) =>
-    setItems((prev) => prev.filter((i) => i.productoId !== productoId));
-
-  const totalPeriodo = items.reduce((acc, i) => {
-    const precio = Number(i.precio) || 0;
-    return acc + precio + (precio * (Number(i.ivaTasa) || 0)) / 100;
-  }, 0);
 
   const guardar = async () => {
-    if (items.length === 0) return toast.error("Agrega al menos un producto");
-    for (const i of items) {
-      if (!i.precio.trim() || Number(i.precio) < 0) {
-        return toast.error(`Ingresa el precio de "${i.nombre}"`);
-      }
-      if (Number(i.visitasPorPeriodo) < 1) {
-        return toast.error(
-          `Ingresa las visitas por período de "${i.nombre}"`
-        );
-      }
+    if (precio.trim() === "" || Number(precio) < 0) {
+      return toast.error("Pon el precio del período");
+    }
+    if (!(Number(visitasPorPeriodo) >= 1)) {
+      return toast.error("Indica cuántas visitas incluye cada período");
     }
 
     setGuardando(true);
@@ -222,16 +231,14 @@ export function SuscripcionDetail({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          propiedadId,
           periodicidad,
           estado,
           fechaInicio,
+          precio: Number(precio),
+          ivaTasa: ivaTasa.trim() ? Number(ivaTasa) : null,
+          visitasPorPeriodo: Number(visitasPorPeriodo),
           notas: notas.trim() || null,
-          items: items.map((i) => ({
-            productoId: i.productoId,
-            precio: Number(i.precio),
-            ivaTasa: i.ivaTasa.trim() ? Number(i.ivaTasa) : null,
-            visitasPorPeriodo: Number(i.visitasPorPeriodo),
-          })),
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
@@ -244,7 +251,54 @@ export function SuscripcionDetail({
     }
   };
 
+  /**
+   * Si hay algo distinto de lo guardado. Los números se comparan como números:
+   * "130.0" tipeado y el 130 que vuelve del servidor son el mismo precio, y
+   * como texto seguirían pareciendo un cambio después de guardar.
+   */
+  const hayCambios =
+    !soloLectura &&
+    (propiedadId !== suscripcion.propiedad.id ||
+      periodicidad !== suscripcion.periodicidad ||
+      estado !== suscripcion.estado ||
+      fechaInicio !== suscripcion.fechaInicio.slice(0, 10) ||
+      notas.trim() !== (suscripcion.notas ?? "").trim() ||
+      Number(precio) !== suscripcion.precio ||
+      (ivaTasa.trim() ? Number(ivaTasa) : 0) !== suscripcion.ivaTasa ||
+      Number(visitasPorPeriodo) !== suscripcion.visitasPorPeriodo);
+
+  /** Vuelve a lo guardado. */
+  const descartar = () => {
+    setPropiedadId(suscripcion.propiedad.id);
+    setPeriodicidad(suscripcion.periodicidad);
+    setEstado(suscripcion.estado);
+    setFechaInicio(suscripcion.fechaInicio.slice(0, 10));
+    setNotas(suscripcion.notas ?? "");
+    setPrecio(String(suscripcion.precio));
+    setIvaTasa(String(suscripcion.ivaTasa));
+    setVisitasPorPeriodo(String(suscripcion.visitasPorPeriodo));
+  };
+
+  /** Qué falta para poder guardar, para que el botón gris diga por qué. */
+  const falta =
+    precio.trim() === "" || Number(precio) < 0
+      ? "Pon el precio del período"
+      : !(Number(visitasPorPeriodo) >= 1)
+        ? "Indica cuántas visitas incluye cada período"
+        : null;
+
+  // Guardar y Descartar viven en el header, en lugar del buscador —la barra
+  // de Shopify—, y no en un botón al pie de la tarjeta de términos: con dos
+  // tarjetas editables, el botón quedaba lejos de la mitad de lo que cambia.
+  useRegistrarCambios(hayCambios, guardando, guardar, descartar, falta);
+
   const sufijo = PERIODICIDAD_SUFIJO[periodicidad] ?? "";
+  const propiedad =
+    suscripcion.propiedades.find((p) => p.id === propiedadId) ??
+    suscripcion.propiedad;
+  const visitasTexto = `${visitasPorPeriodo || "—"} visita${
+    Number(visitasPorPeriodo) === 1 ? "" : "s"
+  }${sufijo}`;
 
   return (
     <div className="space-y-6">
@@ -263,9 +317,9 @@ export function SuscripcionDetail({
               {estado.charAt(0) + estado.slice(1).toLowerCase()}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Suscripción #{suscripcion.numero} · todos sus productos se cobran
-            juntos, en una factura.
+          <p className="truncate text-sm text-muted-foreground">
+            Suscripción #{suscripcion.numero} · {propiedad.nombre} ·{" "}
+            {PERIODICIDAD_LABEL[periodicidad]?.toLowerCase() ?? periodicidad}
           </p>
         </div>
         <Link href={`/dashboard/clientes/${suscripcion.cliente.id}`}>
@@ -275,13 +329,18 @@ export function SuscripcionDetail({
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+          {/* El plan: de qué jardín es, cuánto cuesta y cuántas visitas
+              incluye. Es lo que se pactó con el cliente, en tres números. */}
           <Card className="overflow-visible">
             <CardHeader className="border-b">
-              <CardTitle className="text-base">Productos</CardTitle>
+              <CardTitle className="text-base">Plan</CardTitle>
               {!soloLectura && (
                 <CardAction>
                   <span className="text-sm font-semibold tabular-nums">
-                    {money(totalPeriodo)}
+                    {money(
+                      (Number(precio) || 0) *
+                        (1 + (Number(ivaTasa) || 0) / 100)
+                    )}
                     <span className="text-xs font-normal text-muted-foreground">
                       {sufijo}
                     </span>
@@ -289,116 +348,100 @@ export function SuscripcionDetail({
                 </CardAction>
               )}
             </CardHeader>
-            <CardContent className="space-y-3">
-              {items.length === 0 ? (
-                <p className="rounded-md border border-dashed py-6 text-center text-sm text-muted-foreground">
-                  Sin productos. Una suscripción necesita al menos uno.
-                </p>
-              ) : (
-                items.map((i) => (
-                  <div
-                    key={i.productoId}
-                    className="space-y-2 rounded-md border p-3"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="flex-1 text-sm font-medium">
-                        {i.nombre}
-                      </span>
-                      {!soloLectura && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => quitar(i.productoId)}
-                          aria-label={`Quitar ${i.nombre}`}
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      )}
-                    </div>
-                    {soloLectura ? (
-                      // Lo único que necesita quien agenda: cuántas visitas
-                      // cubre el plan por período. Ni precio ni IVA.
-                      <p className="text-sm text-muted-foreground">
-                        {i.visitasPorPeriodo || "—"} visita
-                        {Number(i.visitasPorPeriodo) === 1 ? "" : "s"}
-                        {sufijo}
-                      </p>
-                    ) : (
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Precio{sufijo} *</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={i.precio}
-                          onChange={(e) =>
-                            actualizar(i.productoId, { precio: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">IVA %</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="100"
-                          value={i.ivaTasa}
-                          onChange={(e) =>
-                            actualizar(i.productoId, { ivaTasa: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Visitas{sufijo} *</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={i.visitasPorPeriodo}
-                          onChange={(e) =>
-                            actualizar(i.productoId, {
-                              visitasPorPeriodo: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                    )}
-                  </div>
-                ))
-              )}
-
-              {!soloLectura && sinAgregar.length > 0 && (
-                <CustomSelect
-                  value=""
-                  onChange={agregar}
-                  options={sinAgregar.map((p) => ({
-                    value: p.id,
-                    label: p.nombre,
-                  }))}
-                  placeholder="Agregar producto recurrente"
-                  searchable
-                  searchPlaceholder="Buscar producto..."
+            {soloLectura ? (
+              // Lo único que necesita quien agenda: dónde y cuántas visitas
+              // cubre el plan por período. Ni precio ni IVA.
+              <CardContent className="space-y-3 text-sm">
+                <UbicacionDelPlan
+                  propiedad={propiedad}
+                  clienteId={suscripcion.cliente.id}
                 />
-              )}
-            </CardContent>
+                <div className="flex items-start justify-between gap-3 border-t pt-3">
+                  <span className="flex-none text-muted-foreground">
+                    Incluye
+                  </span>
+                  <span>{visitasTexto}</span>
+                </div>
+              </CardContent>
+            ) : (
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Propiedad</Label>
+                  <CustomSelect
+                    value={propiedadId}
+                    onChange={setPropiedadId}
+                    options={suscripcion.propiedades.map((p) => ({
+                      value: p.id,
+                      label: p.nombre,
+                      hint: direccionDePropiedad(p) || undefined,
+                    }))}
+                    placeholder="Elegir propiedad"
+                    searchable={suscripcion.propiedades.length > 6}
+                    searchPlaceholder="Buscar propiedad..."
+                  />
+                  {/* Dónde queda, debajo del selector: el nombre solo
+                      ("Principal") no dice a qué jardín se va, y abrir la
+                      ficha de la propiedad para averiguarlo es un viaje. Solo
+                      la ubicación —las medidas son de la ficha—. */}
+                  <UbicacionDelPlan
+                    propiedad={propiedad}
+                    clienteId={suscripcion.cliente.id}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Las visitas de este plan se agendan en esta propiedad.
+                    Cambiarla no mueve las que ya pasaron.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Precio{sufijo} *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={precio}
+                      onChange={(e) => setPrecio(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">IVA %</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={ivaTasa}
+                      onChange={(e) => setIvaTasa(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Visitas{sufijo} *</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={visitasPorPeriodo}
+                      onChange={(e) => setVisitasPorPeriodo(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Cambiar el precio rige desde el ciclo siguiente: los períodos
+                  ya facturados guardan lo que se cobró.
+                </p>
+              </CardContent>
+            )}
           </Card>
-          {/* Las visitas que este plan cubrió. La relación no es directa: va
-              por `VisitaProducto.suscripcionItemId`, o sea por lo que se marcó
-              como cubierto al agendar. */}
+
           <Card>
             <CardHeader className="border-b">
-              <CardTitle className="text-base">Visitas cubiertas</CardTitle>
+              <CardTitle className="text-base">Visitas</CardTitle>
               <CardAction>
                 {/* Llega con el plan ya puesto: "nueva visita de este plan" es
-                    una sola acción, no elegir cliente y plan de nuevo. */}
+                    una sola acción, no elegir cliente, propiedad y plan de
+                    nuevo. */}
                 <Link
                   href={`/dashboard/visitas/nueva?suscripcion=${suscripcion.id}`}
                 >
-                  {/* Con su nombre y no un "+": es la acción de la card, igual
-                      que "Generar órdenes" en la de abajo, y un ícono solo
-                      obliga a adivinar o a esperar el tooltip. */}
                   <Button size="sm" variant="outline">
                     <Plus className="mr-2 h-3.5 w-3.5" />
                     Crear visita
@@ -409,7 +452,7 @@ export function SuscripcionDetail({
             <CardContent>
               {visitas.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Todavía ninguna visita quedó cubierta por este plan.
+                  Todavía no hay visitas de este plan.
                 </p>
               ) : (
                 <ul className="divide-y">
@@ -446,100 +489,104 @@ export function SuscripcionDetail({
           </Card>
 
           {!soloLectura && (
-          <>
-          {/* Órdenes y no facturas: el borrador que crea el cron todavía no
-              tiene factura, y era justo lo que no se veía desde aquí. */}
-          <Card>
-            <CardHeader className="border-b">
-              <CardTitle className="text-base">Órdenes</CardTitle>
-              <CardAction>
-                {/* Lo hace el cron todas las noches; esto es la salida de
-                    emergencia. Idempotente: apretarlo de más no duplica. */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={generarOrdenes}
-                  disabled={generando}
-                >
-                  {generando ? (
-                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <RefreshCw className="mr-2 h-3.5 w-3.5" />
-                  )}
-                  Generar órdenes
-                </Button>
-              </CardAction>
-            </CardHeader>
-            <CardContent>
-              {ordenes.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Todavía no se generó ninguna orden de este plan.
-                </p>
-              ) : (
-                <ul className="divide-y">
-                  {ordenes.map((o) => (
-                    <li key={o.id}>
-                      <Link
-                        href={`/dashboard/ordenes/${o.id}?from=/dashboard/suscripciones/${suscripcion.id}`}
-                        className="flex items-start justify-between gap-3 rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-muted/50"
-                      >
-                        <span className="min-w-0">
-                          <span className="block font-medium">
-                            Orden #{o.numero}
-                            {o.factura && (
-                              <span className="ml-2 font-normal text-muted-foreground tabular-nums">
-                                {o.factura.numero}
+            /* Órdenes y no facturas: el borrador que crea el cron todavía no
+               tiene factura, y era justo lo que no se veía desde aquí. */
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle className="text-base">Órdenes</CardTitle>
+                <CardAction>
+                  {/* Lo hace el cron todas las noches; esto es la salida de
+                      emergencia. Idempotente: apretarlo de más no duplica. */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={generarOrdenes}
+                    disabled={generando}
+                  >
+                    {generando ? (
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="mr-2 h-3.5 w-3.5" />
+                    )}
+                    Generar órdenes
+                  </Button>
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                {ordenes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Todavía no se generó ninguna orden de este plan.
+                  </p>
+                ) : (
+                  <ul className="divide-y">
+                    {ordenes.map((o) => (
+                      <li key={o.id}>
+                        <Link
+                          href={`/dashboard/ordenes/${o.id}?from=/dashboard/suscripciones/${suscripcion.id}`}
+                          className="flex items-start justify-between gap-3 rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-muted/50"
+                        >
+                          <span className="min-w-0">
+                            <span className="block font-medium">
+                              Orden #{o.numero}
+                              {o.factura && (
+                                <span className="ml-2 font-normal text-muted-foreground tabular-nums">
+                                  {o.factura.numero}
+                                </span>
+                              )}
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              {o.periodoInicio
+                                ? `${fecha(o.periodoInicio)} → ${fecha(o.periodoFin!)}`
+                                : fecha(o.fecha)}
+                              {o.periodos > 1 && ` · ${o.periodos} períodos`}
+                            </span>
+                          </span>
+                          <span className="flex-none text-right">
+                            <span className="block font-semibold tabular-nums">
+                              {money(o.delPlan)}
+                            </span>
+                            {/* La orden puede llevar productos sueltos
+                                agregados a mano encima del período. Sin
+                                decirlo, el número de aquí no cuadraba con el
+                                de la orden. */}
+                            {o.delPlan < o.total - 0.001 && (
+                              <span className="block text-xs text-muted-foreground">
+                                de {money(o.total)} en total
                               </span>
                             )}
-                          </span>
-                          <span className="block text-xs text-muted-foreground">
-                            {o.periodoInicio
-                              ? `${fecha(o.periodoInicio)} → ${fecha(o.periodoFin!)}`
-                              : fecha(o.fecha)}
-                            {o.periodos > 1 && ` · ${o.periodos} períodos`}
-                          </span>
-                        </span>
-                        <span className="flex-none text-right">
-                          <span className="block font-semibold tabular-nums">
-                            {money(o.delPlan)}
-                          </span>
-                          {/* La orden puede llevar productos sueltos agregados
-                              a mano encima del período. Sin decirlo, el número
-                              de aquí no cuadraba con el de la orden. */}
-                          {o.delPlan < o.total - 0.001 && (
                             <span className="block text-xs text-muted-foreground">
-                              de {money(o.total)} en total
+                              {o.estado === "BORRADOR"
+                                ? "Borrador"
+                                : o.estado === "ANULADA"
+                                  ? "Anulada"
+                                  : !o.factura || o.factura.saldo === null
+                                    ? "Facturada"
+                                    : o.factura.saldo <= 0.001
+                                      ? "Cobrado"
+                                      : "Por cobrar"}
                             </span>
-                          )}
-                          <span className="block text-xs text-muted-foreground">
-                            {o.estado === "BORRADOR"
-                              ? "Borrador"
-                              : o.estado === "ANULADA"
-                                ? "Anulada"
-                                : !o.factura || o.factura.saldo === null
-                                  ? "Facturada"
-                                  : o.factura.saldo <= 0.001
-                                    ? "Cobrado"
-                                    : "Por cobrar"}
                           </span>
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-          </>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
           )}
         </div>
 
         <div className="space-y-6">
           {/* Arriba de los términos: es lo que se mira seguido —cuánto paga el
-              cliente por cada cosa— mientras que los términos se tocan una vez.
-              Un `PERSONAL_ADMIN` no ve plata, así que para él no existe. */}
+              cliente— mientras que los términos se tocan una vez. Quien no ve
+              plata no lo ve. */}
           {!soloLectura && (
-            <ResumenSuscripcion items={items} sufijo={sufijo} />
+            <ResumenSuscripcion
+              precio={precio}
+              ivaTasa={ivaTasa}
+              visitasPorPeriodo={visitasPorPeriodo}
+              sufijo={sufijo}
+            />
           )}
 
           <Card className="overflow-visible">
@@ -570,61 +617,49 @@ export function SuscripcionDetail({
                 ) : null}
               </CardContent>
             ) : (
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Se cobra</Label>
-                <CustomSelect
-                  value={periodicidad}
-                  onChange={setPeriodicidad}
-                  options={PERIODICIDADES.map((p) => ({
-                    value: p,
-                    label: PERIODICIDAD_LABEL[p],
-                  }))}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Cambiar el precio rige desde el ciclo siguiente: los períodos
-                  ya facturados guardan lo que se cobró.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label>Estado</Label>
-                <CustomSelect
-                  value={estado}
-                  onChange={setEstado}
-                  options={ESTADOS.map((e) => ({
-                    value: e,
-                    label: e.charAt(0) + e.slice(1).toLowerCase(),
-                  }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="inicio">Desde</Label>
-                <Input
-                  id="inicio"
-                  type="date"
-                  value={fechaInicio}
-                  onChange={(e) => setFechaInicio(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notas">Notas</Label>
-                <Textarea
-                  id="notas"
-                  rows={3}
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
-                  placeholder="Opcional"
-                />
-              </div>
-              <Button
-                className="w-full"
-                onClick={guardar}
-                disabled={guardando || items.length === 0}
-              >
-                {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Guardar cambios
-              </Button>
-            </CardContent>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Se cobra</Label>
+                  <CustomSelect
+                    value={periodicidad}
+                    onChange={setPeriodicidad}
+                    options={PERIODICIDADES.map((p) => ({
+                      value: p,
+                      label: PERIODICIDAD_LABEL[p],
+                    }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Estado</Label>
+                  <CustomSelect
+                    value={estado}
+                    onChange={setEstado}
+                    options={ESTADOS.map((e) => ({
+                      value: e,
+                      label: e.charAt(0) + e.slice(1).toLowerCase(),
+                    }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inicio">Desde</Label>
+                  <Input
+                    id="inicio"
+                    type="date"
+                    value={fechaInicio}
+                    onChange={(e) => setFechaInicio(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notas">Notas</Label>
+                  <Textarea
+                    id="notas"
+                    rows={3}
+                    value={notas}
+                    onChange={(e) => setNotas(e.target.value)}
+                    placeholder="Opcional"
+                  />
+                </div>
+              </CardContent>
             )}
           </Card>
         </div>

@@ -45,6 +45,15 @@ export const Periodicidad = {
 export type Periodicidad = (typeof Periodicidad)[keyof typeof Periodicidad]
 
 
+export const AlineacionDeFotos = {
+  IZQUIERDA: 'IZQUIERDA',
+  CENTRO: 'CENTRO',
+  DERECHA: 'DERECHA'
+} as const
+
+export type AlineacionDeFotos = (typeof AlineacionDeFotos)[keyof typeof AlineacionDeFotos]
+
+
 export const TipoPersona = {
   NATURAL: 'NATURAL',
   JURIDICA: 'JURIDICA'

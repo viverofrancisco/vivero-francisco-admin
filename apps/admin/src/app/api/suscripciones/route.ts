@@ -42,15 +42,13 @@ export async function POST(request: Request) {
   try {
     const suscripcion = await crearSuscripcion(viewer, {
       clienteId: parsed.data.clienteId,
+      propiedadId: parsed.data.propiedadId,
       periodicidad: parsed.data.periodicidad,
       fechaInicio: parsed.data.fechaInicio,
+      precio: parsed.data.precio,
+      ivaTasa: parsed.data.ivaTasa ?? null,
+      visitasPorPeriodo: parsed.data.visitasPorPeriodo,
       notas: parsed.data.notas ?? null,
-      items: parsed.data.items.map((i) => ({
-        productoId: i.productoId,
-        precio: i.precio,
-        ivaTasa: i.ivaTasa ?? null,
-        visitasPorPeriodo: i.visitasPorPeriodo ?? null,
-      })),
     });
     return NextResponse.json(suscripcion, { status: 201 });
   } catch (error) {

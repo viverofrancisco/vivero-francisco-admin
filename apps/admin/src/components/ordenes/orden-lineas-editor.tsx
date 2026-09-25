@@ -17,6 +17,8 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { money } from "./formato";
 import {
+  esPersonalizada,
+  lineaPersonalizada,
   origenDeLinea,
   nuevoUid,
   type LineaEditable,
@@ -39,9 +41,9 @@ export interface ProductoCatalogo {
 export const ORDEN_LINEAS_FORM_ID = "orden-lineas-form";
 
 /**
- * Toda línea sale de un producto del catálogo: de ahí sale el
- * `codigoPrincipal` que el SRI pide en cada detalle, así que una línea suelta
- * sería una orden imposible de cobrar.
+ * Toda línea que se agrega acá sale de un producto del catálogo: de ahí sale
+ * el `codigoPrincipal` que el SRI pide en cada detalle. La única sin producto
+ * es la de un período de plan, y esa no se agrega: viene de la renovación.
  */
 function lineaBase(): Omit<LineaEditable, "descripcion" | "productoId"> {
   return {
@@ -50,7 +52,7 @@ function lineaBase(): Omit<LineaEditable, "descripcion" | "productoId"> {
     precioUnitario: "",
     ivaTasa: "0",
     varianteId: null,
-    suscripcionItemId: null,
+    suscripcionId: null,
     periodoInicio: null,
     periodoFin: null,
   };
@@ -65,17 +67,15 @@ function importes(l: LineaEditable) {
 /**
  * Edita las líneas de una orden en borrador.
  *
- * La procedencia (`visitaProductoIds`, `suscripcionItemId` + período) viaja
- * intacta aunque se cambie la descripción o el precio: es lo que sostiene los
- * índices únicos que impiden facturar el mismo trabajo dos veces.
+ * La procedencia (`suscripcionId` + período) viaja intacta aunque se cambie el
+ * precio: es lo que sostiene el índice único que impide cobrar el mismo
+ * período dos veces.
  */
 export function OrdenLineasEditor({
   lineas,
   onLineasChange,
   productos,
   hayMasProductos = false,
-  clienteNombre,
-  suscritos = [],
   onGuardar,
 }: {
   /**
@@ -88,10 +88,6 @@ export function OrdenLineasEditor({
   /** La primera tanda del catálogo. El resto llega al buscar o al bajar. */
   productos: ProductoCatalogo[];
   hayMasProductos?: boolean;
-  /** Para nombrarlo en el aviso: "Fulano tiene este producto…". */
-  clienteNombre?: string;
-  /** Productos que este cliente ya tiene en un plan activo. */
-  suscritos?: string[];
   /**
    * Guardar y cancelar no están acá: los dibuja el encabezado de la página,
    * que es sticky. Este componente solo expone el `form` al que apuntan.
@@ -194,17 +190,29 @@ export function OrdenLineasEditor({
                       aclaración corta, y en su propio renglón hacía cada
                       producto un tercio más alto sin decir más. */}
                   <div className="flex flex-1 flex-wrap items-baseline gap-x-2">
-                    <p className="text-sm font-medium">{l.descripcion}</p>
+                    {/* La personalizada se escribe acá: no hay catálogo del
+                        que tomar el nombre. */}
+                    {esPersonalizada(l) ? (
+                      <Input
+                        value={l.descripcion}
+                        onChange={(e) =>
+                          actualizar(l.uid, { descripcion: e.target.value })
+                        }
+                        placeholder="Descripción del ítem *"
+                        className="max-w-md"
+                      />
+                    ) : (
+                      <p className="text-sm font-medium">{l.descripcion}</p>
+                    )}
                     {proc && (
                       <span className="text-xs text-muted-foreground">
                         {proc}
                       </span>
                     )}
                   </div>
-                {/* Lo que viene de un período de plan se saca desmarcando el
-                    período: se factura completo, así que quitarle un producto
-                    dejaría una orden que el servidor rechaza al guardar. */}
-                {!l.suscripcionItemId && (
+                {/* La línea del período de plan no se quita: es por lo que
+                    existe la orden. Si no se cobra, se anula la orden. */}
+                {!l.suscripcionId && (
                   <Button
                     type="button"
                     variant="ghost"
@@ -217,35 +225,38 @@ export function OrdenLineasEditor({
                 )}
               </div>
               <div className="flex flex-wrap items-end gap-3">
-                <SelectorVariante
-                  variantes={
-                    catalogo.conocidos.find((p) => p.id === l.productoId)
-                      ?.variantes ?? []
-                  }
-                  value={l.varianteId}
-                  onChange={(varianteId) => {
-                    const prod = catalogo.conocidos.find(
-                      (p) => p.id === l.productoId
-                    );
-                    const vs = prod?.variantes ?? [];
-                    const antes = vs.find((v) => v.id === l.varianteId);
-                    const ahora = vs.find((v) => v.id === varianteId);
-                    actualizar(l.uid, {
-                      varianteId,
-                      precioUnitario: precioAlCambiarVariante(
-                        l.precioUnitario,
-                        antes,
-                        ahora
-                      ),
-                      ivaTasa: ivaAlCambiarVariante(
-                        l.ivaTasa,
-                        antes,
-                        ahora,
-                        prod?.ivaTasa ?? null
-                      ),
-                    });
-                  }}
-                />
+                {/* Sin producto no hay variante que elegir. */}
+                {l.productoId && (
+                  <SelectorVariante
+                    variantes={
+                      catalogo.conocidos.find((p) => p.id === l.productoId)
+                        ?.variantes ?? []
+                    }
+                    value={l.varianteId}
+                    onChange={(varianteId) => {
+                      const prod = catalogo.conocidos.find(
+                        (p) => p.id === l.productoId
+                      );
+                      const vs = prod?.variantes ?? [];
+                      const antes = vs.find((v) => v.id === l.varianteId);
+                      const ahora = vs.find((v) => v.id === varianteId);
+                      actualizar(l.uid, {
+                        varianteId,
+                        precioUnitario: precioAlCambiarVariante(
+                          l.precioUnitario,
+                          antes,
+                          ahora
+                        ),
+                        ivaTasa: ivaAlCambiarVariante(
+                          l.ivaTasa,
+                          antes,
+                          ahora,
+                          prod?.ivaTasa ?? null
+                        ),
+                      });
+                    }}
+                  />
+                )}
                 <div className="w-20 space-y-1">
                   <Label className="text-xs">Cant.</Label>
                   <Input
@@ -307,15 +318,20 @@ export function OrdenLineasEditor({
             options={catalogo.pagina.map((p) => ({
               value: p.id,
               label: p.nombre,
-              hint: suscritos.includes(p.id)
-                ? `${clienteNombre ?? "El cliente"} tiene este producto en una suscripción.`
-                : undefined,
             }))}
             placeholder="Buscar producto..."
             searchable
             searchPlaceholder="Buscar producto..."
           />
         </div>
+        {/* Un trabajo puntual que no vale la pena dar de alta como producto. */}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setLineas((prev) => [...prev, lineaPersonalizada()])}
+        >
+          Ítem personalizado
+        </Button>
       </div>
 
       <div className="space-y-1.5 border-t pt-4 text-sm">

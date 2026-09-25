@@ -68,7 +68,6 @@ export const ModelName = {
   ProductoImagen: 'ProductoImagen',
   MovimientoInventario: 'MovimientoInventario',
   Suscripcion: 'Suscripcion',
-  SuscripcionItem: 'SuscripcionItem',
   Personal: 'Personal',
   Grupo: 'Grupo',
   Tarea: 'Tarea',
@@ -366,10 +365,14 @@ export const SuscripcionScalarFieldEnum = {
   id: 'id',
   numero: 'numero',
   clienteId: 'clienteId',
+  propiedadId: 'propiedadId',
   estado: 'estado',
   periodicidad: 'periodicidad',
   fechaInicio: 'fechaInicio',
   fechaFin: 'fechaFin',
+  precio: 'precio',
+  ivaTasa: 'ivaTasa',
+  visitasPorPeriodo: 'visitasPorPeriodo',
   notas: 'notas',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -378,18 +381,6 @@ export const SuscripcionScalarFieldEnum = {
 } as const
 
 export type SuscripcionScalarFieldEnum = (typeof SuscripcionScalarFieldEnum)[keyof typeof SuscripcionScalarFieldEnum]
-
-
-export const SuscripcionItemScalarFieldEnum = {
-  id: 'id',
-  suscripcionId: 'suscripcionId',
-  productoId: 'productoId',
-  precio: 'precio',
-  ivaTasa: 'ivaTasa',
-  visitasPorPeriodo: 'visitasPorPeriodo'
-} as const
-
-export type SuscripcionItemScalarFieldEnum = (typeof SuscripcionItemScalarFieldEnum)[keyof typeof SuscripcionItemScalarFieldEnum]
 
 
 export const PersonalScalarFieldEnum = {
@@ -784,7 +775,8 @@ export const InformeSeccionScalarFieldEnum = {
   descripcion: 'descripcion',
   orden: 'orden',
   saltoDePagina: 'saltoDePagina',
-  fotosPorFila: 'fotosPorFila'
+  fotosPorFila: 'fotosPorFila',
+  fotosAlineacion: 'fotosAlineacion'
 } as const
 
 export type InformeSeccionScalarFieldEnum = (typeof InformeSeccionScalarFieldEnum)[keyof typeof InformeSeccionScalarFieldEnum]
@@ -908,7 +900,7 @@ export const OrdenLineaScalarFieldEnum = {
   total: 'total',
   productoId: 'productoId',
   varianteId: 'varianteId',
-  suscripcionItemId: 'suscripcionItemId',
+  suscripcionId: 'suscripcionId',
   periodoInicio: 'periodoInicio',
   periodoFin: 'periodoFin'
 } as const
@@ -999,6 +991,7 @@ export const FacturaLineaScalarFieldEnum = {
   subtotal: 'subtotal',
   iva: 'iva',
   total: 'total',
+  codigo: 'codigo',
   productoId: 'productoId',
   varianteId: 'varianteId'
 } as const

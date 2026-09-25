@@ -69,6 +69,16 @@ npx prisma migrate dev --name lo_que_sea --create-only   # crea sin aplicar
 npm run migrate:deploy
 ```
 
+**`migrate dev` se niega a correr sin terminal interactiva** (*"Prisma Migrate
+has detected that the environment is non-interactive"*), así que desde Claude
+Code o un script el `--create-only` no sirve: se crea la carpeta a mano
+—`prisma/migrations/<YYYYMMDDHHMMSS>_nombre/migration.sql`, con el timestamp
+posterior al de la última— y se aplica con `migrate deploy`, que sí corre. El
+`migrate diff` de abajo es lo que confirma que el SQL escrito a mano coincide
+con el `schema.prisma`. Y si el deploy muere con *"Timed out trying to acquire
+a postgres advisory lock"*, es que quedó otro `prisma migrate` colgado (o Neon
+despertando): reintentar alcanza.
+
 Después, confirmar que el esquema y la base coinciden:
 
 ```bash
@@ -115,6 +125,9 @@ Ejemplos en el repo que vale la pena mirar antes de escribir una:
 | `20260914160957_tareas_de_visita` | Tabla nueva + índice único **parcial** escrito a mano + catálogo inicial sembrado desde la propia migración |
 | `20260914180000_visita_por_tareas` | Sacar un valor de un `enum` (recrear el tipo, con el `UPDATE` **antes**), agregar otro (`ADD VALUE`), tres `DROP TABLE` y un backfill que salva el dato antes de borrar la tabla que lo tenía |
 | `20260914200000_fotos_y_secciones_por_tarea` | Cambiar a qué tabla apunta una FK: columna nueva al lado, backfill por nombre —sin tildes, con `translate`— y recién después borrar la vieja |
+| `20260925120000_variante_que_faltaba` | Backfill puro, idempotente (`NOT EXISTS`): la variante única que le faltaba a los productos que el seed creó con `prisma.producto.create` a secas. Un producto sin variante no se puede vender; el seed ya la crea |
+| `20260925170000_alineacion_de_fotos_por_seccion` | `CREATE TYPE` + columna `NOT NULL DEFAULT` sobre una tabla con filas: nace con el valor de siempre, así nada existente cambia de aspecto |
+| `20260924200000_suscripcion_por_propiedad_sin_productos` | Plegar una tabla hija a su cabecera (`SuscripcionItem` → `Suscripcion.precio/ivaTasa/visitasPorPeriodo`) conservando el total que el cliente paga con tasas mezcladas; NOT NULL nueva rellenada en cascada (visitas → propiedad más antigua → crearla); mover una FK única de la hija a la cabecera eligiendo **una** fila por clave; y una columna congelada (`FacturaLinea.codigo`) rellenada con la regla que antes se calculaba al leer |
 
 ### Índices que Prisma no sabe expresar
 

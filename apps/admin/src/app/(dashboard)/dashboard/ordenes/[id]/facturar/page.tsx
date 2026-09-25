@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireStaff, viewerFromSession } from "@/lib/auth-helpers";
 import { getOrden } from "@/lib/services/orden.service";
 import { NotFoundError } from "@/lib/services/errors";
-import { emisoresDisponibles } from "@/lib/services/emisor.service";
+import { emisoresParaEmitir } from "@/lib/services/emisor.service";
 import { productosVendibles } from "@/lib/services/variantes-vendibles";
 import { EmitirFacturaPage } from "@/components/ordenes/emitir-factura-page";
 import { facturaVigenteDe } from "@/lib/services/factura-vigente";
@@ -53,8 +53,11 @@ export default async function EmitirRoute({
       orderBy: [{ esPredeterminado: "desc" }, { razonSocial: "asc" }],
     }),
     // Con qué RUC se puede emitir. Vacío mientras no haya ninguno configurado
-    // con su firma, y entonces la pantalla lo dice y no deja emitir.
-    emisoresDisponibles(viewer),
+    // con su firma, y entonces la pantalla lo dice y no deja emitir. Es la
+    // consulta acotada y no la lista completa de Configuración: esa es del
+    // ADMIN, y emitir es también del STAFF, que acá se estrellaba contra un
+    // 403 antes de ver la pantalla.
+    emisoresParaEmitir(viewer),
   ]);
 
   return (
@@ -80,7 +83,14 @@ export default async function EmitirRoute({
           ivaTasa: Number(l.ivaTasa),
           productoId: l.productoId,
           varianteId: l.varianteId,
+          suscripcionId: l.suscripcionId,
         })),
+        suscripcion: orden.suscripcion
+          ? {
+              numero: orden.suscripcion.numero,
+              propiedad: orden.suscripcion.propiedad.nombre,
+            }
+          : null,
       }}
       productos={tandaProductos.items}
       hayMasProductos={tandaProductos.hayMas}

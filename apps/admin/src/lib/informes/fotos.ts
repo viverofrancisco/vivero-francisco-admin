@@ -26,6 +26,10 @@ export const LADO_FINAL: Record<FotosPorFila, number> = {
   2: 1200,
   3: 800,
   4: 600,
+  // Cinco y seis por fila: la foto impresa mide menos, y pedirle 1200 px
+  // sería pagar píxeles que no se ven.
+  5: 480,
+  6: 400,
 };
 
 /**

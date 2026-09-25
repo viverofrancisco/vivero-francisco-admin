@@ -63,24 +63,18 @@ import {
   MoreVertical,
 } from "lucide-react";
 
-interface ProductoCatalogo {
+/** Un plan, tal como lo ve la ficha del cliente: jardín, precio y visitas. */
+interface SuscripcionResumen {
   id: string;
-  nombre: string;
-  tipo: string;
-}
-
-/** Un ítem de suscripción, tal como lo ve la ficha del cliente. */
-interface Asignacion {
-  id: string;
-  suscripcionId: string;
-  productoId: string;
-  precio?: number;
-  ivaTasa?: number;
-  visitasPorPeriodo: number | null;
+  numero: number;
   estado: string;
   periodicidad: string;
   fechaInicio: string;
-  producto: ProductoCatalogo;
+  visitasPorPeriodo: number;
+  propiedad: { id: string; nombre: string };
+  /** Sin IVA. Ausentes para quien no ve plata. */
+  precio?: number;
+  ivaTasa?: number;
 }
 
 interface VisitaRow {
@@ -130,7 +124,7 @@ interface ClienteDetailTabsProps {
   cliente: ClienteData;
   /** Dónde se trabaja. La dirección y el sector viven acá. */
   propiedades: PropiedadData[];
-  asignaciones: Asignacion[];
+  suscripciones: SuscripcionResumen[];
   datosFacturacion: DatoFacturacion[];
   ordenes: OrdenResumen[];
   /**
@@ -175,7 +169,7 @@ const servicioEstado = (estado: string) => {
 export function ClienteDetailTabs({
   cliente,
   propiedades,
-  asignaciones,
+  suscripciones,
   datosFacturacion,
   ordenes,
   verPlata = true,
@@ -272,32 +266,6 @@ export function ClienteDetailTabs({
   // Si el cliente es persona Y empresa, mostramos la empresa como complemento.
   const empresaExtra =
     nombrePersona(cliente) && cliente.empresa ? cliente.empresa : null;
-  // Aplanar los ítems hacía parecer que cada producto era una suscripción
-  // aparte. Se agrupan: una suscripción es UN contrato con N productos que se
-  // cobran juntos, en una sola factura.
-  const suscripciones = [
-    ...asignaciones
-      .reduce((mapa, a) => {
-        const grupo = mapa.get(a.suscripcionId) ?? {
-          id: a.suscripcionId,
-          estado: a.estado,
-          periodicidad: a.periodicidad,
-          items: [] as typeof asignaciones,
-          total: 0,
-        };
-        grupo.items.push(a);
-        grupo.total += a.precio ?? 0;
-        mapa.set(a.suscripcionId, grupo);
-        return mapa;
-      }, new Map<string, {
-        id: string;
-        estado: string;
-        periodicidad: string;
-        items: typeof asignaciones;
-        total: number;
-      }>())
-      .values(),
-  ];
   const topVisitas = visitas.slice(0, 3);
 
   return (
@@ -460,9 +428,7 @@ export function ClienteDetailTabs({
               <CardHeader className="border-b">
                 <CardTitle>Suscripciones</CardTitle>
                 <CardAction>
-                  {/* A la pantalla completa con el cliente ya elegido: armar una
-                      suscripción con varios productos no entra cómodo en un
-                      diálogo. */}
+                  {/* A la pantalla completa con el cliente ya elegido. */}
                   <Link
                     href={`/dashboard/suscripciones/nueva?cliente=${cliente.id}&from=${volverAca}`}
                   >
@@ -476,19 +442,26 @@ export function ClienteDetailTabs({
               {/* Sin tarjeta adentro de otra: cada suscripción es un bloque
                   separado por una línea. */}
               <CardContent>
-                {asignaciones.length === 0 ? (
-                  <EmptyState message="Sin servicios" />
+                {suscripciones.length === 0 ? (
+                  <EmptyState message="Sin suscripciones" />
                 ) : (
                   <div className="divide-y">
                     {suscripciones.slice(0, 3).map((sus) => (
                       <div key={sus.id} className="py-3 first:pt-0 last:pb-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="min-w-0 text-xs font-bold">
+                          <p className="min-w-0 truncate text-xs font-bold">
+                            #{sus.numero} ·{" "}
                             {PERIODICIDAD_LABEL[sus.periodicidad] ??
                               sus.periodicidad}
-                            <span className="ml-1.5 font-semibold text-muted-foreground">
-                              · {formatPrice(sus.total)} por período
-                            </span>
+                            {verPlata && sus.precio !== undefined && (
+                              <span className="ml-1.5 font-semibold text-muted-foreground">
+                                ·{" "}
+                                {formatPrice(
+                                  sus.precio * (1 + (sus.ivaTasa ?? 0) / 100)
+                                )}
+                                {PERIODICIDAD_SUFIJO[sus.periodicidad] ?? ""}
+                              </span>
+                            )}
                           </p>
                           <div className="flex flex-none items-center gap-1.5">
                             <span
@@ -510,23 +483,17 @@ export function ClienteDetailTabs({
                             </Link>
                           </div>
                         </div>
-                        <div className="mt-1.5 space-y-1">
-                          {sus.items.map((a) => (
-                            <div
-                              key={a.id}
-                              className="flex items-center justify-between gap-2"
-                            >
-                              <p className="min-w-0 flex-1 truncate text-sm">
-                                {a.producto.nombre}
-                              </p>
-                              <p className="flex-none text-xs font-semibold text-muted-foreground tabular-nums">
-                                {verPlata ? formatPrice(a.precio ?? 0) : ""}
-                                {a.visitasPorPeriodo
-                                  ? ` · ${a.visitasPorPeriodo}${PERIODICIDAD_SUFIJO[sus.periodicidad] ?? ""}`
-                                  : ""}
-                              </p>
-                            </div>
-                          ))}
+                        {/* De qué jardín es y qué incluye: lo que hace falta
+                            para agendar contra él. */}
+                        <div className="mt-1.5 flex items-center justify-between gap-2">
+                          <p className="min-w-0 flex-1 truncate text-sm">
+                            {sus.propiedad.nombre}
+                          </p>
+                          <p className="flex-none text-xs font-semibold text-muted-foreground tabular-nums">
+                            {sus.visitasPorPeriodo} visita
+                            {sus.visitasPorPeriodo === 1 ? "" : "s"}
+                            {PERIODICIDAD_SUFIJO[sus.periodicidad] ?? ""}
+                          </p>
                         </div>
                       </div>
                     ))}

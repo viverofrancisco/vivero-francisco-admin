@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SeccionFichaMovil } from "@/components/shared/seccion-ficha-movil";
 import { money } from "./formato";
 
 const FORMA_LABEL: Record<string, string> = {
@@ -44,7 +45,14 @@ function fechaCobro(iso: string): string {
  * Se piden al montar: el saldo sale de sumarlos, así que la lista y el número
  * de arriba no pueden discrepar.
  */
-export function CobrosCard({ facturaId }: { facturaId: string }) {
+export function CobrosCard({
+  facturaId,
+  movil = false,
+}: {
+  facturaId: string;
+  /** La sección de la ficha en el teléfono, en vez de la card del escritorio. */
+  movil?: boolean;
+}) {
   const [datos, setDatos] = useState<{
     total: number;
     saldo: number | null;
@@ -95,12 +103,8 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
       .catch((e: Error) => setError(e.message));
   }
 
-  return (
-    <Card>
-      <CardHeader className="border-b py-3">
-        <CardTitle className="text-base">Cobros</CardTitle>
-      </CardHeader>
-      <CardContent>
+  const cuerpo = (
+    <>
         {error ? (
           <p className="text-sm text-destructive">{error}</p>
         ) : !datos ? (
@@ -165,7 +169,18 @@ export function CobrosCard({ facturaId }: { facturaId: string }) {
             </ul>
           </>
         )}
-      </CardContent>
+    </>
+  );
+
+  if (movil) {
+    return <SeccionFichaMovil titulo="Cobros">{cuerpo}</SeccionFichaMovil>;
+  }
+  return (
+    <Card>
+      <CardHeader className="border-b py-3">
+        <CardTitle className="text-base">Cobros</CardTitle>
+      </CardHeader>
+      <CardContent>{cuerpo}</CardContent>
     </Card>
   );
 }

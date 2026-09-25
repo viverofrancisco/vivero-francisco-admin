@@ -27,7 +27,12 @@ const nextConfig: NextConfig = {
     // `@img`: la libvips que `sharp` abre con dlopen. `ffmpeg-static`: el
     // binario que transcodifica los videos del chat; se resuelve por ruta,
     // así que el trazado tampoco lo ve solo.
-    "/**": ["node_modules/@img/**", "node_modules/ffmpeg-static/**"],
+    "/**": [
+      "node_modules/@img/**",
+      "node_modules/ffmpeg-static/**",
+      // Las fuentes del informe: react-pdf las abre por ruta al registrarlas.
+      "./src/lib/informes/fuentes/**",
+    ],
   },
 
   /**

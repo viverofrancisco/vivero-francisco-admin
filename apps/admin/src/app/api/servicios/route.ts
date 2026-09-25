@@ -14,7 +14,6 @@ export async function GET() {
   const servicios = await prisma.producto.findMany({
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { suscripcionItems: true } } },
   });
 
   return NextResponse.json(servicios);

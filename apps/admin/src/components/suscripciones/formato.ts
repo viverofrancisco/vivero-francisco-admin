@@ -1,12 +1,7 @@
-import { unidadDePeriodo } from "@/lib/periodos";
+import { PERIODICIDAD_LABEL, unidadDePeriodo } from "@/lib/periodos";
 
 /** Etiquetas y formato compartidos por las pantallas de suscripciones. */
-export const PERIODICIDAD_LABEL: Record<string, string> = {
-  MENSUAL: "Mensual",
-  TRIMESTRAL: "Trimestral",
-  SEMESTRAL: "Semestral",
-  ANUAL: "Anual",
-};
+export { PERIODICIDAD_LABEL };
 
 /** Sufijo de precio y de visitas incluidas: "/trimestre". */
 export const PERIODICIDAD_SUFIJO: Record<string, string> = Object.fromEntries(

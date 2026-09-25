@@ -29,12 +29,6 @@ export default async function ClientesPage() {
         },
         orderBy: { createdAt: "asc" },
       },
-      suscripciones: {
-        where: { estado: "ACTIVO" },
-        select: {
-          items: { select: { producto: { select: { nombre: true } } } },
-        },
-      },
     },
   });
 

@@ -225,19 +225,17 @@ Todas las órdenes nacen en `crearOrden()` —es el único escritor— y siempre
 
 | Desde | Cómo | Cuándo conviene |
 |---|---|---|
-| `/dashboard/ordenes/nueva` | Se elige el cliente, se marcan sus visitas por facturar y se ajusta precio/IVA por línea | Es el camino normal. Sirve igual para algo que no pasó por una visita |
-| Completar una visita | `borradorDeVisita()` abre el borrador con el trabajo suelto a **$0** | Automático: la visita no lleva plata, así que el borrador existe para que alguien la ponga |
-| `/api/cron/renovaciones` | `generarRenovaciones()` por los períodos vencidos y `generarBorradoresDeVisitas()` como red de seguridad | Diario, sin que nadie apriete nada |
-| `generarOrden()` | Barrido: junta todo lo pendiente de un rango de fechas | Facturación de fin de mes de varios clientes |
+| `/dashboard/ordenes/nueva` (y `ordenes/nueva` en la app, por `POST /api/mobile/ordenes`) | Se eligen productos del catálogo, se marcan las visitas que cubre y se ajusta precio/IVA por línea; o se agrega un período de plan pendiente | Es el camino normal para el trabajo suelto |
+| `/api/cron/renovaciones` | `generarRenovaciones()` por los períodos de plan vencidos, una orden por período | Diario, sin que nadie apriete nada |
+| `generarOrden()` | Barrido: los períodos pendientes de un cliente en un rango, una orden por plan | Ponerse al día con un cliente |
 
-En `/dashboard/ordenes/nueva`, apenas se elige el cliente aparecen sus **visitas
-con trabajo sin facturar**, con una casilla cada una (buscables por número,
-fecha o producto), y aparte los **períodos de suscripción** todavía sin orden.
-Marcar una visita **carga su trabajo entero** —una visita se factura completa— y
-el mismo producto de dos visitas queda en **una sola línea**, con la cantidad
-sumada. La procedencia viaja en `OrdenLineaOrigen` (o `suscripcionItemId` +
-`periodoInicio`), que es lo que impide facturar dos veces lo mismo: lo garantizan
-los índices únicos, no la UI.
+En `/dashboard/ordenes/nueva`, apenas se elige el cliente aparecen sus
+**visitas** para marcar cuáles cubre la orden —marcar es una etiqueta, no carga
+líneas: lo que se hace en una visita son tareas, que no tienen precio— y aparte
+los **períodos de suscripción** todavía sin orden, uno por fila. Agregar un
+período pone **una línea** sin producto, al precio del plan; la procedencia
+(`suscripcionId` + `periodoInicio`) es lo que impide cobrarlo dos veces, y lo
+garantiza el índice único, no la UI.
 
 El precio de la línea es un **snapshot** y se edita sin tocar el catálogo. El
 **nombre no**: la orden registra lo que se hizo, y decidir qué sale impreso es
@@ -272,58 +270,57 @@ ventas aunque el papel tenga otra forma.
 ellas emite las de la orden una a una, que es como sigue funcionando
 `cobrarOrden()` para una factura ya emitida.
 
-### Toda línea sale del catálogo
+### Toda línea sale del catálogo, salvo la de un plan y la personalizada
 
-La línea **necesita un producto del catálogo del portal**. `OrdenLinea.productoId` y `FacturaLinea.productoId` son
-**NOT NULL** y la FK es `RESTRICT`, así que un producto ya vendido tampoco se
-puede borrar en duro — perder ese vínculo dejaría la línea fuera de todo reporte
-por producto y la factura sin con qué reconciliarse. (El portal borra en suave,
-así que en el uso normal no cambia nada.)
+Una línea es **de un producto, de un período de plan, o personalizada**. La de producto
+necesita uno del catálogo del portal: de ahí sale su `codigoPrincipal`, y la FK
+es `RESTRICT`, así que un producto ya vendido tampoco se puede borrar en duro —
+perder ese vínculo dejaría la línea fuera de todo reporte por producto y la
+factura sin con qué reconciliarse. (El portal borra en suave, así que en el uso
+normal no cambia nada.)
+
+La del período de un plan **no tiene producto**: un plan es un precio por un
+jardín, no una lista del catálogo (`Suscripcion.precio`, `ivaTasa` y
+`visitasPorPeriodo` en la cabecera; `SuscripcionItem` ya no existe). Trae
+`suscripcionId` + `periodoInicio`/`periodoFin`, nace como *"Plan mensual · Casa
+· septiembre 2026"* (`descripcionDePeriodoDePlan`) al precio del plan, y su
+código impreso es **`SUS-<numero>`** (`codigoDePlan`). Por eso
+`OrdenLinea.productoId`/`varianteId` y `FacturaLinea.productoId`/`varianteId`
+son opcionales. La **personalizada** tampoco tiene producto ni plan: es el
+*ítem personalizado* de Shopify, un trabajo puntual escrito a mano —el botón
+*Ítem personalizado* al lado del catálogo, en el portal y en la app— y la
+única cuya descripción se edita en la orden. Imprime `PERSONALIZADO` como
+`codigoPrincipal` (`CODIGO_LINEA_PERSONALIZADA`): lo que se vendió lo dice la
+descripción. En el armador de la factura, donde iría el selector de producto,
+la del plan muestra "Suscripción #N · propiedad" y la personalizada "Ítem
+personalizado"; una línea agregada a mano ahí sigue eligiendo producto.
+
+**`FacturaLinea.codigo` congela el código que salió impreso.** Se derivaba al
+leer (el SKU de la variante, o el id del producto), así que una nota de crédito
+emitida meses después imprimía el SKU de *hoy* y no el del comprobante que
+corrige, y el RIDE también lo recalculaba. La migración rellenó lo existente con
+la misma regla que se venía aplicando.
 
 ### Una orden puede cubrir varias visitas
 
-Y el mismo producto de dos visitas es **una sola línea**. Eran dos límites del
-esquema, no del negocio: `Orden.visitaId` era una columna y
-`OrdenLinea.visitaProductoId` era único, así que una orden era "de una visita" y
-un producto hecho dos veces salía como dos líneas.
+`Orden.visitaId` era una columna, así que una orden era "de una visita". Hoy es
+la tabla puente `OrdenVisita`, y cobrarle a alguien el mes entero en una orden
+es un caso normal. Es traza y no procedencia: ninguna línea sale de una visita
+—lo que se hace ahí son tareas— así que marcar visitas no carga nada.
 
-Ahora son dos tablas puente —`OrdenVisita` y `OrdenLineaOrigen`— y cobrarle a
-alguien el mes entero en una orden es un caso normal. Lo que **no** cambió es la
-garantía: `OrdenLineaOrigen.visitaProductoId` sigue siendo único en toda la
-tabla, así que un trabajo se factura una sola vez y lo impide la base, no una
-validación.
+### Un período es una línea
 
-### Lo que se factura junto se factura entero
-
-`ensureTrabajoCompleto()` rechaza una orden que se lleve **parte** de una visita
-o **parte** de un período: si toca una visita, entran todos los productos que a
-esa visita le falten cobrar; si toca un período de un plan, entran todos los
-ítems de ese plan para ese período.
-
-Los índices únicos no alcanzaban. Garantizan que nada se cobre **dos veces**
-—`OrdenLineaOrigen.visitaProductoId` es único y `[suscripcionItemId, periodoInicio]` también—
-pero no que se cobre **junto**: dos productos de la misma visita podían terminar
-en dos órdenes distintas y nadie se quejaba. Media visita facturada es una
-conversación a medias con el cliente y una segunda factura por el resto que
-nadie esperaba.
-
-Agregar productos sueltos del catálogo sigue permitido: **la regla es sobre lo
-que falta, no sobre lo que sobra.**
-
-Al editar una orden, sus propias líneas no cuentan como "facturadas en otra": si
-no, ninguna orden con procedencia se podría volver a guardar.
-
-Del lado de la interfaz no hay que acordarse: agregar un pendiente del panel
-**arrastra a sus hermanos** —la visita completa, el período completo— y lo
-avisa. La validación del servidor está para que no entre por otra puerta.
-
-Verificado el 25/08/2026: media visita y medio período rechazados; la visita
-completa entra sin problema.
+Existió `ensureTrabajoCompleto()`: "un período de plan se factura entero", con
+todos los ítems del plan adentro, porque el índice único impedía cobrar dos
+veces pero no cobrar a medias. Se fue con los ítems. Hoy un período es **una
+sola línea** —el plan tiene un precio, no una lista— así que no hay mitad que
+dejar afuera, y el índice único `[suscripcionId, periodoInicio]` es todo lo que
+hace falta. Agregar productos sueltos del catálogo encima sigue permitido.
 
 ### Una orden no mezcla plan con visitas
 
 `ensureNoMezclaOrigenes()` rechaza una orden que tenga a la vez líneas con
-`suscripcionItemId` y líneas con procedencia de visita. Son dos conversaciones
+`suscripcionId` y visitas marcadas. Son dos conversaciones
 distintas con el cliente: el plan es lo pactado y se renueva solo; la visita
 suelta es algo que pasó y se cotiza. Juntarlas daba una orden cuyo total no se
 podía explicar sin abrirla, y una factura que mezclaba la mensualidad con
@@ -339,58 +336,37 @@ visitas queda deshabilitada con el motivo escrito, y al revés un pendiente que
 no combina se rechaza diciendo en qué orden va: la regla se explica donde se
 está por romper, en vez de dejar apretar y fallar al guardar.
 
-### Lo que cubre un plan entra por procedencia, o a mano como extra
+### Un plan es un precio por un jardín
 
-Un producto que **este cliente** tiene en una suscripción activa llega a una
-orden de tres formas:
+`Suscripcion` dice de qué `propiedadId` del cliente es (obligatoria, FK
+`Restrict`), cuánto se cobra por período (`precio` sin IVA + `ivaTasa`), con qué
+ciclo y cuántas `visitasPorPeriodo` incluye. **No lleva productos.** Era una
+lista de ítems del catálogo con precio cada uno, y armar un plan era elegir tres
+productos y ponerles precio para llegar a la mensualidad que ya se había
+pactado. La migración `20260924200000_suscripcion_por_propiedad_sin_productos`
+plegó los ítems a la cabecera: suma de bases con una sola tasa; con tasas
+mezcladas se conservó **lo que el cliente paga** (la tasa del ítem más caro y la
+base despejada del total); visitas = máximo entre ítems; y la propiedad, la de
+sus visitas o la más antigua viva del cliente.
 
-- `suscripcionItemId` + período → la renovación del plan;
-- una fila de `OrdenLineaOrigen` → trabajo de visita que **no** quedó cubierto;
-- a mano desde el catálogo → un extra, sin procedencia.
+Lo que está en un plan **no bloquea nada en el catálogo**: cualquier producto se
+agrega a mano a cualquier orden, como extra encima de la línea del período o en
+una orden suelta. La protección que importa sigue en la base: un período no se
+cobra dos veces (`[suscripcionId, periodoInicio]`).
 
-**La tercera estuvo prohibida y ya no.** El argumento era que una línea a mano
-no choca contra ningún índice único y el mismo trabajo podría cobrarse dos
-veces. Pero esa protección **ninguna línea a mano la tiene**: dos órdenes con
-"Poda" escrita a mano tampoco chocan contra nada. La regla no evitaba una clase
-de error, evitaba un caso de un error que igual es posible en todos los demás —
-y a cambio hacía imposible algo legítimo, como cobrarle un saco de más a alguien
-que tiene ese producto en su plan.
+### El plan se elige por visita, y la visita pasa en la propiedad del plan
 
-Lo que sí protege la base sigue protegido: un período no se cobra dos veces
-(`[suscripcionItemId, periodoInicio]`) y un trabajo de visita tampoco
-(`OrdenLineaOrigen.visitaProductoId`).
+Al agendar hay un campo **Suscripción** con los planes activos del cliente
+—cada uno con su propiedad, ciclo y visitas— y la X lo deja sin plan. Lo que se
+elija queda en `Visita.suscripcionId`, y **elegir el plan elige la propiedad**:
+el plan es de un jardín, así que una visita del plan de la casa pasa en la casa.
+`validarPlanDelCliente` lo comprueba en el servidor, al agendar y al editar
+(ahí solo cuando el par plan↔propiedad cambió, para que una visita vieja se
+pueda seguir corrigiendo en lo demás). Una visita en la oficina que se cobra
+aparte va sin plan; si es del plan de la oficina, ese es otro plan.
 
-El selector lo ofrece con la aclaración *"El cliente ya lo tiene en un plan.
-Agregalo solo si es un extra"*. Nada queda en gris.
-
-### El plan se elige por visita, no por producto
-
-Al agendar hay un campo **Suscripción** con los planes activos del cliente y la
-opción *Ninguna · se cobra aparte*. Lo que se elija queda en
-`Visita.suscripcionId`, y de ahí `coberturaDelPlan()` deduce, producto por
-producto, cuáles caen dentro del plan: los que ese plan tiene como ítem quedan
-cubiertos, el resto es trabajo suelto que se cobra. Editando la visita se puede
-cambiar el plan o sacarlo, y la cobertura se recalcula sola.
-
-Antes la pregunta era **por producto** —*Cubre el plan* / *Se cobra aparte*, sin
-default— y estaba mal planteada. Nadie agenda media visita contra un plan: si la
-visita es del plan, lo que el plan tiene lo cubre. Preguntarlo por producto
-aparecía en toda visita de todo cliente con plan, y la respuesta correcta era
-siempre la misma; a cambio, la relación visita↔suscripción no existía en ningún
-lado y no había manera de ver las visitas de un plan.
-
-A qué ítem corresponde cada producto lo sigue resolviendo el servidor: el
-cliente manda un `suscripcionId`, nunca un `suscripcionItemId`, y se verifica que
-ese plan sea del cliente de la visita. No hay ambigüedad posible dentro del plan
-—`crearSuscripcion` impide que un producto esté en dos suscripciones activas del
-mismo cliente.
-
-Un detalle que sí importa: **cambiar el plan no toca los productos que ya están
-en una orden**. Marcarlos como cubiertos los dejaría cobrados y cubiertos a la
-vez. Se recalcula solo lo que todavía no se facturó.
-
-Desde la ficha de una suscripción, **"Nueva visita"** abre el alta con ese plan
-ya elegido; es el camino normal para las visitas de un plan.
+Desde la ficha de una suscripción, **"Crear visita"** abre el alta con ese plan
+—y su propiedad— ya elegidos; es el camino normal para las visitas de un plan.
 
 Desde la ficha de una visita, **"Crear orden"** abre la pantalla de alta con su
 trabajo pendiente ya cargado (`?cliente=…&visita=…`). Sirve también con la visita
@@ -430,9 +406,10 @@ es una sola factura para el cliente. Separarlas en dos facturas es armar dos
 ### Las suscripciones se renuevan solas, en borrador
 
 `/api/cron/renovaciones` (diario, 12:00 UTC, gated por `CRON_SECRET`) crea una
-orden **en BORRADOR** por cada suscripción y período ya vencido, con todos sus
-ítems adentro — la periodicidad es del contrato, así que lo que contiene se
-cobra junto.
+orden **en BORRADOR** por cada suscripción y período ya vencido, con **una
+línea**: la del período, al precio del plan, y con `Orden.suscripcionId` en la
+cabecera (el cron lo dejaba en null y la ficha de la orden no mostraba el plan;
+la migración lo completó en las viejas).
 
 Deja todo en borrador a propósito: el cron arma el trabajo, la decisión de
 cobrar sigue siendo de una persona, y hasta confirmar se puede ajustar el precio
@@ -445,12 +422,9 @@ facturar los cobraría todos al precio nuevo. Con la orden ya creada,
 siguiente.
 
 Es **idempotente** — lo que ya tiene línea se saltea, y el índice único atrapa
-las carreras — así que correrlo de más no rompe nada. Lo único que omite es una
-suscripción **sin productos activos**, y lo reporta en la respuesta.
-
-El mismo cron corre `generarBorradoresDeVisitas()`, la red de seguridad para
-visitas completadas que quedaron sin su borrador —lo normal es que nazca al
-completar la visita— y que también deja lo suyo en `omitidas` con el motivo.
+las carreras — así que correrlo de más no rompe nada. Ya no omite nada: la
+única razón para omitir era un plan sin productos activos, y un plan no tiene
+productos.
 
 ### Dónde se ven las facturas
 
@@ -463,11 +437,15 @@ factura se mira desde su orden, que es donde está todo lo demás.
   consultarle al SRI o emitirle una nota de crédito
 - Ficha del cliente — las suyas
 - Ficha de la suscripción — las que salieron de sus períodos
+- La app: la ficha de la orden, con el mismo menú en el ⋯ del encabezado
+  (cobro, RIDE, enviar, consultar al SRI, nota de crédito) por sus rutas
+  gemelas en `/api/mobile/facturas/[id]/*`
 
-La de una suscripción **no es una relación directa**: se llega por las líneas de
-orden que citan alguno de sus ítems. Es el precio de tener un solo libro de
-ventas, y a cambio una factura mixta —período más venta suelta— aparece en las
-dos vistas, que es lo correcto.
+La de una suscripción va por la cabecera de la orden (`Orden.suscripcionId`),
+no por las líneas: una orden anulada suelta el vínculo de sus líneas para que
+el período se pueda volver a cobrar, y aun así es una orden de ese plan que
+conviene ver. Una orden mixta —período más venta suelta— aparece en las dos
+vistas, que es lo correcto.
 
 ### Dónde se ve lo que falta cobrar
 
@@ -541,11 +519,16 @@ prometía un paso que en realidad empezaba por otro lado: un cobro se registra
 
 De ahí salen las dos funciones del servicio:
 
-- `facturarOrden()` — emite y nada más. Es la venta a crédito, y también lo que
-  usa *Emitir* en el armador.
+- `facturarOrden()` — emite y nada más. Es lo que usa *Emitir* en el armador
+  —y `POST /api/mobile/ordenes/[id]/facturar` desde la app, con las líneas de
+  la orden tal cual—: la pantalla vuelve a la orden, y ahí recién aparece
+  *Registrar cobro* (`POST /api/facturas/[id]/cobro`, y su gemelo en
+  `/api/mobile/facturas/[id]/cobro`).
 - `cobrarOrden()` — emite si hace falta y registra el cobro. Sobre una orden que
   ya tiene factura cobra contra esa, así que reintentar después de una falla a
-  mitad de camino es seguro. Es lo que hay detrás de *Emitir y cobrar*.
+  mitad de camino es seguro. Hubo un *Emitir y cobrar* en el armador que lo
+  usaba; se fue porque mezclaba dos decisiones en un botón, y hoy solo
+  *Registrar cobro* pasa por acá, siempre con la factura ya emitida.
 
 **Si emitir falla, la orden se queda en `BORRADOR`** y el motivo vuelve en
 `errorFactura` con HTTP 200 en vez de tirarse. Borrador es el único estado
@@ -554,15 +537,16 @@ cargarle los datos al cliente, corregir lo que el SRI rechazó. (Antes confirmar
 eran dos pasos y una emisión fallida dejaba la orden `CONFIRMADA` sin factura;
 `confirmarYFacturar()` ya no existe.)
 
-A nombre de quién sale la factura vive en `Orden.datoFacturacionId` y se elige
-mientras la orden es borrador, pero **el armador lo vuelve a preguntar** y puede
-cambiarlo para esa emisión: `opciones.datoFacturacionId` gana, después el de la
-orden, y por último el predeterminado del cliente.
+A nombre de quién sale la factura **se elige al emitir**, en el armador, con
+los datos del cliente delante: `opciones.datoFacturacionId` gana, después el
+que la orden tenga en `Orden.datoFacturacionId` (una orden armada por la API
+puede traerlo), y por último el predeterminado del cliente. *Nueva orden* lo
+preguntaba también, y era pedir dos veces lo mismo con la segunda mandando.
 
 **Sin datos de facturación cargados, *Emitir factura* queda apagado y lo dice**,
-en vez de dejar descubrirlo dentro del armador con la orden ya creada. En
-*Nueva orden* eso no apaga nada: *Guardar borrador* es justamente donde se
-arregla.
+en vez de dejar descubrirlo dentro del armador con la orden ya creada. Crear la
+orden no lo exige: es un borrador, y los datos se cargan desde la ficha del
+cliente antes de emitir.
 
 Emitir **manda el comprobante al SRI en el momento**: se arma el XML, se firma
 con el certificado del emisor y se espera la autorización, que casi siempre
@@ -588,10 +572,9 @@ portal**, no un web service: hay plazo hasta el día 7 del mes siguiente, el
 receptor tiene 5 días hábiles para aceptarlo, y desde 2026 no se puede sobre
 facturas a consumidor final. Por eso la orden no puede decidirlo por su cuenta.
 
-**Y acá está la trampa que casi nos comemos.** `OrdenLineaOrigen.visitaProductoId` y
-`[suscripcionItemId, periodoInicio]` son únicos **en toda la tabla, sin mirar el
-estado de la orden**, y `listarPendientes` da por facturado cualquier trabajo
-que tenga línea. Una orden anulada que se llevara sus líneas dejaría esas
+**Y acá está la trampa que casi nos comemos.** `[suscripcionId, periodoInicio]`
+es único **en toda la tabla, sin mirar el estado de la orden**, y
+`listarPendientes` da por facturado cualquier período que tenga línea enlazada. Una orden anulada que se llevara sus líneas dejaría esas
 visitas y esos períodos reservados por un muerto: invisibles en pendientes e
 imposibles de meter en otra orden. Para siempre.
 

@@ -121,6 +121,10 @@ const VISITA_DETAIL_INCLUDE = {
   },
   ...TAREAS_DE_VISITA_INCLUDE,
   grupo: { select: { id: true, nombre: true } },
+  // De qué plan es, si es de alguno: la ficha lo muestra con un link.
+  suscripcion: {
+    select: { id: true, numero: true, periodicidad: true, estado: true },
+  },
   media: { orderBy: { createdAt: "asc" } },
 } as const;
 
@@ -1288,17 +1292,35 @@ async function validarTareas(ids: string[]): Promise<string[]> {
   return unicas;
 }
 
-/** Que el plan sea de este cliente: un id de otro no engancha nada. */
+/**
+ * Que el plan sea de este cliente **y de esta propiedad**.
+ *
+ * Un id de otro cliente no engancha nada. Y el plan es de un jardín: una
+ * visita que cuenta contra el plan de la casa pasa en la casa. Si la visita
+ * es en la oficina y se cobra aparte, va sin plan; si es del plan de la
+ * oficina, ese es otro plan.
+ */
 async function validarPlanDelCliente(
   suscripcionId: string | null | undefined,
   clienteId: string,
+  propiedadId: string,
 ): Promise<string | null> {
   if (!suscripcionId) return null;
   const plan = await prisma.suscripcion.findFirst({
     where: { id: suscripcionId, clienteId },
-    select: { id: true },
+    select: {
+      id: true,
+      numero: true,
+      propiedadId: true,
+      propiedad: { select: { nombre: true } },
+    },
   });
   if (!plan) throw new ValidationError("Ese plan no es de este cliente.");
+  if (plan.propiedadId !== propiedadId) {
+    throw new ValidationError(
+      `La suscripción #${plan.numero} es de ${plan.propiedad.nombre}. Elige esa propiedad, o deja la visita sin suscripción.`,
+    );
+  }
   return plan.id;
 }
 
@@ -1358,6 +1380,7 @@ export async function createVisitasBatch(
   const suscripcionId = await validarPlanDelCliente(
     payload.suscripcionId,
     cliente.id,
+    propiedadId,
   );
   const tareaIds = await validarTareas(payload.tareasObligatoriasIds ?? []);
   const personalIds = [...new Set(payload.personalIds ?? [])];
@@ -1428,6 +1451,8 @@ export async function createVisitasBatch(
 export interface UpdateVisitaInfoPayload {
   fechaProgramada?: Date;
   fechaRealizada?: Date | null;
+  /** Otra propiedad **del mismo cliente**: se agendó en la casa y era la oficina. */
+  propiedadId?: string;
   grupoId?: string | null;
   suscripcionId?: string | null;
   notas?: string | null;
@@ -1457,13 +1482,34 @@ export async function updateVisitaInfo(
       clienteId: true,
       estado: true,
       fechaProgramada: true,
+      propiedadId: true,
+      suscripcionId: true,
     },
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
 
-  const suscripcionId =
+  const propiedadId =
+    payload.propiedadId !== undefined
+      ? await validarPropiedadDelCliente(payload.propiedadId, visita.clienteId)
+      : undefined;
+
+  // El plan y la propiedad se validan como **par**, y solo si el par cambió:
+  // el plan es de un jardín, así que mover la visita de casa la saca del plan
+  // de la casa, y ponerle un plan exige que sea el de donde pasa. Una visita
+  // vieja cuyo par ya no cumple la regla (el plan cambió de propiedad después)
+  // se sigue pudiendo editar en lo demás sin tocarlo.
+  const planFinal =
     payload.suscripcionId !== undefined
-      ? await validarPlanDelCliente(payload.suscripcionId, visita.clienteId)
+      ? payload.suscripcionId || null
+      : visita.suscripcionId;
+  const propiedadFinal = propiedadId ?? visita.propiedadId;
+  const parCambio =
+    planFinal !== visita.suscripcionId || propiedadFinal !== visita.propiedadId;
+  const suscripcionId =
+    payload.suscripcionId !== undefined || (parCambio && planFinal)
+      ? parCambio
+        ? await validarPlanDelCliente(planFinal, visita.clienteId, propiedadFinal)
+        : planFinal
       : undefined;
   const tareaIds =
     payload.tareasObligatoriasIds !== undefined
@@ -1510,6 +1556,7 @@ export async function updateVisitaInfo(
         ...(payload.fechaRealizada !== undefined
           ? { fechaRealizada: payload.fechaRealizada }
           : {}),
+        ...(propiedadId !== undefined ? { propiedadId } : {}),
         ...(payload.grupoId !== undefined ? { grupoId: payload.grupoId } : {}),
         ...(suscripcionId !== undefined ? { suscripcionId } : {}),
         ...(payload.notas !== undefined ? { notas: payload.notas } : {}),

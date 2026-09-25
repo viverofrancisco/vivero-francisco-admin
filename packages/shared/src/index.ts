@@ -6,5 +6,7 @@ export * from "./cliente";
 export * from "./propiedad";
 export * from "./fecha";
 export * from "./orden";
+export * from "./suscripcion";
 export * from "./tarea";
 export * from "./chat";
+export * from "./informe";

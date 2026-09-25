@@ -4316,12 +4316,12 @@ export type $VisitaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     /**
      * De qué plan es esta visita, si es de alguno.
      * 
-     * La decisión es **de la visita**, no de cada producto: "esta visita es del
-     * plan mensual" o "esta visita es un trabajo aparte". Con el plan puesto,
-     * cada producto que **esté en ese plan** queda cubierto —eso ya no se
-     * decide, se deduce del plan— y lo que no esté se cobra como trabajo suelto.
+     * La decisión es **de la visita entera**: "esta visita es del plan mensual"
+     * o "esta visita es un trabajo aparte". El plan es de un jardín, así que la
+     * visita de un plan pasa en la propiedad del plan (`validarPlanDelCliente`
+     * lo comprueba al agendar y al editar).
      * 
-     * En null, todo lo que se haga se cobra aparte. Es lo que permite hacerle a
+     * En null, lo que se haga se cobra aparte. Es lo que permite hacerle a
      * alguien una visita extra de algo que igual tiene contratado.
      */
     suscripcionId: string | null

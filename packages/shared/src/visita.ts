@@ -211,6 +211,8 @@ export type CreateVisitasBody = z.infer<typeof createVisitasSchema>;
 export const visitasListQuerySchema = z.object({
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
+  /** Las de un cliente, todas sus fechas: es lo que arma una orden. */
+  clienteId: z.string().optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });

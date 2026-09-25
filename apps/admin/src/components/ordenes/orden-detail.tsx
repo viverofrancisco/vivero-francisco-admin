@@ -16,11 +16,13 @@ import { CustomSelect } from "@/components/ui/custom-select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
-  DollarSign,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   Loader2,
   Check,
   ChevronDown,
+  MoreHorizontal,
   MoreVertical,
   Send,
   Pencil,
@@ -28,7 +30,17 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { nombreCliente, propiedadesDeVisitas } from "@vivero/shared";
+import {
+  fechaSola,
+  nombreCliente,
+  propiedadesDeVisitas,
+  resumenDePropiedades,
+} from "@vivero/shared";
+import { cn } from "@/lib/utils";
+import {
+  FilaFichaMovil,
+  SeccionFichaMovil,
+} from "@/components/shared/seccion-ficha-movil";
 import {
   money,
   fecha,
@@ -72,7 +84,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CobroDialog, type FacturaCobrable } from "./cobro-dialog";
 import { CobrosCard } from "./cobros-card";
-import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
 import { facturaVigenteDe } from "@/lib/services/factura-vigente";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -124,6 +135,8 @@ interface OrdenData {
     numero: number;
     periodicidad: string;
     estado: string;
+    /** De qué jardín es el plan: es la propiedad de la orden. */
+    propiedad: { id: string; nombre: string };
   } | null;
   lineas: {
     id: string;
@@ -134,13 +147,13 @@ interface OrdenData {
     total: number;
     periodoInicio: string | null;
     periodoFin: string | null;
-    /** Procedencia: se conserva al editar, es lo que evita cobrar dos veces. */
-    productoId: string;
-    /** Qué variante se vende. Solo en un bien. */
+    /** `null` en la línea de un período de plan: no vende un producto. */
+    productoId: string | null;
+    /** Qué variante se vende. Sin producto, ninguna. */
     varianteId: string | null;
-    suscripcionItemId: string | null;
-    /** De qué plan salió, cuando salió de un período. */
-    suscripcionId?: string | null;
+    /** De qué plan es el período que cobra. Se conserva al editar: es lo que
+        evita cobrar el mismo período dos veces. */
+    suscripcionId: string | null;
   }[];
   facturas: {
     id: string;
@@ -275,12 +288,9 @@ export function OrdenDetail({
       }));
 
   /**
-   * El período que cubre la orden.
-   *
-   * Es **uno solo**: `ensureTrabajoCompleto` obliga a llevarse el período
-   * entero, así que todas sus líneas de plan dicen lo mismo. Por eso va en la
-   * card de la suscripción y no repetido en cada línea — a diferencia de las
-   * visitas, que sí pueden ser varias y distintas por línea.
+   * El período que cubre la orden: el de su primera línea de plan. Casi
+   * siempre es uno solo —el cron arma una orden por período— y va en la card
+   * de la suscripción; con varios, cada línea dice el suyo.
    */
   const periodo = orden.lineas.find((l) => l.periodoInicio && l.periodoFin);
 
@@ -333,20 +343,20 @@ export function OrdenDetail({
   /**
    * Las líneas cuyo período se libera al anular, para poder mostrarlas.
    *
-   * Solo los planes: `[suscripcionItemId, periodoInicio]` es único en toda la
+   * Solo los planes: `[suscripcionId, periodoInicio]` es único en toda la
    * tabla sin mirar el estado de la orden, así que un período pegado a una
    * orden anulada no se podría volver a facturar nunca. Las visitas marcadas
    * son traza y no reservan nada.
    */
-  const lineasEnlazadas = orden.lineas.filter((l) => l.suscripcionItemId);
+  const lineasEnlazadas = orden.lineas.filter((l) => l.suscripcionId);
 
   /**
    * Cobrar con la factura emitida va derecho contra ella.
    * **Sin factura pasa antes por el armador**: qué sale impreso es
    * una decisión —varios trabajos pueden ir como una sola línea de "servicio de
    * mantenimiento"— y tomarla por omisión desde un diálogo de cobro es tomarla
-   * a ciegas. El cobro sigue estando a un paso: la pantalla termina en
-   * "Emitir y cobrar".
+   * a ciegas. Emitir y cobrar son dos pasos: el cobro se registra contra el
+   * comprobante, así que primero tiene que existir.
    */
   const abrirCobro = () => {
     if (!facturaVigente) {
@@ -372,7 +382,7 @@ export function OrdenDetail({
         ivaTasa: String(l.ivaTasa),
         productoId: l.productoId,
         varianteId: l.varianteId,
-        suscripcionItemId: l.suscripcionItemId,
+        suscripcionId: l.suscripcionId,
         periodoInicio: l.periodoInicio,
         periodoFin: l.periodoFin,
       }))
@@ -406,7 +416,7 @@ export function OrdenDetail({
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
             varianteId: l.varianteId,
-            suscripcionItemId: l.suscripcionItemId,
+            suscripcionId: l.suscripcionId,
             periodoInicio: l.periodoInicio,
             periodoFin: l.periodoFin,
           })),
@@ -431,10 +441,6 @@ export function OrdenDetail({
     ? "El cliente no tiene datos de facturación cargados."
     : null;
 
-  // La confirmación vive en el diálogo: además de avisar que es irreversible,
-  // hay que elegir con qué datos se emite.
-  const [datoFacturacion, setDatoFacturacion] = useState(orden.datoFacturacionId);
-
   /**
    * Cambiar de cliente arrastra todo lo que dependía del anterior: los datos de
    * facturación dejan de valer, así que se limpian en la misma llamada. El
@@ -450,30 +456,12 @@ export function OrdenDetail({
         body: JSON.stringify({ clienteId, datoFacturacionId: null }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
-      setDatoFacturacion(null);
       toast.success("Cliente actualizado");
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos cambiar el cliente");
     } finally {
       setCargando(null);
-    }
-  };
-
-  /** Se guarda al elegir, sin botón: es un solo campo. */
-  const guardarDatoFacturacion = async (id: string | null) => {
-    setDatoFacturacion(id);
-    if (id === orden.datoFacturacionId) return;
-    try {
-      const res = await fetch(`/api/ordenes/${orden.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ datoFacturacionId: id }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Error");
-      router.refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos guardar");
     }
   };
 
@@ -582,13 +570,171 @@ export function OrdenDetail({
   const irAEmitir = () =>
     router.push(`/dashboard/ordenes/${orden.id}/facturar`);
 
+  /**
+   * El estado que dice la tarjeta de la plata en el teléfono: anulada, un
+   * borrador, o cuánto entró de lo facturado. `estadoCobro` sin factura diría
+   * "sin sincronizar", que es lo que dice de una factura vieja sin saldo, no
+   * de una orden que todavía no se emitió.
+   */
+  const cobro = facturaVigente
+    ? estadoCobro(orden.total, facturaVigente.saldo)
+    : null;
+  const estadoEnLaTarjeta =
+    orden.estado === "ANULADA"
+      ? "Orden anulada"
+      : cobro
+        ? cobroLabel[cobro]
+        : estadoLabel[orden.estado] ?? orden.estado;
+  /** Dónde: la propiedad del plan, o las de las visitas que cubre. */
+  const donde = resumenDePropiedades(
+    orden.suscripcion
+      ? [orden.suscripcion.propiedad.nombre]
+      : propiedades.map((p) => p.nombre)
+  );
+  /** Lo que se le hace a la factura viva, para el ⋯ del teléfono. */
+  const puedeCobrar =
+    facturaVigente !== null &&
+    (facturaVigente.saldo === null || facturaVigente.saldo > 0);
+  const autorizada = facturaVigente?.estado === "AUTORIZADO";
+  const hayMenuMovil =
+    orden.estado !== "ANULADA" &&
+    (hayAccionesDeOrden || facturaVigente !== null);
+
   return (
     <div className="space-y-6">
-      {/* Pegado arriba: las acciones viven aquí —también Guardar y Cancelar
+      {/* ══ Teléfono: el encabezado de la ficha en la app ════════════════
+          La flecha al lado del número, fija arriba, y el ⋯ a la derecha con
+          todo lo que se le hace a la orden y a su factura. Editando, pasa a
+          ser la barra del formulario: Cancelar, el número, Guardar. */}
+      <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-4 flex items-center gap-1.5 bg-card px-4 pt-1.5 pb-2 md:hidden">
+        {editando ? (
+          <>
+            <button
+              type="button"
+              onClick={() => setEditando(false)}
+              disabled={cargando === "guardar"}
+              className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-left text-base font-semibold text-muted-foreground active:bg-muted"
+            >
+              Cancelar
+            </button>
+            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
+              Orden #{orden.numero}
+            </h1>
+            <button
+              type="submit"
+              form={ORDEN_LINEAS_FORM_ID}
+              disabled={cargando === "guardar"}
+              className="flex min-w-[76px] items-center justify-end rounded-lg px-1.5 py-1.5 text-base font-bold text-primary active:bg-muted disabled:text-muted-foreground"
+            >
+              {cargando === "guardar" ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Guardar"
+              )}
+            </button>
+          </>
+        ) : (
+          <>
+            <Link
+              href={backHref}
+              aria-label="Volver"
+              className="-ml-2.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl active:bg-muted"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Link>
+            <h1 className="min-w-0 flex-1 text-[22px] font-extrabold tracking-[-0.4px]">
+              Orden #{orden.numero}
+            </h1>
+            {hayMenuMovil && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      aria-label="Acciones"
+                      disabled={cargando !== null}
+                      className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border border-border text-ink-2 active:bg-muted disabled:opacity-60"
+                    >
+                      {cargando !== null ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <MoreHorizontal className="h-5 w-5" />
+                      )}
+                    </button>
+                  }
+                />
+                {/* Por su nombre a secas, sin iconos: en una lista de tres
+                    o cuatro acciones el dibujo repite lo que ya dice la
+                    palabra. Lo mismo que el ⋯ de la app. */}
+                <DropdownMenuContent align="end" className="min-w-52">
+                  {puedeCobrar && (
+                    <DropdownMenuItem onClick={abrirCobro}>
+                      Registrar cobro
+                    </DropdownMenuItem>
+                  )}
+                  {facturaVigente && autorizada && (
+                    <DropdownMenuItem
+                      render={
+                        <a
+                          href={`/api/facturas/${facturaVigente.id}/ride`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        />
+                      }
+                    >
+                      Ver factura (RIDE)
+                    </DropdownMenuItem>
+                  )}
+                  {facturaVigente && autorizada && (
+                    <DropdownMenuItem
+                      onClick={() => enviarAlCliente(facturaVigente.id)}
+                    >
+                      {facturaVigente.enviadoEl
+                        ? "Volver a enviar al cliente"
+                        : "Enviar al cliente"}
+                    </DropdownMenuItem>
+                  )}
+                  {facturaVigente && !autorizada && (
+                    <DropdownMenuItem
+                      onClick={() => consultarAlSri(facturaVigente.id)}
+                    >
+                      Consultar al SRI
+                    </DropdownMenuItem>
+                  )}
+                  {puedeEditar && (
+                    <DropdownMenuItem onClick={empezarAEditar}>
+                      Editar
+                    </DropdownMenuItem>
+                  )}
+                  {facturaVigente && autorizada && (
+                    <DropdownMenuItem
+                      onClick={() => setAcreditando(true)}
+                      className="text-destructive"
+                    >
+                      Emitir nota de crédito
+                    </DropdownMenuItem>
+                  )}
+                  {sePuedeAnular && (
+                    <DropdownMenuItem
+                      onClick={() => setAnulando(true)}
+                      className="text-destructive"
+                    >
+                      Anular orden
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ══ Escritorio: la cabecera de siempre ═══════════════════════════
+          Pegada arriba: las acciones viven aquí —también Guardar y Cancelar
           mientras se edita— en vez de en una barra fija abajo, que le tapaba
-          el contenido al resto de la página. Los márgenes negativos lo hacen
+          el contenido al resto de la página. Los márgenes negativos la hacen
           sangrar hasta los bordes del contenedor con padding. */}
-      <div className="sticky top-0 z-20 -mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-6 flex items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur-sm md:px-6">
+      <div className="sticky top-0 z-20 -mx-6 -mt-6 mb-6 hidden items-center gap-3 border-b bg-card/95 px-6 py-3 backdrop-blur-sm md:flex">
         {/* Vuelve de donde vino: llegar desde una visita y salir a la lista de
             órdenes es perder el lugar donde uno estaba. */}
         <Link href={backHref}>
@@ -669,11 +815,7 @@ export function OrdenDetail({
               </Button>
             ) : (
               (facturaVigente.saldo === null || facturaVigente.saldo > 0) && (
-                <Button
-                  onClick={abrirCobro}
-                  disabled={cargando !== null}
-                >
-                  <DollarSign className="mr-2 h-4 w-4" />
+                <Button onClick={abrirCobro} disabled={cargando !== null}>
                   Registrar cobro
                 </Button>
               )
@@ -720,7 +862,258 @@ export function OrdenDetail({
       </div>
 
 
-      <div className="grid items-start gap-6 lg:grid-cols-3">
+
+      {/* ══ Teléfono: la ficha de la app, en el mismo orden ═══════════════
+          El cliente y la fecha bajo el título, la tarjeta verde con cuánto
+          es y si entró, el botón de emitir cuando no hay documento, y las
+          secciones —detalle, factura, cobros, visitas, notas— como tarjetas
+          blancas con su rótulo. Editando se muestra el árbol del escritorio,
+          que a este ancho apila sus cards: la app no edita órdenes, así que
+          no hay pantalla que copiar. */}
+      {!editando && (
+        <div className="md:hidden">
+          <div className="mb-4 space-y-0.5">
+            <p className="text-sm text-muted-foreground">
+              {nombreCliente(orden.cliente)} · {fechaSola(orden.fecha)}
+            </p>
+            {donde && (
+              <p className="text-xs text-muted-foreground">{donde}</p>
+            )}
+          </div>
+
+          {/* Lo primero: cuánto es y si entró. Es a lo que se abre esta
+              pantalla. */}
+          <div
+            className={cn(
+              "space-y-0.5 rounded-2xl p-[18px] text-white",
+              orden.estado === "ANULADA" ? "bg-ink-2" : "bg-green-deep"
+            )}
+          >
+            <p className="text-[30px] leading-tight font-bold tabular-nums">
+              {money(orden.total)}
+            </p>
+            <p className="font-semibold text-white/85">{estadoEnLaTarjeta}</p>
+            {orden.estado !== "ANULADA" &&
+              facturaVigente?.saldo != null &&
+              facturaVigente.saldo > 0 && (
+                <p className="text-[13px] text-white/70">
+                  Falta cobrar {money(facturaVigente.saldo)}
+                </p>
+              )}
+          </div>
+
+          {/* Sin documento, lo que toca es emitirlo: el cobro se registra
+              **contra** un comprobante, así que antes no hay nada que cobrar. */}
+          {orden.estado !== "ANULADA" && !facturaVigente && (
+            <div className="mt-3">
+              <Button
+                onClick={irAEmitir}
+                disabled={cargando !== null || motivoNoEmitir !== null}
+                className="h-12 w-full rounded-[14px] text-base font-semibold"
+              >
+                Emitir factura
+              </Button>
+              {motivoNoEmitir && (
+                <p className="mt-2 text-center text-[13px] text-muted-foreground">
+                  {motivoNoEmitir}
+                </p>
+              )}
+            </div>
+          )}
+
+          <SeccionFichaMovil titulo="Detalle">
+            {orden.lineas.map((l) => (
+              <div
+                key={l.id}
+                className="flex items-start justify-between gap-3 border-b border-border/70 py-2.5"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm">{l.descripcion}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {l.cantidad} × {money(l.precioUnitario)}
+                    {l.ivaTasa > 0 ? ` · IVA ${l.ivaTasa}%` : ""}
+                  </p>
+                </div>
+                <span className="flex-none text-sm font-semibold tabular-nums">
+                  {money(l.total)}
+                </span>
+              </div>
+            ))}
+            <div className="pt-1.5">
+              <FilaFichaMovil etiqueta="Subtotal" valor={money(orden.subtotal)} />
+              <FilaFichaMovil etiqueta="IVA" valor={money(orden.iva)} />
+              <FilaFichaMovil etiqueta="Total" valor={money(orden.total)} fuerte />
+            </div>
+          </SeccionFichaMovil>
+
+          {facturaVigente && (
+            <SeccionFichaMovil titulo="Factura">
+              {/* Lo que dijo el SRI cuando no la autorizó: es lo único
+                  accionable, y sin esto una rechazada se ve igual que una
+                  que todavía no contestaron. */}
+              {facturaVigente.mensajesSri &&
+                facturaVigente.mensajesSri.length > 0 && (
+                  <div className="my-2 space-y-1 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs leading-snug text-amber-900">
+                    <p className="font-medium">
+                      El SRI no la autorizó
+                      {facturaVigente.estadoSri
+                        ? ` · ${facturaVigente.estadoSri}`
+                        : ""}
+                    </p>
+                    {facturaVigente.mensajesSri.map((m, i) => (
+                      <p key={i}>
+                        {m.identificador ? `${m.identificador} · ` : ""}
+                        {m.mensaje}
+                        {m.informacionAdicional
+                          ? ` — ${m.informacionAdicional}`
+                          : ""}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              {facturaVigente.ambienteSri === "PRUEBAS" && (
+                <p className="my-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
+                  Emitida en el ambiente de <b>pruebas</b> del SRI: no vale
+                  como comprobante.
+                </p>
+              )}
+              <FilaFichaMovil
+                etiqueta="Número"
+                valor={<span className="tabular-nums">{facturaVigente.numero}</span>}
+              />
+              <FilaFichaMovil
+                etiqueta="Estado"
+                valor={
+                  ESTADO_FACTURA_LABEL[facturaVigente.estado] ??
+                  facturaVigente.estado
+                }
+              />
+              <FilaFichaMovil
+                etiqueta="Emitida"
+                valor={fecha(facturaVigente.fechaEmision)}
+              />
+              {facturaVigente.razonSocial && (
+                <FilaFichaMovil
+                  etiqueta="A nombre de"
+                  valor={facturaVigente.razonSocial}
+                />
+              )}
+              {facturaVigente.enviadoEl && (
+                <FilaFichaMovil
+                  etiqueta="Enviada al cliente"
+                  valor={fecha(facturaVigente.enviadoEl)}
+                />
+              )}
+            </SeccionFichaMovil>
+          )}
+
+          {facturaVigente && <CobrosCard facturaId={facturaVigente.id} movil />}
+
+          {notasDeCredito.length > 0 && (
+            <SeccionFichaMovil
+              titulo={
+                notasDeCredito.length === 1
+                  ? "Nota de crédito"
+                  : "Notas de crédito"
+              }
+            >
+              {notasDeCredito.map((n) => (
+                <div
+                  key={n.id}
+                  className="border-b border-border/70 py-2.5 text-sm last:border-b-0"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="font-medium">{n.numero}</span>
+                    <span className="tabular-nums">−{money(n.total)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {fecha(n.fechaEmision)} ·{" "}
+                    {ESTADO_FACTURA_LABEL[n.estado] ?? n.estado}
+                    {n.motivo ? ` · ${n.motivo}` : ""}
+                  </p>
+                  {n.estado === "AUTORIZADO" && (
+                    <a
+                      href={`/api/facturas/${n.id}/ride`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary"
+                    >
+                      Ver el documento
+                    </a>
+                  )}
+                </div>
+              ))}
+            </SeccionFichaMovil>
+          )}
+
+          {/* De qué es la orden: el plan o las visitas que cubre, cada una
+              una fila que abre su ficha. */}
+          {orden.suscripcion ? (
+            <SeccionFichaMovil titulo="Suscripción">
+              <Link
+                href={`/dashboard/suscripciones/${orden.suscripcion.id}?from=/dashboard/ordenes/${orden.id}`}
+                className="flex items-center justify-between gap-3 py-3 active:bg-muted"
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">
+                    Suscripción #{orden.suscripcion.numero}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {orden.suscripcion.propiedad.nombre} ·{" "}
+                    {PERIODICIDAD_LABEL[orden.suscripcion.periodicidad] ??
+                      orden.suscripcion.periodicidad}
+                    {periodo &&
+                      ` · ${fecha(periodo.periodoInicio!)} → ${fecha(periodo.periodoFin!)}`}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
+              </Link>
+            </SeccionFichaMovil>
+          ) : orden.visitas.length > 0 ? (
+            <SeccionFichaMovil
+              titulo={orden.visitas.length === 1 ? "Visita" : "Visitas"}
+            >
+              {orden.visitas.map((v) => (
+                <Link
+                  key={v.id}
+                  href={`/dashboard/visitas/${v.id}?from=/dashboard/ordenes/${orden.id}`}
+                  className="flex items-center justify-between gap-3 border-b border-border/70 py-3 last:border-b-0 active:bg-muted"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium">
+                      Visita #{v.numero}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {fecha(v.fecha)}
+                      {propiedades.length > 1 && v.propiedad
+                        ? ` · ${v.propiedad.nombre}`
+                        : ""}
+                    </span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 flex-none text-muted-foreground" />
+                </Link>
+              ))}
+            </SeccionFichaMovil>
+          ) : null}
+
+          {orden.notas && (
+            <SeccionFichaMovil titulo="Notas">
+              <p className="py-2 text-sm leading-[21px] whitespace-pre-wrap text-ink-2">
+                {orden.notas}
+              </p>
+            </SeccionFichaMovil>
+          )}
+        </div>
+      )}
+
+      {/* ══ Escritorio ══════════════════════════════════════════════════
+          En el teléfono se dibuja solo mientras se edita. */}
+      <div
+        className={cn(
+          "items-start gap-6 lg:grid-cols-3",
+          editando ? "grid" : "hidden md:grid"
+        )}
+      >
         <div className="lg:col-span-2">
         <Card>
           <CardHeader className="border-b py-3">
@@ -733,7 +1126,6 @@ export function OrdenDetail({
                 onLineasChange={setLineasEdit}
                 productos={productos}
                 hayMasProductos={hayMasProductos}
-                clienteNombre={nombreCliente(orden.cliente)}
                 onGuardar={guardarEdicion}
               />
             ) : (
@@ -768,16 +1160,21 @@ export function OrdenDetail({
                           que lleva el link. */}
                       {l.periodoInicio ? (
                         <>
-                          {l.suscripcionId ? (
+                          {/* Por la cabecera y no por la línea: una orden
+                              anulada suelta el vínculo de sus líneas, pero
+                              sigue siendo de ese plan. */}
+                          {orden.suscripcion ? (
                             <Link
-                              href={`/dashboard/suscripciones/${l.suscripcionId}`}
+                              href={`/dashboard/suscripciones/${orden.suscripcion.id}`}
                               className="text-primary hover:underline"
                             >
-                              Suscripción{orden.suscripcion ? ` #${orden.suscripcion.numero}` : ""}
+                              Suscripción #{orden.suscripcion.numero}
                             </Link>
                           ) : (
                             "Suscripción"
                           )}
+                          {l.periodoFin &&
+                            ` · ${fecha(l.periodoInicio)} → ${fecha(l.periodoFin)}`}
                           {" · "}
                         </>
                       ) : (
@@ -829,7 +1226,7 @@ export function OrdenDetail({
               visitas={visitasDelCliente}
               marcadas={visitasEdit}
               onCambiar={cambiarVisitas}
-              deshabilitado={lineasEdit.some((l) => l.suscripcionItemId)}
+              deshabilitado={lineasEdit.some((l) => l.suscripcionId)}
               motivoDeshabilitado="Esta orden cubre un período de suscripción. Las visitas van en otra orden."
             />
           </div>
@@ -857,6 +1254,7 @@ export function OrdenDetail({
                       Suscripción #{orden.suscripcion.numero}
                     </span>
                     <span className="block truncate text-xs text-muted-foreground">
+                      {orden.suscripcion.propiedad.nombre} ·{" "}
                       {PERIODICIDAD_LABEL[orden.suscripcion.periodicidad] ??
                         orden.suscripcion.periodicidad}
                       {periodo &&
@@ -1314,22 +1712,9 @@ export function OrdenDetail({
           </Card>
         )}
 
-        {/* A nombre de quién sale la factura. Editable mientras sea borrador: una
-            vez confirmada la orden, cambiarlo es cambiar lo que se va a cobrar. */}
-        {orden.estado === "BORRADOR" && (
-          <Card className="overflow-visible">
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">Datos de facturación</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SelectorDatosFacturacion
-                clienteId={orden.cliente.id}
-                value={datoFacturacion}
-                onChange={guardarDatoFacturacion}
-              />
-            </CardContent>
-          </Card>
-        )}
+        {/* A nombre de quién sale la factura no se elige acá: es del armador
+            del documento, que lo pregunta con los datos del cliente delante.
+            Emitida, la tarjeta de la factura dice a nombre de quién salió. */}
 
         {/* Al final de la columna y no arriba: las notas describen la orden, no
             lo que se vendió, así que van después de a quién se le factura y

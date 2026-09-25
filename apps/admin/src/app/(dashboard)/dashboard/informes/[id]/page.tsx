@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { textoPlanoDeHtml } from "@/lib/informes/encabezado-texto";
 import { nombreCliente } from "@vivero/shared";
 import { requireAuth, viewerFromSession, requireStaff } from "@/lib/auth-helpers";
 import { getInforme } from "@/lib/services/informe.service";
@@ -73,6 +74,8 @@ export default async function InformeDetailPage({
           numero: informe.numero,
           titulo: informe.titulo,
           fecha: informe.fecha.toISOString().split("T")[0],
+          fechaDesde: informe.fechaDesde?.toISOString() ?? null,
+          fechaHasta: informe.fechaHasta?.toISOString() ?? null,
           generatedAt: informe.generatedAt.toISOString(),
           pdfUrl: informe.pdfUrl,
           cliente: {
@@ -118,8 +121,10 @@ export default async function InformeDetailPage({
               ).toISOString(),
               propiedad: v.visita.propiedad,
             })),
+          // El título sin formato: con el editor puede ser HTML, y una fila
+          // de la lista necesita una frase.
           secciones: informe.secciones.map((s) => ({
-            titulo: s.titulo,
+            titulo: textoPlanoDeHtml(s.titulo),
             fotos: s.fotos.length,
           })),
         }}

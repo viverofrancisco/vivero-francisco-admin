@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { tareasHechas } from "@/lib/visita-tareas";
 import { requireAuth, viewerFromUser } from "@/lib/auth-helpers";
 import { isAdminRole } from "@/lib/services/viewer";
 import {
+  UBICACION_DE_PROPIEDAD,
   getSuscripcion,
   ordenesDeSuscripcion,
   visitasDeSuscripcion,
@@ -22,9 +24,9 @@ export default async function SuscripcionRoute({
   const { id } = await params;
 
   /**
-   * Un admin de sector entra a ver de qué se trata el plan —qué cubre y
-   * cuántas visitas por período— porque es lo que necesita para agendar. No ve
-   * precios ni órdenes, y no puede cambiar nada: el plan es un acuerdo
+   * Quien no ve plata entra a ver de qué se trata el plan —de qué propiedad
+   * es y cuántas visitas por período— porque es lo que necesita para agendar.
+   * No ve precios ni órdenes, y no puede cambiar nada: el plan es un acuerdo
    * comercial y se toca desde la oficina.
    */
   const soloLectura = !isAdminRole(user.role);
@@ -41,13 +43,17 @@ export default async function SuscripcionRoute({
     throw error;
   }
 
-  // Ninguna de las dos es una relación directa: a las órdenes se llega por las
-  // líneas que citan alguno de sus ítems, y a las visitas por los
-  // `VisitaProducto` marcados como cubiertos por esos mismos ítems.
-  const [ordenes, visitas] = await Promise.all([
+  const [ordenes, visitas, propiedades] = await Promise.all([
     // `ordenesDeSuscripcion` rechaza a quien no ve plata, así que ni se pide.
     soloLectura ? Promise.resolve([]) : ordenesDeSuscripcion(viewer, id),
     visitasDeSuscripcion(viewer, id),
+    // Entre cuáles se puede mover el plan: las propiedades vivas del cliente,
+    // con su ubicación, para mostrarla debajo del selector al cambiarla.
+    prisma.propiedad.findMany({
+      where: { clienteId: suscripcion.cliente.id, deletedAt: null },
+      select: UBICACION_DE_PROPIEDAD,
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
 
   return (
@@ -79,21 +85,22 @@ export default async function SuscripcionRoute({
           periodicidad: suscripcion.periodicidad,
           fechaInicio: suscripcion.fechaInicio.toISOString(),
           notas: suscripcion.notas,
+          // Los precios no salen del servidor para quien no los ve.
+          precio: soloLectura ? 0 : Number(suscripcion.precio),
+          ivaTasa: soloLectura ? 0 : Number(suscripcion.ivaTasa),
+          visitasPorPeriodo: suscripcion.visitasPorPeriodo,
           cliente: {
             id: suscripcion.cliente.id,
             nombre: suscripcion.cliente.nombre,
             apellido: suscripcion.cliente.apellido,
             empresa: suscripcion.cliente.empresa,
           },
-          items: suscripcion.items.map((i) => ({
-            id: i.id,
-            productoId: i.productoId,
-            nombre: i.producto.nombre,
-            // Los precios no salen del servidor para quien no los ve.
-            precio: soloLectura ? 0 : Number(i.precio),
-            ivaTasa: soloLectura ? 0 : Number(i.ivaTasa),
-            visitasPorPeriodo: i.visitasPorPeriodo,
-          })),
+          propiedad: suscripcion.propiedad,
+          // La del plan siempre está, aunque después la hayan eliminado: si
+          // no, el desplegable mostraría vacío un plan que sí tiene propiedad.
+          propiedades: propiedades.some((p) => p.id === suscripcion.propiedad.id)
+            ? propiedades
+            : [suscripcion.propiedad, ...propiedades],
         }}
       />
     </div>

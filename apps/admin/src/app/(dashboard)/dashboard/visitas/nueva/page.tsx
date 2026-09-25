@@ -32,20 +32,18 @@ export default async function NuevaVisitaRoute({
           select: { id: true, nombre: true, direccion: true },
           orderBy: { createdAt: "asc" },
         },
-        // Lo que cubre una suscripción activa no lleva precio en la visita.
+        // Sus planes activos, con su propiedad: elegir el plan elige el
+        // jardín, y al revés el jardín acota qué planes se ofrecen.
         suscripciones: {
           where: { estado: "ACTIVO" },
           select: {
             id: true,
             numero: true,
             periodicidad: true,
-            items: {
-              select: {
-                visitasPorPeriodo: true,
-                producto: { select: { id: true, nombre: true } },
-              },
-            },
+            visitasPorPeriodo: true,
+            propiedad: { select: { id: true, nombre: true } },
           },
+          orderBy: { numero: "asc" },
         },
       },
     }),
@@ -81,17 +79,13 @@ export default async function NuevaVisitaRoute({
     apellido: c.apellido,
     empresa: c.empresa,
     propiedades: c.propiedades,
-    // Sus planes activos, para elegir de cuál es la visita. Lo que cada plan
-    // cubre se deduce de sus productos: no es una decisión por producto.
+    // Sus planes activos, para elegir de cuál es la visita.
     suscripciones: c.suscripciones.map((sus) => ({
       id: sus.id,
       numero: sus.numero,
       periodicidad: sus.periodicidad as string,
-      productos: sus.items.map((i) => ({
-        productoId: i.producto.id,
-        nombre: i.producto.nombre,
-        visitasPorPeriodo: i.visitasPorPeriodo,
-      })),
+      visitasPorPeriodo: sus.visitasPorPeriodo,
+      propiedad: sus.propiedad,
     })),
   }));
 

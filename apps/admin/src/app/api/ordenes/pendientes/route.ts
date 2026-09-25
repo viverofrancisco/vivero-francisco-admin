@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import { viewerFromSession } from "@/lib/auth-helpers";
-import {
-  listarPendientes,
-} from "@/lib/services/orden.service";
-import { productosSuscritos } from "@/lib/services/suscripcion.service";
+import { listarPendientes } from "@/lib/services/orden.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 import { pendientesQuerySchema } from "@/lib/validations/orden";
 
@@ -19,7 +16,7 @@ function finDelMesActual(): Date {
   return new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + 1, 0));
 }
 
-/** Trabajo hecho y todavía no facturado, para previsualizar antes de generar. */
+/** Períodos de plan todavía sin orden, para ofrecerlos al armar una. */
 export async function GET(request: Request) {
   const viewer = await viewerFromSession();
   const { searchParams } = new URL(request.url);
@@ -30,18 +27,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
   try {
-    const [items, suscritos] = await Promise.all([
-      listarPendientes(
-        viewer,
-        parsed.data.clienteId,
-        parsed.data.desde ? new Date(parsed.data.desde) : DESDE_SIEMPRE,
-        parsed.data.hasta ? new Date(parsed.data.hasta) : finDelMesActual()
-      ),
-      // Van juntos porque el editor los necesita a la vez: qué falta cobrar y
-      // qué no se puede agregar a mano por estar ya en un plan.
-      productosSuscritos(parsed.data.clienteId),
-    ]);
-    return NextResponse.json({ items, suscritos });
+    const items = await listarPendientes(
+      viewer,
+      parsed.data.clienteId,
+      parsed.data.desde ? new Date(parsed.data.desde) : DESDE_SIEMPRE,
+      parsed.data.hasta ? new Date(parsed.data.hasta) : finDelMesActual()
+    );
+    return NextResponse.json({ items });
   } catch (error) {
     return serviceErrorResponse(error);
   }

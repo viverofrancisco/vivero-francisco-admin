@@ -9,13 +9,29 @@ import {
 } from "@react-pdf/renderer";
 import type { DocumentProps } from "@react-pdf/renderer";
 import type {
+  AlineacionDeFotos,
   FotosPorFila,
   InformeRenderData,
   InformeRenderFirmante,
   InformeRenderSeccion,
 } from "./template-data";
-import type { LineaEncabezado, TrozoEncabezado } from "./encabezado";
-import { fechaSola } from "@vivero/shared";
+import {
+  lineaVacia,
+  parsearEncabezado,
+  type FuenteDelInforme,
+  type LineaEncabezado,
+  type TrozoEncabezado,
+} from "./encabezado";
+import { esHtml } from "./encabezado-texto";
+import { FUENTES_EMBARCADAS, fuenteRegistrada, registrarFuentes } from "./fuentes";
+import { fechaSola, tituloDeSeccionEnHtml } from "@vivero/shared";
+
+/**
+ * Un estilo de react-pdf, el mismo tipo que `StyleSheet.create` recibe. Sacado
+ * de ahí y no de las props de `<Text>`, que aceptan además los atributos de
+ * un texto SVG y no entran en un `style` normal.
+ */
+type EstiloTexto = Parameters<typeof StyleSheet.create>[0][string];
 
 // Use built-in Helvetica family. Loading custom fonts at runtime in
 // serverless environments is fragile and not worth it for v1.
@@ -26,6 +42,19 @@ const COLOR_TEXT = "#222222";
 const COLOR_MUTED = "#555555";
 
 const GAP_FOTOS = 6;
+
+/** Lo que mide un renglón de descripción: 10 pt con interlineado 1.45. */
+const ALTO_DE_RENGLON = 14.5;
+
+/** Hacia dónde se arriman las fotos de una fila que no se llena. */
+const JUSTIFICACION_DE_FILA: Record<
+  AlineacionDeFotos,
+  "flex-start" | "center" | "flex-end"
+> = {
+  IZQUIERDA: "flex-start",
+  CENTRO: "center",
+  DERECHA: "flex-end",
+};
 
 /**
  * Cuánto mide una foto según cuántas entren en la fila.
@@ -39,6 +68,10 @@ const MEDIDA_FOTO: Record<FotosPorFila, { ancho: string; alto: number }> = {
   2: { ancho: "49%", alto: 190 },
   3: { ancho: "32%", alto: 130 },
   4: { ancho: "23.5%", alto: 100 },
+  // Cinco y seis: la misma cuenta —el ancho útil menos los `gap`, repartido—
+  // y el alto en la misma proporción que las de arriba.
+  5: { ancho: "18.8%", alto: 78 },
+  6: { ancho: "15.6%", alto: 64 },
 };
 
 /**
@@ -118,21 +151,27 @@ const styles = StyleSheet.create({
   primeraLinea: {
     marginTop: 0,
   },
+  // Sin negrita ni subrayado propios: los ponen los trozos, que son marcas
+  // del título (`tituloDeSeccionEnHtml` se las da a un título plano). Con
+  // los dos en el contenedor y también en el trozo, react-pdf dibujaba el
+  // subrayado al revés: en los trozos sin `<u>` y no en los que lo traían.
   sectionTitle: {
     fontSize: 12,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Helvetica",
     color: COLOR_GREEN,
-    textDecoration: "underline",
     textAlign: "center",
     marginTop: 18,
     marginBottom: 10,
   },
-  sectionDescription: {
+  /** Una línea de la descripción: el bloque pone el margen de abajo. */
+  lineaDescripcion: {
     fontSize: 10,
     color: COLOR_TEXT,
-    marginBottom: 10,
     lineHeight: 1.45,
     textAlign: "justify",
+  },
+  bloqueDescripcion: {
+    marginBottom: 10,
   },
   photoRow: {
     flexDirection: "row",
@@ -224,6 +263,7 @@ const MAX_PASADAS = 3;
 export async function renderInformePDF(
   data: InformeRenderData,
 ): Promise<Buffer> {
+  registrarFuentes();
   const forzados = new Set<number>();
   let ultimo: Buffer | null = null;
 
@@ -359,7 +399,11 @@ function InformeDocument({
         </View>
         <View style={styles.titleBlock}>
           {data.encabezado.map((linea, i) => (
-            <LineaDelEncabezado key={i} linea={linea} primera={i === 0} />
+            <Linea
+              key={i}
+              linea={linea}
+              estilo={[styles.lineaEncabezado, i === 0 ? styles.primeraLinea : {}]}
+            />
           ))}
         </View>
 
@@ -379,38 +423,57 @@ function InformeDocument({
 }
 
 /**
- * Una línea del encabezado.
+ * Una línea escrita con el editor: del encabezado, del título de una sección
+ * o de su descripción.
  *
- * El estilo de base lo pone el tipo de línea —título o subtítulo, que son los
- * dos que el documento tuvo siempre— y encima se suman las marcas de cada
- * pedazo. Como negrita y cursiva en Helvetica son **familias distintas** y no
- * atributos, la combinación se resuelve con una tabla en vez de acumular
- * estilos: pedirle `fontWeight: bold` a Helvetica-Oblique no la vuelve
- * Helvetica-BoldOblique.
+ * El estilo de base lo pone el lugar —la línea del encabezado, el título de
+ * sección— y encima se suman las marcas de cada pedazo. Como negrita y
+ * cursiva en Helvetica son **familias distintas** y no atributos, la
+ * combinación se resuelve con una tabla en vez de acumular estilos: pedirle
+ * `fontWeight: bold` a Helvetica-Oblique no la vuelve Helvetica-BoldOblique.
+ *
+ * Un ítem de lista es una fila: la viñeta en su columna y el texto al lado,
+ * con la sangría que le toca; así un ítem de dos renglones no envuelve por
+ * debajo de la viñeta.
  */
-function LineaDelEncabezado({
+function Linea({
   linea,
-  primera,
+  estilo,
+  base = {},
+  mayusculas = false,
 }: {
   linea: LineaEncabezado;
-  primera: boolean;
+  estilo: EstiloTexto[];
+  /** Marcas que el lugar ya trae puestas (el título de sección va en negrita
+      y subrayado): un pedazo sin marca las hereda en vez de apagarlas. */
+  base?: { negrita?: boolean; subrayado?: boolean };
+  mayusculas?: boolean;
 }) {
-  return (
-    <Text
-      style={[
-        styles.lineaEncabezado,
-        primera ? styles.primeraLinea : {},
-        // Centrada salvo que se haya dicho otra cosa: es como va un encabezado.
-        linea.alineacion ? { textAlign: linea.alineacion } : {},
-      ]}
-    >
-      {linea.trozos.map((trozo, i) => (
-        <Text key={i} style={estiloDelTrozo(trozo)}>
-          {trozo.texto}
-        </Text>
-      ))}
+  const estilos: EstiloTexto[] = [
+    ...estilo,
+    linea.alineacion ? { textAlign: linea.alineacion } : {},
+  ];
+  const trozos = linea.trozos.map((trozo, i) => (
+    <Text key={i} style={estiloDelTrozo(trozo, base)}>
+      {mayusculas ? trozo.texto.toUpperCase() : trozo.texto}
     </Text>
-  );
+  ));
+  if (linea.vineta) {
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          paddingLeft: 12 * ((linea.sangria ?? 1) - 1),
+        }}
+      >
+        <Text style={[...estilos, { width: 14, textAlign: "left" }]}>
+          {linea.vineta}
+        </Text>
+        <Text style={[...estilos, { flex: 1 }]}>{trozos}</Text>
+      </View>
+    );
+  }
+  return <Text style={estilos}>{trozos}</Text>;
 }
 
 /**
@@ -418,20 +481,58 @@ function LineaDelEncabezado({
  * Pedirle `fontWeight: bold` a Helvetica-Oblique no la vuelve
  * Helvetica-BoldOblique, así que la combinación se elige de una tabla.
  */
-const FAMILIA = {
-  "": "Helvetica",
-  b: "Helvetica-Bold",
-  i: "Helvetica-Oblique",
-  bi: "Helvetica-BoldOblique",
-} as const;
+const FAMILIA: Partial<
+  Record<FuenteDelInforme, Record<"" | "b" | "i" | "bi", string>>
+> = {
+  HELVETICA: {
+    "": "Helvetica",
+    b: "Helvetica-Bold",
+    i: "Helvetica-Oblique",
+    bi: "Helvetica-BoldOblique",
+  },
+  // Las otras dos familias estándar del PDF, con sus cuatro caras.
+  TIMES: {
+    "": "Times-Roman",
+    b: "Times-Bold",
+    i: "Times-Italic",
+    bi: "Times-BoldItalic",
+  },
+  COURIER: {
+    "": "Courier",
+    b: "Courier-Bold",
+    i: "Courier-Oblique",
+    bi: "Courier-BoldOblique",
+  },
+};
 
-function estiloDelTrozo(trozo: TrozoEncabezado) {
-  const clave = `${trozo.negrita ? "b" : ""}${
+function estiloDelTrozo(
+  trozo: TrozoEncabezado,
+  base: { negrita?: boolean; subrayado?: boolean } = {}
+) {
+  const negrita = trozo.negrita || base.negrita === true;
+  const subrayado = trozo.subrayado || base.subrayado === true;
+  const clave = `${negrita ? "b" : ""}${
     trozo.cursiva ? "i" : ""
-  }` as keyof typeof FAMILIA;
+  }` as "" | "b" | "i" | "bi";
+  const fuente = trozo.fuente ?? "HELVETICA";
+  const estandar = FAMILIA[fuente];
+  const embarcada = FUENTES_EMBARCADAS[fuente];
+  // Una familia estándar es un nombre por cara; una embarcada es una sola
+  // familia registrada con sus cuatro caras, y la cara se pide por peso y
+  // estilo. Si el archivo no está —un despliegue sin la carpeta—, Helvetica.
+  const tipografia =
+    estandar
+      ? { fontFamily: estandar[clave] }
+      : embarcada && fuenteRegistrada(fuente)
+        ? {
+            fontFamily: embarcada.familia,
+            fontWeight: negrita ? (700 as const) : (400 as const),
+            fontStyle: trozo.cursiva ? ("italic" as const) : ("normal" as const),
+          }
+        : { fontFamily: FAMILIA.HELVETICA![clave] };
   return {
-    fontFamily: FAMILIA[clave],
-    textDecoration: trozo.subrayado ? ("underline" as const) : ("none" as const),
+    ...tipografia,
+    textDecoration: subrayado ? ("underline" as const) : ("none" as const),
     // Ausentes = lo que diga la línea. El editor los escribe siempre en el
     // encabezado que propone, así que en la práctica vienen.
     ...(trozo.tamano !== undefined ? { fontSize: trozo.tamano } : {}),
@@ -462,33 +563,107 @@ function Section({
   forzarSalto: boolean;
 }) {
   const medida = MEDIDA_FOTO[seccion.fotosPorFila];
+  /**
+   * Con formato —escrito con el editor— el título es HTML y se dibuja línea
+   * por línea, como el encabezado; sin formato sale como salió siempre. Va en
+   * mayúsculas en los dos casos y conserva la negrita y el subrayado del
+   * documento: lo que el editor le cambia es el tamaño, el color, la cursiva
+   * y la alineación.
+   */
+  // Siempre como HTML: un título plano se envuelve en la negrita y el
+  // subrayado de siempre (`tituloDeSeccionEnHtml`), y uno con formato trae
+  // las suyas. Antes esas dos marcas eran una base fija sobre cualquier
+  // título, y quitarlas en el editor no cambiaba nada impreso.
+  const lineasDeTitulo = parsearEncabezado(tituloDeSeccionEnHtml(seccion.titulo));
+  /**
+   * La descripción, línea por línea, venga con formato o plana: el editor
+   * muestra cada renglón como un párrafo con su separación, y el PDF tiene
+   * que verse igual. Un renglón vacío es un espacio que alguien puso.
+   */
+  const lineasDeDescripcion: LineaEncabezado[] | null = !seccion.descripcion
+    ? null
+    : esHtml(seccion.descripcion)
+      ? parsearEncabezado(seccion.descripcion, { conservarVacias: true })
+      : seccion.descripcion.split(/\r?\n/).map((texto) => ({
+          trozos: texto.trim()
+            ? [{ texto, negrita: false, cursiva: false, subrayado: false }]
+            : [],
+        }));
+  const primeraLinea = lineasDeTitulo?.[0];
   return (
     <>
       <Text
         // El `id` es lo que después permite reconocer un título en el árbol
         // maquetado y saber si quedó solo al pie.
         id={`${ID_TITULO}${indice}`}
-        style={styles.sectionTitle}
+        style={[
+          styles.sectionTitle,
+          primeraLinea?.alineacion ? { textAlign: primeraLinea.alineacion } : {},
+        ]}
         // El salto va en el título y no en un contenedor: es el primer
         // elemento de la sección, así que empezar por él es empezar por ella.
         break={seccion.saltoDePagina || forzarSalto}
         minPresenceAhead={espacioMinimoTrasTitulo(seccion)}
       >
-        {seccion.titulo.toUpperCase()}
+        {primeraLinea
+          ? primeraLinea.trozos.map((trozo, i) => (
+              <Text key={i} style={estiloDelTrozo(trozo)}>
+                {trozo.texto.toUpperCase()}
+              </Text>
+            ))
+          : seccion.titulo.toUpperCase()}
       </Text>
-      {seccion.descripcion ? (
-        // `orphans`/`widows`: una sola línea suelta arriba o abajo de una hoja
-        // se lee como un error de impresión, no como un párrafo.
-        <Text style={styles.sectionDescription} orphans={2} widows={2}>
-          {seccion.descripcion}
-        </Text>
+      {/* Las demás líneas de un título con formato, pegadas a la primera. */}
+      {lineasDeTitulo?.slice(1).map((linea, i) => (
+        <Linea
+          key={i}
+          linea={linea}
+          estilo={[styles.sectionTitle, { marginTop: -8 }]}
+          mayusculas
+        />
+      ))}
+      {lineasDeDescripcion ? (
+        <View style={styles.bloqueDescripcion}>
+          {lineasDeDescripcion.map((linea, i) => {
+            /* La separación copia la del editor: medio cuerpo entre bloques
+               —párrafo con párrafo, párrafo con lista— y un cuarto entre los
+               ítems de una misma lista, así lo que se ve al escribir es lo
+               que sale. Un renglón en blanco mide un renglón. */
+            const anterior = lineasDeDescripcion[i - 1];
+            const entreItems = anterior?.vineta && linea.vineta;
+            const separacion = i === 0 ? 0 : entreItems ? 2.5 : 5;
+            if (lineaVacia(linea)) {
+              return (
+                <View
+                  key={i}
+                  style={{ height: ALTO_DE_RENGLON, marginTop: separacion }}
+                />
+              );
+            }
+            return (
+              <Linea
+                key={i}
+                linea={linea}
+                estilo={[styles.lineaDescripcion, { marginTop: separacion }]}
+              />
+            );
+          })}
+        </View>
       ) : null}
       {/* Una fila por vez y `wrap={false}` en cada una: antes eran todas las
           fotos en un solo `flexWrap`, y el corte de página caía en cualquier
           lado —incluso partiendo una foto al medio—. Así una fila entera es lo
           mínimo que se mueve. */}
       {enFilas(seccion.fotos, seccion.fotosPorFila).map((fila, i) => (
-        <View key={i} style={styles.photoRow} wrap={false}>
+        <View
+          key={i}
+          style={[
+            styles.photoRow,
+            // Solo se nota en la última fila: las llenas ocupan el ancho igual.
+            { justifyContent: JUSTIFICACION_DE_FILA[seccion.fotosAlineacion] },
+          ]}
+          wrap={false}
+        >
           {fila.map((foto) => (
             <Image
               key={foto.id}

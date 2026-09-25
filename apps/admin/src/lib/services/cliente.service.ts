@@ -100,6 +100,19 @@ const CLIENTE_LIST_SELECT = {
   // primera y cuántas más. Contarlas de a una es lo que evita que la fila
   // mienta cuando alguien tiene casa en dos sectores.
   propiedades: PROPIEDADES_DEL_CLIENTE,
+  // Sus planes activos, con su propiedad: el wizard de la app los ofrece al
+  // agendar, y elegir el plan elige el jardín.
+  suscripciones: {
+    where: { estado: "ACTIVO" },
+    select: {
+      id: true,
+      numero: true,
+      periodicidad: true,
+      visitasPorPeriodo: true,
+      propiedad: { select: { id: true, nombre: true } },
+    },
+    orderBy: { numero: "asc" },
+  },
 } as const;
 
 async function buildClienteWhereForStaff(viewer: Viewer) {
@@ -161,25 +174,21 @@ export async function getClienteForStaff(clienteId: string, viewer: Viewer) {
       notas: true,
       inactivoDesde: true,
       propiedades: PROPIEDADES_DEL_CLIENTE,
+      // Sus planes: de qué jardín, cuánto y cuántas visitas. Sin productos.
       suscripciones: {
         where: { estado: { not: "CANCELADO" } },
         select: {
           id: true,
+          numero: true,
           estado: true,
           periodicidad: true,
           fechaInicio: true,
-          items: {
-            select: {
-              id: true,
-              precio: true,
-              ivaTasa: true,
-              visitasPorPeriodo: true,
-              producto: {
-                select: { id: true, nombre: true, tipo: true },
-              },
-            },
-          },
+          precio: true,
+          ivaTasa: true,
+          visitasPorPeriodo: true,
+          propiedad: { select: { id: true, nombre: true } },
         },
+        orderBy: { numero: "asc" },
       },
     },
   });

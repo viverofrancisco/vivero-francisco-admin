@@ -1,24 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  FlatList,
-  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput as RNTextInput,
   View,
 } from "react-native";
 import {
   ActivityIndicator,
   Button,
-  Divider,
   HelperText,
-  IconButton,
-  Menu,
-  ProgressBar,
   Searchbar,
   Text,
   TextInput,
@@ -28,17 +21,48 @@ import DraggableFlatList, {
   ScaleDecorator,
   type RenderItemParams,
 } from "react-native-draggable-flatlist";
-import { useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { EncabezadoDePasos } from "@/components/ui/EncabezadoDePasos";
+import { HojaInferior } from "@/components/ui/HojaInferior";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import { fechaSola, nombreCliente } from "@vivero/shared";
+import {
+  encabezadoPorDefecto,
+  fechaSola,
+  nombreCliente,
+  primeraLineaPlana,
+  textoPlanoDeHtml,
+} from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type {
   ClienteListItem,
   ClientesListResponse,
 } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import {
+  SelectorDeSeccion,
+  type TareaCatalogo,
+  type TareaParaSeccion,
+} from "@/components/informes/SelectorDeSeccion";
+import {
+  ARRIBA_DE_LA_HOJA,
+  SelectorDeFotos,
+  fotoDeBiblioteca,
+  fotoDeVisita,
+  type MediaPoolItem,
+  type SeccionFotoDraft,
+} from "@/components/informes/SelectorDeFotos";
+import {
+  FichaDeSeccion,
+  type AlineacionDeFotos,
+  type FotosPorFila,
+} from "@/components/informes/FichaDeSeccion";
+import { EditorDeEncabezado } from "@/components/informes/EditorDeEncabezado";
+import { VisorDePdf } from "@/components/informes/VisorDePdf";
+import {
+  RecortarFoto,
+  type EdicionDeFoto,
+} from "@/components/informes/RecortarFoto";
 
 // ───────── types ─────────
 
@@ -50,24 +74,6 @@ interface VisitaPI {
   fotosCount: number;
 }
 
-interface MediaPoolItem {
-  id: string;
-  url: string;
-  visitaId: string;
-  visitaFecha: string;
-  /// Producto de la visita con el que se etiquetó la foto, si lo tiene.
-  productoId: string | null;
-}
-
-/** Servicio cubierto por las visitas seleccionadas. Origen de cada sección. */
-interface ServicioParaSeccion {
-  productoId: string;
-  nombre: string;
-  descripcion: string | null;
-  visitasCount: number;
-  fotosCount: number;
-}
-
 interface SavedFirmante {
   id: string;
   nombre: string;
@@ -75,32 +81,38 @@ interface SavedFirmante {
   isDefault: boolean;
 }
 
-/**
- * Foto de una sección: o viene de una visita (`visitaMediaId`) o se subió
- * directo al informe (`key`). `url` siempre sirve para previsualizar.
- */
-interface SeccionFotoDraft {
-  uid: string;
-  visitaMediaId: string | null;
-  key: string | null;
-  url: string;
-}
-
 interface SeccionDraft {
   tempId: string;
-  /// Producto que origina la sección. Null = sección personalizada.
-  productoId: string | null;
+  /// La tarea que origina la sección. Null = sección personalizada.
+  tareaId: string | null;
   titulo: string;
   descripcion: string;
   fotos: SeccionFotoDraft[];
+  /** Cómo se imprime, como en el portal. Los defaults son lo de siempre. */
+  saltoDePagina: boolean;
+  fotosPorFila: FotosPorFila;
+  fotosAlineacion: AlineacionDeFotos;
 }
 
-function fotoDeVisita(m: MediaPoolItem): SeccionFotoDraft {
-  return { uid: `visita-${m.id}`, visitaMediaId: m.id, key: null, url: m.url };
-}
-
-function fotoSubida(key: string, url: string): SeccionFotoDraft {
-  return { uid: `upload-${key}`, visitaMediaId: null, key, url };
+/** Lo que el asistente lee de `GET /api/mobile/informes/[id]` para editar. */
+interface InformeParaEditar {
+  titulo: string;
+  encabezado: string | null;
+  fecha: string;
+  fechaDesde: string | null;
+  fechaHasta: string | null;
+  cliente: { id: string; nombre: string; apellido?: string | null; empresa: string | null };
+  visitas: { id: string }[];
+  firmantes: { nombre: string; cedula: string | null }[];
+  secciones: {
+    tareaId: string | null;
+    titulo: string;
+    descripcion: string;
+    saltoDePagina: boolean;
+    fotosPorFila: FotosPorFila;
+    fotosAlineacion: AlineacionDeFotos;
+    fotos: { visitaMediaId: string | null; mediaId: string | null; url: string }[];
+  }[];
 }
 
 interface FirmanteDraft {
@@ -118,25 +130,42 @@ const ACCENT = tema.verde;
 export default function NuevoInformeScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
+  /**
+   * Con `?id=` el asistente **edita** ese informe: se carga entero —cliente,
+   * visitas, encabezado, secciones, firmantes, fecha impresa— y arranca en
+   * las secciones; el cliente no se cambia, así que el primer paso es el de
+   * las visitas. Guardar hace una versión nueva, como en el portal.
+   */
+  const { id: informeId } = useLocalSearchParams<{ id?: string }>();
+  const editando = !!informeId;
+  const primerPaso: Step = editando ? 1 : 0;
   const [step, setStep] = useState<Step>(0);
+  const [cargandoInforme, setCargandoInforme] = useState(editando);
+  /** La fecha impresa, `YYYY-MM-DD`: al editar se conserva la del informe. */
+  const [fecha, setFecha] = useState<string | null>(null);
 
   // Reference data
   const [clientes, setClientes] = useState<ClienteListItem[]>([]);
   const [serviciosDisponibles, setServiciosDisponibles] = useState<
-    ServicioParaSeccion[]
+    TareaParaSeccion[]
   >([]);
+  /** El catálogo entero: una sección puede ser de algo que nadie registró. */
+  const [catalogoTareas, setCatalogoTareas] = useState<TareaCatalogo[]>([]);
   const [firmantesCatalog, setFirmantesCatalog] = useState<SavedFirmante[]>([]);
   const [loadingRefs, setLoadingRefs] = useState(true);
 
   // Form state
   const [clienteId, setClienteId] = useState<string | null>(null);
-  const [titulo, setTitulo] = useState("");
+  /**
+   * El encabezado impreso, en HTML, escrito con el mismo editor que las
+   * secciones. Se siembra con el de siempre en cuanto hay cliente.
+   */
+  const [encabezado, setEncabezado] = useState("");
   const [dateFrom, setDateFrom] = useState<string | null>(null);
   const [dateTo, setDateTo] = useState<string | null>(null);
   const [visitas, setVisitas] = useState<VisitaPI[]>([]);
@@ -145,13 +174,15 @@ export default function NuevoInformeScreen() {
     new Set()
   );
   const [pool, setPool] = useState<MediaPoolItem[]>([]);
-  const [loadingPool, setLoadingPool] = useState(false);
   const [secciones, setSecciones] = useState<SeccionDraft[]>([]);
   const [firmantes, setFirmantes] = useState<FirmanteDraft[]>([
     { tempId: "1", nombre: "", cedula: "" },
   ]);
 
   const [submitting, setSubmitting] = useState(false);
+  const [previsualizando, setPrevisualizando] = useState(false);
+  /** La URL de la vista previa recién armada, mientras se mira. */
+  const [urlDeVistaPrevia, setUrlDeVistaPrevia] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Photo picker modal state (which section is currently picking)
@@ -165,6 +196,9 @@ export default function NuevoInformeScreen() {
       apiRequest<ClientesListResponse>("/api/mobile/clientes", {
         query: { limit: 500 },
       }).then((r) => setClientes(r.items)),
+      apiRequest<{ items: TareaCatalogo[] }>("/api/mobile/tareas")
+        .then((r) => setCatalogoTareas(r.items))
+        .catch(() => {}),
       apiRequest<{ items: SavedFirmante[] }>("/api/mobile/firmantes")
         .then((r) => {
           setFirmantesCatalog(r.items);
@@ -186,9 +220,62 @@ export default function NuevoInformeScreen() {
       .finally(() => setLoadingRefs(false));
   }, []);
 
-  // Auto-suggest title when entering step 1.
+  // El informe que se edita, cargado una vez: cada pieza a su estado.
   useEffect(() => {
-    if (step === 1 && !titulo && clienteId) {
+    if (!informeId) return;
+    let cancelado = false;
+    apiRequest<InformeParaEditar>(`/api/mobile/informes/${informeId}`)
+      .then((d) => {
+        if (cancelado) return;
+        setClienteId(d.cliente.id);
+        setSelectedVisitaIds(new Set(d.visitas.map((v) => v.id)));
+        setDateFrom(d.fechaDesde ? d.fechaDesde.slice(0, 10) : null);
+        setDateTo(d.fechaHasta ? d.fechaHasta.slice(0, 10) : null);
+        setEncabezado(d.encabezado ?? encabezadoPorDefecto(d.titulo, nombreCliente(d.cliente)));
+        setFecha(d.fecha);
+        setFirmantes(
+          d.firmantes.length > 0
+            ? d.firmantes.map((f, i) => ({
+                tempId: `f${i}`,
+                nombre: f.nombre,
+                cedula: f.cedula ?? "",
+              }))
+            : [{ tempId: "1", nombre: "", cedula: "" }]
+        );
+        setSecciones(
+          d.secciones.map((sec, i) => ({
+            tempId: `s${i}-${Date.now()}`,
+            tareaId: sec.tareaId,
+            titulo: sec.titulo,
+            descripcion: sec.descripcion,
+            fotos: sec.fotos.map((f) => ({
+              uid: f.visitaMediaId ? `visita-${f.visitaMediaId}` : `media-${f.mediaId}`,
+              visitaMediaId: f.visitaMediaId,
+              mediaId: f.mediaId,
+              url: f.url,
+            })),
+            saltoDePagina: sec.saltoDePagina,
+            fotosPorFila: sec.fotosPorFila,
+            fotosAlineacion: sec.fotosAlineacion,
+          }))
+        );
+        setStep(2);
+      })
+      .catch((e) => {
+        if (!cancelado) setError(mensajeDeError(e, "No pudimos cargar el informe"));
+      })
+      .finally(() => {
+        if (!cancelado) setCargandoInforme(false);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [informeId]);
+
+  // El encabezado de siempre, al salir del cliente: el mismo que el portal
+  // ofrece, con el mes y el nombre.
+  useEffect(() => {
+    if (step >= 1 && !encabezado && clienteId) {
       const c = clientes.find((x) => x.id === clienteId);
       if (c) {
         const now = new Date();
@@ -196,12 +283,15 @@ export default function NuevoInformeScreen() {
           month: "long",
           year: "numeric",
         });
-        setTitulo(
-          `Informe ${capitalize(monthYear)} — ${nombreCliente(c)}`.trim()
+        setEncabezado(
+          encabezadoPorDefecto(
+            `Informe de Áreas Verdes — ${capitalize(monthYear)} — ${nombreCliente(c)}`.trim(),
+            nombreCliente(c)
+          )
         );
       }
     }
-  }, [step, titulo, clienteId, clientes]);
+  }, [step, encabezado, clienteId, clientes]);
 
   // Fetch visitas when entering step 1 (or filters change).
   useEffect(() => {
@@ -233,7 +323,6 @@ export default function NuevoInformeScreen() {
   useEffect(() => {
     if (step < 2 || selectedVisitaIds.size === 0) return;
     let cancelled = false;
-    setLoadingPool(true);
     apiRequest<{ items: MediaPoolItem[] }>("/api/mobile/informes/media", {
       method: "POST",
       body: { visitaIds: Array.from(selectedVisitaIds) },
@@ -245,19 +334,18 @@ export default function NuevoInformeScreen() {
         if (!cancelled) setPool([]);
       })
       .finally(() => {
-        if (!cancelled) setLoadingPool(false);
       });
     return () => {
       cancelled = true;
     };
   }, [step, selectedVisitaIds]);
 
-  // Los productos que cubren las visitas seleccionadas son el catálogo de
-  // secciones: título = nombre del servicio, descripción = la del servicio.
+  // Las tareas hechas en las visitas seleccionadas son el primer origen de
+  // las secciones: título = nombre de la tarea, descripción = la suya.
   useEffect(() => {
     if (step < 2 || selectedVisitaIds.size === 0) return;
     let cancelled = false;
-    apiRequest<{ items: ServicioParaSeccion[] }>(
+    apiRequest<{ items: TareaParaSeccion[] }>(
       "/api/mobile/informes/servicios",
       { method: "POST", body: { visitaIds: Array.from(selectedVisitaIds) } }
     )
@@ -292,6 +380,15 @@ export default function NuevoInformeScreen() {
     [pool, assignedMediaIds]
   );
 
+  /** Las libres, y antes de ellas las que la sección ya tiene. */
+  function poolParaElegir(tempId: string): MediaPoolItem[] {
+    const seccion = secciones.find((s) => s.tempId === tempId);
+    const propias = new Set(
+      (seccion?.fotos ?? []).map((f) => f.visitaMediaId).filter(Boolean)
+    );
+    return [...pool.filter((m) => propias.has(m.id)), ...unassignedPool];
+  }
+
   const canContinue = (): boolean => {
     switch (step) {
       case 0:
@@ -302,14 +399,15 @@ export default function NuevoInformeScreen() {
          * visita es un documento igual —una recomendación, un relevamiento— y
          * acá no se podía avanzar sin marcar una: con un cliente sin visitas
          * con fotos en el rango, el asistente quedaba trabado en un paso que no
-         * tenía nada para ofrecer. Lo que sí hace falta es el título, que es
-         * como se llama el documento.
+         * tenía nada para ofrecer.
          */
-        return titulo.trim().length > 0;
+        return true;
       case 2:
+        // El encabezado es como se llama el documento: sin él no hay informe.
         return (
+          !!primeraLineaPlana(encabezado) &&
           secciones.length > 0 &&
-          secciones.every((s) => s.titulo.trim().length > 0)
+          secciones.every((s) => textoPlanoDeHtml(s.titulo).length > 0)
         );
       case 3: {
         const valid = firmantes.filter((f) => f.nombre.trim().length > 0);
@@ -327,40 +425,86 @@ export default function NuevoInformeScreen() {
   }
   function prev() {
     setError(null);
-    if (step === 0) router.back();
+    if (step <= primerPaso) router.back();
     else setStep(((step - 1) as Step));
+  }
+
+  /**
+   * Lo que se manda a generar, y también a previsualizar: si la vista previa
+   * aceptara otra cosa, mostraría un documento distinto del que se archiva.
+   */
+  function cuerpoDelInforme() {
+    // El título de las listas es la primera línea del encabezado, como lo
+    // deriva el servidor.
+    return {
+      clienteId,
+      titulo: primeraLineaPlana(encabezado) ?? "Informe",
+      encabezado,
+      ...(fecha ? { fecha } : {}),
+      visitaIds: Array.from(selectedVisitaIds),
+      firmantes: firmantes
+        .filter((f) => f.nombre.trim().length > 0)
+        .map((f) => ({
+          nombre: f.nombre.trim(),
+          cedula: f.cedula.trim() || null,
+        })),
+      secciones: secciones.map((s) => ({
+        tareaId: s.tareaId,
+        titulo: s.titulo.trim(),
+        descripcion: s.descripcion.trim() || null,
+        fotos: s.fotos.map((f) =>
+          f.visitaMediaId
+            ? { visitaMediaId: f.visitaMediaId }
+            : { mediaId: f.mediaId }
+        ),
+        saltoDePagina: s.saltoDePagina,
+        fotosPorFila: s.fotosPorFila,
+        // Solo cuando no es la izquierda, como el portal: el schema no le
+        // pone default a propósito.
+        ...(s.fotosAlineacion !== "IZQUIERDA"
+          ? { fotosAlineacion: s.fotosAlineacion }
+          : {}),
+      })),
+    };
+  }
+
+  /**
+   * El PDF tal como saldría, en una ventana de la app. El servidor lo sube a
+   * R2 y devuelve la URL; achicado (`borrador`), que para mirarlo en un
+   * teléfono alcanza y tarda la mitad.
+   */
+  async function vistaPrevia() {
+    setError(null);
+    setPrevisualizando(true);
+    try {
+      const { url } = await apiRequest<{ url: string }>(
+        "/api/mobile/informes/preview",
+        { method: "POST", body: { ...cuerpoDelInforme(), borrador: true } }
+      );
+      setUrlDeVistaPrevia(url);
+    } catch (e) {
+      setError(mensajeDeError(e, "No pudimos armar la vista previa"));
+    } finally {
+      setPrevisualizando(false);
+    }
   }
 
   async function submit() {
     setError(null);
     setSubmitting(true);
     try {
-      const validFirmantes = firmantes
-        .filter((f) => f.nombre.trim().length > 0)
-        .map((f) => ({
-          nombre: f.nombre.trim(),
-          cedula: f.cedula.trim() || null,
-        }));
-      const validSecciones = secciones.map((s) => ({
-        productoId: s.productoId,
-        titulo: s.titulo.trim(),
-        descripcion: s.descripcion.trim() || null,
-        fotos: s.fotos.map((f) =>
-          f.visitaMediaId ? { visitaMediaId: f.visitaMediaId } : { key: f.key }
-        ),
-      }));
+      if (informeId) {
+        // Una versión nueva del mismo informe, como el PUT del portal.
+        await apiRequest(`/api/mobile/informes/${informeId}`, {
+          method: "PUT",
+          body: { ...cuerpoDelInforme(), nota: null },
+        });
+        router.replace(`/(personal)/informes/${informeId}`);
+        return;
+      }
       const result = await apiRequest<{ id: string; pdfUrl: string }>(
         "/api/mobile/informes",
-        {
-          method: "POST",
-          body: {
-            clienteId,
-            titulo: titulo.trim(),
-            visitaIds: Array.from(selectedVisitaIds),
-            firmantes: validFirmantes,
-            secciones: validSecciones,
-          },
-        }
+        { method: "POST", body: cuerpoDelInforme() }
       );
       router.replace(`/(personal)/informes/${result.id}`);
     } catch (e) {
@@ -370,7 +514,7 @@ export default function NuevoInformeScreen() {
     }
   }
 
-  if (loadingRefs) {
+  if (loadingRefs || cargandoInforme) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -384,39 +528,33 @@ export default function NuevoInformeScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.flex}>
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-          <View style={styles.headerTopRow}>
-            <IconButton
-              icon={step === 0 ? "close" : "chevron-left"}
-              size={24}
-              onPress={prev}
-              style={styles.headerBtn}
-            />
-            <Text variant="bodySmall" style={styles.stepCounter}>
-              Paso {step + 1} de {STEP_LABELS.length}
-            </Text>
-            <View style={styles.headerBtn} />
-          </View>
-          <ProgressBar
-            progress={(step + 1) / STEP_LABELS.length}
-            color={ACCENT}
-            style={styles.progressBar}
-          />
-        </View>
+        {/* La acción del paso arriba, a la derecha del contador, y no en un
+            botón al pie: es donde están *Crear* y *Guardar* en las demás
+            pantallas, y donde queda fijo mientras la lista scrollea. */}
+        <EncabezadoDePasos
+          paso={step - primerPaso}
+          total={STEP_LABELS.length - primerPaso}
+          onAtras={prev}
+          accion={step < 3 ? "Continuar" : editando ? "Guardar" : "Generar"}
+          onAccion={step < 3 ? next : submit}
+          deshabilitado={step < 3 && !canContinue()}
+          cargando={submitting || previsualizando}
+        />
 
         {step === 2 ? (
           <View style={styles.flex}>
             <SeccionesStep
-              loadingPool={loadingPool}
               secciones={secciones}
               onChangeSecciones={setSecciones}
               productos={serviciosDisponibles}
+              catalogo={catalogoTareas}
               allPool={pool}
               clienteId={clienteId}
-              poolCount={pool.length}
-              unassignedCount={unassignedPool.length}
               onOpenPicker={(tempId) => setPhotoPickerForSection(tempId)}
+              onVistaPrevia={() => void vistaPrevia()}
+              previsualizando={previsualizando}
+              encabezado={encabezado}
+              onChangeEncabezado={setEncabezado}
               error={error}
             />
           </View>
@@ -436,8 +574,6 @@ export default function NuevoInformeScreen() {
             {step === 1 && (
               <VisitasStep
                 cliente={selectedCliente}
-                titulo={titulo}
-                onChangeTitulo={setTitulo}
                 visitas={visitas}
                 loading={loadingVisitas}
                 dateFrom={dateFrom}
@@ -466,6 +602,8 @@ export default function NuevoInformeScreen() {
                 firmantes={firmantes}
                 onChange={setFirmantes}
                 catalog={firmantesCatalog}
+                onVistaPrevia={() => void vistaPrevia()}
+                previsualizando={previsualizando}
               />
             )}
 
@@ -477,63 +615,31 @@ export default function NuevoInformeScreen() {
           </ScrollView>
         )}
 
-        <View
-          style={[
-            styles.footer,
-            { paddingBottom: Math.max(insets.bottom, 16) + 8 },
-          ]}
-        >
-          {step < 3 ? (
-            <Button
-              mode="contained"
-              onPress={next}
-              disabled={!canContinue()}
-              style={styles.primaryBtn}
-              contentStyle={styles.primaryBtnContent}
-              buttonColor={ACCENT}
-            >
-              Continuar
-            </Button>
-          ) : (
-            <Button
-              mode="contained"
-              onPress={submit}
-              loading={submitting}
-              disabled={submitting}
-              style={styles.primaryBtn}
-              contentStyle={styles.primaryBtnContent}
-              buttonColor={ACCENT}
-            >
-              Generar informe
-            </Button>
-          )}
-        </View>
       </View>
 
-      {/* Photo picker modal */}
+      {urlDeVistaPrevia ? (
+        <VisorDePdf
+          url={urlDeVistaPrevia}
+          titulo="Vista previa"
+          onCerrar={() => setUrlDeVistaPrevia(null)}
+        />
+      ) : null}
+
+      {/* El selector de fotos: las de las visitas que ninguna sección tiene,
+          más las que ya tiene *esta* —salen marcadas, y desmarcar una es
+          quitarla—. Devuelve la lista final. */}
       {photoPickerForSection !== null ? (
-        <PhotoPickerModal
-          pool={unassignedPool}
-          onClose={() => setPhotoPickerForSection(null)}
-          onConfirm={(ids) => {
-            const byId = new Map(pool.map((m) => [m.id, m]));
-            const nuevas = ids
-              .map((id) => byId.get(id))
-              .filter((m): m is MediaPoolItem => Boolean(m))
-              .map(fotoDeVisita);
+        <SelectorDeFotos
+          pool={poolParaElegir(photoPickerForSection)}
+          enLaSeccion={
+            secciones.find((s) => s.tempId === photoPickerForSection)?.fotos ??
+            []
+          }
+          onCerrar={() => setPhotoPickerForSection(null)}
+          onConfirmar={(fotos) => {
             setSecciones((prev) =>
               prev.map((s) =>
-                s.tempId === photoPickerForSection
-                  ? {
-                      ...s,
-                      fotos: [
-                        ...s.fotos,
-                        ...nuevas.filter(
-                          (n) => !s.fotos.some((f) => f.uid === n.uid)
-                        ),
-                      ],
-                    }
-                  : s
+                s.tempId === photoPickerForSection ? { ...s, fotos } : s
               )
             );
             setPhotoPickerForSection(null);
@@ -627,8 +733,6 @@ function ClienteStep({
 
 function VisitasStep({
   cliente,
-  titulo,
-  onChangeTitulo,
   visitas,
   loading,
   dateFrom,
@@ -639,8 +743,6 @@ function VisitasStep({
   onSelectAll,
 }: {
   cliente: ClienteListItem | null;
-  titulo: string;
-  onChangeTitulo: (v: string) => void;
   visitas: VisitaPI[];
   loading: boolean;
   dateFrom: string | null;
@@ -677,14 +779,6 @@ function VisitasStep({
       <Text style={styles.subtitle}>
         {cliente ? `Cliente: ${nombreCliente(cliente)}` : ""}
       </Text>
-
-      <View style={{ marginBottom: 16 }}>
-        <NativeField
-          label="Título del informe"
-          value={titulo}
-          onChangeText={onChangeTitulo}
-        />
-      </View>
 
       <Text style={styles.label}>Rango de fechas</Text>
       <View style={styles.quickRow}>
@@ -851,48 +945,51 @@ function VisitasStep({
 // ───────── Step 2: Secciones ─────────
 
 function SeccionesStep({
-  loadingPool,
   secciones,
   onChangeSecciones,
   productos,
+  catalogo,
   allPool,
   clienteId,
-  poolCount,
-  unassignedCount,
   onOpenPicker,
+  encabezado,
+  onChangeEncabezado,
+  onVistaPrevia,
+  previsualizando,
   error,
 }: {
-  loadingPool: boolean;
   secciones: SeccionDraft[];
   onChangeSecciones: (s: SeccionDraft[]) => void;
-  productos: ServicioParaSeccion[];
+  productos: TareaParaSeccion[];
+  catalogo: TareaCatalogo[];
   allPool: MediaPoolItem[];
   clienteId: string | null;
-  poolCount: number;
-  unassignedCount: number;
   onOpenPicker: (tempId: string) => void;
+  /** El PDF tal como saldría, desde el ojo junto al título. */
+  onVistaPrevia: () => void;
+  previsualizando: boolean;
+  /** El encabezado impreso, en HTML. */
+  encabezado: string;
+  onChangeEncabezado: (html: string) => void;
   error: string | null;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
-
-  function toggleCollapsed(tempId: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(tempId)) next.delete(tempId);
-      else next.add(tempId);
-      return next;
-    });
-  }
+  /** La sección abierta en su ficha, y en qué pestaña se abre. */
+  const [abierta, setAbierta] = useState<{ tempId: string; pestana: "texto" | "fotos" } | null>(null);
+  const [editandoEncabezado, setEditandoEncabezado] = useState(false);
+  /** La foto que se está recortando, y de qué sección. */
+  const [recortando, setRecortando] = useState<{
+    tempId: string;
+    foto: SeccionFotoDraft;
+  } | null>(null);
+  const [guardandoRecorte, setGuardandoRecorte] = useState(false);
+  const [avisoDeFoto, setAvisoDeFoto] = useState<string | null>(null);
 
   /**
-   * Crea una sección. Con un servicio, el título y la descripción salen del
-   * servicio y arranca con las fotos etiquetadas con él que estén libres.
+   * Crea una sección. Con una tarea, el título y la descripción salen de la
+   * tarea y arranca con las fotos etiquetadas con ella que estén libres.
    */
-  function addSeccion(servicio: ServicioParaSeccion | null) {
+  function addSeccion(servicio: TareaParaSeccion | null) {
     setMenuOpen(false);
     const yaAsignadas = new Set(
       secciones.flatMap((s) =>
@@ -903,21 +1000,27 @@ function SeccionesStep({
       ? allPool
           .filter(
             (m) =>
-              m.productoId === servicio.productoId &&
+              m.tareaId === servicio.tareaId &&
               !yaAsignadas.has(m.id)
           )
           .map(fotoDeVisita)
       : [];
+    const nuevaId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     onChangeSecciones([
       ...secciones,
       {
-        tempId: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        productoId: servicio?.productoId ?? null,
+        tempId: nuevaId,
+        tareaId: servicio?.tareaId ?? null,
         titulo: servicio?.nombre ?? "",
         descripcion: servicio?.descripcion ?? "",
         fotos: fotosDelServicio,
+        saltoDePagina: false,
+        fotosPorFila: 3,
+        fotosAlineacion: "IZQUIERDA",
       },
     ]);
+    // Recién creada se abre en su texto, como en el portal.
+    setAbierta({ tempId: nuevaId, pestana: "texto" });
   }
   function update(tempId: string, patch: Partial<SeccionDraft>) {
     onChangeSecciones(
@@ -928,79 +1031,51 @@ function SeccionesStep({
     onChangeSecciones(secciones.filter((s) => s.tempId !== tempId));
   }
   /**
-   * Sube imágenes de la galería a R2 con URLs prefirmadas y las agrega a la
-   * sección. Son fotos propias del informe: no vienen de ninguna visita.
+   * Aplica el recorte y cambia la foto por su recorte, **en el mismo lugar**:
+   * el orden de las fotos es el orden en que salen impresas. Lo aplica el
+   * servidor con el mismo servicio que el portal y devuelve otra imagen, en
+   * la biblioteca; el original queda donde estaba, y si la foto era de una
+   * visita, la visita conserva la suya.
    */
-  async function subirImagenes(tempId: string) {
-    if (!clienteId) return;
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      quality: 0.85,
-      selectionLimit: 20,
-    });
-    if (result.canceled || result.assets.length === 0) return;
-
-    setUploadingFor(tempId);
+  async function aplicarRecorte(edicion: EdicionDeFoto) {
+    if (!recortando) return;
+    const { tempId, foto } = recortando;
+    setGuardandoRecorte(true);
     try {
-      const assets = result.assets.map((a) => {
-        const fileName =
-          a.fileName ?? a.uri.split("/").pop() ?? `imagen-${Date.now()}.jpg`;
-        const ext = fileName.split(".").pop()?.toLowerCase() ?? "jpg";
-        const contentType =
-          ext === "png"
-            ? "image/png"
-            : ext === "webp"
-              ? "image/webp"
-              : "image/jpeg";
-        return { uri: a.uri, fileName, contentType };
-      });
-
-      const { uploads } = await apiRequest<{
-        uploads: { key: string; uploadUrl: string; url: string }[];
-      }>("/api/mobile/informes/uploads", {
-        method: "POST",
-        body: {
-          clienteId,
-          files: assets.map((a) => ({
-            fileName: a.fileName,
-            contentType: a.contentType,
-          })),
-        },
-      });
-
-      await Promise.all(
-        uploads.map(async (u, i) => {
-          const asset = assets[i];
-          const blob = await (await fetch(asset.uri)).blob();
-          const put = await fetch(u.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": asset.contentType },
-            body: blob,
-          });
-          if (!put.ok) throw new Error("No pudimos subir una de las imágenes.");
-        })
+      const id = foto.visitaMediaId ?? foto.mediaId;
+      const { media } = await apiRequest<{ media: { id: string; url: string } }>(
+        `/api/mobile/media/${id}/editar`,
+        {
+          method: "POST",
+          body: {
+            origen: foto.visitaMediaId ? "visita" : "biblioteca",
+            ...edicion,
+          },
+        }
       );
-
-      const nuevas = uploads.map((u) => fotoSubida(u.key, u.url));
+      const nueva = fotoDeBiblioteca(media);
       const s = secciones.find((x) => x.tempId === tempId);
-      if (s) update(tempId, { fotos: [...s.fotos, ...nuevas] });
-    } catch {
-      // El error se muestra al generar; acá solo evitamos romper la pantalla.
+      if (s) {
+        update(tempId, {
+          fotos: s.fotos
+            .map((f) => (f.uid === foto.uid ? nueva : f))
+            .filter((f, i, todas) => todas.findIndex((o) => o.uid === f.uid) === i),
+        });
+      }
+      setRecortando(null);
+    } catch (e) {
+      setAvisoDeFoto(mensajeDeError(e, "No pudimos recortar la foto"));
+      setRecortando(null);
     } finally {
-      setUploadingFor(null);
+      setGuardandoRecorte(false);
     }
   }
 
-  function removeFoto(tempId: string, uid: string) {
-    const s = secciones.find((x) => x.tempId === tempId);
-    if (!s) return;
-    update(tempId, { fotos: s.fotos.filter((f) => f.uid !== uid) });
-  }
 
-  const editing = secciones.find((s) => s.tempId === editingId) ?? null;
+  const indiceAbierto = abierta
+    ? secciones.findIndex((x) => x.tempId === abierta.tempId)
+    : -1;
+  const seccionAbierta = indiceAbierto >= 0 ? secciones[indiceAbierto] : null;
 
   return (
     <View style={{ flex: 1 }}>
@@ -1011,215 +1086,159 @@ function SeccionesStep({
         activationDistance={12}
         containerStyle={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
         ListHeaderComponent={
           <View style={{ marginBottom: 12 }}>
-            <Text variant="headlineSmall" style={styles.title}>
-              Componer secciones
-            </Text>
-            <Text style={styles.subtitle}>
-              {loadingPool
-                ? "Cargando fotos…"
-                : `${poolCount} foto${poolCount === 1 ? "" : "s"} disponibles · ${unassignedCount} sin asignar`}
-            </Text>
+            <TituloConVistaPrevia
+              texto="Componer secciones"
+              onVistaPrevia={onVistaPrevia}
+              previsualizando={previsualizando}
+              onAgregar={() => setMenuOpen(true)}
+            />
+            {/* El encabezado, primera fila, como en el portal: se escribe una
+                vez por informe, y se abre igual que una sección. */}
+            <Pressable
+              onPress={() => setEditandoEncabezado(true)}
+              style={({ pressed }) => [
+                styles.encabezadoFila,
+                pressed && styles.cardPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Editar el encabezado"
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.encabezadoRotulo}>Encabezado</Text>
+                <Text
+                  style={[styles.encabezadoTexto, !primeraLineaPlana(encabezado) && styles.muted]}
+                  numberOfLines={2}
+                >
+                  {primeraLineaPlana(encabezado) ?? "Toca para escribirlo"}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#888" />
+            </Pressable>
           </View>
         }
-        renderItem={({ item: s, drag, isActive }: RenderItemParams<SeccionDraft>) => {
-          const isCollapsed = collapsed.has(s.tempId);
+        renderItem={({ item: s, drag, isActive, getIndex }: RenderItemParams<SeccionDraft>) => {
+          const titulo = textoPlanoDeHtml(s.titulo);
+          const descripcion = textoPlanoDeHtml(s.descripcion);
+          const numero = (getIndex() ?? 0) + 1;
           return (
             <ScaleDecorator>
-              <View
-                style={[
-                  styles.seccionCard,
+              {/* La fila del portal: el asa, el número, el título en plano,
+                  cuántas fotos y el arranque de la descripción, y el chevron.
+                  Tocarla abre la sección; mantenerla, la arrastra. */}
+              <Pressable
+                onPress={() => setAbierta({ tempId: s.tempId, pestana: "texto" })}
+                onLongPress={drag}
+                delayLongPress={200}
+                style={({ pressed }) => [
+                  styles.seccionFila,
                   isActive && styles.seccionCardActive,
+                  pressed && styles.cardPressed,
                 ]}
+                accessibilityRole="button"
               >
-                {/* Header */}
+                <View style={styles.dragHandle}>
+                  <Ionicons name="reorder-three" size={20} color="#999" />
+                </View>
+                <View style={styles.seccionNumber}>
+                  <Text style={styles.seccionNumeroTexto}>{numero}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[styles.seccionDisplayTitle, !titulo && styles.muted]}
+                    numberOfLines={1}
+                  >
+                    {titulo || "Sin título"}
+                  </Text>
+                  <Text style={styles.seccionMeta} numberOfLines={1}>
+                    {s.fotos.length === 1 ? "1 foto" : `${s.fotos.length} fotos`}
+                    {descripcion ? ` · ${descripcion}` : ""}
+                  </Text>
+                </View>
                 <Pressable
-                  onPress={() => toggleCollapsed(s.tempId)}
-                  onLongPress={drag}
-                  delayLongPress={200}
-                  style={({ pressed }) => [
-                    styles.seccionHeaderRow,
-                    pressed && styles.cardPressed,
-                  ]}
+                  onPress={() => remove(s.tempId)}
+                  hitSlop={8}
+                  style={({ pressed }) => [styles.tacho, pressed && styles.cardPressed]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Eliminar la sección"
                 >
-                  <View style={styles.dragHandle}>
-                    <Ionicons name="reorder-three" size={18} color="#999" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.seccionDisplayTitle,
-                        !s.titulo && styles.muted,
-                      ]}
-                      numberOfLines={isCollapsed ? 1 : undefined}
-                    >
-                      {s.titulo || "Sin título"}
-                    </Text>
-                    {isCollapsed ? (
-                      <Text style={styles.seccionMeta}>
-                        {s.fotos.length} foto
-                        {s.fotos.length === 1 ? "" : "s"}
-                        {s.descripcion ? " · con descripción" : ""}
-                      </Text>
-                    ) : null}
-                  </View>
-                  <Ionicons
-                    name={isCollapsed ? "chevron-down" : "chevron-up"}
-                    size={20}
-                    color="#888"
-                  />
+                  <Ionicons name="trash-outline" size={19} color="#c62828" />
                 </Pressable>
-
-                {!isCollapsed ? (
-                  <>
-                    {/* Description display (tap to edit) */}
-                    <Pressable
-                      onPress={() => setEditingId(s.tempId)}
-                      style={({ pressed }) => [
-                        styles.seccionEditable,
-                        pressed && styles.cardPressed,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.seccionDescDisplay,
-                          !s.descripcion && styles.muted,
-                        ]}
-                      >
-                        {s.descripcion || "Toca para agregar descripción…"}
-                      </Text>
-                      <View style={styles.editHint}>
-                        <Ionicons
-                          name="pencil-outline"
-                          size={12}
-                          color="#888"
-                        />
-                        <Text style={styles.editHintText}>
-                          Editar título y descripción
-                        </Text>
-                      </View>
-                    </Pressable>
-
-                    {/* Photos */}
-                    {s.fotos.length > 0 ? (
-                      <View style={styles.fotoGrid}>
-                        {s.fotos.map((f) => (
-                          <View key={f.uid} style={styles.fotoCell}>
-                            <Image
-                              source={{ uri: f.url }}
-                              style={styles.foto}
-                            />
-                            {!f.visitaMediaId ? (
-                              <View style={styles.fotoBadge}>
-                                <Text style={styles.fotoBadgeText}>Subida</Text>
-                              </View>
-                            ) : null}
-                            <Pressable
-                              onPress={() => removeFoto(s.tempId, f.uid)}
-                              style={styles.fotoX}
-                              hitSlop={6}
-                            >
-                              <Ionicons name="close" size={14} color="#fff" />
-                            </Pressable>
-                          </View>
-                        ))}
-                      </View>
-                    ) : (
-                      <Text style={styles.seccionEmpty}>
-                        Sin fotos asignadas.
-                      </Text>
-                    )}
-
-                    {/* Actions */}
-                    <View style={styles.seccionFooter}>
-                      <Pressable
-                        onPress={() => onOpenPicker(s.tempId)}
-                        style={styles.iconBtn}
-                      >
-                        <Ionicons
-                          name="image-outline"
-                          size={18}
-                          color={ACCENT}
-                        />
-                        <Text style={styles.iconBtnText}>De las visitas</Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => subirImagenes(s.tempId)}
-                        style={styles.iconBtn}
-                        disabled={uploadingFor === s.tempId}
-                      >
-                        <Ionicons
-                          name="cloud-upload-outline"
-                          size={18}
-                          color={ACCENT}
-                        />
-                        <Text style={styles.iconBtnText}>
-                          {uploadingFor === s.tempId ? "Subiendo…" : "Subir"}
-                        </Text>
-                      </Pressable>
-                      <IconButton
-                        icon="trash-can-outline"
-                        size={18}
-                        onPress={() => remove(s.tempId)}
-                        iconColor="#c62828"
-                      />
-                    </View>
-                  </>
-                ) : null}
-              </View>
+                <Ionicons name="chevron-forward" size={20} color="#888" />
+              </Pressable>
             </ScaleDecorator>
           );
         }}
+        ListEmptyComponent={
+          <View style={styles.sinSecciones}>
+            <Text style={styles.sinSeccionesTexto}>
+              Aún no hay secciones. Agrega una con el + de arriba.
+            </Text>
+          </View>
+        }
         ListFooterComponent={
           <View style={{ marginTop: 16, gap: 8 }}>
-            <Menu
+            {/* Se abre desde el + junto al título. Un cajón y no un menú
+                colgado del botón: son las tareas de las visitas más el
+                catálogo entero, y eso es una lista. */}
+            <SelectorDeSeccion
               visible={menuOpen}
-              onDismiss={() => setMenuOpen(false)}
-              anchor={
-                <Button
-                  mode="outlined"
-                  onPress={() => setMenuOpen(true)}
-                  icon="plus"
-                  textColor={ACCENT}
-                >
-                  Agregar sección
-                </Button>
-              }
-            >
-              <Menu.Item
-                onPress={() => addSeccion(null)}
-                title="Personalizada (vacía)"
-                leadingIcon="text-box-outline"
-              />
-              {productos.length > 0 ? <Divider /> : null}
-              {productos.map((sv) => (
-                <Menu.Item
-                  key={sv.productoId}
-                  onPress={() => addSeccion(sv)}
-                  title={sv.nombre}
-                />
-              ))}
-            </Menu>
-            {error ? (
+              onCerrar={() => setMenuOpen(false)}
+              deVisitas={productos}
+              catalogo={catalogo}
+              usadas={secciones
+                .map((sec) => sec.tareaId)
+                .filter((id): id is string => !!id)}
+              onElegir={addSeccion}
+            />
+            {error || avisoDeFoto ? (
               <HelperText type="error" visible style={styles.error}>
-                {error}
+                {error ?? avisoDeFoto}
               </HelperText>
             ) : null}
           </View>
         }
       />
 
-      {editing ? (
-        <SeccionEditModal
-          key={editing.tempId}
-          initialTitulo={editing.titulo}
-          initialDescripcion={editing.descripcion}
-          onClose={() => setEditingId(null)}
-          onSave={(titulo, descripcion) => {
-            update(editing.tempId, { titulo, descripcion });
-            setEditingId(null);
+      {seccionAbierta && abierta ? (
+        <FichaDeSeccion
+          key={seccionAbierta.tempId}
+          seccion={seccionAbierta}
+          indice={indiceAbierto}
+          total={secciones.length}
+          pestanaInicial={abierta.pestana}
+          onCambiar={(patch) => update(seccionAbierta.tempId, patch)}
+          onEliminar={() => {
+            remove(seccionAbierta.tempId);
+            setAbierta(null);
+          }}
+          onIr={(paso) => {
+            const destino = secciones[indiceAbierto + paso];
+            if (destino) setAbierta({ tempId: destino.tempId, pestana: "texto" });
+          }}
+          onCerrar={() => setAbierta(null)}
+          onAgregarFotos={() => onOpenPicker(seccionAbierta.tempId)}
+          onRecortar={(foto) => setRecortando({ tempId: seccionAbierta.tempId, foto })}
+        />
+      ) : null}
+      {recortando ? (
+        <RecortarFoto
+          key={recortando.foto.uid}
+          url={recortando.foto.url}
+          guardando={guardandoRecorte}
+          onCerrar={() => setRecortando(null)}
+          onGuardar={(edicion) => void aplicarRecorte(edicion)}
+        />
+      ) : null}
+      {editandoEncabezado ? (
+        <EditorDeEncabezado
+          html={encabezado}
+          onCerrar={() => setEditandoEncabezado(false)}
+          onGuardar={(html) => {
+            onChangeEncabezado(html);
+            setEditandoEncabezado(false);
           }}
         />
       ) : null}
@@ -1227,122 +1246,56 @@ function SeccionesStep({
   );
 }
 
-// ───────── Native Field (static label) ─────────
+// ───────── El título de un paso, con el ojo ─────────
 
-function NativeField({
-  label,
-  value,
-  onChangeText,
-  multiline,
-  autoFocus,
+/**
+ * El título del paso y, a su derecha, el ojo que abre la vista previa del
+ * PDF: en los dos pasos donde cambia lo que se imprime —las secciones y la
+ * firma—. Estaba en un ⋯ del encabezado, y un ⋯ con una sola opción es una
+ * puerta que esconde un botón. En las secciones lleva además el + de
+ * *Agregar sección*.
+ */
+function TituloConVistaPrevia({
+  texto,
+  onVistaPrevia,
+  previsualizando,
+  onAgregar,
 }: {
-  label: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  multiline?: boolean;
-  autoFocus?: boolean;
+  texto: string;
+  onVistaPrevia: () => void;
+  previsualizando: boolean;
+  /** El + de *Agregar sección*, en el paso que lo tiene. */
+  onAgregar?: () => void;
 }) {
-  const [focused, setFocused] = useState(false);
   return (
-    <View
-      style={[
-        styles.fieldWrap,
-        focused && styles.fieldWrapFocused,
-        multiline && styles.fieldWrapMultiline,
-      ]}
-    >
-      <Text style={[styles.fieldLabel, focused && styles.fieldLabelFocused]}>
-        {label}
-      </Text>
-      <RNTextInput
-        value={value}
-        onChangeText={onChangeText}
-        multiline={!!multiline}
-        autoFocus={autoFocus}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={[styles.fieldInput, multiline && styles.fieldInputMultiline]}
-        textAlignVertical={multiline ? "top" : "center"}
-        scrollEnabled
-      />
-    </View>
-  );
-}
-
-// ───────── Section Edit Modal ─────────
-
-function SeccionEditModal({
-  initialTitulo,
-  initialDescripcion,
-  onClose,
-  onSave,
-}: {
-  initialTitulo: string;
-  initialDescripcion: string;
-  onClose: () => void;
-  onSave: (titulo: string, descripcion: string) => void;
-}) {
-  const insets = useSafeAreaInsets();
-  const [titulo, setTitulo] = useState(initialTitulo);
-  const [descripcion, setDescripcion] = useState(initialDescripcion);
-  const canSave = titulo.trim().length > 0;
-
-  return (
-    <Modal
-      visible
-      animationType="slide"
-      onRequestClose={onClose}
-      presentationStyle="pageSheet"
-    >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <View style={styles.tituloConOjo}>
+      <Text style={styles.tituloTexto}>{texto}</Text>
+      {onAgregar ? (
+        <Pressable
+          onPress={onAgregar}
+          hitSlop={8}
+          style={({ pressed }) => [styles.ojo, pressed && styles.cardPressed]}
+          accessibilityRole="button"
+          accessibilityLabel="Agregar sección"
+        >
+          <Ionicons name="add" size={22} color={ACCENT} />
+        </Pressable>
+      ) : null}
+      <Pressable
+        onPress={onVistaPrevia}
+        disabled={previsualizando}
+        hitSlop={8}
+        style={({ pressed }) => [styles.ojo, pressed && styles.cardPressed]}
+        accessibilityRole="button"
+        accessibilityLabel="Vista previa del PDF"
       >
-        <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
-          <View style={styles.modalHeader}>
-            <Pressable onPress={onClose}>
-              <Text style={{ color: ACCENT, fontWeight: "500" }}>
-                Cancelar
-              </Text>
-            </Pressable>
-            <Text style={{ fontWeight: "600", fontSize: 16 }}>
-              Editar sección
-            </Text>
-            <Pressable
-              onPress={() => onSave(titulo, descripcion)}
-              disabled={!canSave}
-            >
-              <Text
-                style={{
-                  color: canSave ? ACCENT : "#bbb",
-                  fontWeight: "600",
-                }}
-              >
-                Guardar
-              </Text>
-            </Pressable>
-          </View>
-          <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={{ padding: 16, gap: 16 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <NativeField
-              label="Título"
-              value={titulo}
-              onChangeText={setTitulo}
-              autoFocus
-            />
-            <NativeField
-              label="Descripción (opcional)"
-              value={descripcion}
-              onChangeText={setDescripcion}
-              multiline
-            />
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+        {previsualizando ? (
+          <ActivityIndicator size="small" color={ACCENT} />
+        ) : (
+          <Ionicons name="eye-outline" size={19} color={ACCENT} />
+        )}
+      </Pressable>
+    </View>
   );
 }
 
@@ -1352,10 +1305,14 @@ function FirmantesStep({
   firmantes,
   onChange,
   catalog,
+  onVistaPrevia,
+  previsualizando,
 }: {
   firmantes: FirmanteDraft[];
   onChange: (next: FirmanteDraft[]) => void;
   catalog: SavedFirmante[];
+  onVistaPrevia: () => void;
+  previsualizando: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -1393,9 +1350,13 @@ function FirmantesStep({
 
   return (
     <View>
-      <Text variant="headlineSmall" style={styles.title}>
-        Firmantes
-      </Text>
+      <TituloConVistaPrevia
+        texto="Firmantes"
+        onVistaPrevia={onVistaPrevia}
+        previsualizando={previsualizando}
+        // Hasta tres: con tres el + se va, que es lo que dice que no entra otro.
+        onAgregar={firmantes.length < 3 ? () => setMenuOpen(true) : undefined}
+      />
       <Text style={styles.subtitle}>
         Entre 1 y 3 personas que firman este informe.
       </Text>
@@ -1432,129 +1393,56 @@ function FirmantesStep({
         ))}
       </View>
 
-      {firmantes.length < 3 ? (
-        <Menu
-          visible={menuOpen}
-          onDismiss={() => setMenuOpen(false)}
-          anchor={
-            <Button
-              mode="outlined"
-              onPress={() => setMenuOpen(true)}
-              icon="plus"
-              style={{ marginTop: 16 }}
-              textColor={ACCENT}
-            >
-              Agregar firmante
-            </Button>
-          }
-        >
-          <Menu.Item
+      {/* Un cajón y no un menú colgado del botón: los firmantes guardados
+          son una lista, y el vacío va primero, que es el que no depende de
+          nada. El mismo cajón que abre el portal en el teléfono. */}
+      <HojaInferior visible={menuOpen} onCerrar={() => setMenuOpen(false)} maxAlto={0.85}>
+        <Text style={styles.hojaTitulo}>Agregar firmante</Text>
+        <ScrollView style={styles.hojaLista} contentContainerStyle={{ paddingBottom: 12 }}>
+          <Pressable
             onPress={addCustom}
-            title="Custom (vacío)"
-            leadingIcon="account-plus-outline"
-          />
-          {catalog.length > 0 ? <Divider /> : null}
-          {catalog.map((s) => {
-            const already = firmantes.some((f) => f.nombre === s.nombre);
+            style={({ pressed }) => [styles.hojaFila, pressed && styles.cardPressed]}
+            accessibilityRole="button"
+          >
+            <Ionicons name="person-add-outline" size={20} color={ACCENT} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.hojaFilaTexto}>Firmante nuevo</Text>
+              <Text style={styles.hojaFilaDetalle}>Se escribe desde cero</Text>
+            </View>
+          </Pressable>
+          {catalog.length > 0 ? <Text style={styles.hojaRotulo}>GUARDADOS</Text> : null}
+          {catalog.map((c) => {
+            const yaEsta = firmantes.some((f) => f.nombre === c.nombre);
             return (
-              <Menu.Item
-                key={s.id}
-                onPress={() => addFromCatalog(s)}
-                title={s.nombre}
-                disabled={already}
-              />
+              <Pressable
+                key={c.id}
+                onPress={() => addFromCatalog(c)}
+                disabled={yaEsta}
+                style={({ pressed }) => [
+                  styles.hojaFila,
+                  yaEsta && { opacity: 0.5 },
+                  pressed && styles.cardPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: yaEsta }}
+              >
+                <Ionicons name="person-outline" size={20} color="#666" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.hojaFilaTexto}>{c.nombre}</Text>
+                  <Text style={styles.hojaFilaDetalle}>
+                    {yaEsta ? "Ya está en el informe" : (c.cedula ?? "Sin cédula")}
+                  </Text>
+                </View>
+              </Pressable>
             );
           })}
-        </Menu>
-      ) : null}
+        </ScrollView>
+      </HojaInferior>
     </View>
   );
 }
 
 // ───────── Photo Picker Modal ─────────
-
-function PhotoPickerModal({
-  pool,
-  onClose,
-  onConfirm,
-}: {
-  pool: MediaPoolItem[];
-  onClose: () => void;
-  onConfirm: (ids: string[]) => void;
-}) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const insets = useSafeAreaInsets();
-
-  return (
-    <Modal
-      visible
-      animationType="slide"
-      onRequestClose={onClose}
-      presentationStyle="pageSheet"
-    >
-      <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
-        <View style={styles.modalHeader}>
-          <Pressable onPress={onClose}>
-            <Text style={{ color: ACCENT, fontWeight: "500" }}>Cancelar</Text>
-          </Pressable>
-          <Text style={{ fontWeight: "600", fontSize: 16 }}>
-            {selected.size > 0
-              ? `${selected.size} seleccionada${selected.size === 1 ? "" : "s"}`
-              : "Selecciona fotos"}
-          </Text>
-          <Pressable
-            onPress={() => onConfirm(Array.from(selected))}
-            disabled={selected.size === 0}
-          >
-            <Text
-              style={{
-                color: selected.size > 0 ? ACCENT : "#bbb",
-                fontWeight: "600",
-              }}
-            >
-              Agregar
-            </Text>
-          </Pressable>
-        </View>
-        {pool.length === 0 ? (
-          <Text style={[styles.empty, { padding: 32 }]}>
-            No hay fotos sin asignar.
-          </Text>
-        ) : (
-          <FlatList
-            data={pool}
-            keyExtractor={(i) => i.id}
-            numColumns={3}
-            contentContainerStyle={{ padding: 4 }}
-            renderItem={({ item }) => {
-              const isSel = selected.has(item.id);
-              return (
-                <Pressable
-                  onPress={() =>
-                    setSelected((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(item.id)) next.delete(item.id);
-                      else next.add(item.id);
-                      return next;
-                    })
-                  }
-                  style={styles.pickerCell}
-                >
-                  <Image source={{ uri: item.url }} style={styles.pickerImg} />
-                  {isSel ? (
-                    <View style={styles.pickerCheck}>
-                      <Ionicons name="checkmark" size={14} color="#fff" />
-                    </View>
-                  ) : null}
-                </Pressable>
-              );
-            }}
-          />
-        )}
-      </View>
-    </Modal>
-  );
-}
 
 // ───────── Date Range Modal ─────────
 
@@ -1607,7 +1495,7 @@ function DateRangeModal({
       onRequestClose={onClose}
       presentationStyle="pageSheet"
     >
-      <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
+      <View style={[styles.modalContainer, { paddingTop: ARRIBA_DE_LA_HOJA(insets.top) }]}>
         <View style={styles.modalHeader}>
           <Pressable onPress={onClose}>
             <Text style={{ color: ACCENT, fontWeight: "500" }}>Cerrar</Text>
@@ -1781,32 +1669,26 @@ function capitalize(s: string): string {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  header: {
-    backgroundColor: "#fff",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e0e0e0",
-    paddingBottom: 8,
-  },
-  headerTopRow: {
+  content: { padding: 16, paddingBottom: 32 },
+  title: { marginBottom: 4, fontWeight: "600" },
+  tituloConOjo: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 4,
+    gap: 8,
+    marginBottom: 8,
   },
-  headerBtn: { width: 40 },
-  stepCounter: { color: "#666" },
-  progressBar: { height: 3, marginHorizontal: 16 },
-  content: { padding: 16, paddingBottom: 32 },
-  footer: {
-    backgroundColor: "#fff",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#e0e0e0",
-    paddingHorizontal: 16,
-    paddingTop: 12,
+  // El título del paso, del tamaño de los de la app en el teléfono, y sus
+  // dos botones chicos: son atajos, no la acción del paso.
+  tituloTexto: { flex: 1, fontSize: 18, fontWeight: "700", color: "#1e231f" },
+  ojo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e8f5e9",
   },
-  primaryBtn: { borderRadius: 12 },
-  primaryBtnContent: { paddingVertical: 6 },
-  title: { marginBottom: 4, fontWeight: "600" },
   subtitle: { color: "#666", marginBottom: 16 },
   label: { color: "#444", fontSize: 13, marginBottom: 6, fontWeight: "500" },
   search: {
@@ -2044,20 +1926,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
   },
   foto: { width: "100%", height: "100%" },
-  fotoBadge: {
-    position: "absolute",
-    top: 4,
-    left: 4,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
-    backgroundColor: "rgba(0,0,0,0.6)",
-  },
-  fotoBadgeText: {
-    color: "#fff",
-    fontSize: 9,
-    fontWeight: "600",
-  },
   fotoX: {
     position: "absolute",
     top: 4,
@@ -2081,16 +1949,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 4,
   },
-  iconBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: "#e8f5e9",
-  },
-  iconBtnText: { color: ACCENT, fontWeight: "500", fontSize: 13 },
   // Firmantes
   firmanteCard: {
     backgroundColor: "#fafafa",
@@ -2108,25 +1966,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#e0e0e0",
-  },
-  pickerCell: {
-    flex: 1 / 3,
-    aspectRatio: 1,
-    padding: 2,
-  },
-  pickerImg: { width: "100%", height: "100%", borderRadius: 6 },
-  pickerCheck: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: ACCENT,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#fff",
   },
   modalDateLabel: {
     alignItems: "center",
@@ -2146,5 +1985,56 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     marginTop: "auto",
   },
+  agregarFotos: { borderRadius: 8 },
+  // El encabezado como fila de la lista: rótulo chico arriba, la primera
+  // línea debajo, el chevron al costado.
+  encabezadoFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#fafafa",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  encabezadoRotulo: { color: "#888", fontSize: 12, marginBottom: 2 },
+  // La fila de una sección, como en el portal.
+  seccionFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#fafafa",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingLeft: 8,
+    paddingRight: 12,
+  },
+  seccionNumeroTexto: { color: "#fff", fontSize: 12, fontWeight: "700" },
+  tacho: { width: 32, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 16 },
+  // Las filas de un cajón, como las del selector de sección.
+  hojaTitulo: { fontSize: 17, fontWeight: "700", color: "#1e231f", paddingHorizontal: 4, paddingTop: 6, paddingBottom: 4 },
+  hojaLista: { flexGrow: 0 },
+  hojaRotulo: { color: "#7c827d", fontSize: 11, letterSpacing: 0.8, paddingHorizontal: 4, paddingTop: 14, paddingBottom: 4 },
+  hojaFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 4,
+    paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#ecf0ec",
+  },
+  hojaFilaTexto: { fontSize: 16, color: "#1e231f", fontWeight: "500" },
+  hojaFilaDetalle: { fontSize: 13, color: "#7c827d", marginTop: 2 },
+  sinSecciones: {
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: "#ddd",
+    padding: 24,
+  },
+  sinSeccionesTexto: { color: "#888", textAlign: "center", fontSize: 14 },
+  encabezadoTexto: { fontSize: 15, fontWeight: "600", color: "#222" },
   error: { textAlign: "center", marginTop: 12 },
 });

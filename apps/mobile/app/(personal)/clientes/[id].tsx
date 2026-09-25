@@ -270,12 +270,28 @@ export default function ClienteDetailScreen() {
         </View>
       ) : null}
 
-      {/* Suscripciones — solo lectura: se arman desde el portal. */}
+      {/* Suscripciones: cada fila abre el plan, y Nueva llega con el cliente
+          puesto, como en la ficha del portal. */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text variant="labelMedium" style={styles.sectionLabel}>
             SUSCRIPCIONES
           </Text>
+          {canEdit ? (
+            <Button
+              mode="text"
+              compact
+              style={styles.sectionAction}
+              onPress={() =>
+                router.push({
+                  pathname: "/(personal)/suscripciones/nueva",
+                  params: { cliente: id },
+                })
+              }
+            >
+              Nueva
+            </Button>
+          ) : null}
         </View>
         {suscripcionesVisibles.length === 0 ? (
           <HelperText type="info" visible style={styles.muted}>
@@ -284,29 +300,33 @@ export default function ClienteDetailScreen() {
         ) : (
           <View style={styles.serviciosList}>
             {suscripcionesVisibles.map((sus) => (
-              <View key={sus.id}>
+              <PressableScale
+                key={sus.id}
+                onPress={() => router.push(`/(personal)/suscripciones/${sus.id}`)}
+              >
                 <Text variant="labelSmall" style={styles.muted}>
-                  {formatPeriodicidad(sus.periodicidad)}
+                  #{sus.numero} · {formatPeriodicidad(sus.periodicidad)}
                   {sus.estado !== "ACTIVO" ? ` · ${sus.estado}` : ""}
                 </Text>
-                {sus.items.map((item) => (
-                  <View key={item.id} style={styles.servicioRow}>
-                    <View style={styles.servicioText}>
-                      <Text variant="bodyLarge" style={styles.servicioTitle}>
-                        {item.producto.nombre}
-                      </Text>
-                      <Text variant="bodySmall" style={styles.muted}>
-                        {item.visitasPorPeriodo
-                          ? `${item.visitasPorPeriodo}${sufijoPeriodo(sus.periodicidad)}`
-                          : "Sin visitas declaradas"}
-                      </Text>
-                    </View>
-                    <Text variant="bodyMedium" style={styles.servicioPrecio}>
-                      ${formatPrice(item.precio)}
+                {/* De qué jardín es y qué incluye; el precio con IVA al
+                    final, igual que en la ficha del portal. */}
+                <View style={styles.servicioRow}>
+                  <View style={styles.servicioText}>
+                    <Text variant="bodyLarge" style={styles.servicioTitle}>
+                      {sus.propiedad.nombre}
+                    </Text>
+                    <Text variant="bodySmall" style={styles.muted}>
+                      {sus.visitasPorPeriodo} visita
+                      {sus.visitasPorPeriodo === 1 ? "" : "s"}
+                      {sufijoPeriodo(sus.periodicidad)}
                     </Text>
                   </View>
-                ))}
-              </View>
+                  <Text variant="bodyMedium" style={styles.servicioPrecio}>
+                    ${formatPrice(conIva(sus.precio, sus.ivaTasa))}
+                    {sufijoPeriodo(sus.periodicidad)}
+                  </Text>
+                </View>
+              </PressableScale>
             ))}
           </View>
         )}
@@ -375,6 +395,14 @@ const PERIODICIDAD_SUFIJOS: Record<string, string> = {
 /** Las visitas incluidas se cuentan por período de cobro, no por mes. */
 function sufijoPeriodo(p: string): string {
   return PERIODICIDAD_SUFIJOS[p] ?? "";
+}
+
+/** El precio del plan va sin IVA; lo que el cliente paga es con. */
+function conIva(precio: string, ivaTasa: string): string {
+  const base = Number(precio);
+  const tasa = Number(ivaTasa) || 0;
+  if (!Number.isFinite(base)) return precio;
+  return String(Math.round(base * (1 + tasa / 100) * 100) / 100);
 }
 
 function formatPrice(value: string): string {

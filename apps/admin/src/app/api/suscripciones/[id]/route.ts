@@ -22,8 +22,8 @@ export async function GET(
 }
 
 /**
- * Cambiar solo el estado no toca los ítems: mandar `{estado}` a secas pasa por
- * `cambiarEstadoSuscripcion`, que además maneja la `fechaFin` al cancelar.
+ * Mandar `{estado}` a secas pasa por `cambiarEstadoSuscripcion`, que además
+ * maneja la `fechaFin` al cancelar.
  */
 export async function PUT(
   request: Request,
@@ -40,32 +40,18 @@ export async function PUT(
       { status: 400 }
     );
   }
-  const { estado, items, periodicidad, fechaInicio, notas } = parsed.data;
+  const { estado, ...resto } = parsed.data;
   try {
     const soloEstado =
       estado !== undefined &&
-      items === undefined &&
-      periodicidad === undefined &&
-      fechaInicio === undefined &&
-      notas === undefined;
+      Object.values(resto).every((v) => v === undefined);
     if (soloEstado) {
       return NextResponse.json(
         await cambiarEstadoSuscripcion(viewer, id, estado)
       );
     }
     return NextResponse.json(
-      await actualizarSuscripcion(viewer, id, {
-        periodicidad,
-        estado,
-        fechaInicio,
-        notas,
-        items: items?.map((i) => ({
-          productoId: i.productoId,
-          precio: i.precio,
-          ivaTasa: i.ivaTasa ?? null,
-          visitasPorPeriodo: i.visitasPorPeriodo ?? null,
-        })),
-      })
+      await actualizarSuscripcion(viewer, id, { estado, ...resto })
     );
   } catch (error) {
     return serviceErrorResponse(error);

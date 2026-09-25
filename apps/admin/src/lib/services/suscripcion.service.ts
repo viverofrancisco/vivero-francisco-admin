@@ -1,24 +1,22 @@
 /**
  * Suscripciones: lo recurrente que un cliente tiene contratado.
  *
- * Una suscripción agrupa uno o más productos que se cobran juntos en el mismo
- * ciclo. Cada renovación genera una orden con **una línea por ítem**, y esa
- * orden se emite como una factura con N detalles — por eso la
- * tasa de IVA vive en el ítem y no en la cabecera: una misma factura puede
- * mezclar líneas al 0% y al 15%.
+ * **Un plan es un precio por un jardín.** Dice de qué propiedad del cliente
+ * es, cuánto se cobra por período (sin IVA, con su tasa aparte) y cuántas
+ * visitas incluye. No lleva productos: era una lista de ítems del catálogo,
+ * cada uno con su precio, y armar un plan era elegir tres productos y ponerles
+ * precio a cada uno para llegar a la mensualidad que ya se había pactado. Lo
+ * que se acuerda con el cliente es un número por mantenerle ese jardín.
  *
- * Los trabajos sueltos (productos `UNICO`) no pasan por acá: se cotizan en la
- * visita, que guarda su propio precio.
+ * Cada renovación genera una orden con **una línea**, la del período, y esa
+ * orden se emite como una factura. Los trabajos sueltos no pasan por acá: se
+ * arman a mano en una orden con productos del catálogo.
  */
 import { Prisma } from "@/generated/prisma/client";
 import type { EstadoServicio, Periodicidad } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import {
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-  ValidationError,
-} from "./errors";
+import { clavePeriodo } from "@/lib/periodos";
+import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
 import { FACTURA_VIGENTE } from "./factura-vigente";
@@ -37,50 +35,83 @@ export function isForeignKeyRestriction(error: unknown): boolean {
   );
 }
 
-export interface ItemInput {
-  productoId: string;
+/** Lo que se pacta: el precio del período, su IVA y las visitas que incluye. */
+export interface TerminosDelPlan {
   precio: number;
   ivaTasa?: number | null;
-  visitasPorPeriodo?: number | null;
+  visitasPorPeriodo: number;
 }
 
 /**
- * Un producto recurrente declara cuántas visitas incluye por período. La
- * regla estaba duplicada en cada formulario; acá es una sola.
+ * Las reglas del precio y las visitas, en un solo lugar: estaban repetidas
+ * en cada formulario y en el servicio, y tres copias son tres versiones.
  */
-async function validarItems(items: ItemInput[]): Promise<void> {
-  if (items.length === 0) {
-    throw new ValidationError("La suscripción necesita al menos un producto.");
+function validarTerminos(t: Partial<TerminosDelPlan>): void {
+  if (t.precio !== undefined && !(t.precio >= 0)) {
+    throw new ValidationError("El precio no puede ser negativo.");
   }
-  const ids = [...new Set(items.map((i) => i.productoId))];
-  if (ids.length !== items.length) {
-    throw new ValidationError("Hay un producto repetido en la suscripción.");
+  if (t.ivaTasa != null && (t.ivaTasa < 0 || t.ivaTasa > 100)) {
+    throw new ValidationError("El IVA tiene que estar entre 0 y 100.");
   }
-  const productos = await prisma.producto.findMany({
-    where: { id: { in: ids }, deletedAt: null },
-    select: { id: true, nombre: true },
-  });
-  if (productos.length !== ids.length) {
-    throw new ValidationError("Alguno de los productos no existe.");
-  }
-  for (const item of items) {
-    if (item.precio < 0) throw new ValidationError("El precio no puede ser negativo.");
-    if ((item.visitasPorPeriodo ?? 0) < 1) {
-      const nombre = productos.find((p) => p.id === item.productoId)?.nombre;
-      throw new ValidationError(
-        `Indicá las visitas por período de "${nombre}".`
-      );
-    }
+  if (
+    t.visitasPorPeriodo !== undefined &&
+    !(Number.isInteger(t.visitasPorPeriodo) && t.visitasPorPeriodo >= 1)
+  ) {
+    throw new ValidationError("Indica cuántas visitas incluye cada período.");
   }
 }
 
-export interface CrearSuscripcionPayload {
+/**
+ * La propiedad del plan tiene que ser del cliente, y estar viva.
+ *
+ * El cliente manda el id y el servidor lo comprueba: si no, se le podría
+ * armar a alguien un plan sobre la casa de otro.
+ */
+async function validarPropiedadDelCliente(
+  propiedadId: string | null | undefined,
+  clienteId: string
+): Promise<string> {
+  if (!propiedadId) {
+    throw new ValidationError("Elige de qué propiedad es el plan.");
+  }
+  const propiedad = await prisma.propiedad.findFirst({
+    where: { id: propiedadId, clienteId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!propiedad) {
+    throw new ValidationError("Esa propiedad no es de este cliente.");
+  }
+  return propiedad.id;
+}
+
+export interface CrearSuscripcionPayload extends TerminosDelPlan {
   clienteId: string;
+  propiedadId: string;
   periodicidad?: Periodicidad;
   fechaInicio?: Date | string;
   notas?: string | null;
-  items: ItemInput[];
 }
+
+/** Dónde queda el jardín del plan: lo que hace falta para escribirlo y llegar. */
+export const UBICACION_DE_PROPIEDAD = {
+  id: true,
+  nombre: true,
+  ciudad: true,
+  direccion: true,
+  numeroCasa: true,
+  referencia: true,
+  lat: true,
+  lng: true,
+  sector: { select: { id: true, nombre: true } },
+} satisfies Prisma.PropiedadSelect;
+
+/** Lo que toda lectura de un plan trae consigo: el cliente y el jardín. */
+const SUSCRIPCION_INCLUDE = {
+  cliente: {
+    select: { id: true, nombre: true, apellido: true, empresa: true },
+  },
+  propiedad: { select: UBICACION_DE_PROPIEDAD },
+} satisfies Prisma.SuscripcionInclude;
 
 export async function crearSuscripcion(
   viewer: Viewer,
@@ -94,55 +125,47 @@ export async function crearSuscripcion(
   });
   if (!cliente) throw new NotFoundError("Cliente no encontrado");
 
-  await validarItems(payload.items);
-
-  // Un producto no puede estar en dos suscripciones activas del mismo cliente:
-  // se cobraría dos veces el mismo período.
-  const yaCubiertos = await prisma.suscripcionItem.findMany({
-    where: {
-      productoId: { in: payload.items.map((i) => i.productoId) },
-      suscripcion: { clienteId: payload.clienteId, estado: "ACTIVO" },
-    },
-    include: { producto: { select: { nombre: true } } },
-  });
-  if (yaCubiertos.length > 0) {
-    throw new ConflictError(
-      `El cliente ya tiene una suscripción activa con "${yaCubiertos[0].producto.nombre}".`
-    );
-  }
+  validarTerminos(payload);
+  const propiedadId = await validarPropiedadDelCliente(
+    payload.propiedadId,
+    cliente.id
+  );
 
   return prisma.suscripcion.create({
     data: {
-      clienteId: payload.clienteId,
+      clienteId: cliente.id,
+      propiedadId,
       periodicidad: payload.periodicidad ?? "MENSUAL",
       fechaInicio: payload.fechaInicio
         ? new Date(payload.fechaInicio)
         : new Date(),
+      precio: payload.precio,
+      ivaTasa: payload.ivaTasa ?? 0,
+      visitasPorPeriodo: payload.visitasPorPeriodo,
       notas: payload.notas?.trim() || null,
       createdById: viewer.id,
       updatedById: viewer.id,
-      items: {
-        create: payload.items.map((i) => ({
-          productoId: i.productoId,
-          precio: i.precio,
-          ivaTasa: i.ivaTasa ?? 0,
-          visitasPorPeriodo: i.visitasPorPeriodo ?? null,
-        })),
-      },
     },
-    include: { items: { include: { producto: true } } },
+    include: SUSCRIPCION_INCLUDE,
   });
 }
 
-export interface ActualizarSuscripcionPayload {
+export interface ActualizarSuscripcionPayload extends Partial<TerminosDelPlan> {
+  /** Otra propiedad **del mismo cliente**: se cargó contra la casa y era la oficina. */
+  propiedadId?: string;
   periodicidad?: Periodicidad;
   estado?: EstadoServicio;
   fechaInicio?: Date | string;
   notas?: string | null;
-  /** Si viene, reemplaza el conjunto de ítems. */
-  items?: ItemInput[];
 }
 
+/**
+ * Editar un plan. Cada campo se aplica solo si vino.
+ *
+ * Cambiar el precio rige desde el próximo período: los ya facturados tienen
+ * su `OrdenLinea.precioUnitario`, que es un snapshot. Cambiar la propiedad no
+ * mueve ninguna visita: las que ya pasaron, pasaron donde pasaron.
+ */
 export async function actualizarSuscripcion(
   viewer: Viewer,
   suscripcionId: string,
@@ -156,74 +179,34 @@ export async function actualizarSuscripcion(
   });
   if (!actual) throw new NotFoundError("Suscripción no encontrada");
 
-  if (payload.items) {
-    await validarItems(payload.items);
-    // Un producto que ya está en ESTA suscripción no choca consigo mismo.
-    const enOtra = await prisma.suscripcionItem.findMany({
-      where: {
-        productoId: { in: payload.items.map((i) => i.productoId) },
-        suscripcion: {
-          clienteId: actual.clienteId,
-          estado: "ACTIVO",
-          id: { not: suscripcionId },
-        },
-      },
-      include: { producto: { select: { nombre: true } } },
-    });
-    if (enOtra.length > 0) {
-      throw new ConflictError(
-        `El cliente ya tiene otra suscripción activa con "${enOtra[0].producto.nombre}".`
-      );
-    }
-  }
+  validarTerminos(payload);
+  const propiedadId =
+    payload.propiedadId !== undefined
+      ? await validarPropiedadDelCliente(payload.propiedadId, actual.clienteId)
+      : undefined;
 
-  const items = payload.items;
-  return prisma.$transaction(async (tx) => {
-    if (items) {
-      const ids = items.map((i) => i.productoId);
-      // Sacar un producto del plan ya no toca ninguna visita: la cobertura era
-      // producto por producto (`VisitaProducto.suscripcionItemId`) y eso se fue
-      // con los productos de la visita. Hoy una visita pertenece a un plan
-      // entero (`Visita.suscripcionId`) o a ninguno, y editar qué incluye el
-      // plan no cambia a qué plan perteneció una visita que ya pasó.
-      await tx.suscripcionItem.deleteMany({
-        where: { suscripcionId, productoId: { notIn: ids } },
-      });
-      for (const i of items) {
-        await tx.suscripcionItem.upsert({
-          where: {
-            suscripcionId_productoId: { suscripcionId, productoId: i.productoId },
-          },
-          create: {
-            suscripcionId,
-            productoId: i.productoId,
-            precio: i.precio,
-            ivaTasa: i.ivaTasa ?? 0,
-            visitasPorPeriodo: i.visitasPorPeriodo ?? null,
-          },
-          update: {
-            precio: i.precio,
-            ivaTasa: i.ivaTasa ?? 0,
-            visitasPorPeriodo: i.visitasPorPeriodo ?? null,
-          },
-        });
-      }
-    }
-    return tx.suscripcion.update({
-      where: { id: suscripcionId },
-      data: {
-        ...(payload.periodicidad ? { periodicidad: payload.periodicidad } : {}),
-        ...(payload.estado ? { estado: payload.estado } : {}),
-        ...(payload.fechaInicio
-          ? { fechaInicio: new Date(payload.fechaInicio) }
-          : {}),
-        ...(payload.notas !== undefined
-          ? { notas: payload.notas?.trim() || null }
-          : {}),
-        updatedById: viewer.id,
-      },
-      include: { items: { include: { producto: true } } },
-    });
+  return prisma.suscripcion.update({
+    where: { id: suscripcionId },
+    data: {
+      ...(propiedadId ? { propiedadId } : {}),
+      ...(payload.periodicidad ? { periodicidad: payload.periodicidad } : {}),
+      ...(payload.estado ? { estado: payload.estado } : {}),
+      ...(payload.fechaInicio
+        ? { fechaInicio: new Date(payload.fechaInicio) }
+        : {}),
+      ...(payload.precio !== undefined ? { precio: payload.precio } : {}),
+      ...(payload.ivaTasa !== undefined
+        ? { ivaTasa: payload.ivaTasa ?? 0 }
+        : {}),
+      ...(payload.visitasPorPeriodo !== undefined
+        ? { visitasPorPeriodo: payload.visitasPorPeriodo }
+        : {}),
+      ...(payload.notas !== undefined
+        ? { notas: payload.notas?.trim() || null }
+        : {}),
+      updatedById: viewer.id,
+    },
+    include: SUSCRIPCION_INCLUDE,
   });
 }
 
@@ -268,17 +251,9 @@ export async function listarSuscripciones(
   if (options.estado) where.estado = options.estado;
   else if (!options.incluirCanceladas) where.estado = { not: "CANCELADO" };
 
-
   return prisma.suscripcion.findMany({
     where,
-    include: {
-      cliente: {
-        select: { id: true, nombre: true, apellido: true, empresa: true },
-      },
-      items: {
-        include: { producto: { select: { id: true, nombre: true } } },
-      },
-    },
+    include: SUSCRIPCION_INCLUDE,
     orderBy: [{ estado: "asc" }, { cliente: { nombre: "asc" } }],
   });
 }
@@ -286,25 +261,30 @@ export async function listarSuscripciones(
 /**
  * Las órdenes que salieron de los períodos de esta suscripción.
  *
- * Tampoco es una relación directa: se llega por las líneas que citan alguno de
- * sus ítems. Se listan **órdenes y no facturas** porque el borrador que crea el
- * cron todavía no tiene factura, y era justo lo que no se veía desde acá.
+ * Por la cabecera —`Orden.suscripcionId`, que la migración completó también
+ * en las que el cron creaba sin ella— y no por las líneas: una orden anulada
+ * suelta el vínculo de sus líneas, para que el período se pueda volver a
+ * cobrar, y aun así sigue siendo una orden de este plan que conviene ver. Se
+ * listan **órdenes y no facturas** porque el borrador que crea el cron todavía
+ * no tiene factura, y era justo lo que no se veía desde acá.
  */
 export async function ordenesDeSuscripcion(viewer: Viewer, suscripcionId: string) {
-  const suscripcion = await getSuscripcion(viewer, suscripcionId);
-  const itemIds = suscripcion.items.map((i) => i.id);
-  if (itemIds.length === 0) return [];
+  await getSuscripcion(viewer, suscripcionId);
 
   const ordenes = await prisma.orden.findMany({
-    where: { lineas: { some: { suscripcionItemId: { in: itemIds } } } },
+    where: { suscripcionId },
     select: {
       id: true,
       numero: true,
       fecha: true,
       estado: true,
       total: true,
+      // Las líneas del plan: las que tienen período. Una orden vieja puede
+      // traer varias del mismo período —una por cada producto que el plan
+      // tenía entonces—, así que los períodos se cuentan por fecha, no por
+      // línea.
       lineas: {
-        where: { suscripcionItemId: { in: itemIds } },
+        where: { periodoInicio: { not: null } },
         select: { periodoInicio: true, periodoFin: true, total: true },
         orderBy: { periodoInicio: "asc" },
       },
@@ -324,11 +304,11 @@ export async function ordenesDeSuscripcion(viewer: Viewer, suscripcionId: string
     estado: o.estado,
     total: Number(o.total),
     // Lo que aportó **este** plan, que puede ser menos que el total de la orden
-    // si adentro hay además una visita suelta.
+    // si adentro hay además un producto agregado a mano.
     delPlan: o.lineas.reduce((a, l) => a + Number(l.total), 0),
     periodoInicio: o.lineas[0]?.periodoInicio ?? null,
     periodoFin: o.lineas[o.lineas.length - 1]?.periodoFin ?? null,
-    periodos: o.lineas.length,
+    periodos: new Set(o.lineas.map((l) => clavePeriodo(l.periodoInicio!))).size,
     factura: o.facturas[0]
       ? {
           numero: o.facturas[0].numero,
@@ -341,14 +321,8 @@ export async function ordenesDeSuscripcion(viewer: Viewer, suscripcionId: string
 }
 
 /**
- * Las visitas de este plan.
- *
- * Ahora es una relación directa —`Visita.suscripcionId`— y eso la vuelve una
- * consulta a secas. Antes había que dar la vuelta por
- * `VisitaProducto.suscripcionItemId`, que marcaba "este producto de esta visita
- * lo paga el plan", y una visita aparecía por haber cubierto *algo*; con eso
- * había que decir además **qué** producto había sido el cubierto. Sin productos
- * en la visita esa pregunta ya no existe: la visita es del plan, o no lo es.
+ * Las visitas de este plan: una relación directa, `Visita.suscripcionId`.
+ * La visita es del plan, o no lo es.
  */
 export async function visitasDeSuscripcion(viewer: Viewer, suscripcionId: string) {
   // Valida que el viewer pueda ver el plan.
@@ -388,89 +362,8 @@ export async function getSuscripcion(viewer: Viewer, id: string) {
   }
   const s = await prisma.suscripcion.findUnique({
     where: { id },
-    include: {
-      cliente: {
-        select: { id: true, nombre: true, apellido: true, empresa: true },
-      },
-      items: {
-        include: { producto: { select: { id: true, nombre: true } } },
-      },
-    },
+    include: SUSCRIPCION_INCLUDE,
   });
   if (!s) throw new NotFoundError("Suscripción no encontrada");
   return s;
-}
-
-/**
- * Productos recurrentes que el cliente todavía no tiene en una suscripción
- * activa.
- *
- * Al editar una suscripción hay que pasar su id en `exceptoSuscripcionId`: sus
- * propios productos no son un conflicto consigo misma, y sin eso el formulario
- * de edición no podría volver a ofrecerlos.
- */
-/**
- * Productos que este cliente ya tiene en una suscripción activa.
- *
- * Son los que no se pueden agregar a mano a una orden: entran por el período o
- * por la visita. La pregunta es por cliente porque "recurrente" dejó de ser una
- * etiqueta del catálogo.
- */
-export async function productosSuscritos(
-  clienteId: string
-): Promise<string[]> {
-  const items = await prisma.suscripcionItem.findMany({
-    where: { suscripcion: { clienteId, estado: "ACTIVO" } },
-    select: { productoId: true },
-  });
-  return [...new Set(items.map((i) => i.productoId))];
-}
-
-export async function productosSuscribibles(
-  viewer: Viewer,
-  clienteId: string,
-  exceptoSuscripcionId?: string,
-  opciones: { search?: string; offset?: number; limit?: number } = {}
-) {
-  if (!isAdminRole(viewer.role)) {
-    throw new ForbiddenError();
-  }
-  const limit = Math.min(Math.max(opciones.limit ?? 20, 1), 100);
-  const offset = Math.max(0, opciones.offset ?? 0);
-  const search = opciones.search?.trim();
-
-  // Todo el catálogo es suscribible: lo recurrente lo define el contrato. Solo
-  // se saca lo que este cliente ya tiene en una suscripción activa, para no
-  // cobrarle el mismo período dos veces.
-  //
-  // De a tandas, como el resto de los selectores: el catálogo puede crecer y
-  // esta lista se abre para elegir uno o dos productos.
-  const productos = await prisma.producto.findMany({
-    where: {
-      deletedAt: null,
-      ...(search ? { nombre: { contains: search, mode: "insensitive" } } : {}),
-      NOT: {
-        suscripcionItems: {
-          some: {
-            suscripcion: {
-              clienteId,
-              estado: "ACTIVO",
-              ...(exceptoSuscripcionId ? { id: { not: exceptoSuscripcionId } } : {}),
-            },
-          },
-        },
-      },
-    },
-    select: {
-      id: true,
-      nombre: true,
-      ivaTasa: true,
-    },
-    orderBy: { nombre: "asc" },
-    skip: offset,
-    take: limit + 1,
-  });
-
-  const hayMas = productos.length > limit;
-  return { items: hayMas ? productos.slice(0, limit) : productos, hayMas };
 }

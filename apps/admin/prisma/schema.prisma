@@ -107,6 +107,15 @@ enum Periodicidad {
   ANUAL
 }
 
+/// Hacia dónde se arriman las fotos de una sección del informe cuando la fila
+/// no está llena: tres por fila y dos fotos deja un hueco, y a dónde va el
+/// hueco es una decisión de quien arma el informe.
+enum AlineacionDeFotos {
+  IZQUIERDA
+  CENTRO
+  DERECHA
+}
+
 /// Tipo de persona para facturación.
 enum TipoPersona {
   NATURAL
@@ -356,6 +365,9 @@ model Propiedad {
   createdBy User?    @relation("PropiedadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy User?    @relation("PropiedadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   visitas   Visita[]
+  /// Los planes de esta propiedad. `Restrict` en la FK: un plan que renueva
+  /// solo no puede quedar apuntando a un lugar que ya no está.
+  suscripciones Suscripcion[]
 
   @@index([clienteId])
   @@index([sectorId])
@@ -388,9 +400,8 @@ model Producto {
   createdBy   User?   @relation("ProductoCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy   User?   @relation("ProductoUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  suscripcionItems SuscripcionItem[]
-  ordenLineas      OrdenLinea[]
-  facturaLineas    FacturaLinea[]
+  ordenLineas   OrdenLinea[]
+  facturaLineas FacturaLinea[]
 
   /// Un producto puede estar en varias: "Plantas" y "Interior" a la vez.
   categorias ProductoCategoria[]
@@ -685,12 +696,35 @@ model Suscripcion {
   /// dejaría salteadas —#3, #17, #40— sin ganar nada a cambio.
   numero       Int            @unique @default(autoincrement())
   clienteId    String
+  /// De qué propiedad del cliente es el plan.
+  ///
+  /// Un plan es "mantener este jardín": el precio y las visitas son de un
+  /// lugar, no de una persona. Un cliente con casa y oficina tiene dos planes
+  /// —o uno solo, y la otra se cobra aparte—, y sus visitas cuentan contra el
+  /// plan de la propiedad donde pasan. Obligatoria porque un plan sin lugar no
+  /// dice qué jardín cubre, y `Restrict` porque un plan que renueva solo no
+  /// puede quedar apuntando a una propiedad que ya no está.
+  propiedadId  String
   estado       EstadoServicio @default(ACTIVO)
-  /// El ciclo lo define la suscripción, no el producto: el mismo producto puede
-  /// ser mensual para un cliente y trimestral para otro.
+  /// El ciclo lo define la suscripción: el mismo trabajo puede ser mensual
+  /// para un cliente y trimestral para otro.
   periodicidad Periodicidad   @default(MENSUAL)
   fechaInicio  DateTime       @db.Date
   fechaFin     DateTime?      @db.Date
+  /// Lo que se cobra **por período**, sin IVA. En una trimestral es el precio
+  /// del trimestre.
+  ///
+  /// El plan no lleva productos: antes era una lista de ítems del catálogo,
+  /// cada uno con su precio, y armar un plan era elegir tres productos y
+  /// ponerles precio a cada uno para llegar a la mensualidad que ya se había
+  /// acordado con el cliente. Lo que se pacta es un número por un jardín, y
+  /// eso es lo que se guarda.
+  precio            Decimal @db.Decimal(10, 2)
+  /// Porcentaje. En Ecuador conviven 0% y 15%.
+  ivaTasa           Decimal @default(0) @db.Decimal(5, 2)
+  /// Visitas que incluye **por período de cobro**: en una trimestral son las
+  /// del trimestre. Es informativo — no es un tope, se puede agendar de más.
+  visitasPorPeriodo Int
   notas        String?        @db.Text
 
   createdAt   DateTime @default(now())
@@ -698,35 +732,19 @@ model Suscripcion {
   createdById String?
   updatedById String?
 
-  cliente   Cliente           @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  createdBy User?             @relation("SuscripcionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy User?             @relation("SuscripcionUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  items     SuscripcionItem[]
-  ordenes   Orden[]
-  visitas   Visita[]
+  cliente     Cliente      @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  propiedad   Propiedad    @relation(fields: [propiedadId], references: [id], onDelete: Restrict)
+  createdBy   User?        @relation("SuscripcionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?        @relation("SuscripcionUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  ordenes     Orden[]
+  /// Las líneas que cobraron uno de sus períodos. Es la relación que sostiene
+  /// el índice único `[suscripcionId, periodoInicio]`: un período se factura
+  /// una sola vez.
+  ordenLineas OrdenLinea[]
+  visitas     Visita[]
 
   @@index([clienteId, estado])
-}
-
-/// Un producto dentro de una suscripción, con su propio precio e IVA. La tasa
-/// va acá y no en la cabecera porque una misma factura puede mezclar líneas al
-/// 0% y al 15%.
-model SuscripcionItem {
-  id                String  @id @default(cuid())
-  suscripcionId     String
-  productoId        String
-  precio            Decimal @db.Decimal(10, 2)
-  ivaTasa           Decimal @default(0) @db.Decimal(5, 2)
-  /// Visitas que incluye **por período de cobro**: en una trimestral son las
-  /// del trimestre. Es informativo — no es un tope, se puede agendar de más.
-  visitasPorPeriodo Int?
-
-  suscripcion Suscripcion  @relation(fields: [suscripcionId], references: [id], onDelete: Cascade)
-  producto    Producto     @relation(fields: [productoId], references: [id], onDelete: Restrict)
-  ordenLineas OrdenLinea[]
-
-  @@unique([suscripcionId, productoId])
-  @@index([productoId])
+  @@index([propiedadId])
 }
 
 model Personal {
@@ -844,12 +862,12 @@ model Visita {
   propiedadId         String
   /// De qué plan es esta visita, si es de alguno.
   ///
-  /// La decisión es **de la visita**, no de cada producto: "esta visita es del
-  /// plan mensual" o "esta visita es un trabajo aparte". Con el plan puesto,
-  /// cada producto que **esté en ese plan** queda cubierto —eso ya no se
-  /// decide, se deduce del plan— y lo que no esté se cobra como trabajo suelto.
+  /// La decisión es **de la visita entera**: "esta visita es del plan mensual"
+  /// o "esta visita es un trabajo aparte". El plan es de un jardín, así que la
+  /// visita de un plan pasa en la propiedad del plan (`validarPlanDelCliente`
+  /// lo comprueba al agendar y al editar).
   ///
-  /// En null, todo lo que se haga se cobra aparte. Es lo que permite hacerle a
+  /// En null, lo que se haga se cobra aparte. Es lo que permite hacerle a
   /// alguien una visita extra de algo que igual tiene contratado.
   suscripcionId       String?
   fechaProgramada     DateTime     @db.Date
@@ -1530,6 +1548,9 @@ model InformeSeccion {
   /// palanca de densidad — pocas fotos grandes llenan la hoja, muchas chicas la
   /// dejan corta.
   fotosPorFila  Int     @default(3)
+  /// Hacia dónde se arriman las fotos en una fila incompleta. Solo se nota en
+  /// la última fila de la sección: las llenas ocupan todo el ancho igual.
+  fotosAlineacion AlineacionDeFotos @default(IZQUIERDA)
 
   informe Informe              @relation(fields: [informeId], references: [id], onDelete: Cascade)
   tarea   Tarea?               @relation(fields: [tareaId], references: [id], onDelete: SetNull)
@@ -1801,41 +1822,49 @@ model OrdenLinea {
   iva            Decimal @db.Decimal(10, 2)
   total          Decimal @db.Decimal(10, 2)
 
-  /// Qué se vendió. Obligatorio: de acá sale el `codigoPrincipal` que el SRI
-  /// pide en cada detalle, así que una línea sin producto sería una venta que
-  /// no se puede cobrar. Es además lo que hace que un reporte por producto sea
-  /// un `groupBy` y no una reconstrucción.
-  productoId        String
-  /// **Qué variante se vendió. Siempre hay una.**
+  /// Qué se vendió, cuando es algo del catálogo. De acá sale el
+  /// `codigoPrincipal` que el SRI pide en cada detalle, y es lo que hace que un
+  /// reporte por producto sea un `groupBy` y no una reconstrucción.
   ///
-  /// Todo producto tiene **al menos** una —un servicio y un bien sin opciones
-  /// tienen exactamente una; con opciones hay una por combinación— así que acá
-  /// nunca falta. Antes era opcional "porque un servicio no tiene", y eso hacía
-  /// que una línea apuntara a un producto o a una variante según el tipo: dos
-  /// formas para la misma cosa, y una rama en cada lugar que preguntaba el SKU,
-  /// el precio o el stock.
-  ///
-  /// De acá salen el SKU impreso y el stock que baja.
-  varianteId        String
-  suscripcionItemId String?
+  /// **Una línea es de un producto, de un período de un plan, o
+  /// personalizada.** La del plan no tiene producto: un plan es un precio por
+  /// un jardín, así que su línea trae `suscripcionId` + `periodoInicio` y el
+  /// código impreso sale del número del plan. La personalizada tampoco: es un
+  /// trabajo puntual escrito a mano —el "ítem personalizado" de Shopify— con
+  /// un código genérico impreso. Las líneas migradas desde los ítems viejos
+  /// conservan su producto además del período: es historia.
+  productoId        String?
+  /// **Qué variante se vendió.** Todo producto tiene al menos una —un servicio
+  /// y un bien sin opciones tienen exactamente una; con opciones hay una por
+  /// combinación— así que con producto nunca falta: `ensureVariantes` la
+  /// completa. Sin producto no hay variante. De acá salen el SKU impreso y el
+  /// stock que baja.
+  varianteId        String?
+  /// De qué plan es el período que cobra esta línea, si cobra uno.
+  suscripcionId     String?
   periodoInicio     DateTime? @db.Date
   periodoFin        DateTime? @db.Date
 
-  orden           Orden            @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  orden       Orden        @relation(fields: [ordenId], references: [id], onDelete: Cascade)
   /// `Restrict` y no `SetNull`: un producto que ya se vendió no se puede
   /// borrar. Perder el vínculo dejaría la línea fuera de todo reporte y la
   /// factura sin con qué reconciliarse.
-  producto        Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  producto    Producto?    @relation(fields: [productoId], references: [id], onDelete: Restrict)
   /// `Restrict` por lo mismo que el producto: una variante ya vendida no se
   /// borra. Eso hace, de paso, que sacar un eje avise en vez de romper.
-  variante        Variante         @relation(fields: [varianteId], references: [id], onDelete: Restrict)
-  suscripcionItem SuscripcionItem? @relation(fields: [suscripcionItemId], references: [id], onDelete: SetNull)
+  variante    Variante?    @relation(fields: [varianteId], references: [id], onDelete: Restrict)
+  /// `Restrict`: un plan con períodos cobrados es historia de ventas.
+  suscripcion Suscripcion? @relation(fields: [suscripcionId], references: [id], onDelete: Restrict)
 
-  /// Impide facturar dos veces el mismo período de la misma suscripción.
-  @@unique([suscripcionItemId, periodoInicio])
+  /// Impide facturar dos veces el mismo período de la misma suscripción. Es
+  /// único en **toda** la tabla, sin mirar el estado de la orden: por eso
+  /// anular una orden suelta el vínculo (`liberarProcedencia`), o el período
+  /// quedaría reservado por una orden muerta.
+  @@unique([suscripcionId, periodoInicio])
   @@index([ordenId, posicion])
   @@index([productoId])
   @@index([varianteId])
+  @@index([suscripcionId])
 }
 
 enum EstadoFactura {
@@ -2045,17 +2074,25 @@ model FacturaLinea {
   iva            Decimal @db.Decimal(10, 2)
   total          Decimal @db.Decimal(10, 2)
 
-  /// De dónde sale el `codigoPrincipal`, y con qué queda asociada la venta.
-  productoId String
-  /// Qué variante salió. Siempre hay una: su SKU es lo que se imprime como
-  /// `codigoPrincipal`, y es de dónde se descontó el stock.
-  varianteId String
+  /// El `codigoPrincipal` que salió impreso en el detalle, congelado.
+  ///
+  /// Se derivaba al vuelo del SKU de la variante, y una nota de crédito
+  /// emitida meses después imprimía el SKU de **hoy**, no el del comprobante
+  /// que corrige. Y la línea de un plan no tiene variante de dónde sacarlo:
+  /// su código sale del número del plan (`SUS-12`).
+  codigo     String
+  /// Con qué queda asociada la venta, cuando es algo del catálogo. La línea de
+  /// un período de plan no tiene producto: un plan es un precio por un jardín.
+  productoId String?
+  /// Qué variante salió: su SKU es el código impreso, y es de dónde se descontó
+  /// el stock. Con producto siempre hay una; sin producto, ninguna.
+  varianteId String?
 
-  factura  Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)
-  variante Variante @relation(fields: [varianteId], references: [id], onDelete: Restrict)
+  factura  Factura   @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  variante Variante? @relation(fields: [varianteId], references: [id], onDelete: Restrict)
   /// `Restrict` como en `OrdenLinea`: un producto ya facturado no se borra, o
   /// la factura se queda sin con qué reconciliarse.
-  producto Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  producto Producto? @relation(fields: [productoId], references: [id], onDelete: Restrict)
 
   @@index([facturaId, posicion])
   @@index([productoId])

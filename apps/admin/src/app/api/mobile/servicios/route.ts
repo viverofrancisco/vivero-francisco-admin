@@ -56,7 +56,6 @@ export async function GET(request: Request) {
         imagenUrl: p.imagenes[0]
           ? publicUrlForKey(p.imagenes[0].media.key)
           : null,
-        suscripciones: p._count.suscripcionItems,
       })),
     });
   } catch (error) {

@@ -14,9 +14,9 @@ export default async function SuscripcionesPage({
   const { cliente, pendientes } = await searchParams;
 
   /**
-   * Un admin de sector ve las suscripciones de sus clientes —las necesita para
-   * agendar visitas— pero no lo que se cobra por ellas. Los precios no se
-   * ocultan con CSS: no salen del servidor.
+   * Quien no ve plata ve las suscripciones —las necesita para agendar
+   * visitas— pero no lo que se cobra por ellas. Los precios no se ocultan
+   * con CSS: no salen del servidor.
    */
   const verPrecios = isAdminRole(user.role);
 
@@ -40,23 +40,16 @@ export default async function SuscripcionesPage({
           estado: s.estado,
           periodicidad: s.periodicidad,
           fechaInicio: s.fechaInicio.toISOString(),
+          visitasPorPeriodo: s.visitasPorPeriodo,
           cliente: s.cliente,
-          items: s.items.map((i) => ({
-            id: i.id,
-            visitasPorPeriodo: i.visitasPorPeriodo,
-            producto: i.producto,
-            ...(verPrecios
-              ? { precio: Number(i.precio), ivaTasa: Number(i.ivaTasa) }
-              : {}),
-          })),
+          propiedad: { id: s.propiedad.id, nombre: s.propiedad.nombre },
           ...(verPrecios
             ? {
-                // Lo que se cobra por período: la suma de los ítems con su IVA.
-                totalPeriodo: s.items.reduce(
-                  (acc, i) =>
-                    acc + Number(i.precio) * (1 + Number(i.ivaTasa) / 100),
-                  0
-                ),
+                precio: Number(s.precio),
+                ivaTasa: Number(s.ivaTasa),
+                // Lo que se cobra por período, con su IVA.
+                totalPeriodo:
+                  Number(s.precio) * (1 + Number(s.ivaTasa) / 100),
                 periodosPendientes: sinOrden.get(s.id)?.cantidad ?? 0,
               }
             : {}),

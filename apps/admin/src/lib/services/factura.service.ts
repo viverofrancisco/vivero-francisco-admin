@@ -36,6 +36,7 @@ import {
   emitirFacturaSri,
   emitirNotaCreditoSri,
   numeroComprobante,
+  consultarAutorizacion,
 } from "@/lib/sri/emision";
 import type { EstadoFactura } from "@/generated/prisma/client";
 import { facturaVigenteDe } from "./factura-vigente";
@@ -60,11 +61,18 @@ function ensureCanWrite(viewer: Viewer): void {
   }
 }
 
-/** Una línea tal como la arma quien emite, que puede no ser la de la orden. */
+/**
+ * Una línea tal como la arma quien emite, que puede no ser la de la orden.
+ *
+ * Sin producto es la línea de un período de plan —su código impreso sale del
+ * número del plan— o una personalizada, con un código genérico.
+ */
 export interface LineaFacturaInput {
-  productoId: string;
+  productoId: string | null;
   /** Qué variante sale. Su SKU es el código impreso; todo producto tiene una. */
-  varianteId: string;
+  varianteId: string | null;
+  /** De qué plan es el período que cobra, si es la línea de un plan. */
+  suscripcionId?: string | null;
   /** Lo que sale impreso, tal cual: va al `descripcion` del detalle del XML. */
   descripcion: string;
   cantidad: number;
@@ -87,18 +95,39 @@ export interface EmitirFacturaOpciones {
 const centavos = (n: number) => Math.round(n * 100) / 100;
 
 /**
+ * El `codigoPrincipal` de la línea de un plan: "SUS-12".
+ *
+ * Un plan no tiene producto ni SKU, y el SRI exige un código por detalle. El
+ * número del plan es estable, corto y es como se lo nombra en el portal.
+ */
+export function codigoDePlan(numero: number): string {
+  return `SUS-${numero}`;
+}
+
+/**
+ * El `codigoPrincipal` de una línea personalizada: un trabajo puntual escrito
+ * a mano, sin producto detrás. El SRI exige un código por detalle y acepta
+ * texto libre; lo que se vendió lo dice la descripción.
+ */
+export const CODIGO_LINEA_PERSONALIZADA = "PERSONALIZADO";
+
+/**
  * Lo que salió impreso, congelado.
  *
  * La factura guarda sus propias líneas porque desde que pueden diferir de las
  * de la orden, reconstruirlas sería una mentira sobre un documento ya
  * entregado.
  */
-function lineasParaGuardar(propuestas: LineaFacturaInput[]) {
+function lineasParaGuardar(
+  propuestas: (LineaFacturaInput & { codigo: string })[]
+) {
   return propuestas.map((l, i) => {
     const subtotal = centavos(l.cantidad * l.precioUnitario);
     const iva = centavos((subtotal * l.ivaTasa) / 100);
     return {
       posicion: i,
+      // Lo que salió impreso como `codigoPrincipal`, congelado.
+      codigo: l.codigo,
       descripcion: l.descripcion,
       cantidad: l.cantidad,
       varianteId: l.varianteId,
@@ -192,9 +221,7 @@ export async function listarFacturas(
   const filtrosOrden: Prisma.OrdenWhereInput = {};
   if (options.clienteId) filtrosOrden.clienteId = options.clienteId;
   if (options.suscripcionId) {
-    filtrosOrden.lineas = {
-      some: { suscripcionItem: { suscripcionId: options.suscripcionId } },
-    };
+    filtrosOrden.suscripcionId = options.suscripcionId;
   }
   if (Object.keys(filtrosOrden).length > 0) where.orden = filtrosOrden;
 
@@ -273,6 +300,7 @@ export async function emitirFactura(
     orden.lineas.map((l) => ({
       productoId: l.productoId,
       varianteId: l.varianteId,
+      suscripcionId: l.suscripcionId,
       descripcion: l.descripcion,
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),
@@ -350,8 +378,13 @@ async function emitirPorSri(
 ): Promise<EmitirFacturaResultado> {
   const { orden, emisorId, dato, propuestas, emitidaEl } = args;
 
+  const productoIds = [
+    ...new Set(
+      propuestas.map((l) => l.productoId).filter((id): id is string => !!id)
+    ),
+  ];
   const productos = await prisma.producto.findMany({
-    where: { id: { in: [...new Set(propuestas.map((l) => l.productoId))] } },
+    where: { id: { in: productoIds } },
     select: { id: true, nombre: true },
   });
   const porId = new Map(productos.map((p) => [p.id, p]));
@@ -359,8 +392,13 @@ async function emitirPorSri(
   // El código impreso sale del SKU de la variante, que es lo único que
   // identifica exactamente lo que salió —"Rojo · Grande" y no "Maceta"— y es lo
   // que está pegado en la etiqueta que el cliente tiene en la mano. Todo
-  // producto tiene una variante, así que acá nunca falta de dónde sacarlo.
-  const varianteIds = [...new Set(propuestas.map((l) => l.varianteId))];
+  // producto tiene una variante, así que con producto nunca falta de dónde
+  // sacarlo.
+  const varianteIds = [
+    ...new Set(
+      propuestas.map((l) => l.varianteId).filter((id): id is string => !!id)
+    ),
+  ];
   const skus = new Map(
     (
       await prisma.variante.findMany({
@@ -372,8 +410,20 @@ async function emitirPorSri(
 
   // El código del producto es **nuestro**: el XML del SRI lleva
   // `codigoPrincipal` como texto libre. Por eso emitir por acá no necesita que
-  // el producto esté vinculado a ningún catálogo ajeno.
-  const lineas = propuestas.map((l) => {
+  // el producto esté vinculado a ningún catálogo ajeno. Sin producto, la
+  // línea del plan imprime el número del plan y la personalizada un código
+  // genérico: lo que se vendió lo dice su descripción.
+  const conCodigo = propuestas.map((l) => {
+    if (!l.productoId) {
+      const delPlan =
+        l.suscripcionId && orden.suscripcion && l.suscripcionId === orden.suscripcion.id;
+      return {
+        ...l,
+        codigo: delPlan
+          ? codigoDePlan(orden.suscripcion!.numero)
+          : CODIGO_LINEA_PERSONALIZADA,
+      };
+    }
     const producto = porId.get(l.productoId);
     if (!producto) {
       throw new ValidationError(
@@ -381,16 +431,22 @@ async function emitirPorSri(
       );
     }
     return {
+      ...l,
       // Sin SKU cargado se deriva del id: el SRI exige un `codigoPrincipal` en
       // cada detalle, así que no puede quedar vacío.
-      codigo: skus.get(l.varianteId) ?? producto.id.slice(-10).toUpperCase(),
-      // Lo que el armador decidió imprimir, tal cual.
-      descripcion: l.descripcion,
-      cantidad: l.cantidad,
-      precioUnitario: l.precioUnitario,
-      ivaTasa: l.ivaTasa,
+      codigo:
+        (l.varianteId && skus.get(l.varianteId)) ||
+        producto.id.slice(-10).toUpperCase(),
     };
   });
+  const lineas = conCodigo.map((l) => ({
+    codigo: l.codigo,
+    // Lo que el armador decidió imprimir, tal cual.
+    descripcion: l.descripcion,
+    cantidad: l.cantidad,
+    precioUnitario: l.precioUnitario,
+    ivaTasa: l.ivaTasa,
+  }));
 
   const datosSri = armarFactura(
     {
@@ -484,7 +540,7 @@ async function emitirPorSri(
         total: totales.total,
         // Los cobros los lleva el portal: recién emitida debe todo.
         saldo: totales.total,
-        lineas: { create: lineasParaGuardar(propuestas) },
+        lineas: { create: lineasParaGuardar(conCodigo) },
       },
     });
     if (r.estado === "AUTORIZADO") {
@@ -578,14 +634,13 @@ export async function emitirNotaCredito(
       lineas: {
         orderBy: { posicion: "asc" },
         select: {
+          codigo: true,
           descripcion: true,
           cantidad: true,
           precioUnitario: true,
           ivaTasa: true,
           productoId: true,
           varianteId: true,
-          producto: { select: { id: true } },
-          variante: { select: { sku: true } },
         },
       },
     },
@@ -629,8 +684,10 @@ export async function emitirNotaCredito(
       razonSocial: factura.razonSocial ?? "CONSUMIDOR FINAL",
       direccion: factura.datoFacturacion?.direccion,
     },
+    // El código que salió impreso en la factura, no el SKU de hoy: la nota
+    // corrige **ese** comprobante.
     factura.lineas.map((l) => ({
-      codigo: l.variante.sku ?? l.producto.id.slice(-10).toUpperCase(),
+      codigo: l.codigo,
       descripcion: l.descripcion,
       cantidad: Number(l.cantidad),
       precioUnitario: Number(l.precioUnitario),
@@ -718,6 +775,7 @@ export async function emitirNotaCredito(
             const iva = centavos((subtotal * Number(l.ivaTasa)) / 100);
             return {
               posicion: i,
+              codigo: l.codigo,
               descripcion: l.descripcion,
               varianteId: l.varianteId,
               cantidad: l.cantidad,
@@ -861,4 +919,62 @@ export async function anularOrdenCompleta(
   // que es donde se libera. Tenerlo repetido acá con otra forma era la manera
   // de que las dos comprobaciones se separaran sin que nadie se enterara.
   return anularOrden(viewer, ordenId, opciones);
+}
+
+/**
+ * Le pregunta al SRI por una factura que quedó sin resolver, y guarda lo que
+ * conteste.
+ *
+ * "En proceso" no se guarda: querría decir que ya sabemos algo, y lo que
+ * sabemos es que el SRI todavía no contestó. Autorizada, la orden pasa a
+ * CONFIRMADA, como si se hubiera resuelto al emitir. Vivía adentro de la ruta
+ * web; desde que la app también pregunta, es del servicio.
+ */
+export async function consultarFacturaAlSri(viewer: Viewer, facturaId: string) {
+  ensureCanWrite(viewer);
+  const factura = await prisma.factura.findUnique({
+    where: { id: facturaId },
+    select: { claveAcceso: true, emisorId: true, ordenId: true, estado: true },
+  });
+  if (!factura) throw new NotFoundError("Factura no encontrada");
+  await getOrden(viewer, factura.ordenId);
+
+  if (!factura.claveAcceso || !factura.emisorId) {
+    throw new ValidationError(
+      "Esta factura no la emitió el portal: no hay clave de acceso que consultarle al SRI."
+    );
+  }
+
+  const r = await consultarAutorizacion(factura.emisorId, factura.claveAcceso);
+  const estado =
+    r.estado === "AUTORIZADO"
+      ? "AUTORIZADO"
+      : r.estado === "NO AUTORIZADO" || r.estado === "RECHAZADO"
+        ? "RECHAZADO"
+        : null;
+
+  if (estado) {
+    await prisma.$transaction(async (tx) => {
+      await tx.factura.update({
+        where: { id: facturaId },
+        data: {
+          estado,
+          estadoSri: r.estado,
+          autorizacion: r.numeroAutorizacion ?? undefined,
+          fechaAutorizacion: r.fechaAutorizacion ?? undefined,
+          mensajesSri: r.mensajes?.length
+            ? (JSON.parse(JSON.stringify(r.mensajes)) as object[])
+            : undefined,
+        },
+      });
+      if (estado === "AUTORIZADO") {
+        await tx.orden.updateMany({
+          where: { id: factura.ordenId, estado: "BORRADOR" },
+          data: { estado: "CONFIRMADA" },
+        });
+      }
+    });
+  }
+
+  return { estado: r.estado, resuelta: estado !== null, mensajes: r.mensajes ?? [] };
 }

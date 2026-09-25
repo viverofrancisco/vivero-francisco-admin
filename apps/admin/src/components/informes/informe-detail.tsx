@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   ArrowLeft,
+  CalendarDays,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
   ImageIcon,
+  MoreHorizontal,
+  User,
+  X,
 } from "lucide-react";
+import { useEsMovil } from "@/lib/use-es-movil";
+import {
+  FilaFichaMovil,
+  SeccionFichaMovil,
+} from "@/components/shared/seccion-ficha-movil";
 import { toast } from "sonner";
 
 export interface InformeDetailData {
@@ -42,6 +54,9 @@ export interface InformeDetailData {
   titulo: string;
   /** La que sale impresa, `YYYY-MM-DD`. */
   fecha: string;
+  /** El período que cubren sus visitas, si las tiene. */
+  fechaDesde: string | null;
+  fechaHasta: string | null;
   generatedAt: string;
   pdfUrl: string;
   cliente: { id: string; nombre: string };
@@ -107,6 +122,28 @@ export function InformeDetail({
   /** En qué propiedades pasó lo que cuenta: lo dicen sus visitas. */
   const propiedades = propiedadesDeVisitas(informe.visitas);
   const [eliminando, setEliminando] = useState(false);
+  /**
+   * Debajo de `md` la ficha es la de la app: un árbol u otro por el hook y
+   * no por clases, porque los dos llevan un `<iframe>` con el PDF y con
+   * `md:hidden` se cargaría dos veces.
+   */
+  const esMovil = useEsMovil();
+  const [viendoPdf, setViendoPdf] = useState(false);
+  /**
+   * En Android, Chrome no dibuja un PDF dentro de un `<iframe>` —ofrece
+   * bajarlo—, así que ahí el teléfono lo pide por el visor de Google, que
+   * funciona porque la URL es pública; iOS lo dibuja solo. Es lo mismo que
+   * hace la app en su WebView. Por `useSyncExternalStore` y no en el render,
+   * que en el servidor no hay `navigator` y sería un error de hidratación.
+   */
+  const enAndroid = useSyncExternalStore(
+    () => () => {},
+    () => /Android/i.test(navigator.userAgent),
+    () => false
+  );
+  const pdfParaElTelefono = enAndroid
+    ? `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(informe.pdfUrl)}`
+    : informe.pdfUrl;
 
   async function eliminar() {
     setEliminando(true);
@@ -122,6 +159,253 @@ export function InformeDetail({
       toast.error("No pudimos eliminar");
       setEliminando(false);
     }
+  }
+
+  const dialogo = (
+      <Dialog open={borrando} onOpenChange={(v) => !v && setBorrando(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar el informe #{informe.numero}</DialogTitle>
+            <DialogDescription>
+              Se borra el informe de {informe.cliente.nombre}, sus secciones y
+              el PDF. El enlace deja de abrir, también para quien ya lo haya
+              recibido. No se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBorrando(false)}
+              disabled={eliminando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={eliminar}
+              disabled={eliminando}
+            >
+              {eliminando ? "Eliminando…" : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+  );
+
+  if (esMovil) {
+    const secciones = informe.secciones;
+    return (
+      <div className="-mx-4 -mt-4 min-h-full bg-page">
+        {/* La cabecera de la ficha en el teléfono: la flecha, el nombre del
+            cliente y el ⋯ con lo que se hace con el informe —editar, ver el
+            PDF, eliminar—. La misma que la app. */}
+        <div className="sticky top-0 z-20 flex items-center gap-1.5 border-b bg-card px-4 pt-1.5 pb-2">
+          <Link
+            href={backHref}
+            aria-label="Volver"
+            className="-ml-2.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl active:bg-muted"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Link>
+          <h1 className="min-w-0 flex-1 truncate text-[22px] font-extrabold tracking-[-0.4px]">
+            {informe.cliente.nombre}
+          </h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label="Acciones"
+                  className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border border-border text-ink-2 active:bg-muted"
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                </button>
+              }
+            />
+            <DropdownMenuContent align="end" className="min-w-52">
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href={`/dashboard/informes/${informe.id}/editar?from=${aca}`}
+                  />
+                }
+              >
+                Editar informe
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setViendoPdf(true)}>
+                Ver PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setBorrando(true)}
+                className="text-destructive"
+              >
+                Eliminar informe
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="px-3 pt-3 pb-10">
+          {/* La miniatura del PDF y, al lado, lo que identifica al informe.
+              Tocar la tarjeta abre el PDF. */}
+          <button
+            type="button"
+            onClick={() => setViendoPdf(true)}
+            className="flex w-full gap-3.5 rounded-xl border bg-card p-3 text-left active:opacity-70"
+          >
+            <div className="h-[150px] w-[110px] flex-none overflow-hidden rounded-lg border bg-white">
+              {/* Sin `scrollbar=0`: con él, el visor de Chrome pinta negro
+                  cuando el marco es así de chico. */}
+              <iframe
+                src={enAndroid ? pdfParaElTelefono : `${informe.pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+                title="Primera página"
+                tabIndex={-1}
+                className="pointer-events-none block h-full w-full border-0"
+              />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <p className="text-[17px] font-bold">
+                Informe #{informe.numero}
+                {informe.versionActual > 1 ? ` · v${informe.versionActual}` : ""}
+              </p>
+              <p className="line-clamp-2 text-[13px] text-ink-2">{informe.titulo}</p>
+              <p className="text-xs text-muted-foreground">
+                Fecha impresa: {fechaLarga(informe.fecha)}
+              </p>
+              <p className="line-clamp-2 text-xs text-muted-foreground">
+                Generado: {informe.generadoPor ? `${informe.generadoPor} · ` : ""}
+                {generadoEl(informe.generatedAt)}
+              </p>
+              {informe.actualizadoEl ? (
+                <p className="line-clamp-2 text-xs text-muted-foreground">
+                  Actualizado: {informe.actualizadoPor ? `${informe.actualizadoPor} · ` : ""}
+                  {generadoEl(informe.actualizadoEl)}
+                </p>
+              ) : null}
+              <span className="mt-auto flex items-center gap-1 text-[13px] font-semibold text-primary">
+                <FileText className="h-4 w-4" /> Ver PDF
+              </span>
+            </div>
+          </button>
+
+          {/* Las visitas: el período y las propiedades que salen de ellas, y
+              debajo cada una, para saltar a su ficha. */}
+          <SeccionFichaMovil titulo={`Visitas (${informe.visitas.length})`}>
+            {informe.fechaDesde && informe.fechaHasta ? (
+              <FilaFichaMovil
+                etiqueta="Período"
+                valor={`${fechaCorta(informe.fechaDesde)} — ${fechaCorta(informe.fechaHasta)}`}
+              />
+            ) : null}
+            {propiedades.length > 0 ? (
+              <FilaFichaMovil
+                etiqueta={propiedades.length === 1 ? "Propiedad" : "Propiedades"}
+                valor={propiedades.map((p) => p.nombre).join(", ")}
+              />
+            ) : null}
+            {informe.visitas.length === 0 ? (
+              <p className="py-2.5 text-[13px] text-muted-foreground">
+                Este informe no cubre ninguna visita.
+              </p>
+            ) : null}
+            {informe.visitas.map((v) => (
+              <Link
+                key={v.id}
+                href={`/dashboard/visitas/${v.id}?from=${aca}`}
+                className="flex items-center gap-3 border-t py-2.5 first:border-t-0 active:opacity-70"
+              >
+                <CalendarDays className="h-5 w-5 flex-none text-muted-foreground" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-medium">
+                    Visita #{v.numero} · {fechaCorta(v.fecha)}
+                  </span>
+                  {v.propiedad ? (
+                    <span className="block text-[13px] text-muted-foreground">
+                      {v.propiedad.nombre}
+                    </span>
+                  ) : null}
+                </span>
+                <ChevronRight className="h-[18px] w-[18px] flex-none text-muted-foreground" />
+              </Link>
+            ))}
+          </SeccionFichaMovil>
+
+          <SeccionFichaMovil titulo={`Secciones (${secciones.length})`}>
+            {secciones.map((sec, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 border-t py-2.5 first:border-t-0"
+              >
+                <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {i + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[15px] font-medium">
+                    {sec.titulo || "Sin título"}
+                  </span>
+                  <span className="block text-[13px] text-muted-foreground">
+                    {sec.fotos === 1 ? "1 foto" : `${sec.fotos} fotos`}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </SeccionFichaMovil>
+
+          {informe.firmantes.length > 0 ? (
+            <SeccionFichaMovil titulo="Firmantes">
+              {informe.firmantes.map((f, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 border-t py-2.5 first:border-t-0"
+                >
+                  <User className="h-5 w-5 flex-none text-muted-foreground" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-medium">{f.nombre}</span>
+                    {f.cedula ? (
+                      <span className="block text-[13px] text-muted-foreground">
+                        {f.cedula}
+                      </span>
+                    ) : null}
+                  </span>
+                </div>
+              ))}
+            </SeccionFichaMovil>
+          ) : null}
+        </div>
+
+        {/* El PDF a pantalla completa, como el visor de la app: la ✕ y el
+            número, y el documento debajo. */}
+        <Dialog open={viendoPdf} onOpenChange={(v) => !v && setViendoPdf(false)}>
+          <DialogContent
+            showCloseButton={false}
+            pantallaCompletaEnMovil
+            className="gap-0 p-0"
+          >
+            <div className="flex flex-none items-center gap-2 px-3 pt-3 pb-2">
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => setViendoPdf(false)}
+                aria-label="Cerrar"
+                className="rounded-full"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+              <DialogTitle className="flex-1 text-center text-[17px] font-bold">
+                Informe #{informe.numero}
+              </DialogTitle>
+              <span className="h-10 w-10" aria-hidden />
+            </div>
+            <iframe
+              src={enAndroid ? pdfParaElTelefono : `${informe.pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+              title={`Informe #${informe.numero}`}
+              className="min-h-0 flex-1 border-0 bg-neutral-200"
+            />
+          </DialogContent>
+        </Dialog>
+        {dialogo}
+      </div>
+    );
   }
 
   return (
@@ -423,34 +707,7 @@ export function InformeDetail({
         </div>
       </div>
 
-      <Dialog open={borrando} onOpenChange={(v) => !v && setBorrando(false)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Eliminar el informe #{informe.numero}</DialogTitle>
-            <DialogDescription>
-              Se borra el informe de {informe.cliente.nombre}, sus secciones y
-              el PDF. El enlace deja de abrir, también para quien ya lo haya
-              recibido. No se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setBorrando(false)}
-              disabled={eliminando}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={eliminar}
-              disabled={eliminando}
-            >
-              {eliminando ? "Eliminando…" : "Eliminar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {dialogo}
 
     </div>
   );

@@ -13,5 +13,6 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+  ],
+  "exclude": ["editor-web/index.tsx", "editor-web/Editor.tsx", "editor-web/vite.config.mts"]
 }

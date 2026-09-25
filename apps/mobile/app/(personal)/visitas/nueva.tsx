@@ -11,17 +11,15 @@ import {
   ActivityIndicator,
   Button,
   HelperText,
-  IconButton,
-  ProgressBar,
   Searchbar,
   Switch,
   Text,
   TextInput,
 } from "react-native-paper";
 import { Calendar, type DateData } from "react-native-calendars";
-import { useRouter, useNavigation } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { nombreCliente } from "@vivero/shared";
+import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
+import { EncabezadoDePasos } from "@/components/ui/EncabezadoDePasos";
+import { describirPlan, nombreCliente } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type {
   ClienteListItem,
@@ -30,6 +28,7 @@ import type {
   GruposListResponse,
   PersonalListResponse,
   PersonalOption,
+  PlanDelCliente,
   PropiedadResumen,
 } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -47,7 +46,11 @@ const STEP_LABELS = ["Cliente", "Servicios", "Fechas", "Personal", "Revisar"];
 export default function CrearVisitaScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
+  // Llegar desde una suscripción deja el plan puesto —y con él el cliente y
+  // la propiedad—: "nueva visita de este plan" es una sola acción.
+  const { suscripcion: suscripcionInicial } = useLocalSearchParams<{
+    suscripcion?: string;
+  }>();
 
   // Hide the default Stack header — we render our own progress header.
   useEffect(() => {
@@ -78,6 +81,14 @@ export default function CrearVisitaScreen() {
   const [selectedPropiedadId, setSelectedPropiedadId] = useState<string | null>(
     null
   );
+  /**
+   * De qué plan es la visita. `null` = trabajo aparte, se cobra en una orden.
+   * El plan es de un jardín: elegirlo pone su propiedad, y cambiar de
+   * propiedad suelta un plan que no sea de esa.
+   */
+  const [selectedSuscripcionId, setSelectedSuscripcionId] = useState<
+    string | null
+  >(null);
   /** Las tareas que esta visita va a exigir. Opcional: la mayoría no exige. */
   const [selectedProductoIds, setSelectedProductoIds] = useState<string[]>([]);
   // Precio de cada trabajo suelto elegido, por productoId.
@@ -94,7 +105,19 @@ export default function CrearVisitaScreen() {
     Promise.all([
       apiRequest<ClientesListResponse>("/api/mobile/clientes", {
         query: { limit: 500 },
-      }).then((r) => setClientes(r.items)),
+      }).then((r) => {
+        setClientes(r.items);
+        // Con un plan preseleccionado, el cliente y la propiedad salen de él.
+        const dueno = r.items.find((c) =>
+          c.suscripciones.some((s) => s.id === suscripcionInicial)
+        );
+        const plan = dueno?.suscripciones.find((s) => s.id === suscripcionInicial);
+        if (dueno && plan) {
+          setSelectedClienteId(dueno.id);
+          setSelectedPropiedadId(plan.propiedad.id);
+          setSelectedSuscripcionId(plan.id);
+        }
+      }),
       apiRequest<GruposListResponse>("/api/mobile/grupos").then((r) =>
         setGrupos(r.items)
       ),
@@ -109,7 +132,7 @@ export default function CrearVisitaScreen() {
     ])
       .catch(() => {})
       .finally(() => setLoadingRefs(false));
-  }, []);
+  }, [suscripcionInicial]);
 
   const selectedCliente = clientes.find((c) => c.id === selectedClienteId);
 
@@ -163,6 +186,7 @@ export default function CrearVisitaScreen() {
         body: {
           clienteId: selectedClienteId,
           propiedadId: selectedPropiedadId,
+          suscripcionId: selectedSuscripcionId,
           tareasObligatoriasIds: selectedProductoIds,
           fechas,
           grupoId: grupoId || null,
@@ -192,26 +216,24 @@ export default function CrearVisitaScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.flex}>
-        {/* Header with progress */}
-        <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-          <View style={styles.headerTopRow}>
-            <IconButton
-              icon={step === 0 ? "close" : "chevron-left"}
-              size={24}
-              onPress={prev}
-              style={styles.headerBtn}
-            />
-            <Text variant="bodySmall" style={styles.stepCounter}>
-              Paso {step + 1} de {STEP_LABELS.length}
-            </Text>
-            <View style={styles.headerBtn} />
-          </View>
-          <ProgressBar
-            progress={(step + 1) / STEP_LABELS.length}
-            color={tema.verde}
-            style={styles.progressBar}
-          />
-        </View>
+        {/* La acción del paso arriba, a la derecha del contador, y no en un
+            botón al pie: es donde están *Crear* y *Guardar* en las demás
+            pantallas, y donde queda fijo mientras el calendario scrollea. */}
+        <EncabezadoDePasos
+          paso={step}
+          total={STEP_LABELS.length}
+          onAtras={prev}
+          accion={
+            step < 4
+              ? "Continuar"
+              : fechas.length > 1
+                ? `Crear ${fechas.length}`
+                : "Crear"
+          }
+          onAccion={step < 4 ? next : submit}
+          deshabilitado={step < 4 && !canContinue()}
+          cargando={submitting}
+        />
 
         {/* Content */}
         <ScrollView
@@ -225,6 +247,7 @@ export default function CrearVisitaScreen() {
               selectedId={selectedClienteId}
               onSelect={(id) => {
                 setSelectedClienteId(id);
+                setSelectedSuscripcionId(null);
                 const c = clientes.find((x) => x.id === id);
                 setSelectedPropiedadId(
                   c?.propiedades.length === 1 ? c.propiedades[0].id : null
@@ -232,7 +255,20 @@ export default function CrearVisitaScreen() {
               }}
               propiedades={selectedCliente?.propiedades ?? []}
               selectedPropiedadId={selectedPropiedadId}
-              onSelectPropiedad={setSelectedPropiedadId}
+              onSelectPropiedad={(id) => {
+                setSelectedPropiedadId(id);
+                const plan = selectedCliente?.suscripciones.find(
+                  (s) => s.id === selectedSuscripcionId
+                );
+                if (plan && plan.propiedad.id !== id) setSelectedSuscripcionId(null);
+              }}
+              planes={selectedCliente?.suscripciones ?? []}
+              selectedSuscripcionId={selectedSuscripcionId}
+              onSelectSuscripcion={(id) => {
+                setSelectedSuscripcionId(id);
+                const plan = selectedCliente?.suscripciones.find((s) => s.id === id);
+                if (plan) setSelectedPropiedadId(plan.propiedad.id);
+              }}
             />
           )}
           {step === 1 && (
@@ -304,41 +340,6 @@ export default function CrearVisitaScreen() {
           ) : null}
         </ScrollView>
 
-        {/* Footer — single full-width primary action */}
-        <View
-          style={[
-            styles.footer,
-            { paddingBottom: Math.max(insets.bottom, 16) + 8 },
-          ]}
-        >
-          {step < 4 ? (
-            <Button
-              mode="contained"
-              onPress={next}
-              disabled={!canContinue()}
-              style={styles.primaryBtn}
-              contentStyle={styles.primaryBtnContent}
-              labelStyle={styles.primaryBtnLabel}
-            >
-              Continuar
-            </Button>
-          ) : (
-            <Button
-              mode="contained"
-              onPress={submit}
-              loading={submitting}
-              disabled={submitting}
-              style={styles.primaryBtn}
-              contentStyle={styles.primaryBtnContent}
-              labelStyle={styles.primaryBtnLabel}
-            >
-              {fechas.length > 1
-                ? `Crear ${fechas.length} visitas`
-                : "Crear visita"}
-            </Button>
-          )}
-        </View>
-
       </View>
     </KeyboardAvoidingView>
   );
@@ -355,6 +356,9 @@ function ClienteStep({
   propiedades,
   selectedPropiedadId,
   onSelectPropiedad,
+  planes,
+  selectedSuscripcionId,
+  onSelectSuscripcion,
 }: {
   clientes: ClienteListItem[];
   selectedId: string | null;
@@ -362,6 +366,10 @@ function ClienteStep({
   propiedades: PropiedadResumen[];
   selectedPropiedadId: string | null;
   onSelectPropiedad: (id: string) => void;
+  /** Sus planes activos, para decir de cuál es la visita. */
+  planes: PlanDelCliente[];
+  selectedSuscripcionId: string | null;
+  onSelectSuscripcion: (id: string | null) => void;
 }) {
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
@@ -476,6 +484,50 @@ function ClienteStep({
               })}
             </View>
           )}
+        </View>
+      ) : null}
+
+      {/* De qué plan es la visita: una decisión, de la visita entera. El plan
+          es de un jardín, así que elegirlo pone la propiedad. "Sin
+          suscripción" es trabajo aparte, que se cobra en una orden. */}
+      {selectedId && planes.length > 0 ? (
+        <View style={styles.propiedades}>
+          <Text variant="labelMedium" style={styles.sectionLabel}>
+            ¿DE QUÉ SUSCRIPCIÓN?
+          </Text>
+          <View style={styles.list}>
+            {[
+              { id: null, titulo: "Sin suscripción", detalle: "Trabajo aparte, se cobra en una orden" },
+              ...planes.map((p) => ({
+                id: p.id,
+                titulo: `Suscripción #${p.numero}`,
+                detalle: describirPlan(p),
+              })),
+            ].map((o) => {
+              const elegida = o.id === selectedSuscripcionId;
+              return (
+                <Pressable
+                  key={o.id ?? "ninguna"}
+                  onPress={() => onSelectSuscripcion(o.id)}
+                  style={[styles.row, elegida && styles.rowSelected]}
+                >
+                  <View style={styles.rowText}>
+                    <Text variant="bodyLarge" style={styles.rowTitle}>
+                      {o.titulo}
+                    </Text>
+                    <Text variant="bodySmall" style={styles.muted}>
+                      {o.detalle}
+                    </Text>
+                  </View>
+                  {elegida ? (
+                    <View style={styles.checkmark}>
+                      <Text style={styles.checkmarkIcon}>✓</Text>
+                    </View>
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
       ) : null}
     </View>
@@ -971,23 +1023,6 @@ const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
 
-  header: {
-    paddingBottom: 8,
-    backgroundColor: "#fff",
-  },
-  headerTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 4,
-  },
-  headerBtn: { width: 48 },
-  stepCounter: { color: "#888", letterSpacing: 0.5 },
-  progressBar: {
-    height: 3,
-    marginTop: 4,
-    backgroundColor: "#f0f0f0",
-  },
 
   content: {
     padding: 24,
@@ -1157,20 +1192,4 @@ const styles = StyleSheet.create({
 
   error: { textAlign: "center", marginTop: 16 },
 
-  footer: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    backgroundColor: "#fff",
-  },
-  primaryBtn: {
-    borderRadius: 14,
-  },
-  primaryBtnContent: {
-    paddingVertical: 8,
-  },
-  primaryBtnLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    letterSpacing: 0.2,
-  },
 });

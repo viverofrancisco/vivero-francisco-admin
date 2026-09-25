@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth, viewerFromUser, requireStaff } from "@/lib/auth-helpers";
-import {
-  listarPendientes,
-} from "@/lib/services/orden.service";
-import { productosSuscritos } from "@/lib/services/suscripcion.service";
+import { listarPendientes } from "@/lib/services/orden.service";
 import { productosVendibles } from "@/lib/services/variantes-vendibles";
 import { NuevaOrdenPage } from "@/components/ordenes/nueva-orden-page";
 
@@ -22,7 +19,21 @@ export default async function NuevaOrdenRoute({
     prisma.cliente.findMany({
       where,
       orderBy: { nombre: "asc" },
-      select: { id: true, nombre: true, apellido: true, empresa: true },
+      // Lo que la fila del teléfono muestra debajo del nombre —teléfono y
+      // sector— y si está inactivo, que se ve atenuado y no se elige.
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        empresa: true,
+        telefono: true,
+        inactivoDesde: true,
+        propiedades: {
+          where: { deletedAt: null },
+          take: 1,
+          select: { sector: { select: { nombre: true } } },
+        },
+      },
     }),
     // La primera tanda: el resto llega al buscar o al bajar la lista.
     productosVendibles({ limit: 20 }),
@@ -45,26 +56,25 @@ export default async function NuevaOrdenRoute({
     Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 0)
   );
 
-  const [pendientes, suscritos] =
+  const pendientes =
     clienteInicial && visible
-      ? await Promise.all([
-          listarPendientes(
-            viewer,
-            clienteInicial,
-            new Date(Date.UTC(2000, 0, 1)),
-            finDeMes
-          ),
-          productosSuscritos(clienteInicial),
-        ])
-      : [[], []];
+      ? await listarPendientes(
+          viewer,
+          clienteInicial,
+          new Date(Date.UTC(2000, 0, 1)),
+          finDeMes
+        )
+      : [];
 
   return (
     <NuevaOrdenPage
-      clientes={clientes}
+      clientes={clientes.map(({ propiedades, ...c }) => ({
+        ...c,
+        sector: propiedades[0]?.sector?.nombre ?? null,
+      }))}
       productos={primeraTanda.items}
       hayMasProductos={primeraTanda.hayMas}
       clienteInicial={visible ? clienteInicial : undefined}
-      suscritosIniciales={suscritos}
       desdeVisita={
         laVisita
           ? {
@@ -76,13 +86,12 @@ export default async function NuevaOrdenRoute({
       }
       pendientesIniciales={pendientes.map((p) => ({
         tipo: "suscripcion" as const,
-        productoId: p.productoId,
+        suscripcionId: p.suscripcionId,
+        suscripcionNumero: p.suscripcionNumero,
+        propiedad: p.propiedad,
         descripcion: p.descripcion,
         precio: String(p.precio),
         ivaTasa: String(p.ivaTasa),
-        suscripcionItemId: p.suscripcionItemId,
-        // Un período se factura completo: hace falta saber de qué plan es.
-        suscripcionId: p.suscripcionId,
         periodoInicio: p.periodoInicio.toISOString(),
         periodoFin: p.periodoFin.toISOString(),
       }))}

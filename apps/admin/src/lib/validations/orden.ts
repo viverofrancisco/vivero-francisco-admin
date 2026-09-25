@@ -2,27 +2,25 @@ import { z } from "zod/v4";
 
 /**
  * Una línea del editor de órdenes. La descripción y el precio son la verdad:
- * el catálogo solo prellena. La procedencia (`visitaProductoIds` o
- * `suscripcionItemId` + período) va cuando la línea viene de trabajo pendiente.
- * Son **varios** trabajos cuando el mismo producto se hizo en más de una
- * visita: eso es una sola línea, porque es un solo producto.
+ * el catálogo solo prellena. La procedencia (`suscripcionId` + período) va
+ * cuando la línea es la de un período de plan.
  *
- * `productoId` es obligatorio: de ahí sale el `codigoPrincipal` del detalle y no
- * acepta texto libre, así que una línea suelta sería una venta incobrable.
+ * Una línea es de un producto **o** de un período de plan. Sin producto solo
+ * puede ser la del plan —de ahí sale su `codigoPrincipal`—; eso lo cuida el
+ * servicio (`validarLineas`), que es quien sabe de qué es la orden.
  */
 export const ordenLineaSchema = z.object({
   descripcion: z.string().trim().min(1, "El producto necesita descripción").max(300),
   cantidad: z.number().positive("La cantidad debe ser mayor a 0"),
   precioUnitario: z.number().min(0, "El precio no puede ser negativo"),
   ivaTasa: z.number().min(0).max(100).default(0),
-  productoId: z.string().min(1, "Cada ítem necesita un producto del catálogo"),
+  productoId: z.string().min(1).nullable().optional(),
   /**
    * Qué variante se vende. La exige el servicio cuando el producto es un bien
    * —con una sola, la completa solo—: acá no se sabe el `tipo`.
    */
   varianteId: z.string().min(1).nullable().optional(),
-  visitaProductoIds: z.array(z.string().min(1)).optional(),
-  suscripcionItemId: z.string().min(1).nullable().optional(),
+  suscripcionId: z.string().min(1).nullable().optional(),
   periodoInicio: z.string().min(1).nullable().optional(),
   periodoFin: z.string().min(1).nullable().optional(),
 });
@@ -34,6 +32,11 @@ export const crearOrdenSchema = z.object({
   fecha: z.string().optional(),
   notas: z.string().max(1000).optional().or(z.literal("")),
   lineas: z.array(ordenLineaSchema).min(1, "Agrega al menos un producto"),
+  /**
+   * Qué visitas cubre. Solo traza: no carga líneas. La pantalla las marcaba
+   * y el cuerpo no las mandaba, así que se perdían en silencio al crear.
+   */
+  visitaIds: z.array(z.string().min(1)).optional(),
 });
 
 /** Editar un borrador. `lineas` reemplaza el conjunto entero si viene. */

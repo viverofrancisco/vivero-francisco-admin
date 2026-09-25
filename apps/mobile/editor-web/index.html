@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>Editor</title>
+    <!-- Las siete fuentes embarcadas, para que lo que se elige sea lo que se
+         ve; sin red se ven con la del sistema y el PDF igual sale bien. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Lato:ital,wght@0,400;0,700;1,400;1,700&family=Montserrat:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:ital,wght@0,400;0,700;1,400;1,700&family=Merriweather:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    />
+  </head>
+  <style>
+    /* El esqueleto del editor simple de TenTap, tal cual: el WebView ocupa
+       todo, el documento scrollea adentro. */
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    #root > div:nth-of-type(1) {
+      position: absolute;
+      height: 100%;
+      overflow: auto;
+      width: 100%;
+      top: 0;
+      bottom: 0;
+    }
+    #root > div.dynamic-height {
+      height: unset;
+    }
+    #root div .ProseMirror {
+      min-height: 100%;
+      overflow: visible;
+    }
+    #root div.dynamic-height .ProseMirror {
+      height: unset;
+    }
+    .ProseMirror:focus {
+      outline: none;
+    }
+    .highlight-background {
+      background-color: #e6e6ff;
+    }
+  </style>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

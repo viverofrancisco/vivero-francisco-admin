@@ -534,6 +534,23 @@ export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonFilter<$PrismaModel>
 }
 
+export type EnumAlineacionDeFotosFilter<$PrismaModel = never> = {
+  equals?: $Enums.AlineacionDeFotos | Prisma.EnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  in?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAlineacionDeFotosFilter<$PrismaModel> | $Enums.AlineacionDeFotos
+}
+
+export type EnumAlineacionDeFotosWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AlineacionDeFotos | Prisma.EnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  in?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAlineacionDeFotosWithAggregatesFilter<$PrismaModel> | $Enums.AlineacionDeFotos
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAlineacionDeFotosFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAlineacionDeFotosFilter<$PrismaModel>
+}
+
 export type EnumOrdenTareasFilter<$PrismaModel = never> = {
   equals?: $Enums.OrdenTareas | Prisma.EnumOrdenTareasFieldRefInput<$PrismaModel>
   in?: $Enums.OrdenTareas[] | Prisma.ListEnumOrdenTareasFieldRefInput<$PrismaModel>
@@ -1248,6 +1265,23 @@ export type NestedJsonFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumAlineacionDeFotosFilter<$PrismaModel = never> = {
+  equals?: $Enums.AlineacionDeFotos | Prisma.EnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  in?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAlineacionDeFotosFilter<$PrismaModel> | $Enums.AlineacionDeFotos
+}
+
+export type NestedEnumAlineacionDeFotosWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AlineacionDeFotos | Prisma.EnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  in?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AlineacionDeFotos[] | Prisma.ListEnumAlineacionDeFotosFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAlineacionDeFotosWithAggregatesFilter<$PrismaModel> | $Enums.AlineacionDeFotos
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAlineacionDeFotosFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAlineacionDeFotosFilter<$PrismaModel>
 }
 
 export type NestedEnumOrdenTareasFilter<$PrismaModel = never> = {

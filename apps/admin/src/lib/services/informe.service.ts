@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { nombreCliente } from "@vivero/shared";
+import { nombreCliente, tituloDeSeccionEnHtml } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import {
@@ -33,8 +33,10 @@ import {
   parsearEncabezado,
   tituloDelEncabezado,
 } from "@/lib/informes/encabezado";
-import { sanitizarEncabezado } from "@/lib/html-seguro";
+import { limpiarTextoRico, limpiarTitulo, sanitizarEncabezado } from "@/lib/html-seguro";
+import { esAlineacionDeFotos, esFotosPorFila } from "@/lib/informes/template-data";
 import type {
+  AlineacionDeFotos,
   FotosPorFila,
   InformeRenderData,
   InformeRenderSeccion,
@@ -378,6 +380,7 @@ export async function contenidoDeVersionParaEditar(
     descripcion?: string | null;
     saltoDePagina?: boolean;
     fotosPorFila?: number;
+    fotosAlineacion?: string;
     fotos?: Array<{ visitaMediaId?: string | null; mediaId?: string | null }>;
   }>;
 
@@ -413,9 +416,10 @@ export async function contenidoDeVersionParaEditar(
     titulo: sec.titulo ?? "",
     descripcion: sec.descripcion ?? "",
     saltoDePagina: sec.saltoDePagina ?? false,
-    fotosPorFila: (sec.fotosPorFila === 2 || sec.fotosPorFila === 4
-      ? sec.fotosPorFila
-      : 3) as 2 | 3 | 4,
+    fotosPorFila: esFotosPorFila(sec.fotosPorFila) ? sec.fotosPorFila : 3,
+    fotosAlineacion: esAlineacionDeFotos(sec.fotosAlineacion)
+      ? sec.fotosAlineacion
+      : ("IZQUIERDA" as const),
     fotos: (sec.fotos ?? [])
       .map((f): FotoDeVersion | null => {
         const url = f.visitaMediaId
@@ -786,6 +790,7 @@ export interface InformeGeneratePayload {
     /// Cómo se imprime. Ausentes = lo que se venía imprimiendo.
     saltoDePagina?: boolean;
     fotosPorFila?: FotosPorFila;
+    fotosAlineacion?: AlineacionDeFotos;
   }>;
 }
 
@@ -979,10 +984,13 @@ async function armarDatosDelInforme(
 
   const renderSecciones: InformeRenderSeccion[] = seccionesResueltas.map(
     (sec) => ({
-      titulo: sec.titulo,
-      descripcion: sec.descripcion?.trim() || null,
+      // Saneados acá también: lo que se imprime tiene que ser lo que se
+      // guarda, y el PDF de la previa sale de este mismo lugar.
+      titulo: limpiarTitulo(sec.titulo),
+      descripcion: limpiarTextoRico(sec.descripcion) || null,
       saltoDePagina: sec.saltoDePagina ?? false,
       fotosPorFila: sec.fotosPorFila ?? 3,
+      fotosAlineacion: sec.fotosAlineacion ?? "IZQUIERDA",
       fotos: sec.fotos
         .map((foto) => {
           const cached = fotosCache.get(foto.key);
@@ -1052,6 +1060,33 @@ export async function previsualizarInforme(
     borrador: opciones.borrador ?? false,
   });
   return renderInformePDF(renderData);
+}
+
+/**
+ * La vista previa para la app: el mismo PDF, subido a R2 y devuelto como
+ * URL, porque el visor del teléfono abre una dirección y no puede mandar el
+ * token con el que la ruta del portal entrega los bytes. **Una clave por
+ * persona**, no una por previa: la siguiente pisa a la anterior y no queda
+ * nada que limpiar. La URL lleva la hora para que el navegador no muestre la
+ * de hace un minuto.
+ */
+export async function subirVistaPreviaDelInforme(
+  viewer: Viewer,
+  payload: InformeGeneratePayload,
+  opciones: { borrador?: boolean } = {}
+): Promise<{ url: string }> {
+  const pdf = await previsualizarInforme(viewer, payload, opciones);
+  const key = `informes/previas/${viewer.id}.pdf`;
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: pdf,
+      ContentType: "application/pdf",
+      CacheControl: "no-store",
+    })
+  );
+  return { url: `${publicUrlForKey(key)}?v=${Date.now()}` };
 }
 
 /**
@@ -1150,7 +1185,21 @@ function cambiaElPdf(
   if (dia(fechaImpresaDe(payload)) !== dia(vigente.fecha)) return true;
   return (
     !mismoJson(firmantes, c.firmantes) ||
-    !mismoJson(payload.secciones, c.secciones)
+    !mismoJson(conTitulosResueltos(payload.secciones), conTitulosResueltos(c.secciones))
+  );
+}
+
+/**
+ * Los títulos, como se imprimen: un título plano y su envoltorio de negrita
+ * y subrayado son el mismo título, y la versión anterior puede tener uno y
+ * el guardado de hoy el otro.
+ */
+function conTitulosResueltos(secciones: unknown): unknown {
+  if (!Array.isArray(secciones)) return secciones;
+  return secciones.map((s) =>
+    s && typeof s === "object" && "titulo" in s
+      ? { ...s, titulo: tituloDeSeccionEnHtml(String((s as { titulo: unknown }).titulo ?? "")) }
+      : s
   );
 }
 
@@ -1190,18 +1239,22 @@ function seccionesParaGuardar(
     descripcion?: string | null;
     saltoDePagina?: boolean;
     fotosPorFila?: FotosPorFila;
+    fotosAlineacion?: AlineacionDeFotos;
     fotos: FotoResuelta[];
   }>
 ) {
   return secciones.map((sec, idx) => ({
     tareaId: sec.tareaId ?? null,
-    titulo: sec.titulo,
-    descripcion: sec.descripcion?.trim() || null,
+    // Con formato es HTML del editor; sin formato queda el texto plano de
+    // siempre. Saneado en el servidor, que es lo único que cuenta.
+    titulo: limpiarTitulo(sec.titulo),
+    descripcion: limpiarTextoRico(sec.descripcion) || null,
     orden: idx * 10,
     // Se guarda aunque el PDF ya esté hecho: es lo que explica por qué salió
     // así, y lo que hay que releer para volver a abrirlo y editarlo.
     saltoDePagina: sec.saltoDePagina ?? false,
     fotosPorFila: sec.fotosPorFila ?? 3,
+    fotosAlineacion: sec.fotosAlineacion ?? "IZQUIERDA",
     fotos: {
       create: sec.fotos.map((foto, fIdx) => ({
         orden: fIdx,

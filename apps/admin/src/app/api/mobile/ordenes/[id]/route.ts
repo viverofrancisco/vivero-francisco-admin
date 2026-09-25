@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { nombreCliente, propiedadesDeVisitas } from "@vivero/shared";
+import { nombreCliente } from "@vivero/shared";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
-import { getOrden } from "@/lib/services/orden.service";
+import { getOrden, propiedadesDeLaOrden } from "@/lib/services/orden.service";
 import { facturaVigenteDe } from "@/lib/services/factura-vigente";
 import {
   serviceErrorResponse,
@@ -41,10 +41,10 @@ export async function GET(
         id: orden.cliente.id,
         nombre: nombreCliente(orden.cliente),
         telefono: orden.cliente.telefono,
+        // Para proponer a dónde mandarle la factura.
+        email: orden.cliente.email,
       },
-      propiedades: propiedadesDeVisitas(orden.visitas.map((v) => v.visita)).map(
-        (p) => p.nombre
-      ),
+      propiedades: propiedadesDeLaOrden(orden).map((p) => p.nombre),
       visitas: orden.visitas.map((v) => ({
         id: v.visita.id,
         numero: v.visita.numero,
@@ -70,6 +70,8 @@ export async function GET(
             // `null` = nunca se sincronizó con el SRI: no es lo mismo que cero.
             saldo: vigente.saldo === null ? null : Number(vigente.saldo),
             fechaEmision: vigente.fechaEmision.toISOString(),
+            // Si ya se le mandó al cliente: el menú dice "Volver a enviar".
+            enviadoEl: vigente.enviadoEl?.toISOString() ?? null,
           }
         : null,
     });

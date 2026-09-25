@@ -17,6 +17,7 @@ import type { AmbienteSri } from "@/generated/prisma/client";
 import { ConflictError, NotFoundError, ValidationError } from "./errors";
 import { ForbiddenError } from "./errors";
 import type { Viewer } from "./viewer";
+import { isAdminRole } from "./viewer";
 import { cifrar, descifrar, descifrarTexto } from "@/lib/sri/cifrado";
 import { leerCertificado } from "@/lib/sri/certificado";
 
@@ -122,6 +123,29 @@ export async function emisoresDisponibles(viewer: Viewer) {
     where: { activo: true, certificado: { not: null } },
     orderBy: [{ predeterminado: "desc" }, { razonSocial: "asc" }],
     select: CAMPOS_VISIBLES,
+  });
+}
+
+/**
+ * Con qué RUC se puede emitir, para quien emite.
+ *
+ * Emitir es de ADMIN y STAFF (`ensureCanWrite` en `factura.service`), pero
+ * la lista completa de emisores —direcciones, régimen, contabilidad— es
+ * configuración y queda para el ADMIN. Acá va solo lo que hace falta para
+ * elegir uno: quién es y en qué ambiente está.
+ */
+export async function emisoresParaEmitir(viewer: Viewer) {
+  if (!isAdminRole(viewer.role)) throw new ForbiddenError();
+  return prisma.emisor.findMany({
+    where: { activo: true, certificado: { not: null } },
+    orderBy: [{ predeterminado: "desc" }, { razonSocial: "asc" }],
+    select: {
+      id: true,
+      ruc: true,
+      razonSocial: true,
+      ambiente: true,
+      predeterminado: true,
+    },
   });
 }
 

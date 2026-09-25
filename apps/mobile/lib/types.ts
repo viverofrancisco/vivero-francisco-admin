@@ -236,6 +236,16 @@ export interface VisitasListResponse {
 // Staff-side cliente list + detail
 // ──────────────────────────────────────────────
 
+/** Un plan activo del cliente, tal como lo ofrece el wizard al agendar. */
+export interface PlanDelCliente {
+  id: string;
+  numero: number;
+  periodicidad: string;
+  visitasPorPeriodo: number;
+  /** De qué jardín es: elegir el plan elige la propiedad. */
+  propiedad: { id: string; nombre: string };
+}
+
 export interface ClienteListItem {
   id: string;
   nombre: string;
@@ -245,6 +255,8 @@ export interface ClienteListItem {
   /** Marcado como inactivo desde cuándo; `null` = activo. */
   inactivoDesde: string | null;
   propiedades: PropiedadResumen[];
+  /** Sus planes activos. */
+  suscripciones: PlanDelCliente[];
 }
 
 export interface ClientesListResponse {
@@ -256,18 +268,18 @@ export interface ClienteStaffDetail extends ClienteListItem {
   empresa: string | null;
   email: string | null;
   notas: string | null;
+  /** Sus planes: de qué jardín, cuánto por período y cuántas visitas. */
   suscripciones: {
     id: string;
+    numero: number;
     estado: string;
     periodicidad: string;
     fechaInicio: string;
-    items: {
-      id: string;
-      precio: string;
-      ivaTasa: string | null;
-      visitasPorPeriodo: number | null;
-      producto: { id: string; nombre: string; tipo: string };
-    }[];
+    /** Sin IVA. Llega como texto: es un `Decimal`. */
+    precio: string;
+    ivaTasa: string;
+    visitasPorPeriodo: number;
+    propiedad: { id: string; nombre: string };
   }[];
 }
 
@@ -298,7 +310,6 @@ export interface ServicioListItem {
   stock: number | null;
   variantes: number;
   imagenUrl: string | null;
-  suscripciones: number;
 }
 
 export interface ServiciosListResponse {
@@ -319,7 +330,6 @@ export interface ServicioDetail {
   descripcion: string | null;
   tipo: "SERVICIO" | "BIEN";
   createdAt: string;
-  suscripciones: number;
 }
 
 export interface SectorOption {
@@ -423,7 +433,13 @@ export interface OrdenDetalle {
   fecha: string;
   estado: string;
   notas: string | null;
-  cliente: { id: string; nombre: string; telefono: string | null };
+  cliente: {
+    id: string;
+    nombre: string;
+    telefono: string | null;
+    /** Para proponer a dónde mandarle la factura. */
+    email: string | null;
+  };
   propiedades: string[];
   visitas: { id: string; numero: number }[];
   suscripcion: { id: string; numero: number } | null;
@@ -443,5 +459,140 @@ export interface OrdenDetalle {
     estado: string;
     saldo: number | null;
     fechaEmision: string;
+    /** Cuándo se le mandó al cliente por última vez, si se mandó. */
+    enviadoEl: string | null;
   } | null;
+}
+
+// ──────────────────────────────────────────────
+// Suscripciones (admin/staff)
+// ──────────────────────────────────────────────
+
+/** Una fila de la lista de planes: lo que la fila muestra y lo que se filtra. */
+export interface SuscripcionListItem {
+  id: string;
+  numero: number;
+  estado: string;
+  periodicidad: string;
+  fechaInicio: string;
+  /** Sin IVA. */
+  precio: number;
+  ivaTasa: number;
+  /** Con IVA: lo que el cliente paga por período. */
+  totalPeriodo: number;
+  visitasPorPeriodo: number;
+  cliente: { id: string; nombre: string };
+  propiedad: { id: string; nombre: string };
+  /** Períodos vencidos que todavía no tienen orden. Con el cron sano, 0. */
+  periodosPendientes: number;
+}
+
+/** Dónde queda el jardín de un plan: lo que hace falta para escribirlo y llegar. */
+export interface PropiedadDelPlan {
+  id: string;
+  nombre: string;
+  ciudad: string | null;
+  direccion: string | null;
+  numeroCasa: string | null;
+  referencia: string | null;
+  lat: number | null;
+  lng: number | null;
+  sector: { id: string; nombre: string } | null;
+}
+
+export interface SuscripcionDetalle {
+  id: string;
+  numero: number;
+  estado: string;
+  periodicidad: string;
+  fechaInicio: string;
+  notas: string | null;
+  precio: number;
+  ivaTasa: number;
+  visitasPorPeriodo: number;
+  cliente: { id: string; nombre: string };
+  propiedad: PropiedadDelPlan;
+  /** Entre cuáles se puede mover el plan: las propiedades vivas del cliente. */
+  propiedades: PropiedadDelPlan[];
+  visitas: {
+    id: string;
+    numero: number;
+    fechaProgramada: string;
+    fechaRealizada: string | null;
+    estado: string;
+    tareas: string[];
+  }[];
+  ordenes: {
+    id: string;
+    numero: number;
+    fecha: string;
+    estado: string;
+    total: number;
+    delPlan: number;
+    periodoInicio: string | null;
+    periodoFin: string | null;
+    periodos: number;
+    factura: { numero: string; estado: string; saldo: number | null } | null;
+  }[];
+}
+
+// ──────────────────────────────────────────────
+// Emitir y cobrar (admin/staff)
+// ──────────────────────────────────────────────
+
+/** Con qué RUC se emite: lo justo para elegir uno. */
+export interface EmisorOpcion {
+  id: string;
+  ruc: string;
+  razonSocial: string;
+  ambiente: "PRUEBAS" | "PRODUCCION";
+  predeterminado: boolean;
+}
+
+/** A nombre de quién se le factura a un cliente. */
+export interface DatoFacturacionResumen {
+  id: string;
+  tipoIdentificacion: "CEDULA" | "RUC";
+  identificacion: string;
+  razonSocial: string;
+  tipoPersona: "NATURAL" | "JURIDICA";
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
+  esPredeterminado: boolean;
+}
+
+export type FormaDePago = "EFECTIVO" | "TRANSFERENCIA" | "TARJETA" | "CHEQUE" | "OTRO";
+
+// ──────────────────────────────────────────────
+// Armar una orden (admin/staff)
+// ──────────────────────────────────────────────
+
+/** Un producto del catálogo con sus variantes y precios de lista. */
+export interface ProductoVendible {
+  id: string;
+  nombre: string;
+  ivaTasa: number | null;
+  variantes: {
+    id: string;
+    /** "Rojo · Grande", o vacío en la variante única. */
+    nombre: string;
+    sku: string | null;
+    precio: number;
+    cobraIva: boolean;
+    manejaInventario: boolean;
+    stock: number;
+  }[];
+}
+
+/** Un período de plan todavía sin orden. */
+export interface PeriodoPendiente {
+  suscripcionId: string;
+  suscripcionNumero: number;
+  propiedad: string;
+  descripcion: string;
+  precio: number;
+  ivaTasa: number;
+  periodoInicio: string;
+  periodoFin: string;
 }

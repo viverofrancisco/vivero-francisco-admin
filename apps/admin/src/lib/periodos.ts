@@ -6,6 +6,9 @@
  * entero a un componente cliente.
  */
 
+/** Las etiquetas viven en `@vivero/shared`: la app las muestra igual. */
+export { PERIODICIDAD_LABEL, unidadDePeriodo } from "@vivero/shared";
+
 /** Cuántos meses abarca cada período. */
 export const MESES_POR_PERIODO: Record<string, number> = {
   MENSUAL: 1,
@@ -57,14 +60,57 @@ export function clavePeriodo(inicio: Date): string {
   return inicio.toISOString().slice(0, 10);
 }
 
-const PERIODICIDAD_UNIDAD: Record<string, string> = {
-  MENSUAL: "mes",
-  TRIMESTRAL: "trimestre",
-  SEMESTRAL: "semestre",
-  ANUAL: "año",
+const MES_LARGO = new Intl.DateTimeFormat("es-EC", {
+  month: "long",
+  timeZone: "UTC",
+});
+// Mes y año a mano y no con `{ month, year }`: en español el formateador mete
+// un "de" en el medio ("septiembre de 2026"), y en una factura se escribe
+// "SEPTIEMBRE 2026".
+const mesYAnio = (d: Date) => `${MES_LARGO.format(d)} ${d.getUTCFullYear()}`;
+
+/**
+ * Cómo se nombra un período en una línea de orden: "septiembre 2026",
+ * "octubre – diciembre 2026", "noviembre 2026 – abril 2027".
+ *
+ * En UTC porque así los guarda `OrdenLinea.periodoInicio` (`@db.Date`, ver
+ * `periodosDeSuscripcion`): formatearlos en Guayaquil correría el mes al
+ * anterior.
+ */
+export function etiquetaDePeriodo(inicio: Date, fin: Date): string {
+  const mismoMes =
+    inicio.getUTCFullYear() === fin.getUTCFullYear() &&
+    inicio.getUTCMonth() === fin.getUTCMonth();
+  if (mismoMes) return mesYAnio(inicio);
+  if (inicio.getUTCFullYear() === fin.getUTCFullYear()) {
+    return `${MES_LARGO.format(inicio)} – ${mesYAnio(fin)}`;
+  }
+  return `${mesYAnio(inicio)} – ${mesYAnio(fin)}`;
+}
+
+const PERIODICIDAD_ADJETIVO: Record<string, string> = {
+  MENSUAL: "mensual",
+  TRIMESTRAL: "trimestral",
+  SEMESTRAL: "semestral",
+  ANUAL: "anual",
 };
 
-/** "Visitas / trimestre", según la periodicidad del contrato. */
-export function unidadDePeriodo(periodicidad: string): string {
-  return PERIODICIDAD_UNIDAD[periodicidad] ?? "período";
+/**
+ * La descripción con la que nace la línea de un período de plan:
+ * "Plan mensual · Casa · septiembre 2026".
+ *
+ * Un plan no tiene nombre ni productos, así que la línea se nombra por lo que
+ * es: su ciclo, su jardín y su período. La propiedad va solo cuando el cliente
+ * tiene más de una —con una sola se llama "Principal", que en una factura no
+ * dice nada—. Es un snapshot: quien emite puede reescribirla al imprimir.
+ */
+export function descripcionDePeriodoDePlan(
+  plan: { periodicidad: string; propiedad: { nombre: string } },
+  periodo: Periodo,
+  opciones: { nombrarPropiedad: boolean }
+): string {
+  const partes = [`Plan ${PERIODICIDAD_ADJETIVO[plan.periodicidad] ?? ""}`.trim()];
+  if (opciones.nombrarPropiedad) partes.push(plan.propiedad.nombre);
+  partes.push(etiquetaDePeriodo(periodo.inicio, periodo.fin));
+  return partes.join(" · ");
 }

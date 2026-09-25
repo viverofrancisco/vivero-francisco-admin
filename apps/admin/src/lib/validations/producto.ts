@@ -93,6 +93,38 @@ export const confirmarMediaSchema = z.object({
     .min(1),
 });
 
+/**
+ * Cómo editar una imagen (`POST /api/media/[id]/editar` y su gemela móvil).
+ *
+ * `origen` dice qué es el `id` de la URL: por defecto una imagen de la
+ * biblioteca; con `"visita"` es una `VisitaMedia`, y el recorte igual sale a
+ * la biblioteca. Va acá y no en una ruta aparte porque es la misma operación
+ * sobre otro archivo: dos rutas serían dos copias del mismo schema, y se
+ * separan a la primera corrección.
+ */
+export const edicionDeImagenSchema = z.object({
+  origen: z.enum(["biblioteca", "visita"]).default("biblioteca"),
+  /** En píxeles de la imagen **ya volteada y girada**, que es la que se ve. */
+  recorte: z
+    .object({
+      x: z.number().min(0),
+      y: z.number().min(0),
+      ancho: z.number().positive(),
+      alto: z.number().positive(),
+    })
+    .optional(),
+  redimensionar: z
+    .object({ ancho: z.number().positive(), alto: z.number().positive() })
+    .optional(),
+  circulo: z.boolean().optional(),
+  /** Cuartos de vuelta a la derecha. */
+  rotar: z
+    .union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)])
+    .optional(),
+  /** Espejada de izquierda a derecha. */
+  voltear: z.boolean().optional(),
+});
+
 export const editarMediaSchema = z.object({
   nombre: z.string().min(1).optional(),
   alt: z.string().nullable().optional(),

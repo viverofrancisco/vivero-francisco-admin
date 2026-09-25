@@ -262,6 +262,7 @@ export async function globalSearch(
             estado: true,
             periodicidad: true,
             cliente: { select: { nombre: true, apellido: true, empresa: true } },
+            propiedad: { select: { nombre: true } },
           },
           take,
         })
@@ -332,7 +333,7 @@ export async function globalSearch(
       type: "suscripcion",
       id: s.id,
       title: `Suscripción #${s.numero}`,
-      subtitle: `${nombreCliente(s.cliente)} · ${
+      subtitle: `${nombreCliente(s.cliente)} · ${s.propiedad.nombre} · ${
         s.periodicidad.charAt(0) + s.periodicidad.slice(1).toLowerCase()
       } · ${s.estado.charAt(0) + s.estado.slice(1).toLowerCase()}`,
       href: `/dashboard/suscripciones/${s.id}`,

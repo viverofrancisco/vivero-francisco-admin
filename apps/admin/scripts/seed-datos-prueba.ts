@@ -376,11 +376,6 @@ async function sembrar(
   if (!vendibles.length) {
     throw new Error("El catálogo está vacío: no hay nada que vender.");
   }
-  // Ya no hay productos "recurrentes" en el catálogo: se eligen unos cuantos
-  // para armar planes y el resto queda como trabajo suelto.
-  const recurrentes = algunos(vendibles, Math.min(4, vendibles.length));
-  const idsRecurrentes = new Set(recurrentes.map((p) => p.id));
-  const sueltos = vendibles.filter((p) => !idsRecurrentes.has(p.id));
 
   // Sin un emisor con su firma cargada no hay nada contra qué emitir, y eso no
   // es un error del seed: el portal se puede mirar con todo en borrador.
@@ -472,27 +467,29 @@ async function sembrar(
   const MESES: Record<Periodicidad, number> = {
     MENSUAL: 1, TRIMESTRAL: 3, SEMESTRAL: 6, ANUAL: 12,
   };
-  const suscriptores = recurrentes.length ? algunos(conFacturacion, 14) : [];
+  const suscriptores = algunos(conFacturacion, 14);
+  // Qué plan tiene cada suscriptor, para que sus visitas cuenten contra él y
+  // pasen en la propiedad del plan.
+  const planDe = new Map<string, { id: string; propiedadId: string }>();
 
   for (const c of suscriptores) {
     const periodicidad = uno(PERIODICIDADES) as Periodicidad;
     const meses = MESES[periodicidad];
-    const items = algunos(recurrentes, entre(1, Math.min(2, recurrentes.length))).map((p) => ({
-      productoId: p.id,
-      // Precio del período completo, no mensual.
-      precio: entre(60, 220) * meses,
-      ivaTasa: p.ivaTasa != null ? Number(p.ivaTasa) : 15,
-      visitasPorPeriodo: entre(2, 4) * meses,
-    }));
     try {
+      // Un plan es un precio por un jardín: la primera propiedad del cliente,
+      // el precio del período completo (no mensual) y las visitas que incluye.
       const s = await crearSuscripcion(viewer, {
         clienteId: c.id,
+        propiedadId: c.propiedades[0].id,
         periodicidad,
         // Arrancan entre 2 y 8 meses atrás, para que haya períodos por cobrar.
         fechaInicio: masMeses(hoy, -entre(2, 8)),
-        items,
+        precio: entre(60, 220) * meses,
+        ivaTasa: 15,
+        visitasPorPeriodo: entre(2, 4) * meses,
       });
       m.suscripciones.push(s.id);
+      planDe.set(c.id, { id: s.id, propiedadId: s.propiedadId });
     } catch (e) {
       console.log(`  ${c.nombre}: ${(e as Error).message}`);
     }
@@ -505,15 +502,6 @@ async function sembrar(
     where: { deletedAt: null },
     select: { id: true, miembros: { select: { personalId: true } } },
   });
-  const items = await prisma.suscripcionItem.findMany({
-    where: { suscripcion: { estado: "ACTIVO" } },
-    select: { id: true, productoId: true, suscripcion: { select: { clienteId: true } } },
-  });
-  // Qué ítem de plan cubre a cada (cliente, producto).
-  const cubre = new Map<string, string>(
-    items.map((i) => [`${i.suscripcion.clienteId}|${i.productoId}`, i.id])
-  );
-
   // El alta rechaza dos visitas del mismo cliente y día con el mismo producto,
   // y el seed no debería crear algo que la app no crearía. Acá se va más
   // estricto: una sola visita por cliente y día.
@@ -527,20 +515,15 @@ async function sembrar(
 
   const candidatos = [...suscriptores, ...algunos(clientes, 18)];
   const visitas: VisitaNueva[] = [];
-  // Qué productos lleva cada visita, indexado por cliente+fecha en vez de por
-  // posición: `createManyAndReturn` no promete devolver las filas en el orden
-  // en que se mandaron.
-  const productosDe = new Map<string, string[]>();
-
   for (let n = 0; n < 190; n++) {
     const cliente = uno(candidatos);
     // De cuatro meses atrás a mes y medio adelante.
     const fecha = masDias(hoy, entre(-120, 45));
-    const delPlan = recurrentes.filter((p) => cubre.has(`${cliente.id}|${p.id}`));
-    const elegibles = delPlan.length && chance(0.7) ? delPlan : sueltos;
-    if (!elegibles.length) continue;
+    // Con plan, la mayoría de sus visitas son del plan —y pasan en la
+    // propiedad del plan—; el resto es trabajo aparte.
+    const plan = planDe.get(cliente.id);
+    const delPlan = plan && chance(0.7) ? plan : null;
 
-    const productoIds = algunos(elegibles, chance(0.2) ? 2 : 1).map((p) => p.id);
     // Una visita por cliente y día: es lo realista, y hace que cliente+fecha
     // identifique la fila sin ambigüedad.
     const clave = `${cliente.id}|${fecha.toISOString().slice(0, 10)}`;
@@ -555,9 +538,10 @@ async function sembrar(
 
     visitas.push({
       clienteId: cliente.id,
-      // Donde trabaja: la primera de sus propiedades alcanza para datos de
-      // prueba, y todo cliente tiene al menos una.
-      propiedadId: cliente.propiedades[0].id,
+      // Donde trabaja: la del plan si la visita es del plan; si no, la
+      // primera de sus propiedades, que todo cliente tiene.
+      propiedadId: delPlan ? delPlan.propiedadId : cliente.propiedades[0].id,
+      suscripcionId: delPlan ? delPlan.id : null,
       fechaProgramada: fecha,
       fechaRealizada: estado === "COMPLETADA" || estado === "INCOMPLETA" ? fecha : null,
       horaEntrada: estado === "PROGRAMADA" ? null : `${String(entre(7, 11)).padStart(2, "0")}:${uno(["00", "15", "30", "45"])}`,
@@ -569,7 +553,6 @@ async function sembrar(
       createdById: viewer.id,
       updatedById: viewer.id,
     });
-    productosDe.set(clave, productoIds);
   }
 
   const creadas = await prisma.visita.createManyAndReturn({ data: visitas });
@@ -783,7 +766,7 @@ async function sembrar(
               precioUnitario: Number(l.precioUnitario) || entre(45, 260),
               ivaTasa: Number(l.ivaTasa),
               productoId: l.productoId,
-              suscripcionItemId: l.suscripcionItemId,
+              suscripcionId: l.suscripcionId,
               periodoInicio: l.periodoInicio,
               periodoFin: l.periodoFin,
             })),
@@ -833,6 +816,9 @@ async function sembrarCatalogo(
       select: { id: true },
     });
     if (ya) continue;
+    // Con su variante única, como hace el servicio: sin ella no hay nada que
+    // vender —la orden fallaba al guardar y la app no dejaba marcarlo—. Un
+    // servicio no lleva inventario; un bien sí.
     const creado = await prisma.producto.create({
       data: {
         nombre: p.nombre,
@@ -841,6 +827,9 @@ async function sembrarCatalogo(
         descripcion: null,
         createdById: viewer.id,
         updatedById: viewer.id,
+        variantes: {
+          create: { manejaInventario: p.tipo === "BIEN", precio: 0 },
+        },
       },
       select: { id: true },
     });
@@ -1062,9 +1051,6 @@ async function limpiarTodo(prisma: PrismaClient, host: string) {
   }
 
   await borrar("visita", () => prisma.visita.deleteMany({ where: { id: { in: m.visitas } } }));
-  await borrar("suscripcionItem", () =>
-    prisma.suscripcionItem.deleteMany({ where: { suscripcionId: { in: m.suscripciones } } })
-  );
   await borrar("suscripcion", () =>
     prisma.suscripcion.deleteMany({ where: { id: { in: m.suscripciones } } })
   );

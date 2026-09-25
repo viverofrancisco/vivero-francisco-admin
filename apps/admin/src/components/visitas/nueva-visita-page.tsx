@@ -26,6 +26,7 @@ import { ArrowLeft, Loader2, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
 import { SelectorTareas } from "@/components/visitas/selector-tareas";
+import { PERIODICIDAD_LABEL, unidadDePeriodo } from "@/lib/periodos";
 
 interface TareaCatalogo {
   id: string;
@@ -36,7 +37,9 @@ interface SuscripcionOpcion {
   id: string;
   numero: number;
   periodicidad: string;
-  productos: { productoId: string; nombre: string; visitasPorPeriodo: number | null }[];
+  visitasPorPeriodo: number;
+  /** De qué jardín es el plan: elegirlo elige la propiedad. */
+  propiedad: { id: string; nombre: string };
 }
 
 interface Cliente {
@@ -55,6 +58,11 @@ interface Grupo {
   id: string;
   nombre: string;
   miembrosIds: string[];
+}
+
+/** "Casa · Mensual · 4 visitas/mes": lo que distingue un plan de otro. */
+function describirPlan(sus: SuscripcionOpcion): string {
+  return `${sus.propiedad.nombre} · ${PERIODICIDAD_LABEL[sus.periodicidad] ?? sus.periodicidad} · ${sus.visitasPorPeriodo} visita${sus.visitasPorPeriodo === 1 ? "" : "s"}/${unidadDePeriodo(sus.periodicidad)}`;
 }
 
 interface PersonalOption {
@@ -109,11 +117,14 @@ export function NuevaVisitaPage({
         c.suscripciones.some((s) => s.id === suscripcionInicial)
       )?.id ?? ""
   );
-  // La propiedad sale sola cuando el cliente tiene una, que es casi siempre.
+  // Con un plan preseleccionado la propiedad es la del plan; si no, sale sola
+  // cuando el cliente tiene una, que es casi siempre.
   const [propiedadId, setPropiedadId] = useState(() => {
     const c = clientes.find((x) =>
       x.suscripciones.some((s) => s.id === suscripcionInicial)
     );
+    const plan = c?.suscripciones.find((s) => s.id === suscripcionInicial);
+    if (plan) return plan.propiedad.id;
     return c?.propiedades.length === 1 ? c.propiedades[0].id : "";
   });
   const [tareaIds, setTareaIds] = useState<string[]>([]);
@@ -126,8 +137,9 @@ export function NuevaVisitaPage({
   /**
    * De qué plan es la visita. Vacío = trabajo aparte, se cobra en una orden.
    *
-   * Una sola decisión y de la visita entera. Qué productos cubre ese plan no se
-   * elige: se deduce de lo que el plan contiene.
+   * Una sola decisión y de la visita entera. El plan es de un jardín, así que
+   * elegirlo pone su propiedad, y cambiar de propiedad suelta un plan que no
+   * sea de esa.
    */
   const [suscripcionId, setSuscripcionId] = useState(
     suscripcionInicial ?? ""
@@ -135,6 +147,18 @@ export function NuevaVisitaPage({
 
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
   const planes = cliente?.suscripciones ?? [];
+
+  const elegirPlan = (id: string) => {
+    setSuscripcionId(id);
+    const plan = planes.find((s) => s.id === id);
+    if (plan) setPropiedadId(plan.propiedad.id);
+  };
+
+  const elegirPropiedad = (id: string) => {
+    setPropiedadId(id);
+    const plan = planes.find((s) => s.id === suscripcionId);
+    if (plan && plan.propiedad.id !== id) setSuscripcionId("");
+  };
 
   // El orden del catálogo manda, así la lista no salta al elegir.
   const elegidas = tareas.filter((t) => tareaIds.includes(t.id));
@@ -375,7 +399,7 @@ export function NuevaVisitaPage({
                   ) : (
                     <CustomSelect
                       value={propiedadId}
-                      onChange={setPropiedadId}
+                      onChange={elegirPropiedad}
                       options={cliente.propiedades.map((p) => ({
                         value: p.id,
                         label: p.nombre,
@@ -391,8 +415,8 @@ export function NuevaVisitaPage({
             </CardContent>
           </Card>
 
-          {/* De qué plan es la visita: una decisión, de la visita entera. Lo
-              que el plan cubra sale de sus productos, no se elige aquí. La X la
+          {/* De qué plan es la visita: una decisión, de la visita entera. El
+              plan es de un jardín, así que elegirlo pone la propiedad. La X la
               desvincula; una opción "Ninguna" diría lo mismo ocupando lugar. */}
           {planes.length > 0 && (
             <Card className="overflow-visible">
@@ -402,11 +426,11 @@ export function NuevaVisitaPage({
               <CardContent>
                 <CustomSelect
                   value={suscripcionId}
-                  onChange={setSuscripcionId}
+                  onChange={elegirPlan}
                   options={planes.map((sus) => ({
                     value: sus.id,
                     label: `Suscripción #${sus.numero}`,
-                    hint: sus.productos.map((x) => x.nombre).join(", "),
+                    hint: describirPlan(sus),
                   }))}
                   placeholder="Sin suscripción"
                   clearable

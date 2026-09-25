@@ -128,6 +128,17 @@ export default function PersonalTabsLayout() {
           `tabBarItemStyle: { display: "none" }` deja la ruta navegable y la
           saca de la barra. */}
       <Tabs.Screen
+        name="suscripciones"
+        options={{
+          title: "Suscripciones",
+          href: isAdminOrStaff ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="sync-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="servicios"
         options={{
           // "Productos", como en el portal: es el mismo catálogo —servicios y

@@ -29,20 +29,30 @@ export type AggregateSuscripcion = {
 
 export type SuscripcionAvgAggregateOutputType = {
   numero: number | null
+  precio: runtime.Decimal | null
+  ivaTasa: runtime.Decimal | null
+  visitasPorPeriodo: number | null
 }
 
 export type SuscripcionSumAggregateOutputType = {
   numero: number | null
+  precio: runtime.Decimal | null
+  ivaTasa: runtime.Decimal | null
+  visitasPorPeriodo: number | null
 }
 
 export type SuscripcionMinAggregateOutputType = {
   id: string | null
   numero: number | null
   clienteId: string | null
+  propiedadId: string | null
   estado: $Enums.EstadoServicio | null
   periodicidad: $Enums.Periodicidad | null
   fechaInicio: Date | null
   fechaFin: Date | null
+  precio: runtime.Decimal | null
+  ivaTasa: runtime.Decimal | null
+  visitasPorPeriodo: number | null
   notas: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -54,10 +64,14 @@ export type SuscripcionMaxAggregateOutputType = {
   id: string | null
   numero: number | null
   clienteId: string | null
+  propiedadId: string | null
   estado: $Enums.EstadoServicio | null
   periodicidad: $Enums.Periodicidad | null
   fechaInicio: Date | null
   fechaFin: Date | null
+  precio: runtime.Decimal | null
+  ivaTasa: runtime.Decimal | null
+  visitasPorPeriodo: number | null
   notas: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -69,10 +83,14 @@ export type SuscripcionCountAggregateOutputType = {
   id: number
   numero: number
   clienteId: number
+  propiedadId: number
   estado: number
   periodicidad: number
   fechaInicio: number
   fechaFin: number
+  precio: number
+  ivaTasa: number
+  visitasPorPeriodo: number
   notas: number
   createdAt: number
   updatedAt: number
@@ -84,20 +102,30 @@ export type SuscripcionCountAggregateOutputType = {
 
 export type SuscripcionAvgAggregateInputType = {
   numero?: true
+  precio?: true
+  ivaTasa?: true
+  visitasPorPeriodo?: true
 }
 
 export type SuscripcionSumAggregateInputType = {
   numero?: true
+  precio?: true
+  ivaTasa?: true
+  visitasPorPeriodo?: true
 }
 
 export type SuscripcionMinAggregateInputType = {
   id?: true
   numero?: true
   clienteId?: true
+  propiedadId?: true
   estado?: true
   periodicidad?: true
   fechaInicio?: true
   fechaFin?: true
+  precio?: true
+  ivaTasa?: true
+  visitasPorPeriodo?: true
   notas?: true
   createdAt?: true
   updatedAt?: true
@@ -109,10 +137,14 @@ export type SuscripcionMaxAggregateInputType = {
   id?: true
   numero?: true
   clienteId?: true
+  propiedadId?: true
   estado?: true
   periodicidad?: true
   fechaInicio?: true
   fechaFin?: true
+  precio?: true
+  ivaTasa?: true
+  visitasPorPeriodo?: true
   notas?: true
   createdAt?: true
   updatedAt?: true
@@ -124,10 +156,14 @@ export type SuscripcionCountAggregateInputType = {
   id?: true
   numero?: true
   clienteId?: true
+  propiedadId?: true
   estado?: true
   periodicidad?: true
   fechaInicio?: true
   fechaFin?: true
+  precio?: true
+  ivaTasa?: true
+  visitasPorPeriodo?: true
   notas?: true
   createdAt?: true
   updatedAt?: true
@@ -226,10 +262,14 @@ export type SuscripcionGroupByOutputType = {
   id: string
   numero: number
   clienteId: string
+  propiedadId: string
   estado: $Enums.EstadoServicio
   periodicidad: $Enums.Periodicidad
   fechaInicio: Date
   fechaFin: Date | null
+  precio: runtime.Decimal
+  ivaTasa: runtime.Decimal
+  visitasPorPeriodo: number
   notas: string | null
   createdAt: Date
   updatedAt: Date
@@ -264,20 +304,25 @@ export type SuscripcionWhereInput = {
   id?: Prisma.StringFilter<"Suscripcion"> | string
   numero?: Prisma.IntFilter<"Suscripcion"> | number
   clienteId?: Prisma.StringFilter<"Suscripcion"> | string
+  propiedadId?: Prisma.StringFilter<"Suscripcion"> | string
   estado?: Prisma.EnumEstadoServicioFilter<"Suscripcion"> | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFilter<"Suscripcion"> | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   fechaFin?: Prisma.DateTimeNullableFilter<"Suscripcion"> | Date | string | null
+  precio?: Prisma.DecimalFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFilter<"Suscripcion"> | number
   notas?: Prisma.StringNullableFilter<"Suscripcion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   createdById?: Prisma.StringNullableFilter<"Suscripcion"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Suscripcion"> | string | null
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
+  propiedad?: Prisma.XOR<Prisma.PropiedadScalarRelationFilter, Prisma.PropiedadWhereInput>
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  items?: Prisma.SuscripcionItemListRelationFilter
   ordenes?: Prisma.OrdenListRelationFilter
+  ordenLineas?: Prisma.OrdenLineaListRelationFilter
   visitas?: Prisma.VisitaListRelationFilter
 }
 
@@ -285,20 +330,25 @@ export type SuscripcionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  propiedadId?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   periodicidad?: Prisma.SortOrder
   fechaInicio?: Prisma.SortOrder
   fechaFin?: Prisma.SortOrderInput | Prisma.SortOrder
+  precio?: Prisma.SortOrder
+  ivaTasa?: Prisma.SortOrder
+  visitasPorPeriodo?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
   cliente?: Prisma.ClienteOrderByWithRelationInput
+  propiedad?: Prisma.PropiedadOrderByWithRelationInput
   createdBy?: Prisma.UserOrderByWithRelationInput
   updatedBy?: Prisma.UserOrderByWithRelationInput
-  items?: Prisma.SuscripcionItemOrderByRelationAggregateInput
   ordenes?: Prisma.OrdenOrderByRelationAggregateInput
+  ordenLineas?: Prisma.OrdenLineaOrderByRelationAggregateInput
   visitas?: Prisma.VisitaOrderByRelationAggregateInput
 }
 
@@ -309,20 +359,25 @@ export type SuscripcionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.SuscripcionWhereInput[]
   NOT?: Prisma.SuscripcionWhereInput | Prisma.SuscripcionWhereInput[]
   clienteId?: Prisma.StringFilter<"Suscripcion"> | string
+  propiedadId?: Prisma.StringFilter<"Suscripcion"> | string
   estado?: Prisma.EnumEstadoServicioFilter<"Suscripcion"> | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFilter<"Suscripcion"> | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   fechaFin?: Prisma.DateTimeNullableFilter<"Suscripcion"> | Date | string | null
+  precio?: Prisma.DecimalFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFilter<"Suscripcion"> | number
   notas?: Prisma.StringNullableFilter<"Suscripcion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   createdById?: Prisma.StringNullableFilter<"Suscripcion"> | string | null
   updatedById?: Prisma.StringNullableFilter<"Suscripcion"> | string | null
   cliente?: Prisma.XOR<Prisma.ClienteScalarRelationFilter, Prisma.ClienteWhereInput>
+  propiedad?: Prisma.XOR<Prisma.PropiedadScalarRelationFilter, Prisma.PropiedadWhereInput>
   createdBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  items?: Prisma.SuscripcionItemListRelationFilter
   ordenes?: Prisma.OrdenListRelationFilter
+  ordenLineas?: Prisma.OrdenLineaListRelationFilter
   visitas?: Prisma.VisitaListRelationFilter
 }, "id" | "numero">
 
@@ -330,10 +385,14 @@ export type SuscripcionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  propiedadId?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   periodicidad?: Prisma.SortOrder
   fechaInicio?: Prisma.SortOrder
   fechaFin?: Prisma.SortOrderInput | Prisma.SortOrder
+  precio?: Prisma.SortOrder
+  ivaTasa?: Prisma.SortOrder
+  visitasPorPeriodo?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -353,10 +412,14 @@ export type SuscripcionScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Suscripcion"> | string
   numero?: Prisma.IntWithAggregatesFilter<"Suscripcion"> | number
   clienteId?: Prisma.StringWithAggregatesFilter<"Suscripcion"> | string
+  propiedadId?: Prisma.StringWithAggregatesFilter<"Suscripcion"> | string
   estado?: Prisma.EnumEstadoServicioWithAggregatesFilter<"Suscripcion"> | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadWithAggregatesFilter<"Suscripcion"> | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeWithAggregatesFilter<"Suscripcion"> | Date | string
   fechaFin?: Prisma.DateTimeNullableWithAggregatesFilter<"Suscripcion"> | Date | string | null
+  precio?: Prisma.DecimalWithAggregatesFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalWithAggregatesFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntWithAggregatesFilter<"Suscripcion"> | number
   notas?: Prisma.StringNullableWithAggregatesFilter<"Suscripcion"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Suscripcion"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Suscripcion"> | Date | string
@@ -371,14 +434,18 @@ export type SuscripcionCreateInput = {
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutSuscripcionesInput
+  propiedad: Prisma.PropiedadCreateNestedOneWithoutSuscripcionesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesUpdatedInput
-  items?: Prisma.SuscripcionItemCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -386,17 +453,21 @@ export type SuscripcionUncheckedCreateInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdById?: string | null
   updatedById?: string | null
-  items?: Prisma.SuscripcionItemUncheckedCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -406,14 +477,18 @@ export type SuscripcionUpdateInput = {
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
+  propiedad?: Prisma.PropiedadUpdateOneRequiredWithoutSuscripcionesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
-  items?: Prisma.SuscripcionItemUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -421,17 +496,21 @@ export type SuscripcionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  items?: Prisma.SuscripcionItemUncheckedUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -439,10 +518,14 @@ export type SuscripcionCreateManyInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -456,6 +539,9 @@ export type SuscripcionUpdateManyMutationInput = {
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -465,10 +551,14 @@ export type SuscripcionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -490,10 +580,14 @@ export type SuscripcionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  propiedadId?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   periodicidad?: Prisma.SortOrder
   fechaInicio?: Prisma.SortOrder
   fechaFin?: Prisma.SortOrder
+  precio?: Prisma.SortOrder
+  ivaTasa?: Prisma.SortOrder
+  visitasPorPeriodo?: Prisma.SortOrder
   notas?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -503,16 +597,23 @@ export type SuscripcionCountOrderByAggregateInput = {
 
 export type SuscripcionAvgOrderByAggregateInput = {
   numero?: Prisma.SortOrder
+  precio?: Prisma.SortOrder
+  ivaTasa?: Prisma.SortOrder
+  visitasPorPeriodo?: Prisma.SortOrder
 }
 
 export type SuscripcionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  propiedadId?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   periodicidad?: Prisma.SortOrder
   fechaInicio?: Prisma.SortOrder
   fechaFin?: Prisma.SortOrder
+  precio?: Prisma.SortOrder
+  ivaTasa?: Prisma.SortOrder
+  visitasPorPeriodo?: Prisma.SortOrder
   notas?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -524,10 +625,14 @@ export type SuscripcionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   numero?: Prisma.SortOrder
   clienteId?: Prisma.SortOrder
+  propiedadId?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   periodicidad?: Prisma.SortOrder
   fechaInicio?: Prisma.SortOrder
   fechaFin?: Prisma.SortOrder
+  precio?: Prisma.SortOrder
+  ivaTasa?: Prisma.SortOrder
+  visitasPorPeriodo?: Prisma.SortOrder
   notas?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -537,11 +642,9 @@ export type SuscripcionMinOrderByAggregateInput = {
 
 export type SuscripcionSumOrderByAggregateInput = {
   numero?: Prisma.SortOrder
-}
-
-export type SuscripcionScalarRelationFilter = {
-  is?: Prisma.SuscripcionWhereInput
-  isNot?: Prisma.SuscripcionWhereInput
+  precio?: Prisma.SortOrder
+  ivaTasa?: Prisma.SortOrder
+  visitasPorPeriodo?: Prisma.SortOrder
 }
 
 export type SuscripcionNullableScalarRelationFilter = {
@@ -675,26 +778,54 @@ export type SuscripcionUncheckedUpdateManyWithoutClienteNestedInput = {
   deleteMany?: Prisma.SuscripcionScalarWhereInput | Prisma.SuscripcionScalarWhereInput[]
 }
 
+export type SuscripcionCreateNestedManyWithoutPropiedadInput = {
+  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutPropiedadInput, Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput> | Prisma.SuscripcionCreateWithoutPropiedadInput[] | Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput[]
+  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput | Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput[]
+  createMany?: Prisma.SuscripcionCreateManyPropiedadInputEnvelope
+  connect?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+}
+
+export type SuscripcionUncheckedCreateNestedManyWithoutPropiedadInput = {
+  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutPropiedadInput, Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput> | Prisma.SuscripcionCreateWithoutPropiedadInput[] | Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput[]
+  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput | Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput[]
+  createMany?: Prisma.SuscripcionCreateManyPropiedadInputEnvelope
+  connect?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+}
+
+export type SuscripcionUpdateManyWithoutPropiedadNestedInput = {
+  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutPropiedadInput, Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput> | Prisma.SuscripcionCreateWithoutPropiedadInput[] | Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput[]
+  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput | Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput[]
+  upsert?: Prisma.SuscripcionUpsertWithWhereUniqueWithoutPropiedadInput | Prisma.SuscripcionUpsertWithWhereUniqueWithoutPropiedadInput[]
+  createMany?: Prisma.SuscripcionCreateManyPropiedadInputEnvelope
+  set?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  disconnect?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  delete?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  connect?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  update?: Prisma.SuscripcionUpdateWithWhereUniqueWithoutPropiedadInput | Prisma.SuscripcionUpdateWithWhereUniqueWithoutPropiedadInput[]
+  updateMany?: Prisma.SuscripcionUpdateManyWithWhereWithoutPropiedadInput | Prisma.SuscripcionUpdateManyWithWhereWithoutPropiedadInput[]
+  deleteMany?: Prisma.SuscripcionScalarWhereInput | Prisma.SuscripcionScalarWhereInput[]
+}
+
+export type SuscripcionUncheckedUpdateManyWithoutPropiedadNestedInput = {
+  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutPropiedadInput, Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput> | Prisma.SuscripcionCreateWithoutPropiedadInput[] | Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput[]
+  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput | Prisma.SuscripcionCreateOrConnectWithoutPropiedadInput[]
+  upsert?: Prisma.SuscripcionUpsertWithWhereUniqueWithoutPropiedadInput | Prisma.SuscripcionUpsertWithWhereUniqueWithoutPropiedadInput[]
+  createMany?: Prisma.SuscripcionCreateManyPropiedadInputEnvelope
+  set?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  disconnect?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  delete?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  connect?: Prisma.SuscripcionWhereUniqueInput | Prisma.SuscripcionWhereUniqueInput[]
+  update?: Prisma.SuscripcionUpdateWithWhereUniqueWithoutPropiedadInput | Prisma.SuscripcionUpdateWithWhereUniqueWithoutPropiedadInput[]
+  updateMany?: Prisma.SuscripcionUpdateManyWithWhereWithoutPropiedadInput | Prisma.SuscripcionUpdateManyWithWhereWithoutPropiedadInput[]
+  deleteMany?: Prisma.SuscripcionScalarWhereInput | Prisma.SuscripcionScalarWhereInput[]
+}
+
 export type EnumEstadoServicioFieldUpdateOperationsInput = {
   set?: $Enums.EstadoServicio
 }
 
 export type EnumPeriodicidadFieldUpdateOperationsInput = {
   set?: $Enums.Periodicidad
-}
-
-export type SuscripcionCreateNestedOneWithoutItemsInput = {
-  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutItemsInput, Prisma.SuscripcionUncheckedCreateWithoutItemsInput>
-  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutItemsInput
-  connect?: Prisma.SuscripcionWhereUniqueInput
-}
-
-export type SuscripcionUpdateOneRequiredWithoutItemsNestedInput = {
-  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutItemsInput, Prisma.SuscripcionUncheckedCreateWithoutItemsInput>
-  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutItemsInput
-  upsert?: Prisma.SuscripcionUpsertWithoutItemsInput
-  connect?: Prisma.SuscripcionWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SuscripcionUpdateToOneWithWhereWithoutItemsInput, Prisma.SuscripcionUpdateWithoutItemsInput>, Prisma.SuscripcionUncheckedUpdateWithoutItemsInput>
 }
 
 export type SuscripcionCreateNestedOneWithoutVisitasInput = {
@@ -729,6 +860,22 @@ export type SuscripcionUpdateOneWithoutOrdenesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SuscripcionUpdateToOneWithWhereWithoutOrdenesInput, Prisma.SuscripcionUpdateWithoutOrdenesInput>, Prisma.SuscripcionUncheckedUpdateWithoutOrdenesInput>
 }
 
+export type SuscripcionCreateNestedOneWithoutOrdenLineasInput = {
+  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutOrdenLineasInput, Prisma.SuscripcionUncheckedCreateWithoutOrdenLineasInput>
+  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutOrdenLineasInput
+  connect?: Prisma.SuscripcionWhereUniqueInput
+}
+
+export type SuscripcionUpdateOneWithoutOrdenLineasNestedInput = {
+  create?: Prisma.XOR<Prisma.SuscripcionCreateWithoutOrdenLineasInput, Prisma.SuscripcionUncheckedCreateWithoutOrdenLineasInput>
+  connectOrCreate?: Prisma.SuscripcionCreateOrConnectWithoutOrdenLineasInput
+  upsert?: Prisma.SuscripcionUpsertWithoutOrdenLineasInput
+  disconnect?: Prisma.SuscripcionWhereInput | boolean
+  delete?: Prisma.SuscripcionWhereInput | boolean
+  connect?: Prisma.SuscripcionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SuscripcionUpdateToOneWithWhereWithoutOrdenLineasInput, Prisma.SuscripcionUpdateWithoutOrdenLineasInput>, Prisma.SuscripcionUncheckedUpdateWithoutOrdenLineasInput>
+}
+
 export type SuscripcionCreateWithoutCreatedByInput = {
   id?: string
   numero?: number
@@ -736,13 +883,17 @@ export type SuscripcionCreateWithoutCreatedByInput = {
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutSuscripcionesInput
+  propiedad: Prisma.PropiedadCreateNestedOneWithoutSuscripcionesInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesUpdatedInput
-  items?: Prisma.SuscripcionItemCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -750,16 +901,20 @@ export type SuscripcionUncheckedCreateWithoutCreatedByInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   updatedById?: string | null
-  items?: Prisma.SuscripcionItemUncheckedCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -780,13 +935,17 @@ export type SuscripcionCreateWithoutUpdatedByInput = {
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutSuscripcionesInput
+  propiedad: Prisma.PropiedadCreateNestedOneWithoutSuscripcionesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesCreatedInput
-  items?: Prisma.SuscripcionItemCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -794,16 +953,20 @@ export type SuscripcionUncheckedCreateWithoutUpdatedByInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdById?: string | null
-  items?: Prisma.SuscripcionItemUncheckedCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -840,10 +1003,14 @@ export type SuscripcionScalarWhereInput = {
   id?: Prisma.StringFilter<"Suscripcion"> | string
   numero?: Prisma.IntFilter<"Suscripcion"> | number
   clienteId?: Prisma.StringFilter<"Suscripcion"> | string
+  propiedadId?: Prisma.StringFilter<"Suscripcion"> | string
   estado?: Prisma.EnumEstadoServicioFilter<"Suscripcion"> | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFilter<"Suscripcion"> | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   fechaFin?: Prisma.DateTimeNullableFilter<"Suscripcion"> | Date | string | null
+  precio?: Prisma.DecimalFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFilter<"Suscripcion"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFilter<"Suscripcion"> | number
   notas?: Prisma.StringNullableFilter<"Suscripcion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Suscripcion"> | Date | string
@@ -874,30 +1041,38 @@ export type SuscripcionCreateWithoutClienteInput = {
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  propiedad: Prisma.PropiedadCreateNestedOneWithoutSuscripcionesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesUpdatedInput
-  items?: Prisma.SuscripcionItemCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutSuscripcionInput
 }
 
 export type SuscripcionUncheckedCreateWithoutClienteInput = {
   id?: string
   numero?: number
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdById?: string | null
   updatedById?: string | null
-  items?: Prisma.SuscripcionItemUncheckedCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -927,13 +1102,16 @@ export type SuscripcionUpdateManyWithWhereWithoutClienteInput = {
   data: Prisma.XOR<Prisma.SuscripcionUpdateManyMutationInput, Prisma.SuscripcionUncheckedUpdateManyWithoutClienteInput>
 }
 
-export type SuscripcionCreateWithoutItemsInput = {
+export type SuscripcionCreateWithoutPropiedadInput = {
   id?: string
   numero?: number
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -941,10 +1119,11 @@ export type SuscripcionCreateWithoutItemsInput = {
   createdBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesUpdatedInput
   ordenes?: Prisma.OrdenCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutSuscripcionInput
 }
 
-export type SuscripcionUncheckedCreateWithoutItemsInput = {
+export type SuscripcionUncheckedCreateWithoutPropiedadInput = {
   id?: string
   numero?: number
   clienteId: string
@@ -952,62 +1131,43 @@ export type SuscripcionUncheckedCreateWithoutItemsInput = {
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdById?: string | null
   updatedById?: string | null
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutSuscripcionInput
 }
 
-export type SuscripcionCreateOrConnectWithoutItemsInput = {
+export type SuscripcionCreateOrConnectWithoutPropiedadInput = {
   where: Prisma.SuscripcionWhereUniqueInput
-  create: Prisma.XOR<Prisma.SuscripcionCreateWithoutItemsInput, Prisma.SuscripcionUncheckedCreateWithoutItemsInput>
+  create: Prisma.XOR<Prisma.SuscripcionCreateWithoutPropiedadInput, Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput>
 }
 
-export type SuscripcionUpsertWithoutItemsInput = {
-  update: Prisma.XOR<Prisma.SuscripcionUpdateWithoutItemsInput, Prisma.SuscripcionUncheckedUpdateWithoutItemsInput>
-  create: Prisma.XOR<Prisma.SuscripcionCreateWithoutItemsInput, Prisma.SuscripcionUncheckedCreateWithoutItemsInput>
-  where?: Prisma.SuscripcionWhereInput
+export type SuscripcionCreateManyPropiedadInputEnvelope = {
+  data: Prisma.SuscripcionCreateManyPropiedadInput | Prisma.SuscripcionCreateManyPropiedadInput[]
+  skipDuplicates?: boolean
 }
 
-export type SuscripcionUpdateToOneWithWhereWithoutItemsInput = {
-  where?: Prisma.SuscripcionWhereInput
-  data: Prisma.XOR<Prisma.SuscripcionUpdateWithoutItemsInput, Prisma.SuscripcionUncheckedUpdateWithoutItemsInput>
+export type SuscripcionUpsertWithWhereUniqueWithoutPropiedadInput = {
+  where: Prisma.SuscripcionWhereUniqueInput
+  update: Prisma.XOR<Prisma.SuscripcionUpdateWithoutPropiedadInput, Prisma.SuscripcionUncheckedUpdateWithoutPropiedadInput>
+  create: Prisma.XOR<Prisma.SuscripcionCreateWithoutPropiedadInput, Prisma.SuscripcionUncheckedCreateWithoutPropiedadInput>
 }
 
-export type SuscripcionUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
-  periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
-  fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
-  createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
-  updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
-  ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
-  visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
+export type SuscripcionUpdateWithWhereUniqueWithoutPropiedadInput = {
+  where: Prisma.SuscripcionWhereUniqueInput
+  data: Prisma.XOR<Prisma.SuscripcionUpdateWithoutPropiedadInput, Prisma.SuscripcionUncheckedUpdateWithoutPropiedadInput>
 }
 
-export type SuscripcionUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  numero?: Prisma.IntFieldUpdateOperationsInput | number
-  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
-  estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
-  periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
-  fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
-  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
+export type SuscripcionUpdateManyWithWhereWithoutPropiedadInput = {
+  where: Prisma.SuscripcionScalarWhereInput
+  data: Prisma.XOR<Prisma.SuscripcionUpdateManyMutationInput, Prisma.SuscripcionUncheckedUpdateManyWithoutPropiedadInput>
 }
 
 export type SuscripcionCreateWithoutVisitasInput = {
@@ -1017,31 +1177,39 @@ export type SuscripcionCreateWithoutVisitasInput = {
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutSuscripcionesInput
+  propiedad: Prisma.PropiedadCreateNestedOneWithoutSuscripcionesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesUpdatedInput
-  items?: Prisma.SuscripcionItemCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionInput
 }
 
 export type SuscripcionUncheckedCreateWithoutVisitasInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdById?: string | null
   updatedById?: string | null
-  items?: Prisma.SuscripcionItemUncheckedCreateNestedManyWithoutSuscripcionInput
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionInput
 }
 
 export type SuscripcionCreateOrConnectWithoutVisitasInput = {
@@ -1066,31 +1234,39 @@ export type SuscripcionUpdateWithoutVisitasInput = {
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
+  propiedad?: Prisma.PropiedadUpdateOneRequiredWithoutSuscripcionesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
-  items?: Prisma.SuscripcionItemUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionNestedInput
 }
 
 export type SuscripcionUncheckedUpdateWithoutVisitasInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  items?: Prisma.SuscripcionItemUncheckedUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionNestedInput
 }
 
 export type SuscripcionCreateWithoutOrdenesInput = {
@@ -1100,13 +1276,17 @@ export type SuscripcionCreateWithoutOrdenesInput = {
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   cliente: Prisma.ClienteCreateNestedOneWithoutSuscripcionesInput
+  propiedad: Prisma.PropiedadCreateNestedOneWithoutSuscripcionesInput
   createdBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesCreatedInput
   updatedBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesUpdatedInput
-  items?: Prisma.SuscripcionItemCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -1114,16 +1294,20 @@ export type SuscripcionUncheckedCreateWithoutOrdenesInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   createdById?: string | null
   updatedById?: string | null
-  items?: Prisma.SuscripcionItemUncheckedCreateNestedManyWithoutSuscripcionInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedCreateNestedManyWithoutSuscripcionInput
   visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutSuscripcionInput
 }
 
@@ -1149,13 +1333,17 @@ export type SuscripcionUpdateWithoutOrdenesInput = {
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
+  propiedad?: Prisma.PropiedadUpdateOneRequiredWithoutSuscripcionesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
-  items?: Prisma.SuscripcionItemUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -1163,16 +1351,119 @@ export type SuscripcionUncheckedUpdateWithoutOrdenesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  items?: Prisma.SuscripcionItemUncheckedUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionNestedInput
+  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
+}
+
+export type SuscripcionCreateWithoutOrdenLineasInput = {
+  id?: string
+  numero?: number
+  estado?: $Enums.EstadoServicio
+  periodicidad?: $Enums.Periodicidad
+  fechaInicio: Date | string
+  fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
+  notas?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  cliente: Prisma.ClienteCreateNestedOneWithoutSuscripcionesInput
+  propiedad: Prisma.PropiedadCreateNestedOneWithoutSuscripcionesInput
+  createdBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutSuscripcionesUpdatedInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutSuscripcionInput
+  visitas?: Prisma.VisitaCreateNestedManyWithoutSuscripcionInput
+}
+
+export type SuscripcionUncheckedCreateWithoutOrdenLineasInput = {
+  id?: string
+  numero?: number
+  clienteId: string
+  propiedadId: string
+  estado?: $Enums.EstadoServicio
+  periodicidad?: $Enums.Periodicidad
+  fechaInicio: Date | string
+  fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
+  notas?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdById?: string | null
+  updatedById?: string | null
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutSuscripcionInput
+  visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutSuscripcionInput
+}
+
+export type SuscripcionCreateOrConnectWithoutOrdenLineasInput = {
+  where: Prisma.SuscripcionWhereUniqueInput
+  create: Prisma.XOR<Prisma.SuscripcionCreateWithoutOrdenLineasInput, Prisma.SuscripcionUncheckedCreateWithoutOrdenLineasInput>
+}
+
+export type SuscripcionUpsertWithoutOrdenLineasInput = {
+  update: Prisma.XOR<Prisma.SuscripcionUpdateWithoutOrdenLineasInput, Prisma.SuscripcionUncheckedUpdateWithoutOrdenLineasInput>
+  create: Prisma.XOR<Prisma.SuscripcionCreateWithoutOrdenLineasInput, Prisma.SuscripcionUncheckedCreateWithoutOrdenLineasInput>
+  where?: Prisma.SuscripcionWhereInput
+}
+
+export type SuscripcionUpdateToOneWithWhereWithoutOrdenLineasInput = {
+  where?: Prisma.SuscripcionWhereInput
+  data: Prisma.XOR<Prisma.SuscripcionUpdateWithoutOrdenLineasInput, Prisma.SuscripcionUncheckedUpdateWithoutOrdenLineasInput>
+}
+
+export type SuscripcionUpdateWithoutOrdenLineasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
+  periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
+  fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
+  propiedad?: Prisma.PropiedadUpdateOneRequiredWithoutSuscripcionesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
+  visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
+}
+
+export type SuscripcionUncheckedUpdateWithoutOrdenLineasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
+  periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
+  fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -1180,10 +1471,14 @@ export type SuscripcionCreateManyCreatedByInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1194,10 +1489,14 @@ export type SuscripcionCreateManyUpdatedByInput = {
   id?: string
   numero?: number
   clienteId: string
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1210,13 +1509,17 @@ export type SuscripcionUpdateWithoutCreatedByInput = {
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
+  propiedad?: Prisma.PropiedadUpdateOneRequiredWithoutSuscripcionesNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
-  items?: Prisma.SuscripcionItemUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -1224,16 +1527,20 @@ export type SuscripcionUncheckedUpdateWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  items?: Prisma.SuscripcionItemUncheckedUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -1241,10 +1548,14 @@ export type SuscripcionUncheckedUpdateManyWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1257,13 +1568,17 @@ export type SuscripcionUpdateWithoutUpdatedByInput = {
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
+  propiedad?: Prisma.PropiedadUpdateOneRequiredWithoutSuscripcionesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
-  items?: Prisma.SuscripcionItemUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -1271,16 +1586,20 @@ export type SuscripcionUncheckedUpdateWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  items?: Prisma.SuscripcionItemUncheckedUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
 }
 
@@ -1288,10 +1607,14 @@ export type SuscripcionUncheckedUpdateManyWithoutUpdatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
   clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1301,10 +1624,14 @@ export type SuscripcionUncheckedUpdateManyWithoutUpdatedByInput = {
 export type SuscripcionCreateManyClienteInput = {
   id?: string
   numero?: number
+  propiedadId: string
   estado?: $Enums.EstadoServicio
   periodicidad?: $Enums.Periodicidad
   fechaInicio: Date | string
   fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1318,40 +1645,129 @@ export type SuscripcionUpdateWithoutClienteInput = {
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  propiedad?: Prisma.PropiedadUpdateOneRequiredWithoutSuscripcionesNestedInput
   createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
   updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
-  items?: Prisma.SuscripcionItemUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
 }
 
 export type SuscripcionUncheckedUpdateWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  items?: Prisma.SuscripcionItemUncheckedUpdateManyWithoutSuscripcionNestedInput
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
 }
 
 export type SuscripcionUncheckedUpdateManyWithoutClienteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   numero?: Prisma.IntFieldUpdateOperationsInput | number
+  propiedadId?: Prisma.StringFieldUpdateOperationsInput | string
   estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
   periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
   fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type SuscripcionCreateManyPropiedadInput = {
+  id?: string
+  numero?: number
+  clienteId: string
+  estado?: $Enums.EstadoServicio
+  periodicidad?: $Enums.Periodicidad
+  fechaInicio: Date | string
+  fechaFin?: Date | string | null
+  precio: runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo: number
+  notas?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdById?: string | null
+  updatedById?: string | null
+}
+
+export type SuscripcionUpdateWithoutPropiedadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
+  periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
+  fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cliente?: Prisma.ClienteUpdateOneRequiredWithoutSuscripcionesNestedInput
+  createdBy?: Prisma.UserUpdateOneWithoutSuscripcionesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutSuscripcionesUpdatedNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUpdateManyWithoutSuscripcionNestedInput
+  visitas?: Prisma.VisitaUpdateManyWithoutSuscripcionNestedInput
+}
+
+export type SuscripcionUncheckedUpdateWithoutPropiedadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
+  periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
+  fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutSuscripcionNestedInput
+  ordenLineas?: Prisma.OrdenLineaUncheckedUpdateManyWithoutSuscripcionNestedInput
+  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutSuscripcionNestedInput
+}
+
+export type SuscripcionUncheckedUpdateManyWithoutPropiedadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  numero?: Prisma.IntFieldUpdateOperationsInput | number
+  clienteId?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.EnumEstadoServicioFieldUpdateOperationsInput | $Enums.EstadoServicio
+  periodicidad?: Prisma.EnumPeriodicidadFieldUpdateOperationsInput | $Enums.Periodicidad
+  fechaInicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaFin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  precio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  ivaTasa?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  visitasPorPeriodo?: Prisma.IntFieldUpdateOperationsInput | number
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1365,14 +1781,14 @@ export type SuscripcionUncheckedUpdateManyWithoutClienteInput = {
  */
 
 export type SuscripcionCountOutputType = {
-  items: number
   ordenes: number
+  ordenLineas: number
   visitas: number
 }
 
 export type SuscripcionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  items?: boolean | SuscripcionCountOutputTypeCountItemsArgs
   ordenes?: boolean | SuscripcionCountOutputTypeCountOrdenesArgs
+  ordenLineas?: boolean | SuscripcionCountOutputTypeCountOrdenLineasArgs
   visitas?: boolean | SuscripcionCountOutputTypeCountVisitasArgs
 }
 
@@ -1389,15 +1805,15 @@ export type SuscripcionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.
 /**
  * SuscripcionCountOutputType without action
  */
-export type SuscripcionCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.SuscripcionItemWhereInput
+export type SuscripcionCountOutputTypeCountOrdenesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenWhereInput
 }
 
 /**
  * SuscripcionCountOutputType without action
  */
-export type SuscripcionCountOutputTypeCountOrdenesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.OrdenWhereInput
+export type SuscripcionCountOutputTypeCountOrdenLineasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrdenLineaWhereInput
 }
 
 /**
@@ -1412,20 +1828,25 @@ export type SuscripcionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   id?: boolean
   numero?: boolean
   clienteId?: boolean
+  propiedadId?: boolean
   estado?: boolean
   periodicidad?: boolean
   fechaInicio?: boolean
   fechaFin?: boolean
+  precio?: boolean
+  ivaTasa?: boolean
+  visitasPorPeriodo?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdById?: boolean
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  propiedad?: boolean | Prisma.PropiedadDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.Suscripcion$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Suscripcion$updatedByArgs<ExtArgs>
-  items?: boolean | Prisma.Suscripcion$itemsArgs<ExtArgs>
   ordenes?: boolean | Prisma.Suscripcion$ordenesArgs<ExtArgs>
+  ordenLineas?: boolean | Prisma.Suscripcion$ordenLineasArgs<ExtArgs>
   visitas?: boolean | Prisma.Suscripcion$visitasArgs<ExtArgs>
   _count?: boolean | Prisma.SuscripcionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["suscripcion"]>
@@ -1434,16 +1855,21 @@ export type SuscripcionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   numero?: boolean
   clienteId?: boolean
+  propiedadId?: boolean
   estado?: boolean
   periodicidad?: boolean
   fechaInicio?: boolean
   fechaFin?: boolean
+  precio?: boolean
+  ivaTasa?: boolean
+  visitasPorPeriodo?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdById?: boolean
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  propiedad?: boolean | Prisma.PropiedadDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.Suscripcion$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Suscripcion$updatedByArgs<ExtArgs>
 }, ExtArgs["result"]["suscripcion"]>
@@ -1452,16 +1878,21 @@ export type SuscripcionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   numero?: boolean
   clienteId?: boolean
+  propiedadId?: boolean
   estado?: boolean
   periodicidad?: boolean
   fechaInicio?: boolean
   fechaFin?: boolean
+  precio?: boolean
+  ivaTasa?: boolean
+  visitasPorPeriodo?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdById?: boolean
   updatedById?: boolean
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  propiedad?: boolean | Prisma.PropiedadDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.Suscripcion$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Suscripcion$updatedByArgs<ExtArgs>
 }, ExtArgs["result"]["suscripcion"]>
@@ -1470,10 +1901,14 @@ export type SuscripcionSelectScalar = {
   id?: boolean
   numero?: boolean
   clienteId?: boolean
+  propiedadId?: boolean
   estado?: boolean
   periodicidad?: boolean
   fechaInicio?: boolean
   fechaFin?: boolean
+  precio?: boolean
+  ivaTasa?: boolean
+  visitasPorPeriodo?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1481,23 +1916,26 @@ export type SuscripcionSelectScalar = {
   updatedById?: boolean
 }
 
-export type SuscripcionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero" | "clienteId" | "estado" | "periodicidad" | "fechaInicio" | "fechaFin" | "notas" | "createdAt" | "updatedAt" | "createdById" | "updatedById", ExtArgs["result"]["suscripcion"]>
+export type SuscripcionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero" | "clienteId" | "propiedadId" | "estado" | "periodicidad" | "fechaInicio" | "fechaFin" | "precio" | "ivaTasa" | "visitasPorPeriodo" | "notas" | "createdAt" | "updatedAt" | "createdById" | "updatedById", ExtArgs["result"]["suscripcion"]>
 export type SuscripcionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  propiedad?: boolean | Prisma.PropiedadDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.Suscripcion$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Suscripcion$updatedByArgs<ExtArgs>
-  items?: boolean | Prisma.Suscripcion$itemsArgs<ExtArgs>
   ordenes?: boolean | Prisma.Suscripcion$ordenesArgs<ExtArgs>
+  ordenLineas?: boolean | Prisma.Suscripcion$ordenLineasArgs<ExtArgs>
   visitas?: boolean | Prisma.Suscripcion$visitasArgs<ExtArgs>
   _count?: boolean | Prisma.SuscripcionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SuscripcionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  propiedad?: boolean | Prisma.PropiedadDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.Suscripcion$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Suscripcion$updatedByArgs<ExtArgs>
 }
 export type SuscripcionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cliente?: boolean | Prisma.ClienteDefaultArgs<ExtArgs>
+  propiedad?: boolean | Prisma.PropiedadDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.Suscripcion$createdByArgs<ExtArgs>
   updatedBy?: boolean | Prisma.Suscripcion$updatedByArgs<ExtArgs>
 }
@@ -1506,10 +1944,16 @@ export type $SuscripcionPayload<ExtArgs extends runtime.Types.Extensions.Interna
   name: "Suscripcion"
   objects: {
     cliente: Prisma.$ClientePayload<ExtArgs>
+    propiedad: Prisma.$PropiedadPayload<ExtArgs>
     createdBy: Prisma.$UserPayload<ExtArgs> | null
     updatedBy: Prisma.$UserPayload<ExtArgs> | null
-    items: Prisma.$SuscripcionItemPayload<ExtArgs>[]
     ordenes: Prisma.$OrdenPayload<ExtArgs>[]
+    /**
+     * Las líneas que cobraron uno de sus períodos. Es la relación que sostiene
+     * el índice único `[suscripcionId, periodoInicio]`: un período se factura
+     * una sola vez.
+     */
+    ordenLineas: Prisma.$OrdenLineaPayload<ExtArgs>[]
     visitas: Prisma.$VisitaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1524,14 +1968,45 @@ export type $SuscripcionPayload<ExtArgs extends runtime.Types.Extensions.Interna
      */
     numero: number
     clienteId: string
+    /**
+     * De qué propiedad del cliente es el plan.
+     * 
+     * Un plan es "mantener este jardín": el precio y las visitas son de un
+     * lugar, no de una persona. Un cliente con casa y oficina tiene dos planes
+     * —o uno solo, y la otra se cobra aparte—, y sus visitas cuentan contra el
+     * plan de la propiedad donde pasan. Obligatoria porque un plan sin lugar no
+     * dice qué jardín cubre, y `Restrict` porque un plan que renueva solo no
+     * puede quedar apuntando a una propiedad que ya no está.
+     */
+    propiedadId: string
     estado: $Enums.EstadoServicio
     /**
-     * El ciclo lo define la suscripción, no el producto: el mismo producto puede
-     * ser mensual para un cliente y trimestral para otro.
+     * El ciclo lo define la suscripción: el mismo trabajo puede ser mensual
+     * para un cliente y trimestral para otro.
      */
     periodicidad: $Enums.Periodicidad
     fechaInicio: Date
     fechaFin: Date | null
+    /**
+     * Lo que se cobra **por período**, sin IVA. En una trimestral es el precio
+     * del trimestre.
+     * 
+     * El plan no lleva productos: antes era una lista de ítems del catálogo,
+     * cada uno con su precio, y armar un plan era elegir tres productos y
+     * ponerles precio a cada uno para llegar a la mensualidad que ya se había
+     * acordado con el cliente. Lo que se pacta es un número por un jardín, y
+     * eso es lo que se guarda.
+     */
+    precio: runtime.Decimal
+    /**
+     * Porcentaje. En Ecuador conviven 0% y 15%.
+     */
+    ivaTasa: runtime.Decimal
+    /**
+     * Visitas que incluye **por período de cobro**: en una trimestral son las
+     * del trimestre. Es informativo — no es un tope, se puede agendar de más.
+     */
+    visitasPorPeriodo: number
     notas: string | null
     createdAt: Date
     updatedAt: Date
@@ -1932,10 +2407,11 @@ readonly fields: SuscripcionFieldRefs;
 export interface Prisma__SuscripcionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   cliente<T extends Prisma.ClienteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClienteDefaultArgs<ExtArgs>>): Prisma.Prisma__ClienteClient<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  propiedad<T extends Prisma.PropiedadDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PropiedadDefaultArgs<ExtArgs>>): Prisma.Prisma__PropiedadClient<runtime.Types.Result.GetResult<Prisma.$PropiedadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   createdBy<T extends Prisma.Suscripcion$createdByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Suscripcion$createdByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   updatedBy<T extends Prisma.Suscripcion$updatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Suscripcion$updatedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  items<T extends Prisma.Suscripcion$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Suscripcion$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SuscripcionItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ordenes<T extends Prisma.Suscripcion$ordenesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Suscripcion$ordenesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ordenLineas<T extends Prisma.Suscripcion$ordenLineasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Suscripcion$ordenLineasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrdenLineaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitas<T extends Prisma.Suscripcion$visitasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Suscripcion$visitasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1969,10 +2445,14 @@ export interface SuscripcionFieldRefs {
   readonly id: Prisma.FieldRef<"Suscripcion", 'String'>
   readonly numero: Prisma.FieldRef<"Suscripcion", 'Int'>
   readonly clienteId: Prisma.FieldRef<"Suscripcion", 'String'>
+  readonly propiedadId: Prisma.FieldRef<"Suscripcion", 'String'>
   readonly estado: Prisma.FieldRef<"Suscripcion", 'EstadoServicio'>
   readonly periodicidad: Prisma.FieldRef<"Suscripcion", 'Periodicidad'>
   readonly fechaInicio: Prisma.FieldRef<"Suscripcion", 'DateTime'>
   readonly fechaFin: Prisma.FieldRef<"Suscripcion", 'DateTime'>
+  readonly precio: Prisma.FieldRef<"Suscripcion", 'Decimal'>
+  readonly ivaTasa: Prisma.FieldRef<"Suscripcion", 'Decimal'>
+  readonly visitasPorPeriodo: Prisma.FieldRef<"Suscripcion", 'Int'>
   readonly notas: Prisma.FieldRef<"Suscripcion", 'String'>
   readonly createdAt: Prisma.FieldRef<"Suscripcion", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Suscripcion", 'DateTime'>
@@ -2417,30 +2897,6 @@ export type Suscripcion$updatedByArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
- * Suscripcion.items
- */
-export type Suscripcion$itemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the SuscripcionItem
-   */
-  select?: Prisma.SuscripcionItemSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the SuscripcionItem
-   */
-  omit?: Prisma.SuscripcionItemOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SuscripcionItemInclude<ExtArgs> | null
-  where?: Prisma.SuscripcionItemWhereInput
-  orderBy?: Prisma.SuscripcionItemOrderByWithRelationInput | Prisma.SuscripcionItemOrderByWithRelationInput[]
-  cursor?: Prisma.SuscripcionItemWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.SuscripcionItemScalarFieldEnum | Prisma.SuscripcionItemScalarFieldEnum[]
-}
-
-/**
  * Suscripcion.ordenes
  */
 export type Suscripcion$ordenesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2462,6 +2918,30 @@ export type Suscripcion$ordenesArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.OrdenScalarFieldEnum | Prisma.OrdenScalarFieldEnum[]
+}
+
+/**
+ * Suscripcion.ordenLineas
+ */
+export type Suscripcion$ordenLineasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrdenLinea
+   */
+  select?: Prisma.OrdenLineaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrdenLinea
+   */
+  omit?: Prisma.OrdenLineaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrdenLineaInclude<ExtArgs> | null
+  where?: Prisma.OrdenLineaWhereInput
+  orderBy?: Prisma.OrdenLineaOrderByWithRelationInput | Prisma.OrdenLineaOrderByWithRelationInput[]
+  cursor?: Prisma.OrdenLineaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrdenLineaScalarFieldEnum | Prisma.OrdenLineaScalarFieldEnum[]
 }
 
 /**

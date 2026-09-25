@@ -106,7 +106,18 @@ export async function eliminarPropiedad(
 
   const propiedad = await prisma.propiedad.findFirst({
     where: { id: propiedadId, clienteId, deletedAt: null },
-    select: { id: true, nombre: true, _count: { select: { visitas: true } } },
+    select: {
+      id: true,
+      nombre: true,
+      _count: {
+        select: {
+          visitas: true,
+          // Un plan vivo es de un jardín: sin el jardín no dice qué cubre. Uno
+          // cancelado no cuenta —ya no renueva— y se queda como historia.
+          suscripciones: { where: { estado: { not: "CANCELADO" } } },
+        },
+      },
+    },
   });
   if (!propiedad) throw new NotFoundError("Propiedad no encontrada");
 
@@ -115,6 +126,11 @@ export async function eliminarPropiedad(
       `${propiedad.nombre} tiene ${propiedad._count.visitas} visita${
         propiedad._count.visitas === 1 ? "" : "s"
       }, así que no se puede eliminar.`
+    );
+  }
+  if (propiedad._count.suscripciones > 0) {
+    throw new ConflictError(
+      `${propiedad.nombre} tiene una suscripción vigente. Cancélala o pásala a otra propiedad antes de eliminarla.`
     );
   }
 

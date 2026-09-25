@@ -20,6 +20,7 @@ import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { nombreCliente } from "@vivero/shared";
+import { PERIODICIDAD_LABEL, unidadDePeriodo } from "@/lib/periodos";
 import {
   SelectorTareas,
   type TareaElegible,
@@ -91,7 +92,14 @@ interface PlanOpcion {
   numero: number;
   estado: string;
   periodicidad: string;
-  productos: { productoId: string; nombre: string; visitasPorPeriodo: number | null }[];
+  visitasPorPeriodo: number;
+  /** De qué jardín es el plan: elegirlo elige la propiedad. */
+  propiedad: { id: string; nombre: string };
+}
+
+/** "Casa · Mensual · 4 visitas/mes": lo que distingue un plan de otro. */
+function describirPlan(sus: PlanOpcion): string {
+  return `${sus.propiedad.nombre} · ${PERIODICIDAD_LABEL[sus.periodicidad] ?? sus.periodicidad} · ${sus.visitasPorPeriodo} visita${sus.visitasPorPeriodo === 1 ? "" : "s"}/${unidadDePeriodo(sus.periodicidad)}`;
 }
 
 export function EditarVisitaPage({
@@ -123,6 +131,19 @@ export function EditarVisitaPage({
   const [personalIds, setPersonalIds] = useState(visita.personalIds);
   const [propiedadId, setPropiedadId] = useState(visita.propiedadId);
   const [notas, setNotas] = useState(visita.notas ?? "");
+
+  // El plan es de un jardín: elegirlo pone su propiedad, y cambiar de
+  // propiedad suelta un plan que no sea de esa.
+  const elegirPlan = (id: string) => {
+    setSuscripcionId(id);
+    const plan = planes.find((s) => s.id === id);
+    if (plan) setPropiedadId(plan.propiedad.id);
+  };
+  const elegirPropiedad = (id: string) => {
+    setPropiedadId(id);
+    const plan = planes.find((s) => s.id === suscripcionId);
+    if (plan && plan.propiedad.id !== id) setSuscripcionId("");
+  };
 
   const elegidas = tareas.filter((t) => tareaIds.includes(t.id));
 
@@ -274,7 +295,7 @@ export function EditarVisitaPage({
               <CardContent>
                 <CustomSelect
                   value={suscripcionId}
-                  onChange={setSuscripcionId}
+                  onChange={elegirPlan}
                   options={planes.map((sus) => ({
                     value: sus.id,
                     label: `Suscripción #${sus.numero}${
@@ -282,7 +303,7 @@ export function EditarVisitaPage({
                         ? ""
                         : ` · ${sus.estado.charAt(0)}${sus.estado.slice(1).toLowerCase()}`
                     }`,
-                    hint: sus.productos.map((x) => x.nombre).join(", "),
+                    hint: describirPlan(sus),
                   }))}
                   placeholder="Sin suscripción"
                   clearable
@@ -369,7 +390,7 @@ export function EditarVisitaPage({
                 <Label>Propiedad</Label>
                 <CustomSelect
                   value={propiedadId}
-                  onChange={setPropiedadId}
+                  onChange={elegirPropiedad}
                   options={visita.cliente.propiedades.map((p) => ({
                     value: p.id,
                     label: p.nombre,

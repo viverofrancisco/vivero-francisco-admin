@@ -4,7 +4,20 @@
 import type { LineaEncabezado } from "./encabezado";
 
 /** Cuántas fotos entran en una fila. Es la palanca de densidad de la sección. */
-export type FotosPorFila = 2 | 3 | 4;
+export type FotosPorFila = 2 | 3 | 4 | 5 | 6;
+
+export const FOTOS_POR_FILA: FotosPorFila[] = [2, 3, 4, 5, 6];
+
+export function esFotosPorFila(v: unknown): v is FotosPorFila {
+  return v === 2 || v === 3 || v === 4 || v === 5 || v === 6;
+}
+
+/** Hacia dónde se arriman las fotos de una fila incompleta. */
+export type AlineacionDeFotos = "IZQUIERDA" | "CENTRO" | "DERECHA";
+
+export function esAlineacionDeFotos(v: unknown): v is AlineacionDeFotos {
+  return v === "IZQUIERDA" || v === "CENTRO" || v === "DERECHA";
+}
 
 export interface InformeRenderSeccion {
   titulo: string;
@@ -15,6 +28,7 @@ export interface InformeRenderSeccion {
   /** Empieza en una hoja nueva. */
   saltoDePagina: boolean;
   fotosPorFila: FotosPorFila;
+  fotosAlineacion: AlineacionDeFotos;
 }
 
 export interface InformeRenderFirmante {

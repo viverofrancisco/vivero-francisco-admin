@@ -54,6 +54,16 @@ export default async function VisitaDetailPage({
         },
       },
       ...TAREAS_DE_VISITA_INCLUDE,
+      // De qué plan es, si es de alguno: la ficha lo muestra con un link.
+      suscripcion: {
+        select: {
+          id: true,
+          numero: true,
+          periodicidad: true,
+          estado: true,
+          propiedad: { select: { nombre: true } },
+        },
+      },
       grupo: {
         select: {
           id: true,
@@ -128,6 +138,7 @@ export default async function VisitaDetailPage({
     media: visita.media,
     cliente: visita.cliente,
     propiedad: visita.propiedad,
+    suscripcion: visita.suscripcion,
     grupo: visita.grupo,
     tareasObligatorias: visita.tareasObligatorias,
     // Los partes de cada uno, con la fecha como texto para que crucen el

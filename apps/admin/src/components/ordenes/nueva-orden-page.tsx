@@ -21,38 +21,44 @@ import {
   ivaDeLista,
   precioAlCambiarVariante,
   precioDeLista,
-  type VarianteVendible,
 } from "@/components/ordenes/selector-variante";
 import {
   SelectorVisitas,
   type VisitaVinculable,
+  esPersonalizada,
+  lineaPersonalizada,
   origenDeLinea,
   nuevoUid,
   type LineaEditable,
   type Pendiente,
 } from "./selector-visitas";
+import {
+  Casilla,
+  SelectorProductos,
+  type ProductoElegible,
+  type VarianteElegida,
+} from "./selector-productos";
+import {
+  HojaItemPersonalizado,
+  type ItemPersonalizado,
+} from "./item-personalizado";
+import {
+  SelectorClienteMovil,
+  type ClienteElegible,
+} from "@/components/clientes/selector-cliente-movil";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCatalogo } from "./use-catalogo";
 import { nombreCliente } from "@vivero/shared";
 import { tareasHechas } from "@/lib/visita-tareas";
+import { cn } from "@/lib/utils";
 import { money, fecha } from "./formato";
-import { SelectorDatosFacturacion } from "@/components/facturacion/selector-datos-facturacion";
 
-interface Cliente {
-  id: string;
-  nombre: string;
-  apellido: string | null;
-  empresa: string | null;
-}
+/** Un cliente para elegir: lo que la fila del teléfono muestra debajo del nombre. */
+type Cliente = ClienteElegible;
 
-interface Producto {
-  id: string;
-  nombre: string;
-  ivaTasa: number | null;
-  /** Vacío en un servicio; una sola en un bien sin opciones. */
-  variantes: VarianteVendible[];
-}
+/** Un producto del catálogo, con sus variantes. */
+type Producto = ProductoElegible;
 
 /**
  * El tipo de línea, el de pendiente y el rearmado por visitas viven en
@@ -62,11 +68,12 @@ interface Producto {
 type Linea = LineaEditable;
 
 /**
- * Toda línea sale de un producto del catálogo.
+ * Toda línea que se agrega a mano sale de un producto del catálogo.
  *
  * El SRI pide un `codigoPrincipal` en cada detalle y ese código sale del
  * producto, así que una línea suelta sería una orden imposible de cobrar. Si
- * algo no está en el catálogo, hay que crearlo como producto primero.
+ * algo no está en el catálogo, hay que crearlo como producto primero. La única
+ * sin producto es la de un período de plan: su código es el número del plan.
  */
 function lineaBase(): Omit<Linea, "descripcion" | "productoId"> {
   return {
@@ -75,29 +82,32 @@ function lineaBase(): Omit<Linea, "descripcion" | "productoId"> {
     precioUnitario: "",
     ivaTasa: "0",
     varianteId: null,
-    suscripcionItemId: null,
+    suscripcionId: null,
     periodoInicio: null,
     periodoFin: null,
   };
 }
 
-/** Un pendiente convertido en línea de la orden. */
+/** Un período pendiente convertido en la línea de la orden. */
 function lineaDesde(p: Pendiente): Linea {
   return {
     ...lineaBase(),
     descripcion: p.descripcion,
     precioUnitario: String(Number(p.precio)),
     ivaTasa: String(Number(p.ivaTasa)),
-    productoId: p.productoId,
-    suscripcionItemId: p.suscripcionItemId ?? null,
-    periodoInicio: p.periodoInicio ?? null,
-    periodoFin: p.periodoFin ?? null,
+    productoId: null,
+    suscripcionId: p.suscripcionId,
+    periodoInicio: p.periodoInicio,
+    periodoFin: p.periodoFin,
   };
 }
 
-/** Clave estable de un pendiente, para no ofrecer dos veces lo mismo. */
-function clavePendiente(p: Pendiente): string {
-  return `${p.suscripcionItemId}:${p.periodoInicio}`;
+/** Clave estable de un pendiente: la misma del índice único de `OrdenLinea`. */
+function clavePendiente(p: {
+  suscripcionId: string | null;
+  periodoInicio: string | null;
+}): string {
+  return `${p.suscripcionId}:${p.periodoInicio}`;
 }
 
 function importes(l: Linea) {
@@ -112,7 +122,6 @@ export function NuevaOrdenPage({
   hayMasProductos = false,
   clienteInicial,
   pendientesIniciales,
-  suscritosIniciales,
   visitasIniciales,
   desdeVisita,
 }: {
@@ -128,7 +137,6 @@ export function NuevaOrdenPage({
    * ya completa en vez de con un spinner.
    */
   pendientesIniciales?: Pendiente[];
-  suscritosIniciales?: string[];
   /** Las visitas del cliente preseleccionado, para poder marcarlas. */
   visitasIniciales?: VisitaVinculable[];
   /** De qué visita se llegó, para decirlo en pantalla. */
@@ -145,7 +153,8 @@ export function NuevaOrdenPage({
    * `pagina` es lo que muestra el desplegable; `conocidos` es todo lo que se
    * vio, y de ahí salen el precio, el IVA y las variantes de cada línea — si
    * al buscar otra cosa se fueran los anteriores, una línea ya cargada se
-   * quedaría sin los suyos.
+   * quedaría sin los suyos. Es **uno solo** para el desplegable del
+   * escritorio y el selector del teléfono, por lo mismo.
    */
   const catalogo = useCatalogo(productos, hayMasProductos);
 
@@ -153,13 +162,6 @@ export function NuevaOrdenPage({
   // son tareas, y una tarea no tiene precio. Qué se le cobra al cliente por ese
   // trabajo lo decide quien arma la orden.
   const [lineas, setLineas] = useState<Linea[]>([]);
-  /**
-   * Productos que este cliente ya tiene en un plan. Se pueden agregar igual
-   * —sería un extra sobre lo que el plan cubre—, pero se avisa, porque agregar
-   * sin querer lo que el plan ya cubre es cobrarlo dos veces. Depende del
-   * cliente, así que se recarga con él.
-   */
-  const [suscritos, setSuscritos] = useState<string[]>(suscritosIniciales ?? []);
 
   /**
    * De qué visitas es esta orden. Vacío = de ninguna.
@@ -178,19 +180,15 @@ export function NuevaOrdenPage({
   const [visitas, setVisitas] = useState<VisitaVinculable[]>(
     visitasIniciales ?? []
   );
-  const nombreDelCliente = (() => {
-    const c = clientes.find((x) => x.id === clienteId);
-    return c ? nombreCliente(c) : "El cliente";
-  })();
   const [pendientes, setPendientes] = useState<Pendiente[]>(
     pendientesIniciales ?? []
   );
   const [cargandoPendientes, setCargandoPendientes] = useState(false);
   const [guardando, setGuardando] = useState(false);
-  /** La orden recién creada, mientras se le registra el cobro. */
   const [productoAAgregar, setProductoAAgregar] = useState("");
-  // Con qué se va a facturar. Se elige acá, con el cliente delante.
-  const [datoFacturacionId, setDatoFacturacionId] = useState<string | null>(null);
+  /** Las dos hojas del teléfono: el selector del catálogo y el ítem a mano. */
+  const [eligiendoProductos, setEligiendoProductos] = useState(false);
+  const [agregandoPersonalizado, setAgregandoPersonalizado] = useState(false);
 
   async function cargarPendientes(id: string) {
     setCargandoPendientes(true);
@@ -201,9 +199,10 @@ export function NuevaOrdenPage({
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
       const datos = await res.json();
       setPendientes(datos.items);
-      setSuscritos(datos.suscritos ?? []);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No pudimos ver lo pendiente");
+      toast.error(
+        e instanceof Error ? e.message : "No pudimos ver lo pendiente"
+      );
     } finally {
       setCargandoPendientes(false);
     }
@@ -227,7 +226,9 @@ export function NuevaOrdenPage({
         numero: number;
         fechaProgramada: string;
         estado: string;
-        tareasObligatorias: { tarea: { id: string; nombre: string; orden: number } }[];
+        tareasObligatorias: {
+          tarea: { id: string; nombre: string; orden: number };
+        }[];
         personal: {
           personal: { nombre: string; apellido: string | null };
           tareas: { tarea: { id: string; nombre: string; orden: number } }[];
@@ -251,11 +252,9 @@ export function NuevaOrdenPage({
   const seleccionarCliente = async (id: string) => {
     setClienteId(id);
     // Las líneas que venían de pendientes eran de otro cliente: no valen más.
-    setLineas((prev) => prev.filter((l) => !l.suscripcionItemId));
+    setLineas((prev) => prev.filter((l) => !l.suscripcionId));
     setVisitaIds([]);
     setPendientes([]);
-    setSuscritos([]);
-    setDatoFacturacionId(null);
     setVisitas([]);
     if (!id) return;
     await Promise.all([cargarPendientes(id), cargarVisitas(id)]);
@@ -287,48 +286,50 @@ export function NuevaOrdenPage({
     setProductoAAgregar("");
   };
 
+  /**
+   * Lo que el selector del teléfono devuelve es la selección **entera**:
+   * entran las variantes nuevas, con su precio de lista, y salen las que se
+   * desmarcaron. Las que ya estaban se quedan como estén, precio tocado
+   * incluido. La misma regla que en la app.
+   */
+  const aplicarSeleccion = (elegidas: VarianteElegida[]) => {
+    const ids = new Set(elegidas.map((e) => e.variante.id));
+    setLineas((prev) => {
+      const quedan = prev.filter((l) => !l.varianteId || ids.has(l.varianteId));
+      const nuevas = elegidas
+        .filter((e) => !prev.some((l) => l.varianteId === e.variante.id))
+        .map<Linea>((e) => ({
+          ...lineaBase(),
+          // Con varias variantes el nombre dice cuál: en el teléfono no hay
+          // un campo aparte para eso, la elección ya se hizo en el selector.
+          descripcion:
+            e.producto.variantes.length > 1
+              ? `${e.producto.nombre} · ${e.variante.nombre}`
+              : e.producto.nombre,
+          productoId: e.producto.id,
+          varianteId: e.variante.id,
+          precioUnitario: precioDeLista(e.variante),
+          ivaTasa: ivaDeLista(e.variante, e.producto.ivaTasa),
+        }));
+      return [...quedan, ...nuevas];
+    });
+    setEligiendoProductos(false);
+  };
+
+  const agregarPersonalizado = (item: ItemPersonalizado) => {
+    setLineas((prev) => [...prev, { ...lineaPersonalizada(), ...item }]);
+    setAgregandoPersonalizado(false);
+  };
+
   // Lo que ya está en la orden no vuelve a ofrecerse. La misma clave que usa
   // el índice único de OrdenLinea, así que coincide con lo que rechaza la BD.
   const yaEnLaOrden = new Set(
-    lineas.flatMap((l) =>
-      l.suscripcionItemId ? [`${l.suscripcionItemId}:${l.periodoInicio}`] : []
-    )
+    lineas.filter((l) => l.suscripcionId).map(clavePendiente)
   );
-  const pendientesDisponibles = pendientes.filter(
-    (p) => !yaEnLaOrden.has(clavePendiente(p))
-  );
-
-  /** Lo único pendiente que existe: los períodos de plan. */
-  const periodosPendientes = pendientesDisponibles;
-
-  /**
-   * Un período, no un producto suelto.
-   *
-   * Un período se factura entero igual que una visita —agregar uno arrastra a
-   * sus hermanos—, así que una fila por producto mostraba tres veces la misma
-   * acción y hacía la lista larga sin decir nada nuevo. Una fila por período,
-   * con lo que incluye debajo.
-   */
-  const periodosAgrupados = [
-    ...periodosPendientes
-      .reduce((mapa, p) => {
-        const clave = `${p.suscripcionId}:${p.periodoInicio}`;
-        const actual = mapa.get(clave);
-        if (actual) {
-          actual.productos.push(p.descripcion);
-          actual.total += Number(p.precio);
-        } else {
-          mapa.set(clave, {
-            clave,
-            muestra: p,
-            productos: [p.descripcion],
-            total: Number(p.precio),
-          });
-        }
-        return mapa;
-      }, new Map<string, { clave: string; muestra: Pendiente; productos: string[]; total: number }>())
-      .values(),
-  ].sort((a, b) => a.muestra.periodoInicio.localeCompare(b.muestra.periodoInicio));
+  /** Lo único pendiente que existe: los períodos de plan, uno por fila. */
+  const periodosPendientes = pendientes
+    .filter((p) => !yaEnLaOrden.has(clavePendiente(p)))
+    .sort((a, b) => a.periodoInicio.localeCompare(b.periodoInicio));
 
   /**
    * Una orden es de un plan **o** de unas visitas, nunca de las dos.
@@ -337,7 +338,7 @@ export function NuevaOrdenPage({
    * marcadas, o marcar una visita con un período cargado, es armar una orden
    * cuyo total no se puede explicar sin abrirla.
    */
-  const tienePeriodo = lineas.some((l) => l.suscripcionItemId);
+  const tienePeriodo = lineas.some((l) => l.suscripcionId);
 
   const cambiarVisitas = (ids: string[]) => {
     if (ids.length > 0 && tienePeriodo) {
@@ -350,17 +351,12 @@ export function NuevaOrdenPage({
   };
 
   /**
-   * Qué otros pendientes tienen que entrar con este: un período de un plan se
-   * factura completo, así que agregar uno arrastra a sus hermanos. Es la misma
-   * regla que valida el servidor, pero acá se cumple sola en vez de rebotar
-   * recién al guardar.
+   * Una orden es de **un** plan: dos planes en la misma orden son dos
+   * acuerdos, cada uno con su factura. El servicio lo rechaza; acá se avisa
+   * antes de dejar apretar.
    */
-  const grupoDe = (p: Pendiente) =>
-    pendientesDisponibles.filter(
-      (otro) =>
-        otro.suscripcionId === p.suscripcionId &&
-        otro.periodoInicio === p.periodoInicio
-    );
+  const deOtroPlan = (p: Pendiente) =>
+    lineas.some((l) => l.suscripcionId && l.suscripcionId !== p.suscripcionId);
 
   const agregarPendiente = (p: Pendiente) => {
     if (visitaIds.length > 0) {
@@ -369,11 +365,13 @@ export function NuevaOrdenPage({
       );
       return;
     }
-    const grupo = grupoDe(p);
-    setLineas((prev) => [...prev, ...grupo.map(lineaDesde)]);
-    if (grupo.length > 1) {
-      toast.info(`Se agregó el período completo (${grupo.length} productos)`);
+    if (deOtroPlan(p)) {
+      toast.error(
+        "Esta orden ya es de otra suscripción. Arma una orden por plan."
+      );
+      return;
     }
+    setLineas((prev) => [...prev, lineaDesde(p)]);
   };
 
   const agregarTodosLosPeriodos = () => {
@@ -383,9 +381,17 @@ export function NuevaOrdenPage({
       );
       return;
     }
-    periodosPendientes.forEach((p) =>
-      setLineas((prev) => [...prev, lineaDesde(p)])
-    );
+    // Solo los del plan que ya está en la orden, o del primero de la lista.
+    const plan =
+      lineas.find((l) => l.suscripcionId)?.suscripcionId ??
+      periodosPendientes[0]?.suscripcionId;
+    const delPlan = periodosPendientes.filter((p) => p.suscripcionId === plan);
+    setLineas((prev) => [...prev, ...delPlan.map(lineaDesde)]);
+    if (delPlan.length < periodosPendientes.length) {
+      toast.info(
+        "Se agregaron los períodos de un solo plan: una orden es de un plan."
+      );
+    }
   };
 
   const actualizar = (uid: string, patch: Partial<Linea>) =>
@@ -409,20 +415,17 @@ export function NuevaOrdenPage({
   );
 
   /**
-   * Crear la orden, y de ahí a facturarla o a dejarla en borrador.
+   * Crear la orden. Nace en `BORRADOR` —el único estado editable— y la pantalla
+   * sigue a su ficha, que es donde se factura.
    *
-   * Las dos escriben lo mismo: `crearOrden` abre siempre un `BORRADOR`, que es
-   * el único estado editable. La diferencia es qué pasa después —seguir al
-   * armador del documento o irse al detalle— y qué se exige antes: un borrador
-   * puede quedar sin precios, porque existe justamente para que alguien los
-   * ponga; para emitir no.
-   *
-   * Antes esta acción cobraba de una. Ya no: **qué sale impreso es una
-   * decisión** —varios trabajos pueden ir como una sola línea— y tomarla por
-   * omisión desde un botón de cobro era tomarla a ciegas. El cobro sigue a un
-   * paso: el armador termina en "Emitir y cobrar".
+   * Hubo dos botones: *Guardar borrador* y *Crear y facturar*, que saltaba al
+   * armador del documento. Facturar es otro paso, con sus propias decisiones
+   * —qué sale impreso, con qué RUC, a nombre de quién— y ofrecerlo en el mismo
+   * botón que crea hacía parecer que una orden sin factura era una orden a
+   * medias. Un borrador puede quedar sin precios: existe justamente para que
+   * alguien los ponga.
    */
-  const crear = async ({ cobrar }: { cobrar: boolean }) => {
+  const crear = async () => {
     if (!clienteId) return toast.error("Selecciona un cliente");
     if (lineas.length === 0) return toast.error("Agrega al menos un producto");
     const sinDescripcion = lineas.find((l) => !l.descripcion.trim());
@@ -430,11 +433,6 @@ export function NuevaOrdenPage({
     const negativo = lineas.find((l) => Number(l.precioUnitario) < 0);
     if (negativo)
       return toast.error(`El precio de "${negativo.descripcion}" es negativo`);
-    if (cobrar) {
-      const sinPrecio = lineas.find((l) => l.precioUnitario.trim() === "");
-      if (sinPrecio)
-        return toast.error(`Falta el precio de "${sinPrecio.descripcion}"`);
-    }
 
     setGuardando(true);
     try {
@@ -443,8 +441,10 @@ export function NuevaOrdenPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clienteId,
-          datoFacturacionId,
           notas: notas.trim() || undefined,
+          // Las visitas marcadas: se marcaban y no viajaban, así que la orden
+          // nacía sin decir de qué era.
+          visitaIds,
           lineas: lineas.map((l) => ({
             descripcion: l.descripcion.trim(),
             cantidad: Number(l.cantidad) || 1,
@@ -452,7 +452,7 @@ export function NuevaOrdenPage({
             ivaTasa: Number(l.ivaTasa) || 0,
             productoId: l.productoId,
             varianteId: l.varianteId,
-            suscripcionItemId: l.suscripcionItemId,
+            suscripcionId: l.suscripcionId,
             periodoInicio: l.periodoInicio,
             periodoFin: l.periodoFin,
           })),
@@ -460,13 +460,8 @@ export function NuevaOrdenPage({
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Error");
       const orden = await res.json();
-      if (!cobrar) {
-        toast.success(`Borrador #${orden.numero} guardado`);
-        router.push(`/dashboard/ordenes/${orden.id}`);
-        return;
-      }
       toast.success(`Orden #${orden.numero} creada`);
-      router.push(`/dashboard/ordenes/${orden.id}/facturar`);
+      router.push(`/dashboard/ordenes/${orden.id}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos crear la orden");
     } finally {
@@ -476,70 +471,392 @@ export function NuevaOrdenPage({
 
   const noSePuedeGuardar = guardando || !clienteId || lineas.length === 0;
 
-  return (
-    <div className="space-y-6 pb-6">
-      {/* Pegado arriba, con las acciones: una orden puede tener quince líneas y
-          guardar no puede quedar a un scroll de distancia de lo que se edita.
-          Los márgenes negativos lo hacen sangrar hasta los bordes. */}
-      <div className="sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur-sm md:px-6">
-        {/* Vuelve de donde vino: si se entró desde una visita, cancelar tiene
-            que devolver a esa visita y no a la lista de órdenes. */}
-        <Link
-          href={
-            desdeVisita
-              ? `/dashboard/visitas/${desdeVisita.id}`
-              : "/dashboard/ordenes"
-          }
-        >
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
+  /** Vuelve de donde vino: si se entró desde una visita, cancelar tiene que
+      devolver a esa visita y no a la lista de órdenes. */
+  const hrefVolver = desdeVisita
+    ? `/dashboard/visitas/${desdeVisita.id}`
+    : "/dashboard/ordenes";
+
+  /**
+   * Una línea, igual en las dos pantallas: el nombre (o el campo, si es
+   * personalizada), la papelera, y cantidad, precio e IVA — a tercios en el
+   * teléfono, con su ancho fijo en el escritorio.
+   *
+   * Es una función y no un componente adentro de este: un componente definido
+   * acá se recrea en cada render, y React lo desmonta y vuelve a montar, con
+   * lo que el campo pierde el foco a cada tecla.
+   */
+  const renderLinea = (l: Linea) => {
+    const i = importes(l);
+    const prod = l.productoId
+      ? catalogo.conocidos.find((p) => p.id === l.productoId)
+      : undefined;
+    return (
+      <div
+        key={l.uid}
+        className="space-y-2 rounded-xl border p-3 md:rounded-md"
+      >
+        <div className="flex items-start gap-2">
+          {/* El nombre no se edita aquí. La orden registra **lo que se
+              hizo**, y renombrarlo es una decisión de qué sale impreso: eso
+              se toma al emitir, donde además se puede juntar todo en una sola
+              línea. */}
+          <div className="flex flex-1 flex-wrap items-baseline gap-x-2">
+            {/* La personalizada se escribe acá: no hay catálogo del que tomar
+                el nombre. */}
+            {esPersonalizada(l) ? (
+              <Input
+                value={l.descripcion}
+                onChange={(e) =>
+                  actualizar(l.uid, { descripcion: e.target.value })
+                }
+                placeholder="Descripción del ítem *"
+                className="max-w-md"
+                autoFocus={l.descripcion === ""}
+              />
+            ) : (
+              <p className="text-sm font-medium">{l.descripcion}</p>
+            )}
+            {origenDeLinea(l) && (
+              <span className="text-xs text-muted-foreground">
+                {origenDeLinea(l)}
+              </span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => quitar(l.uid)}
+            aria-label="Quitar producto"
+          >
+            <Trash2 className="h-4 w-4 text-muted-foreground" />
           </Button>
-        </Link>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold">Nueva orden</h1>
-          {/* Llegando desde una visita hay que decirlo: si no, la línea ya
-              cargada parece salida de la nada. */}
-          {desdeVisita ? (
-            <p className="text-sm text-muted-foreground">
-              Con el trabajo de la{" "}
-              <Link
-                href={`/dashboard/visitas/${desdeVisita.id}`}
-                className="text-primary hover:underline"
-              >
-                visita del {fecha(desdeVisita.fecha)}
-              </Link>{" "}
-              ya cargado. Puedes sumarle más productos antes de guardar.
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Armá la orden con lo que se vendió. Cobrala ahora o guardala como
-              borrador para terminarla después.
-            </p>
-          )}
         </div>
-        <div className="flex flex-none items-center gap-2">
-          {/* Las dos abren un borrador: `crearOrden` es el único escritor. La
-              diferencia es adónde va después —al armador del documento o al
-              detalle— y qué exige antes: un borrador puede quedar sin precios,
-              para emitir no. */}
-          <Button
-            variant="outline"
-            onClick={() => crear({ cobrar: false })}
-            disabled={noSePuedeGuardar}
+        <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:items-end md:gap-3">
+          {/* Sin producto no hay variante que elegir. En el teléfono, con la
+              variante ya elegida en el selector, el nombre de la línea la
+              dice y el campo sobra; sin elegir todavía, se muestra igual. */}
+          {prod && prod.variantes.length > 1 && (
+            <div
+              className={cn("col-span-3", l.varianteId && "hidden md:block")}
+            >
+              <SelectorVariante
+                variantes={prod.variantes}
+                value={l.varianteId}
+                onChange={(varianteId) => {
+                  const vs = prod.variantes;
+                  const antes = vs.find((v) => v.id === l.varianteId);
+                  const ahora = vs.find((v) => v.id === varianteId);
+                  actualizar(l.uid, {
+                    varianteId,
+                    precioUnitario: precioAlCambiarVariante(
+                      l.precioUnitario,
+                      antes,
+                      ahora
+                    ),
+                    ivaTasa: ivaAlCambiarVariante(
+                      l.ivaTasa,
+                      antes,
+                      ahora,
+                      prod.ivaTasa
+                    ),
+                  });
+                }}
+              />
+            </div>
+          )}
+          <div className="space-y-1 md:w-20">
+            <Label className="text-xs">Cant.</Label>
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              value={l.cantidad}
+              onChange={(e) => actualizar(l.uid, { cantidad: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1 md:w-28">
+            <Label className="text-xs">Precio *</Label>
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              value={l.precioUnitario}
+              onChange={(e) =>
+                actualizar(l.uid, { precioUnitario: e.target.value })
+              }
+              placeholder="0.00"
+            />
+          </div>
+          <div className="space-y-1 md:w-24">
+            <Label className="text-xs">IVA %</Label>
+            <Input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              inputMode="decimal"
+              value={l.ivaTasa}
+              onChange={(e) => actualizar(l.uid, { ivaTasa: e.target.value })}
+            />
+          </div>
+          <div className="col-span-3 flex items-baseline justify-end gap-1.5 md:col-auto md:ml-auto md:block md:text-right">
+            <p className="text-xs text-muted-foreground md:text-xs">
+              <span className="text-sm font-bold text-foreground md:hidden">
+                Total
+              </span>
+              <span className="hidden md:inline">Total</span>
+            </p>
+            <p className="font-bold tabular-nums md:font-semibold">
+              {money(i.total)}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /** Subtotal, IVA y total: al pie de las líneas, que es de donde salen. */
+  const renderTotales = () => (
+    <>
+      <FilaDePago etiqueta="Subtotal" valor={money(totales.subtotal)} />
+      <FilaDePago etiqueta="IVA" valor={money(totales.iva)} />
+      <FilaDePago etiqueta="Total" valor={money(totales.total)} fuerte />
+    </>
+  );
+
+  const hayVisitasParaMarcar =
+    Boolean(clienteId) && (visitas.length > 0 || visitaIds.length > 0);
+  const hayPeriodosParaOfrecer =
+    Boolean(clienteId) &&
+    visitaIds.length === 0 &&
+    periodosPendientes.length > 0;
+
+  return (
+    <div className="pb-6 md:space-y-6">
+      {/* Pegado arriba, con las acciones: una orden puede tener quince líneas y
+          guardar no puede quedar a un scroll de distancia de lo que se edita. */}
+      <div className="sticky top-0 z-20 border-b bg-card/95 backdrop-blur-sm">
+        {/* En el teléfono, la cabecera de la app: Cancelar a la izquierda, el
+            título en el medio, Crear a la derecha. Sin subtítulo: lo que la
+            pantalla es se ve en la pantalla. */}
+        <div className="flex h-12 items-center gap-1.5 px-2.5 md:hidden">
+          <Link
+            href={hrefVolver}
+            className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-base font-semibold text-muted-foreground active:bg-muted"
           >
-            Guardar borrador
-          </Button>
-          <Button
-            onClick={() => crear({ cobrar: true })}
+            Cancelar
+          </Link>
+          <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
+            Nueva orden
+          </h1>
+          <button
+            type="button"
+            onClick={crear}
             disabled={noSePuedeGuardar}
+            className="flex min-w-[76px] items-center justify-end rounded-lg px-1.5 py-1.5 text-base font-bold text-primary active:bg-muted disabled:text-muted-foreground"
           >
-            {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Crear y facturar
-          </Button>
+            {guardando ? <Loader2 className="h-5 w-5 animate-spin" /> : "Crear"}
+          </button>
+        </div>
+
+        {/* En el escritorio, como siempre. */}
+        <div className="hidden flex-wrap items-center gap-3 px-6 py-3 md:flex">
+          <Link href={hrefVolver}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold">Nueva orden</h1>
+            {/* Llegando desde una visita hay que decirlo: si no, la línea ya
+                cargada parece salida de la nada. */}
+            {desdeVisita ? (
+              <p className="text-sm text-muted-foreground">
+                Con el trabajo de la{" "}
+                <Link
+                  href={`/dashboard/visitas/${desdeVisita.id}`}
+                  className="text-primary hover:underline"
+                >
+                  visita del {fecha(desdeVisita.fecha)}
+                </Link>{" "}
+                ya cargado. Puedes sumarle más productos antes de guardar.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Arma la orden con lo que se vendió. Facturarla es el paso
+                siguiente, desde su ficha.
+              </p>
+            )}
+          </div>
+          <div className="flex flex-none items-center gap-2">
+            {/* Un solo botón: crea el borrador y va a su ficha. Facturar es el
+                paso siguiente, con sus propias decisiones, y vive allá. */}
+            <Button onClick={crear} disabled={noSePuedeGuardar}>
+              {guardando && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Crear
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid items-start gap-6 px-4 md:px-6 lg:grid-cols-[1fr_360px]">
+      {/* ══ Teléfono: la pantalla de la app, en el mismo orden ═══════════
+          Secciones separadas por bandas, como Shopify: cada bloque es una
+          pregunta —para quién, qué, cuánto— y la banda gris del fondo es lo
+          que las separa sin recuadrar cada una. El escritorio se dibuja aparte
+          más abajo, sobre el mismo estado: es la misma orden en dos anchos. */}
+      <div className="space-y-2 md:hidden">
+        <Seccion titulo="Cliente">
+          <SelectorClienteMovil
+            clientes={clientes}
+            valor={clienteId || null}
+            onElegir={seleccionarCliente}
+          />
+        </Seccion>
+
+        <Seccion titulo="Productos">
+          {/* Dos botones, como Shopify: del catálogo —varios de una, en su
+              propia hoja— o un ítem personalizado escrito a mano. */}
+          <div className="flex gap-2.5">
+            <Button
+              className="h-11 flex-1 rounded-xl text-[15px]"
+              onClick={() => setEligiendoProductos(true)}
+            >
+              Agregar producto
+            </Button>
+            <Button
+              variant="outline"
+              className="h-11 flex-1 rounded-xl text-[15px]"
+              onClick={() => setAgregandoPersonalizado(true)}
+            >
+              Ítem personalizado
+            </Button>
+          </div>
+
+          {lineas.length > 0 && (
+            <div className="mt-2.5 space-y-2">{lineas.map(renderLinea)}</div>
+          )}
+
+          {/* Los períodos de plan sin orden, uno por fila. Con visitas
+              marcadas no se ofrecen: una orden es de un plan o de visitas. */}
+          {hayPeriodosParaOfrecer && (
+            <div className="mt-2">
+              <p className="mb-1 text-[13px] font-semibold text-muted-foreground">
+                Períodos por facturar
+              </p>
+              {cargandoPendientes ? (
+                <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Buscando…
+                </div>
+              ) : (
+                periodosPendientes.map((p) => (
+                  <div
+                    key={clavePendiente(p)}
+                    className="flex items-center gap-3 border-t py-2.5"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">
+                        {fecha(p.periodoInicio)} → {fecha(p.periodoFin)}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        Suscripción #{p.suscripcionNumero} · {p.propiedad} ·{" "}
+                        {money(Number(p.precio))}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-none"
+                      onClick={() => agregarPendiente(p)}
+                    >
+                      Agregar
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </Seccion>
+
+        <Seccion titulo="Pago">{renderTotales()}</Seccion>
+
+        {/* De qué visitas es la orden: una etiqueta, no carga líneas. */}
+        {hayVisitasParaMarcar && (
+          <Seccion titulo="Visitas">
+            {tienePeriodo ? (
+              <p className="text-[13px] leading-[18px] text-muted-foreground">
+                Esta orden cubre un período de suscripción. Las visitas van en
+                otra orden.
+              </p>
+            ) : (
+              <>
+                <p className="mb-2 text-[13px] leading-[18px] text-muted-foreground">
+                  Deja dicho por qué existe esta orden y permite ir de una a la
+                  otra. No carga productos.
+                </p>
+                {visitas.map((v) => {
+                  const marcada = visitaIds.includes(v.id);
+                  const trabada =
+                    bloqueada && desdeVisita?.id === v.id && marcada;
+                  return (
+                    /* La fila entera es lo que se toca, con la casilla
+                       dibujada adentro: un botón adentro de otro no es HTML
+                       válido, y dos que se disputan el toque marcan y
+                       desmarcan en un solo gesto. */
+                    <button
+                      key={v.id}
+                      type="button"
+                      disabled={trabada}
+                      onClick={() =>
+                        cambiarVisitas(
+                          marcada
+                            ? visitaIds.filter((x) => x !== v.id)
+                            : [...visitaIds, v.id]
+                        )
+                      }
+                      className={cn(
+                        "flex w-full items-center gap-3 border-t py-2.5 text-left",
+                        trabada ? "opacity-60" : "active:bg-muted"
+                      )}
+                    >
+                      <Casilla
+                        estado={marcada ? "si" : "no"}
+                        className="h-[22px] w-[22px] rounded-md"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium">
+                          Visita #{v.numero} · {fecha(v.fecha)}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {v.tareas.length > 0
+                            ? v.tareas.join(", ")
+                            : "Sin tareas registradas"}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </>
+            )}
+          </Seccion>
+        )}
+
+        <Seccion titulo="Notas">
+          <Textarea
+            value={notas}
+            onChange={(e) => setNotas(e.target.value)}
+            placeholder="Opcional"
+            rows={3}
+            className="rounded-xl"
+          />
+        </Seccion>
+      </div>
+
+      {/* ══ Escritorio ═══════════════════════════════════════════════════ */}
+      <div className="hidden items-start gap-6 px-6 md:grid lg:grid-cols-[1fr_360px]">
         {/* ── Líneas ─────────────────────────────────────────────── */}
         <div className="space-y-6">
           <Card className="overflow-visible">
@@ -552,123 +869,7 @@ export function NuevaOrdenPage({
                   Todavía no hay nada en la orden.
                 </p>
               ) : (
-                <div className="space-y-3">
-                  {lineas.map((l) => {
-                    const i = importes(l);
-                    return (
-                      <div
-                        key={l.uid}
-                        className="rounded-md border p-3 space-y-2"
-                      >
-                        <div className="flex items-start gap-2">
-                          {/* El nombre no se edita aquí. La orden registra
-                              **lo que se hizo**, y renombrarlo es una decisión
-                              de qué sale impreso: eso se toma al emitir, donde
-                              además se puede juntar todo en una sola línea. */}
-                          <div className="flex flex-1 flex-wrap items-baseline gap-x-2">
-                            <p className="text-sm font-medium">
-                              {l.descripcion}
-                            </p>
-                            {origenDeLinea(l) && (
-                              <span className="text-xs text-muted-foreground">
-                                {origenDeLinea(l)}
-                              </span>
-                            )}
-                          </div>
-                          {true && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => quitar(l.uid)}
-                              aria-label="Quitar producto"
-                            >
-                              <Trash2 className="h-4 w-4 text-muted-foreground" />
-                            </Button>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap items-end gap-3">
-                          <SelectorVariante
-                            variantes={
-                              catalogo.conocidos.find((p) => p.id === l.productoId)
-                                ?.variantes ?? []
-                            }
-                            value={l.varianteId}
-                            onChange={(varianteId) => {
-                              const prod = catalogo.conocidos.find(
-                                (p) => p.id === l.productoId
-                              );
-                              const vs = prod?.variantes ?? [];
-                              const antes = vs.find((v) => v.id === l.varianteId);
-                              const ahora = vs.find((v) => v.id === varianteId);
-                              actualizar(l.uid, {
-                                varianteId,
-                                precioUnitario: precioAlCambiarVariante(
-                                  l.precioUnitario,
-                                  antes,
-                                  ahora
-                                ),
-                                ivaTasa: ivaAlCambiarVariante(
-                                  l.ivaTasa,
-                                  antes,
-                                  ahora,
-                                  prod?.ivaTasa ?? null
-                                ),
-                              });
-                            }}
-                          />
-                          <div className="w-20 space-y-1">
-                            <Label className="text-xs">Cant.</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={l.cantidad}
-                              onChange={(e) =>
-                                actualizar(l.uid, { cantidad: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="w-28 space-y-1">
-                            <Label className="text-xs">Precio *</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={l.precioUnitario}
-                              onChange={(e) =>
-                                actualizar(l.uid, {
-                                  precioUnitario: e.target.value,
-                                })
-                              }
-                              placeholder="0.00"
-                            />
-                          </div>
-                          <div className="w-24 space-y-1">
-                            <Label className="text-xs">IVA %</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              max="100"
-                              step="0.01"
-                              value={l.ivaTasa}
-                              onChange={(e) =>
-                                actualizar(l.uid, { ivaTasa: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="ml-auto text-right">
-                            <p className="text-xs text-muted-foreground">
-                              Total
-                            </p>
-                            <p className="font-semibold tabular-nums">
-                              {money(i.total)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <div className="space-y-3">{lineas.map(renderLinea)}</div>
               )}
 
               <div className="flex flex-wrap items-end gap-3 border-t pt-3">
@@ -677,15 +878,9 @@ export function NuevaOrdenPage({
                   <CustomSelect
                     value={productoAAgregar}
                     onChange={agregarProducto}
-                    // Lo que está en un plan del cliente **sí** se puede
-                    // agregar: es un extra sobre lo que el plan cubre, y quien
-                    // arma la orden es quien decide si se cobra.
                     options={catalogo.pagina.map((p) => ({
                       value: p.id,
                       label: p.nombre,
-                      hint: suscritos.includes(p.id)
-                        ? `${nombreDelCliente} tiene este producto en una suscripción.`
-                        : undefined,
                     }))}
                     placeholder="Buscar producto..."
                     searchable
@@ -699,28 +894,24 @@ export function NuevaOrdenPage({
                     searchPlaceholder="Buscar producto..."
                   />
                 </div>
+                {/* Un trabajo puntual que no vale la pena dar de alta como
+                    producto: se escribe y se cobra, con un código genérico
+                    impreso. El ítem personalizado de Shopify. */}
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setLineas((prev) => [...prev, lineaPersonalizada()])
+                  }
+                >
+                  Ítem personalizado
+                </Button>
               </div>
 
               {/* Los totales al pie de las líneas, que es de donde salen. En la
                   columna de al lado obligaban a mirar a otro lado para ver el
                   efecto de lo que se acaba de tipear. */}
               {lineas.length > 0 && (
-                <div className="space-y-1.5 border-t pt-4 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="tabular-nums">
-                      {money(totales.subtotal)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">IVA</span>
-                    <span className="tabular-nums">{money(totales.iva)}</span>
-                  </div>
-                  <div className="flex justify-between border-t pt-1.5 text-base font-bold">
-                    <span>Total</span>
-                    <span className="tabular-nums">{money(totales.total)}</span>
-                  </div>
-                </div>
+                <div className="border-t pt-2 text-sm">{renderTotales()}</div>
               )}
             </CardContent>
           </Card>
@@ -733,7 +924,7 @@ export function NuevaOrdenPage({
 
               Lista con casillas y no un desplegable: se eligen **varias**, y
               hay que ver de un vistazo cuáles están marcadas. */}
-          {clienteId && (visitas.length > 0 || visitaIds.length > 0) && (
+          {hayVisitasParaMarcar && (
             <SelectorVisitas
               visitas={visitas}
               marcadas={visitaIds}
@@ -745,9 +936,7 @@ export function NuevaOrdenPage({
           )}
 
           {/* ── Períodos de suscripción por facturar ─────────────── */}
-          {clienteId &&
-            visitaIds.length === 0 &&
-            periodosPendientes.length > 0 && (
+          {hayPeriodosParaOfrecer && (
             <Card>
               <CardHeader className="border-b py-3">
                 <CardTitle className="text-base">
@@ -768,32 +957,32 @@ export function NuevaOrdenPage({
                   <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Buscando…
-
-        </div>
+                  </div>
                 ) : (
                   <div className="divide-y">
-                    {periodosAgrupados.map((g) => (
+                    {periodosPendientes.map((p) => (
                       <div
-                        key={g.clave}
+                        key={clavePendiente(p)}
                         className="flex items-center justify-between gap-3 py-2.5"
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium">
-                            {fecha(g.muestra.periodoInicio)} →{" "}
-                            {fecha(g.muestra.periodoFin)}
+                            {fecha(p.periodoInicio)} → {fecha(p.periodoFin)}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {g.productos.join(", ")}
+                            Suscripción #{p.suscripcionNumero} · {p.propiedad}
                           </p>
                         </div>
                         <div className="flex flex-none items-center gap-3">
+                          {/* Sin IVA, como el precio de la línea que va a
+                              crear: el total con IVA se ve abajo. */}
                           <span className="font-semibold tabular-nums">
-                            {money(g.total)}
+                            {money(Number(p.precio))}
                           </span>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => agregarPendiente(g.muestra)}
+                            onClick={() => agregarPendiente(p)}
                           >
                             Agregar
                           </Button>
@@ -807,7 +996,7 @@ export function NuevaOrdenPage({
           )}
         </div>
 
-        {/* ── Cliente, facturación y notas ───────────────────────── */}
+        {/* ── Cliente y notas ────────────────────────────────────── */}
         <div className="space-y-6">
           <Card className="overflow-visible">
             <CardHeader className="border-b py-3">
@@ -817,9 +1006,13 @@ export function NuevaOrdenPage({
               <CustomSelect
                 value={clienteId}
                 onChange={seleccionarCliente}
+                // El inactivo se ve y no se elige, como en el teléfono y en la
+                // app: si volvió a contratar, primero se lo reactiva.
                 options={clientes.map((c) => ({
                   value: c.id,
                   label: nombreCliente(c),
+                  disabled: c.inactivoDesde !== null,
+                  hint: c.inactivoDesde !== null ? "Inactivo" : undefined,
                 }))}
                 placeholder="Seleccionar cliente"
                 searchable
@@ -828,23 +1021,10 @@ export function NuevaOrdenPage({
             </CardContent>
           </Card>
 
-          {/* A nombre de quién sale la factura. Se pregunta aquí y no al emitir:
-              en ese momento quien vende tiene al cliente delante. */}
-          {clienteId && (
-            <Card className="overflow-visible">
-              <CardHeader className="border-b py-3">
-                <CardTitle className="text-base">Datos de facturación</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SelectorDatosFacturacion
-                  key={clienteId}
-                  clienteId={clienteId}
-                  value={datoFacturacionId}
-                  onChange={setDatoFacturacionId}
-                />
-              </CardContent>
-            </Card>
-          )}
+          {/* A nombre de quién sale la factura no se pregunta acá: es una
+              decisión de la emisión, y el armador del documento la hace con
+              los datos del cliente delante. Preguntarla al armar la orden era
+              pedir dos veces lo mismo, y la segunda era la que valía. */}
 
           {/* Notas en la columna derecha, con lo demás que describe la orden y
               no lo que se vendió. Entre las líneas y el catálogo interrumpía
@@ -855,7 +1035,6 @@ export function NuevaOrdenPage({
             </CardHeader>
             <CardContent>
               <Textarea
-                id="notas"
                 value={notas}
                 onChange={(e) => setNotas(e.target.value)}
                 placeholder="Opcional"
@@ -865,6 +1044,67 @@ export function NuevaOrdenPage({
           </Card>
         </div>
       </div>
+
+      {/* Las dos hojas del teléfono. Se montan una vez, fuera de los dos
+          árboles, y viven en un portal: no les importa cuál se está viendo. */}
+      <SelectorProductos
+        abierto={eligiendoProductos}
+        catalogo={catalogo}
+        yaElegidas={lineas
+          .map((l) => l.varianteId)
+          .filter((id): id is string => !!id)}
+        onCerrar={() => setEligiendoProductos(false)}
+        onGuardar={aplicarSeleccion}
+      />
+      <HojaItemPersonalizado
+        abierto={agregandoPersonalizado}
+        onCerrar={() => setAgregandoPersonalizado(false)}
+        onAgregar={agregarPersonalizado}
+      />
+    </div>
+  );
+}
+
+/**
+ * Una sección del teléfono: blanca, con su título, sobre el fondo gris que
+ * hace de banda entre una y la siguiente. La `Seccion` de la app.
+ */
+function Seccion({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="bg-card px-4 py-3.5">
+      <h2 className="mb-2.5 text-[17px] font-bold">{titulo}</h2>
+      {children}
+    </section>
+  );
+}
+
+/** Una fila de Subtotal / IVA / Total. */
+function FilaDePago({
+  etiqueta,
+  valor,
+  fuerte,
+}: {
+  etiqueta: string;
+  valor: string;
+  fuerte?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex justify-between border-t py-2 text-sm first:border-t-0 md:first:border-t",
+        fuerte ? "font-bold md:text-base" : "text-muted-foreground"
+      )}
+    >
+      <span className={cn(fuerte && "text-foreground")}>{etiqueta}</span>
+      <span className={cn("tabular-nums", !fuerte && "text-foreground")}>
+        {valor}
+      </span>
     </div>
   );
 }

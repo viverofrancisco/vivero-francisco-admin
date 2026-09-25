@@ -35,6 +35,7 @@ export async function GET(request: Request) {
   const parsed = visitasListQuerySchema.safeParse({
     from: url.searchParams.get("from") ?? undefined,
     to: url.searchParams.get("to") ?? undefined,
+    clienteId: url.searchParams.get("clienteId") ?? undefined,
     cursor: url.searchParams.get("cursor") ?? undefined,
     limit: url.searchParams.get("limit") ?? undefined,
   });
@@ -46,13 +47,17 @@ export async function GET(request: Request) {
     // El cliente ve su historial entero —entra a mirar lo que ya se hizo— y
     // todos los demás arrancan en hoy, salvo que pidan otra cosa: al jardinero
     // y a la oficina lo que les importa es lo que viene.
+    // Pedidas por cliente vienen **todas** sus fechas: se piden para marcar
+    // cuáles cubre una orden, y cobrar el mes pasado es lo normal.
     const isCliente = userOrResponse.role === "CLIENTE";
+    const porCliente = parsed.data.clienteId !== undefined;
     const result = await listVisitas(viewerFromMobileUser(userOrResponse), {
       from: parsed.data.from ? new Date(parsed.data.from) : undefined,
       to: parsed.data.to ? new Date(parsed.data.to) : undefined,
+      clienteId: parsed.data.clienteId,
       cursor: parsed.data.cursor,
-      limit: parsed.data.limit ?? (isCliente ? 200 : 50),
-      defaultFromToday: !isCliente,
+      limit: parsed.data.limit ?? (isCliente || porCliente ? 200 : 50),
+      defaultFromToday: !isCliente && !porCliente,
     });
     return NextResponse.json(result);
   } catch (error) {

@@ -35,11 +35,9 @@ const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 /**
- * Las órdenes, para mirar.
- *
- * Desde el teléfono se consulta —"¿este cliente debe algo?", "¿qué se le
- * cobró?"—; armar una orden y emitir una factura se siguen haciendo en el
- * portal, que es donde están el catálogo, los precios y el emisor.
+ * Las órdenes: se consultan, se arman (⋯ → *Nueva orden*), y desde la ficha
+ * se emite la factura y se registra el cobro. Lo mismo que el portal en el
+ * teléfono.
  */
 export default function OrdenesListScreen() {
   const router = useRouter();
@@ -140,6 +138,12 @@ export default function OrdenesListScreen() {
       onBuscar={setBusqueda}
       placeholder="Buscar por cliente o número..."
       grupos={grupos}
+      acciones={[
+        {
+          etiqueta: "Nueva orden",
+          onPress: () => router.push("/(personal)/ordenes/nueva"),
+        },
+      ]}
     >
       {cargando ? (
         <View style={styles.centro}>
@@ -161,7 +165,7 @@ export default function OrdenesListScreen() {
                 {busqueda || cobro ? "Sin coincidencias" : "No hay órdenes"}
               </Text>
               <Text variant="bodyMedium" style={styles.vacioTexto}>
-                Las órdenes se arman en el portal.
+                Crea la primera desde el menú de arriba.
               </Text>
             </View>
           }

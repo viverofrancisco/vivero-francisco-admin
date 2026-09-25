@@ -84,12 +84,8 @@ export default async function EditarVisitaRoute({
       numero: true,
       estado: true,
       periodicidad: true,
-      items: {
-        select: {
-          visitasPorPeriodo: true,
-          producto: { select: { id: true, nombre: true } },
-        },
-      },
+      visitasPorPeriodo: true,
+      propiedad: { select: { id: true, nombre: true } },
     },
     orderBy: { numero: "asc" },
   });
@@ -121,11 +117,8 @@ export default async function EditarVisitaRoute({
         numero: s.numero,
         estado: s.estado,
         periodicidad: s.periodicidad as string,
-        productos: s.items.map((i) => ({
-          productoId: i.producto.id,
-          nombre: i.producto.nombre,
-          visitasPorPeriodo: i.visitasPorPeriodo,
-        })),
+        visitasPorPeriodo: s.visitasPorPeriodo,
+        propiedad: s.propiedad,
       }))}
       grupos={grupos.map((g) => ({
         id: g.id,

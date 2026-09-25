@@ -119,8 +119,7 @@ export default async function OrdenRoute({
             periodoFin: l.periodoFin?.toISOString() ?? null,
             productoId: l.productoId,
             varianteId: l.varianteId,
-            suscripcionItemId: l.suscripcionItemId,
-            suscripcionId: l.suscripcionItem?.suscripcionId ?? null,
+            suscripcionId: l.suscripcionId,
           })),
           facturas: orden.facturas.map((f) => ({
             id: f.id,

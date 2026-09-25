@@ -23,13 +23,7 @@ export async function GET(request: Request) {
   try {
     const suscripciones = await generarRenovaciones();
     return NextResponse.json({
-      suscripciones: {
-        creadas: suscripciones.creadas.length,
-        omitidas: suscripciones.omitidas.length,
-        // Las omitidas necesitan que alguien haga algo —una suscripción sin
-        // productos activos, por ejemplo— así que van con detalle.
-        detalleOmitidas: suscripciones.omitidas,
-      },
+      suscripciones: { creadas: suscripciones.creadas.length },
     });
   } catch (error) {
     return NextResponse.json(
