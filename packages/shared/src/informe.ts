@@ -331,10 +331,17 @@ const ENVOLTORIO_DE_TITULO =
  * y no como texto plano: plano querría decir "lo de siempre" y se imprimiría
  * en negrita, que es justo lo que se acaba de quitar. Las marcas son lo de
  * omisión para que sea fácil, no una regla.
+ *
+ * **Lo que ya llega plano se queda plano.** Esa regla es para lo que devuelve
+ * el editor, que siempre es HTML. El nombre de una tarea en una sección que
+ * nadie abrió, o un título escrito en la app, llegan como texto sin etiquetas
+ * y quieren decir "lo de siempre"; convertirlos en `<p>…</p>` los dejaba sin
+ * negrita ni subrayado en el PDF mientras el editor los mostraba con las dos.
  */
 export function simplificarTitulo(html: string | null | undefined): string {
   if (!html) return "";
   const limpio = html.trim();
+  if (!esHtml(limpio)) return limpio;
   const canonico = ENVOLTORIO_DE_TITULO.exec(limpio);
   if (canonico) return decodificarEntidades(canonico[1]).trim();
   const simple = simplificarHtml(limpio);
