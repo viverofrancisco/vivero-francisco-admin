@@ -268,6 +268,8 @@ export interface ClienteStaffDetail extends ClienteListItem {
   empresa: string | null;
   email: string | null;
   notas: string | null;
+  /** Desde cuándo es cliente: un instante ISO, el alta de la ficha. */
+  createdAt: string;
   /** Sus planes: de qué jardín, cuánto por período y cuántas visitas. */
   suscripciones: {
     id: string;

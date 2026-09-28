@@ -9,6 +9,7 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
 import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
 import { EstadoDelCliente } from "@/components/clientes/EstadoDelCliente";
 import { apiRequest, mensajeDeError } from "@/lib/api";
@@ -75,8 +76,11 @@ export default function ClienteDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
+      <View style={styles.flex}>
+        <EncabezadoDeFicha titulo="Cliente" />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" />
+        </View>
       </View>
     );
   }
@@ -94,74 +98,60 @@ export default function ClienteDetailScreen() {
 
   const displayName = nombreCliente(data);
   const tienePersona = nombrePersona(data).length > 0;
-  const initials =
-    displayName
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase() || "?";
-
   // El detalle ya excluye las canceladas; se muestran activas y pausadas.
   const suscripcionesVisibles = data.suscripciones;
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Hero */}
-      <View style={styles.hero}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials || "?"}</Text>
-        </View>
-        <View style={styles.heroText}>
-          <Text variant="headlineSmall" style={styles.heroTitle}>
-            {displayName}
-          </Text>
-          <View style={styles.estado}>
-            <EstadoDelCliente inactivo={data.inactivoDesde !== null} />
-          </View>
-          {data.empresa && tienePersona ? (
-            <Text variant="bodyMedium" style={styles.heroSubtitle}>
-              {data.empresa}
-            </Text>
-          ) : null}
-          {data.propiedades[0]?.sector?.nombre ? (
-            <Text variant="bodyMedium" style={styles.heroSubtitle}>
-              {data.propiedades[0].sector.nombre}
-            </Text>
-          ) : null}
-        </View>
-        {canEdit ? (
-          <View style={styles.acciones}>
-            <Button
-              mode="text"
-              compact
-              onPress={() => router.push(`/(personal)/clientes/editar/${id}`)}
-            >
-              Editar
-            </Button>
-            {/* Lo que se hace una vez por cliente va detrás del ⋯. */}
-            <MenuDeEncabezado
-              opciones={[
-                {
-                  etiqueta: data.inactivoDesde ? "Reactivar cliente" : "Marcar como inactivo",
-                  onPress: () => cambiarActividad(!data.inactivoDesde),
-                },
-              ]}
-            />
-          </View>
-        ) : null}
-      </View>
+  /*
+   * El encabezado es el de la orden y la suscripción: la flecha al lado del
+   * nombre, fijo mientras el cuerpo scrollea, y el ⋯ a la derecha con lo que
+   * se hace una vez por cliente, Editar incluido. Había una barra nativa que
+   * decía "index" y "Cliente", y debajo un bloque con avatar, nombre, un
+   * botón Editar y el ⋯: dos encabezados para una ficha.
+   */
+  const opciones = canEdit
+    ? [
+        {
+          etiqueta: "Editar",
+          onPress: () => router.push(`/(personal)/clientes/editar/${id}`),
+        },
+        {
+          etiqueta: data.inactivoDesde ? "Reactivar cliente" : "Marcar como inactivo",
+          onPress: () => cambiarActividad(!data.inactivoDesde),
+        },
+      ]
+    : [];
+  // El sector es de cada propiedad: con dos casas en dos sectores se nombran
+  // los dos, porque uno solo sería mentira la mitad del tiempo.
+  const sectores = Array.from(
+    new Set(data.propiedades.map((p) => p.sector?.nombre).filter(Boolean))
+  ).join(", ");
 
-      {/* Contacto */}
-      {data.telefono || data.email ? (
-        <Section title="Contacto">
-          {data.telefono ? (
-            <Row label="Teléfono" value={data.telefono} />
-          ) : null}
-          {data.email ? <Row label="Email" value={data.email} /> : null}
-        </Section>
-      ) : null}
+  return (
+    <View style={styles.flex}>
+    <EncabezadoDeFicha
+      titulo={displayName}
+      derecha={opciones.length > 0 ? <MenuDeEncabezado opciones={opciones} /> : undefined}
+    />
+    <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
+      {/* Información general: el estado y el sector como filas, junto al
+          teléfono, en vez de sueltos debajo del nombre. Es la tarjeta del
+          portal. */}
+      <Section title="Información general">
+        <Row
+          label="Estado"
+          value={<EstadoDelCliente inactivo={data.inactivoDesde !== null} />}
+        />
+        {/* Todas las filas, con "—" cuando no hay dato: una fila que falta
+            se lee como un dato que nadie cargó y nadie va a cargar. */}
+        <Row label="Sector" value={sectores || "—"} />
+        <Row label="Cliente desde" value={fechaDeAlta(data.createdAt)} />
+        <Row
+          label="Empresa"
+          value={data.empresa && tienePersona ? data.empresa : "—"}
+        />
+        <Row label="Teléfono" value={data.telefono || "—"} />
+        <Row label="Email" value={data.email || "—"} />
+      </Section>
 
       {/* Dónde se le trabaja. Una tarjeta por propiedad, porque un cliente
           puede tener varias y ninguna es más "la suya" que otra. */}
@@ -332,6 +322,7 @@ export default function ClienteDetailScreen() {
         )}
       </View>
     </ScrollView>
+    </View>
   );
 }
 
@@ -361,17 +352,28 @@ function Section({
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <View style={styles.row}>
       <Text variant="bodyMedium" style={styles.rowLabel}>
         {label}
       </Text>
-      <Text variant="bodyMedium" style={styles.rowValue}>
-        {value}
-      </Text>
+      {typeof value === "string" ? (
+        <Text variant="bodyMedium" style={styles.rowValue}>
+          {value}
+        </Text>
+      ) : (
+        value
+      )}
     </View>
   );
+}
+
+/** "29 jun 2026", como el portal. Es un instante: se lee en la hora local. */
+function fechaDeAlta(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("es-EC", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const PERIODICIDAD_LABELS: Record<string, string> = {
@@ -427,31 +429,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
 
-  hero: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 8,
-    paddingBottom: 8,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#e8f5e9",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    color: tema.verde,
-    fontWeight: "600",
-    fontSize: 20,
-  },
-  heroText: { flex: 1, gap: 2 },
-  acciones: { flexDirection: "row", alignItems: "center", gap: 6 },
-  estado: { marginTop: 3, flexDirection: "row" },
-  heroTitle: { color: "#111", fontWeight: "700" },
-  heroSubtitle: { color: "#777" },
+  flex: { flex: 1, backgroundColor: "#fff" },
 
   section: { marginTop: 20, gap: 6 },
   sectionLabel: {

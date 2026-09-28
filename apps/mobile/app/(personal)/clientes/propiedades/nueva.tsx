@@ -28,5 +28,7 @@ export default function PropiedadNuevaScreen() {
     }
   }
 
-  return <PropiedadForm submitLabel="Agregar propiedad" onSubmit={submit} />;
+  return (
+    <PropiedadForm titulo="Nueva propiedad" accion="Agregar" onSubmit={submit} />
+  );
 }

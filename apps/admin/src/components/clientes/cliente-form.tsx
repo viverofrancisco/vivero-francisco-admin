@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   clienteConPropiedadSchema,
@@ -13,11 +13,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { CustomSelect } from "@/components/ui/custom-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import { StickyFormActions } from "@/components/shared/sticky-form-actions";
 import { toast } from "sonner";
-import { CIUDADES_ECUADOR } from "@/lib/constants/ciudades-ecuador";
+import {
+  DondeEsta,
+  EnElMapa,
+  NotasDePropiedad,
+  QueHayQueMantener,
+  type SectorElegible,
+} from "./campos-de-propiedad";
 
 interface ClienteFormProps {
   initialData?: {
@@ -30,6 +36,8 @@ interface ClienteFormProps {
 
     notas: string | null;
   };
+  /** Para el selector de sector de la primera propiedad. Solo al crear. */
+  sectores?: SectorElegible[];
   onSuccess?: () => void;
   compact?: boolean;
   /**
@@ -41,17 +49,51 @@ interface ClienteFormProps {
   cardsEditing?: boolean;
   onEditDone?: () => void;
   /**
-   * Órdenes, suscripciones y visitas. Va en la columna ancha: es lo que se
-   * mira, mientras que los datos del cliente son referencia.
+   * Propiedades, órdenes, suscripciones y visitas. Va en la columna ancha: es
+   * lo que se mira, mientras que los datos del cliente son referencia.
    */
   actividadContent?: React.ReactNode;
   /** Debajo de los datos, en la columna angosta. */
   rightColumnContent?: React.ReactNode;
+  /**
+   * Filas de Información General que en el escritorio viven en el
+   * encabezado —el estado, el sector, desde cuándo— y en el teléfono, donde el
+   * encabezado es solo el nombre, van con el resto de los datos.
+   */
+  filasSoloMovil?: { label: string; value: React.ReactNode }[];
 }
 
-function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
+/**
+ * La primera propiedad arranca vacía, con cada campo en su valor "sin cargar":
+ * `""` para el texto (un `undefined` deja el input sin controlar y el mapa sin
+ * qué leer), `null` para el punto y `false` para las jardineras.
+ */
+const PROPIEDAD_VACIA: ClienteConPropiedadFormData["propiedad"] = {
+  nombre: "",
+  ciudad: "",
+  sectorId: "",
+  direccion: "",
+  numeroCasa: "",
+  referencia: "",
+  notas: "",
+  lat: null,
+  lng: null,
+  jardinerasPlantaAlta: false,
+};
+
+function InfoRow({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="flex justify-between py-2.5 border-b border-border last:border-0">
+    <div
+      className={`flex items-center justify-between gap-3 py-2.5 border-b border-border last:border-0 ${className ?? ""}`}
+    >
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-right">{value || "—"}</span>
     </div>
@@ -60,6 +102,7 @@ function InfoRow({ label, value }: { label: string; value: string | null | undef
 
 export function ClienteForm({
   initialData,
+  sectores = [],
   onSuccess,
   compact,
   cards,
@@ -67,27 +110,22 @@ export function ClienteForm({
   onEditDone,
   actividadContent,
   rightColumnContent,
+  filasSoloMovil = [],
 }: ClienteFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEditing = !!initialData;
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors },
-    /*
-     * El mismo formulario para crear y para editar, con la primera propiedad
-     * adentro.
-     *
-     * Crear un cliente sin ningún lugar donde trabajar deja algo que no sirve
-     * para agendar, y pedirlo en dos pasos es garantizar que alguien se olvide
-     * del segundo. Editando, esos campos no se dibujan —cada propiedad se toca
-     * en su propia tarjeta— así que viajan en `undefined` y el PUT los ignora.
-     */
-  } = useForm<ClienteConPropiedadFormData>({
+  /*
+   * El mismo formulario para crear y para editar, con la primera propiedad
+   * adentro.
+   *
+   * Crear un cliente sin ningún lugar donde trabajar deja algo que no sirve
+   * para agendar, y pedirlo en dos pasos es garantizar que alguien se olvide
+   * del segundo. Editando, esos campos no se dibujan —cada propiedad se toca
+   * en su propia tarjeta— así que viajan en `undefined` y el PUT los ignora.
+   */
+  const form = useForm<ClienteConPropiedadFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(clienteConPropiedadSchema as any) as any,
     defaultValues: {
@@ -97,8 +135,16 @@ export function ClienteForm({
       email: initialData?.email ?? "",
       telefono: initialData?.telefono ?? "",
       notas: initialData?.notas ?? "",
+      ...(isEditing ? {} : { propiedad: PROPIEDAD_VACIA }),
     },
   });
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = form;
 
   // Reset form when leaving edit mode externally (header cancel)
   const prevEditing = useRef(cardsEditing);
@@ -172,6 +218,17 @@ export function ClienteForm({
                 <CardTitle>Informacion General</CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Primero y solo en el teléfono: así la última fila sigue
+                    siendo Telefono en el escritorio y no queda una línea de
+                    más. */}
+                {filasSoloMovil.map((fila) => (
+                  <InfoRow
+                    key={fila.label}
+                    label={fila.label}
+                    value={fila.value}
+                    className="md:hidden"
+                  />
+                ))}
                 <InfoRow label="Nombre" value={initialData?.nombre} />
                 <InfoRow label="Apellido" value={initialData?.apellido} />
                 <InfoRow label="Empresa" value={initialData?.empresa} />
@@ -296,11 +353,8 @@ export function ClienteForm({
 
   const sections = (
     <div className="space-y-5">
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Datos del cliente</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
+      <TarjetaSeccion titulo="Datos del cliente">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="nombre">Nombre</Label>
             <Input id="nombre" {...register("nombre")} />
@@ -341,134 +395,76 @@ export function ClienteForm({
             />
             {fieldError(errors.telefono?.message)}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </TarjetaSeccion>
 
-      {/* La primera propiedad, en el mismo formulario. Después se agregan más
-          desde la ficha del cliente, cada una con su mapa y sus medidas. */}
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Dónde se trabaja</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="propiedad.nombre">Nombre de la propiedad</Label>
-            <Input
-              id="propiedad.nombre"
-              placeholder="Casa, Oficina, Villa…"
-              {...register("propiedad.nombre")}
-            />
-            <p className="text-xs text-muted-foreground">
-              Para distinguirla si el cliente tiene más de una. Si la dejas
-              vacía se llama Principal.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label>Ciudad</Label>
-            <Controller
-              name="propiedad.ciudad"
-              control={control}
-              render={({ field }) => (
-                <CustomSelect
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={CIUDADES_ECUADOR.map((ciudad) => ({
-                    value: ciudad,
-                    label: ciudad,
-                  }))}
-                  placeholder="Seleccionar ciudad"
-                  searchable
-                  searchPlaceholder="Buscar ciudad..."
-                />
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="propiedad.direccion">Dirección</Label>
-            <Input
-              id="propiedad.direccion"
-              placeholder="Calle principal e intersección"
-              {...register("propiedad.direccion")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="propiedad.numeroCasa">Número de casa</Label>
-            <Input
-              id="propiedad.numeroCasa"
-              placeholder="Ej: N45-123"
-              {...register("propiedad.numeroCasa")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="propiedad.m2Total">Metros cuadrados</Label>
-            <Input
-              id="propiedad.m2Total"
-              type="number"
-              step="0.1"
-              min="0"
-              placeholder="Ej: 150"
-              {...register("propiedad.m2Total")}
-            />
-            {fieldError(errors.propiedad?.m2Total?.message)}
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="propiedad.referencia">Referencia</Label>
-            <Textarea
-              id="propiedad.referencia"
-              rows={2}
-              placeholder="Ej: Frente al parque, casa blanca con portón verde"
-              {...register("propiedad.referencia")}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Notas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            id="notas"
-            rows={4}
-            placeholder="Indicaciones especiales, horarios preferidos, mascotas…"
-            {...register("notas")}
+      {/* La primera propiedad, entera y en el mismo formulario: los mismos
+          campos que su propia página —dirección, sector, el punto en el mapa,
+          lo que hay que mantener y sus notas—. Pedía la dirección y los metros
+          totales y nada más, y la propiedad quedaba a medio cargar hasta que
+          alguien la reabría. Después se agregan más desde la ficha del
+          cliente, cada una con su página. */}
+      {!isEditing && (
+        <>
+          <DondeEsta
+            prefijo="propiedad."
+            sectores={sectores}
+            titulo="Dónde se trabaja"
+            nombreOpcional
           />
-        </CardContent>
-      </Card>
+          <EnElMapa prefijo="propiedad." />
+          <QueHayQueMantener prefijo="propiedad." />
+          <NotasDePropiedad prefijo="propiedad." titulo="Notas de la propiedad" />
+        </>
+      )}
+
+      <TarjetaSeccion titulo={isEditing ? "Notas" : "Notas del cliente"}>
+        <Textarea
+          id="notas"
+          rows={4}
+          placeholder="Indicaciones especiales, horarios preferidos, mascotas…"
+          {...register("notas")}
+        />
+      </TarjetaSeccion>
     </div>
   );
 
   if (compact) {
     return (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {sections}
-        <Button type="submit" disabled={loading}>
-          {loading ? "Guardando..." : "Guardar"}
-        </Button>
-      </form>
+      <FormProvider {...form}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {sections}
+          <Button type="submit" disabled={loading}>
+            {loading ? "Guardando..." : "Guardar"}
+          </Button>
+        </form>
+      </FormProvider>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mx-auto max-w-3xl space-y-5 pb-24">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {isEditing ? "Editar cliente" : "Nuevo cliente"}
-          </h1>
-          <p className="text-muted-foreground">
-            Información de contacto, ubicación y notas del cliente.
-          </p>
+    <FormProvider {...form}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="mx-auto max-w-3xl space-y-5 pb-24">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {isEditing ? "Editar cliente" : "Nuevo cliente"}
+            </h1>
+            <p className="text-muted-foreground">
+              {isEditing
+                ? "Información de contacto y notas del cliente."
+                : "Sus datos de contacto y su primera propiedad: dónde se trabaja, el punto en el mapa y lo que hay que mantener."}
+            </p>
+          </div>
+          {sections}
         </div>
-        {sections}
-      </div>
 
-      <StickyFormActions
-        saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
-        saving={loading}
-        onCancel={() => router.push("/dashboard/clientes")}
-      />
-    </form>
+        <StickyFormActions
+          saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
+          saving={loading}
+          onCancel={() => router.push("/dashboard/clientes")}
+        />
+      </form>
+    </FormProvider>
   );
 }

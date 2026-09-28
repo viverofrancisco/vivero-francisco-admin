@@ -4,19 +4,19 @@ export default function PersonalClientesLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="[id]" options={{ title: "Cliente" }} />
-      <Stack.Screen name="nuevo" options={{ title: "Nuevo cliente" }} />
-      <Stack.Screen
-        name="editar/[id]"
-        options={{ title: "Editar cliente" }}
-      />
-      <Stack.Screen
-        name="propiedades/nueva"
-        options={{ title: "Nueva propiedad" }}
-      />
+      {/* La ficha trae su encabezado (`EncabezadoDeFicha`), como la orden. */}
+      <Stack.Screen name="[id]" options={{ headerShown: false }} />
+      {/* Los formularios traen su propio encabezado —Cancelar · título ·
+          acción, `EncabezadoDeFormulario`—, como Nueva orden y Nueva
+          suscripción: la barra nativa decía "index" en la flecha y la
+          acción quedaba en un botón al pie, que con el teclado abierto se
+          iba de la pantalla. */}
+      <Stack.Screen name="nuevo" options={{ headerShown: false }} />
+      <Stack.Screen name="editar/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="propiedades/nueva" options={{ headerShown: false }} />
       <Stack.Screen
         name="propiedades/[propiedadId]"
-        options={{ title: "Propiedad" }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="asignar/[id]"

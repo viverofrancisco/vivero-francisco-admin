@@ -173,6 +173,9 @@ export async function getClienteForStaff(clienteId: string, viewer: Viewer) {
       telefono: true,
       notas: true,
       inactivoDesde: true,
+      // "Cliente desde": la ficha de la app lo muestra con el estado y el
+      // sector, como la del portal.
+      createdAt: true,
       propiedades: PROPIEDADES_DEL_CLIENTE,
       // Sus planes: de qué jardín, cuánto y cuántas visitas. Sin productos.
       suscripciones: {

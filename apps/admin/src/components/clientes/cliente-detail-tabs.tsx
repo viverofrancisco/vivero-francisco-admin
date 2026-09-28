@@ -55,12 +55,15 @@ import { toast } from "sonner";
 import { nombreCliente, nombrePersona } from "@vivero/shared";
 import { resumenTareas, type VisitaConTareas } from "@/lib/visita-tareas";
 import {
-  Plus,
   ArrowLeft,
   ArrowRight,
-  Pencil,
+  ChevronLeft,
   Eye,
+  Loader2,
+  MoreHorizontal,
   MoreVertical,
+  Pencil,
+  Plus,
 } from "lucide-react";
 
 /** Un plan, tal como lo ve la ficha del cliente: jardín, precio y visitas. */
@@ -267,11 +270,85 @@ export function ClienteDetailTabs({
   const empresaExtra =
     nombrePersona(cliente) && cliente.empresa ? cliente.empresa : null;
   const topVisitas = visitas.slice(0, 3);
+  // El sector es de cada propiedad: con dos casas en dos sectores se nombran
+  // los dos, porque uno solo sería mentira la mitad del tiempo.
+  const sectores = Array.from(
+    new Set(propiedades.map((p) => p.sector?.nombre).filter(Boolean))
+  ).join(", ");
 
   return (
     <div>
-      {/* Sticky header */}
-      <div className="sticky top-0 z-20 px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b">
+      {/* ══ Teléfono: el encabezado de la ficha en la app ════════════════
+          La flecha al lado del nombre, fija arriba, y el ⋯ a la derecha con
+          Editar y lo que se hace una vez por cliente. Editando, pasa a ser la
+          barra del formulario: Cancelar, el nombre, Guardar. El avatar, la
+          pastilla y el "cliente desde" bajan al cuerpo: a 375 px el nombre
+          es lo que tiene que caber. Es el encabezado de la orden. */}
+      <div className="sticky top-0 z-20 flex items-center gap-1.5 bg-card px-4 pt-1.5 pb-2 md:hidden">
+        {cardsEditing ? (
+          <>
+            <button
+              type="button"
+              onClick={() => setCardsEditing(false)}
+              className="min-w-[76px] rounded-lg px-1.5 py-1.5 text-left text-base font-semibold text-muted-foreground active:bg-muted"
+            >
+              Cancelar
+            </button>
+            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">
+              {nombreCompleto}
+            </h1>
+            <button
+              type="submit"
+              form="cliente-cards-form"
+              className="flex min-w-[76px] items-center justify-end rounded-lg px-1.5 py-1.5 text-base font-bold text-primary active:bg-muted disabled:text-muted-foreground"
+            >
+              Guardar
+            </button>
+          </>
+        ) : (
+          <>
+            <Link
+              href={backHref}
+              aria-label="Volver"
+              className="-ml-2.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl active:bg-muted"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Link>
+            <h1 className="min-w-0 flex-1 text-[22px] font-extrabold tracking-[-0.4px]">
+              {nombreCompleto}
+            </h1>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="Acciones"
+                    disabled={cambiandoActividad}
+                    className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border border-border text-ink-2 active:bg-muted disabled:opacity-60"
+                  >
+                    {cambiandoActividad ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <MoreHorizontal className="h-5 w-5" />
+                    )}
+                  </button>
+                }
+              />
+              <DropdownMenuContent align="end" className="min-w-52">
+                <DropdownMenuItem onClick={() => setCardsEditing(true)}>
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => cambiarActividad(!cliente.inactivoDesde)}>
+                  {cliente.inactivoDesde ? "Reactivar cliente" : "Marcar como inactivo"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
+      </div>
+
+      {/* Escritorio: el encabezado de siempre. */}
+      <div className="sticky top-0 z-20 hidden px-4 md:px-6 py-3 bg-card/95 backdrop-blur-sm border-b md:block">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -345,8 +422,19 @@ export function ClienteDetailTabs({
       </div>
 
       {/* Content below header */}
-      <div className="px-4 md:px-6 pt-6 pb-6">
+      <div className="px-4 md:px-6 pt-3 md:pt-6 pb-6">
       <ClienteForm
+        /* Teléfono: lo que el encabezado de escritorio pone al lado del
+           nombre —el estado, el sector, desde cuándo— va como filas de
+           Información General, junto al teléfono, como en la app. */
+        filasSoloMovil={[
+          {
+            label: "Estado",
+            value: <EstadoDelCliente inactivo={cliente.inactivoDesde !== null} />,
+          },
+          { label: "Sector", value: sectores },
+          { label: "Cliente desde", value: formatDate(cliente.createdAt) },
+        ]}
         initialData={{
           id: cliente.id,
           nombre: cliente.nombre,
@@ -359,7 +447,19 @@ export function ClienteDetailTabs({
         cards
         cardsEditing={cardsEditing}
         onEditDone={() => setCardsEditing(false)}
-        actividadContent={<>            {/* Órdenes primero: es lo que se factura, y lo que más se
+        actividadContent={<>
+            {/* Dónde se trabaja, primero: es lo que se busca al abrir un
+                cliente, y desde que la dirección es de cada propiedad no hay
+                ninguna otra tarjeta que la diga. Estaba en la columna angosta,
+                con los datos de referencia, y ahí quedaba debajo de las notas
+                y fuera de la vista. */}
+            <PropiedadesCard
+              clienteId={cliente.id}
+              propiedades={propiedades}
+              puedeEditar={verPlata}
+            />
+
+            {/* Órdenes después: es lo que se factura, y lo que más se
                 consulta al entrar a un cliente. */}
             {verPlata && (
             <Card>
@@ -580,15 +680,6 @@ export function ClienteDetailTabs({
 </>}
         rightColumnContent={
           <>
-            {/* Dónde se trabaja: es lo primero que se busca al abrir un
-                cliente, y desde que la dirección es de cada propiedad no hay
-                ninguna otra tarjeta que la diga. */}
-            <PropiedadesCard
-              clienteId={cliente.id}
-              propiedades={propiedades}
-              puedeEditar={verPlata}
-            />
-
             {/* Notifications Card */}
             <Card>
               <CardHeader className="border-b">

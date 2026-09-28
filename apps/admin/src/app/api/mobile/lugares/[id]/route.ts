@@ -4,12 +4,13 @@ import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 /**
  * Los datos del lugar elegido: la calle y la ciudad, para completar la ficha.
  *
- * **No devuelve el punto del mapa, a propósito.** Lo que Google contesta por
- * "Blue Bay, Isla Mocolí" es el centro de la urbanización, que es justo el dato
- * que el pin viene a reemplazar: doscientas casas comparten ese punto. Guardarlo
- * como si fuera la puerta es peor que no tener pin, porque después nadie sabe
- * que era aproximado. El pin se toma parado en la propiedad, o se ajusta sobre
- * el mapa del portal.
+ * **Devuelve dónde queda (`lat`/`lng`) para llevar el mapa hasta ahí, y la app
+ * nunca lo guarda como pin.** Lo que Google contesta por "Blue Bay, Isla
+ * Mocolí" es el centro de la urbanización, que es justo el dato que el pin
+ * viene a reemplazar: doscientas casas comparten ese punto. Guardarlo como si
+ * fuera la puerta es peor que no tener pin, porque después nadie sabe que era
+ * aproximado. El mapa queda en el barrio y el pin se pone tocando, como en el
+ * portal.
  *
  * Pedir los datos del lugar es también lo que **cierra la sesión** de búsqueda,
  * así que el mismo `sesion` que se usó al escribir viaja acá: con eso Google
@@ -41,7 +42,7 @@ export async function GET(
     respuesta = await fetch(url, {
       headers: {
         "X-Goog-Api-Key": clave,
-        "X-Goog-FieldMask": "formattedAddress,addressComponents",
+        "X-Goog-FieldMask": "formattedAddress,addressComponents,location",
       },
       cache: "no-store",
     });
@@ -60,6 +61,7 @@ export async function GET(
   const datos = (await respuesta.json()) as {
     formattedAddress?: string;
     addressComponents?: { longText?: string; types?: string[] }[];
+    location?: { latitude?: number; longitude?: number };
   };
 
   const parte = (tipo: string) =>
@@ -74,5 +76,7 @@ export async function GET(
     // `locality` es la ciudad; en algunas zonas de Ecuador viene solo el cantón.
     ciudad: parte("locality") ?? parte("administrative_area_level_2"),
     completa: datos.formattedAddress ?? null,
+    lat: datos.location?.latitude ?? null,
+    lng: datos.location?.longitude ?? null,
   });
 }

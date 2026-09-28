@@ -6,18 +6,27 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { Button, HelperText, Text, TextInput } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { CreateClienteBody } from "@vivero/shared";
-import { SelectorSector } from "@/components/SelectorSector";
+import { HelperText, Text, TextInput } from "react-native-paper";
+import { useRouter } from "expo-router";
+import type { CreateClienteBody, CreatePropiedadBody } from "@vivero/shared";
+import {
+  CamposDePropiedad,
+  useCamposDePropiedad,
+} from "@/components/PropiedadForm";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { tema } from "@/lib/tema";
 
 const PRIMARY = tema.verde;
 
 export interface ClienteFormProps {
   initial?: Partial<CreateClienteBody>;
-  submitLabel: string;
+  /** "Nuevo cliente", "Editar cliente": va en el medio del encabezado. */
+  titulo: string;
+  /** "Crear", "Guardar": la acción, a la derecha del encabezado. */
+  accion: string;
   onSubmit: (values: CreateClienteBody) => Promise<void>;
+  /** Por defecto vuelve atrás. */
+  onCancelar?: () => void;
   /**
    * Si se pregunta también por la primera propiedad. Solo al crear.
    *
@@ -29,41 +38,42 @@ export interface ClienteFormProps {
   pidePropiedad?: boolean;
 }
 
+/**
+ * El formulario del cliente, con la acción en el encabezado.
+ *
+ * *Cancelar* · título · *Crear* arriba (`EncabezadoDeFormulario`), como en
+ * Nueva orden y Nueva suscripción: es lo único que no se va scrolleando, y el
+ * botón al pie que había quedaba debajo del teclado en cuanto se tocaba un
+ * campo. El error se muestra arriba, pegado al encabezado, porque es ahí
+ * donde se está mirando cuando se toca la acción.
+ */
 export function ClienteForm({
   initial,
-  submitLabel,
+  titulo,
+  accion,
   onSubmit,
+  onCancelar,
   pidePropiedad = true,
 }: ClienteFormProps) {
-  const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const [nombre, setNombre] = useState(initial?.nombre ?? "");
   const [apellido, setApellido] = useState(initial?.apellido ?? "");
   const [empresa, setEmpresa] = useState(initial?.empresa ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [telefono, setTelefono] = useState(initial?.telefono ?? "");
+  const [notas, setNotas] = useState(initial?.notas ?? "");
   /*
    * La dirección es de la **propiedad**, no del cliente.
    *
    * Un cliente con dos casas tiene dos direcciones y ninguna es "la suya". Acá
    * se carga la primera —sin un lugar donde trabajar el cliente no sirve para
-   * agendar—, y las demás se agregan desde su ficha, cada una con su pantalla.
+   * agendar—, **entera**: los mismos campos que su propia pantalla, punto y
+   * medidas incluidos. Pedía la dirección y los metros totales y nada más, y
+   * la propiedad quedaba a medio cargar hasta que alguien la reabría. Las
+   * demás se agregan desde la ficha del cliente, cada una con su pantalla.
    */
-  const [ciudad, setCiudad] = useState(initial?.propiedad?.ciudad ?? "");
-  const [direccion, setDireccion] = useState(initial?.propiedad?.direccion ?? "");
-  const [numeroCasa, setNumeroCasa] = useState(
-    initial?.propiedad?.numeroCasa ?? ""
-  );
-  const [referencia, setReferencia] = useState(
-    initial?.propiedad?.referencia ?? ""
-  );
-  const [notas, setNotas] = useState(initial?.notas ?? "");
-  const [metrosCuadrados, setMetrosCuadrados] = useState(
-    initial?.propiedad?.m2Total != null ? String(initial.propiedad.m2Total) : ""
-  );
-  const [sectorId, setSectorId] = useState<string | null>(
-    initial?.propiedad?.sectorId ?? null
-  );
+  const propiedad = useCamposDePropiedad(initial?.propiedad);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,15 +83,20 @@ export function ClienteForm({
       setError("El nombre es obligatorio");
       return;
     }
+
+    let valoresPropiedad: CreatePropiedadBody | undefined;
+    if (pidePropiedad) {
+      const armado = propiedad.armar({ nombreOpcional: true });
+      if (!armado.ok) {
+        setError(armado.error);
+        return;
+      }
+      valoresPropiedad = armado.valores;
+    }
+
     setError(null);
     setSubmitting(true);
     try {
-      const metros = metrosCuadrados.trim() ? Number(metrosCuadrados) : null;
-      if (metros !== null && (!Number.isFinite(metros) || metros <= 0)) {
-        setError("Metros² debe ser un número mayor a 0");
-        setSubmitting(false);
-        return;
-      }
       await onSubmit({
         nombre: nombre.trim(),
         apellido: apellido?.trim() || null,
@@ -89,18 +104,7 @@ export function ClienteForm({
         email: email?.trim() || null,
         telefono: telefono?.trim() || null,
         notas: notas?.trim() || null,
-        ...(pidePropiedad
-          ? {
-              propiedad: {
-                ciudad: ciudad?.trim() || null,
-                sectorId: sectorId ?? null,
-                direccion: direccion?.trim() || null,
-                numeroCasa: numeroCasa?.trim() || null,
-                referencia: referencia?.trim() || null,
-                m2Total: metros,
-              },
-            }
-          : {}),
+        ...(valoresPropiedad ? { propiedad: valoresPropiedad } : {}),
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar");
@@ -110,124 +114,84 @@ export function ClienteForm({
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView
+    <View style={styles.flex}>
+      <EncabezadoDeFormulario
+        titulo={titulo}
+        accion={accion}
+        onAccion={submit}
+        onCancelar={onCancelar ?? (() => router.back())}
+        cargando={submitting}
+        deshabilitado={!nombre.trim()}
+      />
+      <KeyboardAvoidingView
         style={styles.flex}
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <SectionTitle>Nombre</SectionTitle>
-        <Field
-          label="Nombre"
-          required
-          value={nombre}
-          onChangeText={setNombre}
-        />
-        <Field
-          label="Apellido"
-          value={apellido ?? ""}
-          onChangeText={setApellido}
-        />
-        <Field
-          label="Empresa"
-          value={empresa ?? ""}
-          onChangeText={setEmpresa}
-        />
-
-        <SectionTitle>Contacto</SectionTitle>
-        <Field
-          label="Teléfono"
-          value={telefono ?? ""}
-          onChangeText={setTelefono}
-          keyboardType="phone-pad"
-        />
-        <Field
-          label="Email"
-          value={email ?? ""}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        {pidePropiedad ? (
-          <>
-            {/* La dirección es de la **propiedad**, no del cliente. Acá se
-                carga la primera —sin ella el cliente no sirve para agendar—;
-                las demás se agregan desde su ficha. */}
-            <SectionTitle>Sector</SectionTitle>
-            <SelectorSector value={sectorId} onChange={setSectorId} />
-
-            <SectionTitle>Dirección</SectionTitle>
-            <Field
-              label="Calle"
-              value={direccion ?? ""}
-              onChangeText={setDireccion}
-            />
-            <Field
-              label="Número de casa"
-              value={numeroCasa ?? ""}
-              onChangeText={setNumeroCasa}
-            />
-            <Field label="Ciudad" value={ciudad ?? ""} onChangeText={setCiudad} />
-            <Field
-              label="Referencia"
-              value={referencia ?? ""}
-              onChangeText={setReferencia}
-            />
-            <Field
-              label="Metros²"
-              value={metrosCuadrados}
-              onChangeText={(t) => setMetrosCuadrados(t.replace(/[^\d.]/g, ""))}
-              keyboardType="numeric"
-            />
-          </>
-        ) : null}
-
-        <SectionTitle>Notas</SectionTitle>
-        <TextInput
-          mode="outlined"
-          value={notas ?? ""}
-          onChangeText={setNotas}
-          multiline
-          numberOfLines={5}
-          placeholder="Información adicional..."
-          outlineColor="#e0e0e0"
-          activeOutlineColor={PRIMARY}
-          outlineStyle={styles.outline}
-          style={[styles.field, styles.notas]}
-          contentStyle={styles.notasContent}
-        />
-
-        {error ? (
-          <HelperText type="error" visible style={styles.error}>
-            {error}
-          </HelperText>
-        ) : null}
-      </ScrollView>
-
-      <View
-        style={[
-          styles.footer,
-          { paddingBottom: Math.max(insets.bottom, 16) + 8 },
-        ]}
-      >
-        <Button
-          mode="contained"
-          onPress={submit}
-          loading={submitting}
-          disabled={submitting || !nombre.trim()}
-          style={styles.primaryBtn}
-          contentStyle={styles.primaryBtnContent}
-          labelStyle={styles.primaryBtnLabel}
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
         >
-          {submitLabel}
-        </Button>
-      </View>
+          {error ? (
+            <HelperText type="error" visible style={styles.error}>
+              {error}
+            </HelperText>
+          ) : null}
 
-    </KeyboardAvoidingView>
+          <SectionTitle>Nombre</SectionTitle>
+          <Field
+            label="Nombre"
+            required
+            value={nombre}
+            onChangeText={setNombre}
+          />
+          <Field
+            label="Apellido"
+            value={apellido ?? ""}
+            onChangeText={setApellido}
+          />
+          <Field
+            label="Empresa"
+            value={empresa ?? ""}
+            onChangeText={setEmpresa}
+          />
+
+          <SectionTitle>Contacto</SectionTitle>
+          <Field
+            label="Teléfono"
+            value={telefono ?? ""}
+            onChangeText={setTelefono}
+            keyboardType="phone-pad"
+          />
+          <Field
+            label="Email"
+            value={email ?? ""}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          {pidePropiedad ? (
+            <CamposDePropiedad campos={propiedad} dentroDelCliente />
+          ) : null}
+
+          <SectionTitle>{pidePropiedad ? "Notas del cliente" : "Notas"}</SectionTitle>
+          <TextInput
+            mode="outlined"
+            value={notas ?? ""}
+            onChangeText={setNotas}
+            multiline
+            numberOfLines={5}
+            placeholder="Información adicional..."
+            outlineColor="#e0e0e0"
+            activeOutlineColor={PRIMARY}
+            outlineStyle={styles.outline}
+            style={[styles.field, styles.notas]}
+            contentStyle={styles.notasContent}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -309,20 +273,5 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
 
-  error: { textAlign: "center", marginTop: 16 },
-
-  footer: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    backgroundColor: "#fff",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#eee",
-  },
-  primaryBtn: { borderRadius: 14 },
-  primaryBtnContent: { paddingVertical: 8 },
-  primaryBtnLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    letterSpacing: 0.2,
-  },
+  error: { textAlign: "center", marginTop: 4 },
 });

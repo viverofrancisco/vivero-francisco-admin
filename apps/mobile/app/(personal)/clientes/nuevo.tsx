@@ -19,5 +19,5 @@ export default function ClienteNuevoScreen() {
     }
   }
 
-  return <ClienteForm submitLabel="Crear cliente" onSubmit={submit} />;
+  return <ClienteForm titulo="Nuevo cliente" accion="Crear" onSubmit={submit} />;
 }

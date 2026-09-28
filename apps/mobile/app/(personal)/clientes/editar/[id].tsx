@@ -3,6 +3,7 @@ import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { CreateClienteBody } from "@vivero/shared";
 import { ClienteForm } from "@/components/ClienteForm";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { apiRequest, ApiError } from "@/lib/api";
 import type { ClienteStaffDetail } from "@/lib/types";
 
@@ -33,15 +34,27 @@ export default function ClienteEditarScreen() {
 
   if (!initial) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
+      <View style={styles.flex}>
+        {/* El encabezado desde el primer instante: sin barra nativa, es la
+            única salida mientras carga. */}
+        <EncabezadoDeFormulario
+          titulo="Editar cliente"
+          accion="Guardar"
+          onAccion={() => {}}
+          onCancelar={() => router.back()}
+          deshabilitado
+        />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" />
+        </View>
       </View>
     );
   }
 
   return (
     <ClienteForm
-      submitLabel="Guardar cambios"
+      titulo="Editar cliente"
+      accion="Guardar"
       // La dirección y las medidas viven en cada propiedad, que se abre desde
       // la ficha del cliente. Acá estaban y no se guardaban.
       pidePropiedad={false}
@@ -59,5 +72,6 @@ export default function ClienteEditarScreen() {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: "#fff" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
 });

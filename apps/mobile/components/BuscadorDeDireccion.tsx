@@ -15,25 +15,31 @@ export interface DireccionElegida {
   direccion: string | null;
   numeroCasa: string | null;
   ciudad: string | null;
+  /** Dónde queda, para llevar el mapa hasta ahí. Nunca es el pin. */
+  lat: number | null;
+  lng: number | null;
 }
 
 /**
  * Buscar una dirección y que complete los campos.
  *
- * **No pone el punto del mapa, y eso es a propósito.** Lo que Google contesta
- * por "Blue Bay, Isla Mocolí" es el centro de la urbanización: doscientas casas
- * comparten ese punto, que es justo el dato que el pin viene a reemplazar.
- * Guardarlo como si fuera la puerta es peor que no tener pin, porque después
- * nadie sabe que era aproximado. En el portal el buscador tampoco pone el pin —
- * mueve el mapa y el ajuste fino se hace tocando—; acá no hay mapa, así que lo
- * que aporta es ahorrarse tipear la calle y la ciudad con el pulgar.
+ * **Lleva el mapa hasta ahí y no pone el pin, y eso es a propósito.** Lo que
+ * Google contesta por "Blue Bay, Isla Mocolí" es el centro de la urbanización:
+ * doscientas casas comparten ese punto, que es justo el dato que el pin viene
+ * a reemplazar. Guardarlo como si fuera la puerta es peor que no tener pin,
+ * porque después nadie sabe que era aproximado. Igual que en el portal: el
+ * mapa queda en el barrio y el ajuste fino se hace tocando.
  *
  * La búsqueda pasa por nuestro servidor, que es donde vive la clave, y viaja
  * con un identificador de sesión: Google cobra todas las teclas de una misma
  * búsqueda como una sola consulta si comparten ese token.
  *
  * Si el servidor no tiene configurado el buscador (404), el campo desaparece:
- * el resto de la ficha se carga igual.
+ * el resto de la ficha se carga igual. Cualquier otro fallo —Google que
+ * rechaza la clave, sin conexión— **se dice debajo del campo**: se quedaba
+ * callado, y "escribí y no salió nada" no distingue un error de una calle
+ * que no existe. Y una búsqueda que sí llegó pero no trajo nada dice
+ * "Sin resultados", por lo mismo.
  */
 export function BuscadorDeDireccion({
   onElegir,
@@ -44,12 +50,14 @@ export function BuscadorDeDireccion({
   const [items, setItems] = useState<Sugerencia[] | null>(null);
   const [buscando, setBuscando] = useState(false);
   const [disponible, setDisponible] = useState(true);
+  const [fallo, setFallo] = useState<string | null>(null);
   const sesion = useRef<string | null>(null);
 
   useEffect(() => {
     const q = texto.trim();
     if (q.length < 3) {
       setItems(null);
+      setFallo(null);
       return;
     }
     let vigente = true;
@@ -63,12 +71,18 @@ export function BuscadorDeDireccion({
           "/api/mobile/lugares",
           { query: { q, sesion: sesion.current } }
         );
-        if (vigente) setItems(res.items);
+        if (!vigente) return;
+        setItems(res.items);
+        setFallo(null);
       } catch (e) {
         if (!vigente) return;
         // 404 = el servidor no tiene la clave con Places habilitado. No es un
         // error de quien está cargando la ficha, así que el campo se va.
         if (e instanceof ApiError && e.status === 404) setDisponible(false);
+        else
+          setFallo(
+            "No pudimos buscar. Si sigue pasando, avísale a un administrador."
+          );
         setItems(null);
       } finally {
         if (vigente) setBuscando(false);
@@ -89,7 +103,13 @@ export function BuscadorDeDireccion({
       onElegir(datos);
     } catch {
       // Sin detalle, al menos queda el nombre en la calle.
-      onElegir({ direccion: s.principal, numeroCasa: null, ciudad: null });
+      onElegir({
+        direccion: s.principal,
+        numeroCasa: null,
+        ciudad: null,
+        lat: null,
+        lng: null,
+      });
     } finally {
       // Pedir el detalle cierra la sesión: de acá en más hace falta otra.
       sesion.current = null;
@@ -123,6 +143,16 @@ export function BuscadorDeDireccion({
         style={styles.campo}
       />
 
+      {fallo ? (
+        <Text variant="bodySmall" style={styles.fallo}>
+          {fallo}
+        </Text>
+      ) : items && items.length === 0 && !buscando ? (
+        <Text variant="bodySmall" style={styles.nota}>
+          Sin resultados.
+        </Text>
+      ) : null}
+
       {items && items.length > 0 ? (
         <View style={styles.lista}>
           {items.map((s) => (
@@ -148,8 +178,8 @@ export function BuscadorDeDireccion({
       ) : null}
 
       <Text variant="bodySmall" style={styles.nota}>
-        Completa la calle y la ciudad. El punto en el mapa se toma parado en la
-        propiedad.
+        Completa la calle y la ciudad y lleva el mapa hasta ahí. El pin lo
+        pones tú, tocando.
       </Text>
     </View>
   );
@@ -181,4 +211,5 @@ const styles = StyleSheet.create({
   principal: { color: tema.texto },
   secundario: { color: tema.texto3 },
   nota: { color: tema.texto3, marginTop: 6, paddingHorizontal: 4 },
+  fallo: { color: tema.rojo, marginTop: 6, paddingHorizontal: 4 },
 });

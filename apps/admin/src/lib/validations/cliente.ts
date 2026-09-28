@@ -94,13 +94,22 @@ export type ClienteImportRow = z.infer<typeof clienteImportRowSchema>;
 // Propiedades
 // ──────────────────────────────────────────────
 
-/** Un número que puede venir vacío del formulario. */
+/**
+ * Un número que puede venir vacío del formulario.
+ *
+ * Vacío es "todavía no se midió" y viaja como `null`, que es lo que la base
+ * guarda y lo que la ficha entiende como "no mostrar". La rama del texto vacío
+ * va **primero**: la unión devuelve la primera que acepta, y `coerce.number`
+ * acepta `""` porque `Number("")` es 0 — así que una medida que nadie cargó se
+ * guardaba como cero, y "0 m de vegetación media" es un dato, no una ausencia.
+ */
 const numeroDeFormulario = (mensaje = "No puede ser negativo") =>
   z
     .union([
+      z.literal("").transform(() => null),
       z.coerce.number().min(0, mensaje),
-      z.literal("").transform(() => undefined),
     ])
+    .nullable()
     .optional();
 
 /**
@@ -143,7 +152,16 @@ export type PropiedadFormData = z.infer<typeof propiedadSchema>;
  * pasaba con la cuenta del jardinero antes de que naciera con su ficha.
  */
 export const clienteConPropiedadSchema = clienteBase
-  .extend({ propiedad: propiedadSchema.partial().optional() })
+  .extend({
+    propiedad: propiedadSchema
+      .partial()
+      // Acá el nombre puede quedar vacío y el servidor le pone "Principal":
+      // la mayoría tiene una sola propiedad y no hay nada que distinguir. Con
+      // el `min(1)` de la propiedad suelta, dejarlo vacío frenaba el envío sin
+      // decir nada, porque el campo no mostraba su error.
+      .extend({ nombre: z.string().optional().or(z.literal("")) })
+      .optional(),
+  })
   .refine(tieneNombre.check, {
     message: tieneNombre.message,
     path: [...tieneNombre.path],
