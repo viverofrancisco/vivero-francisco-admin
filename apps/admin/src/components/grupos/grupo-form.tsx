@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { StickyFormActions } from "@/components/shared/sticky-form-actions";
+import { EncabezadoFormularioMovil } from "@/components/shared/encabezado-formulario-movil";
 import { PersonalSelector } from "./personal-selector";
 import { toast } from "sonner";
 
@@ -79,8 +80,16 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mx-auto max-w-2xl space-y-5 pb-24">
-        <div>
+      {/* Teléfono: Cancelar · título · Crear arriba; escritorio: el título
+          con su línea y la barra de abajo. */}
+      <EncabezadoFormularioMovil
+        titulo={isEditing ? "Editar grupo" : "Nuevo grupo"}
+        accion={isEditing ? "Guardar" : "Crear"}
+        cargando={loading}
+        onCancelar={() => router.push("/dashboard/grupos")}
+      />
+      <div className="mx-auto max-w-2xl space-y-5 px-4 pt-3 pb-6 md:px-0 md:pt-0 md:pb-24">
+        <div className="hidden md:block">
           <h1 className="text-2xl font-bold tracking-tight">
             {isEditing ? "Editar grupo" : "Nuevo grupo"}
           </h1>
@@ -118,11 +127,13 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
         </Card>
       </div>
 
-      <StickyFormActions
-        saveLabel={isEditing ? "Guardar cambios" : "Crear grupo"}
-        saving={loading}
-        onCancel={() => router.push("/dashboard/grupos")}
-      />
+      <div className="hidden md:block">
+        <StickyFormActions
+          saveLabel={isEditing ? "Guardar cambios" : "Crear grupo"}
+          saving={loading}
+          onCancel={() => router.push("/dashboard/grupos")}
+        />
+      </div>
     </form>
   );
 }

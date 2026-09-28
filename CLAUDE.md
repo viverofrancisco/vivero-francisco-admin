@@ -520,8 +520,11 @@ for one ficha; *Editar* now lives in the ⋯, and the estado pill, empresa and
 "cliente desde" sit under the header, on the portal's phone tree too). The create screens (*Nueva
 orden*, *Nueva suscripción*, *Emitir*, and the cliente and propiedad forms — *Nuevo cliente*, *Editar cliente*, *Nueva propiedad*, the propiedad's own screen — with `headerShown: false` in the clientes layout) use `EncabezadoDeFormulario` instead:
 *Cancelar* on the left, the action (*Crear*, *Emitir*) on the right, the
-title between — the portal's header on the same screens, and the only thing
-that stays put while a long form scrolls, so there is no button at the foot.
+title between — the portal's header on the same screens (*Nueva orden*, and
+*Nuevo cliente*, *Nuevo personal* and *Nuevo grupo* below `md` through
+`EncabezadoFormularioMovil` in `components/shared`, with `StickyFormActions`
+kept for the desktop), and the only thing that stays put while a long form scrolls, so
+there is no button at the foot.
 
 **Nothing about a visita becomes an order by itself.** Completing one used to
 open a `BORRADOR` with its loose work at $0, and a nightly cron swept up the

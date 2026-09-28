@@ -12,7 +12,9 @@ export default async function NuevoGrupoPage() {
   });
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    // Sin relleno en el teléfono: el formulario trae su encabezado pegado
+    // arriba, de borde a borde, y pone el suyo al cuerpo.
+    <div className="md:p-6">
       <GrupoForm personalList={personalList} />
     </div>
   );

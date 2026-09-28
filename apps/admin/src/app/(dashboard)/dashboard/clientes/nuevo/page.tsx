@@ -18,7 +18,9 @@ export default async function NuevoClientePage() {
   });
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    // Sin relleno en el teléfono: el formulario trae su encabezado pegado
+    // arriba, de borde a borde, y pone el suyo al cuerpo.
+    <div className="md:p-6">
       <ClienteForm sectores={sectores} />
     </div>
   );

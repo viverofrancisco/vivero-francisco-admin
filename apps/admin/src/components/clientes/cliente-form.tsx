@@ -16,6 +16,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import { StickyFormActions } from "@/components/shared/sticky-form-actions";
+import { EncabezadoFormularioMovil } from "@/components/shared/encabezado-formulario-movil";
 import { toast } from "sonner";
 import {
   DondeEsta,
@@ -442,14 +443,23 @@ export function ClienteForm({
     );
   }
 
+  const titulo = isEditing ? "Editar cliente" : "Nuevo cliente";
+
   return (
     <FormProvider {...form}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="mx-auto max-w-3xl space-y-5 pb-24">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              {isEditing ? "Editar cliente" : "Nuevo cliente"}
-            </h1>
+        <EncabezadoFormularioMovil
+          titulo={titulo}
+          accion={isEditing ? "Guardar" : "Crear"}
+          cargando={loading}
+          onCancelar={() => router.push("/dashboard/clientes")}
+        />
+
+        <div className="mx-auto max-w-3xl space-y-5 px-4 pt-3 pb-6 md:px-0 md:pt-0 md:pb-24">
+          {/* El título y su línea, solo en el escritorio: en el teléfono el
+              encabezado ya dice qué pantalla es. */}
+          <div className="hidden md:block">
+            <h1 className="text-2xl font-bold tracking-tight">{titulo}</h1>
             <p className="text-muted-foreground">
               {isEditing
                 ? "Información de contacto y notas del cliente."
@@ -459,11 +469,14 @@ export function ClienteForm({
           {sections}
         </div>
 
-        <StickyFormActions
-          saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
-          saving={loading}
-          onCancel={() => router.push("/dashboard/clientes")}
-        />
+        {/* Escritorio: la barra de siempre. */}
+        <div className="hidden md:block">
+          <StickyFormActions
+            saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
+            saving={loading}
+            onCancel={() => router.push("/dashboard/clientes")}
+          />
+        </div>
       </form>
     </FormProvider>
   );
