@@ -130,6 +130,7 @@ Ejemplos en el repo que vale la pena mirar antes de escribir una:
 | `20260924200000_suscripcion_por_propiedad_sin_productos` | Plegar una tabla hija a su cabecera (`SuscripcionItem` → `Suscripcion.precio/ivaTasa/visitasPorPeriodo`) conservando el total que el cliente paga con tasas mezcladas; NOT NULL nueva rellenada en cascada (visitas → propiedad más antigua → crearla); mover una FK única de la hija a la cabecera eligiendo **una** fila por clave; y una columna congelada (`FacturaLinea.codigo`) rellenada con la regla que antes se calculaba al leer |
 | `20260928120000_visita_no_realizada_y_novedades` | `ADD VALUE` a un enum existente (`EstadoVisita.NO_REALIZADA`) sin usarlo en la misma transacción, un enum nuevo (`MotivoNovedad`), una tabla nueva con índice único compuesto (`VisitaNovedad`), y una **autorrelación** (`Visita.reprogramadaDeId` → `Visita.id`, `SET NULL`) |
 | `20260928130000_fotos_de_novedad` | Una columna (una sola foto) que pasa a ser una tabla hija (`VisitaNovedadFoto`): crear la tabla, `INSERT … SELECT` desde las dos columnas, y recién ahí `DROP COLUMN` |
+| `20260928150000_costo_y_peso_de_variante` | Dos columnas nulables (`costo`, `peso`) donde nulo es "no se sabe" y no cero, más un enum nuevo (`UnidadPeso`) para una columna `NOT NULL DEFAULT` sobre una tabla con filas |
 
 ### Índices que Prisma no sabe expresar
 

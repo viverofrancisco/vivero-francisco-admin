@@ -6,11 +6,19 @@ import {
   listarCategorias,
 } from "@/lib/services/categoria.service";
 import { categoriaSchema } from "@/lib/validations/categoria";
+import { publicUrlForKey } from "@/lib/s3";
 
 export async function GET() {
   const viewer = await viewerFromSession();
   try {
-    return NextResponse.json(await listarCategorias(viewer));
+    // Con la url de la foto resuelta: la lista del teléfono la dibuja.
+    const categorias = await listarCategorias(viewer);
+    return NextResponse.json(
+      categorias.map((c) => ({
+        ...c,
+        imagenUrl: c.media ? publicUrlForKey(c.media.key) : null,
+      }))
+    );
   } catch (error) {
     return serviceErrorResponse(error);
   }

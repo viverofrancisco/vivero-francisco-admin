@@ -203,7 +203,7 @@ export function PantallaLista({
               style={styles.cerrar}
               accessibilityLabel="Cerrar filtros"
             >
-              <Ionicons name="close" size={22} color={tema.texto2} />
+              <Ionicons name="close-outline" size={18} color={tema.texto2} />
             </PressableScale>
           </View>
 
@@ -332,12 +332,14 @@ const styles = StyleSheet.create({
     borderBottomColor: tema.linea,
   },
   panelTitulo: { fontSize: 17, fontWeight: "700", color: tema.texto },
+  // La ✕ de toda hoja: 36 de círculo, el ícono en 18 (`CabeceraDeHoja`).
   cerrar: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: tema.lienzo,
   },
   panelCuerpo: { flex: 1, padding: 16 },
   grupo: { gap: 8, marginBottom: 22 },
@@ -386,6 +388,14 @@ const styles = StyleSheet.create({
   verTexto: { color: "#fff", fontWeight: "600", fontSize: 15 },
 
 });
+
+/**
+ * Un botón más de la fila del buscador —el orden, por ejemplo—: la misma
+ * caja que el de filtros, y el mismo pintado con algo puesto, para que los
+ * dos se lean como la fila de controles que son.
+ */
+export const BOTON_JUNTO_AL_BUSCADOR = styles.botonFiltro;
+export const BOTON_JUNTO_AL_BUSCADOR_ACTIVO = styles.botonFiltroActivo;
 
 /**
  * Una fila de la lista: de borde a borde, con una línea arriba.

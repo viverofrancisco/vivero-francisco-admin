@@ -246,6 +246,157 @@ El **historial** vive en la ficha de la variante, entero. Desde la card de
 Inventario de un bien sin opciones hay un enlace: acá está el número y cómo
 moverlo, allá el porqué de cada cambio.
 
+**Las dos guardan desde la barra del header**, como el resto de la ficha. La
+card de la variante única guardaba cada campo al salir de él, sin avisar, y
+la ficha de la variante también: dos formas de guardar en la misma pantalla,
+y la que no avisa dejaba a quien escribía un costo buscando el botón para
+confirmarlo. Ahora lo que se toca queda pendiente —en la card, dentro del
+formulario del producto (`form.cambios`, un parche por variante, más el
+movimiento en `form.movimientos`); en la ficha de la variante, en su propio
+`form`— y sale con *Guardar* o vuelve atrás con *Descartar*. El stock sigue
+siendo un movimiento pendiente y el número grande muestra **en cuánto va a
+quedar**, en ámbar, como en la tabla de variantes. `PrecioDeLista`,
+`CostoPorUnidad` y `PesoDeVariante` llaman `onCambio` **en cada tecla**, no
+al salir del campo: la barra tiene que aparecer con el primer dígito, que es
+cuando se empezó a cambiar algo. El texto del campo lo lleva
+`useTextoNumerico` (`input-numero.tsx`), que repone lo escrito desde afuera
+solo cuando el número ya no es el que dice el campo: sin esa condición,
+"12." publicaba 12, el padre devolvía 12 y `String(12)` le borraba el punto
+recién escrito — que es exactamente lo que le pasaba al precio de la tabla
+de variantes, donde no se podía escribir un decimal (`PrecioEnFila`).
+
+### El portal en el teléfono es la app
+
+Por debajo de `md`, `ServicioDetail` se bifurca por `useEsMovil()` —por el
+hook y no por clases, porque la ficha del teléfono es otro árbol con hojas
+que guardan en el acto y `md:hidden` montaría los dos— y dibuja
+`FichaProductoMovil` (`components/servicios/movil/`): la misma ficha que la
+app, sección por sección, con las mismas hojas a pantalla completa
+(`HojaCompleta` sobre `DialogContent pantallaCompletaEnMovil`, con la
+`CabeceraDeHoja` de Shopify) — el editor de opciones con su lista, el
+buscador de sugerencias y el editor de una opción (los valores se arrastran
+con `@dnd-kit`, por el agarre); la lista de variantes y la ficha de la
+variante con sus hojas de precio, inventario y *Ajustar stock*; la foto de
+la variante por la biblioteca; las fotos del producto con el **+** a la
+biblioteca (`MediaLibrary` con `elegidasIniciales` y `permiteNinguna`) y la
+hoja de acciones por foto; las categorías; y *Editar* en el ⋯, que abre el
+formulario de la app. **Ahí no hay barra de guardar**: cada hoja pega a la
+API del portal (`PATCH /api/variantes/[id]`, `POST …/movimientos`,
+`PUT …/opciones`, `PUT /api/servicios/[id]`, las de `…/imagenes`) y hace
+`router.refresh()`, como la app vuelve a pedir la ficha. La página manda
+`descripcionPlana` (`textoPlano`) y `createdAt` para eso; la descripción se
+edita como texto plano, como en la app. `/api/categorias` devuelve además
+`imagenUrl`, que la lista del teléfono dibuja. El escritorio no cambia.
+
+### La app tiene la misma ficha, con la forma de la de Shopify
+
+`GET /api/mobile/servicios/[id]` devuelve lo que arma la página del portal
+—el producto con su estado, IVA y categorías, la galería, los ejes y las
+variantes con SKU, precio, costo, peso y stock— y la ficha de la app la
+dibuja con las secciones de las demás fichas (`EncabezadoDeFicha`, el ⋯ con
+*Editar*): fotos, información general, descripción y, con una sola variante,
+*Precio e inventario* con **todas** las filas y "—" donde no hay dato; con
+opciones, los ejes y una fila por combinación. *Ajustar* abre la pantalla de
+Shopify (`HojaAjustarStock`): el número grande con − y +, que es **en cuánto
+va a quedar**, el motivo en un renglón que abre la lista con el tilde
+(Corrección, Conteo, Entró mercadería), la tarjeta con el antes → después y
+una nota; al guardar se traduce al libro —*Conteo* manda cuánto hay y los
+otros dos la diferencia, y *Entró mercadería* solo suma— por
+`POST /api/mobile/variantes/[id]/movimientos`. Las hojas de precio e
+inventario usan `CampoEnCaja` (el campo con el rótulo adentro y el ⊗) y
+`Casilla` (la casilla de Shopify, en vez del interruptor), y la de precio
+muestra el margen y la ganancia en dos tarjetas grises. Devolvía nombre, descripción
+y tipo bajo una barra nativa que decía "index": una ficha a medio hacer. El
+formulario (`ServicioForm`) es el alta del portal con `EncabezadoDeFormulario`
+—tipo al crear, estado, SKU y, en un bien sin opciones, precio, costo con su
+ganancia, IVA, se cuenta, stock inicial, vender sin stock y peso— y guarda por
+`POST`/`PUT` del producto más el `PATCH /api/mobile/variantes/[id]` gemelo del
+portal.
+
+**Las opciones y las variantes son las pantallas de Shopify.** En la ficha,
+la sección *Opciones* muestra cada eje con su nombre, cuántos valores tiene y
+los valores como pastillas, y *Editar* abre `EditorDeOpciones`, una hoja
+`pageSheet` con la cabecera de Shopify (`CabeceraDeHoja`: la ✕ redonda, el
+título con "N variantes" debajo, la pastilla *Guardar*): un renglón por eje
+—"Tamaño" / "(2) Chica, Grande"— que abre `EditorDeOpcion` (el nombre, los
+valores como filas con su agarre para arrastrar y su tacho, y la última fila
+vacía que dice *Agregar valor* y se convierte en valor al escribir, como en
+el portal), y al final *Agregar opción*, que abre el buscador con las
+sugerencias de siempre y *Crear opción personalizada*. **Los valores viajan
+con su id** cuando ya existían, por lo mismo que en el portal. *Guardar*
+manda el conjunto entero a `PUT /api/mobile/servicios/[id]/opciones`, la
+gemela de la web, y ante el 409 pregunta con `DialogoConfirmar` y vuelve a
+mandar con `descartarVariantes`. Con opciones, la ficha muestra un renglón
+*N variantes* con la miniatura que abre `ListaDeVariantes` (la miniatura, el
+nombre, "$16,00 • 578 disponibles", el SKU y un filtro), y cada fila abre
+`FichaDeVariante`: la foto con el nombre de la combinación y el del producto,
+qué valor tiene en cada eje, y `CuerpoDeVariante` — la sección *Precio*, cuyos
+renglones abren `HojaPrecioDeVariante` (precio, costo con su ganancia, IVA), y
+la sección *Inventario* con *Editar* (`HojaInventarioDeVariante`: se cuenta,
+vender sin stock, SKU, peso con su unidad) y la cantidad en una pastilla que
+abre *Ajustar stock*. **Sin opciones, la ficha del producto usa ese mismo
+`CuerpoDeVariante`** para su variante única, así que las secciones se
+escriben una vez y el bien sin opciones se lee como en el portal.
+
+**Las fotos, las categorías y la foto de cada variante también se editan
+desde la app**, cada gesto guardado en el acto como hace Shopify:
+
+- *Fotos* (`FotosDeProducto`) es la sección *Media*: las miniaturas grandes
+  en fila y un **+** al final que abre el selector de fotos del informe en
+  modo biblioteca (`SelectorDeFotos` con `soloBiblioteca`, el *Select files*
+  de Shopify): la grilla de la biblioteca con las del producto ya marcadas,
+  el buscador, y la cámara y el + arriba para subir nuevas, que entran a la
+  biblioteca y quedan marcadas. *Listo* devuelve la lista final y la ficha
+  la aplica en el acto: lo desmarcado se quita (`DELETE …/imagenes/[id]`) y
+  lo nuevo se suma (`POST /api/mobile/servicios/[id]/imagenes`); las que
+  siguen no se tocan, así conservan su fila. Tocar una foto
+  abre *Ver foto*, *Poner como primera* (`PATCH …/imagenes`, el orden) y
+  *Quitar del producto* (`DELETE …/imagenes/[imagenId]`), que la saca del
+  producto y no de la biblioteca. Son las gemelas de las rutas web; no hay
+  un `PUT` de la galería entera porque acá no hay barra de guardar.
+- *Categorías* es una fila de *Información general* con los nombres unidos
+  por "•", y tocarla abre `SelectorDeCategorias`, la pantalla *Collections*:
+  buscador, cada categoría con su casilla, su foto y cuántos productos tiene
+  (`GET /api/mobile/categorias`), y la barra oscura con cuántas van. En
+  cuanto el conjunto cambia, arriba aparecen *Cancelar* y *Guardar*, y
+  *Guardar* lo manda entero por `PUT` del producto. La fila vive al final
+  de la ficha, en *Organización*, con su ícono, como las *Collections* de
+  Shopify; la descripción va pegada a las fotos.
+- En la ficha de la variante la foto se toca y abre
+  `SelectorDeFotoDeVariante`: el selector del informe en modo biblioteca y
+  **de a una** (`SelectorDeFotos` con `soloBiblioteca` y `unaSola`), como en
+  el portal — la biblioteca entera con la casilla en la elegida, el buscador,
+  la cámara y el + para subir. La foto actual entra marcada y desmarcarla es
+  volver a la principal del producto. Si el archivo elegido no es foto del
+  producto todavía, se le suma primero (`POST …/imagenes`) y recién ahí la
+  variante lo señala por su fila (`PATCH /api/mobile/variantes/[id]` con
+  `imagenId`), así que aparece también entre las fotos del producto. En el portal es el
+  *Select image* de Shopify: la miniatura de la variante —en su ficha y en
+  cada fila de la tabla de variantes— abre **la biblioteca entera de a una**
+  (`SelectorFotoDeVariante` sobre `MediaLibrary` con `unaSola`,
+  `elegidaInicial`, `permiteNinguna` y una `nota`): buscador, la zona de
+  subir —lo subido queda marcado—, la grilla con la casilla en la elegida, y
+  el vacío de Shopify cuando no hay nada. La foto actual entra marcada y
+  desmarcarla es volver a mostrar la principal del producto. El diálogo
+  devuelve el **archivo**, no una fila, porque las fotos de una variante son
+  del producto: si el archivo ya es foto del producto se usa su fila; si no,
+  se le suma primero. En la ficha de la variante va derecho al servidor
+  (`POST …/imagenes`, y la galería local se actualiza con la respuesta). En
+  la tabla, en cambio, la galería es **del formulario**: el archivo entra a
+  `form.imagenes` sin fila (`agregarMediaAlFormulario`), como *Elegir
+  existente* en la card de Fotos, y la variante lo señala por su **media**
+  —lo único que existe—; al guardar, `guardarGaleria` devuelve la galería
+  con la fila que el servidor le dio a cada foto nueva y
+  `guardarCambiosDeVariantes` cambia ese `imagenId` por el id de la fila
+  antes del `PATCH`. Así nada toca el producto hasta *Guardar* y *Descartar*
+  deshace también la foto. La elección queda **pendiente** en
+  `form.cambios[id].imagenId` —la miniatura en ámbar— y sale con la barra del
+  header. Reemplaza al desplegable "Foto 1, Foto 2", que no decía cuál era
+  la roja. La biblioteca misma (`MediaLibrary`, *Elegir existente* del
+  producto y la foto de la categoría) tiene la forma del *Select file*: alto
+  fijo, buscador, zona de subir, miniaturas de ancho fijo con casilla,
+  nombre y tipo, y *Cancelar* / *Listo* al pie.
+
 La ficha es de **dos columnas**: a la izquierda lo que el producto *es* —qué es,
 cómo se ve, cuánto hay—, a la derecha cómo se lo agrupa. Las categorías se
 guardan al elegirlas, sin pasar por *Editar*: reagrupar un producto no es
@@ -438,6 +589,42 @@ Un **servicio no muestra precio de lista** aunque su variante tenga la columna:
 una poda se cotiza cada vez, y el precio se decide en la suscripción o en la
 orden. El lugar ya existe si algún día hace falta mostrarlo.
 
+## Costo y peso, solo en un bien
+
+Los dos de Shopify, y los dos **de la variante**, porque son de la mercadería
+concreta: la maceta grande cuesta y pesa distinto que la chica.
+
+**`Variante.costo`** es lo que costó tenerla. Con el precio de lista al lado,
+la ficha muestra la **ganancia** (precio menos costo) y el **margen** (qué
+parte del precio es ganancia), calculados por `gananciaDeVenta()` en
+`@vivero/shared` y nunca guardados: cambian cada vez que cambia cualquiera de
+los dos números, y una columna sería una segunda respuesta a la misma
+pregunta. Vender por debajo del costo los pinta en ámbar. **Nulo es "no se
+sabe"**, y no es cero: un precio en cero es gratis y es una decisión; un costo
+en cero diría que la mercadería fue regalada, cuando lo que pasa es que nadie
+lo cargó. Por eso vaciar el campo **sí** guarda nulo, al revés del precio,
+donde vaciarlo repone lo que había. Y **no llega a la orden**: lo que costó lo
+vendido es un informe para otro día, no una columna de la línea.
+
+**`Variante.peso`** va con su **`pesoUnidad`** (`G` | `KG` | `LB` | `OZ`, las
+cuatro de Shopify: el vivero es métrico, pero la libra se usa a diario en
+Ecuador para lo que se vende suelto, y una bolsa importada viene marcada en
+onzas). Se guarda **como se escribió**, con su unidad, y no convertido a
+gramos: quien cargó "25 kg" tiene que volver a leer "25 kg". Acá nada se
+despacha por correo, así que no hay una card de *Envío*: el peso es un dato de
+la mercadería —lo que dice la bolsa— y va junto al SKU. Cambiar la unidad
+guarda en el acto con el número que haya en el campo, porque la unidad sin el
+número no dice nada. El campo admite **tres decimales**: en kilos, el tercero
+son los gramos (`InputNumero` toma `decimales={3}`; con `true` son los dos de
+la plata).
+
+**Solo un bien.** `actualizarVariante()` rechaza costo o peso en un servicio
+—una poda no se compra ni se despacha— y las tres pantallas (la card *Precio e
+inventario* del producto sin opciones, la ficha de la variante y el alta) los
+muestran solo cuando el producto es un bien. Con opciones, cada combinación
+carga los suyos en su propia ficha; la tabla de variantes no los muestra, como
+la de Shopify.
+
 ## El SKU y el código
 
 El `codigoPrincipal` de cada detalle del XML sale, en este orden:
@@ -468,6 +655,65 @@ El costo es que dos personas pueden armar órdenes por la misma mercadería y la
 segunda se entera recién al emitir. Es el precio de no reservar, y es el
 correcto para un vivero: entre armar la orden y cobrarla pasan minutos, no
 semanas.
+
+## El orden del catálogo
+
+**Los últimos creados primero, como Shopify.** Lo que se acaba de cargar es
+lo que se va a buscar, y por nombre quedaba en la página que le tocara. El
+orden es **un campo y una dirección** (`OrdenProductos` en `@vivero/shared`,
+`servicio.ts`): *Producto*, *Tipo*, *Creado* o *Actualizado*, cada uno con
+sus dos direcciones rotuladas (`DIRECCIONES_DE_ORDEN`: "A–Z" / "Z–A",
+"Servicios primero" / "Bienes primero", "Más recientes primero" / "Más
+antiguos primero") y **la primera es la que se propone al elegir el campo** —
+un nombre de la A a la Z, una fecha desde lo último. No hay *Inventario*: el
+stock de un producto es la suma de sus variantes y Prisma no ordena por un
+agregado de una relación; el día que haga falta es una consulta cruda.
+
+Viaja codificado, `creado-desc`: en `?orden=` de la URL del portal
+(`useFiltroUrl`, vacío cuando es el de siempre, así una lista sin tocar deja
+la URL limpia) y en el mismo query de `GET /api/mobile/servicios`.
+`decodificarOrden` devuelve el orden por defecto ante cualquier cosa que no
+entienda — ordenar distinto una lista no vale un 400.
+
+**La app se lo pide al servidor y el portal ordena en el navegador.** La app
+pagina por cursor, y ordenar en el teléfono acomodaría solo la página que ya
+bajó; el portal trae el catálogo entero y ya filtra ahí, así que ordena ahí
+con `compararProductos`. Las dos tienen que dar la misma lista, y para eso
+hay dos reglas iguales de los dos lados:
+
+- **El desempate es el id, siempre ascendente**, y por tipo el nombre en el
+  medio (`ordenDeCatalogo` en `servicio.service.ts`). El cursor de Prisma
+  compara contra la fila del cursor por las columnas del `orderBy` —funciona
+  con cualquier `orderBy`, no solo por id—, pero dos productos creados en el
+  mismo instante sin desempate se repetirían o se saltearían al pasar de
+  página. Se verificó paginando de a tres en los ocho órdenes contra la base
+  de desarrollo: ni repetidos ni faltantes, y la misma lista que la consulta
+  de un saque.
+- **El nombre se compara por bytes.** La base de Neon está en `C.UTF-8`, y
+  con esa colación Postgres ordena por código: mayúsculas antes que
+  minúsculas y "Césped" después de "Corteza", porque la é vale más que la o.
+  Es feo, pero es lo que el servidor devuelve, y un `localeCompare("es")` en
+  el portal haría que las dos aplicaciones mostraran el mismo catálogo en dos
+  órdenes. Lo que lo arregla es una colación en la columna (`ALTER TABLE
+  "Producto" ALTER COLUMN "nombre" TYPE TEXT COLLATE "es-x-icu"`), que Prisma
+  no expresa en el schema y va a mano en una migración; ese día el comparador
+  del navegador pasa a `localeCompare("es")` y los dos siguen coincidiendo.
+
+El selector es uno por aplicación y las dos presentaciones adentro
+(`SelectorOrdenProductos` en el portal, `SelectorDeOrden` en la app): en
+escritorio un desplegable con las ocho combinaciones ("Creado · Más recientes
+primero", `OPCIONES_ORDEN_PRODUCTOS`); en el teléfono el ⇅ entre el buscador
+y el botón de filtros, pintado como el de filtros con algo puesto cuando el
+orden no es el de siempre, que abre una hoja desde abajo con los campos como
+filas y, al lado del elegido, su dirección con el ⇅ — la hoja de Shopify. Un
+toque en otra fila la elige con la dirección que se propone; **un segundo
+toque en la elegida la invierte**, y por eso la hoja no se cierra al elegir:
+la segunda decisión se toma ahí mismo. El botón del teléfono comparte su caja
+con el de filtros (`BOTON_JUNTO_AL_BUSCADOR` en `PantallaLista.tsx`, que el
+orden de las tareas también usa).
+
+El buscador de productos del chat (`compartibles`) sigue alfabético a
+propósito: ahí se elige de una lista corta buscando por nombre.
 
 ## Lo que falta
 

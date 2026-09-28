@@ -38,6 +38,15 @@ import { useScrollInfinito } from "@/components/shared/scroll-infinito";
 import { FILA_MOVIL, ListaMovil } from "@/components/shared/lista-movil";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
 import { fecha } from "@/components/ordenes/formato";
+import { SelectorOrdenProductos } from "./selector-orden-productos";
+import {
+  ORDEN_PRODUCTOS_POR_DEFECTO,
+  codificarOrden,
+  compararProductos,
+  decodificarOrden,
+  mismoOrden,
+  type OrdenProductos,
+} from "@vivero/shared";
 
 interface Servicio {
   id: string;
@@ -49,6 +58,9 @@ interface Servicio {
   estado: "ACTIVO" | "BORRADOR";
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
+  /** ISO. Por estos dos se ordena; llegan como texto porque solo se comparan. */
+  createdAt: string;
+  updatedAt: string;
   /**
    * Varias: un rosal es "Plantas" y también "Exterior". No se muestran en la
    * tabla —con dos o tres por fila el listado se vuelve una nube de etiquetas
@@ -105,6 +117,15 @@ export function ServiciosTable({
    */
   const [estado, setEstado] = useFiltroUrl("estado", "");
   const [categoria, setCategoria] = useFiltroUrl("categoria", "");
+  /**
+   * Por qué campo y hacia dónde, como viaja: `creado-desc`. Vacío es el orden
+   * de siempre —los últimos creados primero—, así una lista sin tocar deja la
+   * URL limpia. Se ordena acá y no en la consulta porque el catálogo llega
+   * entero y los filtros ya se aplican acá; la app, que pagina, se lo pide al
+   * servidor con el mismo valor.
+   */
+  const [ordenTexto, setOrdenTexto] = useFiltroUrl("orden", "");
+  const orden = useMemo(() => decodificarOrden(ordenTexto), [ordenTexto]);
   const [page, setPage] = useFiltroUrl("pagina", 1);
   /** Ids marcados para archivar de a varios. */
   const [marcados, setMarcados] = useState<string[]>([]);
@@ -132,8 +153,9 @@ export function ServiciosTable({
           (s.descripcion ?? "").toLowerCase().includes(q),
       );
     }
-    return result;
-  }, [productos, estado, tipo, categoria, searchQuery]);
+    // `filter` ya devolvió una copia: ordenar en el lugar no toca la prop.
+    return result.sort(compararProductos(orden));
+  }, [productos, estado, tipo, categoria, searchQuery, orden]);
 
   // La página se acota al renderizar: filtrar puede dejar menos páginas que la
   // actual, y así no hace falta un efecto que la corrija después de pintar.
@@ -169,6 +191,13 @@ export function ServiciosTable({
     setPage(1);
   };
 
+  const cambiarOrden = (o: OrdenProductos) =>
+    cambiar(() =>
+      setOrdenTexto(
+        mismoOrden(o, ORDEN_PRODUCTOS_POR_DEFECTO) ? "" : codificarOrden(o)
+      )
+    );
+
   /** Cuántos filtros están puestos — la búsqueda no cuenta, se ve sola. */
   const filtrosPuestos = [tipo, categoria, estado].filter(Boolean).length;
 
@@ -183,7 +212,7 @@ export function ServiciosTable({
   // cualquier cosa devuelve el listado a la primera tanda.
   const { visibles, hayMas, cargando, centinela } = useScrollInfinito(
     filtered.length,
-    `${searchQuery}|${tipo}|${categoria}|${estado}`
+    `${searchQuery}|${tipo}|${categoria}|${estado}|${ordenTexto}`
   );
   const enLista = filtered.slice(0, visibles);
   const aqui = useAca();
@@ -235,14 +264,19 @@ export function ServiciosTable({
         activos={filtrosPuestos}
         onLimpiar={limpiarFiltros}
         busqueda={
-          <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar producto..."
-              value={searchQuery}
-              onChange={(e) => cambiar(() => setSearchQuery(e.target.value))}
-              className="pl-9"
-            />
+          /* El buscador y el orden van juntos, como en Shopify: en el teléfono
+             el ⇅ queda entre el buscador y el botón de filtros. */
+          <div className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
+            <div className="relative min-w-0 flex-1 md:min-w-[200px] md:max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar producto..."
+                value={searchQuery}
+                onChange={(e) => cambiar(() => setSearchQuery(e.target.value))}
+                className="pl-9"
+              />
+            </div>
+            <SelectorOrdenProductos orden={orden} onChange={cambiarOrden} />
           </div>
         }
       >

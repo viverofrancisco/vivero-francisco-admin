@@ -9,8 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ImagePlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { InputNumero, comoNumero } from "@/components/ui/input-numero";
+import {
+  InputNumero,
+  comoNumero,
+  useTextoNumerico,
+} from "@/components/ui/input-numero";
 import { Label } from "@/components/ui/label";
 import { CustomSelect } from "@/components/ui/custom-select";
 import {
@@ -23,7 +28,11 @@ import Link from "next/link";
 import { useAca } from "@/lib/filtros-url";
 import { PopoverStock } from "./popover-stock";
 import { money } from "@/components/ordenes/formato";
+import type { UnidadPeso } from "@vivero/shared";
 import type { ImagenProducto } from "./producto-imagenes";
+import type { CambiosDeVariante } from "./producto-inventario";
+import { SelectorFotoDeVariante } from "./selector-foto-de-variante";
+import type { MediaItem } from "./media-library";
 
 /** Cuántos ejes admite un producto. El servicio aplica el mismo tope. */
 const MAX_OPCIONES = 3;
@@ -81,6 +90,11 @@ export interface VarianteFila {
   precio: number;
   /** Si se le cobra IVA. La tasa sale del producto. */
   cobraIva: boolean;
+  /** Costo por unidad. Nulo es "no se sabe". Solo un bien. */
+  costo: number | null;
+  /** Cuánto pesa una unidad, en `pesoUnidad`. Solo un bien. */
+  peso: number | null;
+  pesoUnidad: UnidadPeso;
   manejaInventario: boolean;
   stock: number;
   permiteNegativo: boolean;
@@ -227,6 +241,9 @@ export function ProductoVariantes({
   onSkusChange,
   movimientos,
   onMovimientosChange,
+  cambios,
+  onCambiosChange,
+  onAgregarMedia,
   variantes: variantesIniciales,
   imagenes,
 }: {
@@ -260,6 +277,20 @@ export function ProductoVariantes({
   /** Movimientos de stock sin guardar, uno por variante. */
   movimientos: Record<string, MovimientoPendiente>;
   onMovimientosChange: (m: Record<string, MovimientoPendiente>) => void;
+  /**
+   * Lo demás que se toca de una variante sin guardar; acá, la **foto** que
+   * cada fila elige. Es el mismo mapa que usa la card de la variante única,
+   * y se guarda con la barra del header.
+   */
+  cambios: Record<string, Partial<CambiosDeVariante>>;
+  onCambiosChange: (c: Record<string, Partial<CambiosDeVariante>>) => void;
+  /**
+   * Sumar a la galería **del formulario** archivos de la biblioteca que el
+   * producto no tiene, cuando una fila los elige como su foto. Entran sin
+   * fila y se guardan con la barra; la variante los señala por su media y
+   * al guardar el id se cambia por el de la fila.
+   */
+  onAgregarMedia?: (media: MediaItem[]) => void;
   variantes: VarianteFila[];
   imagenes: ImagenProducto[];
 }) {
@@ -485,6 +516,20 @@ export function ProductoVariantes({
                                   precioPendiente={
                                     f.variante ? precios[f.variante.id] : undefined
                                   }
+                                  imagenPendiente={
+                                    f.variante ? cambios[f.variante.id]?.imagenId : undefined
+                                  }
+                                  onAgregarMedia={onAgregarMedia}
+                                  onImagen={(imagenId) =>
+                                    f.variante &&
+                                    onCambiosChange({
+                                      ...cambios,
+                                      [f.variante.id]: {
+                                        ...cambios[f.variante.id],
+                                        imagenId,
+                                      },
+                                    })
+                                  }
                                   skuPendiente={
                                     f.variante ? skus[f.variante.id] : undefined
                                   }
@@ -534,6 +579,17 @@ export function ProductoVariantes({
                         }
                         precioPendiente={
                           f.variante ? precios[f.variante.id] : undefined
+                        }
+                        imagenPendiente={
+                          f.variante ? cambios[f.variante.id]?.imagenId : undefined
+                        }
+                        onAgregarMedia={onAgregarMedia}
+                        onImagen={(imagenId) =>
+                          f.variante &&
+                          onCambiosChange({
+                            ...cambios,
+                            [f.variante.id]: { ...cambios[f.variante.id], imagenId },
+                          })
                         }
                         skuPendiente={
                           f.variante ? skus[f.variante.id] : undefined
@@ -598,9 +654,12 @@ function FilaVariante({
   precioPendiente,
   skuPendiente,
   movimientoPendiente,
+  imagenPendiente,
   onPrecio,
   onSku,
   onMover,
+  onImagen,
+  onAgregarMedia,
 }: {
   fila: FilaPreview;
   productoId: string | null;
@@ -614,34 +673,96 @@ function FilaVariante({
   precioPendiente?: number;
   skuPendiente?: string;
   movimientoPendiente?: MovimientoPendiente;
+  /** La foto elegida sin guardar: `undefined` es que no se tocó. */
+  imagenPendiente?: string | null;
   onPrecio: (precio: number) => void;
   onSku: (sku: string) => void;
   onMover: (m: MovimientoPendiente) => void;
+  onImagen: (imagenId: string | null) => void;
+  onAgregarMedia?: (media: MediaItem[]) => void;
 }) {
   const from = useAca();
+  const [eligiendoFoto, setEligiendoFoto] = useState(false);
   const variante = fila.variante;
   const nombre = nombreVariante(
     variante ?? { valores: fila.valores },
     productoNombre
   );
+  /** La elegida —la pendiente si la hay— o la principal del producto. */
+  const imagenId =
+    imagenPendiente !== undefined ? imagenPendiente : (variante?.imagenId ?? null);
   const foto =
-    imagenes.find((i) => i.id === variante?.imagenId) ?? imagenes[0] ?? null;
+    imagenes.find((i) => i.id === imagenId) ?? imagenes[0] ?? null;
 
   return (
     <div
       className={`flex items-center gap-3 px-3 py-2.5 ${sangrada ? "pl-10" : ""}`}
     >
-      {foto && (
-        <div className="relative h-9 w-9 flex-none overflow-hidden rounded border">
+      {/* La miniatura abre el diálogo para elegir cuál de las fotos del
+          producto es la de esta variante, como en la tabla de Shopify. En
+          ámbar mientras la elección no esté guardada. Una combinación que
+          todavía no existe no tiene a qué apuntar. */}
+      {variante && productoId ? (
+        <button
+          type="button"
+          onClick={() => setEligiendoFoto(true)}
+          aria-label={`Foto de ${nombre}`}
+          // 56 de lado, como la casilla de foto de la tabla de Shopify: a 36
+          // no se distinguía la roja de la azul, que es para lo que está.
+          className={`group relative h-14 w-14 flex-none overflow-hidden rounded-md border bg-muted hover:border-primary ${
+            imagenPendiente !== undefined ? "border-amber-400" : ""
+          }`}
+        >
+          {foto ? (
+            <Image
+              src={foto.url}
+              alt=""
+              fill
+              sizes="56px"
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <span className="flex h-full items-center justify-center text-muted-foreground group-hover:text-primary">
+              <ImagePlus className="h-5 w-5" />
+            </span>
+          )}
+        </button>
+      ) : foto ? (
+        <div className="relative h-14 w-14 flex-none overflow-hidden rounded-md border">
           <Image
             src={foto.url}
             alt=""
             fill
-            sizes="36px"
+            sizes="56px"
             className="object-cover"
             unoptimized
           />
         </div>
+      ) : null}
+      {eligiendoFoto && (
+        <SelectorFotoDeVariante
+          imagenes={imagenes}
+          imagenId={imagenId}
+          onListo={(media) => {
+            setEligiendoFoto(false);
+            if (media === null) {
+              onImagen(null);
+              return;
+            }
+            // Un archivo que ya es foto del producto tiene su fila —o su
+            // media, si está pendiente—; uno que no, entra a la galería
+            // del formulario y la variante lo señala por su media.
+            const enElProducto = imagenes.find((i) => i.mediaId === media.id);
+            if (enElProducto) {
+              onImagen(enElProducto.id);
+              return;
+            }
+            onAgregarMedia?.([media]);
+            onImagen(media.id);
+          }}
+          onCerrar={() => setEligiendoFoto(false)}
+        />
       )}
 
       {variante && productoId ? (
@@ -707,9 +828,8 @@ function FilaVariante({
             </span>
             {/* Lo escrito no se guarda solo: va a la barra del header con el
                 resto de la ficha. */}
-            <InputNumero
-              decimales
-              value={String(precioPendiente ?? variante.precio)}
+            <PrecioEnFila
+              precio={precioPendiente ?? variante.precio}
               aria-label={`Precio de ${nombre}`}
               className={`h-8 pl-5 text-right text-sm tabular-nums ${
                 precioPendiente !== undefined
@@ -718,13 +838,7 @@ function FilaVariante({
                     ? "text-amber-700"
                     : ""
               }`}
-              onChange={(texto) => {
-                const nuevo = comoNumero(texto);
-                // A medio escribir no se publica: "12." todavía no es un
-                // precio, y publicarlo como 12 borraría los decimales que se
-                // están por tipear.
-                if (nuevo !== null) onPrecio(nuevo);
-              }}
+              onCambio={onPrecio}
             />
           </div>
           {variante.manejaInventario ? (
@@ -770,17 +884,11 @@ function FilaVariante({
             <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
               $
             </span>
-            <InputNumero
-              decimales
-              value={String(pendiente?.precio ?? 0)}
+            <PrecioEnFila
+              precio={pendiente?.precio ?? 0}
               aria-label={`Precio de ${nombre}`}
               className="h-8 pl-5 text-right text-sm tabular-nums"
-              onChange={(texto) =>
-                onPendiente({
-                  ...vacia(pendiente),
-                  precio: comoNumero(texto) ?? 0,
-                })
-              }
+              onCambio={(precio) => onPendiente({ ...vacia(pendiente), precio })}
             />
           </div>
           <InputNumero
@@ -925,5 +1033,40 @@ function EditorOpcion({
         </Button>
       </div>
     </div>
+  );
+}
+
+/**
+ * El precio de una fila de la tabla, con el texto a su cargo.
+ *
+ * Estaba controlado por el número —`String(precio)`— y eso le borraba el
+ * punto: "12." se publicaba como 12, volvía como "12", y no había forma de
+ * escribir un decimal. Lo escrito se queda como texto y el número sale en
+ * cada tecla (`useTextoNumerico`); a medio escribir, o vacío, no publica.
+ */
+function PrecioEnFila({
+  precio,
+  onCambio,
+  className,
+  "aria-label": ariaLabel,
+}: {
+  precio: number;
+  onCambio: (precio: number) => void;
+  className?: string;
+  "aria-label": string;
+}) {
+  const [texto, setTexto] = useTextoNumerico(precio);
+  return (
+    <InputNumero
+      decimales
+      value={texto}
+      aria-label={ariaLabel}
+      className={className}
+      onChange={(t) => {
+        setTexto(t);
+        const nuevo = comoNumero(t);
+        if (nuevo !== null && nuevo !== precio) onCambio(nuevo);
+      }}
+    />
   );
 }

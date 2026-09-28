@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EstadoDelCliente } from "@/components/clientes/EstadoDelCliente";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
@@ -59,10 +59,15 @@ export default function ClientesListScreen() {
   const pedido = useRef(0);
 
   const traer = useCallback(
-    async (q: string, desde: string | null, modo: "inicial" | "mas" | "refrescar") => {
+    async (q: string, desde: string | null, modo: "inicial" | "mas" | "refrescar" | "silencioso") => {
       const mio = ++pedido.current;
       if (modo === "inicial") setCargando(true);
       if (modo === "mas") setCargandoMas(true);
+      // "silencioso" no prende nada: la lista sigue mostrando lo que tenía y
+      // se reemplaza cuando llega la nueva. El de tirar para refrescar es
+      // **solo del gesto**: prendido por código al volver de una ficha, iOS
+      // lo dejaba clavado arriba de la lista, con la transición de vuelta a
+      // medio hacer.
       if (modo === "refrescar") setRefrescando(true);
       try {
         const res = await apiRequest<ClientesListResponse>(
@@ -94,22 +99,36 @@ export default function ClientesListScreen() {
     []
   );
 
+  /*
+   * Lo último que se buscó y si ya hay filas, para el foco. El efecto de
+   * foco cierra sobre el primer render —`busqueda` vacía, `items` vacío— y
+   * ponerlos entre sus dependencias lo dispararía en cada tecla mientras la
+   * pantalla tiene el foco. Con esto, volver de una ficha vuelve a pedir
+   * **lo que se estaba buscando** y en silencio: la lista quedaba sin filtro
+   * con el término todavía en el buscador, y con el spinner encima.
+   */
+  const busquedaRef = useRef(busqueda);
+  const hayFilasRef = useRef(false);
+  useEffect(() => {
+    busquedaRef.current = busqueda;
+    hayFilasRef.current = items.length > 0;
+  }, [busqueda, items.length]);
+
   useFocusEffect(
     useCallback(() => {
-      traer(busqueda, null, items.length === 0 ? "inicial" : "refrescar");
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      traer(busquedaRef.current, null, hayFilasRef.current ? "silencioso" : "inicial");
     }, [traer])
   );
 
   function buscar(v: string) {
     setBusqueda(v);
-    traer(v, null, "refrescar");
+    traer(v, null, "silencioso");
   }
 
   function filtrarPorEstado(v: string) {
     setEstado(v);
     estadoRef.current = v;
-    traer(busqueda, null, "refrescar");
+    traer(busqueda, null, "silencioso");
   }
 
   /** Marcar la selección como inactiva, o reactivarla. Reversible: sin confirmación. */
@@ -122,7 +141,7 @@ export default function ClientesListScreen() {
       });
       setSeleccionando(false);
       setMarcados([]);
-      await traer(busqueda, null, "refrescar");
+      await traer(busqueda, null, "silencioso");
     } catch (e) {
       setError(mensajeDeError(e, "No se pudo guardar"));
     } finally {
@@ -163,7 +182,7 @@ export default function ClientesListScreen() {
       setConfirmando(false);
       setSeleccionando(false);
       setMarcados([]);
-      await traer(busqueda, null, "refrescar");
+      await traer(busqueda, null, "silencioso");
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos archivar"));
       setConfirmando(false);

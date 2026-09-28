@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, Image, RefreshControl, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -17,6 +17,12 @@ import {
 } from "@/components/ui/BarraSeleccion";
 import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
 import { avisoDeLote, eliminarEnLote } from "@/lib/lote";
+import { SelectorDeOrden } from "@/components/ui/SelectorDeOrden";
+import {
+  ORDEN_PRODUCTOS_POR_DEFECTO,
+  codificarOrden,
+  type OrdenProductos,
+} from "@vivero/shared";
 import type { ServicioListItem, ServiciosListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
@@ -56,6 +62,8 @@ export default function ProductosListScreen() {
   const [items, setItems] = useState<ServicioListItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  /** Por qué campo y hacia dónde. Nace con los últimos creados primero. */
+  const [orden, setOrden] = useState<OrdenProductos>(ORDEN_PRODUCTOS_POR_DEFECTO);
   const [tipo, setTipo] = useState("");
   const [estado, setEstado] = useState("");
   const [cargando, setCargando] = useState(true);
@@ -71,10 +79,20 @@ export default function ProductosListScreen() {
   const pedido = useRef(0);
 
   const traer = useCallback(
-    async (q: string, desde: string | null, modo: "inicial" | "mas" | "refrescar") => {
+    async (
+      q: string,
+      o: OrdenProductos,
+      desde: string | null,
+      modo: "inicial" | "mas" | "refrescar" | "silencioso"
+    ) => {
       const mio = ++pedido.current;
       if (modo === "inicial") setCargando(true);
       if (modo === "mas") setCargandoMas(true);
+      // "silencioso" no prende nada: la lista sigue mostrando lo que tenía y
+      // se reemplaza cuando llega la nueva. El de tirar para refrescar es
+      // **solo del gesto**: prendido por código al volver de una ficha, iOS
+      // lo dejaba clavado arriba de la lista, con la transición de vuelta a
+      // medio hacer.
       if (modo === "refrescar") setRefrescando(true);
       try {
         const res = await apiRequest<ServiciosListResponse>(
@@ -82,6 +100,9 @@ export default function ProductosListScreen() {
           {
             query: {
               search: q || undefined,
+              // El orden lo hace el servidor: la lista llega de a páginas, y
+              // ordenar en el teléfono acomodaría solo la que ya bajó.
+              orden: codificarOrden(o),
               limit: POR_PAGINA,
               cursor: desde ?? undefined,
             },
@@ -105,16 +126,43 @@ export default function ProductosListScreen() {
     []
   );
 
+  /*
+   * Lo último que se buscó, el orden puesto y si ya hay filas, para el foco.
+   * El efecto de foco cierra sobre el primer render —`busqueda` vacía,
+   * `items` vacío— y ponerlos entre sus dependencias lo dispararía en cada
+   * tecla mientras la pantalla tiene el foco. Con esto, volver de una ficha
+   * vuelve a pedir **lo que se estaba buscando, como se estaba viendo** y en
+   * silencio: la lista quedaba sin filtro con el término todavía en el
+   * buscador, y con el spinner encima.
+   */
+  const busquedaRef = useRef(busqueda);
+  const ordenRef = useRef(orden);
+  const hayFilasRef = useRef(false);
+  useEffect(() => {
+    busquedaRef.current = busqueda;
+    ordenRef.current = orden;
+    hayFilasRef.current = items.length > 0;
+  }, [busqueda, orden, items.length]);
+
   useFocusEffect(
     useCallback(() => {
-      traer(busqueda, null, items.length === 0 ? "inicial" : "refrescar");
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      traer(
+        busquedaRef.current,
+        ordenRef.current,
+        null,
+        hayFilasRef.current ? "silencioso" : "inicial"
+      );
     }, [traer])
   );
 
   function buscar(v: string) {
     setBusqueda(v);
-    traer(v, null, "refrescar");
+    traer(v, orden, null, "silencioso");
+  }
+
+  function ordenar(o: OrdenProductos) {
+    setOrden(o);
+    traer(busqueda, o, null, "silencioso");
   }
 
   // Tipo y estado se aplican sobre lo que ya llegó: son dos valores y el
@@ -151,7 +199,7 @@ export default function ProductosListScreen() {
       setConfirmando(false);
       setSeleccionando(false);
       setMarcados([]);
-      await traer(busqueda, null, "refrescar");
+      await traer(busqueda, orden, null, "silencioso");
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos eliminar"));
       setConfirmando(false);
@@ -206,6 +254,10 @@ export default function ProductosListScreen() {
       busqueda={busqueda}
       onBuscar={buscar}
       placeholder="Buscar producto..."
+      /* Al lado del buscador, como en Shopify: el orden es de la lista, igual
+         que el filtro, y los dos juntos se leen como la fila de controles que
+         son. */
+      accionBusqueda={<SelectorDeOrden orden={orden} onCambiar={ordenar} />}
       grupos={grupos}
     >
       {cargando ? (
@@ -219,7 +271,7 @@ export default function ProductosListScreen() {
           refreshControl={
             <RefreshControl
               refreshing={refrescando}
-              onRefresh={() => traer(busqueda, null, "refrescar")}
+              onRefresh={() => traer(busqueda, orden, null, "refrescar")}
             />
           }
           ListHeaderComponent={
@@ -249,7 +301,7 @@ export default function ProductosListScreen() {
           }
           onEndReachedThreshold={0.4}
           onEndReached={() => {
-            if (cursor && !cargandoMas) traer(busqueda, cursor, "mas");
+            if (cursor && !cargandoMas) traer(busqueda, orden, cursor, "mas");
           }}
           renderItem={({ item }) => (
             <PressableScale

@@ -7,6 +7,7 @@ import { SinAcceso } from "@/components/shared/sin-acceso";
 import { getCatalogoDelProducto } from "@/lib/services/variante.service";
 import { listarImagenes } from "@/lib/services/producto-imagen.service";
 import { ServicioDetail } from "@/components/servicios/servicio-detail";
+import { textoPlano } from "@/lib/html-seguro";
 
 export default async function EditarServicioPage({
   params,
@@ -59,6 +60,10 @@ export default async function EditarServicioPage({
           ...servicio,
           // Decimal no cruza a un componente cliente.
           ivaTasa: servicio.ivaTasa === null ? null : Number(servicio.ivaTasa),
+          // Sin formato, para la ficha del teléfono; el editor con formato
+          // queda para el escritorio.
+          descripcionPlana: textoPlano(servicio.descripcion) ?? "",
+          createdAt: servicio.createdAt.toISOString(),
           // La ficha de un archivado se abre igual, pero tiene que decirlo.
           archivadoEl: servicio.deletedAt?.toISOString() ?? null,
           estado: servicio.estado,
@@ -76,6 +81,9 @@ export default async function EditarServicioPage({
           sku: v.sku,
           precio: v.precio,
           cobraIva: v.cobraIva,
+          costo: v.costo,
+          peso: v.peso,
+          pesoUnidad: v.pesoUnidad,
           manejaInventario: v.manejaInventario,
           stock: v.stock,
           permiteNegativo: v.permiteNegativo,

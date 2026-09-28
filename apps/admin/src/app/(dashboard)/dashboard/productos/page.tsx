@@ -22,6 +22,10 @@ export default async function ServiciosPage() {
       descripcion: true,
       estado: true,
       deletedAt: true,
+      // Para ordenar en el navegador: el catálogo llega entero y la tabla
+      // decide el orden con el mismo selector que la app.
+      createdAt: true,
+      updatedAt: true,
       categorias: {
         select: { categoria: { select: { id: true, nombre: true } } },
       },
@@ -59,6 +63,8 @@ export default async function ServiciosPage() {
           estado: p.estado,
           // Texto y no `Date`: la tabla solo lo muestra.
           archivadoEl: p.deletedAt?.toISOString() ?? null,
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.updatedAt.toISOString(),
           categorias: p.categorias.map((c) => c.categoria),
           // `null` = no cuenta stock, que no es lo mismo que tener cero.
           stock: p.variantes.some((v) => v.manejaInventario)

@@ -1,4 +1,8 @@
 import { Prisma } from "@/generated/prisma/client";
+import {
+  ORDEN_PRODUCTOS_POR_DEFECTO,
+  type OrdenProductos,
+} from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtml } from "@/lib/html-seguro";
 import { asegurarVarianteUnica } from "./variante.service";
@@ -47,6 +51,31 @@ export interface ListServiciosFilters {
   search?: string;
   cursor?: string;
   limit?: number;
+  /** Por qué campo y hacia dónde. Sin él, los últimos creados primero. */
+  orden?: OrdenProductos;
+}
+
+/**
+ * El `orderBy` de cada orden, **siempre con el id de desempate**: el cursor
+ * de Prisma compara contra la fila del cursor por las columnas del `orderBy`,
+ * y dos productos creados en el mismo instante sin desempate se repetirían o
+ * se saltearían al pasar de página. Por tipo, el nombre va en el medio, o
+ * dentro de cada tipo saldrían por id, que no le dice nada a nadie.
+ */
+function ordenDeCatalogo(
+  orden: OrdenProductos
+): Prisma.ProductoOrderByWithRelationInput[] {
+  const d = orden.direccion;
+  switch (orden.campo) {
+    case "nombre":
+      return [{ nombre: d }, { id: "asc" }];
+    case "tipo":
+      return [{ tipo: d }, { nombre: "asc" }, { id: "asc" }];
+    case "creado":
+      return [{ createdAt: d }, { id: "asc" }];
+    case "actualizado":
+      return [{ updatedAt: d }, { id: "asc" }];
+  }
 }
 
 /**
@@ -105,7 +134,7 @@ export async function listServicios(
   const items = await prisma.producto.findMany({
     where,
     select: SERVICIO_LIST_SELECT,
-    orderBy: [{ nombre: "asc" }, { id: "asc" }],
+    orderBy: ordenDeCatalogo(filters.orden ?? ORDEN_PRODUCTOS_POR_DEFECTO),
     take: limit + 1,
     ...(filters.cursor ? { cursor: { id: filters.cursor }, skip: 1 } : {}),
   });
@@ -286,11 +315,21 @@ export async function getServicio(productoId: string, viewer: Viewer) {
       nombre: true,
       descripcion: true,
       tipo: true,
+      estado: true,
+      ivaTasa: true,
       createdAt: true,
+      categorias: {
+        select: { categoria: { select: { id: true, nombre: true } } },
+      },
     },
   });
   if (!servicio) throw new NotFoundError("Servicio no encontrado");
-  return servicio;
+  return {
+    ...servicio,
+    // Decimal no cruza a JSON ni a un componente cliente.
+    ivaTasa: servicio.ivaTasa === null ? null : Number(servicio.ivaTasa),
+    categorias: servicio.categorias.map((c) => c.categoria),
+  };
 }
 
 /**

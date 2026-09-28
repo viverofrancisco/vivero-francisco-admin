@@ -1,6 +1,7 @@
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Switch, TextInput as TextInputNativo, View } from "react-native";
 import { ActivityIndicator, Text, TextInput } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
 
@@ -105,6 +106,139 @@ export function PieDeFormulario({
   );
 }
 
+/**
+ * El campo de las hojas de Shopify: el rótulo chico y gris **adentro** de la
+ * caja, el valor debajo con su prefijo (`$`), y a la derecha un ⊗ que lo
+ * vacía mientras tiene algo. Es para las hojas que copian a Shopify —precio,
+ * inventario, opción—; el resto de los formularios sigue con `Campo`.
+ */
+export function CampoEnCaja({
+  label,
+  value,
+  onChangeText,
+  prefijo,
+  keyboardType,
+  placeholder,
+  autoFocus,
+  autoCapitalize,
+  limpiable = true,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  prefijo?: string;
+  keyboardType?: "default" | "decimal-pad" | "number-pad";
+  placeholder?: string;
+  autoFocus?: boolean;
+  autoCapitalize?: "none" | "sentences" | "words";
+  /** El ⊗ que vacía el campo. Apagado para lo que no tiene sentido vaciar. */
+  limpiable?: boolean;
+}) {
+  return (
+    <View style={estilos.caja}>
+      <Text style={estilos.cajaRotulo}>{label}</Text>
+      <View style={estilos.cajaFila}>
+        {prefijo ? <Text style={estilos.cajaPrefijo}>{prefijo}</Text> : null}
+        <TextInputNativo
+          value={value}
+          onChangeText={onChangeText}
+          keyboardType={keyboardType}
+          placeholder={placeholder}
+          placeholderTextColor={tema.texto3}
+          autoFocus={autoFocus}
+          autoCapitalize={autoCapitalize}
+          returnKeyType="done"
+          style={estilos.cajaTexto}
+        />
+        {limpiable && value !== "" ? (
+          <Pressable
+            onPress={() => onChangeText("")}
+            hitSlop={8}
+            style={({ pressed }) => [estilos.cajaLimpiar, pressed && estilos.tocado]}
+            accessibilityLabel={`Vaciar ${label}`}
+          >
+            <Ionicons name="close-circle-outline" size={20} color={tema.texto2} />
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * Una casilla con su rótulo, la de Shopify: el cuadrado relleno con el tilde
+ * cuando está marcada, vacío con borde cuando no. Para lo que se decide con
+ * un sí o un no dentro de una hoja; el interruptor queda para los ajustes.
+ */
+export function Casilla({
+  label,
+  nota,
+  value,
+  onValueChange,
+}: {
+  label: string;
+  nota?: string;
+  value: boolean;
+  onValueChange: (v: boolean) => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => onValueChange(!value)}
+      style={({ pressed }) => [estilos.casillaFila, pressed && estilos.tocado]}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: value }}
+    >
+      <View style={[estilos.casilla, value && estilos.casillaMarcada]}>
+        {value ? <Ionicons name="checkmark" size={15} color="#fff" /> : null}
+      </View>
+      <View style={estilos.interruptorTexto}>
+        <Text variant="bodyLarge" style={estilos.interruptorLabel}>
+          {label}
+        </Text>
+        {nota ? (
+          <Text variant="bodySmall" style={estilos.interruptorNota}>
+            {nota}
+          </Text>
+        ) : null}
+      </View>
+    </Pressable>
+  );
+}
+
+/** Una fila con un interruptor: el rótulo, una nota debajo y el switch. */
+export function Interruptor({
+  label,
+  nota,
+  value,
+  onValueChange,
+}: {
+  label: string;
+  nota?: string;
+  value: boolean;
+  onValueChange: (v: boolean) => void;
+}) {
+  return (
+    <View style={estilos.interruptor}>
+      <View style={estilos.interruptorTexto}>
+        <Text variant="bodyLarge" style={estilos.interruptorLabel}>
+          {label}
+        </Text>
+        {nota ? (
+          <Text variant="bodySmall" style={estilos.interruptorNota}>
+            {nota}
+          </Text>
+        ) : null}
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ true: tema.verde100, false: undefined }}
+        thumbColor={value ? tema.verde : undefined}
+      />
+    </View>
+  );
+}
+
 /** La acción destructiva de una ficha: al final, y en rojo suave. */
 export function BotonEliminar({
   etiqueta,
@@ -166,6 +300,54 @@ const estilos = StyleSheet.create({
     fontWeight: "600",
     letterSpacing: 0.2,
   },
+
+  caja: {
+    borderWidth: 1,
+    borderColor: tema.linea,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingTop: 7,
+    paddingBottom: 5,
+    marginBottom: 10,
+    backgroundColor: tema.superficie,
+  },
+  cajaRotulo: { fontSize: 12, color: tema.texto3 },
+  cajaFila: { flexDirection: "row", alignItems: "center", gap: 6 },
+  cajaPrefijo: { fontSize: 16, color: tema.texto },
+  cajaTexto: { flex: 1, fontSize: 16, color: tema.texto, paddingVertical: 5 },
+  cajaLimpiar: { padding: 2 },
+  tocado: { opacity: 0.6 },
+
+  casillaFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  casilla: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: tema.linea,
+    backgroundColor: tema.superficie,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  casillaMarcada: { backgroundColor: tema.verde, borderColor: tema.verde },
+
+  interruptor: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  interruptorTexto: { flex: 1, gap: 2 },
+  interruptorLabel: { color: tema.texto, fontWeight: "500" },
+  interruptorNota: { color: tema.texto3 },
 
   eliminarExterno: { marginTop: 24 },
   eliminar: {

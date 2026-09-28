@@ -6,7 +6,12 @@ import { z } from "zod/v4";
  */
 export const servicioSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
-  descripcion: z.string().optional().or(z.literal("")),
+  /**
+   * Acepta `null` además de vacío: el alta manda `null` cuando el editor está
+   * en blanco, y con `.optional()` solo, crear un producto sin descripción
+   * moría en "Datos inválidos" sin decir qué campo.
+   */
+  descripcion: z.string().nullable().optional(),
   tipo: z.enum(["SERVICIO", "BIEN"]).default("SERVICIO"),
   ivaTasa: z.number().min(0).max(100).nullable().optional(),
   /**

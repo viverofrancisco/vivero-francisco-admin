@@ -96,6 +96,16 @@ enum TipoProducto {
   BIEN
 }
 
+/// En qué unidad está `Variante.peso`. Las cuatro de Shopify: el vivero es
+/// métrico, pero la libra se usa a diario en Ecuador para lo que se vende
+/// suelto, y una bolsa importada viene marcada en onzas.
+enum UnidadPeso {
+  G
+  KG
+  LB
+  OZ
+}
+
 /// Cómo se vende. Vive solo en el portal: al SRI le llega una factura por
 /// período, no el contrato que la generó.
 /// Cada cuánto se cobra una suscripción. El precio del contrato es por período,
@@ -548,6 +558,25 @@ model Variante {
   /// igual. Y como todo lo demás, es una **propuesta**: la tasa que se cobró
   /// queda en `OrdenLinea.ivaTasa`, donde se puede cambiar.
   cobraIva Boolean @default(true)
+
+  /// **Costo por unidad**: lo que costó tenerla, para saber cuánto deja cada
+  /// venta. La ficha muestra la ganancia y el margen al lado del precio,
+  /// calculados y nunca guardados. **Nulo quiere decir que no se sabe**, que
+  /// no es lo mismo que cero: un precio en cero es gratis, un costo en cero
+  /// sería regalado — y casi siempre lo que pasa es que nadie lo cargó.
+  ///
+  /// **Solo un bien.** Un servicio no se compra: lo que cuesta una poda son
+  /// horas y eso no vive en el catálogo. `actualizarVariante` lo rechaza en
+  /// un servicio. Y no llega a la orden: lo que costó lo vendido es un informe
+  /// para otro día, no una columna de la línea.
+  costo Decimal? @db.Decimal(10, 2)
+
+  /// Cuánto pesa una unidad, en `pesoUnidad`. Es un dato de la mercadería
+  /// —una bolsa de abono de 25 kg, una maceta de 800 g— y se guarda como se
+  /// lo escribió, con su unidad, en vez de convertirlo a gramos: quien cargó
+  /// "25 kg" tiene que volver a leer "25 kg". Solo un bien, como el costo.
+  peso       Decimal?   @db.Decimal(10, 3)
+  pesoUnidad UnidadPeso @default(KG)
 
   /// Si lleva stock. Una planta se cuenta; la tierra a granel puede que no.
   manejaInventario Boolean @default(true)

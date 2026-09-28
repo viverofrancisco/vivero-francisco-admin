@@ -3,7 +3,7 @@
 // in screens. Keep in sync with the includes in
 // apps/admin/src/lib/services/visita.service.ts and cliente.service.ts.
 
-import type { EstadoVisita } from "@vivero/shared";
+import type { EstadoProducto, EstadoVisita, UnidadPeso } from "@vivero/shared";
 
 /** Una tarea, tal como viaja en el JSON de una visita. */
 export interface TareaDeVisita {
@@ -350,12 +350,66 @@ export interface ServiciosListResponse {
  * teléfono muestra— y heredar de la lista prometía campos que la respuesta no
  * tiene, que es lo que rompía al agregarle columnas a la lista.
  */
+/** Una variante como la manda `GET /api/mobile/servicios/[id]`. */
+export interface VarianteDeProducto {
+  id: string;
+  /** "Rojo · Grande", o el nombre del producto en la variante única. */
+  nombre: string;
+  /** Qué valor de cada eje: "Color → Rojo". Vacío en la variante única. */
+  valores: { opcion: string; valor: string }[];
+  sku: string | null;
+  /** Precio de lista. Cero es gratis. */
+  precio: number;
+  cobraIva: boolean;
+  /** Costo por unidad. Nulo es "no se sabe". Solo un bien. */
+  costo: number | null;
+  /** Cuánto pesa una unidad, en `pesoUnidad`. Solo un bien. */
+  peso: number | null;
+  pesoUnidad: UnidadPeso;
+  manejaInventario: boolean;
+  stock: number;
+  permiteNegativo: boolean;
+  /** Cuál de las fotos del producto eligió; `null` es la principal. */
+  imagenId: string | null;
+  imagenUrl: string | null;
+}
+
+/**
+ * La ficha entera de un producto: lo mismo que arma la página del portal.
+ * Un servicio trae una variante y ningún eje; un bien sin opciones, igual;
+ * un bien con opciones, sus ejes y una variante por combinación.
+ */
 export interface ServicioDetail {
   id: string;
   nombre: string;
+  /** Texto plano: el HTML del editor del portal llega aplanado. */
   descripcion: string | null;
   tipo: "SERVICIO" | "BIEN";
+  estado: EstadoProducto;
+  /** Porcentaje por defecto. En Ecuador conviven 0% y 15%. */
+  ivaTasa: number | null;
   createdAt: string;
+  categorias: { id: string; nombre: string }[];
+  /** Cada fila de la galería, con el archivo de la biblioteca que usa. */
+  imagenes: { id: string; mediaId: string; url: string }[];
+  opciones: OpcionDeProducto[];
+  variantes: VarianteDeProducto[];
+}
+
+/** Una categoría en la lista de la app: para elegir con su casilla. */
+export interface CategoriaListItem {
+  id: string;
+  nombre: string;
+  /** Cuántos productos vivos tiene. */
+  productos: number;
+  imagenUrl: string | null;
+}
+
+/** Un eje del producto (Color, Tamaño) con sus valores, cada uno con su id. */
+export interface OpcionDeProducto {
+  id: string;
+  nombre: string;
+  valores: { id: string; valor: string }[];
 }
 
 export interface SectorOption {

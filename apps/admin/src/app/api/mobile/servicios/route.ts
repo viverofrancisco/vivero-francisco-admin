@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServicioSchema } from "@vivero/shared";
+import { createServicioSchema, decodificarOrden } from "@vivero/shared";
 import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 import {
   createServicio,
@@ -31,6 +31,8 @@ export async function GET(request: Request) {
       search,
       cursor,
       limit: Number.isFinite(limit) ? limit : undefined,
+      // `creado-desc`; lo que no se entiende es el orden por defecto.
+      orden: decodificarOrden(url.searchParams.get("orden")),
     });
     // Aplanado para la fila del teléfono, igual que lo hace la página del
     // portal: la app no tiene por qué saber que el stock es la suma de las
@@ -64,7 +66,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const userOrResponse = await requireMobileRole(request, "ADMIN");
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const parsed = createServicioSchema.safeParse(

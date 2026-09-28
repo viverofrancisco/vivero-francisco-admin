@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { InputNumero, comoNumero } from "@/components/ui/input-numero";
+import {
+  InputNumero,
+  comoNumero,
+  useTextoNumerico,
+} from "@/components/ui/input-numero";
 
 /**
  * El precio de lista de una variante.
@@ -12,23 +15,20 @@ import { InputNumero, comoNumero } from "@/components/ui/input-numero";
  * Separarlos es lo que permite subir la lista sin reescribir lo ya vendido.
  *
  * Es obligatorio y **cero quiere decir gratis**. Por eso vaciar el campo no
- * guarda cero: vuelve a lo que decía. Marcar algo como gratis es una decisión,
- * y borrar un número mientras se lo reescribe no lo es.
+ * publica cero: al salir, vuelve a lo que decía. Marcar algo como gratis es
+ * una decisión, y borrar un número mientras se lo reescribe no lo es.
+ *
+ * Publica en cada tecla, no al salir del campo: la barra de guardar tiene
+ * que aparecer con el primer dígito, que es cuando se empezó a cambiar algo.
  */
 export function PrecioDeLista({
   precio,
-  onGuardar,
+  onCambio,
 }: {
   precio: number;
-  onGuardar: (precio: number) => void;
+  onCambio: (precio: number) => void;
 }) {
-  const [texto, setTexto] = useState(String(precio));
-  // Si el precio cambia desde afuera (se guardó, se descartó), el campo sigue.
-  const [ultimo, setUltimo] = useState(precio);
-  if (ultimo !== precio) {
-    setUltimo(precio);
-    setTexto(String(precio));
-  }
+  const [texto, setTexto] = useTextoNumerico(precio);
 
   return (
     <div className="space-y-1.5">
@@ -40,16 +40,15 @@ export function PrecioDeLista({
         <InputNumero
           decimales
           value={texto}
-          onChange={setTexto}
+          onChange={(t) => {
+            setTexto(t);
+            const nuevo = comoNumero(t);
+            if (nuevo !== null && nuevo !== precio) onCambio(nuevo);
+          }}
           className="pl-7"
           onBlur={() => {
-            const nuevo = comoNumero(texto);
-            if (nuevo === null) {
-              // Se repone lo que había: un campo vacío no es "gratis".
-              setTexto(String(precio));
-              return;
-            }
-            if (nuevo !== precio) onGuardar(nuevo);
+            // Se repone lo que había: un campo vacío no es "gratis".
+            if (comoNumero(texto) === null) setTexto(String(precio));
           }}
         />
       </div>

@@ -168,6 +168,8 @@ const MARGEN = 12;
 export function SelectorDeFotos({
   pool,
   enLaSeccion,
+  soloBiblioteca = false,
+  unaSola = false,
   onCerrar,
   onConfirmar,
 }: {
@@ -175,13 +177,23 @@ export function SelectorDeFotos({
   pool: MediaPoolItem[];
   /** Las fotos que la sección ya tiene, en su orden. */
   enLaSeccion: SeccionFotoDraft[];
+  /**
+   * Solo la biblioteca, sin el filtro de origen: es lo que usa la ficha del
+   * producto, que no tiene visitas de dónde sacar fotos.
+   */
+  soloBiblioteca?: boolean;
+  /**
+   * Una sola, para donde no hay galería sino una foto: la de una variante.
+   * Marcar otra desmarca la anterior; tocar la marcada la desmarca.
+   */
+  unaSola?: boolean;
   onCerrar: () => void;
   onConfirmar: (fotos: SeccionFotoDraft[]) => void;
 }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [busqueda, setBusqueda] = useState("");
-  const [origen, setOrigen] = useState<Origen>("todas");
+  const [origen, setOrigen] = useState<Origen>(soloBiblioteca ? "biblioteca" : "todas");
   const [biblioteca, setBiblioteca] = useState<MediaItem[] | null>(null);
   const [elegidas, setElegidas] = useState<Set<string>>(
     () => new Set(enLaSeccion.map((f) => f.uid))
@@ -257,6 +269,7 @@ export function SelectorDeFotos({
 
   const alternar = (clave: string) =>
     setElegidas((prev) => {
+      if (unaSola) return prev.has(clave) ? new Set() : new Set([clave]);
       const next = new Set(prev);
       if (next.has(clave)) next.delete(clave);
       else next.add(clave);
@@ -287,6 +300,7 @@ export function SelectorDeFotos({
       const media = await subirImagenesALaBiblioteca(archivos);
       setBiblioteca((prev) => [...media, ...(prev ?? [])]);
       setElegidas((prev) => {
+        if (unaSola) return new Set(media.slice(-1).map((m) => `media-${m.id}`));
         const next = new Set(prev);
         for (const m of media) next.add(`media-${m.id}`);
         return next;
@@ -361,7 +375,7 @@ export function SelectorDeFotos({
               accessibilityRole="button"
               accessibilityLabel="Cerrar"
             >
-              <Ionicons name="close" size={22} color={tema.texto} />
+              <Ionicons name="close-outline" size={18} color={tema.texto} />
             </Pressable>
           )}
           <Text style={styles.titulo} numberOfLines={1}>
@@ -376,7 +390,7 @@ export function SelectorDeFotos({
               accessibilityRole="button"
               accessibilityLabel="Tomar una foto"
             >
-              <Ionicons name="camera-outline" size={22} color={tema.texto} />
+              <Ionicons name="camera-outline" size={18} color={tema.texto} />
             </Pressable>
           ) : null}
           <Pressable
@@ -387,7 +401,7 @@ export function SelectorDeFotos({
             accessibilityRole="button"
             accessibilityLabel="Agregar fotos"
           >
-            <Ionicons name="add-circle-outline" size={24} color={tema.texto} />
+            <Ionicons name="add-circle-outline" size={20} color={tema.texto} />
           </Pressable>
           {hayCambios ? (
             <Pressable
@@ -414,23 +428,25 @@ export function SelectorDeFotos({
             style={styles.buscador}
             inputStyle={styles.buscadorTexto}
           />
-          <Pressable
-            onPress={() => setHoja("origen")}
-            style={({ pressed }) => [
-              styles.redondo,
-              origen !== "todas" && styles.redondoActivo,
-              pressed && styles.redondoTocado,
-            ]}
-            hitSlop={6}
-            accessibilityRole="button"
-            accessibilityLabel="Mostrar de dónde"
-          >
-            <Ionicons
-              name="filter-outline"
-              size={22}
-              color={origen !== "todas" ? tema.verde : tema.texto}
-            />
-          </Pressable>
+          {soloBiblioteca ? null : (
+            <Pressable
+              onPress={() => setHoja("origen")}
+              style={({ pressed }) => [
+                styles.redondo,
+                origen !== "todas" && styles.redondoActivo,
+                pressed && styles.redondoTocado,
+              ]}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel="Mostrar de dónde"
+            >
+              <Ionicons
+                name="filter-outline"
+                size={18}
+                color={origen !== "todas" ? tema.verde : tema.texto}
+              />
+            </Pressable>
+          )}
         </View>
         {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
         {subiendo ? (
@@ -557,7 +573,7 @@ export function SelectorDeFotos({
           style={({ pressed }) => [styles.filaHoja, pressed && styles.filaHojaTocada]}
           accessibilityRole="button"
         >
-          <Ionicons name="camera-outline" size={22} color={tema.texto} />
+          <Ionicons name="camera-outline" size={18} color={tema.texto} />
           <Text style={[styles.filaHojaTexto, styles.filaHojaConIcono]}>Cámara</Text>
         </Pressable>
       </HojaInferior>
@@ -581,10 +597,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: tema.texto,
   },
+  // 36 con el ícono en 18, la misma ✕ que `CabeceraDeHoja`.
   redondo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: tema.lienzo,
@@ -641,15 +658,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   casillaMarcada: { backgroundColor: tema.verde, borderColor: tema.verde },
+  // La medida de la casa, la del *Guardar* de *Ordenar tareas*: 30 de alto,
+  // 12 de costado, 13 semibold.
   pastilla: {
-    height: 40,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     backgroundColor: tema.lienzo,
     alignItems: "center",
     justifyContent: "center",
   },
-  pastillaTexto: { fontSize: 15, fontWeight: "600", color: tema.texto },
+  pastillaTexto: { fontSize: 13, fontWeight: "600", color: tema.texto },
   pastillaListo: { backgroundColor: tema.verde },
   pastillaListoTexto: { color: "#fff" },
   // La barra de Shopify: oscura, flotando sobre la grilla.

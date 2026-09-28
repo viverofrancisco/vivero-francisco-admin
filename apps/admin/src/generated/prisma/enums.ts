@@ -35,6 +35,16 @@ export const TipoProducto = {
 export type TipoProducto = (typeof TipoProducto)[keyof typeof TipoProducto]
 
 
+export const UnidadPeso = {
+  G: 'G',
+  KG: 'KG',
+  LB: 'LB',
+  OZ: 'OZ'
+} as const
+
+export type UnidadPeso = (typeof UnidadPeso)[keyof typeof UnidadPeso]
+
+
 export const Periodicidad = {
   MENSUAL: 'MENSUAL',
   TRIMESTRAL: 'TRIMESTRAL',

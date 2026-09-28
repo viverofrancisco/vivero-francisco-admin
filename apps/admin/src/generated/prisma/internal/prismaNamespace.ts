@@ -5193,6 +5193,9 @@ export const VarianteScalarFieldEnum = {
   posicion: 'posicion',
   combinacion: 'combinacion',
   cobraIva: 'cobraIva',
+  costo: 'costo',
+  peso: 'peso',
+  pesoUnidad: 'pesoUnidad',
   manejaInventario: 'manejaInventario',
   stock: 'stock',
   permiteNegativo: 'permiteNegativo',
@@ -6175,6 +6178,20 @@ export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Decimal[]'
  */
 export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
+ * Reference to a field of type 'UnidadPeso'
+ */
+export type EnumUnidadPesoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UnidadPeso'>
+    
+
+
+/**
+ * Reference to a field of type 'UnidadPeso[]'
+ */
+export type ListEnumUnidadPesoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UnidadPeso[]'>
     
 
 

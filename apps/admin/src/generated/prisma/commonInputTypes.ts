@@ -335,6 +335,13 @@ export type DecimalFilter<$PrismaModel = never> = {
   not?: Prisma.NestedDecimalFilter<$PrismaModel> | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type EnumUnidadPesoFilter<$PrismaModel = never> = {
+  equals?: $Enums.UnidadPeso | Prisma.EnumUnidadPesoFieldRefInput<$PrismaModel>
+  in?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUnidadPesoFilter<$PrismaModel> | $Enums.UnidadPeso
+}
+
 export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[] | Prisma.ListDecimalFieldRefInput<$PrismaModel>
@@ -349,6 +356,16 @@ export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedDecimalFilter<$PrismaModel>
   _min?: Prisma.NestedDecimalFilter<$PrismaModel>
   _max?: Prisma.NestedDecimalFilter<$PrismaModel>
+}
+
+export type EnumUnidadPesoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UnidadPeso | Prisma.EnumUnidadPesoFieldRefInput<$PrismaModel>
+  in?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUnidadPesoWithAggregatesFilter<$PrismaModel> | $Enums.UnidadPeso
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUnidadPesoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUnidadPesoFilter<$PrismaModel>
 }
 
 export type EnumMotivoMovimientoFilter<$PrismaModel = never> = {
@@ -1129,6 +1146,13 @@ export type NestedDecimalFilter<$PrismaModel = never> = {
   not?: Prisma.NestedDecimalFilter<$PrismaModel> | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type NestedEnumUnidadPesoFilter<$PrismaModel = never> = {
+  equals?: $Enums.UnidadPeso | Prisma.EnumUnidadPesoFieldRefInput<$PrismaModel>
+  in?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUnidadPesoFilter<$PrismaModel> | $Enums.UnidadPeso
+}
+
 export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[] | Prisma.ListDecimalFieldRefInput<$PrismaModel>
@@ -1143,6 +1167,16 @@ export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedDecimalFilter<$PrismaModel>
   _min?: Prisma.NestedDecimalFilter<$PrismaModel>
   _max?: Prisma.NestedDecimalFilter<$PrismaModel>
+}
+
+export type NestedEnumUnidadPesoWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UnidadPeso | Prisma.EnumUnidadPesoFieldRefInput<$PrismaModel>
+  in?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UnidadPeso[] | Prisma.ListEnumUnidadPesoFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUnidadPesoWithAggregatesFilter<$PrismaModel> | $Enums.UnidadPeso
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUnidadPesoFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUnidadPesoFilter<$PrismaModel>
 }
 
 export type NestedEnumMotivoMovimientoFilter<$PrismaModel = never> = {

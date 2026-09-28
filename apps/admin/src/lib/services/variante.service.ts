@@ -15,6 +15,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import type { UnidadPeso } from "@vivero/shared";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
@@ -70,6 +71,9 @@ export async function getCatalogoDelProducto(viewer: Viewer, productoId: string)
           sku: true,
           precio: true,
           cobraIva: true,
+          costo: true,
+          peso: true,
+          pesoUnidad: true,
           combinacion: true,
           manejaInventario: true,
           stock: true,
@@ -100,6 +104,9 @@ export async function getCatalogoDelProducto(viewer: Viewer, productoId: string)
       // Decimal no cruza a un componente cliente.
       precio: Number(v.precio),
       cobraIva: v.cobraIva,
+      costo: v.costo === null ? null : Number(v.costo),
+      peso: v.peso === null ? null : Number(v.peso),
+      pesoUnidad: v.pesoUnidad,
       manejaInventario: v.manejaInventario,
       stock: v.stock,
       permiteNegativo: v.permiteNegativo,
@@ -428,6 +435,9 @@ export async function getVariante(viewer: Viewer, varianteId: string) {
       sku: true,
       precio: true,
       cobraIva: true,
+      costo: true,
+      peso: true,
+      pesoUnidad: true,
       stock: true,
       manejaInventario: true,
       permiteNegativo: true,
@@ -484,6 +494,9 @@ export async function getVariante(viewer: Viewer, varianteId: string) {
     sku: variante.sku,
     precio: Number(variante.precio),
     cobraIva: variante.cobraIva,
+    costo: variante.costo === null ? null : Number(variante.costo),
+    peso: variante.peso === null ? null : Number(variante.peso),
+    pesoUnidad: variante.pesoUnidad,
     stock: variante.stock,
     manejaInventario: variante.manejaInventario,
     permiteNegativo: variante.permiteNegativo,
@@ -495,6 +508,8 @@ export async function getVariante(viewer: Viewer, varianteId: string) {
     producto: {
       id: variante.producto.id,
       nombre: variante.producto.nombre,
+      // La ficha muestra costo y peso solo en un bien.
+      tipo: variante.producto.tipo,
       archivado: variante.producto.deletedAt !== null,
       // El *cuánto* del IVA es del producto; la variante decide el *si*.
       ivaTasa:
@@ -521,6 +536,11 @@ export interface VarianteInput {
   precio?: number;
   /** Si se le cobra IVA. El cuánto es del producto (`Producto.ivaTasa`). */
   cobraIva?: boolean;
+  /** Costo por unidad. Nulo es "no se sabe". Solo un bien. */
+  costo?: number | null;
+  /** Cuánto pesa una unidad, en `pesoUnidad`. Solo un bien. */
+  peso?: number | null;
+  pesoUnidad?: UnidadPeso;
   manejaInventario?: boolean;
   permiteNegativo?: boolean;
   /** Cuál de las fotos del producto la representa. */
@@ -539,9 +559,27 @@ export async function actualizarVariante(
   ensureAdmin(viewer);
   const variante = await prisma.variante.findUnique({
     where: { id: varianteId },
-    select: { id: true, productoId: true, stock: true },
+    select: {
+      id: true,
+      productoId: true,
+      stock: true,
+      producto: { select: { tipo: true } },
+    },
   });
   if (!variante) throw new NotFoundError("Variante no encontrada");
+
+  // El costo y el peso son de la mercadería: un servicio no se compra ni se
+  // despacha. La pantalla ya no los ofrece; esto es para el pedido armado a
+  // mano, y para que un servicio no quede con un margen que no significa nada.
+  if (
+    variante.producto.tipo !== "BIEN" &&
+    ((payload.costo !== undefined && payload.costo !== null) ||
+      (payload.peso !== undefined && payload.peso !== null))
+  ) {
+    throw new ValidationError(
+      "Solo un bien lleva costo y peso: un servicio no se compra ni se despacha."
+    );
+  }
 
   if (payload.imagenId) {
     const imagen = await prisma.productoImagen.findFirst({
@@ -569,6 +607,11 @@ export async function actualizarVariante(
         ...(payload.sku !== undefined ? { sku: payload.sku?.trim() || null } : {}),
         ...(payload.precio !== undefined ? { precio: payload.precio } : {}),
         ...(payload.cobraIva !== undefined ? { cobraIva: payload.cobraIva } : {}),
+        ...(payload.costo !== undefined ? { costo: payload.costo } : {}),
+        ...(payload.peso !== undefined ? { peso: payload.peso } : {}),
+        ...(payload.pesoUnidad !== undefined
+          ? { pesoUnidad: payload.pesoUnidad }
+          : {}),
         ...(payload.manejaInventario !== undefined
           ? { manejaInventario: payload.manejaInventario }
           : {}),

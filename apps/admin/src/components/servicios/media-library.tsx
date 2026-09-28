@@ -4,14 +4,16 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Check, Loader2, Search, Upload } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, Search, Upload } from "lucide-react";
+
+/** "JPG", "PNG": lo que va debajo del nombre, sacado de su extensión. */
+function tipoDeArchivo(nombre: string): string {
+  const ext = nombre.split(".").pop();
+  return ext && ext.length <= 5 && ext !== nombre ? ext.toUpperCase() : "Imagen";
+}
 
 export interface MediaItem {
   id: string;
@@ -91,6 +93,10 @@ export function MediaLibrary({
   onElegirItems,
   unaSola,
   onCerrar,
+  titulo,
+  elegidasIniciales,
+  permiteNinguna = false,
+  nota,
 }: {
   /** Los `mediaId` que ya están en uso ahí: se marcan y no se pueden elegir. */
   yaUsadas: string[];
@@ -103,12 +109,28 @@ export function MediaLibrary({
   /** Una sola, para donde no hay galería sino una foto. */
   unaSola?: boolean;
   onCerrar: () => void;
+  /** "Elegir foto" para la variante; sin esto, según `unaSola`. */
+  titulo?: string;
+  /**
+   * Las que ya están elegidas al abrir: la foto actual de una variante, o
+   * las del producto cuando se abre desde el + de la ficha en el teléfono.
+   */
+  elegidasIniciales?: string[];
+  /**
+   * Si *Listo* vale sin nada marcado: para la variante, desmarcar es
+   * volver a mostrar la principal, y eso también es una elección.
+   */
+  permiteNinguna?: boolean;
+  /** Un renglón chico al pie, para decir qué pasa con lo elegido. */
+  nota?: string;
 }) {
   const [items, setItems] = useState<MediaItem[] | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [pedida, setPedida] = useState<string | null>(null);
-  const [elegidas, setElegidas] = useState<string[]>([]);
+  const [elegidas, setElegidas] = useState<string[]>(() => elegidasIniciales ?? []);
   const [subiendo, setSubiendo] = useState(false);
+  /** Cuántos `dragenter` sin su `dragleave`: los hijos disparan los suyos. */
+  const [arrastrando, setArrastrando] = useState(0);
 
   // Se dispara al renderizar con una búsqueda nueva en vez de con un efecto: no
   // hay dependencias que sincronizar ni un `setState` después de pintar.
@@ -122,14 +144,17 @@ export function MediaLibrary({
 
   const archivo = useRef<HTMLInputElement>(null);
 
-  const subir = async (files: FileList | null) => {
-    if (!files?.length) return;
+  const subir = async (files: File[]) => {
+    const imagenes = files.filter((f) => f.type.startsWith("image/"));
+    if (imagenes.length === 0) return;
     setSubiendo(true);
     try {
-      const nuevas = await subirALaBiblioteca([...files]);
+      const nuevas = await subirALaBiblioteca(imagenes);
       setItems((prev) => [...nuevas, ...(prev ?? [])]);
       // Lo recién subido queda elegido: es a lo que venía quien sube desde acá.
-      setElegidas((prev) => [...prev, ...nuevas.map((m) => m.id)]);
+      setElegidas((prev) =>
+        unaSola ? nuevas.slice(0, 1).map((m) => m.id) : [...prev, ...nuevas.map((m) => m.id)]
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No pudimos subir");
     } finally {
@@ -151,21 +176,51 @@ export function MediaLibrary({
 
   return (
     <Dialog open onOpenChange={(v) => !v && onCerrar()}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Biblioteca</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre..."
-                className="pl-9"
-              />
-            </div>
+      {/* La forma del *Select file* de Shopify —y del selector de fotos del
+          informe—: alto fijo para que la grilla no haga saltar el modal, el
+          buscador arriba, la zona de subir, las miniaturas con su casilla y
+          el nombre debajo, y Cancelar / Listo al pie. El drop se escucha en
+          todo el modal: apuntarle a un recuadro chico mientras se arrastra es
+          más trabajo del que vale. */}
+      <DialogContent
+        pantallaCompletaEnMovil
+        className="flex flex-col gap-0 p-0 sm:max-w-5xl md:h-[min(85vh,40rem)]"
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setArrastrando((n) => n + 1);
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        onDragLeave={() => setArrastrando((n) => Math.max(0, n - 1))}
+        onDrop={(e) => {
+          e.preventDefault();
+          setArrastrando(0);
+          void subir(Array.from(e.dataTransfer.files ?? []));
+        }}
+      >
+        <div className="flex flex-none items-center gap-2 px-5 pt-4 pb-3">
+          <DialogTitle className="flex-1 text-lg font-semibold">
+            {titulo ?? `Elegir ${unaSola ? "archivo" : "archivos"}`}
+          </DialogTitle>
+        </div>
+
+        <div className="flex-none px-5 pb-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar archivos"
+              className="pl-9"
+            />
+          </div>
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col px-5">
+          <div
+            className={`mb-3 flex flex-none flex-col items-center gap-1.5 rounded-lg border-2 border-dashed px-4 py-5 text-center transition-colors ${
+              arrastrando > 0 ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+            }`}
+          >
             {/* El input escondido se dispara desde el botón, y no envuelto en
                 un `<label>`: ahí el botón tenía que dibujarse como `<span>`
                 para no tragarse el clic, y un span no es un botón — se pierde
@@ -174,110 +229,144 @@ export function MediaLibrary({
               ref={archivo}
               type="file"
               accept="image/*"
-              multiple
+              multiple={!unaSola}
               className="hidden"
-              onChange={(e) => subir(e.target.files)}
+              onChange={(e) => void subir(Array.from(e.target.files ?? []))}
             />
             <Button
               type="button"
               variant="outline"
-              className="flex-none"
+              size="sm"
               disabled={subiendo}
               onClick={() => archivo.current?.click()}
             >
               {subiendo ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
               ) : (
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="mr-1.5 h-4 w-4" />
               )}
-              Subir
+              {subiendo ? "Subiendo…" : "Subir"}
             </Button>
+            <p className="text-xs text-muted-foreground">
+              {arrastrando > 0
+                ? "Suelta las imágenes aquí"
+                : "O arrastra imágenes de tu computadora"}
+            </p>
           </div>
 
-          <div className="max-h-[50vh] overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto pb-3">
             {items === null ? (
               <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Cargando…
               </p>
             ) : items.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">
-                {busqueda
-                  ? "Nada con ese nombre."
-                  : "La biblioteca está vacía. Sube la primera foto."}
-              </p>
+              /* El vacío de Shopify: la lupa, qué pasa y subir como la acción
+                 principal. Con una búsqueda, lo que no hay es coincidencias. */
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                <Search className="h-10 w-10 text-muted-foreground/40" strokeWidth={1.5} />
+                <p className="mt-2 text-lg font-semibold">
+                  {busqueda ? "Sin resultados" : "La biblioteca está vacía"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {busqueda
+                    ? "Prueba con otro nombre, o sube una imagen nueva."
+                    : "Sube la primera imagen."}
+                </p>
+                <Button
+                  type="button"
+                  className="mt-2"
+                  disabled={subiendo}
+                  onClick={() => archivo.current?.click()}
+                >
+                  {subiendo ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  Subir imagen
+                </Button>
+              </div>
             ) : (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              // Columnas de ancho fijo, las que entren: las miniaturas miden
+              // siempre lo mismo en vez de agrandarse para llenar el hueco.
+              <div className="grid grid-cols-[repeat(auto-fill,9.25rem)] justify-start gap-3">
                 {items.map((m) => {
                   const usada = yaUsadas.includes(m.id);
                   const elegida = elegidas.includes(m.id);
                   return (
-                    <button
+                    /* La casilla y la foto son dos controles hermanos que
+                       hacen lo mismo: marcar. Una que ya está en el producto
+                       se ve atenuada y no se puede volver a elegir. */
+                    <div
                       key={m.id}
-                      type="button"
-                      disabled={usada}
-                      onClick={() => alternar(m.id)}
-                      title={usada ? "Ya está en este producto" : m.nombre}
-                      className={`group relative aspect-square overflow-hidden rounded-md border-2 bg-muted transition-colors ${
-                        elegida
-                          ? "border-primary"
-                          : usada
-                            ? "border-transparent opacity-40"
-                            : "border-transparent hover:border-muted-foreground/40"
-                      }`}
+                      className={`relative rounded-lg border p-2 transition-colors ${
+                        elegida ? "border-primary bg-primary/5" : "border-border"
+                      } ${usada ? "opacity-50" : ""}`}
+                      title={usada ? "Ya está en este producto" : undefined}
                     >
-                      <Image
-                        src={m.url}
-                        alt={m.alt ?? ""}
-                        fill
-                        sizes="150px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                      {(elegida || usada) && (
-                        <span
-                          className={`absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full ${
-                            elegida
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background/90 text-muted-foreground"
-                          }`}
-                        >
-                          <Check className="h-3 w-3" />
-                        </span>
-                      )}
-                      <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/70 to-transparent px-1.5 pb-1 pt-4 text-left text-[10px] text-white">
-                        {m.nombre}
+                      <button
+                        type="button"
+                        disabled={usada}
+                        onClick={() => alternar(m.id)}
+                        className="relative block aspect-square w-full overflow-hidden rounded-md border bg-muted"
+                        title={usada ? "Ya está en este producto" : elegida ? "Desmarcar" : "Marcar"}
+                      >
+                        <Image
+                          src={m.url}
+                          alt={m.alt ?? ""}
+                          fill
+                          sizes="150px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </button>
+                      <span className="absolute top-3.5 left-3.5">
+                        <Checkbox
+                          checked={elegida || usada}
+                          disabled={usada}
+                          onCheckedChange={() => alternar(m.id)}
+                          className="bg-card"
+                          aria-label={elegida ? "Desmarcar" : "Marcar"}
+                        />
                       </span>
-                    </button>
+                      <p className="mt-1.5 truncate text-center text-xs font-medium" title={m.nombre}>
+                        {m.nombre}
+                      </p>
+                      <p className="truncate text-center text-[11px] text-muted-foreground">
+                        {tipoDeArchivo(m.nombre)}
+                      </p>
+                    </div>
                   );
                 })}
               </div>
             )}
           </div>
+        </div>
 
-          <div className="flex items-center justify-between gap-2 border-t pt-4">
-            <span className="text-xs text-muted-foreground">
-              {elegidas.length > 0 &&
-                `${elegidas.length} ${elegidas.length === 1 ? "elegida" : "elegidas"}`}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onCerrar}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => {
-                  onElegir?.(elegidas);
-                  onElegirItems?.(
-                    elegidas
-                      .map((id) => (items ?? []).find((m) => m.id === id))
-                      .filter((m): m is MediaItem => Boolean(m))
-                  );
-                }}
-                disabled={elegidas.length === 0}
-              >
-                {unaSola ? "Elegir" : "Agregar"}
-              </Button>
-            </div>
+        <div className="flex flex-none items-center justify-between gap-2 border-t px-5 py-3">
+          <span className="text-xs text-muted-foreground">
+            {nota ??
+              (elegidas.length > 0 &&
+                `${elegidas.length} ${elegidas.length === 1 ? "marcada" : "marcadas"}`)}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onCerrar}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                onElegir?.(elegidas);
+                onElegirItems?.(
+                  elegidas
+                    .map((id) => (items ?? []).find((m) => m.id === id))
+                    .filter((m): m is MediaItem => Boolean(m))
+                );
+              }}
+              disabled={elegidas.length === 0 && !permiteNinguna}
+            >
+              Listo
+            </Button>
           </div>
         </div>
       </DialogContent>

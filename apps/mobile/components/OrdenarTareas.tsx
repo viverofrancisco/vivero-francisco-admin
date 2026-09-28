@@ -153,7 +153,7 @@ export function OrdenarTareas({
             style={styles.cerrar}
             accessibilityLabel="Cerrar"
           >
-            <Ionicons name="close" size={22} color={tema.texto2} />
+            <Ionicons name="close-outline" size={18} color={tema.texto2} />
           </PressableScale>
           <Text style={styles.titulo}>Ordenar tareas</Text>
           <PressableScale
@@ -375,12 +375,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tema.linea,
   },
+  // La ✕ de toda hoja: 36 de círculo, el ícono en 18 (`CabeceraDeHoja`).
   cerrar: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: tema.lienzo,
   },
   titulo: { flex: 1, fontSize: 17, fontWeight: "700", color: tema.texto },
   /* Los mismos números que el botón Crear de las listas: 30 de alto, 12 de

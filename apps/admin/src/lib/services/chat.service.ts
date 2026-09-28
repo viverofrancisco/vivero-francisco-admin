@@ -8,6 +8,7 @@ import {
   type TipoDeReferencia,
   nombrePersona,
   type VistaPreviaDeReferencia,
+  ordenPorCampo,
 } from "@vivero/shared";
 import { getVisitaForViewer, listVisitas } from "./visita.service";
 import { getClienteForStaff, listClientes } from "./cliente.service";
@@ -918,6 +919,10 @@ export async function compartibles(
     const { items } = await listServicios(viewer, {
       search: texto || undefined,
       limit: 30,
+      // Por nombre y no como el catálogo (los últimos creados primero): acá
+      // se elige de una lista corta buscando por nombre, y alfabético es
+      // como se recorre.
+      orden: ordenPorCampo("nombre"),
     });
     return items.map((p) => ({
       tipo,

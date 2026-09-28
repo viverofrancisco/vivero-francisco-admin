@@ -37,6 +37,8 @@ export async function listarCategorias(viewer: Viewer) {
       _count: {
         select: { productos: { where: { producto: { deletedAt: null } } } },
       },
+      // La foto, para la lista de la app: la fila muestra la miniatura.
+      media: { select: { key: true } },
     },
   });
 }

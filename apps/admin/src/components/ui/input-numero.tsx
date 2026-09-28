@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 
 /**
@@ -24,8 +25,11 @@ export function InputNumero({
   /** Lo escrito, tal cual. Se maneja como texto: "12." es un estado válido. */
   value: string;
   onChange: (texto: string) => void;
-  /** Con decimales (precios) o solo enteros (cantidades). */
-  decimales?: boolean;
+  /**
+   * Con decimales (precios) o solo enteros (cantidades). `true` son dos, los
+   * de la plata; un número dice cuántos, para un peso en kilos con gramos.
+   */
+  decimales?: boolean | number;
   className?: string;
 } & Omit<
   React.ComponentProps<typeof Input>,
@@ -46,8 +50,9 @@ export function InputNumero({
         // toma como punto: en un teclado en español es la tecla que está a
         // mano y nadie espera que no funcione.
         const normalizado = texto.replace(",", ".");
+        const cuantos = typeof decimales === "number" ? decimales : 2;
         const valido = decimales
-          ? /^\d*\.?\d{0,2}$/.test(normalizado)
+          ? new RegExp(`^\\d*\\.?\\d{0,${cuantos}}$`).test(normalizado)
           : /^\d*$/.test(normalizado);
         if (valido) onChange(normalizado);
       }}
@@ -60,4 +65,28 @@ export function comoNumero(texto: string): number | null {
   if (texto.trim() === "" || texto === ".") return null;
   const n = Number(texto);
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * El texto de un campo numérico que publica **en cada tecla**.
+ *
+ * Lo escrito vive como texto y el número sale apenas se puede leer uno, para
+ * que la barra de *Cambios sin guardar* aparezca al primer dígito y no al
+ * salir del campo. El texto se repone desde afuera —se guardó, se descartó—
+ * solo cuando el número ya no es el que dice el campo: sin esa condición,
+ * "12." publica 12, el padre devuelve 12, y `String(12)` le borra el punto
+ * que se acaba de escribir. Nulo es un campo vacío.
+ */
+export function useTextoNumerico(
+  valor: number | null
+): [string, (texto: string) => void] {
+  const [texto, setTexto] = useState(valor === null ? "" : String(valor));
+  const [ultimo, setUltimo] = useState(valor);
+  if (ultimo !== valor) {
+    setUltimo(valor);
+    if (comoNumero(texto) !== valor) {
+      setTexto(valor === null ? "" : String(valor));
+    }
+  }
+  return [texto, setTexto];
 }

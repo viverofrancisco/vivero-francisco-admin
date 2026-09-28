@@ -19,14 +19,18 @@ import { RichText } from "@/components/ui/rich-text";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { SelectorCategorias } from "./selector-categorias";
 import { ProductoImagenes, type ImagenProducto } from "./producto-imagenes";
+import type { MediaItem } from "./media-library";
 import { ProductoInventario } from "./producto-inventario";
 import { EstadoBadge } from "./estado-badge";
+import { FichaProductoMovil } from "./movil/ficha-producto-movil";
+import { useEsMovil } from "@/lib/use-es-movil";
 import {
   ProductoVariantes,
   type OpcionEditable,
   type VarianteFila,
   type VariantePendiente,
 } from "./producto-variantes";
+import type { CambiosDeVariante } from "./producto-inventario";
 
 const TIPO_LABEL: Record<string, string> = {
   SERVICIO: "Servicio",
@@ -38,15 +42,16 @@ interface ServicioData {
   nombre: string;
   tipo: string;
   descripcion: string | null;
+  /** La descripción sin formato, para la ficha del teléfono. */
+  descripcionPlana: string;
   ivaTasa: string | number | null;
-
-
   /** Si ya se puede vender. Un borrador no aparece en los selectores. */
   estado: "ACTIVO" | "BORRADOR";
   /** Cuándo se archivó, o `null` si está en el catálogo. */
   archivadoEl: string | null;
   /** Varias: un rosal es "Plantas" y también "Exterior". */
   categoriaIds: string[];
+  createdAt?: string;
 }
 
 export function ServicioDetail({
@@ -71,13 +76,9 @@ export function ServicioDetail({
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
   const [restaurando, setRestaurando] = useState(false);
-  /**
-   * La galería vive acá y no adentro de su card: la variante ofrece elegir una
-   * de estas fotos, así que subir una tiene que aparecer en el selector de al
-   * lado sin recargar.
-   */
-
-  const [filas, setFilas] = useState(variantes);
+  // Por el hook y no por clases: la ficha del teléfono es otro árbol, con
+  // hojas que guardan en el acto, y `md:hidden` montaría los dos.
+  const esMovil = useEsMovil();
 
   /**
    * Lo guardado y lo que se está escribiendo.
@@ -108,6 +109,14 @@ export function ServicioDetail({
     /** SKU cambiados en la tabla, por variante. */
     skus: {} as Record<string, string>,
     /**
+     * Lo que se tocó en la card de la variante única —precio, costo, SKU,
+     * peso, los interruptores—, por variante. Esa card guardaba cada campo
+     * sola, al salir de él, mientras el resto de la ficha esperaba la barra:
+     * dos formas de guardar en la misma pantalla, y la que no avisa es la que
+     * deja a alguien buscando el botón.
+     */
+    cambios: {} as Record<string, Partial<CambiosDeVariante>>,
+    /**
      * Movimientos de stock sin guardar, uno por variante. Uno solo: dos sobre
      * la misma variante antes de guardar no se acumulan.
      */
@@ -117,6 +126,10 @@ export function ServicioDetail({
     >,
   };
   const [form, setForm] = useState(guardado);
+  // Todo `setForm` de abajo parte del estado actual (`(f) => …`), nunca de
+  // `form`: una fila de la tabla que elige una foto la suma a la galería y
+  // anota la elección en el mismo gesto, y la segunda escritura copiaba un
+  // `form` de antes de la primera y la pisaba — la foto desaparecía.
 
   /**
    * Re-sincroniza el formulario cuando el servidor manda otra cosa.
@@ -152,6 +165,7 @@ export function ServicioDetail({
     Object.keys(form.nuevas).length > 0 ||
     Object.keys(form.precios).length > 0 ||
     Object.keys(form.skus).length > 0 ||
+    Object.values(form.cambios).some((c) => Object.keys(c).length > 0) ||
     Object.keys(form.movimientos).length > 0;
 
   /** Lo devuelve al catálogo. */
@@ -260,11 +274,11 @@ export function ServicioDetail({
    * que siguen —y con ellas la foto que cada variante había elegido— en vez de
    * borrar y recrear.
    */
-  const guardarGaleria = async () => {
+  const guardarGaleria = async (): Promise<ImagenProducto[] | null> => {
     const igual =
       form.imagenes.map((i) => `${i.id}:${i.mediaId}`).join() ===
       imagenes.map((i) => `${i.id}:${i.mediaId}`).join();
-    if (igual) return;
+    if (igual) return null;
     const res = await fetch(`/api/servicios/${servicio.id}/imagenes`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -277,12 +291,41 @@ export function ServicioDetail({
         })),
       }),
     });
-    if (!res.ok) {
-      throw new Error((await res.json()).error ?? "Error con las fotos");
-    }
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error ?? "Error con las fotos");
+    // Lo que quedó, con la fila que el servidor le dio a cada foto nueva: es
+    // lo que le permite a una variante que eligió una foto recién subida
+    // apuntar a su fila y no a la media.
+    return body.imagenes as ImagenProducto[];
   };
 
-  const guardarCambiosDeVariantes = async () => {
+  /**
+   * Un archivo de la biblioteca que una variante eligió como su foto y el
+   * producto no tenía.
+   *
+   * Entra a la galería **del formulario**, como *Elegir existente* en la
+   * card de Fotos: no toca el producto hasta guardar. La variante lo señala
+   * por su media —lo único que existe— y al guardar, cuando la galería ya
+   * tiene fila para él, el id se cambia por el de la fila antes del `PATCH`.
+   */
+  const agregarMediaAlFormulario = (media: MediaItem[]) => {
+    setForm((f) => {
+      const ya = new Set(f.imagenes.map((i) => i.mediaId));
+      const nuevas = media
+        .filter((m) => !ya.has(m.id))
+        .map((m, i) => ({
+          id: m.id,
+          mediaId: m.id,
+          url: m.url,
+          alt: m.alt,
+          nombre: m.nombre,
+          posicion: f.imagenes.length + i,
+        }));
+      return nuevas.length === 0 ? f : { ...f, imagenes: [...f.imagenes, ...nuevas] };
+    });
+  };
+
+  const guardarCambiosDeVariantes = async (galeria: ImagenProducto[] | null) => {
     for (const [id, sku] of Object.entries(form.skus)) {
       const r = await fetch(`/api/variantes/${id}`, {
         method: "PATCH",
@@ -301,6 +344,25 @@ export function ServicioDetail({
       });
       if (!r.ok) throw new Error((await r.json()).error ?? "Error con un precio");
     }
+    // Lo de la card de la variante única y la foto elegida en la tabla, en
+    // un solo PATCH por variante. El SKU vacío viaja como `null`: "sin
+    // código" es un estado, no una cadena. Una foto elegida recién subida
+    // apuntaba a su media; ahora que la galería tiene fila, va la fila.
+    for (const [id, c] of Object.entries(form.cambios)) {
+      if (Object.keys(c).length === 0) continue;
+      const fila =
+        c.imagenId && galeria ? galeria.find((i) => i.mediaId === c.imagenId) : undefined;
+      const r = await fetch(`/api/variantes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...c,
+          ...(c.sku !== undefined ? { sku: c.sku?.trim() || null } : {}),
+          ...(fila ? { imagenId: fila.id } : {}),
+        }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error ?? "Error con la variante");
+    }
     for (const [id, m] of Object.entries(form.movimientos)) {
       const r = await fetch(`/api/variantes/${id}/movimientos`, {
         method: "POST",
@@ -317,7 +379,7 @@ export function ServicioDetail({
       });
       if (!r.ok) throw new Error((await r.json()).error ?? "Error con el stock");
     }
-    setForm((f) => ({ ...f, precios: {}, skus: {}, movimientos: {} }));
+    setForm((f) => ({ ...f, precios: {}, skus: {}, cambios: {}, movimientos: {} }));
   };
 
   const guardar = async () => {
@@ -350,8 +412,8 @@ export function ServicioDetail({
       ) {
         await guardarOpciones();
       }
-      await guardarGaleria();
-      await guardarCambiosDeVariantes();
+      const galeria = await guardarGaleria();
+      await guardarCambiosDeVariantes(galeria);
       toast.success("Producto actualizado");
       // El servidor es el que dice qué quedó guardado: `router.refresh()` trae
       // la ficha de nuevo y `guardado` vuelve a coincidir con el formulario.
@@ -380,7 +442,20 @@ export function ServicioDetail({
     // Por lo que hay **en el formulario**, no por lo guardado: al agregar la
     // primera opción el SKU, el precio y el stock pasan a ser de cada
     // combinación, y esta card tiene que irse en ese momento y no al guardar.
-    form.opciones.length === 0 && filas.length === 1 ? filas[0] : null;
+    form.opciones.length === 0 && variantes.length === 1 ? variantes[0] : null;
+
+  if (esMovil) {
+    return (
+      <FichaProductoMovil
+        servicio={servicio}
+        imagenes={imagenes}
+        opciones={opciones}
+        variantes={variantes}
+        categorias={categorias}
+        backHref={backHref}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -435,14 +510,14 @@ export function ServicioDetail({
                 <Input
                   id="nombre"
                   value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                  onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Descripción</Label>
                 <RichText
                   value={form.descripcion}
-                  onChange={(html) => setForm({ ...form, descripcion: html })}
+                  onChange={(html) => setForm((f) => ({ ...f, descripcion: html }))}
                 />
               </div>
             </CardContent>
@@ -452,7 +527,7 @@ export function ServicioDetail({
               la barra de arriba, como todo lo demás de la ficha. */}
           <ProductoImagenes
             imagenes={form.imagenes}
-            onCambio={(imagenes) => setForm({ ...form, imagenes })}
+            onCambio={(imagenes) => setForm((f) => ({ ...f, imagenes }))}
           />
 
           {/* Debajo de las fotos, como en Shopify: primero qué es y cómo se
@@ -465,7 +540,22 @@ export function ServicioDetail({
               ivaTasa={
                 servicio.ivaTasa === null ? null : Number(servicio.ivaTasa)
               }
-              onCambio={(v) => setFilas([v])}
+              cambios={form.cambios[varianteUnica.id] ?? {}}
+              onCambios={(c) =>
+                setForm((f) => ({
+                  ...f,
+                  cambios: { ...f.cambios, [varianteUnica.id]: c },
+                }))
+              }
+              movimiento={form.movimientos[varianteUnica.id]}
+              onMovimiento={(m) =>
+                setForm((f) => {
+                  const movimientos = { ...f.movimientos };
+                  if (m) movimientos[varianteUnica.id] = m;
+                  else delete movimientos[varianteUnica.id];
+                  return { ...f, movimientos };
+                })
+              }
             />
           )}
 
@@ -475,16 +565,19 @@ export function ServicioDetail({
               productoId={servicio.id}
               productoNombre={form.nombre}
               opciones={form.opciones}
-              onOpcionesChange={(o) => setForm({ ...form, opciones: o })}
+              onOpcionesChange={(o) => setForm((f) => ({ ...f, opciones: o }))}
               nuevas={form.nuevas}
-              onNuevasChange={(n) => setForm({ ...form, nuevas: n })}
+              onNuevasChange={(n) => setForm((f) => ({ ...f, nuevas: n }))}
               precios={form.precios}
-              onPreciosChange={(p) => setForm({ ...form, precios: p })}
+              onPreciosChange={(p) => setForm((f) => ({ ...f, precios: p }))}
               skus={form.skus}
-              onSkusChange={(sk) => setForm({ ...form, skus: sk })}
+              onSkusChange={(sk) => setForm((f) => ({ ...f, skus: sk }))}
               movimientos={form.movimientos}
-              onMovimientosChange={(m) => setForm({ ...form, movimientos: m })}
-              variantes={filas}
+              onMovimientosChange={(m) => setForm((f) => ({ ...f, movimientos: m }))}
+              cambios={form.cambios}
+              onCambiosChange={(c) => setForm((f) => ({ ...f, cambios: c }))}
+              onAgregarMedia={agregarMediaAlFormulario}
+              variantes={variantes}
               imagenes={form.imagenes}
             />
           )}
@@ -499,7 +592,7 @@ export function ServicioDetail({
               <CustomSelect
                 value={form.estado}
                 onChange={(v) =>
-                  setForm({ ...form, estado: v as "ACTIVO" | "BORRADOR" })
+                  setForm((f) => ({ ...f, estado: v as "ACTIVO" | "BORRADOR" }))
                 }
                 options={[
                   { value: "ACTIVO", label: "Activo" },
@@ -534,7 +627,7 @@ export function ServicioDetail({
                 <SelectorCategorias
                   categorias={categorias}
                   value={form.categoriaIds}
-                  onChange={(ids) => setForm({ ...form, categoriaIds: ids })}
+                  onChange={(ids) => setForm((f) => ({ ...f, categoriaIds: ids }))}
                 />
               )}
             </CardContent>

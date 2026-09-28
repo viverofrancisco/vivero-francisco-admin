@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import { UNIDADES_DE_PESO } from "@vivero/shared";
 
 /**
  * Los ejes de un bien y sus valores.
@@ -38,6 +39,11 @@ export const varianteSchema = z.object({
   precio: z.number().nonnegative().optional(),
   /** Si se le cobra IVA. El cuánto es del producto. */
   cobraIva: z.boolean().optional(),
+  /** Costo por unidad. Nulo es "no se sabe", que no es cero. Solo un bien. */
+  costo: z.number().nonnegative().nullable().optional(),
+  /** Cuánto pesa una unidad, en `pesoUnidad`. Solo un bien. */
+  peso: z.number().nonnegative().nullable().optional(),
+  pesoUnidad: z.enum(UNIDADES_DE_PESO).optional(),
   manejaInventario: z.boolean().optional(),
   permiteNegativo: z.boolean().optional(),
   imagenId: z.string().min(1).nullable().optional(),

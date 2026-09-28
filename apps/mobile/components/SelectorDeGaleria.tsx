@@ -206,7 +206,7 @@ export function SelectorDeGaleria({
               accessibilityRole="button"
               accessibilityLabel="Cerrar"
             >
-              <Ionicons name="close" size={22} color={tema.texto} />
+              <Ionicons name="close-outline" size={18} color={tema.texto} />
             </Pressable>
           )}
           <Text style={styles.titulo} numberOfLines={1}>
@@ -377,25 +377,28 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: tema.texto,
   },
+  // 36 con el ícono en 18, la misma ✕ que `CabeceraDeHoja`.
   redondo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: tema.lienzo,
   },
   redondoVacio: { width: 40, height: 40 },
   tocado: { opacity: 0.6 },
+  // La medida de la casa, la del *Guardar* de *Ordenar tareas*: 30 de alto,
+  // 12 de costado, 13 semibold.
   pastilla: {
-    height: 40,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     backgroundColor: tema.lienzo,
     alignItems: "center",
     justifyContent: "center",
   },
-  pastillaTexto: { fontSize: 15, fontWeight: "600", color: tema.texto },
+  pastillaTexto: { fontSize: 13, fontWeight: "600", color: tema.texto },
   pastillaListo: { backgroundColor: tema.verde, minWidth: 72 },
   pastillaListoTexto: { color: "#fff" },
   limitado: { paddingHorizontal: MARGEN, paddingBottom: 8 },

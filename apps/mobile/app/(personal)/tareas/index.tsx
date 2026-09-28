@@ -6,7 +6,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { ordenarTareas, type ModoOrdenTareas } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { FILA_LISTA, PantallaLista } from "@/components/ui/PantallaLista";
+import {
+  BOTON_JUNTO_AL_BUSCADOR,
+  FILA_LISTA,
+  PantallaLista,
+} from "@/components/ui/PantallaLista";
 import { OrdenarTareas } from "@/components/OrdenarTareas";
 import { tema } from "@/lib/tema";
 
@@ -89,7 +93,7 @@ export default function TareasListScreen() {
       accionBusqueda={
         <PressableScale
           onPress={() => setOrdenando(true)}
-          style={styles.botonOrden}
+          style={BOTON_JUNTO_AL_BUSCADOR}
           accessibilityLabel="Ordenar tareas"
         >
           <Ionicons name="swap-vertical" size={20} color={tema.texto2} />
@@ -174,15 +178,6 @@ const styles = StyleSheet.create({
   ancho: { alignSelf: "stretch" },
   nombre: { color: tema.texto, fontWeight: "500" },
   descripcion: { color: tema.texto3 },
-  botonOrden: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: tema.linea,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   vacio: { alignItems: "center", paddingVertical: 48, gap: 6 },
   vacioTitulo: { color: tema.texto },
   vacioTexto: { color: tema.texto3, textAlign: "center" },

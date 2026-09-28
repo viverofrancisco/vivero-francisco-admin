@@ -33,12 +33,16 @@ export type AggregateVariante = {
 export type VarianteAvgAggregateOutputType = {
   precio: runtime.Decimal | null
   posicion: number | null
+  costo: runtime.Decimal | null
+  peso: runtime.Decimal | null
   stock: number | null
 }
 
 export type VarianteSumAggregateOutputType = {
   precio: runtime.Decimal | null
   posicion: number | null
+  costo: runtime.Decimal | null
+  peso: runtime.Decimal | null
   stock: number | null
 }
 
@@ -50,6 +54,9 @@ export type VarianteMinAggregateOutputType = {
   posicion: number | null
   combinacion: string | null
   cobraIva: boolean | null
+  costo: runtime.Decimal | null
+  peso: runtime.Decimal | null
+  pesoUnidad: $Enums.UnidadPeso | null
   manejaInventario: boolean | null
   stock: number | null
   permiteNegativo: boolean | null
@@ -64,6 +71,9 @@ export type VarianteMaxAggregateOutputType = {
   posicion: number | null
   combinacion: string | null
   cobraIva: boolean | null
+  costo: runtime.Decimal | null
+  peso: runtime.Decimal | null
+  pesoUnidad: $Enums.UnidadPeso | null
   manejaInventario: boolean | null
   stock: number | null
   permiteNegativo: boolean | null
@@ -78,6 +88,9 @@ export type VarianteCountAggregateOutputType = {
   posicion: number
   combinacion: number
   cobraIva: number
+  costo: number
+  peso: number
+  pesoUnidad: number
   manejaInventario: number
   stock: number
   permiteNegativo: number
@@ -89,12 +102,16 @@ export type VarianteCountAggregateOutputType = {
 export type VarianteAvgAggregateInputType = {
   precio?: true
   posicion?: true
+  costo?: true
+  peso?: true
   stock?: true
 }
 
 export type VarianteSumAggregateInputType = {
   precio?: true
   posicion?: true
+  costo?: true
+  peso?: true
   stock?: true
 }
 
@@ -106,6 +123,9 @@ export type VarianteMinAggregateInputType = {
   posicion?: true
   combinacion?: true
   cobraIva?: true
+  costo?: true
+  peso?: true
+  pesoUnidad?: true
   manejaInventario?: true
   stock?: true
   permiteNegativo?: true
@@ -120,6 +140,9 @@ export type VarianteMaxAggregateInputType = {
   posicion?: true
   combinacion?: true
   cobraIva?: true
+  costo?: true
+  peso?: true
+  pesoUnidad?: true
   manejaInventario?: true
   stock?: true
   permiteNegativo?: true
@@ -134,6 +157,9 @@ export type VarianteCountAggregateInputType = {
   posicion?: true
   combinacion?: true
   cobraIva?: true
+  costo?: true
+  peso?: true
+  pesoUnidad?: true
   manejaInventario?: true
   stock?: true
   permiteNegativo?: true
@@ -235,6 +261,9 @@ export type VarianteGroupByOutputType = {
   posicion: number
   combinacion: string
   cobraIva: boolean
+  costo: runtime.Decimal | null
+  peso: runtime.Decimal | null
+  pesoUnidad: $Enums.UnidadPeso
   manejaInventario: boolean
   stock: number
   permiteNegativo: boolean
@@ -272,6 +301,9 @@ export type VarianteWhereInput = {
   posicion?: Prisma.IntFilter<"Variante"> | number
   combinacion?: Prisma.StringFilter<"Variante"> | string
   cobraIva?: Prisma.BoolFilter<"Variante"> | boolean
+  costo?: Prisma.DecimalNullableFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.DecimalNullableFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFilter<"Variante"> | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFilter<"Variante"> | boolean
   stock?: Prisma.IntFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolFilter<"Variante"> | boolean
@@ -292,6 +324,9 @@ export type VarianteOrderByWithRelationInput = {
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
   cobraIva?: Prisma.SortOrder
+  costo?: Prisma.SortOrderInput | Prisma.SortOrder
+  peso?: Prisma.SortOrderInput | Prisma.SortOrder
+  pesoUnidad?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -316,6 +351,9 @@ export type VarianteWhereUniqueInput = Prisma.AtLeast<{
   posicion?: Prisma.IntFilter<"Variante"> | number
   combinacion?: Prisma.StringFilter<"Variante"> | string
   cobraIva?: Prisma.BoolFilter<"Variante"> | boolean
+  costo?: Prisma.DecimalNullableFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.DecimalNullableFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFilter<"Variante"> | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFilter<"Variante"> | boolean
   stock?: Prisma.IntFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolFilter<"Variante"> | boolean
@@ -336,6 +374,9 @@ export type VarianteOrderByWithAggregationInput = {
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
   cobraIva?: Prisma.SortOrder
+  costo?: Prisma.SortOrderInput | Prisma.SortOrder
+  peso?: Prisma.SortOrderInput | Prisma.SortOrder
+  pesoUnidad?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -358,6 +399,9 @@ export type VarianteScalarWhereWithAggregatesInput = {
   posicion?: Prisma.IntWithAggregatesFilter<"Variante"> | number
   combinacion?: Prisma.StringWithAggregatesFilter<"Variante"> | string
   cobraIva?: Prisma.BoolWithAggregatesFilter<"Variante"> | boolean
+  costo?: Prisma.DecimalNullableWithAggregatesFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.DecimalNullableWithAggregatesFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoWithAggregatesFilter<"Variante"> | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolWithAggregatesFilter<"Variante"> | boolean
   stock?: Prisma.IntWithAggregatesFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolWithAggregatesFilter<"Variante"> | boolean
@@ -371,6 +415,9 @@ export type VarianteCreateInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -390,6 +437,9 @@ export type VarianteUncheckedCreateInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -407,6 +457,9 @@ export type VarianteUpdateInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -426,6 +479,9 @@ export type VarianteUncheckedUpdateInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -444,6 +500,9 @@ export type VarianteCreateManyInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -457,6 +516,9 @@ export type VarianteUpdateManyMutationInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -470,6 +532,9 @@ export type VarianteUncheckedUpdateManyInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -499,6 +564,9 @@ export type VarianteCountOrderByAggregateInput = {
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
   cobraIva?: Prisma.SortOrder
+  costo?: Prisma.SortOrder
+  peso?: Prisma.SortOrder
+  pesoUnidad?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -508,6 +576,8 @@ export type VarianteCountOrderByAggregateInput = {
 export type VarianteAvgOrderByAggregateInput = {
   precio?: Prisma.SortOrder
   posicion?: Prisma.SortOrder
+  costo?: Prisma.SortOrder
+  peso?: Prisma.SortOrder
   stock?: Prisma.SortOrder
 }
 
@@ -519,6 +589,9 @@ export type VarianteMaxOrderByAggregateInput = {
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
   cobraIva?: Prisma.SortOrder
+  costo?: Prisma.SortOrder
+  peso?: Prisma.SortOrder
+  pesoUnidad?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -533,6 +606,9 @@ export type VarianteMinOrderByAggregateInput = {
   posicion?: Prisma.SortOrder
   combinacion?: Prisma.SortOrder
   cobraIva?: Prisma.SortOrder
+  costo?: Prisma.SortOrder
+  peso?: Prisma.SortOrder
+  pesoUnidad?: Prisma.SortOrder
   manejaInventario?: Prisma.SortOrder
   stock?: Prisma.SortOrder
   permiteNegativo?: Prisma.SortOrder
@@ -542,6 +618,8 @@ export type VarianteMinOrderByAggregateInput = {
 export type VarianteSumOrderByAggregateInput = {
   precio?: Prisma.SortOrder
   posicion?: Prisma.SortOrder
+  costo?: Prisma.SortOrder
+  peso?: Prisma.SortOrder
   stock?: Prisma.SortOrder
 }
 
@@ -603,6 +681,10 @@ export type DecimalFieldUpdateOperationsInput = {
   decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
   multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type EnumUnidadPesoFieldUpdateOperationsInput = {
+  set?: $Enums.UnidadPeso
 }
 
 export type VarianteCreateNestedOneWithoutValoresInput = {
@@ -714,6 +796,9 @@ export type VarianteCreateWithoutProductoInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -731,6 +816,9 @@ export type VarianteUncheckedCreateWithoutProductoInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -778,6 +866,9 @@ export type VarianteScalarWhereInput = {
   posicion?: Prisma.IntFilter<"Variante"> | number
   combinacion?: Prisma.StringFilter<"Variante"> | string
   cobraIva?: Prisma.BoolFilter<"Variante"> | boolean
+  costo?: Prisma.DecimalNullableFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.DecimalNullableFilter<"Variante"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFilter<"Variante"> | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFilter<"Variante"> | boolean
   stock?: Prisma.IntFilter<"Variante"> | number
   permiteNegativo?: Prisma.BoolFilter<"Variante"> | boolean
@@ -791,6 +882,9 @@ export type VarianteCreateWithoutValoresInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -809,6 +903,9 @@ export type VarianteUncheckedCreateWithoutValoresInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -841,6 +938,9 @@ export type VarianteUpdateWithoutValoresInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -859,6 +959,9 @@ export type VarianteUncheckedUpdateWithoutValoresInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -875,6 +978,9 @@ export type VarianteCreateWithoutImagenInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -893,6 +999,9 @@ export type VarianteUncheckedCreateWithoutImagenInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -935,6 +1044,9 @@ export type VarianteCreateWithoutMovimientosInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -953,6 +1065,9 @@ export type VarianteUncheckedCreateWithoutMovimientosInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -985,6 +1100,9 @@ export type VarianteUpdateWithoutMovimientosInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1003,6 +1121,9 @@ export type VarianteUncheckedUpdateWithoutMovimientosInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1019,6 +1140,9 @@ export type VarianteCreateWithoutOrdenLineasInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1037,6 +1161,9 @@ export type VarianteUncheckedCreateWithoutOrdenLineasInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1069,6 +1196,9 @@ export type VarianteUpdateWithoutOrdenLineasInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1087,6 +1217,9 @@ export type VarianteUncheckedUpdateWithoutOrdenLineasInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1103,6 +1236,9 @@ export type VarianteCreateWithoutFacturaLineasInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1121,6 +1257,9 @@ export type VarianteUncheckedCreateWithoutFacturaLineasInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1153,6 +1292,9 @@ export type VarianteUpdateWithoutFacturaLineasInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1171,6 +1313,9 @@ export type VarianteUncheckedUpdateWithoutFacturaLineasInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1187,6 +1332,9 @@ export type VarianteCreateManyProductoInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1200,6 +1348,9 @@ export type VarianteUpdateWithoutProductoInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1217,6 +1368,9 @@ export type VarianteUncheckedUpdateWithoutProductoInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1234,6 +1388,9 @@ export type VarianteUncheckedUpdateManyWithoutProductoInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1248,6 +1405,9 @@ export type VarianteCreateManyImagenInput = {
   posicion?: number
   combinacion?: string
   cobraIva?: boolean
+  costo?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: $Enums.UnidadPeso
   manejaInventario?: boolean
   stock?: number
   permiteNegativo?: boolean
@@ -1260,6 +1420,9 @@ export type VarianteUpdateWithoutImagenInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1278,6 +1441,9 @@ export type VarianteUncheckedUpdateWithoutImagenInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1295,6 +1461,9 @@ export type VarianteUncheckedUpdateManyWithoutImagenInput = {
   posicion?: Prisma.IntFieldUpdateOperationsInput | number
   combinacion?: Prisma.StringFieldUpdateOperationsInput | string
   cobraIva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  costo?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  peso?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  pesoUnidad?: Prisma.EnumUnidadPesoFieldUpdateOperationsInput | $Enums.UnidadPeso
   manejaInventario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stock?: Prisma.IntFieldUpdateOperationsInput | number
   permiteNegativo?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1366,6 +1535,9 @@ export type VarianteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   posicion?: boolean
   combinacion?: boolean
   cobraIva?: boolean
+  costo?: boolean
+  peso?: boolean
+  pesoUnidad?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
@@ -1387,6 +1559,9 @@ export type VarianteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   posicion?: boolean
   combinacion?: boolean
   cobraIva?: boolean
+  costo?: boolean
+  peso?: boolean
+  pesoUnidad?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
@@ -1403,6 +1578,9 @@ export type VarianteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   posicion?: boolean
   combinacion?: boolean
   cobraIva?: boolean
+  costo?: boolean
+  peso?: boolean
+  pesoUnidad?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
@@ -1419,13 +1597,16 @@ export type VarianteSelectScalar = {
   posicion?: boolean
   combinacion?: boolean
   cobraIva?: boolean
+  costo?: boolean
+  peso?: boolean
+  pesoUnidad?: boolean
   manejaInventario?: boolean
   stock?: boolean
   permiteNegativo?: boolean
   imagenId?: boolean
 }
 
-export type VarianteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productoId" | "precio" | "sku" | "posicion" | "combinacion" | "cobraIva" | "manejaInventario" | "stock" | "permiteNegativo" | "imagenId", ExtArgs["result"]["variante"]>
+export type VarianteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productoId" | "precio" | "sku" | "posicion" | "combinacion" | "cobraIva" | "costo" | "peso" | "pesoUnidad" | "manejaInventario" | "stock" | "permiteNegativo" | "imagenId", ExtArgs["result"]["variante"]>
 export type VarianteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   imagen?: boolean | Prisma.Variante$imagenArgs<ExtArgs>
   producto?: boolean | Prisma.ProductoDefaultArgs<ExtArgs>
@@ -1495,6 +1676,27 @@ export type $VariantePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
      * queda en `OrdenLinea.ivaTasa`, donde se puede cambiar.
      */
     cobraIva: boolean
+    /**
+     * **Costo por unidad**: lo que costó tenerla, para saber cuánto deja cada
+     * venta. La ficha muestra la ganancia y el margen al lado del precio,
+     * calculados y nunca guardados. **Nulo quiere decir que no se sabe**, que
+     * no es lo mismo que cero: un precio en cero es gratis, un costo en cero
+     * sería regalado — y casi siempre lo que pasa es que nadie lo cargó.
+     * 
+     * **Solo un bien.** Un servicio no se compra: lo que cuesta una poda son
+     * horas y eso no vive en el catálogo. `actualizarVariante` lo rechaza en
+     * un servicio. Y no llega a la orden: lo que costó lo vendido es un informe
+     * para otro día, no una columna de la línea.
+     */
+    costo: runtime.Decimal | null
+    /**
+     * Cuánto pesa una unidad, en `pesoUnidad`. Es un dato de la mercadería
+     * —una bolsa de abono de 25 kg, una maceta de 800 g— y se guarda como se
+     * lo escribió, con su unidad, en vez de convertirlo a gramos: quien cargó
+     * "25 kg" tiene que volver a leer "25 kg". Solo un bien, como el costo.
+     */
+    peso: runtime.Decimal | null
+    pesoUnidad: $Enums.UnidadPeso
     /**
      * Si lleva stock. Una planta se cuenta; la tierra a granel puede que no.
      */
@@ -1952,6 +2154,9 @@ export interface VarianteFieldRefs {
   readonly posicion: Prisma.FieldRef<"Variante", 'Int'>
   readonly combinacion: Prisma.FieldRef<"Variante", 'String'>
   readonly cobraIva: Prisma.FieldRef<"Variante", 'Boolean'>
+  readonly costo: Prisma.FieldRef<"Variante", 'Decimal'>
+  readonly peso: Prisma.FieldRef<"Variante", 'Decimal'>
+  readonly pesoUnidad: Prisma.FieldRef<"Variante", 'UnidadPeso'>
   readonly manejaInventario: Prisma.FieldRef<"Variante", 'Boolean'>
   readonly stock: Prisma.FieldRef<"Variante", 'Int'>
   readonly permiteNegativo: Prisma.FieldRef<"Variante", 'Boolean'>

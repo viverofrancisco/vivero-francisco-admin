@@ -30,6 +30,9 @@ import {
   type ImagenProducto,
 } from "./producto-imagenes";
 import { ArrowLeft } from "lucide-react";
+import type { UnidadPeso } from "@vivero/shared";
+import { CostoPorUnidad, GananciaDeVenta } from "./costo-por-unidad";
+import { PesoDeVariante } from "./peso-de-variante";
 
 interface Categoria {
   id: string;
@@ -132,6 +135,10 @@ export function ServicioForm({
      * pedir dos cosas que se contradicen.
      */
     precio: "",
+    /** Nulo es "no se sabe", que no es cero. */
+    costo: null as number | null,
+    peso: null as number | null,
+    pesoUnidad: "KG" as UnidadPeso,
     cobraIva: true,
     manejaInventario: true,
     stock: "",
@@ -254,6 +261,9 @@ export function ServicioForm({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             precio: form.precio.trim() && precio >= 0 ? precio : 0,
+            costo: form.costo,
+            peso: form.peso,
+            pesoUnidad: form.pesoUnidad,
             cobraIva: form.cobraIva,
             manejaInventario: form.manejaInventario,
           }),
@@ -447,24 +457,50 @@ export function ServicioForm({
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="precio">Precio</Label>
-                    <InputNumero
-                      id="precio"
-                      decimales
-                      value={form.precio}
-                      onChange={(precio) => setForm({ ...form, precio })}
-                      placeholder="0.00"
-                      className="text-right tabular-nums"
-                    />
+                    <Label className="text-xs" htmlFor="precio">
+                      Precio
+                    </Label>
+                    {/* Con el `$` adelante, como el costo de al lado y como
+                        el precio de la ficha: dos campos de plata en la
+                        misma fila tienen que leerse igual. */}
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        $
+                      </span>
+                      <InputNumero
+                        id="precio"
+                        decimales
+                        value={form.precio}
+                        onChange={(precio) => setForm({ ...form, precio })}
+                        placeholder="0.00"
+                        className="pl-7"
+                      />
+                    </div>
                     {/* Es una propuesta: al armar la orden se ofrece este y se
                         puede cambiar ahí, y lo cobrado queda en la línea. */}
                     <p className="text-xs text-muted-foreground">
                       Se propone al armar una orden y se puede cambiar ahí.
                     </p>
                   </div>
+                  {/* El costo al lado del precio, como en la ficha, y debajo
+                      lo que deja la venta. Acá todavía no hay variante: se
+                      guarda en el formulario y viaja apenas el producto
+                      existe, con el precio. */}
+                  <CostoPorUnidad
+                    costo={form.costo}
+                    onCambio={(costo) => setForm({ ...form, costo })}
+                  />
+                </div>
+                <GananciaDeVenta
+                  precio={Number(form.precio) || 0}
+                  costo={form.costo}
+                />
+                <div className="grid gap-4 sm:grid-cols-2">
                   {form.manejaInventario && (
                     <div className="space-y-1.5">
-                      <Label htmlFor="stock">Stock inicial</Label>
+                      <Label className="text-xs" htmlFor="stock">
+                        Stock inicial
+                      </Label>
                       <InputNumero
                         id="stock"
                         value={form.stock}
@@ -477,6 +513,13 @@ export function ServicioForm({
                       </p>
                     </div>
                   )}
+                  <PesoDeVariante
+                    peso={form.peso}
+                    unidad={form.pesoUnidad}
+                    onCambio={(peso, pesoUnidad) =>
+                      setForm({ ...form, peso, pesoUnidad })
+                    }
+                  />
                 </div>
                 <label className="flex items-center justify-between gap-3 border-t pt-3 text-sm">
                   <span>Cobrar IVA</span>
@@ -507,6 +550,8 @@ export function ServicioForm({
               onSkusChange={() => {}}
               movimientos={{}}
               onMovimientosChange={() => {}}
+              cambios={{}}
+              onCambiosChange={() => {}}
               variantes={[]}
               imagenes={[]}
             />
