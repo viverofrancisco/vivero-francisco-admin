@@ -24,8 +24,16 @@ import { PersonalSelector } from "@/components/grupos/personal-selector";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { nombreCliente } from "@vivero/shared";
+import {
+  MOTIVOS_NOVEDAD,
+  MOTIVO_NOVEDAD_LABEL,
+  nombreCliente,
+} from "@vivero/shared";
 import { hoyISOEcuador } from "@/lib/fechas";
+import {
+  TarjetaNovedades,
+  type NovedadData,
+} from "@/components/visitas/novedad-de-visita";
 import {
   obligatoriasSinCubrir,
   personalSinRegistrar,
@@ -47,6 +55,8 @@ interface VisitaData {
   tareasObligatorias: { tarea: TareaDeVisita }[];
   /** Los partes cargados, para mirar antes de cerrar. */
   personal: PersonalDeVisita[];
+  /** Lo que alguien reportó desde el jardín: "llegué y no pude". */
+  novedades?: NovedadData[];
 }
 
 const fechaLarga = (iso: string) =>
@@ -73,14 +83,23 @@ export function CompletarVisitaPage({
   visita,
   personalList,
   backHref,
+  resultadoInicial,
 }: {
   visita: VisitaData;
   personalList: { id: string; nombre: string; apellido: string | null }[];
   /** A dónde vuelve al cancelar o al terminar. */
   backHref: string;
+  /**
+   * Con qué resultado arranca el formulario. Desde el botón *Resolver* de una
+   * novedad llega "no realizada", con el motivo que reportó el jardinero ya
+   * puesto: es lo que casi siempre se va a elegir, y lo que se elige se ve.
+   */
+  resultadoInicial?: "NO_REALIZADA";
 }) {
   const router = useRouter();
   const [guardando, setGuardando] = useState(false);
+  const novedades = visita.novedades ?? [];
+  const primeraNovedad = novedades[0] ?? null;
   /**
    * Quién fue de verdad. Arranca con lo asignado al agendar, que es una
    * intención: el día del trabajo cambia quién pudo ir, y este es el momento
@@ -92,7 +111,11 @@ export function CompletarVisitaPage({
 
   const hechas = tareasHechas(visita);
   const faltantes = obligatoriasSinCubrir(visita);
-  const sinRegistrar = personalSinRegistrar(visita.personal);
+  // Quien reportó que no pudo sí dijo lo suyo: no se le reclama el parte.
+  const reportaron = new Set(novedades.map((n) => n.personalId));
+  const sinRegistrar = personalSinRegistrar(visita.personal).filter(
+    (p) => !reportaron.has(p.personalId)
+  );
 
   const {
     register,
@@ -104,14 +127,22 @@ export function CompletarVisitaPage({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(completarVisitaSchema as any) as any,
     defaultValues: {
-      estado: "COMPLETADA",
+      estado: resultadoInicial ?? "COMPLETADA",
       fechaRealizada: hoyISOEcuador(),
       notas: "",
-      notasIncompleto: "",
+      // Con una novedad, lo que reportó el jardinero es lo que se propone; se
+      // corrige si el administrador sabe algo más.
+      notasIncompleto:
+        resultadoInicial === "NO_REALIZADA" ? (primeraNovedad?.nota ?? "") : "",
+      motivoNoRealizada:
+        (primeraNovedad?.motivo as CompletarVisitaFormData["motivoNoRealizada"]) ??
+        "NADIE_EN_CASA",
+      reprogramarPara: "",
     },
   });
 
   const estado = watch("estado");
+  const motivoNoRealizada = watch("motivoNoRealizada");
 
   const onSubmit = async (data: CompletarVisitaFormData) => {
     setGuardando(true);
@@ -126,6 +157,9 @@ export function CompletarVisitaPage({
       const titulos: Record<string, string> = {
         COMPLETADA: "Visita completada",
         INCOMPLETA: "Visita marcada como incompleta",
+        NO_REALIZADA: data.reprogramarPara
+          ? "Visita cerrada como no realizada y reprogramada"
+          : "Visita cerrada como no realizada",
         CANCELADA: "Visita cancelada",
       };
       toast.success(titulos[data.estado]);
@@ -190,6 +224,10 @@ export function CompletarVisitaPage({
                       options={[
                         { value: "COMPLETADA", label: "Completada" },
                         { value: "INCOMPLETA", label: "Incompleta" },
+                        {
+                          value: "NO_REALIZADA",
+                          label: "No realizada (fueron y no hubo trabajo)",
+                        },
                         { value: "CANCELADA", label: "Cancelada" },
                       ]}
                     />
@@ -199,7 +237,13 @@ export function CompletarVisitaPage({
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label className="text-xs">Fecha realizada *</Label>
+                  {/* En una no realizada no hay "realizada": lo que se fecha
+                      es el viaje. */}
+                  <Label className="text-xs">
+                    {estado === "NO_REALIZADA"
+                      ? "Día en que se fue *"
+                      : "Fecha realizada *"}
+                  </Label>
                   <Controller
                     name="fechaRealizada"
                     control={control}
@@ -240,10 +284,63 @@ export function CompletarVisitaPage({
                   <Textarea
                     id="notasIncompleto"
                     rows={3}
-                    placeholder="Explicá por qué se canceló..."
+                    placeholder="Explica por qué se canceló..."
                     {...register("notasIncompleto")}
                   />
                 </div>
+              )}
+
+              {estado === "NO_REALIZADA" && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">¿Por qué no se hizo? *</Label>
+                    <Controller
+                      name="motivoNoRealizada"
+                      control={control}
+                      render={({ field }) => (
+                        <CustomSelect
+                          value={field.value ?? "NADIE_EN_CASA"}
+                          onChange={field.onChange}
+                          options={MOTIVOS_NOVEDAD.map((m) => ({
+                            value: m,
+                            label: MOTIVO_NOVEDAD_LABEL[m],
+                          }))}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="notasIncompleto" className="text-xs">
+                      Qué pasó{motivoNoRealizada === "OTRO" ? " *" : ""}
+                    </Label>
+                    <Textarea
+                      id="notasIncompleto"
+                      rows={3}
+                      placeholder="Lo que dijo el cliente, lo que vio la cuadrilla..."
+                      {...register("notasIncompleto")}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Reprogramar para</Label>
+                    <Controller
+                      name="reprogramarPara"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePicker
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          placeholder="Sin reprogramar"
+                          minDate={hoyISOEcuador()}
+                        />
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Crea la visita nueva ese día, con la misma gente, el
+                      mismo plan y las mismas tareas obligatorias, enlazada a
+                      esta. Déjalo vacío si todavía no se sabe cuándo.
+                    </p>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -263,6 +360,13 @@ export function CompletarVisitaPage({
         </div>
 
         <div className="space-y-6">
+        {/* Lo que se reportó desde el jardín, antes que nada: si hay una
+            novedad, es la razón por la que se está cerrando. */}
+        <TarjetaNovedades
+          novedades={novedades}
+          fechaProgramada={visita.fechaProgramada}
+        />
+
         {/* Lo que hay que mirar antes de decir que está terminada: qué se
             cargó, qué se exigía y no está, y quién no cargó nada. */}
         <Card>

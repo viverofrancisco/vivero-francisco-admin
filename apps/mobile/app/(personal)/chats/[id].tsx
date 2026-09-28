@@ -45,6 +45,8 @@ import {
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { FilaDeslizable } from "@/components/chats/FilaDeslizable";
 import { PanelAdjuntar, type OpcionDeAdjuntar } from "@/components/chats/PanelAdjuntar";
+import { SelectorDeGaleria } from "@/components/SelectorDeGaleria";
+import type { ArchivoDeGaleria } from "@/lib/galeria";
 import { VistaPreviaDeFicha } from "@/components/chats/VistaPreviaDeFicha";
 import {
   etiquetaDeAdjuntos,
@@ -152,6 +154,8 @@ export default function ChatScreen() {
    * documentos: un archivo del teléfono, su nombre, su tipo y su peso.
    */
   const [pendientes, setPendientes] = useState<FotoEnCola[]>([]);
+  /** La galería propia, abierta desde *Multimedia*. */
+  const [galeriaAbierta, setGaleriaAbierta] = useState(false);
   const [tocado, setTocado] = useState<MensajeDeChat | null>(null);
   /** La ficha para compartir —visita, cliente o producto—, esperando arriba del campo. */
   const [referencia, setReferencia] = useState<ReferenciaEnMensaje | null>(null);
@@ -510,14 +514,32 @@ export default function ChatScreen() {
     setPendientes((actuales) => [...actuales, ...nuevos].slice(0, 10));
   }
 
-  async function elegirDeGaleria() {
-    const r = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsMultipleSelection: true,
-      selectionLimit: 10,
-      quality: 0.7,
+  /**
+   * La galería propia (`SelectorDeGaleria`), no la del sistema. La del
+   * sistema arrancaba en blanco cada vez: con tres fotos en la bandeja, volver
+   * a la galería para agregar una cuarta no mostraba las tres, y elegir una
+   * repetida la duplicaba. Esta abre con las que ya están marcadas, y lo que
+   * devuelve **reemplaza** lo que había venido de la galería; lo de la cámara
+   * y los documentos se queda donde estaba.
+   */
+  function elegirDeGaleria() {
+    setGaleriaAbierta(true);
+  }
+
+  function alConfirmarGaleria(archivos: ArchivoDeGaleria[]) {
+    setGaleriaAbierta(false);
+    setPendientes((actuales) => {
+      const otros = actuales.filter((a) => !a.assetId);
+      const deGaleria: FotoEnCola[] = archivos.map((f) => ({
+        uri: f.uri,
+        nombre: f.fileName,
+        contentType: f.contentType,
+        tipo: f.tipo,
+        tamano: null,
+        assetId: f.assetId,
+      }));
+      return [...otros, ...deGaleria].slice(0, 10);
     });
-    if (!r.canceled) agregar(r.assets);
   }
 
   /**
@@ -803,7 +825,14 @@ export default function ChatScreen() {
                       actuales.filter((_, j) => j !== i)
                     )
                   }
-                  style={styles.quitar}
+                  // En `estiloExterno`, no en `style`: el `position: absolute`
+                  // tiene que ir en el `Pressable` de afuera, que es el hijo de
+                  // la miniatura. En la vista de adentro quedaba absoluto
+                  // respecto de un `Pressable` en flujo, debajo de la imagen,
+                  // y el `overflow: hidden` de la miniatura lo recortaba: la ✕
+                  // no se veía ni se tocaba.
+                  estiloExterno={styles.quitar}
+                  hitSlop={8}
                   accessibilityLabel="Quitar la foto"
                 >
                   <Ionicons name="close" size={12} color="#fff" />
@@ -926,6 +955,19 @@ export default function ChatScreen() {
         onCerrar={() => setMenuAdjuntar(false)}
         onElegir={alElegirAdjunto}
       />
+
+      {galeriaAbierta ? (
+        <SelectorDeGaleria
+          titulo="Fotos y videos"
+          conVideos
+          // Diez por mensaje, contando lo que ya vino de la cámara o de
+          // documentos, que no están en la galería.
+          maximo={10 - pendientes.filter((a) => !a.assetId).length}
+          preseleccion={pendientes.flatMap((a) => (a.assetId ? [a.assetId] : []))}
+          onCerrar={() => setGaleriaAbierta(false)}
+          onConfirmar={alConfirmarGaleria}
+        />
+      ) : null}
 
       <VistaPreviaDeFicha
         referencia={vistaPrevia}

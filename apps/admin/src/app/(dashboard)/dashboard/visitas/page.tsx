@@ -129,6 +129,8 @@ export default async function VisitasPage({
         cliente: { select: { id: true, nombre: true, apellido: true, empresa: true } },
         ...TAREAS_DE_VISITA_INCLUDE,
         grupo: { select: { id: true, nombre: true } },
+        // Solo si hay alguna: la fila muestra la píldora, no el detalle.
+        novedades: { select: { id: true }, take: 1 },
       },
     }),
     prisma.tarea.findMany({
@@ -153,6 +155,11 @@ export default async function VisitasPage({
     estado: v.estado,
     completadaEl: v.completadaEl?.toISOString() ?? null,
     notas: v.notas,
+    // Una novedad sin resolver: reportada, y la visita todavía abierta. Una
+    // vez cerrada —como sea—, la novedad es historia y la fila no la anuncia.
+    conNovedad:
+      v.novedades.length > 0 &&
+      (v.estado === "PROGRAMADA" || v.estado === "EN_CURSO"),
     cliente: v.cliente,
     tareas: {
       tareasObligatorias: v.tareasObligatorias,

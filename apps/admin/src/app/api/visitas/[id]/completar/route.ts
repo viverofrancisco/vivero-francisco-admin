@@ -5,6 +5,7 @@ import {
   cancelVisita,
   completeVisita,
   markVisitaIncomplete,
+  markVisitaNoRealizada,
   updateVisitaPersonal,
 } from "@/lib/services/visita.service";
 import {
@@ -58,6 +59,22 @@ export async function POST(
         motivo: data.notasIncompleto?.trim() || "",
         notas: data.notas || null,
         fechaRealizada,
+      });
+    } else if (data.estado === "NO_REALIZADA") {
+      if (!data.motivoNoRealizada) {
+        return NextResponse.json(
+          { error: "Elige por qué no se hizo la visita." },
+          { status: 400 }
+        );
+      }
+      updated = await markVisitaNoRealizada(id, viewer, {
+        motivo: data.motivoNoRealizada,
+        nota: data.notasIncompleto || null,
+        notas: data.notas || null,
+        fechaRealizada,
+        reprogramarPara: data.reprogramarPara
+          ? new Date(`${data.reprogramarPara}T00:00:00.000Z`)
+          : null,
       });
     } else {
       // CANCELADA

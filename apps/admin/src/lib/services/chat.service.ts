@@ -780,6 +780,7 @@ const ESTADO_DE_VISITA: Record<string, string> = {
   EN_CURSO: "En curso",
   COMPLETADA: "Completada",
   INCOMPLETA: "Incompleta",
+  NO_REALIZADA: "No realizada",
   CANCELADA: "Cancelada",
 };
 const FECHA_LARGA: Intl.DateTimeFormatOptions = {

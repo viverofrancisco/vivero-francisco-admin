@@ -382,6 +382,12 @@ export interface FotoEnCola {
   tipo: TipoDeAdjunto;
   /** Bytes, para los documentos. */
   tamano?: number | null;
+  /**
+   * De qué foto de la galería del teléfono salió, si salió de ahí. Es lo que
+   * deja abrir la galería otra vez con esta ya marcada, y desmarcarla desde
+   * ahí. Una foto de la cámara o un documento no lo tienen.
+   */
+  assetId?: string;
 }
 
 /**

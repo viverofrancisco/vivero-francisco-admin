@@ -170,10 +170,34 @@ export interface VisitaMedia {
   tareaId: string | null;
 }
 
+/**
+ * "Llegué y no pude hacer la visita", reportado desde el jardín. Una por
+ * persona; la ficha las muestra todas y el estado dice "Con novedad" mientras
+ * un administrador no la resuelva.
+ */
+export interface NovedadDeVisita {
+  id: string;
+  personalId: string;
+  personalNombre: string;
+  motivo: string;
+  nota: string | null;
+  /** Las que hagan falta. Opcional porque una copia vieja no lo trae. */
+  fotos?: { id: string; url: string }[];
+  /** Cuándo se reportó, en ISO. */
+  marcadaEl: string;
+  sinConexion: boolean;
+}
+
 export interface VisitaDetail extends VisitaSummary {
   horaSalida: string | null;
   notas: string | null;
   notasIncompleto: string | null;
+  /** Solo en NO_REALIZADA: el motivo de la lista cerrada. */
+  motivoNoRealizada?: string | null;
+  /** Opcionales: una copia guardada antes de que existieran no los trae. */
+  novedades?: NovedadDeVisita[];
+  reprogramadaDe?: { id: string; numero: number; fechaProgramada: string } | null;
+  reprogramaciones?: { id: string; numero: number; fechaProgramada: string; estado: string }[];
   fechaRealizada: string | null;
   cliente: {
     id: string;

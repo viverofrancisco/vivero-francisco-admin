@@ -1011,10 +1011,6 @@ export type VisitaPersonalUncheckedUpdateManyWithoutVisitaNestedInput = {
   deleteMany?: Prisma.VisitaPersonalScalarWhereInput | Prisma.VisitaPersonalScalarWhereInput[]
 }
 
-export type NullableBoolFieldUpdateOperationsInput = {
-  set?: boolean | null
-}
-
 export type VisitaPersonalCreateNestedOneWithoutTareasInput = {
   create?: Prisma.XOR<Prisma.VisitaPersonalCreateWithoutTareasInput, Prisma.VisitaPersonalUncheckedCreateWithoutTareasInput>
   connectOrCreate?: Prisma.VisitaPersonalCreateOrConnectWithoutTareasInput

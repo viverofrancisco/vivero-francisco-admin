@@ -22,6 +22,7 @@ const ESTADOS = [
   { value: "PROGRAMADA", label: "Programada" },
   { value: "COMPLETADA", label: "Completada" },
   { value: "INCOMPLETA", label: "Incompleta" },
+  { value: "NO_REALIZADA", label: "No realizada" },
   { value: "CANCELADA", label: "Cancelada" },
 ];
 
@@ -32,6 +33,8 @@ interface VisitaRow {
   fechaRealizada: string | null;
   estado: string;
   notas: string | null;
+  /** Alguien reportó que no pudo hacerla y todavía nadie la resolvió. */
+  conNovedad?: boolean;
   cliente: {
     id: string;
     nombre: string;

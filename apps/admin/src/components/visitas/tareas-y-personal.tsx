@@ -2,12 +2,14 @@
 
 import { TarjetaSeccion } from "@/components/shared/tarjeta-seccion";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
-import { Check, Clock, Smartphone } from "lucide-react";
+import { AlertTriangle, Check, Clock, Smartphone } from "lucide-react";
+import { MOTIVO_NOVEDAD_LABEL, type MotivoNovedad } from "@vivero/shared";
 import {
   NotaDeMarcaSinConexion,
   UbicacionDeMarca,
 } from "@/components/visitas/ubicaciones-marcadas";
-import { fechaYHora } from "@/components/visitas/formato-marca";
+import { fechaYHora, horaConDia } from "@/components/visitas/formato-marca";
+import type { NovedadData } from "@/components/visitas/novedad-de-visita";
 import type { PersonalDeVisita, TareaHecha } from "@/lib/visita-tareas";
 
 interface VisitaParaFichas {
@@ -51,14 +53,22 @@ export function Cronologia({
   visita,
   mismoAparato,
   canModify,
+  novedades = [],
 }: {
   visita: VisitaParaFichas;
   /** Quiénes marcaron desde el mismo aparato que otro. */
   mismoAparato: Set<string>;
   /** La ubicación de las marcas es de oficina: el jardinero no revisa a nadie. */
   canModify: boolean;
+  /**
+   * Lo que cada uno reportó, si reportó: "llegué y no pude". Va en la ficha
+   * de esa persona, porque es lo que hizo ese día — decir "sin marcar" de
+   * quien reportó a las 8:12 que nadie abrió es esconder su parte.
+   */
+  novedades?: NovedadData[];
 }) {
   const gente = [...visita.personal].sort(porCronologia);
+  const novedadDe = new Map(novedades.map((n) => [n.personalId, n]));
 
   return (
     <TarjetaSeccion
@@ -82,6 +92,8 @@ export function Cronologia({
             <FichaDeParte
               key={vp.personalId}
               parte={vp}
+              novedad={novedadDe.get(vp.personalId) ?? null}
+              fechaProgramada={visita.fechaProgramada}
               mismoAparato={mismoAparato.has(vp.personalId)}
               verUbicacion={canModify}
               ultimo={i === gente.length - 1}
@@ -168,11 +180,17 @@ export function TareasObligatorias({
  */
 function FichaDeParte({
   parte,
+  novedad,
+  fechaProgramada,
   mismoAparato,
   verUbicacion,
   ultimo,
 }: {
   parte: PersonalDeVisita;
+  /** Lo que esta persona reportó, si reportó que no pudo hacer la visita. */
+  novedad: NovedadData | null;
+  /** El día de la visita: la hora del reporte va sola cuando es de ese día. */
+  fechaProgramada: string | Date;
   mismoAparato: boolean;
   verUbicacion: boolean;
   /** El último no lleva línea hacia abajo: no hay nadie después. */
@@ -187,14 +205,17 @@ function FichaDeParte({
     <div className="flex gap-[14px]">
       {/* El riel: el punto de esta persona y la línea que baja a la siguiente.
           Lleno cuando ya cerró lo suyo, anillo gris mientras falte — es lo que
-          deja ver de un vistazo cuánto de la jornada está cerrado. */}
+          deja ver de un vistazo cuánto de la jornada está cerrado. Ámbar si
+          reportó que no pudo: su día terminó, pero no como los demás. */}
       <div className="flex w-5 flex-none flex-col items-center">
         <span
           aria-hidden
           className={`mt-1 h-[13px] w-[13px] flex-none rounded-full ${
-            parte.salidaEl
-              ? "bg-primary"
-              : "border-2 border-border bg-transparent"
+            novedad
+              ? "bg-amber-500"
+              : parte.salidaEl
+                ? "bg-primary"
+                : "border-2 border-border bg-transparent"
           }`}
         />
         {!ultimo && <span aria-hidden className="min-h-[54px] w-0.5 flex-1 bg-muted" />}
@@ -206,14 +227,23 @@ function FichaDeParte({
           <span className="min-w-0 truncate text-[14.5px] font-bold">
             {nombre}
           </span>
-          {/* A la derecha, lo que resume su paso: cuánto estuvo, o que falta. */}
+          {/* A la derecha, lo que resume su paso: cuánto estuvo, o que falta,
+              o que no pudo. */}
           <span
             className={`ml-auto flex-none text-xs font-bold ${
-              duracion ? "text-primary" : "text-muted-foreground"
+              novedad && !duracion
+                ? "text-amber-700"
+                : duracion
+                  ? "text-primary"
+                  : "text-muted-foreground"
             }`}
           >
             {duracion ??
-              (parte.entradaEl ? "Sin salir todavía" : "Sin marcar")}
+              (novedad
+                ? "No pudo hacerla"
+                : parte.entradaEl
+                  ? "Sin salir todavía"
+                  : "Sin marcar")}
           </span>
         </div>
 
@@ -244,22 +274,46 @@ function FichaDeParte({
                 )}
                 {verUbicacion && <NotaDeMarcaSinConexion parte={parte} cual="salida" />}
               </span>
-              <span className="text-muted-foreground">
-                Tareas:{" "}
-                {suyas.length > 0
-                  ? suyas.join(" · ")
-                  : parte.registradoEl === null
-                    ? "todavía no las cargó"
-                    : "no marcó ninguna"}
-              </span>
+              {/* Con una novedad, la salida la selló el reporte y no hay
+                  tareas que contar: lo que hay que leer es qué pasó. */}
+              {!novedad && (
+                <span className="text-muted-foreground">
+                  Tareas:{" "}
+                  {suyas.length > 0
+                    ? suyas.join(" · ")
+                    : parte.registradoEl === null
+                      ? "todavía no las cargó"
+                      : "no marcó ninguna"}
+                </span>
+              )}
             </>
-          ) : (
+          ) : novedad ? null : (
             /* Sin entrada no hay nada que contar, y el motivo importa: "no
                marcó ninguna tarea" y "todavía no cargó su parte" se ven igual
                de vacíos y significan cosas distintas. */
             <span className="text-muted-foreground">
               Todavía no cargó su parte.
             </span>
+          )}
+
+          {/* Lo que reportó: la hora en que dijo que no pudo, y por qué. Es su
+              parte de ese día, y va acá y no solo en la tarjeta de arriba,
+              porque acá es donde se lee persona por persona. */}
+          {novedad && (
+            <>
+              {/* El ícono va en línea con el texto y no en una fila flex: con
+                  una nota larga, el flex lo dejaba solo en un renglón y el
+                  texto debajo. */}
+              <span className="text-amber-800">
+                <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
+                No pudo hacer la visita · reportó{" "}
+                {horaConDia(novedad.marcadaEl, fechaProgramada)}
+              </span>
+              <span className="text-muted-foreground">
+                {MOTIVO_NOVEDAD_LABEL[novedad.motivo as MotivoNovedad] ?? novedad.motivo}
+                {novedad.nota ? ` · ${novedad.nota}` : ""}
+              </span>
+            </>
           )}
 
           {/* Es el único rastro que deja prestarle la cuenta a un compañero, y

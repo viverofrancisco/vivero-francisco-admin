@@ -65,10 +65,19 @@ export type CrearVisitasFormData = z.infer<typeof crearVisitasSchema>;
  * medias— por qué.
  */
 export const completarVisitaSchema = z.object({
-  estado: z.enum(["COMPLETADA", "INCOMPLETA", "CANCELADA"]),
+  estado: z.enum(["COMPLETADA", "INCOMPLETA", "NO_REALIZADA", "CANCELADA"]),
   fechaRealizada: z.string().min(1, "La fecha realizada es obligatoria"),
   notas: z.string().optional().or(z.literal("")),
   notasIncompleto: z.string().optional().or(z.literal("")),
+  /**
+   * Solo para NO_REALIZADA: por qué no se hizo, de la lista cerrada. La
+   * pantalla lo trae de la novedad cuando hay una.
+   */
+  motivoNoRealizada: z
+    .enum(["NADIE_EN_CASA", "SIN_ACCESO", "CLIENTE_CANCELO", "OTRO"])
+    .optional(),
+  /// Solo para NO_REALIZADA: el día de la visita nueva, `YYYY-MM-DD`.
+  reprogramarPara: z.string().optional().or(z.literal("")),
   /**
    * Quién fue de verdad. Se manda desde la pantalla de cerrar porque es ahí
    * donde se sabe: lo que se asignó al agendar es una intención, y el que faltó

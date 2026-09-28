@@ -79,7 +79,16 @@ export const estadoVisual: Record<
   EN_CURSO: { etiqueta: "En curso", color: tema.cielo, fondo: tema.cielo50, punto: tema.cielo },
   COMPLETADA: { etiqueta: "Completada", color: tema.texto2, fondo: tema.linea2, punto: tema.texto3 },
   INCOMPLETA: { etiqueta: "Incompleta", color: tema.ambarTexto, fondo: tema.ambar50, punto: tema.ambar },
+  // Fueron y no hubo trabajo: la arcilla, entre el rojo de cancelada y el
+  // ámbar de incompleta, que es exactamente donde queda.
+  NO_REALIZADA: { etiqueta: "No realizada", color: tema.arcilla, fondo: tema.ambar50, punto: tema.arcilla },
   CANCELADA: { etiqueta: "Cancelada", color: tema.rojo, fondo: tema.rojo50, punto: tema.rojo },
+  /**
+   * No es un estado de la base: es cómo se ve una visita abierta en la que
+   * alguien reportó que no pudo hacerla y todavía nadie la resolvió. Ver
+   * `estadoParaMi`.
+   */
+  NOVEDAD: { etiqueta: "Con novedad", color: tema.ambarTexto, fondo: tema.ambar50, punto: tema.ambar },
 };
 
 /** La tarjeta del sistema: blanca, borde fino, sombra de un píxel. */

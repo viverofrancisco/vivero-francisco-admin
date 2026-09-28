@@ -10,11 +10,12 @@ export default async function CompletarVisitaRoute({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string }>;
+  /** `resultado=no-realizada` llega desde el botón *Resolver* de una novedad. */
+  searchParams: Promise<{ from?: string; resultado?: string }>;
 }) {
   const user = await requireAuth();
   const { id } = await params;
-  const { from } = await searchParams;
+  const { from, resultado } = await searchParams;
 
   // Cerrar una visita es de oficina: el jardinero carga su parte desde la ficha
   // y nada más. No debería llegar acá ni escribiendo la URL.
@@ -32,6 +33,17 @@ export default async function CompletarVisitaRoute({
           select: { nombre: true, apellido: true, empresa: true },
         },
         ...TAREAS_DE_VISITA_INCLUDE,
+        // Lo que se reportó desde el jardín: la pantalla lo muestra y, si se
+        // cierra como no realizada, propone su motivo.
+        novedades: {
+          orderBy: { marcadaEl: "asc" },
+          include: {
+            fotos: {
+              select: { id: true, url: true },
+              orderBy: { createdAt: "asc" },
+            },
+          },
+        },
       },
     }),
     prisma.personal.findMany({
@@ -57,8 +69,24 @@ export default async function CompletarVisitaRoute({
           ...p,
           registradoEl: p.registradoEl?.toISOString() ?? null,
         })),
+        novedades: visita.novedades.map((n) => ({
+          id: n.id,
+          personalId: n.personalId,
+          personalNombre: n.personalNombre,
+          motivo: n.motivo,
+          nota: n.nota,
+          fotos: n.fotos,
+          marcadaEl: n.marcadaEl.toISOString(),
+          recibidaEl: n.recibidaEl.toISOString(),
+          sinConexion: n.sinConexion,
+          lat: n.lat,
+          lng: n.lng,
+          precision: n.precision,
+          simulada: n.simulada,
+        })),
       }}
       personalList={personalList}
+      resultadoInicial={resultado === "no-realizada" ? "NO_REALIZADA" : undefined}
     />
   );
 }

@@ -9,6 +9,7 @@ export interface VisitaConCola {
   visita: VisitaDetail;
   entradaEnCola?: TrabajoEnCola;
   salidaEnCola?: TrabajoEnCola;
+  novedadEnCola?: TrabajoEnCola;
   archivosEnCola: ArchivosEnCola[];
 }
 
@@ -36,12 +37,24 @@ export function aplicarCola(
 
   const entradaEnCola = trabajos.find((t) => t.tipo === "ENTRADA");
   const salidaEnCola = trabajos.find((t) => t.tipo === "SALIDA");
+  const novedadEnCola = trabajos.find((t) => t.tipo === "NOVEDAD");
 
   const personal = (visita.personal ?? []).map((p) => {
     if (p.personalId !== personalId) return p;
     let mio = { ...p };
     if (entradaEnCola?.tipo === "ENTRADA" && !mio.entradaEl) {
       mio = { ...mio, entradaEl: entradaEnCola.marcadaEl, entradaSinConexion: true };
+    }
+    // Con entrada y sin salida, la novedad es también la salida: entró y lo
+    // mandaron de vuelta. Es lo que hace el servidor, y la pantalla lo
+    // anticipa para no ofrecer "Marcar salida" de un trabajo que no hubo.
+    if (novedadEnCola?.tipo === "NOVEDAD" && mio.entradaEl && !mio.salidaEl) {
+      mio = {
+        ...mio,
+        salidaEl: novedadEnCola.marcadaEl,
+        salidaSinConexion: true,
+        registradoEl: novedadEnCola.marcadaEl,
+      };
     }
     if (salidaEnCola?.tipo === "SALIDA" && !mio.salidaEl) {
       mio = {
@@ -69,10 +82,38 @@ export function aplicarCola(
   const estado =
     visita.estado === "PROGRAMADA" && entradaEnCola ? "EN_CURSO" : visita.estado;
 
+  // La novedad que espera se ve reportada: con lo que se dijo y las fotos
+  // desde los archivos del teléfono. El nombre no viaja en la cola; la
+  // pantalla sabe que es la propia por el `personalId`.
+  let novedades = visita.novedades ?? [];
+  if (
+    novedadEnCola?.tipo === "NOVEDAD" &&
+    personalId &&
+    !novedades.some((n) => n.personalId === personalId)
+  ) {
+    novedades = [
+      ...novedades,
+      {
+        id: novedadEnCola.id,
+        personalId,
+        personalNombre: "",
+        motivo: novedadEnCola.motivo,
+        nota: novedadEnCola.nota,
+        fotos: novedadEnCola.fotos.map((f, i) => ({
+          id: `${novedadEnCola.id}-${i}`,
+          url: f.uri,
+        })),
+        marcadaEl: novedadEnCola.marcadaEl,
+        sinConexion: true,
+      },
+    ];
+  }
+
   return {
-    visita: { ...visita, personal, media, estado },
+    visita: { ...visita, personal, media, estado, novedades },
     entradaEnCola,
     salidaEnCola,
+    novedadEnCola,
     archivosEnCola,
   };
 }

@@ -37,6 +37,13 @@ export const statusMeta: Record<EstadoVisitaUI, StatusMeta> = {
     badge: "bg-warning/15 text-warning-foreground",
     dot: "bg-warning",
   },
+  // La cuadrilla fue y no hubo trabajo. Ni el rojo de cancelada —hubo un
+  // viaje— ni el ámbar de incompleta —no se trabajó a medias—.
+  NO_REALIZADA: {
+    label: "No realizada",
+    badge: "bg-orange-100 text-orange-900",
+    dot: "bg-orange-500",
+  },
   CANCELADA: {
     label: "Cancelada",
     badge: "bg-destructive/10 text-destructive",

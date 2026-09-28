@@ -12,6 +12,13 @@ import { useConexion } from "@/lib/conexion";
 import type { ArchivosEnCola } from "@/lib/visita-con-cola";
 import type { VisitaMedia } from "@/lib/types";
 import type { TareaDeCatalogo } from "@/components/VisitaResultForm";
+import { SelectorDeGaleria } from "@/components/SelectorDeGaleria";
+import {
+  archivoDeAssetDeCamara,
+  type ArchivoDeGaleria,
+  type ArchivoLocal,
+} from "@/lib/galeria";
+import { MAX_ARCHIVOS_POR_SUBIDA } from "@vivero/shared";
 import { tema } from "@/lib/tema";
 
 /**
@@ -59,9 +66,16 @@ import { tema } from "@/lib/tema";
  * `useCambiosDeArchivos`—, que es lo único que siempre está a la vista.
  */
 
-/** Una foto elegida que todavía no se subió. */
+/**
+ * Una foto elegida que todavía no se subió.
+ *
+ * Un archivo normalizado y no el asset del selector: vienen de la cámara del
+ * sistema y de la galería propia, y las dos pantallas de acá abajo no tienen
+ * por qué saber cuál fue. Con `assetId` es de la galería, y la galería vuelve
+ * a mostrarla marcada.
+ */
 export interface Pendiente {
-  asset: ImagePicker.ImagePickerAsset;
+  archivo: ArchivoLocal;
   tareaId: string | null;
 }
 
@@ -119,7 +133,14 @@ export interface CambiosDeArchivos {
   errorEn: number;
   /** Cuántas de la tanda nueva siguen sin tarea. */
   sinTarea: number;
-  agregar: (assets: ImagePicker.ImagePickerAsset[]) => void;
+  /** Sumar a la tanda: lo que sacó la cámara. */
+  agregar: (archivos: ArchivoLocal[]) => void;
+  /**
+   * Lo que volvió de la galería propia **reemplaza** lo que había venido de
+   * ella: las que siguen conservan su tarea, las nuevas entran sin tarea, y
+   * las que se desmarcaron se van. Lo de la cámara se queda donde estaba.
+   */
+  reemplazarDeGaleria: (archivos: ArchivoDeGaleria[]) => void;
   sacarPendiente: (indice: number) => void;
   etiquetarPendiente: (indice: number, tareaId: string) => void;
   etiquetarTodas: (tareaId: string) => void;
@@ -167,12 +188,10 @@ export function useCambiosDeArchivos(
     useColaDeVisitas.getState().encolar({
       tipo: "ARCHIVOS",
       visitaId,
-      nuevas: pendientes.map(({ asset, tareaId }) => ({
-        uri: asset.uri,
-        fileName:
-          asset.fileName ?? asset.uri.split("/").pop() ?? `foto-${Date.now()}.jpg`,
-        contentType:
-          asset.mimeType ?? (asset.type === "video" ? "video/mp4" : "image/jpeg"),
+      nuevas: pendientes.map(({ archivo, tareaId }) => ({
+        uri: archivo.uri,
+        fileName: archivo.fileName,
+        contentType: archivo.contentType,
         tareaId: tareaId!,
       })),
       eliminar: [...quitadas],
@@ -201,20 +220,12 @@ export function useCambiosDeArchivos(
       let subidas: { key: string; tipo: string; tareaId: string }[] = [];
 
       if (pendientes.length > 0) {
-        const aEnviar = pendientes.map(({ asset, tareaId }) => {
-          const nombre =
-            asset.fileName ??
-            asset.uri.split("/").pop() ??
-            `foto-${Date.now()}.jpg`;
-          const esVideo = asset.type === "video";
-          return {
-            uri: asset.uri,
-            fileName: nombre,
-            contentType:
-              asset.mimeType ?? (esVideo ? "video/mp4" : "image/jpeg"),
-            tareaId: tareaId!,
-          };
-        });
+        const aEnviar = pendientes.map(({ archivo, tareaId }) => ({
+          uri: archivo.uri,
+          fileName: archivo.fileName,
+          contentType: archivo.contentType,
+          tareaId: tareaId!,
+        }));
 
         const presign = await apiRequest<{
           uploads: {
@@ -309,12 +320,32 @@ export function useCambiosDeArchivos(
     sinTarea,
     guardar,
     cancelar,
-    agregar: useCallback((assets: ImagePicker.ImagePickerAsset[]) => {
+    agregar: useCallback((archivos: ArchivoLocal[]) => {
       setError(null);
       setPendientes((antes) => [
         ...antes,
-        ...assets.map((asset) => ({ asset, tareaId: null })),
+        ...archivos.map((archivo) => ({ archivo, tareaId: null })),
       ]);
+    }, []),
+    reemplazarDeGaleria: useCallback((archivos: ArchivoDeGaleria[]) => {
+      setError(null);
+      setPendientes((antes) => {
+        const deLaCamara = antes.filter((p) => !p.archivo.assetId);
+        // La tarea ya elegida viaja con la foto: reabrir la galería para sumar
+        // una no puede borrar lo que ya se etiquetó.
+        const tareaPorAsset = new Map(
+          antes
+            .filter((p) => p.archivo.assetId)
+            .map((p) => [p.archivo.assetId!, p.tareaId] as const)
+        );
+        return [
+          ...deLaCamara,
+          ...archivos.map((archivo) => ({
+            archivo,
+            tareaId: tareaPorAsset.get(archivo.assetId) ?? null,
+          })),
+        ];
+      });
     }, []),
     sacarPendiente: useCallback((indice: number) => {
       setPendientes((antes) => antes.filter((_, i) => i !== indice));
@@ -362,6 +393,8 @@ export function ArchivosVisita({
   onDescartar?: (id: string) => void;
 }) {
   const [vista, setVista] = useState<Vista | null>(null);
+  /** La galería propia, abierta desde *Galería*. */
+  const [galeria, setGaleria] = useState(false);
   const { pendientes, quitadas, etiquetas, error, sinTarea } = cambios;
 
   const nombreDeTarea = (id: string | null) =>
@@ -393,22 +426,27 @@ export function ArchivosVisita({
     if (!permiso.granted) return;
     const r = await ImagePicker.launchCameraAsync({ quality: 0.85 });
     if (!r.canceled) {
-      cambios.agregar(r.assets);
+      cambios.agregar(r.assets.map(archivoDeAssetDeCamara));
       setVista({ paso: "revision" });
     }
   }
 
-  async function elegirDeGaleria() {
-    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permiso.granted) return;
-    const r = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsMultipleSelection: true,
-      quality: 0.85,
-      selectionLimit: 20,
-    });
-    if (!r.canceled) {
-      cambios.agregar(r.assets);
+  /**
+   * La galería propia (`SelectorDeGaleria`), con las pendientes de galería ya
+   * marcadas: volver a entrar para sumar una foto muestra las que están, y
+   * desmarcar una desde ahí la saca de la tanda. La del sistema arrancaba en
+   * blanco cada vez y duplicaba la repetida.
+   *
+   * La revisión —de qué es cada foto— se abre solo si entró alguna nueva:
+   * quitar dos desde la galería no tiene tarea que pedir.
+   */
+  function alConfirmarGaleria(archivos: ArchivoDeGaleria[]) {
+    setGaleria(false);
+    const yaEstaban = new Set(
+      pendientes.flatMap((p) => (p.archivo.assetId ? [p.archivo.assetId] : []))
+    );
+    cambios.reemplazarDeGaleria(archivos);
+    if (archivos.some((a) => !yaEstaban.has(a.assetId))) {
       setVista({ paso: "revision" });
     }
   }
@@ -462,7 +500,7 @@ export function ArchivosVisita({
           <Text style={styles.accionTexto}>Tomar foto</Text>
         </PressableScale>
         <PressableScale
-          onPress={elegirDeGaleria}
+          onPress={() => setGaleria(true)}
           estiloExterno={styles.mitad}
           style={styles.accion}
           estiloPresionado={styles.accionTocada}
@@ -471,6 +509,23 @@ export function ArchivosVisita({
           <Text style={styles.accionTexto}>Galería</Text>
         </PressableScale>
       </View>
+
+      {galeria ? (
+        <SelectorDeGaleria
+          titulo="Fotos y videos"
+          conVideos
+          // El tope es por subida, y lo de la cámara también cuenta.
+          maximo={
+            MAX_ARCHIVOS_POR_SUBIDA -
+            pendientes.filter((p) => !p.archivo.assetId).length
+          }
+          preseleccion={pendientes.flatMap((p) =>
+            p.archivo.assetId ? [p.archivo.assetId] : []
+          )}
+          onCerrar={() => setGaleria(false)}
+          onConfirmar={alConfirmarGaleria}
+        />
+      ) : null}
 
       {/* Sin "Guardando…" acá: el spinner que reemplaza a *Guardar* en el
           encabezado ya lo dice, y está justo donde se acaba de tocar. */}
@@ -528,7 +583,7 @@ export function ArchivosVisita({
               que el Guardar de arriba está esperando. */}
           {pendientes.map((p, i) => (
             <PressableScale
-              key={`${p.asset.uri}-${i}`}
+              key={`${p.archivo.uri}-${i}`}
               onPress={() =>
                 setVista({ paso: "foto", de: { tipo: "nueva", indice: i } })
               }
@@ -536,7 +591,13 @@ export function ArchivosVisita({
               estiloPresionado={styles.filaTocada}
             >
               <View style={styles.miniaturaCaja}>
-                <Image source={{ uri: p.asset.uri }} style={styles.miniatura} />
+                {p.archivo.tipo === "video" ? (
+                  <View style={[styles.miniatura, styles.video]}>
+                    <Ionicons name="play" size={18} color="#fff" />
+                  </View>
+                ) : (
+                  <Image source={{ uri: p.archivo.uri }} style={styles.miniatura} />
+                )}
               </View>
               <View style={styles.filaTexto}>
                 <Text
@@ -641,11 +702,17 @@ export function ArchivosVisita({
 
             <ScrollView style={styles.hojaLista}>
               {pendientes.map((p, i) => (
-                <View key={`${p.asset.uri}-${i}`} style={styles.revision}>
-                  <Image
-                    source={{ uri: p.asset.uri }}
-                    style={styles.revisionFoto}
-                  />
+                <View key={`${p.archivo.uri}-${i}`} style={styles.revision}>
+                  {p.archivo.tipo === "video" ? (
+                    <View style={[styles.revisionFoto, styles.video]}>
+                      <Ionicons name="play" size={18} color="#fff" />
+                    </View>
+                  ) : (
+                    <Image
+                      source={{ uri: p.archivo.uri }}
+                      style={styles.revisionFoto}
+                    />
+                  )}
                   <Pressable
                     onPress={() =>
                       setVista({
@@ -799,9 +866,9 @@ function FotoEnHoja({
   const nueva = de.tipo === "nueva" ? pendientes[de.indice] : null;
   if (de.tipo === "nueva" && !nueva) return null;
 
-  const uri = nueva ? nueva.asset.uri : de.tipo === "subida" ? de.media.url : "";
+  const uri = nueva ? nueva.archivo.uri : de.tipo === "subida" ? de.media.url : "";
   const esVideo = nueva
-    ? nueva.asset.type === "video"
+    ? nueva.archivo.tipo === "video"
     : de.tipo === "subida" && de.media.tipo === "video";
   const tareaId = nueva
     ? nueva.tareaId

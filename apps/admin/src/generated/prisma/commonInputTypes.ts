@@ -409,6 +409,13 @@ export type EnumEstadoVisitaFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumEstadoVisitaFilter<$PrismaModel> | $Enums.EstadoVisita
 }
 
+export type EnumMotivoNovedadNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMotivoNovedadNullableFilter<$PrismaModel> | $Enums.MotivoNovedad | null
+}
+
 export type EnumEstadoVisitaWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.EstadoVisita | Prisma.EnumEstadoVisitaFieldRefInput<$PrismaModel>
   in?: $Enums.EstadoVisita[] | Prisma.ListEnumEstadoVisitaFieldRefInput<$PrismaModel>
@@ -419,9 +426,36 @@ export type EnumEstadoVisitaWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEstadoVisitaFilter<$PrismaModel>
 }
 
+export type EnumMotivoNovedadNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMotivoNovedadNullableWithAggregatesFilter<$PrismaModel> | $Enums.MotivoNovedad | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMotivoNovedadNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMotivoNovedadNullableFilter<$PrismaModel>
+}
+
+export type EnumMotivoNovedadFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoNovedadFilter<$PrismaModel> | $Enums.MotivoNovedad
+}
+
 export type BoolNullableFilter<$PrismaModel = never> = {
   equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel> | null
   not?: Prisma.NestedBoolNullableFilter<$PrismaModel> | boolean | null
+}
+
+export type EnumMotivoNovedadWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoNovedadWithAggregatesFilter<$PrismaModel> | $Enums.MotivoNovedad
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMotivoNovedadFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMotivoNovedadFilter<$PrismaModel>
 }
 
 export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -1169,6 +1203,13 @@ export type NestedEnumEstadoVisitaFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumEstadoVisitaFilter<$PrismaModel> | $Enums.EstadoVisita
 }
 
+export type NestedEnumMotivoNovedadNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMotivoNovedadNullableFilter<$PrismaModel> | $Enums.MotivoNovedad | null
+}
+
 export type NestedEnumEstadoVisitaWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.EstadoVisita | Prisma.EnumEstadoVisitaFieldRefInput<$PrismaModel>
   in?: $Enums.EstadoVisita[] | Prisma.ListEnumEstadoVisitaFieldRefInput<$PrismaModel>
@@ -1179,9 +1220,36 @@ export type NestedEnumEstadoVisitaWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEstadoVisitaFilter<$PrismaModel>
 }
 
+export type NestedEnumMotivoNovedadNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMotivoNovedadNullableWithAggregatesFilter<$PrismaModel> | $Enums.MotivoNovedad | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMotivoNovedadNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMotivoNovedadNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumMotivoNovedadFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoNovedadFilter<$PrismaModel> | $Enums.MotivoNovedad
+}
+
 export type NestedBoolNullableFilter<$PrismaModel = never> = {
   equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel> | null
   not?: Prisma.NestedBoolNullableFilter<$PrismaModel> | boolean | null
+}
+
+export type NestedEnumMotivoNovedadWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MotivoNovedad | Prisma.EnumMotivoNovedadFieldRefInput<$PrismaModel>
+  in?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MotivoNovedad[] | Prisma.ListEnumMotivoNovedadFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMotivoNovedadWithAggregatesFilter<$PrismaModel> | $Enums.MotivoNovedad
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMotivoNovedadFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMotivoNovedadFilter<$PrismaModel>
 }
 
 export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {

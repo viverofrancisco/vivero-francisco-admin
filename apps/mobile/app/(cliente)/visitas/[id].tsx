@@ -15,7 +15,7 @@ import type { VisitaDetail, VisitaMedia } from "@/lib/types";
 import { listaTareas } from "@/lib/types";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { tema } from "@/lib/tema";
-import { fechaSola } from "@vivero/shared";
+import { MOTIVO_NOVEDAD_LABEL, fechaSola, type MotivoNovedad } from "@vivero/shared";
 
 export default function ClienteVisitaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -156,17 +156,33 @@ export default function ClienteVisitaScreen() {
         ) : null}
 
         {/* Notas / Motivo */}
-        {visita.notas || visita.notasIncompleto ? (
+        {visita.notas || visita.notasIncompleto || visita.motivoNoRealizada ? (
           <Section
             title={
-              visita.estado === "INCOMPLETA" || visita.estado === "CANCELADA"
+              visita.estado === "INCOMPLETA" ||
+              visita.estado === "NO_REALIZADA" ||
+              visita.estado === "CANCELADA"
                 ? "Motivo"
                 : "Notas"
             }
           >
-            <Text variant="bodyMedium" style={styles.notasText}>
-              {visita.notasIncompleto || visita.notas}
-            </Text>
+            {visita.estado === "NO_REALIZADA" && visita.motivoNoRealizada ? (
+              <View style={styles.motivoBloque}>
+                <Text variant="bodyMedium" style={styles.motivoTitulo}>
+                  {MOTIVO_NOVEDAD_LABEL[visita.motivoNoRealizada as MotivoNovedad] ??
+                    visita.motivoNoRealizada}
+                </Text>
+                {visita.notasIncompleto ? (
+                  <Text variant="bodyMedium" style={styles.notasText}>
+                    {visita.notasIncompleto}
+                  </Text>
+                ) : null}
+              </View>
+            ) : (
+              <Text variant="bodyMedium" style={styles.notasText}>
+                {visita.notasIncompleto || visita.notas}
+              </Text>
+            )}
           </Section>
         ) : null}
 
@@ -337,6 +353,7 @@ function estadoBg(estado: string): string {
     case "COMPLETADA":
       return "#f0f0f0";
     case "INCOMPLETA":
+    case "NO_REALIZADA":
       return "#fff3e0";
     case "CANCELADA":
       return "#ffebee";
@@ -431,6 +448,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     lineHeight: 22,
   },
+  /** El motivo de una no realizada en una línea y la nota debajo. */
+  motivoBloque: { paddingTop: 12 },
+  motivoTitulo: { color: "#111", fontWeight: "600" },
 
   mediaSection: { marginTop: 20, gap: 8 },
   mediaGrid: {

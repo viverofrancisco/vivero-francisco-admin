@@ -4,17 +4,73 @@ import { z } from "zod";
  * Espejo de `EstadoVisita` en Prisma.
  *
  * `EN_CURSO` es la que ya tiene a alguien registrando lo que hizo pero que
- * nadie dio por terminada. Cerrarla —`COMPLETADA` o `INCOMPLETA`— es de
- * oficina; el jardinero solo carga su parte.
+ * nadie dio por terminada. Cerrarla —`COMPLETADA`, `INCOMPLETA` o
+ * `NO_REALIZADA`— es de un administrador; el jardinero solo carga su parte.
+ *
+ * `NO_REALIZADA` es distinta de `CANCELADA`: cancelada es que se decidió antes
+ * y nadie fue; no realizada es que la cuadrilla **fue** y no hubo trabajo
+ * —nadie en casa, el portón cerrado, el cliente la canceló en la puerta—. Hay
+ * un viaje hecho, un motivo que casi siempre es del lado del cliente, y una
+ * novedad reportada desde el jardín con su hora y su ubicación.
  */
 export const estadoVisitaSchema = z.enum([
   "PROGRAMADA",
   "EN_CURSO",
   "COMPLETADA",
   "INCOMPLETA",
+  "NO_REALIZADA",
   "CANCELADA",
 ]);
 export type EstadoVisita = z.infer<typeof estadoVisitaSchema>;
+
+/** Los estados en los que ya no se trabaja ni se reporta nada. */
+export function visitaCerrada(estado: string): boolean {
+  return (
+    estado === "COMPLETADA" ||
+    estado === "INCOMPLETA" ||
+    estado === "NO_REALIZADA" ||
+    estado === "CANCELADA"
+  );
+}
+
+/**
+ * Por qué no se pudo hacer la visita. Lista cerrada, como las tareas: con
+ * texto libre hay "nadie", "no habia nadie" y "cerrado" para una sola cosa, y
+ * con eso no se cuenta cuántas veces pasó ni se le contesta al cliente con una
+ * frase que siempre sea la misma. `OTRO` lleva la nota.
+ */
+export const motivoNovedadSchema = z.enum([
+  "NADIE_EN_CASA",
+  "SIN_ACCESO",
+  "CLIENTE_CANCELO",
+  "OTRO",
+]);
+export type MotivoNovedad = z.infer<typeof motivoNovedadSchema>;
+
+export const MOTIVO_NOVEDAD_LABEL: Record<MotivoNovedad, string> = {
+  NADIE_EN_CASA: "Nadie en casa",
+  SIN_ACCESO: "No pude ingresar",
+  CLIENTE_CANCELO: "El cliente la canceló en el sitio",
+  OTRO: "Otro",
+};
+
+/** En el orden en que se ofrecen: los dos de siempre primero. */
+export const MOTIVOS_NOVEDAD: MotivoNovedad[] = [
+  "NADIE_EN_CASA",
+  "SIN_ACCESO",
+  "CLIENTE_CANCELO",
+  "OTRO",
+];
+
+/** "Nadie en casa · no abrieron el portón": el motivo y, si hay, la nota. */
+export function describirMotivoNovedad(
+  motivo: MotivoNovedad | string,
+  nota?: string | null
+): string {
+  const etiqueta = MOTIVO_NOVEDAD_LABEL[motivo as MotivoNovedad] ?? motivo;
+  const texto = nota?.trim();
+  return texto ? `${etiqueta} · ${texto}` : etiqueta;
+}
 
 export const cancelVisitaSchema = z.object({
   motivo: z.string().max(500).optional(),
@@ -136,6 +192,55 @@ export const marcaVisitaSchema = z.discriminatedUnion("tipo", [
   }),
 ]);
 export type MarcaVisitaBody = z.infer<typeof marcaVisitaSchema>;
+
+/**
+ * Reportar una novedad: llegué y no pude hacer la visita. **Solo desde la app.**
+ *
+ * Es la tercera cosa que el jardinero puede decir de una visita, después de
+ * la entrada y la salida, y viaja con la misma evidencia que una marca —el
+ * instante, dónde estaba y desde qué aparato—, porque "estuve ahí a las 8:12
+ * y nadie abrió" es justo la afirmación que hay que poder respaldar cuando el
+ * cliente dice que nunca fueron. Se acepta con o sin entrada marcada: la
+ * mitad de las veces se reporta desde la vereda.
+ *
+ * Las fotos son opcionales y las que hagan falta —el portón cerrado, la nota
+ * pegada, la calle inundada—, como los adjuntos de un mensaje del chat, y van
+ * a un prefijo propio en R2, no a las fotos de la visita: esas son del trabajo
+ * y arman el informe, y un portón cerrado no tiene que terminar impreso ahí.
+ */
+export const MAX_FOTOS_NOVEDAD = 10;
+
+export const novedadVisitaSchema = z.object({
+  motivo: motivoNovedadSchema,
+  nota: z.string().trim().max(1000).optional().nullable(),
+  /** Ya subidas con las URLs firmadas de `/novedad/upload-url`. */
+  fotos: z
+    .array(z.object({ key: z.string().min(1) }))
+    .max(MAX_FOTOS_NOVEDAD)
+    .optional(),
+  ...marcaComunSchema,
+});
+export type NovedadVisitaBody = z.infer<typeof novedadVisitaSchema>;
+
+/**
+ * Cerrarla como **no realizada**: la cuadrilla fue y no hubo trabajo. Solo
+ * ADMIN/STAFF, y es la respuesta a una novedad —aunque también se puede cerrar
+ * así sin novedad, cuando el jardinero avisó por teléfono—.
+ *
+ * `reprogramarPara` crea la visita nueva en el mismo gesto, copiando a la
+ * gente, el plan y las obligatorias: lo primero que se decide después de
+ * "nadie en casa" es cuándo se vuelve, y dos pantallas para eso es una que se
+ * olvida.
+ */
+export const noRealizadaVisitaSchema = z.object({
+  motivo: motivoNovedadSchema,
+  nota: z.string().trim().max(2000).optional().nullable(),
+  notas: z.string().max(2000).optional().nullable(),
+  fechaRealizada: z.string().optional(),
+  /** ISO `YYYY-MM-DD`. Vacío = no se reprograma desde acá. */
+  reprogramarPara: z.string().optional().nullable(),
+});
+export type NoRealizadaVisitaBody = z.infer<typeof noRealizadaVisitaSchema>;
 
 /** Cerrar la visita. Solo ADMIN/STAFF. */
 export const completeVisitaSchema = z.object({

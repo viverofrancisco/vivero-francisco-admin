@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { estadoLabel, estadoParaMi } from "@/lib/estado-visita";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
   Button,
@@ -10,10 +10,14 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import {
+  MOTIVO_NOVEDAD_LABEL,
   fechaSola,
   medidasDePropiedad,
   nombreCliente,
+  visitaCerrada,
+  type MotivoNovedad,
 } from "@vivero/shared";
+import { HojaNovedad, type DatosDeNovedad } from "@/components/HojaNovedad";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import {
   guardarTareas,
@@ -63,6 +67,9 @@ export default function PersonalVisitaScreen() {
   const insets = useSafeAreaInsets();
   const [confirmandoEntrada, setConfirmandoEntrada] = useState(false);
   const [marcando, setMarcando] = useState(false);
+  /** La hoja de "no pude hacer la visita". */
+  const [reportando, setReportando] = useState(false);
+  const [enviandoNovedad, setEnviandoNovedad] = useState(false);
   const personalId = useAuthStore((s) => s.user?.personalId ?? null);
   const [visita, setVisita] = useState<VisitaDetail | null>(null);
   const [catalogo, setCatalogo] = useState<TareaDeCatalogo[]>([]);
@@ -216,13 +223,20 @@ export default function PersonalVisitaScreen() {
 
   // La visita con lo que espera en la cola puesto encima: la entrada que se
   // marcó sin señal ya se ve marcada, y el botón ya ofrece la salida.
-  const { visita: vista, entradaEnCola, salidaEnCola, archivosEnCola } =
-    aplicarCola(visita, personalId, trabajosDe(cola, visita.id), catalogo);
+  const {
+    visita: vista,
+    entradaEnCola,
+    salidaEnCola,
+    novedadEnCola,
+    archivosEnCola,
+  } = aplicarCola(visita, personalId, trabajosDe(cola, visita.id), catalogo);
 
-  // Una cancelada es de solo lectura; en cualquier otra se puede cargar el
-  // parte propio. **No se cierra desde acá**: decir que el trabajo está
-  // terminado es mirar lo que cargaron todos, y eso se hace desde el portal.
-  const canAct = vista.estado !== "CANCELADA";
+  // Una cancelada o una no realizada es de solo lectura: en ninguna de las dos
+  // hubo trabajo que cargar. En cualquier otra se puede cargar el parte propio.
+  // **No se cierra desde acá**: decir que el trabajo está terminado es mirar
+  // lo que cargaron todos, y eso se hace desde el portal.
+  const canAct =
+    vista.estado !== "CANCELADA" && vista.estado !== "NO_REALIZADA";
   /**
    * El botón dice el próximo paso, no lo que la pantalla hace.
    *
@@ -255,7 +269,16 @@ export default function PersonalVisitaScreen() {
    */
   const puedeCorregir =
     esDeHoy || (mio?.salidaEl ? diaEnEcuador(mio.salidaEl) === hoyEnEcuador() : false);
-  const accion = !mio
+  /**
+   * Lo que reportó quien mira, si reportó. Con eso no hay nada más que hacer
+   * acá: la visita queda en manos de un administrador. Si había marcado
+   * entrada, la novedad le cerró las horas, y "Editar tareas" ofrecería
+   * corregir un trabajo que no hubo.
+   */
+  const miNovedad = (vista.novedades ?? []).find(
+    (n) => n.personalId === personalId
+  );
+  const accion = !mio || miNovedad
     ? null
     : !mio.entradaEl
       ? esDeHoy
@@ -266,6 +289,18 @@ export default function PersonalVisitaScreen() {
         : puedeCorregir
           ? "Editar tareas"
           : null;
+  /**
+   * "No pude hacer la visita" se ofrece el día de la visita, mientras no se
+   * haya marcado la salida —después la visita ya se hizo— y una sola vez. Es
+   * secundario a propósito: lo normal es marcar entrada, y el reporte es la
+   * excepción de la vereda.
+   */
+  const puedeReportar =
+    Boolean(mio) &&
+    esDeHoy &&
+    !mio?.salidaEl &&
+    !miNovedad &&
+    !visitaCerrada(vista.estado);
   /**
    * Marcar entrada, desde la ficha.
    *
@@ -318,6 +353,53 @@ export default function PersonalVisitaScreen() {
       setConfirmandoEntrada(false);
     } finally {
       setMarcando(false);
+    }
+  }
+
+  /**
+   * Reportar que no se pudo hacer la visita. **Va a la cola, como una marca**:
+   * la hora es la de este momento, la ubicación se pide igual que para la
+   * entrada —es lo que respalda el "estuve acá"—, y sin señal espera con su ✓.
+   * La pantalla la muestra reportada desde ya (`aplicarCola`).
+   */
+  async function reportarNovedad(datos: DatosDeNovedad) {
+    setEnviandoNovedad(true);
+    try {
+      const donde = await ubicacionActual();
+      if (donde.estado === "sin-permiso") {
+        setEnviandoNovedad(false);
+        setReportando(false);
+        avisarFaltaUbicacion(
+          "Para reportar que no pudiste hacer la visita necesitamos saber dónde estás.",
+          donde.ajustes
+        );
+        return;
+      }
+
+      encolar({
+        tipo: "NOVEDAD",
+        visitaId: visita!.id,
+        marcadaEl: new Date().toISOString(),
+        ubicacion: donde.estado === "ok" ? donde.ubicacion : null,
+        dispositivo: await dispositivoId(),
+        motivo: datos.motivo,
+        nota: datos.nota,
+        fotos: datos.fotos,
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setReportando(false);
+      if (donde.estado === "sin-senal") {
+        Alert.alert(
+          "Novedad reportada",
+          "No pudimos obtener tu ubicación, así que quedó registrada sin ella."
+        );
+      }
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setError(mensajeDeError(e, "No pudimos reportar"));
+      setReportando(false);
+    } finally {
+      setEnviandoNovedad(false);
     }
   }
 
@@ -393,9 +475,11 @@ export default function PersonalVisitaScreen() {
           <Row label="Visita" value={`#${vista.numero}`} />
           {/* El suyo: quien ya marcó su salida ve Completada aunque la visita
               siga En curso esperando el parte de otro. Ver `estadoParaMi`. */}
+          {/* Sobre `vista`, con la cola puesta encima: la entrada o la novedad
+              que esperan señal ya cuentan como marcadas. */}
           <Row
             label="Estado"
-            value={estadoLabel(estadoParaMi(visita, personalId))}
+            value={estadoLabel(estadoParaMi(vista, personalId))}
           />
           {/* "Fecha" y no "Programada": arriba dice Estado: Programada, y la
               misma palabra dos veces seguidas parecía un error. */}
@@ -425,6 +509,76 @@ export default function PersonalVisitaScreen() {
             />
           ) : null}
         </Section>
+
+        {/* Lo que se reportó desde el jardín: "llegué y no pude". Arriba de
+            las tareas, porque mientras esté sin resolver es lo que pasa con
+            esta visita; y cerrada, es la historia de por qué no se hizo. */}
+        {(vista.novedades ?? []).length > 0 ? (
+          <Section title="Novedad">
+            {(vista.novedades ?? []).map((n) => {
+              // La que todavía espera en la cola: su estado va acá, pegado a
+              // lo que se cargó, y no en una línea suelta al pie. Un ✓ mientras
+              // espera señal; el motivo y qué hacer si el servidor la rechazó.
+              const enCola =
+                novedadEnCola && n.id === novedadEnCola.id ? novedadEnCola : null;
+              return (
+              <View key={n.id} style={styles.novedad}>
+                {/* El motivo en una línea y la nota en otra: son dos cosas,
+                    lo que se eligió y lo que se escribió. */}
+                <Text variant="bodyMedium" style={styles.novedadMotivo}>
+                  {MOTIVO_NOVEDAD_LABEL[n.motivo as MotivoNovedad] ?? n.motivo}
+                </Text>
+                {n.nota ? (
+                  <Text variant="bodyMedium" style={styles.novedadNota}>
+                    {n.nota}
+                  </Text>
+                ) : null}
+                <Text variant="bodySmall" style={styles.novedadQuien}>
+                  {n.personalId === personalId
+                    ? "Reportaste"
+                    : `${n.personalNombre.split(" ")[0]} reportó`}{" "}
+                  {fechaYHora12(n.marcadaEl)}
+                </Text>
+                {enCola?.estado === "pendiente" ? (
+                  <View style={styles.novedadEspera}>
+                    <Ionicons name="checkmark" size={14} color={tema.texto3} />
+                    <Text style={styles.novedadPendiente}>Se envía cuando haya señal</Text>
+                  </View>
+                ) : null}
+                {enCola?.estado === "fallido" ? (
+                  <>
+                    <Text style={styles.novedadFallo}>
+                      Rechazada: {enCola.error ?? "no se pudo guardar"}
+                    </Text>
+                    <View style={styles.novedadAcciones}>
+                      <PressableScale onPress={() => reintentar(enCola.id)} hitSlop={8}>
+                        <Text style={styles.novedadAccion}>Reintentar</Text>
+                      </PressableScale>
+                      <PressableScale onPress={() => descartar(enCola.id)} hitSlop={8}>
+                        <Text style={styles.novedadAccion}>Descartar</Text>
+                      </PressableScale>
+                    </View>
+                  </>
+                ) : null}
+                {/* Las fotos en fila debajo, como los adjuntos de un mensaje. */}
+                {(n.fotos ?? []).length > 0 ? (
+                  <View style={styles.novedadFotos}>
+                    {(n.fotos ?? []).map((f) => (
+                      <PressableScale
+                        key={f.id}
+                        onPress={() => setActiveMedia({ url: f.url, tipo: "imagen" })}
+                        style={styles.novedadFoto}
+                      >
+                        <Image source={{ uri: f.url }} style={styles.novedadFotoImagen} />
+                      </PressableScale>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+              );
+            })}
+          </Section>
+        ) : null}
 
         {/* Lo que la visita exigía. Acá no se tilda nada: se marca al
             registrar la salida, y lo que esta lista responde es qué falta. */}
@@ -508,17 +662,33 @@ export default function PersonalVisitaScreen() {
         ) : null}
 
         {/* Notas */}
-        {vista.notas || vista.notasIncompleto ? (
+        {vista.notas || vista.notasIncompleto || vista.motivoNoRealizada ? (
           <Section
             title={
-              vista.estado === "INCOMPLETA" || vista.estado === "CANCELADA"
+              vista.estado === "INCOMPLETA" ||
+              vista.estado === "NO_REALIZADA" ||
+              vista.estado === "CANCELADA"
                 ? "Motivo"
                 : "Notas"
             }
           >
-            <Text variant="bodyMedium" style={styles.notasText}>
-              {vista.notasIncompleto || vista.notas}
-            </Text>
+            {vista.estado === "NO_REALIZADA" && vista.motivoNoRealizada ? (
+              <View style={styles.motivoBloque}>
+                <Text variant="bodyMedium" style={styles.novedadMotivo}>
+                  {MOTIVO_NOVEDAD_LABEL[vista.motivoNoRealizada as MotivoNovedad] ??
+                    vista.motivoNoRealizada}
+                </Text>
+                {vista.notasIncompleto ? (
+                  <Text variant="bodyMedium" style={styles.novedadNota}>
+                    {vista.notasIncompleto}
+                  </Text>
+                ) : null}
+              </View>
+            ) : (
+              <Text variant="bodyMedium" style={styles.notasText}>
+                {vista.notasIncompleto || vista.notas}
+              </Text>
+            )}
           </Section>
         ) : null}
 
@@ -555,7 +725,13 @@ export default function PersonalVisitaScreen() {
         ) : null}
       </ScrollView>
 
-      {/* Sticky actions */}
+      {/* Sticky actions. Solo cuando hay algo que poner: con una novedad
+          reportada, o fuera del día de la visita sin nada que marcar, la
+          franja quedaba dibujada vacía, con su línea y su aire. */}
+      {(salidaEnCola ?? entradaEnCola) ||
+      (canAct && !accion && mio && !miNovedad) ||
+      (canAct && accion) ||
+      (canAct && puedeReportar) ? (
       <View style={styles.footer}>
         {/* La marca que espera: con su ✓ mientras no hay señal, o con el
             motivo y qué hacer si el servidor la rechazó. */}
@@ -566,8 +742,10 @@ export default function PersonalVisitaScreen() {
             onDescartar={descartar}
           />
         ) : null}
-        {/* Sin botón hay que decir por qué, o parece que algo se rompió. */}
-        {canAct && !accion && mio ? (
+        {/* Sin botón hay que decir por qué, o parece que algo se rompió. Con
+            una novedad reportada no: lo que pasa con la visita lo dice la
+            sección Novedad de arriba, con lo que la persona cargó. */}
+        {canAct && !accion && mio && !miNovedad ? (
           <Text style={styles.soloHoy}>
             {mio.entradaEl
               ? "Las tareas ya no se editan. Las fotos sí."
@@ -589,7 +767,21 @@ export default function PersonalVisitaScreen() {
             {accion}
           </Button>
         ) : null}
+        {/* Debajo del principal y en gris: es la excepción de la vereda, no
+            el camino normal. */}
+        {canAct && puedeReportar ? (
+          <Button
+            mode="text"
+            onPress={() => setReportando(true)}
+            textColor={tema.texto2}
+            style={styles.secondaryBtn}
+            labelStyle={styles.secondaryBtnLabel}
+          >
+            No pude hacer la visita
+          </Button>
+        ) : null}
       </View>
+      ) : null}
 
       <DialogoConfirmar
         visible={confirmandoEntrada}
@@ -599,6 +791,13 @@ export default function PersonalVisitaScreen() {
         cargando={marcando}
         onConfirmar={marcarEntrada}
         onCancelar={() => setConfirmandoEntrada(false)}
+      />
+
+      <HojaNovedad
+        visible={reportando}
+        enviando={enviandoNovedad}
+        onEnviar={reportarNovedad}
+        onCerrar={() => setReportando(false)}
       />
 
       <MediaViewer
@@ -955,6 +1154,20 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     lineHeight: 22,
   },
+
+  novedad: { gap: 2, paddingVertical: 10 },
+  novedadFotos: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  novedadFoto: { width: 56, height: 56, borderRadius: 8, overflow: "hidden" },
+  novedadFotoImagen: { width: "100%", height: "100%", backgroundColor: "#eee" },
+  novedadMotivo: { color: "#111", fontWeight: "600" },
+  novedadNota: { color: "#222", lineHeight: 21 },
+  novedadQuien: { color: "#888" },
+  motivoBloque: { gap: 2, paddingVertical: 12 },
+  novedadEspera: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
+  novedadPendiente: { fontSize: 12, color: tema.texto3 },
+  novedadFallo: { fontSize: 12, color: tema.rojo, marginTop: 4 },
+  novedadAcciones: { flexDirection: "row", gap: 16, marginTop: 2 },
+  novedadAccion: { fontSize: 12, fontWeight: "700", color: tema.rojo, textDecorationLine: "underline" },
 
   mediaSection: { marginTop: 20, gap: 8 },
   mediaGrid: {

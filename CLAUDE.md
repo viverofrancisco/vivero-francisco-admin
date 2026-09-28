@@ -352,11 +352,16 @@ start and nothing called it: the form was only ever built for the phone, so on
 the portal a gardener saw that his parte was missing and had no way in. The first parte moves the visit from
 `PROGRAMADA` to `EN_CURSO` on its own; from there an `ADMIN`/`STAFF` marks it
 `COMPLETADA` or `INCOMPLETA`, looking at what was filed and what is missing.
-**A gardener who marked his salida sees the visit as *Completada*** —
-`estadoParaMi` in the app, a rendering rule and not a column: his part is filed
-and he left the garden, and showing him "En curso" because a coworker hasn't
-filed yet tells him something of his is half-done. It only overrides
-`EN_CURSO`, so an office `INCOMPLETA` or `CANCELADA` still shows as what it is. It
+**A gardener sees the visit in the state of *his own* marks** —
+`estadoParaMi` in the app, a rendering rule and not a column. While the visit
+is open, what the row stores is the sum of everybody: a coworker's entrada
+puts it `EN_CURSO` before he arrives, and showing him "En curso" after he
+left because a coworker hasn't filed yet tells him something of his is
+half-done. So he sees *Programada* with nothing marked, *En curso* with his
+entrada, *Completada* with his salida, and *Con novedad* when he reported
+(the `NOVEDAD` pseudo-state). It only overrides `PROGRAMADA` and `EN_CURSO`:
+an office `INCOMPLETA`, `NO_REALIZADA` or `CANCELADA` still shows as what it
+is. It
 does **not** close itself when the last person files: someone may never file,
 and deciding that the work is nonetheless finished is a judgement, not a count.
 `tareaIds` replaces that person's set rather than adding to it — the form is a
@@ -628,7 +633,101 @@ remember. So neither *Completar* nor *Editar* touches files.
 a dialog, and it is **office-only**: it shows what every assigned person filed,
 which obligatorias nobody covered and who hasn't filed at all, and asks only
 whether the work is done, with what date, and — if it isn't — why. It no longer
-asks for hours or for what was done: the gardeners already said both.
+asks for hours or for what was done: the gardeners already said both. The
+*Completar* button shows for `PROGRAMADA` **and `EN_CURSO`**: it was programada
+only, and a visit goes en curso the moment somebody marks entrada, so the one
+that needed closing was exactly the one without a button.
+
+**When the visit can't be done, the gardener reports a novedad, and the office
+closes it as `NO_REALIZADA`.** Arriving to find nobody home, a locked gate, or
+the client cancelling at the door had no honest path: the salida demands a
+tarea, cancelling is the client's or the office's and only from `PROGRAMADA`,
+and what was left was the chat, which leaves nothing on the visit. Now the app
+offers *No pude hacer la visita* under the primary button, on the visit's day,
+while the person hasn't marked salida and hasn't reported yet: a bottom sheet
+(`HojaNovedad`) with the motivo from a closed list (`MotivoNovedad`:
+`NADIE_EN_CASA`, `SIN_ACCESO`, `CLIENTE_CANCELO`, `OTRO` — `OTRO` requires the
+note; the labels are `MOTIVO_NOVEDAD_LABEL` in `@vivero/shared`), an optional
+note and optional photos — up to `MAX_FOTOS_NOVEDAD`, gathered like the chat's
+attachments (camera and gallery **add**, each thumbnail has its ✕; it was one
+photo and the second replaced the first), stored in `VisitaNovedadFoto`. It
+goes through the same offline queue as
+the marks (`tipo: "NOVEDAD"` in `cola-de-visitas.ts`; `aplicarCola` shows it
+reported at once) and lands in **`VisitaNovedad`** with the evidence of a mark —
+`marcadaEl`/`recibidaEl`/`sinConexion`, lat/lng/precision/simulada, the device
+— because "we were there at 8:12 and nobody opened" is what gets answered to
+the client who says nobody came. `reportarNovedad` (`POST
+/api/mobile/visitas/[id]/novedad`, **app only**, like marking) is accepted with
+or without an entrada; with entrada and no salida it **also stamps the salida**
+with no tareas, since "got in and was sent away" has hours but no work, and the
+normal salida can't say that. After a salida it is refused: the parte is filed.
+One per person per visita (unique index), idempotent by `marcadaEl` like a mark,
+and it does **not** change the visit's estado: it pushes `pushNovedadDeVisita`
+to every ADMIN/STAFF **in the moment** — with the crew still at the gate is when
+calling the client is worth something — and the lists show an amber *Novedad*
+pill beside the estado while the visit is still open (`conNovedad` on the
+portal's rows, the `NOVEDAD` pseudo-state of `estadoParaMi` in the app, which
+reads *Con novedad*). In the portal's *Cronología* the report sits on that
+person's own row — amber dot, *No pudo hacerla*, the hour and the motivo —
+instead of *Sin marcar*, and the close page doesn't list them among those who
+"haven't filed": reporting is their parte for that day. With several
+reporters the card is titled *N novedades* and lists each. **A gardener sees
+only the novedad they reported** (`novedadesQueLeTocan`, the same cut as
+`fotosQueLeTocan`, applied in the service and in the portal's detail page): a
+coworker's report belongs to that coworker and to the office, which is who
+resolves it. The photos go to
+`novedades/<visitaId>/` in R2, their own
+prefix (`/novedad/upload-url`, a signed batch like the calificación's), never
+to `VisitaMedia`: those are the work photos and they build the informe handed
+to the client. The portal's ficha and
+the close page show `TarjetaNovedades` on top, with the hour, the point on a
+map and the *Resolver* button, which opens the close page with *No realizada*
+and the reported motivo preselected (`?resultado=no-realizada`). **`NO_REALIZADA`
+is the fourth way to close** (`markVisitaNoRealizada`, the `NO_REALIZADA`
+branch of `POST /api/visitas/[id]/completar`, `/api/mobile/visitas/[id]/no-realizada`):
+the crew went and there was no work. It is not `CANCELADA` — decided before,
+nobody travelled — nor `INCOMPLETA` — work was started. It stores the motivo in
+`Visita.motivoNoRealizada` (cleared if the visit leaves that state) and the
+text in `notasIncompleto`, like the other two; it **does not occupy the
+client's day** (`visitasDelDia` skips it, so the crew can go back that same
+afternoon), it **is offered when building an orden** (the wasted trip is a
+legitimate line; a cancelada is not), it cannot be deleted (`softDeleteVisita`
+counts it as worked: somebody went), it refuses partes like a cancelada
+(`ensureHuboOPuedeHaberTrabajo`), and it notifies the admins like an incompleta
+plus a push to the **client** with the hour (`pushVisitaNoRealizada`). The
+close page's *Reprogramar para* creates the new visit in the same gesture —
+same people, plan, obligatorias and notes, linked through
+`Visita.reprogramadaDeId` (self-relation; the ficha shows *Repite a* and
+*Reprogramada* rows) — and everything that alta could refuse (the day taken,
+the client inactive, the plan not of that propiedad) is checked **before**
+closing, so it never leaves one visit closed and the other uncreated.
+
+**The app's gallery is its own, like WhatsApp's** (`SelectorDeGaleria`, on
+`expo-media-library`): the chat's *Multimedia*, the novedad's *Galería* and
+the visit's *Galería* in `ArchivosVisita` open it instead of the system picker
+(a pending visit photo is an `ArchivoLocal` now, from the camera or the
+gallery alike, and a gallery one keeps its tarea when the gallery is reopened). The system picker starts blank every
+time and has no way to be told what is already chosen, so with three photos in
+the tray you could neither see which ones nor unmark one from there, and
+picking one again duplicated it. This one opens with the chosen ones **marked
+with their number** (the order tapped is the order sent), unmarking there
+removes them, and what comes back **replaces** what had come from the gallery
+while camera shots and documents stay put — `assetId` on `FotoEnCola` /
+`FotoElegida` is the link. It is the informe picker's shape (Shopify's *Select
+files*: ✕ and title, four per row, the floating dark bar with the count and ⊗,
+*Ver marcadas*, *Cancelar* / *Listo* once the selection changed), paginated
+eighty at a time newest first, with a duration label on videos. It returns
+**files ready to upload** (`archivoDeAssetDeGaleria` in `lib/galeria.ts`): a
+gallery `ph://` / `content://` is not a file, so `getAssetInfoAsync` gives the
+real one, and every **photo is re-encoded to JPEG** with
+`expo-image-manipulator` — an iPhone shoots HEIC, which sharp can't read
+without libheif and browsers other than Safari can't show, and the original
+is the 12-megapixel one; the system picker used to do both silently. Videos go
+as they are. The price is a native module and the photo permission the system
+picker never asked for (`photosPermission` in `app.json`, granular
+photo/video on Android): a new native build, and with **limited** access
+(iOS, Android 14) the grid shows what was allowed and offers *Elegir más*
+through the system's own limited-library picker.
 
 Each file is tagged to a **tarea** (`VisitaMedia.tareaId`) — a photo of a garden
 shows work done, not something sold — and **that tag is what makes the informe

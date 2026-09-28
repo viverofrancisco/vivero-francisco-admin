@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { listaTareas } from "@/lib/visita-tareas";
-import { fechaSola, nombreCliente, nombrePersona } from "@vivero/shared";
+import {
+  describirMotivoNovedad,
+  fechaSola,
+  nombreCliente,
+  nombrePersona,
+} from "@vivero/shared";
 import { TipoNotificacion, DestinatarioTipo } from "@/generated/prisma/client";
 import { createMetaProvider } from "./meta-provider";
 import { formatForWhatsApp, isValidWhatsAppNumber } from "./phone";
@@ -422,8 +427,17 @@ export async function enviarAlertaVisitaIncompleta(visitaId: string) {
     ...nombreVarsCliente(visita.cliente),
     fechaVisita: formatFecha(visita.fechaProgramada),
     servicio: listaTareas(visita),
-    estado: visita.estado,
-    motivo: visita.notasIncompleto || "Sin detalle",
+    // Con palabras: "NO_REALIZADA" no es una frase en un WhatsApp.
+    estado:
+      visita.estado === "NO_REALIZADA"
+        ? "No realizada"
+        : visita.estado === "INCOMPLETA"
+          ? "Incompleta"
+          : visita.estado,
+    motivo:
+      visita.estado === "NO_REALIZADA" && visita.motivoNoRealizada
+        ? describirMotivoNovedad(visita.motivoNoRealizada, visita.notasIncompleto)
+        : visita.notasIncompleto || "Sin detalle",
   };
 
   const mensaje = resolverVariables(plantilla.contenido, vars);

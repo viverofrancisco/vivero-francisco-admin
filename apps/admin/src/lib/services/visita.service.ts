@@ -7,7 +7,11 @@ import {
 } from "./errors";
 import type { Viewer } from "./viewer";
 import { isAdminRole } from "./viewer";
-import type { EstadoVisita, Prisma } from "@/generated/prisma/client";
+import type {
+  EstadoVisita,
+  MotivoNovedad,
+  Prisma,
+} from "@/generated/prisma/client";
 import {
   enviarAlertaVisitaCompletada,
   enviarAlertaVisitaIncompleta,
@@ -17,10 +21,13 @@ import {
   pushAlertaCompletada,
   pushAlertaIncompleta,
   pushConfirmacionVisita,
+  pushNovedadDeVisita,
   pushPedirCalificacion,
+  pushVisitaNoRealizada,
 } from "@/lib/push/triggers";
+import { visitaCerrada } from "@vivero/shared";
 import { getUploadUrl, publicUrlForKey } from "@/lib/s3";
-import { TAREAS_DE_VISITA_INCLUDE } from "@/lib/visita-tareas";
+import { TAREAS_DE_VISITA_INCLUDE, nombrePersonal } from "@/lib/visita-tareas";
 import { hoyISOEcuador } from "@/lib/fechas";
 import { randomUUID } from "crypto";
 
@@ -37,9 +44,19 @@ import { randomUUID } from "crypto";
  *
  * **Cerrarla es de oficina.** Cada asignado registra *lo suyo* —sus horas y sus
  * tareas—, la visita pasa sola a `EN_CURSO` con el primer registro, y un
- * `ADMIN`/`STAFF` la da por `COMPLETADA` o `INCOMPLETA` mirando lo que
- * cargaron. No se cierra sola al registrar el último: puede faltar alguien que
- * nunca cargue, y la oficina es quien decide si eso igual está terminado.
+ * `ADMIN`/`STAFF` la da por `COMPLETADA`, `INCOMPLETA` o `NO_REALIZADA`
+ * mirando lo que cargaron. No se cierra sola al registrar el último: puede
+ * faltar alguien que nunca cargue, y la oficina es quien decide si eso igual
+ * está terminado.
+ *
+ * **Y cuando no se pudo hacer, el jardinero lo reporta.** Llegar y que no haya
+ * nadie, o que el cliente la cancele en la puerta, no tenía camino honesto: la
+ * salida exige una tarea, cancelar es del cliente o de la oficina, y lo que
+ * quedaba era el chat. `reportarNovedad` lo anota con la evidencia de una
+ * marca, le avisa a la oficina en el momento —que es cuando todavía se puede
+ * llamar al cliente con la cuadrilla cerca— y la oficina lo resuelve:
+ * reprogramar, cancelar, o cerrarla como `NO_REALIZADA`, que es el viaje en
+ * falso y se puede cobrar.
  */
 
 // ──────────────────────────────────────────────
@@ -126,6 +143,36 @@ const VISITA_DETAIL_INCLUDE = {
     select: { id: true, numero: true, periodicidad: true, estado: true },
   },
   media: { orderBy: { createdAt: "asc" } },
+  // Lo que alguien reportó desde el jardín: "llegué y no pude". La ficha lo
+  // muestra arriba de todo y es lo que un administrador resuelve.
+  novedades: {
+    orderBy: { marcadaEl: "asc" },
+    select: {
+      id: true,
+      personalId: true,
+      personalNombre: true,
+      motivo: true,
+      nota: true,
+      fotos: { select: { id: true, url: true }, orderBy: { createdAt: "asc" } },
+      marcadaEl: true,
+      recibidaEl: true,
+      sinConexion: true,
+      lat: true,
+      lng: true,
+      precision: true,
+      simulada: true,
+      dispositivo: true,
+    },
+  },
+  // De qué visita fallida es la repetición, y con cuál se repitió esta: el
+  // par de enlaces que deja ir de una a la otra.
+  reprogramadaDe: {
+    select: { id: true, numero: true, fechaProgramada: true, estado: true },
+  },
+  reprogramaciones: {
+    where: { deletedAt: null },
+    select: { id: true, numero: true, fechaProgramada: true, estado: true },
+  },
 } as const;
 
 export async function getVisitaForViewer(visitaId: string, viewer: Viewer) {
@@ -135,7 +182,25 @@ export async function getVisitaForViewer(visitaId: string, viewer: Viewer) {
   });
   if (!visita) throw new NotFoundError("Visita no encontrada");
   ensureViewerCanSeeVisita(viewer, visita);
-  return { ...visita, media: fotosQueLeTocan(visita.media, viewer) };
+  return {
+    ...visita,
+    media: fotosQueLeTocan(visita.media, viewer),
+    novedades: novedadesQueLeTocan(visita.novedades, viewer),
+  };
+}
+
+/**
+ * Qué novedades de la visita le corresponden a quien mira: la misma regla
+ * que las fotos. El jardinero ve **la suya**; lo que reportó un compañero es
+ * de ese compañero y de la oficina, que es quien lo resuelve. La oficina y el
+ * cliente las ven todas.
+ */
+function novedadesQueLeTocan<T extends { personalId: string }>(
+  novedades: T[],
+  viewer: Viewer,
+): T[] {
+  if (viewer.role !== "PERSONAL") return novedades;
+  return novedades.filter((n) => n.personalId === viewer.personalId);
 }
 
 /**
@@ -223,7 +288,10 @@ export async function listVisitas(
   });
 
   const hasMore = visitas.length > limit;
-  const items = hasMore ? visitas.slice(0, limit) : visitas;
+  const items = (hasMore ? visitas.slice(0, limit) : visitas).map((v) => ({
+    ...v,
+    novedades: novedadesQueLeTocan(v.novedades, viewer),
+  }));
   return {
     items,
     nextCursor: hasMore ? items[items.length - 1].id : null,
@@ -647,9 +715,7 @@ async function miAsignacion(
   personalIdPedido?: string,
 ) {
   const visita = await getVisitaForViewer(visitaId, viewer);
-  if (visita.estado === "CANCELADA") {
-    throw new ConflictError("Esta visita está cancelada.");
-  }
+  ensureHuboOPuedeHaberTrabajo(visita.estado);
 
   let personalId: string;
   if (isAdminRole(viewer.role)) {
@@ -669,6 +735,21 @@ async function miAsignacion(
     throw new ValidationError("Esa persona no está asignada a esta visita.");
   }
   return { visita, asignacion };
+}
+
+/**
+ * En una cancelada o una no realizada no hay parte que cargar ni corregir: la
+ * primera no pasó, y la segunda se cerró diciendo que nadie trabajó. Las otras
+ * dos formas de cerrar (completada, incompleta) sí dejan corregir un parte,
+ * porque ahí hubo trabajo y el parte es su registro.
+ */
+function ensureHuboOPuedeHaberTrabajo(estado: EstadoVisita) {
+  if (estado === "CANCELADA") {
+    throw new ConflictError("Esta visita está cancelada.");
+  }
+  if (estado === "NO_REALIZADA") {
+    throw new ConflictError("Esta visita se cerró como no realizada.");
+  }
 }
 
 /** Lo que rodea a una marca —dónde y desde qué aparato—, listo para escribir. */
@@ -708,7 +789,7 @@ function columnasDeContexto(
 function ensureQuienMarca(viewer: Viewer) {
   if (viewer.role !== "PERSONAL") {
     throw new ForbiddenError(
-      "Marcar entrada y salida es de quien hace la visita, desde la app.",
+      "Marcar y reportar es de quien hace la visita, desde la app.",
     );
   }
 }
@@ -730,11 +811,15 @@ function ensureQuienMarca(viewer: Viewer) {
  * Quien no marcó el día que correspondía no marca después: eso lo corrige la
  * oficina con `registrarParte`, que es otra cosa y se llama distinto.
  */
-function ensureEsElDiaDeLaVisita(fechaProgramada: Date, instante: Date) {
+function ensureEsElDiaDeLaVisita(
+  fechaProgramada: Date,
+  instante: Date,
+  que = "La entrada se marca",
+) {
   // Contra el instante de la marca y no contra hoy: una entrada hecha sin
   // señal el día de la visita puede llegar recién al día siguiente.
   if (fechaProgramada.toISOString().slice(0, 10) !== hoyISOEcuador(instante)) {
-    throw new ConflictError("La entrada se marca el día de la visita.");
+    throw new ConflictError(`${que} el día de la visita.`);
   }
 }
 
@@ -916,6 +1001,120 @@ export async function marcarSalida(
   return getVisitaForViewer(visitaId, viewer);
 }
 
+export interface NovedadPayload extends ContextoDeMarca {
+  motivo: MotivoNovedad;
+  nota?: string | null;
+  /** Ya subidas a R2 bajo `novedades/<visitaId>/`. */
+  fotos?: { key: string }[];
+}
+
+/**
+ * "Llegué y no pude hacer la visita." Lo dice el asignado, desde la app, y
+ * viaja con la misma evidencia que una marca: el instante, dónde estaba y
+ * desde qué aparato. Es lo que se le contesta al cliente que dice que nunca
+ * fueron: estuvimos a las 8:12, en este punto, y nadie abrió.
+ *
+ * **No cierra la visita.** Queda anotada, la oficina recibe el aviso en el
+ * momento —con la cuadrilla todavía cerca, que es cuando llamar al cliente
+ * sirve— y decide: reprogramar, cancelar, o cerrarla como no realizada.
+ *
+ * Se acepta con o sin entrada marcada. Con entrada y sin salida —entró y lo
+ * mandaron de vuelta a los diez minutos— la novedad **es también su salida**:
+ * le cierra las horas sin exigirle la tarea que no hizo, que es exactamente lo
+ * que la salida normal exige y lo que no tenía cómo contestar. Después de la
+ * salida ya no: su parte está cargado, y lo que haya que decir va al chat.
+ *
+ * Una por persona y por visita: dos de la misma cuadrilla pueden reportar, y
+ * un reintento sin señal trae el mismo `marcadaEl` y se contesta como si
+ * hubiera entrado recién, igual que una marca.
+ */
+export async function reportarNovedad(
+  visitaId: string,
+  viewer: Viewer,
+  payload: NovedadPayload,
+) {
+  ensureQuienMarca(viewer);
+  const { visita, asignacion } = await miAsignacion(visitaId, viewer);
+  if (visitaCerrada(visita.estado)) {
+    throw new ConflictError("Esta visita ya está cerrada.");
+  }
+  const previa = visita.novedades.find(
+    (n) => n.personalId === asignacion.personalId,
+  );
+  if (previa) {
+    if (esLaMismaMarca(previa.marcadaEl, payload)) {
+      return getVisitaForViewer(visitaId, viewer);
+    }
+    throw new ConflictError("Ya reportaste una novedad en esta visita.");
+  }
+  if (asignacion.salidaEl) {
+    throw new ConflictError(
+      "Ya marcaste tu salida en esta visita. Lo que haya que contar va al chat.",
+    );
+  }
+  const instante = instanteDeMarca(payload);
+  ensureEsElDiaDeLaVisita(
+    visita.fechaProgramada,
+    instante,
+    "La novedad se reporta",
+  );
+  if (asignacion.entradaEl && instante.getTime() < asignacion.entradaEl.getTime()) {
+    throw new ValidationError("La novedad no puede ser antes de tu entrada.");
+  }
+  const nota = payload.nota?.trim() || null;
+  if (payload.motivo === "OTRO" && !nota) {
+    throw new ValidationError('Con "Otro", escribe qué pasó.');
+  }
+
+  const novedad = await prisma.$transaction(async (tx) => {
+    const creada = await tx.visitaNovedad.create({
+      data: {
+        visitaId,
+        personalId: asignacion.personalId,
+        // El nombre de la ficha, congelado: es quien firma el reporte.
+        personalNombre: nombrePersonal(asignacion.personal),
+        motivo: payload.motivo,
+        nota,
+        fotos: payload.fotos?.length
+          ? {
+              create: payload.fotos.map((f) => ({
+                key: f.key,
+                url: publicUrlForKey(f.key),
+              })),
+            }
+          : undefined,
+        marcadaEl: instante,
+        recibidaEl: new Date(),
+        sinConexion: Boolean(payload.sinConexion),
+        lat: payload.ubicacion?.lat ?? null,
+        lng: payload.ubicacion?.lng ?? null,
+        precision: payload.ubicacion?.precision ?? null,
+        simulada: payload.ubicacion?.simulada ?? null,
+        dispositivo: payload.dispositivo ?? null,
+      },
+      select: { id: true },
+    });
+    if (asignacion.entradaEl && !asignacion.salidaEl) {
+      await tx.visitaPersonal.update({
+        where: { id: asignacion.id },
+        data: {
+          salidaEl: instante,
+          salidaRecibidaEl: new Date(),
+          salidaSinConexion: Boolean(payload.sinConexion),
+          ...columnasDeContexto("salida", payload),
+          registradoEl: new Date(),
+        },
+      });
+      await recalcularHorasDeVisita(tx, visitaId);
+    }
+    return creada;
+  });
+
+  pushNovedadDeVisita(novedad.id).catch(console.error);
+
+  return getVisitaForViewer(visitaId, viewer);
+}
+
 /**
  * Un parte lleva al menos una tarea.
  *
@@ -964,9 +1163,7 @@ export async function registrarParte(
   payload: ParteDeVisitaPayload,
 ) {
   const visita = await getVisitaForViewer(visitaId, viewer);
-  if (visita.estado === "CANCELADA") {
-    throw new ConflictError("Esta visita está cancelada.");
-  }
+  ensureHuboOPuedeHaberTrabajo(visita.estado);
 
   // Un jardinero carga lo suyo; la oficina puede cargar por otro para corregir.
   let personalId: string;
@@ -1121,12 +1318,17 @@ interface TransicionPayload {
   notas?: string | null;
   notasIncompleto?: string | null;
   fechaRealizada?: Date;
+  /** Solo para NO_REALIZADA: el motivo de la lista cerrada. */
+  motivoNoRealizada?: MotivoNovedad | null;
 }
 
 async function transicionar(
   visitaId: string,
   viewer: Viewer,
-  estado: Extract<EstadoVisita, "COMPLETADA" | "INCOMPLETA" | "CANCELADA">,
+  estado: Extract<
+    EstadoVisita,
+    "COMPLETADA" | "INCOMPLETA" | "NO_REALIZADA" | "CANCELADA"
+  >,
   patch: TransicionPayload = {},
 ) {
   const visita = await prisma.visita.findFirst({
@@ -1147,6 +1349,10 @@ async function transicionar(
         patch.fechaRealizada ?? visita.fechaRealizada ?? new Date(),
       notas: patch.notas ?? visita.notas,
       notasIncompleto: patch.notasIncompleto ?? null,
+      // El motivo es de "no realizada" y de ningún otro estado: si la visita
+      // sale de ahí, no hay motivo que conservar.
+      motivoNoRealizada:
+        estado === "NO_REALIZADA" ? (patch.motivoNoRealizada ?? null) : null,
       updatedById: viewer.id,
       updatedByNombre: viewer.nombre,
       // Quién la cerró se sella **en la transición**, no en cada guardado:
@@ -1181,6 +1387,14 @@ async function transicionar(
     } else if (estado === "INCOMPLETA") {
       enviarAlertaVisitaIncompleta(visitaId).catch(console.error);
       pushAlertaIncompleta(visitaId).catch(console.error);
+    } else if (estado === "NO_REALIZADA") {
+      // A la oficina, como una incompleta —la plantilla lleva el estado y el
+      // motivo—, y **al cliente**: "fuimos a las 8:12 y no había nadie" es la
+      // respuesta a "ustedes nunca vinieron", y conviene que le llegue el
+      // mismo día.
+      enviarAlertaVisitaIncompleta(visitaId).catch(console.error);
+      pushAlertaIncompleta(visitaId).catch(console.error);
+      pushVisitaNoRealizada(visitaId).catch(console.error);
     }
   }
 
@@ -1232,6 +1446,98 @@ export async function markVisitaIncomplete(
   });
 }
 
+export interface NoRealizadaPayload extends CerrarVisitaPayload {
+  motivo: MotivoNovedad;
+  /** El texto libre: qué pasó, con las palabras de quien cierra. */
+  nota?: string | null;
+  /** El día de la visita nueva, si se reprograma en el mismo gesto. */
+  reprogramarPara?: Date | null;
+}
+
+/**
+ * Cerrarla como **no realizada**: la cuadrilla fue y no hubo trabajo. Solo
+ * oficina, como las otras dos formas de cerrar.
+ *
+ * Es la respuesta normal a una novedad, y también vale sin ella —cuando el
+ * jardinero avisó por teléfono—. Lo que la distingue de cancelar es que hubo
+ * un viaje: se puede cobrar (una no realizada se ofrece al armar una orden,
+ * una cancelada no), y no ocupa el día del cliente, así que se puede volver
+ * esa misma tarde.
+ *
+ * **Reprogramar va en el mismo gesto**, porque lo primero que se decide
+ * después de "nadie en casa" es cuándo se vuelve: la visita nueva se crea con
+ * la misma gente, el mismo plan y las mismas obligatorias, enlazada a esta.
+ * Lo que puede fallar de esa alta —el día ocupado, el cliente inactivo, el
+ * plan que ya no es de esa propiedad— se comprueba **antes** de cerrar, para
+ * no dejar una visita cerrada y la otra sin crear.
+ */
+export async function markVisitaNoRealizada(
+  visitaId: string,
+  viewer: Viewer,
+  payload: NoRealizadaPayload,
+) {
+  ensureOficina(viewer);
+  const visita = await getVisitaForViewer(visitaId, viewer);
+  if (visita.estado === "CANCELADA") {
+    throw new ConflictError("Esta visita está cancelada.");
+  }
+  const nota = payload.nota?.trim() || null;
+  if (payload.motivo === "OTRO" && !nota) {
+    throw new ValidationError('Con "Otro", escribe qué pasó.');
+  }
+
+  if (payload.reprogramarPara) {
+    const cliente = await prisma.cliente.findFirst({
+      where: { id: visita.clienteId, deletedAt: null },
+      select: { inactivoDesde: true },
+    });
+    if (!cliente || cliente.inactivoDesde) {
+      throw new ValidationError(
+        "Este cliente está marcado como inactivo. Reactívalo desde su ficha para reprogramarle la visita.",
+      );
+    }
+    await validarPlanDelCliente(
+      visita.suscripcionId,
+      visita.clienteId,
+      visita.propiedadId,
+    );
+    const ocupado = await visitasDelDia(
+      prisma,
+      visita.clienteId,
+      [payload.reprogramarPara],
+      visita.id,
+    );
+    if (ocupado.length > 0) {
+      throw new ConflictError(
+        `Este cliente ya tiene la visita ${nombrarVisitas(ocupado)}.`,
+      );
+    }
+  }
+
+  await transicionar(visitaId, viewer, "NO_REALIZADA", {
+    notas: payload.notas?.trim() || null,
+    notasIncompleto: nota,
+    motivoNoRealizada: payload.motivo,
+    fechaRealizada: payload.fechaRealizada,
+  });
+
+  if (payload.reprogramarPara) {
+    await createVisitasBatch(viewer, {
+      clienteId: visita.clienteId,
+      propiedadId: visita.propiedadId,
+      fechas: [payload.reprogramarPara],
+      suscripcionId: visita.suscripcionId,
+      grupoId: visita.grupoId,
+      tareasObligatoriasIds: visita.tareasObligatorias.map((o) => o.tarea.id),
+      personalIds: visita.personal.map((p) => p.personalId),
+      notas: visita.notas,
+      reprogramadaDeId: visita.id,
+    });
+  }
+
+  return getVisitaForViewer(visitaId, viewer);
+}
+
 /**
  * Cancelar es decir que **no se hizo**, y por eso solo vale mientras no haya
  * empezado: con alguien ya registrando su parte, lo que corresponde es cerrarla
@@ -1277,6 +1583,8 @@ export interface CreateVisitasBatchPayload {
   personalIds?: string[];
   /** Lo que esta visita exige que se haga. Opcional. */
   tareasObligatoriasIds?: string[];
+  /** De qué visita no realizada es la repetición. Solo la pone `markVisitaNoRealizada`. */
+  reprogramadaDeId?: string | null;
 }
 
 /** Las tareas exigidas tienen que existir y estar vivas. */
@@ -1411,6 +1719,7 @@ export async function createVisitasBatch(
         grupoId: payload.grupoId || null,
         suscripcionId,
         notas: payload.notas || null,
+        reprogramadaDeId: payload.reprogramadaDeId || null,
         createdById: viewer.id,
         updatedById: viewer.id,
         updatedByNombre: viewer.nombre,
@@ -1522,6 +1831,7 @@ export async function updateVisitaInfo(
   if (
     payload.fechaProgramada !== undefined &&
     visita.estado !== "CANCELADA" &&
+    visita.estado !== "NO_REALIZADA" &&
     payload.fechaProgramada.getTime() !== visita.fechaProgramada.getTime()
   ) {
     const ocupado = await visitasDelDia(
@@ -1678,7 +1988,9 @@ async function visitasDelDia(
     where: {
       clienteId,
       deletedAt: null,
-      estado: { not: "CANCELADA" },
+      // Ni la cancelada ni la no realizada ocupan el día: la primera no pasó,
+      // y de la segunda lo que se quiere es justamente poder volver esa tarde.
+      estado: { notIn: ["CANCELADA", "NO_REALIZADA"] },
       fechaProgramada: { in: fechas },
       ...(excepto ? { id: { not: excepto } } : {}),
     },
@@ -1739,14 +2051,16 @@ export async function softDeleteVisita(visitaId: string, viewer: Viewer) {
    * esconde todo eso sin que nadie lo decida. Lo que corresponde ahí es
    * **cancelarla**, que deja dicho que no se hizo y por qué.
    *
-   * `EN_CURSO`, `COMPLETADA` e `INCOMPLETA` son exactamente "alguien trabajó".
-   * `CANCELADA` puede serlo también —se cancela una visita que ya había
-   * empezado—, así que además se mira si hay alguna entrada marcada.
+   * `EN_CURSO`, `COMPLETADA` e `INCOMPLETA` son exactamente "alguien trabajó",
+   * y `NO_REALIZADA` es "alguien fue": el viaje y la novedad que lo cuenta son
+   * un hecho igual. `CANCELADA` puede serlo también —se cancela una visita que
+   * ya había empezado—, así que además se mira si hay alguna entrada marcada.
    */
   const trabajada =
     visita.estado === "EN_CURSO" ||
     visita.estado === "COMPLETADA" ||
     visita.estado === "INCOMPLETA" ||
+    visita.estado === "NO_REALIZADA" ||
     visita.personal.length > 0;
   if (trabajada) {
     throw new ConflictError(

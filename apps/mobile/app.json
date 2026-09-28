@@ -53,6 +53,15 @@
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Vivero Francisco muestra tus fotos y videos para que elijas cuáles mandar en un chat o adjuntar a una novedad.",
+          "savePhotosPermission": "Vivero Francisco no guarda fotos en tu galería.",
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": ["photo", "video"]
+        }
       ]
     ],
     "experiments": {

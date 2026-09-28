@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusBadge, type EstadoVisitaUI } from "@/components/ui/status-badge";
+import { PastillaNovedad } from "@/components/visitas/novedad-de-visita";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
 import { nombreCliente } from "@vivero/shared";
 import { aca, useAca, useFiltroUrl } from "@/lib/filtros-url";
@@ -45,6 +46,8 @@ interface VisitaRow {
   fechaRealizada: string | null;
   estado: string;
   notas: string | null;
+  /** Alguien reportó que no pudo hacerla y todavía nadie la resolvió. */
+  conNovedad?: boolean;
   cliente: {
     id: string;
     nombre: string;
@@ -65,7 +68,10 @@ interface VisitaRow {
  */
 function sePuedeEliminar(estado: string): boolean {
   return (
-    estado !== "EN_CURSO" && estado !== "COMPLETADA" && estado !== "INCOMPLETA"
+    estado !== "EN_CURSO" &&
+    estado !== "COMPLETADA" &&
+    estado !== "INCOMPLETA" &&
+    estado !== "NO_REALIZADA"
   );
 }
 
@@ -334,10 +340,15 @@ export function VisitasTable({
                       {formatDate(v.fechaProgramada)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <StatusBadge
-                        estado={v.estado as EstadoVisitaUI}
-                        size="sm"
-                      />
+                      <span className="inline-flex items-center gap-1.5">
+                        {/* Al lado del estado, no en su lugar: la visita
+                            sigue programada; lo que hay es algo que mirar. */}
+                        {v.conNovedad ? <PastillaNovedad /> : null}
+                        <StatusBadge
+                          estado={v.estado as EstadoVisitaUI}
+                          size="sm"
+                        />
+                      </span>
                     </TableCell>
                   </TableRow>
                 );
@@ -389,6 +400,7 @@ export function VisitasTable({
                   <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
                     {nombre}
                   </span>
+                  {v.conNovedad ? <PastillaNovedad /> : null}
                   <StatusBadge estado={v.estado as EstadoVisitaUI} size="sm" />
                 </span>
                 <span className="block truncate text-xs font-medium text-muted-foreground">

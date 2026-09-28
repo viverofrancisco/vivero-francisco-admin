@@ -59,12 +59,19 @@ import {
   estadoVariant as estadoSuscripcionVariant,
 } from "@/components/suscripciones/formato";
 import {
+  MOTIVO_NOVEDAD_LABEL,
   direccionDePropiedad,
   enlaceParaLlegar,
+  fechaSola,
   medidasDePropiedad,
   nombreCliente,
   zonaDePropiedad,
+  type MotivoNovedad,
 } from "@vivero/shared";
+import {
+  TarjetaNovedades,
+  type NovedadData,
+} from "@/components/visitas/novedad-de-visita";
 import {
   obligatoriasSinCubrir,
   marcaronDesdeElMismoAparato,
@@ -91,6 +98,19 @@ interface VisitaDetailData {
   estado: string;
   notas: string | null;
   notasIncompleto: string | null;
+  /** Solo en NO_REALIZADA: el motivo de la lista cerrada. */
+  motivoNoRealizada?: string | null;
+  /** Lo que alguien reportó desde el jardín: "llegué y no pude". */
+  novedades?: NovedadData[];
+  /** De qué visita no realizada es la repetición. */
+  reprogramadaDe?: { id: string; numero: number; fechaProgramada: string } | null;
+  /** Con cuáles se repitió esta, cuando no se pudo hacer. */
+  reprogramaciones?: {
+    id: string;
+    numero: number;
+    estado: string;
+    fechaProgramada: string;
+  }[];
   media: { id: string; url: string; tipo: string; tareaId: string | null }[];
   cliente: {
     id: string;
@@ -193,8 +213,15 @@ export function VisitaDetail({
     }
   }
 
-  const isProgramada = visita.estado === "PROGRAMADA";
+  /**
+   * Se cierra lo que está abierto: programada o en curso. Solo se ofrecía en
+   * programada, y una visita pasa a en curso apenas alguien marca su entrada,
+   * así que la que había que cerrar era justamente la que no tenía botón.
+   */
+  const puedeCerrar =
+    visita.estado === "PROGRAMADA" || visita.estado === "EN_CURSO";
   const canModify = userRole !== "PERSONAL";
+  const novedades = visita.novedades ?? [];
   /**
    * Las órdenes de la visita son plata: solo la oficina. Un admin de sector
    * agenda y cierra la visita; lo que se cobra por ella no es asunto suyo.
@@ -209,7 +236,8 @@ export function VisitaDetail({
    *
    * Se puede facturar por adelantado: alcanza con que la visita exista y no
    * esté cancelada. De una cancelada no hay nada que cobrar, y
-   * `listarPendientes` tampoco la ofrece.
+   * `listarPendientes` tampoco la ofrece. Una **no realizada** sí se cobra:
+   * hubo un viaje, y la visita en falso es una línea legítima.
    */
   const facturable = visita.estado !== "CANCELADA";
 
@@ -227,6 +255,7 @@ export function VisitaDetail({
     visita.estado !== "EN_CURSO" &&
     visita.estado !== "COMPLETADA" &&
     visita.estado !== "INCOMPLETA" &&
+    visita.estado !== "NO_REALIZADA" &&
     !visita.personal.some((p) => p.entradaEl);
   /** Quiénes marcaron desde el mismo teléfono que otro. Solo la oficina lo ve. */
   const mismoAparato = canModify
@@ -242,7 +271,10 @@ export function VisitaDetail({
    * rechaza, y ofrecer un botón que va a fallar es peor que no ofrecerlo.
    */
   const miParte =
-    userRole === "PERSONAL" && personalId && visita.estado !== "CANCELADA"
+    userRole === "PERSONAL" &&
+    personalId &&
+    visita.estado !== "CANCELADA" &&
+    visita.estado !== "NO_REALIZADA"
       ? visita.personal.find((p) => p.personalId === personalId)
       : undefined;
 
@@ -299,7 +331,7 @@ export function VisitaDetail({
                   Editar
                 </Button>
               </Link>
-              {isProgramada && (
+              {puedeCerrar && (
                 <Link href={`/dashboard/visitas/${visita.id}/completar`}>
                   <Button>
                     <CheckCircle className="mr-2 h-4 w-4" />
@@ -338,12 +370,27 @@ export function VisitaDetail({
           <CalificacionVisita calificacion={visita.calificacion} />
         )}
 
+        {/* "Llegué y no pude": arriba de todo mientras esté sin resolver, con
+            el botón que lleva a cerrarla. Cerrada, se queda como historia —es
+            lo que se le contesta al cliente que dice que nunca fueron—. */}
+        <TarjetaNovedades
+          novedades={novedades}
+          fechaProgramada={visita.fechaProgramada}
+          resolverHref={
+            canModify && puedeCerrar
+              ? `/dashboard/visitas/${visita.id}/completar?resultado=no-realizada`
+              : null
+          }
+          onVerFoto={(url) => setActiveMedia({ url, tipo: "imagen" })}
+        />
+
         {/* Cómo pasó la jornada, en orden: un punto por persona sobre una
             línea, con su entrada, su salida y lo que hizo. Ver `Cronologia`. */}
         <Cronologia
           visita={visita}
           mismoAparato={mismoAparato}
           canModify={canModify}
+          novedades={novedades}
         />
 
         {/* Lo que la visita exigía, aparte: se decide al agendar y es de la
@@ -392,6 +439,9 @@ export function VisitaDetail({
                 variant="outline"
                 size="sm"
                 className="flex-none"
+                // Es un enlace: sin esto Base UI avisa en consola que esperaba
+                // un <button> nativo.
+                nativeButton={false}
                 render={
                   <a
                     href={enlaceParaLlegar(
@@ -461,16 +511,28 @@ export function VisitaDetail({
             ) : (
               <p className="text-sm text-muted-foreground">Sin notas</p>
             )}
-            {visita.notasIncompleto && (
+            {(visita.notasIncompleto ||
+              (visita.estado === "NO_REALIZADA" && visita.motivoNoRealizada)) && (
               <div className="rounded-xl bg-destructive/5 p-3">
                 <p className="mb-1 text-xs font-bold text-destructive">
                   {visita.estado === "CANCELADA"
                     ? "Razón de cancelación"
-                    : "Razón de incompleto"}
+                    : visita.estado === "NO_REALIZADA"
+                      ? "Por qué no se hizo"
+                      : "Razón de incompleto"}
                 </p>
-                <p className="whitespace-pre-wrap text-sm">
-                  {visita.notasIncompleto}
-                </p>
+                {visita.estado === "NO_REALIZADA" && visita.motivoNoRealizada ? (
+                  <p className="text-sm font-bold">
+                    {MOTIVO_NOVEDAD_LABEL[
+                      visita.motivoNoRealizada as MotivoNovedad
+                    ] ?? visita.motivoNoRealizada}
+                  </p>
+                ) : null}
+                {visita.notasIncompleto ? (
+                  <p className="whitespace-pre-wrap text-sm">
+                    {visita.notasIncompleto}
+                  </p>
+                ) : null}
               </div>
             )}
           </div>
@@ -547,6 +609,37 @@ export function VisitaDetail({
                   <span className="text-muted-foreground">Todavía no</span>
                 )}
               </Fila>
+              {/* El par de enlaces de una reprogramación: de cuál viene esta
+                  y con cuál se repitió. Es lo que dice que el viaje en falso
+                  y el trabajo de la semana siguiente son el mismo encargo. */}
+              {visita.reprogramadaDe ? (
+                <Fila etiqueta="Repite a" icono={<CalendarDays className="h-3.5 w-3.5 flex-none" />}>
+                  <Link
+                    href={`/dashboard/visitas/${visita.reprogramadaDe.id}?from=/dashboard/visitas/${visita.id}`}
+                    className="text-primary hover:underline"
+                  >
+                    Visita #{visita.reprogramadaDe.numero} ·{" "}
+                    {fechaSola(visita.reprogramadaDe.fechaProgramada, {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </Link>
+                </Fila>
+              ) : null}
+              {(visita.reprogramaciones ?? []).map((r) => (
+                <Fila key={r.id} etiqueta="Reprogramada" icono={<CalendarDays className="h-3.5 w-3.5 flex-none" />}>
+                  <Link
+                    href={`/dashboard/visitas/${r.id}?from=/dashboard/visitas/${visita.id}`}
+                    className="text-primary hover:underline"
+                  >
+                    Visita #{r.numero} ·{" "}
+                    {fechaSola(r.fechaProgramada, {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </Link>
+                </Fila>
+              ))}
               {/* Quien está asignado ve **sus** marcas y nada más: "Horario"
                   es la ventana de toda la visita —la primera entrada y la
                   última salida de todos— y al lado de las suyas decía dos veces

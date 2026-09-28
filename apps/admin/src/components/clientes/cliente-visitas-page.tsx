@@ -68,6 +68,7 @@ const estadoBadgeVariant = (estado: string) => {
     case "PROGRAMADA": return "secondary" as const;
     case "COMPLETADA": return "default" as const;
     case "INCOMPLETA": return "destructive" as const;
+    case "NO_REALIZADA": return "destructive" as const;
     case "CANCELADA": return "outline" as const;
     default: return "outline" as const;
   }
@@ -76,8 +77,10 @@ const estadoBadgeVariant = (estado: string) => {
 const estadoLabel = (estado: string) => {
   switch (estado) {
     case "PROGRAMADA": return "Programada";
+    case "EN_CURSO": return "En curso";
     case "COMPLETADA": return "Completada";
     case "INCOMPLETA": return "Incompleta";
+    case "NO_REALIZADA": return "No realizada";
     case "CANCELADA": return "Cancelada";
     default: return estado;
   }
@@ -176,6 +179,7 @@ export function ClienteVisitasPage({
             { value: "PROGRAMADA", label: "Programadas" },
             { value: "COMPLETADA", label: "Completadas" },
             { value: "INCOMPLETA", label: "Incompletas" },
+            { value: "NO_REALIZADA", label: "No realizadas" },
             { value: "CANCELADA", label: "Canceladas" },
           ]}
           placeholder="Todas"

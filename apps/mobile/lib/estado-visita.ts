@@ -38,30 +38,44 @@ export function visitaTerminada(estado: string): boolean {
   return (
     estado === "COMPLETADA" ||
     estado === "INCOMPLETA" ||
+    estado === "NO_REALIZADA" ||
     estado === "CANCELADA"
   );
 }
 
 /**
- * El estado como lo ve quien lo mira.
+ * El estado como lo ve quien lo mira: **el de lo que él marcó**.
  *
- * Para el jardinero que ya marcó su salida, la visita terminó: lo suyo está
- * cargado y se fue del jardín. La visita en sí sigue `EN_CURSO` hasta que la
- * oficina la cierra —puede faltar el parte de un compañero, y cerrar es una
- * decisión de oficina, no una cuenta— pero mostrarle "En curso" después de
- * haberse ido le dice que algo le quedó a medio hacer.
+ * Mientras la visita está abierta —programada o en curso—, lo que la base
+ * dice de ella es la suma de lo que hicieron todos, y a un jardinero eso le
+ * miente sobre lo suyo: la entrada de un compañero la pone "En curso" antes de
+ * que él llegue, y la novedad de otro la pondría "Con novedad" cuando él ni
+ * reportó. Así que acá se mira solo su parte: nada marcado, *Programada*; su
+ * entrada, *En curso*; su salida, *Completada* —lo suyo está cargado y se fue
+ * del jardín, aunque la visita siga esperando el parte de otro—; y si reportó
+ * que no pudo, *Con novedad* (`NOVEDAD`, que no es un estado de la base sino
+ * una forma de verlo).
  *
- * **Solo pisa `EN_CURSO`.** Si la oficina ya dijo `INCOMPLETA` o `CANCELADA`,
- * eso es lo que pasó y no lo tapa nada; y `COMPLETADA` ya es lo mismo.
+ * **Solo pisa `PROGRAMADA` y `EN_CURSO`.** Lo que la oficina cerró
+ * —`COMPLETADA`, `INCOMPLETA`, `NO_REALIZADA`, `CANCELADA`— es lo que pasó y
+ * no lo tapa nada. Sin `personalId` (la oficina mirando desde la app) se ve
+ * el estado de la visita.
  */
 export function estadoParaMi(
   visita: {
     estado: string;
-    personal?: { personalId: string; salidaEl: string | null }[] | null;
+    personal?: { personalId: string; entradaEl?: string | null; salidaEl: string | null }[] | null;
+    novedades?: { personalId?: string }[] | null;
   },
   personalId: string | null
 ): string {
-  if (!personalId || visita.estado !== "EN_CURSO") return visita.estado;
+  const abierta = visita.estado === "PROGRAMADA" || visita.estado === "EN_CURSO";
+  if (!abierta || !personalId) return visita.estado;
+  // El servidor ya manda solo la propia; el `personalId` es por si una copia
+  // vieja del teléfono trae las de todos.
+  if (visita.novedades?.some((n) => n.personalId === personalId)) return "NOVEDAD";
   const mio = visita.personal?.find((p) => p.personalId === personalId);
-  return mio?.salidaEl ? "COMPLETADA" : visita.estado;
+  if (mio?.salidaEl) return "COMPLETADA";
+  if (mio?.entradaEl) return "EN_CURSO";
+  return "PROGRAMADA";
 }

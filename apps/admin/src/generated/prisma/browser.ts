@@ -188,6 +188,33 @@ export type Tarea = Prisma.TareaModel
  */
 export type Visita = Prisma.VisitaModel
 /**
+ * Model VisitaNovedad
+ * "Llegué y no pude hacer la visita", dicho desde el jardín.
+ * 
+ * Es lo tercero que un jardinero puede decir de una visita, después de marcar
+ * entrada y salida, y lleva la misma evidencia que una marca: el instante, la
+ * ubicación y el aparato. Existe porque sin esto no había camino honesto: la
+ * salida exige una tarea, cancelar es del cliente o de un administrador, y lo
+ * que quedaba era el chat, que no deja nada en la visita. Con esto, "estuvimos
+ * a las 8:12 y nadie abrió" queda anotado con su hora y su punto, que es lo
+ * que se le contesta al cliente que dice que nunca fueron.
+ * 
+ * **No cierra la visita.** Es un hecho que un administrador mira y resuelve:
+ * reprogramar, cancelar o cerrarla como NO_REALIZADA. Una por persona y por
+ * visita: dos de la misma cuadrilla pueden reportar, y un reintento sin señal
+ * llega con el mismo `marcadaEl` y no crea otra.
+ */
+export type VisitaNovedad = Prisma.VisitaNovedadModel
+/**
+ * Model VisitaNovedadFoto
+ * Las fotos de una novedad —el portón cerrado, la nota pegada—, las que hagan
+ * falta, como los adjuntos de un mensaje del chat. Era una columna para una
+ * sola, y la segunda foto reemplazaba a la primera. Van a un prefijo propio de
+ * R2 (`novedades/<visitaId>/…`), nunca a `VisitaMedia`: esas son las fotos del
+ * trabajo y arman el informe que se le entrega al cliente.
+ */
+export type VisitaNovedadFoto = Prisma.VisitaNovedadFotoModel
+/**
  * Model VisitaPersonal
  * Quién está asignado a una visita y **qué registró de su paso por ella**.
  * 

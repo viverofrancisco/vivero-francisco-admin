@@ -293,6 +293,7 @@ export type PersonalWhereInput = {
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   grupos?: Prisma.GrupoMiembroListRelationFilter
   visitas?: Prisma.VisitaPersonalListRelationFilter
+  novedades?: Prisma.VisitaNovedadListRelationFilter
 }
 
 export type PersonalOrderByWithRelationInput = {
@@ -315,6 +316,7 @@ export type PersonalOrderByWithRelationInput = {
   user?: Prisma.UserOrderByWithRelationInput
   grupos?: Prisma.GrupoMiembroOrderByRelationAggregateInput
   visitas?: Prisma.VisitaPersonalOrderByRelationAggregateInput
+  novedades?: Prisma.VisitaNovedadOrderByRelationAggregateInput
 }
 
 export type PersonalWhereUniqueInput = Prisma.AtLeast<{
@@ -340,6 +342,7 @@ export type PersonalWhereUniqueInput = Prisma.AtLeast<{
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   grupos?: Prisma.GrupoMiembroListRelationFilter
   visitas?: Prisma.VisitaPersonalListRelationFilter
+  novedades?: Prisma.VisitaNovedadListRelationFilter
 }, "id" | "userId">
 
 export type PersonalOrderByWithAggregationInput = {
@@ -401,6 +404,7 @@ export type PersonalCreateInput = {
   user?: Prisma.UserCreateNestedOneWithoutPersonalInput
   grupos?: Prisma.GrupoMiembroCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalUncheckedCreateInput = {
@@ -420,6 +424,7 @@ export type PersonalUncheckedCreateInput = {
   updatedById?: string | null
   grupos?: Prisma.GrupoMiembroUncheckedCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadUncheckedCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalUpdateInput = {
@@ -439,6 +444,7 @@ export type PersonalUpdateInput = {
   user?: Prisma.UserUpdateOneWithoutPersonalNestedInput
   grupos?: Prisma.GrupoMiembroUpdateManyWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateInput = {
@@ -458,6 +464,7 @@ export type PersonalUncheckedUpdateInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grupos?: Prisma.GrupoMiembroUncheckedUpdateManyWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUncheckedUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalCreateManyInput = {
@@ -703,6 +710,20 @@ export type PersonalUncheckedUpdateOneWithoutUserNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PersonalUpdateToOneWithWhereWithoutUserInput, Prisma.PersonalUpdateWithoutUserInput>, Prisma.PersonalUncheckedUpdateWithoutUserInput>
 }
 
+export type PersonalCreateNestedOneWithoutNovedadesInput = {
+  create?: Prisma.XOR<Prisma.PersonalCreateWithoutNovedadesInput, Prisma.PersonalUncheckedCreateWithoutNovedadesInput>
+  connectOrCreate?: Prisma.PersonalCreateOrConnectWithoutNovedadesInput
+  connect?: Prisma.PersonalWhereUniqueInput
+}
+
+export type PersonalUpdateOneRequiredWithoutNovedadesNestedInput = {
+  create?: Prisma.XOR<Prisma.PersonalCreateWithoutNovedadesInput, Prisma.PersonalUncheckedCreateWithoutNovedadesInput>
+  connectOrCreate?: Prisma.PersonalCreateOrConnectWithoutNovedadesInput
+  upsert?: Prisma.PersonalUpsertWithoutNovedadesInput
+  connect?: Prisma.PersonalWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PersonalUpdateToOneWithWhereWithoutNovedadesInput, Prisma.PersonalUpdateWithoutNovedadesInput>, Prisma.PersonalUncheckedUpdateWithoutNovedadesInput>
+}
+
 export type PersonalCreateNestedOneWithoutVisitasInput = {
   create?: Prisma.XOR<Prisma.PersonalCreateWithoutVisitasInput, Prisma.PersonalUncheckedCreateWithoutVisitasInput>
   connectOrCreate?: Prisma.PersonalCreateOrConnectWithoutVisitasInput
@@ -747,6 +768,7 @@ export type PersonalCreateWithoutCreatedByInput = {
   user?: Prisma.UserCreateNestedOneWithoutPersonalInput
   grupos?: Prisma.GrupoMiembroCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalUncheckedCreateWithoutCreatedByInput = {
@@ -765,6 +787,7 @@ export type PersonalUncheckedCreateWithoutCreatedByInput = {
   updatedById?: string | null
   grupos?: Prisma.GrupoMiembroUncheckedCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadUncheckedCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalCreateOrConnectWithoutCreatedByInput = {
@@ -793,6 +816,7 @@ export type PersonalCreateWithoutUpdatedByInput = {
   user?: Prisma.UserCreateNestedOneWithoutPersonalInput
   grupos?: Prisma.GrupoMiembroCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalUncheckedCreateWithoutUpdatedByInput = {
@@ -811,6 +835,7 @@ export type PersonalUncheckedCreateWithoutUpdatedByInput = {
   createdById?: string | null
   grupos?: Prisma.GrupoMiembroUncheckedCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadUncheckedCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalCreateOrConnectWithoutUpdatedByInput = {
@@ -839,6 +864,7 @@ export type PersonalCreateWithoutUserInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutPersonalUpdatedInput
   grupos?: Prisma.GrupoMiembroCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalUncheckedCreateWithoutUserInput = {
@@ -857,6 +883,7 @@ export type PersonalUncheckedCreateWithoutUserInput = {
   updatedById?: string | null
   grupos?: Prisma.GrupoMiembroUncheckedCreateNestedManyWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadUncheckedCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalCreateOrConnectWithoutUserInput = {
@@ -943,6 +970,7 @@ export type PersonalUpdateWithoutUserInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutPersonalUpdatedNestedInput
   grupos?: Prisma.GrupoMiembroUpdateManyWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateWithoutUserInput = {
@@ -954,6 +982,99 @@ export type PersonalUncheckedUpdateWithoutUserInput = {
   sueldo?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   tipo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   estado?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  grupos?: Prisma.GrupoMiembroUncheckedUpdateManyWithoutPersonalNestedInput
+  visitas?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUncheckedUpdateManyWithoutPersonalNestedInput
+}
+
+export type PersonalCreateWithoutNovedadesInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  telefono?: string | null
+  especialidad?: string | null
+  sueldo?: number | null
+  tipo?: string | null
+  estado?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdBy?: Prisma.UserCreateNestedOneWithoutPersonalCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutPersonalUpdatedInput
+  user?: Prisma.UserCreateNestedOneWithoutPersonalInput
+  grupos?: Prisma.GrupoMiembroCreateNestedManyWithoutPersonalInput
+  visitas?: Prisma.VisitaPersonalCreateNestedManyWithoutPersonalInput
+}
+
+export type PersonalUncheckedCreateWithoutNovedadesInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  telefono?: string | null
+  especialidad?: string | null
+  sueldo?: number | null
+  tipo?: string | null
+  estado?: string
+  userId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  grupos?: Prisma.GrupoMiembroUncheckedCreateNestedManyWithoutPersonalInput
+  visitas?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutPersonalInput
+}
+
+export type PersonalCreateOrConnectWithoutNovedadesInput = {
+  where: Prisma.PersonalWhereUniqueInput
+  create: Prisma.XOR<Prisma.PersonalCreateWithoutNovedadesInput, Prisma.PersonalUncheckedCreateWithoutNovedadesInput>
+}
+
+export type PersonalUpsertWithoutNovedadesInput = {
+  update: Prisma.XOR<Prisma.PersonalUpdateWithoutNovedadesInput, Prisma.PersonalUncheckedUpdateWithoutNovedadesInput>
+  create: Prisma.XOR<Prisma.PersonalCreateWithoutNovedadesInput, Prisma.PersonalUncheckedCreateWithoutNovedadesInput>
+  where?: Prisma.PersonalWhereInput
+}
+
+export type PersonalUpdateToOneWithWhereWithoutNovedadesInput = {
+  where?: Prisma.PersonalWhereInput
+  data: Prisma.XOR<Prisma.PersonalUpdateWithoutNovedadesInput, Prisma.PersonalUncheckedUpdateWithoutNovedadesInput>
+}
+
+export type PersonalUpdateWithoutNovedadesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  especialidad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sueldo?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tipo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneWithoutPersonalCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutPersonalUpdatedNestedInput
+  user?: Prisma.UserUpdateOneWithoutPersonalNestedInput
+  grupos?: Prisma.GrupoMiembroUpdateManyWithoutPersonalNestedInput
+  visitas?: Prisma.VisitaPersonalUpdateManyWithoutPersonalNestedInput
+}
+
+export type PersonalUncheckedUpdateWithoutNovedadesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  especialidad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sueldo?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tipo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -979,6 +1100,7 @@ export type PersonalCreateWithoutVisitasInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutPersonalUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutPersonalInput
   grupos?: Prisma.GrupoMiembroCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalUncheckedCreateWithoutVisitasInput = {
@@ -997,6 +1119,7 @@ export type PersonalUncheckedCreateWithoutVisitasInput = {
   createdById?: string | null
   updatedById?: string | null
   grupos?: Prisma.GrupoMiembroUncheckedCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadUncheckedCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalCreateOrConnectWithoutVisitasInput = {
@@ -1031,6 +1154,7 @@ export type PersonalUpdateWithoutVisitasInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutPersonalUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutPersonalNestedInput
   grupos?: Prisma.GrupoMiembroUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateWithoutVisitasInput = {
@@ -1049,6 +1173,7 @@ export type PersonalUncheckedUpdateWithoutVisitasInput = {
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grupos?: Prisma.GrupoMiembroUncheckedUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUncheckedUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalCreateWithoutGruposInput = {
@@ -1067,6 +1192,7 @@ export type PersonalCreateWithoutGruposInput = {
   updatedBy?: Prisma.UserCreateNestedOneWithoutPersonalUpdatedInput
   user?: Prisma.UserCreateNestedOneWithoutPersonalInput
   visitas?: Prisma.VisitaPersonalCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalUncheckedCreateWithoutGruposInput = {
@@ -1085,6 +1211,7 @@ export type PersonalUncheckedCreateWithoutGruposInput = {
   createdById?: string | null
   updatedById?: string | null
   visitas?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutPersonalInput
+  novedades?: Prisma.VisitaNovedadUncheckedCreateNestedManyWithoutPersonalInput
 }
 
 export type PersonalCreateOrConnectWithoutGruposInput = {
@@ -1119,6 +1246,7 @@ export type PersonalUpdateWithoutGruposInput = {
   updatedBy?: Prisma.UserUpdateOneWithoutPersonalUpdatedNestedInput
   user?: Prisma.UserUpdateOneWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateWithoutGruposInput = {
@@ -1137,6 +1265,7 @@ export type PersonalUncheckedUpdateWithoutGruposInput = {
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visitas?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUncheckedUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalCreateManyCreatedByInput = {
@@ -1187,6 +1316,7 @@ export type PersonalUpdateWithoutCreatedByInput = {
   user?: Prisma.UserUpdateOneWithoutPersonalNestedInput
   grupos?: Prisma.GrupoMiembroUpdateManyWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateWithoutCreatedByInput = {
@@ -1205,6 +1335,7 @@ export type PersonalUncheckedUpdateWithoutCreatedByInput = {
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grupos?: Prisma.GrupoMiembroUncheckedUpdateManyWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUncheckedUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateManyWithoutCreatedByInput = {
@@ -1239,6 +1370,7 @@ export type PersonalUpdateWithoutUpdatedByInput = {
   user?: Prisma.UserUpdateOneWithoutPersonalNestedInput
   grupos?: Prisma.GrupoMiembroUpdateManyWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateWithoutUpdatedByInput = {
@@ -1257,6 +1389,7 @@ export type PersonalUncheckedUpdateWithoutUpdatedByInput = {
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   grupos?: Prisma.GrupoMiembroUncheckedUpdateManyWithoutPersonalNestedInput
   visitas?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutPersonalNestedInput
+  novedades?: Prisma.VisitaNovedadUncheckedUpdateManyWithoutPersonalNestedInput
 }
 
 export type PersonalUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -1283,11 +1416,13 @@ export type PersonalUncheckedUpdateManyWithoutUpdatedByInput = {
 export type PersonalCountOutputType = {
   grupos: number
   visitas: number
+  novedades: number
 }
 
 export type PersonalCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   grupos?: boolean | PersonalCountOutputTypeCountGruposArgs
   visitas?: boolean | PersonalCountOutputTypeCountVisitasArgs
+  novedades?: boolean | PersonalCountOutputTypeCountNovedadesArgs
 }
 
 /**
@@ -1314,6 +1449,13 @@ export type PersonalCountOutputTypeCountVisitasArgs<ExtArgs extends runtime.Type
   where?: Prisma.VisitaPersonalWhereInput
 }
 
+/**
+ * PersonalCountOutputType without action
+ */
+export type PersonalCountOutputTypeCountNovedadesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VisitaNovedadWhereInput
+}
+
 
 export type PersonalSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1335,6 +1477,7 @@ export type PersonalSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   user?: boolean | Prisma.Personal$userArgs<ExtArgs>
   grupos?: boolean | Prisma.Personal$gruposArgs<ExtArgs>
   visitas?: boolean | Prisma.Personal$visitasArgs<ExtArgs>
+  novedades?: boolean | Prisma.Personal$novedadesArgs<ExtArgs>
   _count?: boolean | Prisma.PersonalCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["personal"]>
 
@@ -1402,6 +1545,7 @@ export type PersonalInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   user?: boolean | Prisma.Personal$userArgs<ExtArgs>
   grupos?: boolean | Prisma.Personal$gruposArgs<ExtArgs>
   visitas?: boolean | Prisma.Personal$visitasArgs<ExtArgs>
+  novedades?: boolean | Prisma.Personal$novedadesArgs<ExtArgs>
   _count?: boolean | Prisma.PersonalCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PersonalIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1423,6 +1567,7 @@ export type $PersonalPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     user: Prisma.$UserPayload<ExtArgs> | null
     grupos: Prisma.$GrupoMiembroPayload<ExtArgs>[]
     visitas: Prisma.$VisitaPersonalPayload<ExtArgs>[]
+    novedades: Prisma.$VisitaNovedadPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1838,6 +1983,7 @@ export interface Prisma__PersonalClient<T, Null = never, ExtArgs extends runtime
   user<T extends Prisma.Personal$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Personal$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   grupos<T extends Prisma.Personal$gruposArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Personal$gruposArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GrupoMiembroPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visitas<T extends Prisma.Personal$visitasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Personal$visitasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaPersonalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  novedades<T extends Prisma.Personal$novedadesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Personal$novedadesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VisitaNovedadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2384,6 +2530,30 @@ export type Personal$visitasArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.VisitaPersonalScalarFieldEnum | Prisma.VisitaPersonalScalarFieldEnum[]
+}
+
+/**
+ * Personal.novedades
+ */
+export type Personal$novedadesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VisitaNovedad
+   */
+  select?: Prisma.VisitaNovedadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VisitaNovedad
+   */
+  omit?: Prisma.VisitaNovedadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VisitaNovedadInclude<ExtArgs> | null
+  where?: Prisma.VisitaNovedadWhereInput
+  orderBy?: Prisma.VisitaNovedadOrderByWithRelationInput | Prisma.VisitaNovedadOrderByWithRelationInput[]
+  cursor?: Prisma.VisitaNovedadWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VisitaNovedadScalarFieldEnum | Prisma.VisitaNovedadScalarFieldEnum[]
 }
 
 /**

@@ -76,10 +76,21 @@ export const EstadoVisita = {
   EN_CURSO: 'EN_CURSO',
   COMPLETADA: 'COMPLETADA',
   INCOMPLETA: 'INCOMPLETA',
+  NO_REALIZADA: 'NO_REALIZADA',
   CANCELADA: 'CANCELADA'
 } as const
 
 export type EstadoVisita = (typeof EstadoVisita)[keyof typeof EstadoVisita]
+
+
+export const MotivoNovedad = {
+  NADIE_EN_CASA: 'NADIE_EN_CASA',
+  SIN_ACCESO: 'SIN_ACCESO',
+  CLIENTE_CANCELO: 'CLIENTE_CANCELO',
+  OTRO: 'OTRO'
+} as const
+
+export type MotivoNovedad = (typeof MotivoNovedad)[keyof typeof MotivoNovedad]
 
 
 export const TipoNotificacion = {

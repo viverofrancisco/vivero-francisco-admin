@@ -77,6 +77,24 @@ export default async function VisitaDetailPage({
         select: { id: true, url: true, tipo: true, tareaId: true },
         orderBy: { createdAt: "asc" as const },
       },
+      // Lo que alguien reportó desde el jardín, y el par de enlaces de una
+      // visita reprogramada: de cuál viene y con cuál se repitió.
+      novedades: {
+        orderBy: { marcadaEl: "asc" as const },
+        include: {
+          fotos: {
+            select: { id: true, url: true },
+            orderBy: { createdAt: "asc" as const },
+          },
+        },
+      },
+      reprogramadaDe: {
+        select: { id: true, numero: true, fechaProgramada: true },
+      },
+      reprogramaciones: {
+        where: { deletedAt: null },
+        select: { id: true, numero: true, fechaProgramada: true, estado: true },
+      },
     },
   });
 
@@ -135,6 +153,39 @@ export default async function VisitaDetailPage({
     estado: visita.estado,
     notas: visita.notas,
     notasIncompleto: visita.notasIncompleto,
+    motivoNoRealizada: visita.motivoNoRealizada,
+    // El jardinero ve la novedad que reportó él, como con las fotos: la de un
+    // compañero es de ese compañero y de la oficina.
+    novedades: visita.novedades.filter(
+      (n) => user.role !== "PERSONAL" || n.personalId === user.personalId
+    ).map((n) => ({
+      id: n.id,
+      personalId: n.personalId,
+      personalNombre: n.personalNombre,
+      motivo: n.motivo,
+      nota: n.nota,
+      fotos: n.fotos,
+      marcadaEl: n.marcadaEl.toISOString(),
+      recibidaEl: n.recibidaEl.toISOString(),
+      sinConexion: n.sinConexion,
+      lat: n.lat,
+      lng: n.lng,
+      precision: n.precision,
+      simulada: n.simulada,
+    })),
+    reprogramadaDe: visita.reprogramadaDe && {
+      id: visita.reprogramadaDe.id,
+      numero: visita.reprogramadaDe.numero,
+      fechaProgramada: visita.reprogramadaDe.fechaProgramada
+        .toISOString()
+        .split("T")[0],
+    },
+    reprogramaciones: visita.reprogramaciones.map((r) => ({
+      id: r.id,
+      numero: r.numero,
+      estado: r.estado,
+      fechaProgramada: r.fechaProgramada.toISOString().split("T")[0],
+    })),
     media: visita.media,
     cliente: visita.cliente,
     propiedad: visita.propiedad,

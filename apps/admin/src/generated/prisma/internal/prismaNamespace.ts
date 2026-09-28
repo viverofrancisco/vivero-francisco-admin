@@ -405,6 +405,8 @@ export const ModelName = {
   Grupo: 'Grupo',
   Tarea: 'Tarea',
   Visita: 'Visita',
+  VisitaNovedad: 'VisitaNovedad',
+  VisitaNovedadFoto: 'VisitaNovedadFoto',
   VisitaPersonal: 'VisitaPersonal',
   VisitaPersonalTarea: 'VisitaPersonalTarea',
   CalificacionVisita: 'CalificacionVisita',
@@ -458,7 +460,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "personal" | "grupo" | "tarea" | "visita" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "personal" | "grupo" | "tarea" | "visita" | "visitaNovedad" | "visitaNovedadFoto" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2013,6 +2015,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.VisitaCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.VisitaCountAggregateOutputType> | number
+        }
+      }
+    }
+    VisitaNovedad: {
+      payload: Prisma.$VisitaNovedadPayload<ExtArgs>
+      fields: Prisma.VisitaNovedadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VisitaNovedadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VisitaNovedadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>
+        }
+        findFirst: {
+          args: Prisma.VisitaNovedadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VisitaNovedadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>
+        }
+        findMany: {
+          args: Prisma.VisitaNovedadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>[]
+        }
+        create: {
+          args: Prisma.VisitaNovedadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>
+        }
+        createMany: {
+          args: Prisma.VisitaNovedadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VisitaNovedadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>[]
+        }
+        delete: {
+          args: Prisma.VisitaNovedadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>
+        }
+        update: {
+          args: Prisma.VisitaNovedadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>
+        }
+        deleteMany: {
+          args: Prisma.VisitaNovedadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VisitaNovedadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VisitaNovedadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>[]
+        }
+        upsert: {
+          args: Prisma.VisitaNovedadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadPayload>
+        }
+        aggregate: {
+          args: Prisma.VisitaNovedadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVisitaNovedad>
+        }
+        groupBy: {
+          args: Prisma.VisitaNovedadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VisitaNovedadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VisitaNovedadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VisitaNovedadCountAggregateOutputType> | number
+        }
+      }
+    }
+    VisitaNovedadFoto: {
+      payload: Prisma.$VisitaNovedadFotoPayload<ExtArgs>
+      fields: Prisma.VisitaNovedadFotoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VisitaNovedadFotoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VisitaNovedadFotoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>
+        }
+        findFirst: {
+          args: Prisma.VisitaNovedadFotoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VisitaNovedadFotoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>
+        }
+        findMany: {
+          args: Prisma.VisitaNovedadFotoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>[]
+        }
+        create: {
+          args: Prisma.VisitaNovedadFotoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>
+        }
+        createMany: {
+          args: Prisma.VisitaNovedadFotoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VisitaNovedadFotoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>[]
+        }
+        delete: {
+          args: Prisma.VisitaNovedadFotoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>
+        }
+        update: {
+          args: Prisma.VisitaNovedadFotoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>
+        }
+        deleteMany: {
+          args: Prisma.VisitaNovedadFotoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VisitaNovedadFotoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VisitaNovedadFotoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>[]
+        }
+        upsert: {
+          args: Prisma.VisitaNovedadFotoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitaNovedadFotoPayload>
+        }
+        aggregate: {
+          args: Prisma.VisitaNovedadFotoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVisitaNovedadFoto>
+        }
+        groupBy: {
+          args: Prisma.VisitaNovedadFotoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VisitaNovedadFotoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VisitaNovedadFotoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VisitaNovedadFotoCountAggregateOutputType> | number
         }
       }
     }
@@ -5197,10 +5347,44 @@ export const VisitaScalarFieldEnum = {
   completadaPorId: 'completadaPorId',
   completadaPorNombre: 'completadaPorNombre',
   deletedById: 'deletedById',
-  deletedByNombre: 'deletedByNombre'
+  deletedByNombre: 'deletedByNombre',
+  motivoNoRealizada: 'motivoNoRealizada',
+  reprogramadaDeId: 'reprogramadaDeId'
 } as const
 
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]
+
+
+export const VisitaNovedadScalarFieldEnum = {
+  id: 'id',
+  visitaId: 'visitaId',
+  personalId: 'personalId',
+  personalNombre: 'personalNombre',
+  motivo: 'motivo',
+  nota: 'nota',
+  marcadaEl: 'marcadaEl',
+  recibidaEl: 'recibidaEl',
+  sinConexion: 'sinConexion',
+  lat: 'lat',
+  lng: 'lng',
+  precision: 'precision',
+  simulada: 'simulada',
+  dispositivo: 'dispositivo',
+  createdAt: 'createdAt'
+} as const
+
+export type VisitaNovedadScalarFieldEnum = (typeof VisitaNovedadScalarFieldEnum)[keyof typeof VisitaNovedadScalarFieldEnum]
+
+
+export const VisitaNovedadFotoScalarFieldEnum = {
+  id: 'id',
+  novedadId: 'novedadId',
+  key: 'key',
+  url: 'url',
+  createdAt: 'createdAt'
+} as const
+
+export type VisitaNovedadFotoScalarFieldEnum = (typeof VisitaNovedadFotoScalarFieldEnum)[keyof typeof VisitaNovedadFotoScalarFieldEnum]
 
 
 export const VisitaPersonalScalarFieldEnum = {
@@ -6051,6 +6235,20 @@ export type ListEnumEstadoVisitaFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'MotivoNovedad'
+ */
+export type EnumMotivoNovedadFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MotivoNovedad'>
+    
+
+
+/**
+ * Reference to a field of type 'MotivoNovedad[]'
+ */
+export type ListEnumMotivoNovedadFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MotivoNovedad[]'>
+    
+
+
+/**
  * Reference to a field of type 'TipoNotificacion'
  */
 export type EnumTipoNotificacionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoNotificacion'>
@@ -6362,6 +6560,8 @@ export type GlobalOmitConfig = {
   grupo?: Prisma.GrupoOmit
   tarea?: Prisma.TareaOmit
   visita?: Prisma.VisitaOmit
+  visitaNovedad?: Prisma.VisitaNovedadOmit
+  visitaNovedadFoto?: Prisma.VisitaNovedadFotoOmit
   visitaPersonal?: Prisma.VisitaPersonalOmit
   visitaPersonalTarea?: Prisma.VisitaPersonalTareaOmit
   calificacionVisita?: Prisma.CalificacionVisitaOmit

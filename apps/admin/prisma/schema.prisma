@@ -142,7 +142,20 @@ enum EstadoVisita {
   EN_CURSO
   COMPLETADA
   INCOMPLETA
+  /// La cuadrilla fue y no hubo trabajo: nadie en casa, el portón cerrado, el
+  /// cliente la canceló en la puerta. No es CANCELADA —eso se decide antes y
+  /// nadie viaja— ni INCOMPLETA —ahí se trabajó a medias—. Hay un viaje
+  /// hecho, se puede cobrar, y casi siempre viene de una `VisitaNovedad`.
+  NO_REALIZADA
   CANCELADA
+}
+
+/// Por qué no se pudo hacer una visita. Lista cerrada, como las tareas.
+enum MotivoNovedad {
+  NADIE_EN_CASA
+  SIN_ACCESO
+  CLIENTE_CANCELO
+  OTRO
 }
 
 enum TipoNotificacion {
@@ -768,7 +781,8 @@ model Personal {
 
   user    User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   grupos  GrupoMiembro[]
-  visitas VisitaPersonal[]
+  visitas   VisitaPersonal[]
+  novedades VisitaNovedad[]
 }
 
 model Grupo {
@@ -916,9 +930,21 @@ model Visita {
   /// la cuenta se borra; el texto es lo que se muestra.
   deletedById         String?
   deletedByNombre     String?
+  /// Solo en NO_REALIZADA: por qué no se hizo, de la lista cerrada. El texto
+  /// libre va en `notasIncompleto`, como en las otras dos formas de cerrar.
+  /// Se limpia si la visita sale de ese estado.
+  motivoNoRealizada   MotivoNovedad?
+  /// De qué visita es la repetición, cuando se reprogramó una que no se pudo
+  /// hacer. Es lo que deja ir de la visita fallida a la que la reemplaza y
+  /// volver, y lo que dice que el viaje en falso y el trabajo de la semana
+  /// siguiente son el mismo encargo.
+  reprogramadaDeId    String?
 
   cliente            Cliente                  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   propiedad          Propiedad                @relation(fields: [propiedadId], references: [id], onDelete: Restrict)
+  reprogramadaDe     Visita?                  @relation("Reprogramacion", fields: [reprogramadaDeId], references: [id], onDelete: SetNull)
+  reprogramaciones   Visita[]                 @relation("Reprogramacion")
+  novedades          VisitaNovedad[]
   tareasObligatorias VisitaTareaObligatoria[]
   calificacion       CalificacionVisita?
   grupo              Grupo?                   @relation(fields: [grupoId], references: [id], onDelete: SetNull)
@@ -939,6 +965,66 @@ model Visita {
   @@index([fechaProgramada])
   /// Para filtrar "completadas entre estas fechas" sin recorrer la tabla.
   @@index([completadaEl])
+  @@index([reprogramadaDeId])
+}
+
+/// "Llegué y no pude hacer la visita", dicho desde el jardín.
+///
+/// Es lo tercero que un jardinero puede decir de una visita, después de marcar
+/// entrada y salida, y lleva la misma evidencia que una marca: el instante, la
+/// ubicación y el aparato. Existe porque sin esto no había camino honesto: la
+/// salida exige una tarea, cancelar es del cliente o de un administrador, y lo
+/// que quedaba era el chat, que no deja nada en la visita. Con esto, "estuvimos
+/// a las 8:12 y nadie abrió" queda anotado con su hora y su punto, que es lo
+/// que se le contesta al cliente que dice que nunca fueron.
+///
+/// **No cierra la visita.** Es un hecho que un administrador mira y resuelve:
+/// reprogramar, cancelar o cerrarla como NO_REALIZADA. Una por persona y por
+/// visita: dos de la misma cuadrilla pueden reportar, y un reintento sin señal
+/// llega con el mismo `marcadaEl` y no crea otra.
+model VisitaNovedad {
+  id             String        @id @default(cuid())
+  visitaId       String
+  personalId     String
+  /// El nombre de quien reportó, congelado: el id filtra, el texto se muestra.
+  personalNombre String
+  motivo         MotivoNovedad
+  nota           String?       @db.Text
+  /// Cuándo se reportó, según el teléfono si fue sin señal. Ver
+  /// `VisitaPersonal.entradaEl` y `entradaRecibidaEl`: la misma pareja.
+  marcadaEl      DateTime
+  recibidaEl     DateTime      @default(now())
+  sinConexion    Boolean       @default(false)
+  lat            Float?
+  lng            Float?
+  precision      Float?
+  simulada       Boolean?
+  dispositivo    String?
+  createdAt      DateTime      @default(now())
+
+  visita   Visita              @relation(fields: [visitaId], references: [id], onDelete: Cascade)
+  personal Personal            @relation(fields: [personalId], references: [id], onDelete: Restrict)
+  fotos    VisitaNovedadFoto[]
+
+  @@unique([visitaId, personalId])
+  @@index([personalId])
+}
+
+/// Las fotos de una novedad —el portón cerrado, la nota pegada—, las que hagan
+/// falta, como los adjuntos de un mensaje del chat. Era una columna para una
+/// sola, y la segunda foto reemplazaba a la primera. Van a un prefijo propio de
+/// R2 (`novedades/<visitaId>/…`), nunca a `VisitaMedia`: esas son las fotos del
+/// trabajo y arman el informe que se le entrega al cliente.
+model VisitaNovedadFoto {
+  id        String   @id @default(cuid())
+  novedadId String
+  key       String
+  url       String
+  createdAt DateTime @default(now())
+
+  novedad VisitaNovedad @relation(fields: [novedadId], references: [id], onDelete: Cascade)
+
+  @@index([novedadId])
 }
 
 /// Quién está asignado a una visita y **qué registró de su paso por ella**.

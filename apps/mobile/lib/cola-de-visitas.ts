@@ -6,6 +6,7 @@ import type { VisitaDetail } from "./types";
 import type { UbicacionMarcada } from "./ubicacion";
 import { apiRequest } from "./api";
 import { useConexion } from "./conexion";
+import { ArchivoAusente, subirArchivoLocal } from "./subida";
 
 /**
  * La cola de trabajo de las visitas: lo que se hizo en el jardín y todavía no
@@ -59,6 +60,18 @@ export interface FotoEnCola {
   tipo?: string;
 }
 
+/** Una foto de una novedad, en el teléfono hasta que sale. */
+export interface FotoDeNovedad {
+  uri: string;
+  fileName: string;
+  contentType: string;
+  /** De la galería del teléfono, si salió de ahí. Viaja sin uso: es de la pantalla. */
+  assetId?: string;
+  /** Lo que el servidor firmó la última vez, para no subir dos veces. */
+  key?: string;
+  uploadUrl?: string;
+}
+
 export type TrabajoEnCola =
   | (Base & {
       tipo: "ENTRADA";
@@ -73,6 +86,21 @@ export type TrabajoEnCola =
       dispositivo: string | null;
       tareaIds: string[];
     })
+  /**
+   * "Llegué y no pude hacer la visita". Viaja con lo mismo que una marca —la
+   * hora, dónde, desde qué aparato— porque es la evidencia que la respalda,
+   * y sin señal espera igual que las otras: en la vereda de una urbanización
+   * cerrada es donde menos señal hay.
+   */
+  | (Base & {
+      tipo: "NOVEDAD";
+      marcadaEl: string;
+      ubicacion: UbicacionMarcada | null;
+      dispositivo: string | null;
+      motivo: string;
+      nota: string | null;
+      fotos: FotoDeNovedad[];
+    })
   | (Base & {
       tipo: "ARCHIVOS";
       nuevas: FotoEnCola[];
@@ -83,6 +111,7 @@ export type TrabajoEnCola =
 type Nuevo =
   | Omit<Extract<TrabajoEnCola, { tipo: "ENTRADA" }>, keyof Base>
   | Omit<Extract<TrabajoEnCola, { tipo: "SALIDA" }>, keyof Base>
+  | Omit<Extract<TrabajoEnCola, { tipo: "NOVEDAD" }>, keyof Base>
   | Omit<Extract<TrabajoEnCola, { tipo: "ARCHIVOS" }>, keyof Base>;
 
 interface Cola {
@@ -208,6 +237,60 @@ export const useColaDeVisitas = create<Cola>((set, get) => {
     return nuevas;
   }
 
+  /**
+   * Las fotos de una novedad: se firman en su propia ruta —van a un prefijo
+   * aparte de las fotos del trabajo— y se suben una por una; un reintento
+   * reutiliza las firmas que ya tenía.
+   */
+  async function subirFotosDeNovedad(
+    item: Extract<TrabajoEnCola, { tipo: "NOVEDAD" }>
+  ): Promise<FotoDeNovedad[]> {
+    const sinFirma = item.fotos.filter((f) => !f.key || !f.uploadUrl);
+    let fotos = item.fotos;
+    if (sinFirma.length > 0) {
+      const firma = await apiRequest<{
+        uploads: { key: string; uploadUrl: string }[];
+      }>(`/api/mobile/visitas/${item.visitaId}/novedad/upload-url`, {
+        method: "POST",
+        body: {
+          files: sinFirma.map((f) => ({ fileName: f.fileName, contentType: f.contentType })),
+        },
+      });
+      let j = 0;
+      fotos = item.fotos.map((f) =>
+        f.key && f.uploadUrl ? f : { ...f, ...firma.uploads[j++] }
+      );
+      actualizar(item.id, { fotos });
+    }
+    for (const f of fotos) {
+      // Por la ruta del archivo, con el nativo (`subirArchivoLocal`), y no con
+      // `fetch(uri).blob()`: esa lectura falló con las fotos convertidas de la
+      // galería aunque el archivo estaba en la caché. El motivo real va al
+      // log; a la persona se le dice qué hacer.
+      let status: number;
+      try {
+        status = await subirArchivoLocal(f.uri, f.uploadUrl!, f.contentType);
+      } catch (e) {
+        console.warn("No se pudo subir la foto de la novedad", f.uri, e);
+        if (e instanceof ArchivoAusente) {
+          throw new RespuestaDelServidor(400, "Una foto ya no está en el teléfono. Vuelve a elegirla.");
+        }
+        // Sin llegar al bucket: es esperar, no un rechazo.
+        throw new RespuestaDelServidor(0, "No pudimos subir la foto.");
+      }
+      if (status === 403) {
+        actualizar(item.id, {
+          fotos: fotos.map((x) => (x === f ? { ...x, key: undefined, uploadUrl: undefined } : x)),
+        });
+        throw new RespuestaDelServidor(503, "La subida venció; se vuelve a intentar.");
+      }
+      if (status < 200 || status >= 300) {
+        throw new RespuestaDelServidor(status, "No pudimos subir una de las fotos.");
+      }
+    }
+    return fotos;
+  }
+
   return {
     items: [],
     hidratada: false,
@@ -279,6 +362,23 @@ export const useColaDeVisitas = create<Cola>((set, get) => {
                     // primer intento: en los dos casos llegó después.
                     sinConexion: item.sinConexion || item.intentos > 0,
                     ...(item.tipo === "SALIDA" ? { tareaIds: item.tareaIds } : {}),
+                  },
+                }
+              );
+            } else if (item.tipo === "NOVEDAD") {
+              const fotos = await subirFotosDeNovedad(item);
+              visita = await apiRequest<VisitaDetail>(
+                `/api/mobile/visitas/${item.visitaId}/novedad`,
+                {
+                  method: "POST",
+                  body: {
+                    motivo: item.motivo,
+                    nota: item.nota,
+                    fotos: fotos.map((f) => ({ key: f.key })),
+                    ubicacion: item.ubicacion,
+                    dispositivo: item.dispositivo,
+                    marcadaEl: item.marcadaEl,
+                    sinConexion: item.sinConexion || item.intentos > 0,
                   },
                 }
               );

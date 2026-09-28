@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
-import { fechaSola, nombreCliente } from "@vivero/shared";
+import {
+  describirMotivoNovedad,
+  fechaSola,
+  nombreCliente,
+  type MotivoNovedad,
+} from "@vivero/shared";
 import { listaTareas } from "@/lib/visita-tareas";
+import { ZONA_ECUADOR } from "@/lib/fechas";
 import { sendPushToUser, sendPushToUsers } from "./expo";
 
 // `fechaProgramada` es `@db.Date`: el día, sin hora. Formatearlo en la zona
@@ -112,9 +118,107 @@ export async function pushAlertaIncompleta(visitaId: string): Promise<void> {
   if (admins.length === 0) return;
 
   await sendPushToUsers(admins, {
-    title: `Visita ${visita.estado.toLowerCase()}`,
+    // Con la etiqueta y no el enum en minúsculas: "Visita no_realizada" no es
+    // una frase.
+    title:
+      visita.estado === "NO_REALIZADA"
+        ? "Visita no realizada"
+        : `Visita ${visita.estado.toLowerCase()}`,
     body: `${nombreCliente(visita.cliente)} — ${tareasParaAvisar(visita)}`,
     data: { type: "visita_incompleta", visitaId },
+  });
+}
+
+// ──────────────────────────────────────────────
+// Novedad: no se pudo hacer la visita
+// ──────────────────────────────────────────────
+
+/**
+ * Alguien reportó desde el jardín que no pudo hacer la visita: **a la oficina,
+ * en el momento**. Es el aviso que más vale por su hora: con la cuadrilla
+ * todavía en la puerta se puede llamar al cliente y decidir si vuelven a las
+ * tres o siguen a la próxima; una hora después es un viaje perdido.
+ */
+export async function pushNovedadDeVisita(novedadId: string): Promise<void> {
+  const novedad = await prisma.visitaNovedad.findUnique({
+    where: { id: novedadId },
+    select: {
+      motivo: true,
+      nota: true,
+      personalNombre: true,
+      visita: {
+        select: {
+          id: true,
+          numero: true,
+          cliente: { select: { nombre: true, apellido: true, empresa: true } },
+        },
+      },
+    },
+  });
+  if (!novedad) return;
+
+  const admins = await getAdminUserIds();
+  if (admins.length === 0) return;
+
+  await sendPushToUsers(admins, {
+    title: `Novedad en la visita #${novedad.visita.numero}`,
+    body: `${novedad.personalNombre}: ${describirMotivoNovedad(
+      novedad.motivo,
+      novedad.nota
+    )} — ${nombreCliente(novedad.visita.cliente)}`,
+    data: { type: "visita_novedad", visitaId: novedad.visita.id },
+  });
+}
+
+/** Lo que se le dice al cliente, por motivo. Con la hora cuando se sabe. */
+const AVISO_AL_CLIENTE: Record<MotivoNovedad, (hora: string | null) => string> = {
+  NADIE_EN_CASA: (hora) =>
+    `Fuimos ${hora ? `a las ${hora}` : "hoy"} y no había nadie para recibirnos.`,
+  SIN_ACCESO: (hora) =>
+    `Fuimos ${hora ? `a las ${hora}` : "hoy"} y no pudimos ingresar a la propiedad.`,
+  CLIENTE_CANCELO: (hora) =>
+    `La visita quedó cancelada ${hora ? `a las ${hora}` : "hoy"}, ya en el sitio.`,
+  OTRO: (hora) =>
+    `Fuimos ${hora ? `a las ${hora}` : "hoy"} y no pudimos hacer el trabajo.`,
+};
+
+/**
+ * La visita se cerró como no realizada: **al cliente**, con la hora a la que
+ * se estuvo. Es la respuesta a "ustedes nunca vinieron", y conviene que le
+ * llegue el mismo día y no cuando llega la orden.
+ */
+export async function pushVisitaNoRealizada(visitaId: string): Promise<void> {
+  const visita = await prisma.visita.findUnique({
+    where: { id: visitaId },
+    select: {
+      estado: true,
+      motivoNoRealizada: true,
+      cliente: { select: { userId: true } },
+      novedades: {
+        orderBy: { marcadaEl: "asc" },
+        take: 1,
+        select: { marcadaEl: true },
+      },
+    },
+  });
+  if (!visita || visita.estado !== "NO_REALIZADA") return;
+  const userId = visita.cliente.userId;
+  if (!userId) return;
+
+  const marcada = visita.novedades[0]?.marcadaEl ?? null;
+  const hora = marcada
+    ? marcada.toLocaleTimeString("es-EC", {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: ZONA_ECUADOR,
+      })
+    : null;
+  const decir = AVISO_AL_CLIENTE[visita.motivoNoRealizada ?? "OTRO"];
+
+  await sendPushToUser(userId, {
+    title: "No pudimos hacer la visita",
+    body: decir(hora),
+    data: { type: "visita_no_realizada", visitaId },
   });
 }
 

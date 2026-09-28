@@ -72,6 +72,8 @@ export const ModelName = {
   Grupo: 'Grupo',
   Tarea: 'Tarea',
   Visita: 'Visita',
+  VisitaNovedad: 'VisitaNovedad',
+  VisitaNovedadFoto: 'VisitaNovedadFoto',
   VisitaPersonal: 'VisitaPersonal',
   VisitaPersonalTarea: 'VisitaPersonalTarea',
   CalificacionVisita: 'CalificacionVisita',
@@ -458,10 +460,44 @@ export const VisitaScalarFieldEnum = {
   completadaPorId: 'completadaPorId',
   completadaPorNombre: 'completadaPorNombre',
   deletedById: 'deletedById',
-  deletedByNombre: 'deletedByNombre'
+  deletedByNombre: 'deletedByNombre',
+  motivoNoRealizada: 'motivoNoRealizada',
+  reprogramadaDeId: 'reprogramadaDeId'
 } as const
 
 export type VisitaScalarFieldEnum = (typeof VisitaScalarFieldEnum)[keyof typeof VisitaScalarFieldEnum]
+
+
+export const VisitaNovedadScalarFieldEnum = {
+  id: 'id',
+  visitaId: 'visitaId',
+  personalId: 'personalId',
+  personalNombre: 'personalNombre',
+  motivo: 'motivo',
+  nota: 'nota',
+  marcadaEl: 'marcadaEl',
+  recibidaEl: 'recibidaEl',
+  sinConexion: 'sinConexion',
+  lat: 'lat',
+  lng: 'lng',
+  precision: 'precision',
+  simulada: 'simulada',
+  dispositivo: 'dispositivo',
+  createdAt: 'createdAt'
+} as const
+
+export type VisitaNovedadScalarFieldEnum = (typeof VisitaNovedadScalarFieldEnum)[keyof typeof VisitaNovedadScalarFieldEnum]
+
+
+export const VisitaNovedadFotoScalarFieldEnum = {
+  id: 'id',
+  novedadId: 'novedadId',
+  key: 'key',
+  url: 'url',
+  createdAt: 'createdAt'
+} as const
+
+export type VisitaNovedadFotoScalarFieldEnum = (typeof VisitaNovedadFotoScalarFieldEnum)[keyof typeof VisitaNovedadFotoScalarFieldEnum]
 
 
 export const VisitaPersonalScalarFieldEnum = {
