@@ -20,3 +20,7 @@ aquí para los detalles.
   esquema *offline* del SRI y la clave de acceso, los emisores y su firma `.p12`
   cifrada, la numeración por serie, el RIDE, los cobros, las notas de crédito, y las
   reglas que van de la orden a la factura.
+- [publicacion-de-la-app.md](./publicacion-de-la-app.md) — subir la app a las tiendas
+  con EAS: identidad (bundle id `com.viverofrancisco.app`), los íconos generados del
+  logo, las variables que EAS necesita (la URL del portal y las claves de Maps), y los
+  pasos de iOS y de Android la primera vez.

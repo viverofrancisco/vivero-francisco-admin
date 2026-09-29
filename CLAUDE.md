@@ -13,6 +13,7 @@ Extended context lives in [`.claude/docs/`](./.claude/docs/) (see [`.claude/docs
 - [SRI e-invoicing](./.claude/docs/facturacion-sri.md) — the portal issues its own invoices: Ecuador's *offline* scheme and the clave de acceso, emisores and their encrypted `.p12`, per-series numbering, the RIDE, payments, credit notes, and the rules that take an orden to a factura.
 - [Passwords & invites](./.claude/docs/autenticacion-clientes.md) — nobody sets anyone else's password: every account starts without one and its owner sets it through a single-use link. Covers cliente login (phone/email + password), portal-user invites and resets, the three link lifetimes, and email via the Gmail API.
 - [WhatsApp notifications](./.claude/docs/notificaciones-whatsapp.md) — the Meta template system and the two seed scripts (DB rows vs. Meta templates).
+- [Publishing the app](./.claude/docs/publicacion-de-la-app.md) — EAS builds and store submission: the identity (`com.viverofrancisco.app`), the icons generated from the logo, the env vars EAS needs (the portal URL and the Maps keys), and the first-time steps for iOS and Android.
 
 ### Keep the docs current
 

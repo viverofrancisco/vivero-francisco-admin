@@ -16,8 +16,8 @@ import type { ConfigContext, ExpoConfig } from "@expo/config";
  */
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: config.name ?? "mobile",
-  slug: config.slug ?? "mobile",
+  name: config.name ?? "Vivero Francisco",
+  slug: config.slug ?? "vivero-francisco",
   ios: {
     ...config.ios,
     config: {
