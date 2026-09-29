@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { HojaInferior } from "@/components/ui/HojaInferior";
@@ -23,10 +23,15 @@ import { tema } from "@/lib/tema";
  * *Hoy* está siempre a mano, que es adonde se vuelve casi siempre.
  */
 
-/** Ancho fijo de la ficha del año, para poder scrollear hasta el elegido. */
-const ANCHO_ANIO = 72;
+/** Cuántos años entran en una página de la grilla, como en el portal. */
+const ANIOS_POR_PAGINA = 12;
 
 const DIAS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
+
+/** El primer año de la página de doce en la que cae ese año. */
+function paginaDe(anio: number) {
+  return anio - (anio % ANIOS_POR_PAGINA);
+}
 const MESES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
@@ -73,6 +78,16 @@ export function SelectorFecha({
   const [anio, setAnio] = useState(valor.getFullYear());
   /** Con el panel abierto se eligen mes y año en vez de un día. */
   const [eligiendoMes, setEligiendoMes] = useState(false);
+  /**
+   * El panel es el del portal (`MonthYearPicker`), en dos vistas: la grilla
+   * de meses del año que se está mirando, y la de años de a doce. Las
+   * flechas mueven el año o la página, y el año del medio cambia de vista.
+   * Tocar un mes cierra el panel. Estaban los meses y los años juntos en una
+   * sola pantalla, y el año perdido al pie.
+   */
+  const [vista, setVista] = useState<"meses" | "anios">("meses");
+  const [anioVisible, setAnioVisible] = useState(valor.getFullYear());
+  const [decada, setDecada] = useState(() => paginaDe(valor.getFullYear()));
 
   const hoy = new Date();
   const celdas = celdasDelMes(anio, mes);
@@ -90,22 +105,13 @@ export function SelectorFecha({
     setEligiendoMes(false);
   }
 
-  /**
-   * Diez años para cada lado, en una fila que scrollea y arranca en el año
-   * elegido. Eran ocho fichas fijas —cinco atrás, dos adelante—: un plan a
-   * tres años o una visita vieja no tenían adónde ir.
-   */
-  const anios = Array.from({ length: 21 }, (_, i) => hoy.getFullYear() - 10 + i);
-  const filaDeAnios = useRef<ScrollView>(null);
-  useEffect(() => {
-    if (!eligiendoMes) return;
-    const i = anios.indexOf(anio);
-    if (i < 0) return;
-    // Centrado, sin animar: al abrir el panel el año ya está a la vista.
-    filaDeAnios.current?.scrollTo({ x: Math.max(0, i * (ANCHO_ANIO + 8) - 130), animated: false });
-    // Solo al abrir el panel: al tocar un año no hace falta moverlo.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eligiendoMes]);
+  /** Abrir el panel parte del mes que se está viendo, no del último toqueteo. */
+  function abrirPanel() {
+    setVista("meses");
+    setAnioVisible(anio);
+    setDecada(paginaDe(anio));
+    setEligiendoMes(true);
+  }
 
   // La hoja se monta con el valor actual a la vista.
   const visibleAntes = useRef(visible);
@@ -116,7 +122,7 @@ export function SelectorFecha({
     <HojaInferior visible={visible} onCerrar={onCerrar}>
           <View style={styles.encabezado}>
             <PressableScale
-              onPress={() => setEligiendoMes((v) => !v)}
+              onPress={() => (eligiendoMes ? setEligiendoMes(false) : abrirPanel())}
               style={styles.mesBoton}
               hitSlop={6}
             >
@@ -143,47 +149,101 @@ export function SelectorFecha({
           </View>
 
           {eligiendoMes ? (
-            <ScrollView style={styles.panel}>
-              <Text style={styles.panelTitulo}>Mes</Text>
-              <View style={styles.rejilla}>
-                {MESES.map((m, i) => (
-                  <Pressable
-                    key={m}
-                    onPress={() => setMes(i)}
-                    style={[styles.ficha, i === mes && styles.fichaActiva]}
-                  >
-                    <Text style={[styles.fichaTexto, i === mes && styles.fichaTextoActivo]}>
-                      {m.slice(0, 3)}
-                    </Text>
-                  </Pressable>
-                ))}
+            <View style={styles.panel}>
+              {/* ‹ año › con el año en el medio, que cambia a la grilla de
+                  años; en esa vista las flechas mueven de a doce. */}
+              <View style={styles.panelCabecera}>
+                <PressableScale
+                  onPress={() =>
+                    vista === "meses"
+                      ? setAnioVisible(anioVisible - 1)
+                      : setDecada(decada - ANIOS_POR_PAGINA)
+                  }
+                  hitSlop={10}
+                  style={styles.flecha}
+                  accessibilityLabel={vista === "meses" ? "Año anterior" : "Años anteriores"}
+                >
+                  <Ionicons name="chevron-back" size={20} color={VERDE} />
+                </PressableScale>
+                <PressableScale
+                  onPress={() => setVista(vista === "meses" ? "anios" : "meses")}
+                  hitSlop={6}
+                  style={styles.panelAnio}
+                >
+                  <Text style={styles.panelAnioTexto}>
+                    {vista === "meses"
+                      ? anioVisible
+                      : `${decada} – ${decada + ANIOS_POR_PAGINA - 1}`}
+                  </Text>
+                  <Ionicons
+                    name={vista === "meses" ? "chevron-down" : "chevron-up"}
+                    size={16}
+                    color={VERDE}
+                  />
+                </PressableScale>
+                <PressableScale
+                  onPress={() =>
+                    vista === "meses"
+                      ? setAnioVisible(anioVisible + 1)
+                      : setDecada(decada + ANIOS_POR_PAGINA)
+                  }
+                  hitSlop={10}
+                  style={styles.flecha}
+                  accessibilityLabel={vista === "meses" ? "Año siguiente" : "Años siguientes"}
+                >
+                  <Ionicons name="chevron-forward" size={20} color={VERDE} />
+                </PressableScale>
               </View>
-              <Text style={styles.panelTitulo}>Año</Text>
-              <ScrollView
-                ref={filaDeAnios}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.filaDeAnios}
-              >
-                {anios.map((a) => (
-                  <Pressable
-                    key={a}
-                    onPress={() => setAnio(a)}
-                    style={[styles.ficha, styles.fichaDeAnio, a === anio && styles.fichaActiva]}
-                  >
-                    <Text style={[styles.fichaTexto, a === anio && styles.fichaTextoActivo]}>
-                      {a}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-              <Pressable
-                onPress={() => setEligiendoMes(false)}
-                style={styles.listo}
-              >
-                <Text style={styles.listoTexto}>Listo</Text>
-              </Pressable>
-            </ScrollView>
+
+              <View style={styles.rejilla}>
+                {vista === "meses"
+                  ? MESES.map((m, i) => {
+                      const elegido = anioVisible === anio && i === mes;
+                      const esteMes = anioVisible === hoy.getFullYear() && i === hoy.getMonth();
+                      return (
+                        <Pressable
+                          key={m}
+                          onPress={() => {
+                            setMes(i);
+                            setAnio(anioVisible);
+                            setEligiendoMes(false);
+                          }}
+                          style={[styles.ficha, styles.fichaTercio, elegido && styles.fichaActiva]}
+                        >
+                          <Text
+                            style={[
+                              styles.fichaTexto,
+                              elegido && styles.fichaTextoActivo,
+                              !elegido && esteMes && styles.fichaTextoHoy,
+                            ]}
+                          >
+                            {m.slice(0, 3)}
+                          </Text>
+                        </Pressable>
+                      );
+                    })
+                  : Array.from({ length: ANIOS_POR_PAGINA }, (_, i) => decada + i).map((a) => (
+                      <Pressable
+                        key={a}
+                        onPress={() => {
+                          setAnioVisible(a);
+                          setVista("meses");
+                        }}
+                        style={[styles.ficha, styles.fichaTercio, a === anio && styles.fichaActiva]}
+                      >
+                        <Text
+                          style={[
+                            styles.fichaTexto,
+                            a === anio && styles.fichaTextoActivo,
+                            a !== anio && a === hoy.getFullYear() && styles.fichaTextoHoy,
+                          ]}
+                        >
+                          {a}
+                        </Text>
+                      </Pressable>
+                    ))}
+              </View>
+            </View>
           ) : (
             <>
               <View style={styles.semana}>
@@ -245,8 +305,23 @@ export function SelectorFecha({
 }
 
 const styles = StyleSheet.create({
-  filaDeAnios: { gap: 8, paddingRight: 16 },
-  fichaDeAnio: { width: ANCHO_ANIO, alignItems: "center" },
+  panelCabecera: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  panelAnio: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  panelAnioTexto: { fontSize: 16, fontWeight: "700", color: "#222" },
+  fichaTercio: { flexBasis: "30%", flexGrow: 1, alignItems: "center" },
+  fichaTextoHoy: { color: VERDE, fontWeight: "800" },
   encabezado: {
     flexDirection: "row",
     alignItems: "center",
@@ -297,15 +372,6 @@ const styles = StyleSheet.create({
   hoyTexto: { color: VERDE, fontWeight: "700" },
 
   panel: { maxHeight: 340 },
-  panelTitulo: {
-    color: "#999",
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-    marginTop: 8,
-    marginBottom: 6,
-  },
   rejilla: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   ficha: {
     paddingVertical: 10,
@@ -316,12 +382,4 @@ const styles = StyleSheet.create({
   fichaActiva: { backgroundColor: VERDE },
   fichaTexto: { color: "#333", fontWeight: "600", fontSize: 14 },
   fichaTextoActivo: { color: "#fff" },
-  listo: {
-    marginTop: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: VERDE,
-    alignItems: "center",
-  },
-  listoTexto: { color: "#fff", fontWeight: "700" },
 });
