@@ -4,14 +4,11 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  View,
 } from "react-native";
 import { HelperText } from "react-native-paper";
-import {
-  BotonEliminar,
-  Campo,
-  PieDeFormulario,
-  Titulo,
-} from "@/components/ui/Formulario";
+import { BotonEliminar, Campo, Titulo } from "@/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { mensajeDeError } from "@/lib/api";
 import { tema } from "@/lib/tema";
 
@@ -22,22 +19,41 @@ import { tema } from "@/lib/tema";
  * visita, no lo que se vende. La descripción no es decoración — es el texto con
  * el que el asistente de informes escribe la sección de esa tarea, así que vale
  * la pena escribirla una vez bien.
+ *
+ * *Cancelar* · título · *Crear* / *Guardar* arriba (`EncabezadoDeFormulario`),
+ * como los demás formularios de la app y el portal en el teléfono: tenía la
+ * barra nativa con "index" en la flecha y un botón ancho al pie.
  */
 export function TareaForm({
   inicial,
-  etiqueta,
+  titulo,
+  accion,
   onSubmit,
+  onCancelar,
   onEliminar,
 }: {
   inicial?: { nombre: string; descripcion: string | null };
-  etiqueta: string;
+  titulo: string;
+  /** "Crear" o "Guardar". */
+  accion: string;
   onSubmit: (valores: { nombre: string; descripcion: string | null }) => Promise<void>;
+  onCancelar: () => void;
   onEliminar?: () => void;
 }) {
   const [nombre, setNombre] = useState(inicial?.nombre ?? "");
   const [descripcion, setDescripcion] = useState(inicial?.descripcion ?? "");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /*
+   * Al editar, *Guardar* se prende solo cuando algo difiere de lo cargado:
+   * un botón verde sobre una ficha sin tocar invita a apretarlo para nada.
+   * Al crear, con el nombre alcanza.
+   */
+  const valores = { nombre: nombre.trim(), descripcion: descripcion.trim() || null };
+  const hayCambios = inicial
+    ? valores.nombre !== inicial.nombre || valores.descripcion !== inicial.descripcion
+    : valores.nombre.length > 0;
 
   async function guardar() {
     if (!nombre.trim()) {
@@ -47,10 +63,7 @@ export function TareaForm({
     setError(null);
     setGuardando(true);
     try {
-      await onSubmit({
-        nombre: nombre.trim(),
-        descripcion: descripcion.trim() || null,
-      });
+      await onSubmit(valores);
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos guardar"));
     } finally {
@@ -59,10 +72,19 @@ export function TareaForm({
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={styles.flex}>
+      <EncabezadoDeFormulario
+        titulo={titulo}
+        accion={accion}
+        onAccion={guardar}
+        onCancelar={onCancelar}
+        cargando={guardando}
+        deshabilitado={!valores.nombre || !hayCambios}
+      />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.scroll}
@@ -96,14 +118,8 @@ export function TareaForm({
           <BotonEliminar etiqueta="Eliminar tarea" onPress={onEliminar} />
         ) : null}
       </ScrollView>
-
-      <PieDeFormulario
-        etiqueta={etiqueta}
-        onPress={guardar}
-        cargando={guardando}
-        deshabilitado={!nombre.trim()}
-      />
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 

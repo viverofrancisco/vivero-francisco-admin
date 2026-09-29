@@ -10,7 +10,9 @@ export default function PersonalNuevoScreen() {
   const router = useRouter();
   return (
     <PersonalForm
-      etiqueta="Crear ficha"
+      titulo="Nueva persona"
+      accion="Crear"
+      onCancelar={() => router.back()}
       onSubmit={async (valores) => {
         await apiRequest("/api/mobile/personal", {
           method: "POST",

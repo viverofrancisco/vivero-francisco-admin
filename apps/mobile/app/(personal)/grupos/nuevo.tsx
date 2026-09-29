@@ -6,7 +6,9 @@ export default function GrupoNuevoScreen() {
   const router = useRouter();
   return (
     <GrupoForm
-      etiqueta="Crear grupo"
+      titulo="Nuevo grupo"
+      accion="Crear"
+      onCancelar={() => router.back()}
       onSubmit={async (valores) => {
         await apiRequest("/api/mobile/grupos", { method: "POST", body: valores });
         router.back();

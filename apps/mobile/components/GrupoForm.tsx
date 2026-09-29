@@ -9,12 +9,8 @@ import {
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  BotonEliminar,
-  Campo,
-  PieDeFormulario,
-  Titulo,
-} from "@/components/ui/Formulario";
+import { BotonEliminar, Campo, Titulo } from "@/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { PersonalFicha } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -35,16 +31,25 @@ export interface DatosGrupo {
  *
  * Los miembros se eligen tocando la lista entera, sin buscador: el vivero tiene
  * cinco personas y un buscador sobre cinco filas es un campo de más.
+ *
+ * *Cancelar* · título · *Crear* / *Guardar* arriba (`EncabezadoDeFormulario`),
+ * como los demás formularios; al editar, *Guardar* se prende solo cuando algo
+ * difiere del grupo cargado, los miembros incluidos.
  */
 export function GrupoForm({
   inicial,
-  etiqueta,
+  titulo,
+  accion,
   onSubmit,
+  onCancelar,
   onEliminar,
 }: {
   inicial?: DatosGrupo;
-  etiqueta: string;
+  titulo: string;
+  /** "Crear" o "Guardar". */
+  accion: string;
   onSubmit: (valores: DatosGrupo) => Promise<void>;
+  onCancelar: () => void;
   onEliminar?: () => void;
 }) {
   const [nombre, setNombre] = useState(inicial?.nombre ?? "");
@@ -66,6 +71,21 @@ export function GrupoForm({
     );
   }
 
+  const valores: DatosGrupo = {
+    nombre: nombre.trim(),
+    descripcion: descripcion.trim() || null,
+    miembrosIds: miembros,
+  };
+  // Los miembros se comparan como conjunto: tocar y destocar a alguien deja
+  // el mismo grupo, aunque el orden del arreglo haya cambiado.
+  const mismosMiembros = (a: string[], b: string[]) =>
+    a.length === b.length && a.every((id) => b.includes(id));
+  const hayCambios = inicial
+    ? valores.nombre !== inicial.nombre ||
+      valores.descripcion !== inicial.descripcion ||
+      !mismosMiembros(valores.miembrosIds, inicial.miembrosIds)
+    : valores.nombre.length > 0;
+
   async function guardar() {
     if (!nombre.trim()) {
       setError("El nombre es obligatorio");
@@ -74,11 +94,7 @@ export function GrupoForm({
     setError(null);
     setGuardando(true);
     try {
-      await onSubmit({
-        nombre: nombre.trim(),
-        descripcion: descripcion.trim() || null,
-        miembrosIds: miembros,
-      });
+      await onSubmit(valores);
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos guardar"));
     } finally {
@@ -87,10 +103,19 @@ export function GrupoForm({
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={styles.flex}>
+      <EncabezadoDeFormulario
+        titulo={titulo}
+        accion={accion}
+        onAccion={guardar}
+        onCancelar={onCancelar}
+        cargando={guardando}
+        deshabilitado={!valores.nombre || !hayCambios}
+      />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.scroll}
@@ -153,14 +178,8 @@ export function GrupoForm({
           <BotonEliminar etiqueta="Archivar grupo" onPress={onEliminar} />
         ) : null}
       </ScrollView>
-
-      <PieDeFormulario
-        etiqueta={etiqueta}
-        onPress={guardar}
-        cargando={guardando}
-        deshabilitado={!nombre.trim()}
-      />
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 

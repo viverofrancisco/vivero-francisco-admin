@@ -4,8 +4,9 @@ export default function GruposLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="nuevo" options={{ title: "Nuevo grupo" }} />
-      <Stack.Screen name="[id]" options={{ title: "Grupo" }} />
+      {/* El formulario trae su propio encabezado (Cancelar · título · Crear). */}
+      <Stack.Screen name="nuevo" options={{ headerShown: false }} />
+      <Stack.Screen name="[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

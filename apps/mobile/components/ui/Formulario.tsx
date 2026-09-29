@@ -1,6 +1,5 @@
 import { Pressable, StyleSheet, Switch, TextInput as TextInputNativo, View } from "react-native";
-import { ActivityIndicator, Text, TextInput } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
@@ -63,46 +62,6 @@ export function Campo({
       style={[estilos.campo, multiline && estilos.campoAlto]}
       contentStyle={multiline ? estilos.campoAltoContenido : undefined}
     />
-  );
-}
-
-/**
- * La barra de guardar, pegada abajo.
- *
- * Fija y no al final del scroll: en un formulario largo, el botón que hay que
- * apretar no debería estar a seis gestos de distancia de lo último que se
- * escribió.
- */
-export function PieDeFormulario({
-  etiqueta,
-  onPress,
-  cargando,
-  deshabilitado,
-}: {
-  etiqueta: string;
-  onPress: () => void;
-  cargando?: boolean;
-  deshabilitado?: boolean;
-}) {
-  const insets = useSafeAreaInsets();
-  const apagado = cargando || deshabilitado;
-  return (
-    <View
-      style={[estilos.pie, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}
-    >
-      <PressableScale
-        onPress={onPress}
-        disabled={apagado}
-        estiloExterno={estilos.ancho}
-        style={[estilos.guardar, apagado && estilos.guardarApagado]}
-      >
-        {cargando ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={estilos.guardarTexto}>{etiqueta}</Text>
-        )}
-      </PressableScale>
-    </View>
   );
 }
 
@@ -278,28 +237,6 @@ const estilos = StyleSheet.create({
   campoAltoContenido: { paddingTop: 12, paddingBottom: 12 },
   borde: { borderRadius: 12 },
 
-  pie: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    backgroundColor: "#fff",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: tema.linea,
-  },
-  ancho: { alignSelf: "stretch" },
-  guardar: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 15,
-    borderRadius: 14,
-    backgroundColor: tema.verde,
-  },
-  guardarApagado: { backgroundColor: tema.linea },
-  guardarTexto: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    letterSpacing: 0.2,
-  },
 
   caja: {
     borderWidth: 1,

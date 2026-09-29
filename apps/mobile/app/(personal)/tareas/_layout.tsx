@@ -4,8 +4,9 @@ export default function TareasLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="nueva" options={{ title: "Nueva tarea" }} />
-      <Stack.Screen name="[id]" options={{ title: "Tarea" }} />
+      {/* El formulario trae su propio encabezado (Cancelar · título · Crear). */}
+      <Stack.Screen name="nueva" options={{ headerShown: false }} />
+      <Stack.Screen name="[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

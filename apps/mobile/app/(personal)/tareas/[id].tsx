@@ -3,6 +3,7 @@ import { Alert, ActivityIndicator, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { TareaForm } from "@/components/TareaForm";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { tema } from "@/lib/tema";
 
@@ -54,17 +55,25 @@ export default function TareaScreen() {
     );
   }
 
-  if (error && !tarea) {
-    return (
-      <View style={styles.centro}>
-        <Text style={styles.apagado}>{error}</Text>
-      </View>
-    );
-  }
+  // Sin barra nativa, el encabezado del formulario es el único; mientras
+  // carga va igual, apagado, para que la pantalla no salte al llegar la tarea.
   if (!tarea) {
     return (
-      <View style={styles.centro}>
-        <ActivityIndicator size="large" />
+      <View style={styles.flex}>
+        <EncabezadoDeFormulario
+          titulo="Tarea"
+          accion="Guardar"
+          onAccion={() => {}}
+          onCancelar={() => router.back()}
+          deshabilitado
+        />
+        <View style={styles.centro}>
+          {error ? (
+            <Text style={styles.apagado}>{error}</Text>
+          ) : (
+            <ActivityIndicator size="large" />
+          )}
+        </View>
       </View>
     );
   }
@@ -72,7 +81,9 @@ export default function TareaScreen() {
   return (
     <TareaForm
       inicial={tarea}
-      etiqueta="Guardar cambios"
+      titulo={tarea.nombre}
+      accion="Guardar"
+      onCancelar={() => router.back()}
       onEliminar={eliminar}
       onSubmit={async (valores) => {
         await apiRequest(`/api/mobile/tareas/${id}`, {
@@ -86,6 +97,7 @@ export default function TareaScreen() {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: "#fff" },
   centro: {
     flex: 1,
     alignItems: "center",

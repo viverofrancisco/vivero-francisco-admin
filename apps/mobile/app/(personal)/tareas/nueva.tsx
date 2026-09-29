@@ -6,7 +6,9 @@ export default function TareaNuevaScreen() {
   const router = useRouter();
   return (
     <TareaForm
-      etiqueta="Crear tarea"
+      titulo="Nueva tarea"
+      accion="Crear"
+      onCancelar={() => router.back()}
       onSubmit={async (valores) => {
         await apiRequest("/api/mobile/tareas", {
           method: "POST",

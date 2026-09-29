@@ -9,12 +9,8 @@ import {
   View,
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
-import {
-  BotonEliminar,
-  Campo,
-  PieDeFormulario,
-  Titulo,
-} from "@/components/ui/Formulario";
+import { BotonEliminar, Campo, Titulo } from "@/components/ui/Formulario";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { tema } from "@/lib/tema";
@@ -50,19 +46,28 @@ const ETIQUETA_TIPO: Record<string, string> = {
  * ADMIN lo cambia: se genera solo al crear la ficha (inicial del nombre más el
  * apellido) y se corrige acá cuando el generador se equivoca. Borrar la cuenta
  * para arreglar un tipeo se llevaría el historial de quién cargó cada parte.
+ *
+ * *Cancelar* · título · *Crear* / *Guardar* arriba (`EncabezadoDeFormulario`),
+ * como los demás formularios; al editar, *Guardar* se prende solo cuando algo
+ * difiere de la ficha cargada.
  */
 export function PersonalForm({
   inicial,
   usuario,
-  etiqueta,
+  titulo,
+  accion,
   onSubmit,
+  onCancelar,
   onEliminar,
 }: {
   inicial?: DatosPersonal;
   /** El usuario actual de su cuenta. Solo al editar. */
   usuario?: string | null;
-  etiqueta: string;
+  titulo: string;
+  /** "Crear" o "Guardar". */
+  accion: string;
   onSubmit: (valores: DatosPersonal) => Promise<void>;
+  onCancelar: () => void;
   onEliminar?: () => void;
 }) {
   const rol = useAuthStore((s) => s.user?.role);
@@ -78,6 +83,27 @@ export function PersonalForm({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const valores: DatosPersonal = {
+    nombre: nombre.trim(),
+    apellido: apellido.trim() || null,
+    telefono: telefono.trim() || null,
+    especialidad: especialidad.trim() || null,
+    tipo,
+    estado: activo ? "ACTIVO" : "INACTIVO",
+    // Solo viaja si esta pantalla lo muestra: el servidor lo aplica
+    // únicamente si cambió, así que mandarlo igual no molesta.
+    ...(usuario !== undefined ? { usuario: nuevoUsuario.trim() || null } : {}),
+  };
+  const hayCambios = inicial
+    ? valores.nombre !== inicial.nombre ||
+      valores.apellido !== inicial.apellido ||
+      valores.telefono !== inicial.telefono ||
+      valores.especialidad !== inicial.especialidad ||
+      valores.tipo !== inicial.tipo ||
+      valores.estado !== inicial.estado ||
+      (usuario !== undefined && (valores.usuario ?? null) !== usuario)
+    : valores.nombre.length > 0;
+
   async function guardar() {
     if (!nombre.trim()) {
       setError("El nombre es obligatorio");
@@ -86,17 +112,7 @@ export function PersonalForm({
     setError(null);
     setGuardando(true);
     try {
-      await onSubmit({
-        nombre: nombre.trim(),
-        apellido: apellido.trim() || null,
-        telefono: telefono.trim() || null,
-        especialidad: especialidad.trim() || null,
-        tipo,
-        estado: activo ? "ACTIVO" : "INACTIVO",
-        // Solo viaja si esta pantalla lo muestra: el servidor lo aplica
-        // únicamente si cambió, así que mandarlo igual no molesta.
-        ...(usuario !== undefined ? { usuario: nuevoUsuario.trim() || null } : {}),
-      });
+      await onSubmit(valores);
     } catch (e) {
       setError(mensajeDeError(e, "No pudimos guardar"));
     } finally {
@@ -105,10 +121,19 @@ export function PersonalForm({
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={styles.flex}>
+      <EncabezadoDeFormulario
+        titulo={titulo}
+        accion={accion}
+        onAccion={guardar}
+        onCancelar={onCancelar}
+        cargando={guardando}
+        deshabilitado={!valores.nombre || !hayCambios}
+      />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.scroll}
@@ -200,14 +225,8 @@ export function PersonalForm({
           <BotonEliminar etiqueta="Archivar y quitar acceso" onPress={onEliminar} />
         ) : null}
       </ScrollView>
-
-      <PieDeFormulario
-        etiqueta={etiqueta}
-        onPress={guardar}
-        cargando={guardando}
-        deshabilitado={!nombre.trim()}
-      />
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 

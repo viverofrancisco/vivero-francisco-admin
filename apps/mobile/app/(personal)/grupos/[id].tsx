@@ -3,6 +3,7 @@ import { Alert, ActivityIndicator, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { GrupoForm } from "@/components/GrupoForm";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { GrupoConMiembros } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -41,17 +42,25 @@ export default function GrupoScreen() {
     );
   }
 
-  if (error && !grupo) {
-    return (
-      <View style={styles.centro}>
-        <Text style={styles.apagado}>{error}</Text>
-      </View>
-    );
-  }
+  // Sin barra nativa, el encabezado del formulario es el único; mientras
+  // carga va igual, apagado, para que la pantalla no salte al llegar.
   if (!grupo) {
     return (
-      <View style={styles.centro}>
-        <ActivityIndicator size="large" />
+      <View style={styles.flex}>
+        <EncabezadoDeFormulario
+          titulo="Grupo"
+          accion="Guardar"
+          onAccion={() => {}}
+          onCancelar={() => router.back()}
+          deshabilitado
+        />
+        <View style={styles.centro}>
+          {error ? (
+            <Text style={styles.apagado}>{error}</Text>
+          ) : (
+            <ActivityIndicator size="large" />
+          )}
+        </View>
       </View>
     );
   }
@@ -63,7 +72,9 @@ export default function GrupoScreen() {
         descripcion: grupo.descripcion,
         miembrosIds: grupo.miembros.map((m) => m.personal.id),
       }}
-      etiqueta="Guardar cambios"
+      titulo={grupo.nombre}
+      accion="Guardar"
+      onCancelar={() => router.back()}
       onEliminar={archivar}
       onSubmit={async (valores) => {
         await apiRequest(`/api/mobile/grupos/${id}`, {
@@ -77,6 +88,7 @@ export default function GrupoScreen() {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: "#fff" },
   centro: {
     flex: 1,
     alignItems: "center",

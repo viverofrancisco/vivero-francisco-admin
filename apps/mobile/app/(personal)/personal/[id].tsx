@@ -3,6 +3,7 @@ import { Alert, ActivityIndicator, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { PersonalForm } from "@/components/PersonalForm";
+import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { PersonalFicha } from "@/lib/types";
 import { tema } from "@/lib/tema";
@@ -41,17 +42,25 @@ export default function PersonalFichaScreen() {
     );
   }
 
-  if (error && !ficha) {
-    return (
-      <View style={styles.centro}>
-        <Text style={styles.apagado}>{error}</Text>
-      </View>
-    );
-  }
+  // Sin barra nativa, el encabezado del formulario es el único; mientras
+  // carga va igual, apagado, para que la pantalla no salte al llegar.
   if (!ficha) {
     return (
-      <View style={styles.centro}>
-        <ActivityIndicator size="large" />
+      <View style={styles.flex}>
+        <EncabezadoDeFormulario
+          titulo="Ficha"
+          accion="Guardar"
+          onAccion={() => {}}
+          onCancelar={() => router.back()}
+          deshabilitado
+        />
+        <View style={styles.centro}>
+          {error ? (
+            <Text style={styles.apagado}>{error}</Text>
+          ) : (
+            <ActivityIndicator size="large" />
+          )}
+        </View>
       </View>
     );
   }
@@ -67,7 +76,9 @@ export default function PersonalFichaScreen() {
         estado: ficha.estado,
       }}
       usuario={ficha.user?.usuario ?? null}
-      etiqueta="Guardar cambios"
+      titulo={`${ficha.nombre} ${ficha.apellido ?? ""}`.trim()}
+      accion="Guardar"
+      onCancelar={() => router.back()}
       onEliminar={archivar}
       onSubmit={async (valores) => {
         await apiRequest(`/api/mobile/personal/${id}`, {
@@ -81,6 +92,7 @@ export default function PersonalFichaScreen() {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: "#fff" },
   centro: {
     flex: 1,
     alignItems: "center",

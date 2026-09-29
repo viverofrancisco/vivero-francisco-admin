@@ -524,7 +524,7 @@ longer show the native bar with "index" as the back label (the cliente's had a
 hero block under it — avatar, name, an *Editar* button and the ⋯ — two headers
 for one ficha; *Editar* now lives in the ⋯, and the estado pill, empresa and
 "cliente desde" sit under the header, on the portal's phone tree too). The create screens (*Nueva
-orden*, *Nueva suscripción*, *Emitir*, and the cliente and propiedad forms — *Nuevo cliente*, *Editar cliente*, *Nueva propiedad*, the propiedad's own screen — with `headerShown: false` in the clientes layout) use `EncabezadoDeFormulario` instead:
+orden*, *Nueva suscripción*, *Emitir*, and the cliente and propiedad forms — *Nuevo cliente*, *Editar cliente*, *Nueva propiedad*, the propiedad's own screen — with `headerShown: false` in the clientes layout; and *Nueva tarea*, *Nueva persona* and *Nuevo grupo* with their edit screens, whose `TareaForm` / `PersonalForm` / `GrupoForm` carry the header themselves and, when editing, light *Guardar* only once something differs from what was loaded — the members of a grupo compared as a set) use `EncabezadoDeFormulario` instead:
 *Cancelar* on the left, the action (*Crear*, *Emitir*) on the right, the
 title between — the portal's header on the same screens (*Nueva orden*, and
 *Nuevo cliente*, *Nuevo personal* and *Nuevo grupo* below `md` through
