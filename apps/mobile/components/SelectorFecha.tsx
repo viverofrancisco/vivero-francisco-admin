@@ -74,6 +74,7 @@ export function SelectorFecha({
   onElegir: (d: Date) => void;
   onCerrar: () => void;
 }) {
+  const hoy = new Date();
   const [mes, setMes] = useState(valor.getMonth());
   const [anio, setAnio] = useState(valor.getFullYear());
   /** Con el panel abierto se eligen mes y año en vez de un día. */
@@ -94,7 +95,6 @@ export function SelectorFecha({
     (_, i) => hoy.getFullYear() - ANIOS_ATRAS + i
   );
 
-  const hoy = new Date();
   const celdas = celdasDelMes(anio, mes);
 
   function correrMes(delta: number) {
