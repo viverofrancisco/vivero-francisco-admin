@@ -131,14 +131,12 @@ export function SelectorFecha({
                 hitSlop={6}
                 accessibilityLabel="Elegir el mes"
               >
-                <Text variant="titleMedium" style={styles.mesTexto}>
+                <Text
+                  variant="titleMedium"
+                  style={[styles.mesTexto, panel === "meses" && styles.mesTextoAbierto]}
+                >
                   {MESES[mes]}
                 </Text>
-                <Ionicons
-                  name={panel === "meses" ? "chevron-up" : "chevron-down"}
-                  size={16}
-                  color={VERDE}
-                />
               </PressableScale>
               <PressableScale
                 onPress={() => setPanel(panel === "anios" ? null : "anios")}
@@ -146,14 +144,12 @@ export function SelectorFecha({
                 hitSlop={6}
                 accessibilityLabel="Elegir el año"
               >
-                <Text variant="titleMedium" style={styles.mesTexto}>
+                <Text
+                  variant="titleMedium"
+                  style={[styles.mesTexto, panel === "anios" && styles.mesTextoAbierto]}
+                >
                   {anio}
                 </Text>
-                <Ionicons
-                  name={panel === "anios" ? "chevron-up" : "chevron-down"}
-                  size={16}
-                  color={VERDE}
-                />
               </PressableScale>
             </View>
 
@@ -307,16 +303,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 8,
   },
-  mesYAnio: { flexDirection: "row", alignItems: "center", gap: 6 },
+  mesYAnio: { flexDirection: "row", alignItems: "center", gap: 8 },
+  /* Dos botones, como las fichas de las grillas: gris, y verde el que está
+     abierto. Sin flecha: un botón ya dice que se toca. */
   mesBoton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: "#f4f4f4",
   },
-  mesBotonAbierto: { backgroundColor: "#eef5ef" },
+  mesBotonAbierto: { backgroundColor: VERDE },
+  mesTextoAbierto: { color: "#fff" },
   mesTexto: { color: "#111", fontWeight: "700" },
   flechas: { flexDirection: "row", gap: 4 },
   flecha: { padding: 8 },
