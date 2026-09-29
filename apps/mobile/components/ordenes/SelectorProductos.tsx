@@ -7,6 +7,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { PieDeLista } from "@/components/ui/PantallaLista";
 import type { ProductoVendible } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { useAltoDelTeclado } from "@/lib/use-teclado";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -148,6 +149,7 @@ export function SelectorProductos({
   const marcadasDe = (p: ProductoVendible) =>
     p.variantes.filter((v) => marcadas.has(v.id)).length;
 
+  const teclado = useAltoDelTeclado();
   return (
     <Modal
       visible={visible}
@@ -155,7 +157,7 @@ export function SelectorProductos({
       presentationStyle="pageSheet"
       onRequestClose={cerrar}
     >
-      <View style={styles.pantalla}>
+      <View style={[styles.pantalla, { paddingBottom: teclado }]}>
         {/* Cancelar / Guardar arriba, como el portal y como Shopify: son lo
             único que no se va scrolleando. Adentro de un producto, la flecha
             vuelve a la lista sin perder nada. */}

@@ -9,6 +9,7 @@ import { FichaDeVariante } from "./FichaDeVariante";
 import { resumenDeVariante } from "./formato";
 import type { ServicioDetail } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { useAltoDelTeclado } from "@/lib/use-teclado";
 
 /**
  * Las variantes de un producto, la lista de Shopify: la miniatura, el nombre
@@ -41,9 +42,10 @@ export function ListaDeVariantes({
     : producto.variantes;
   const abierta = producto.variantes.find((v) => v.id === abiertaId) ?? null;
 
+  const teclado = useAltoDelTeclado();
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onCerrar}>
-      <View style={styles.pantalla}>
+      <View style={[styles.pantalla, { paddingBottom: teclado }]}>
         <CabeceraDeHoja
           titulo="Variantes"
           subtitulo={`${producto.variantes.length} ${producto.variantes.length === 1 ? "variante" : "variantes"}`}

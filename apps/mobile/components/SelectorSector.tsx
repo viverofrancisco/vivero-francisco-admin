@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
 import { Button, Dialog, Portal, Searchbar, Text } from "react-native-paper";
 import { apiRequest } from "@/lib/api";
 import type { SectorOption, SectoresListResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { useAltoDelTeclado } from "@/lib/use-teclado";
 
 /**
  * Elegir el sector de un lugar.
@@ -46,6 +47,8 @@ export function SelectorSector({
     setAbierto(false);
   }
 
+  const teclado = useAltoDelTeclado();
+  const { height: alto } = useWindowDimensions();
   return (
     <>
       <Pressable
@@ -65,7 +68,16 @@ export function SelectorSector({
         <Dialog
           visible={abierto}
           onDismiss={() => setAbierto(false)}
-          style={styles.dialogo}
+          // Centrado en lo que el teclado deja libre, y no más alto que eso:
+          // el diálogo de Paper no se mueve solo y los sectores quedaban
+          // detrás del teclado con el buscador abierto.
+          style={[
+            styles.dialogo,
+            teclado > 0 && {
+              transform: [{ translateY: -teclado / 2 }],
+              maxHeight: alto - teclado - 48,
+            },
+          ]}
         >
           <Dialog.Title>Seleccionar sector</Dialog.Title>
           <Dialog.Content style={styles.dialogoContenido}>

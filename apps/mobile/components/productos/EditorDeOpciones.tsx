@@ -18,6 +18,7 @@ import { EditorDeOpcion, type OpcionBorrador } from "./EditorDeOpcion";
 import { apiRequest, ApiError, mensajeDeError } from "@/lib/api";
 import type { OpcionDeProducto } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { useAltoDelTeclado } from "@/lib/use-teclado";
 
 /** Cuántos ejes admite un producto, como en el servidor. */
 const MAX_OPCIONES = 3;
@@ -256,6 +257,7 @@ function AgregarOpcion({
   const personalizada = busqueda.trim();
   const personalizadaEnUso = enUso.has(personalizada.toLowerCase());
 
+  const teclado = useAltoDelTeclado();
   return (
     <Modal
       visible
@@ -263,7 +265,7 @@ function AgregarOpcion({
       presentationStyle="pageSheet"
       onRequestClose={onCerrar}
     >
-      <View style={styles.pantalla}>
+      <View style={[styles.pantalla, { paddingBottom: teclado }]}>
         <CabeceraDeHoja titulo="Agregar opción" onCerrar={onCerrar} />
         <View style={styles.buscador}>
           <Ionicons name="search" size={18} color={tema.texto3} />

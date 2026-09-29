@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { ETIQUETA_DE_ROL } from "@vivero/shared";
-import { ScrollView, StyleSheet, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -251,6 +258,12 @@ export default function ChatFormScreen() {
         </PressableScale>
       </View>
 
+      {/* El buscador de miembros está abajo del nombre y la foto: sin esto
+          la lista de resultados quedaba detrás del teclado. */}
+      <KeyboardAvoidingView
+        style={styles.crece}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
       <ScrollView contentContainerStyle={styles.cuerpo}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -352,6 +365,7 @@ export default function ChatFormScreen() {
         </>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {recortando ? (
         <RecortarFoto
@@ -366,6 +380,7 @@ export default function ChatFormScreen() {
 }
 
 const styles = StyleSheet.create({
+  crece: { flex: 1 },
   pantalla: { flex: 1, backgroundColor: tema.fondo },
   fotoBloque: { alignItems: "center", gap: 6, paddingTop: 4, paddingBottom: 12 },
   camara: {

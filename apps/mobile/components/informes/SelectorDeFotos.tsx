@@ -17,6 +17,7 @@ import { fechaSola } from "@vivero/shared";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { tema } from "@/lib/tema";
+import { useAltoDelTeclado } from "@/lib/use-teclado";
 
 /** Una foto de las visitas elegidas, de donde salen casi todas. */
 export interface MediaPoolItem {
@@ -346,6 +347,7 @@ export function SelectorDeFotos({
     setTimeout(abrir, 150);
   }
 
+  const teclado = useAltoDelTeclado();
   return (
     <Modal
       visible
@@ -356,7 +358,7 @@ export function SelectorDeFotos({
       {/* Una hoja (`pageSheet`) ya arranca debajo de la barra de estado en
           iOS: sumarle el inset del notch dejaba un dedo de blanco arriba. En
           Android el modal es la pantalla entera y ahí sí hace falta. */}
-      <View style={[styles.pantalla, { paddingTop: ARRIBA_DE_LA_HOJA(insets.top) }]}>
+      <View style={[styles.pantalla, { paddingTop: ARRIBA_DE_LA_HOJA(insets.top), paddingBottom: teclado }]}>
         <View style={styles.encabezado}>
           {hayCambios ? (
             <Pressable

@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { PressableScale } from "@/components/ui/PressableScale";
-import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -134,7 +142,12 @@ export function CalificarVisita({
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.contenido}>
+    // El comentario va al pie: sin esto el campo quedaba detrás del teclado.
+    <KeyboardAvoidingView
+      style={styles.crece}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+    <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
       <Text variant="titleMedium" style={styles.titulo}>
         ¿Cómo quedó tu jardín?
       </Text>
@@ -221,6 +234,7 @@ export function CalificarVisita({
         {inicial ? "Guardar cambios" : "Enviar"}
       </Button>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -251,6 +265,7 @@ function claveDeUrl(url: string): string {
 }
 
 const styles = StyleSheet.create({
+  crece: { flex: 1 },
   contenido: { padding: 20, gap: 16 },
   titulo: { color: "#111", fontWeight: "700", textAlign: "center" },
   estrellas: {

@@ -1,13 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Keyboard,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Extrapolation,
@@ -23,6 +15,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
 import * as Haptics from "expo-haptics";
 import { tema } from "@/lib/tema";
+import { useAltoDelTeclado } from "@/lib/use-teclado";
 
 /**
  * Una hoja que sube desde abajo y **se puede arrastrar para cerrar**.
@@ -86,18 +79,8 @@ export function HojaInferior({
   const desde = useSharedValue(0);
   /** Lo que mide la hoja de verdad, para que el umbral no sea un número inventado. */
   const [alto, setAlto] = useState(height * 0.5);
-  /** Cuánto del piso ocupa el teclado, para apoyar la hoja encima. Solo iOS. */
-  const [teclado, setTeclado] = useState(0);
-
-  useEffect(() => {
-    if (Platform.OS !== "ios") return;
-    const sub = Keyboard.addListener("keyboardWillChangeFrame", (e) => {
-      // `screenY` es dónde empieza el teclado; al cerrarse queda en el borde
-      // de la pantalla y la diferencia da cero.
-      setTeclado(Math.max(0, Math.round(height - e.endCoordinates.screenY)));
-    });
-    return () => sub.remove();
-  }, [height]);
+  /** Cuánto del piso ocupa el teclado, para apoyar la hoja encima. */
+  const teclado = useAltoDelTeclado();
 
   const cerrar = useCallback(() => onCerrar(), [onCerrar]);
 

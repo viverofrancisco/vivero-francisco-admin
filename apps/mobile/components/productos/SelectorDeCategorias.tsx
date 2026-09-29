@@ -9,6 +9,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { CategoriaListItem } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { useAltoDelTeclado } from "@/lib/use-teclado";
 
 /**
  * En qué categorías está el producto: la pantalla *Collections* de Shopify.
@@ -82,9 +83,10 @@ export function SelectorDeCategorias({
     }
   }
 
+  const teclado = useAltoDelTeclado();
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onCerrar}>
-      <View style={styles.pantalla}>
+      <View style={[styles.pantalla, { paddingBottom: teclado }]}>
         <CabeceraDeHoja
           titulo="Categorías"
           onCerrar={onCerrar}
