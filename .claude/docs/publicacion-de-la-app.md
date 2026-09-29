@@ -94,6 +94,33 @@ Es un monorepo con npm workspaces: `eas build` se corre **desde
 `apps/mobile`**, y EAS sube el repo entero (lo que git no ignora) e instala
 desde la raíz, que es donde vive `packages/shared`.
 
+## Un solo `expo` en el monorepo
+
+El primer `.apk` de EAS **se cerraba al abrir** con
+`NoClassDefFoundError: expo.modules.kotlin.types.AnyTypeCache` desde
+`DomWebViewModule`. La causa no estaba en la app sino en `node_modules`: la
+raíz tenía `expo-router` como devDependency (un resto del template) y npm,
+al resolver los peers `expo@"*"` de los paquetes izados, instaló **expo 57**
+en la raíz mientras `apps/mobile` quedaba con su expo 54 anidado. Desde
+`apps/mobile`, `require("expo")` daba 54 y `require("expo-modules-core")`
+daba el 57 de la raíz, y el build de Android compiló el módulo de uno contra
+el core del otro. iOS no se quejó porque CocoaPods resuelve cada pod desde
+el paquete que lo declara.
+
+Por eso la raíz lleva **`overrides.expo = "~54.0.33"`** (el mismo rango que
+`apps/mobile`, hay que moverlos juntos al subir de SDK) y ya no tiene
+`expo-router`. El override no bastó sobre el lockfile viejo —npm no vuelve a
+resolver lo que ya tenía resuelto— y hubo que regenerarlo desde cero
+(`rm -rf node_modules package-lock.json && npm install`). La comprobación
+rápida, desde `apps/mobile`:
+
+```bash
+node -e "console.log(require('expo/package.json').version, require('expo-modules-core/package.json').version)"
+```
+
+Tiene que dar 54.x y 3.0.x; `npx expo-doctor` también lo detecta como
+versiones que no corresponden al SDK.
+
 ## iOS, la primera vez
 
 1. Apple Developer Program a nombre del negocio (US$ 99/año). Con cuenta de
