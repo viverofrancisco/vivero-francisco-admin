@@ -49,6 +49,14 @@ export function MenuDeEncabezado({
   etiqueta?: string;
 }) {
   const ancla = useRef<View>(null);
+  const [abierto, setAbierto] = useState(false);
+  /*
+   * La posición vive aparte de si está abierto, y **no se borra al cerrar**:
+   * el `Modal` hace su fundido de salida después de `visible={false}`, y si
+   * la posición se iba con él, el menú perdía su `top`/`right` justo en ese
+   * instante y se fundía en la esquina de arriba a la izquierda. Se
+   * sobreescribe en cada apertura, que es cuando el botón se vuelve a medir.
+   */
   const [desde, setDesde] = useState<{ top?: number; bottom?: number; right: number } | null>(
     null
   );
@@ -64,7 +72,12 @@ export function MenuDeEncabezado({
         // ancho que él, así que crece hacia adentro de la pantalla.
         right: ventana.width - (x + ancho),
       });
+      setAbierto(true);
     });
+  }
+
+  function cerrar() {
+    setAbierto(false);
   }
 
   return (
@@ -86,13 +99,13 @@ export function MenuDeEncabezado({
       </View>
 
       <Modal
-        visible={desde !== null}
+        visible={abierto}
         transparent
         animationType="fade"
-        onRequestClose={() => setDesde(null)}
+        onRequestClose={cerrar}
       >
         {/* Tocar afuera cierra, que es lo que hace un desplegable. */}
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => setDesde(null)}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={cerrar}>
           <View
             style={[styles.menu, desde ?? undefined]}
             // El toque adentro del menú no tiene que cerrarlo.
@@ -102,7 +115,7 @@ export function MenuDeEncabezado({
               <PressableScale
                 key={o.etiqueta}
                 onPress={() => {
-                  setDesde(null);
+                  cerrar();
                   o.onPress();
                 }}
                 estiloExterno={styles.ancho}
