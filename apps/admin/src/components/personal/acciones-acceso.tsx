@@ -18,7 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  BOTON_REDONDO_MOVIL,
+  ICONO_BOTON_REDONDO,
+} from "@/components/shared/boton-redondo-movil";
 import { toast } from "sonner";
 import {
   EnlaceAcceso,
@@ -112,14 +117,26 @@ export function AccionesAcceso({
   return (
     <>
       <DropdownMenu>
+        {/* En el teléfono es el ⋯ redondo de toda ficha, el mismo que la app;
+            en escritorio sigue siendo el botón *Acciones*. Un solo botón con
+            clases por tamaño, no dos: el disparador del menú es uno. */}
         <DropdownMenuTrigger
           render={
-            <Button variant="outline" size="sm" disabled={cargando}>
-              Acciones
-              <ChevronDown className="ml-1.5 h-3.5 w-3.5" />
-            </Button>
+            <button
+              type="button"
+              disabled={cargando}
+              aria-label="Acciones"
+              className={cn(
+                BOTON_REDONDO_MOVIL,
+                "md:h-8 md:w-auto md:gap-1.5 md:rounded-md md:border md:border-border md:bg-card md:px-3 md:text-sm md:font-medium md:hover:bg-muted"
+              )}
+            />
           }
-        />
+        >
+          <MoreHorizontal className={cn(ICONO_BOTON_REDONDO, "md:hidden")} />
+          <span className="hidden md:inline">Acciones</span>
+          <ChevronDown className="hidden h-3.5 w-3.5 md:inline" />
+        </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           {/* Sin iconos: son tres opciones que se leen enteras, y un icono al
               lado de cada una solo agrega ruido a un menú que ya es corto. */}
