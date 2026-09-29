@@ -153,6 +153,17 @@ Las siguientes subidas son `eas build -p ios --profile production` y
 de JS puede ir por EAS Update sin pasar por la tienda, pero eso pide
 `expo-updates`, que no está instalado; por ahora todo va por build.
 
+## Visto en TestFlight
+
+- **La barra de estado salía invisible** en el iPhone del usuario: hora y
+  batería en blanco sobre el fondo blanco de la app. El teléfono estaba en
+  modo oscuro, `app.json` traía `userInterfaceStyle: "automatic"` y el
+  `<StatusBar style="auto">` de `_layout.tsx` seguía al sistema, mientras
+  que la app es clara siempre (`tema.ts` no tiene paleta oscura). Ahora la
+  app se declara `light` y la barra es `dark`. En el simulador nunca se vio
+  porque estaba en modo claro: **probar en modo oscuro** antes de cada
+  subida.
+
 ## Android, después
 
 1. Google Play Console (US$ 25 una vez) a nombre del negocio.

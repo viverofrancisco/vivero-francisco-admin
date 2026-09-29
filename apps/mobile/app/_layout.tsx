@@ -113,7 +113,12 @@ export default function RootLayout() {
           <Stack.Screen name="(cliente)" />
           <Stack.Screen name="(personal)" />
         </Stack>
-        <StatusBar style="auto" />
+        {/* Oscuro y no "auto": la app es clara siempre —`tema.ts` no tiene
+            paleta oscura— y "auto" seguía al sistema, así que en un iPhone
+            en modo oscuro la hora y la batería salían blancas sobre nuestro
+            fondo blanco. `userInterfaceStyle: "light"` en app.json dice lo
+            mismo del lado nativo (alertas, teclado, hojas). */}
+        <StatusBar style="dark" />
       </PaperProvider>
     </GestureHandlerRootView>
   );
