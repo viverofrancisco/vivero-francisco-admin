@@ -33,7 +33,7 @@ import type {
 } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
 /** Una tarea del catálogo, tal como la devuelve `/api/mobile/tareas`. */
 interface TareaDelCatalogo {
@@ -41,7 +41,9 @@ interface TareaDelCatalogo {
   nombre: string;
   orden: number;
 }
-const STEP_LABELS = ["Cliente", "Servicios", "Fechas", "Personal", "Revisar"];
+// La propiedad es un paso propio: iba al pie de la lista de clientes, y con
+// cuarenta clientes quedaba fuera de la pantalla, donde nadie la veía.
+const STEP_LABELS = ["Cliente", "Propiedad", "Servicios", "Fechas", "Personal", "Revisar"];
 
 export default function CrearVisitaScreen() {
   const router = useRouter();
@@ -154,19 +156,18 @@ export default function CrearVisitaScreen() {
   );
 
   function canContinue(): boolean {
-    if (step === 0) return !!selectedClienteId && !!selectedPropiedadId;
-    if (step === 1) {
-      return totalServicios > 0;
-    }
-    if (step === 2) return fechas.length > 0;
-    if (step === 3) return true; // personal optional
+    if (step === 0) return !!selectedClienteId;
+    if (step === 1) return !!selectedPropiedadId;
+    if (step === 2) return totalServicios > 0;
+    if (step === 3) return fechas.length > 0;
+    if (step === 4) return true; // personal optional
     return true;
   }
 
   function next() {
     if (!canContinue()) return;
     setError(null);
-    if (step < 4) setStep((step + 1) as Step);
+    if (step < 5) setStep((step + 1) as Step);
   }
 
   function prev() {
@@ -224,14 +225,14 @@ export default function CrearVisitaScreen() {
           total={STEP_LABELS.length}
           onAtras={prev}
           accion={
-            step < 4
+            step < 5
               ? "Continuar"
               : fechas.length > 1
                 ? `Crear ${fechas.length}`
                 : "Crear"
           }
-          onAccion={step < 4 ? next : submit}
-          deshabilitado={step < 4 && !canContinue()}
+          onAccion={step < 5 ? next : submit}
+          deshabilitado={step < 5 && !canContinue()}
           cargando={submitting}
         />
 
@@ -253,6 +254,11 @@ export default function CrearVisitaScreen() {
                   c?.propiedades.length === 1 ? c.propiedades[0].id : null
                 );
               }}
+            />
+          )}
+          {step === 1 && (
+            <PropiedadStep
+              cliente={selectedCliente ?? null}
               propiedades={selectedCliente?.propiedades ?? []}
               selectedPropiedadId={selectedPropiedadId}
               onSelectPropiedad={(id) => {
@@ -271,7 +277,7 @@ export default function CrearVisitaScreen() {
               }}
             />
           )}
-          {step === 1 && (
+          {step === 2 && (
             <ServicioStep
               loading={loadingRefs}
               catalogoDisponible={catalogoDisponible}
@@ -279,7 +285,7 @@ export default function CrearVisitaScreen() {
               onToggle={toggleServicio}
             />
           )}
-          {step === 2 && (
+          {step === 3 && (
             <FechasStep
               fechas={fechas}
               onToggle={(iso) => {
@@ -292,7 +298,7 @@ export default function CrearVisitaScreen() {
               onClear={() => setFechas([])}
             />
           )}
-          {step === 3 && (
+          {step === 4 && (
             <PersonalStep
               grupos={grupos}
               personal={personal}
@@ -315,7 +321,7 @@ export default function CrearVisitaScreen() {
               }
             />
           )}
-          {step === 4 && (
+          {step === 5 && (
             <RevisarStep
               cliente={selectedCliente}
               propiedad={
@@ -353,23 +359,10 @@ function ClienteStep({
   clientes,
   selectedId,
   onSelect,
-  propiedades,
-  selectedPropiedadId,
-  onSelectPropiedad,
-  planes,
-  selectedSuscripcionId,
-  onSelectSuscripcion,
 }: {
   clientes: ClienteListItem[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
-  propiedades: PropiedadResumen[];
-  selectedPropiedadId: string | null;
-  onSelectPropiedad: (id: string) => void;
-  /** Sus planes activos, para decir de cuál es la visita. */
-  planes: PlanDelCliente[];
-  selectedSuscripcionId: string | null;
-  onSelectSuscripcion: (id: string | null) => void;
 }) {
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
@@ -437,15 +430,52 @@ function ClienteStep({
           <Text style={styles.empty}>Sin coincidencias.</Text>
         )}
       </View>
+    </View>
+  );
+}
 
-      {/* Dónde. La mayoría tiene una sola y ya viene marcada; el que tiene dos
-          casas necesita decir en cuál, porque la dirección, el sector y los
-          metros son del lugar y no de la persona. */}
-      {selectedId ? (
+// ──────────────────────────────────────────────
+// Step 1 — Propiedad (y suscripción)
+// ──────────────────────────────────────────────
+
+/**
+ * Dónde, en un paso propio. La mayoría tiene una sola propiedad y ya viene
+ * marcada, así que este paso es un vistazo y *Continuar*; el que tiene dos
+ * casas necesita decir en cuál, porque la dirección, el sector y los metros
+ * son del lugar y no de la persona. Iba al pie de la lista de clientes, y con
+ * cuarenta clientes quedaba fuera de la pantalla: se agendaba sin verla.
+ */
+function PropiedadStep({
+  cliente,
+  propiedades,
+  selectedPropiedadId,
+  onSelectPropiedad,
+  planes,
+  selectedSuscripcionId,
+  onSelectSuscripcion,
+}: {
+  cliente: ClienteListItem | null;
+  propiedades: PropiedadResumen[];
+  selectedPropiedadId: string | null;
+  onSelectPropiedad: (id: string) => void;
+  /** Sus planes activos, para decir de cuál es la visita. */
+  planes: PlanDelCliente[];
+  selectedSuscripcionId: string | null;
+  onSelectSuscripcion: (id: string | null) => void;
+}) {
+  return (
+    <View>
+      <Text variant="headlineSmall" style={styles.title}>
+        ¿En qué propiedad?
+      </Text>
+      <Text variant="bodyMedium" style={styles.subtitle}>
+        {cliente
+          ? `Dónde va a ser la visita de ${nombreCliente(cliente)}`
+          : "Dónde va a ser la visita"}
+      </Text>
+
+      {cliente ? (
         <View style={styles.propiedades}>
-          <Text variant="labelMedium" style={styles.sectionLabel}>
-            ¿EN QUÉ PROPIEDAD?
-          </Text>
           {propiedades.length === 0 ? (
             <Text style={styles.empty}>
               Este cliente no tiene propiedades. Agrégale una desde su ficha
@@ -490,7 +520,7 @@ function ClienteStep({
       {/* De qué plan es la visita: una decisión, de la visita entera. El plan
           es de un jardín, así que elegirlo pone la propiedad. "Sin
           suscripción" es trabajo aparte, que se cobra en una orden. */}
-      {selectedId && planes.length > 0 ? (
+      {cliente && planes.length > 0 ? (
         <View style={styles.propiedades}>
           <Text variant="labelMedium" style={styles.sectionLabel}>
             ¿DE QUÉ SUSCRIPCIÓN?
