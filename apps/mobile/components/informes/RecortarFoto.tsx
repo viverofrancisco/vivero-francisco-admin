@@ -126,15 +126,25 @@ function moverEsquina(
  *
  * Cada gesto terminado, cada giro y cada forma es un paso en la historia,
  * que es lo que deshacen y rehacen las flechas.
+ *
+ * Con `circulo` es el recorte de una foto de perfil, el de WhatsApp: el
+ * recuadro arranca cuadrado y centrado, no cambia de forma, y dibuja el
+ * círculo que se va a ver —lo que queda en las esquinas no se muestra—.
+ * Guardar está siempre disponible, porque el cuadrado inicial ya es un
+ * recorte. Antes la foto del grupo pasaba por el recorte del sistema, que
+ * muestra un cuadrado para algo que después se ve redondo.
  */
 export function RecortarFoto({
   url,
   guardando = false,
+  circulo = false,
   onCerrar,
   onGuardar,
 }: {
   url: string;
   guardando?: boolean;
+  /** Foto de perfil: cuadrado fijo con el círculo visible encima. */
+  circulo?: boolean;
   onCerrar: () => void;
   onGuardar: (edicion: EdicionDeFoto) => void;
 }) {
@@ -142,7 +152,7 @@ export function RecortarFoto({
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [area, setArea] = useState<{ w: number; h: number } | null>(null);
   const [historial, setHistorial] = useState<Estado[]>([
-    { recuadro: ENTERO, rotar: 0, voltear: false, forma: "original" },
+    { recuadro: ENTERO, rotar: 0, voltear: false, forma: circulo ? "1:1" : "original" },
   ]);
   const [indice, setIndice] = useState(0);
   const [eligiendoForma, setEligiendoForma] = useState(false);
@@ -153,7 +163,15 @@ export function RecortarFoto({
     Image.getSize(
       url,
       (w, h) => {
-        if (vivo) setNatural({ w, h });
+        if (!vivo) return;
+        setNatural({ w, h });
+        // El círculo arranca ya cuadrado y centrado, no con la foto entera.
+        if (circulo) {
+          setHistorial([
+            { recuadro: recuadroParaForma("1:1", { w, h }), rotar: 0, voltear: false, forma: "1:1" },
+          ]);
+          setIndice(0);
+        }
       },
       () => {
         if (vivo) setNatural({ w: 1, h: 1 });
@@ -162,7 +180,7 @@ export function RecortarFoto({
     return () => {
       vivo = false;
     };
-  }, [url]);
+  }, [url, circulo]);
 
   /** La imagen girada: con un cuarto de vuelta, ancho y alto se cambian. */
   const dims = useMemo(() => {
@@ -346,7 +364,7 @@ export function RecortarFoto({
     });
   }
 
-  const hayCambios = indice > 0;
+  const hayCambios = circulo ? natural !== null : indice > 0;
   const formaActual = FORMAS.find((f) => f.clave === estado.forma) ?? FORMAS[0];
   // La imagen sin girar, centrada donde va la girada: el giro es un
   // `transform`, y la caja de layout sigue siendo la de antes de girar.
@@ -455,10 +473,17 @@ export function RecortarFoto({
                 <Animated.View style={[styles.velo, estiloDerecha]} />
                 <GestureDetector gesture={gestoDeMover}>
                   <Animated.View style={[styles.recuadro, estiloRecuadro]}>
-                    <View style={[styles.linea, styles.lineaV, { left: "33.33%" }]} />
-                    <View style={[styles.linea, styles.lineaV, { left: "66.66%" }]} />
-                    <View style={[styles.linea, styles.lineaH, { top: "33.33%" }]} />
-                    <View style={[styles.linea, styles.lineaH, { top: "66.66%" }]} />
+                    {circulo ? (
+                      // El círculo que se va a ver, sobre el cuadrado que se recorta.
+                      <View pointerEvents="none" style={styles.circulo} />
+                    ) : (
+                      <>
+                        <View style={[styles.linea, styles.lineaV, { left: "33.33%" }]} />
+                        <View style={[styles.linea, styles.lineaV, { left: "66.66%" }]} />
+                        <View style={[styles.linea, styles.lineaH, { top: "33.33%" }]} />
+                        <View style={[styles.linea, styles.lineaH, { top: "66.66%" }]} />
+                      </>
+                    )}
                     {ESQUINAS.map((esquina) => (
                       <GestureDetector key={esquina} gesture={gestosDeEsquina[esquina]}>
                         <View style={[styles.asa, styles[esquina]]}>
@@ -492,6 +517,7 @@ export function RecortarFoto({
               <MaterialCommunityIcons name="flip-horizontal" size={22} color="#fff" />
             </Pressable>
           </View>
+          {circulo ? null : (
           <View>
             {eligiendoForma ? (
               <View style={styles.menuFormas}>
@@ -534,6 +560,7 @@ export function RecortarFoto({
               />
             </Pressable>
           </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -590,6 +617,16 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.9)",
   },
   linea: { position: "absolute", backgroundColor: "rgba(255,255,255,0.45)" },
+  circulo: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 9999,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.95)",
+  },
   lineaV: { top: 0, bottom: 0, width: 1 },
   lineaH: { left: 0, right: 0, height: 1 },
   asa: {

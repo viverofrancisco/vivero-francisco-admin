@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
@@ -32,6 +33,7 @@ interface Item {
  */
 export default function MasMenuScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const refreshToken = useAuthStore((s) => s.refreshToken);
@@ -112,11 +114,20 @@ export default function MasMenuScreen() {
 
   return (
     <View style={styles.contenedor}>
-      {/* Sin barra nativa, el margen de arriba lo pone el safe area: la
-          primera fila no tiene que quedar bajo la hora. */}
-      <ScrollView
-        contentContainerStyle={[styles.lista, { paddingTop: insets.top + 12 }]}
-      >
+      {/* Sin barra nativa, el margen de arriba lo pone el safe area. La ✕
+          vuelve a la pestaña anterior (`backBehavior: "history"`): *Más* es
+          un menú, y un menú se cierra; sin ella parecía que no había salida.
+          No aparece cuando no hay adónde volver, como al abrir la app acá. */}
+      <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
+        {navigation.canGoBack() ? (
+          <BotonRedondoDeHoja
+            icono="close-outline"
+            etiqueta="Cerrar"
+            onPress={() => router.back()}
+          />
+        ) : null}
+      </View>
+      <ScrollView contentContainerStyle={styles.lista}>
         {items
           .filter((i) => i.visible)
           .map((item) => (
@@ -166,6 +177,12 @@ export default function MasMenuScreen() {
 
 const styles = StyleSheet.create({
   contenedor: { flex: 1, backgroundColor: tema.superficie },
+  cabecera: {
+    minHeight: 44,
+    paddingHorizontal: 12,
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
   lista: { padding: 12 },
   fila: {
     flexDirection: "row",

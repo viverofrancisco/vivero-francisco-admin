@@ -46,6 +46,9 @@ export default function PersonalTabsLayout() {
 
   return (
     <Tabs
+      // "Atrás" vuelve a la pestaña anterior, no a la primera: es lo que
+      // cierra *Más* desde su ✕ y desde un segundo toque en la pestaña.
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: tema.verde,
@@ -213,6 +216,17 @@ export default function PersonalTabsLayout() {
       />
       <Tabs.Screen
         name="mas"
+        // Tocar *Más* estando en *Más* lo cierra, como en el portal: con la
+        // pestaña ya activa el toque no hacía nada y parecía que no había
+        // salida.
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            if (navigation.isFocused() && navigation.canGoBack()) {
+              e.preventDefault();
+              navigation.goBack();
+            }
+          },
+        })}
         options={{
           title: "Más",
           href: esJardinero ? null : undefined,

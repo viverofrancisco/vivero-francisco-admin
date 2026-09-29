@@ -6,12 +6,27 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import {
+  FlipType,
+  SaveFormat,
+  manipulateAsync,
+  type Action,
+} from "expo-image-manipulator";
+import { RecortarFoto, type EdicionDeFoto } from "@/components/informes/RecortarFoto";
+
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { AvatarDeChat } from "@/components/chats/AvatarDeChat";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { Campo, Titulo } from "@/components/ui/Formulario";
 import type { ChatDetalle } from "@/lib/chats";
 import { tema } from "@/lib/tema";
+
+/** Lo que se sube: la foto ya recortada, o la que vino de la galería. */
+interface FotoLista {
+  uri: string;
+  mimeType?: string | null;
+  fileName?: string | null;
+}
 
 interface Persona {
   id: string;
@@ -44,31 +59,64 @@ export default function ChatFormScreen() {
   const [error, setError] = useState<string | null>(null);
   /** La foto que ya tiene, la elegida y todavía no subida, y si se quita. */
   const [imagenActual, setImagenActual] = useState<string | null>(null);
-  const [foto, setFoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [foto, setFoto] = useState<FotoLista | null>(null);
   const [quitar, setQuitar] = useState(false);
+  /** La elegida en la galería, mientras se recorta. */
+  const [recortando, setRecortando] = useState<string | null>(null);
   const vistaDeFoto = foto?.uri ?? (quitar ? null : imagenActual);
 
   /**
-   * La foto del grupo, como en WhatsApp. `allowsEditing` con `aspect` 1:1 es
-   * el recorte cuadrado del propio sistema, así no hace falta uno nuestro; y
-   * `quality` baja porque son varios MB para un círculo de 40 px.
+   * La foto del grupo, como en WhatsApp: se elige en la galería y se recorta
+   * en **nuestro** recortador con el círculo dibujado, que es lo que se va a
+   * ver. Pasaba por el recorte del sistema (`allowsEditing` 1:1), que
+   * muestra un cuadrado para una foto que después sale redonda.
    */
   async function elegirFoto() {
     const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permiso.granted) return;
     const r = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
+      quality: 1,
     });
     if (r.canceled) return;
-    setFoto(r.assets[0]);
-    setQuitar(false);
+    setRecortando(r.assets[0].uri);
+  }
+
+  /**
+   * El recorte se aplica acá, en el teléfono: la foto del chat no es un
+   * medio de la biblioteca con id al que el servidor le sepa recortar. El
+   * orden es el del recortador —espejo, giro, recorte— y sale JPEG chico,
+   * que son varios MB para un círculo de 40 px.
+   */
+  async function aplicarRecorte(edicion: EdicionDeFoto) {
+    if (!recortando) return;
+    const acciones: Action[] = [];
+    if (edicion.voltear) acciones.push({ flip: FlipType.Horizontal });
+    if (edicion.rotar) acciones.push({ rotate: edicion.rotar });
+    acciones.push({
+      crop: {
+        originX: edicion.recorte.x,
+        originY: edicion.recorte.y,
+        width: edicion.recorte.ancho,
+        height: edicion.recorte.alto,
+      },
+    });
+    try {
+      const res = await manipulateAsync(recortando, acciones, {
+        compress: 0.7,
+        format: SaveFormat.JPEG,
+      });
+      setFoto({ uri: res.uri, mimeType: "image/jpeg", fileName: "grupo.jpg" });
+      setQuitar(false);
+    } catch (e) {
+      setError(mensajeDeError(e, "No pudimos recortar la foto"));
+    } finally {
+      setRecortando(null);
+    }
   }
 
   /** Sube la foto bajo el prefijo del chat y la deja como su imagen. */
-  async function subirFoto(chatId: string, asset: ImagePicker.ImagePickerAsset) {
+  async function subirFoto(chatId: string, asset: FotoLista) {
     const contentType = asset.mimeType ?? "image/jpeg";
     const { uploads } = await apiRequest<{
       uploads: { key: string; url: string; uploadUrl: string }[];
@@ -304,6 +352,15 @@ export default function ChatFormScreen() {
         </>
         )}
       </ScrollView>
+
+      {recortando ? (
+        <RecortarFoto
+          circulo
+          url={recortando}
+          onCerrar={() => setRecortando(null)}
+          onGuardar={(edicion) => void aplicarRecorte(edicion)}
+        />
+      ) : null}
     </View>
   );
 }
