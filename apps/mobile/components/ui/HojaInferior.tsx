@@ -1,5 +1,13 @@
-import { useCallback, useMemo, useState } from "react";
-import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Keyboard,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Extrapolation,
@@ -37,6 +45,14 @@ import { tema } from "@/lib/tema";
  *
  * Hacia arriba resiste en vez de frenar en seco: cuanto más se pasa del tope,
  * menos acompaña.
+ *
+ * **Sube con el teclado.** Una hoja con un buscador o un campo —compartir una
+ * visita, mover tareas— quedaba tapada por el teclado en iOS: el `Modal` no
+ * se encoge solo y la hoja, pegada al piso, desaparecía detrás. Acá se
+ * escucha el teclado (`keyboardWillChangeFrame`, que cubre abrir, cerrar y
+ * la barrita del teclado físico) y la hoja se apoya encima, con su alto
+ * máximo recortado a lo que queda visible. Android no hace falta: la
+ * ventana del modal se achica sola con el teclado.
  */
 
 /** Dónde terminaría el dedo si siguiera desacelerando. La forma de Apple. */
@@ -70,6 +86,18 @@ export function HojaInferior({
   const desde = useSharedValue(0);
   /** Lo que mide la hoja de verdad, para que el umbral no sea un número inventado. */
   const [alto, setAlto] = useState(height * 0.5);
+  /** Cuánto del piso ocupa el teclado, para apoyar la hoja encima. Solo iOS. */
+  const [teclado, setTeclado] = useState(0);
+
+  useEffect(() => {
+    if (Platform.OS !== "ios") return;
+    const sub = Keyboard.addListener("keyboardWillChangeFrame", (e) => {
+      // `screenY` es dónde empieza el teclado; al cerrarse queda en el borde
+      // de la pantalla y la diferencia da cero.
+      setTeclado(Math.max(0, Math.round(height - e.endCoordinates.screenY)));
+    });
+    return () => sub.remove();
+  }, [height]);
 
   const cerrar = useCallback(() => onCerrar(), [onCerrar]);
 
@@ -145,7 +173,7 @@ export function HojaInferior({
       }}
       onRequestClose={onCerrar}
     >
-      <View style={styles.contenedor}>
+      <View style={[styles.contenedor, { paddingBottom: teclado }]}>
         <Animated.View style={[styles.velo, estiloVelo]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onCerrar} />
         </Animated.View>
@@ -161,12 +189,19 @@ export function HojaInferior({
             style={[
               styles.hoja,
               {
-                maxHeight: height * maxAlto,
+                // Con el teclado abierto, lo que queda visible manda: una hoja
+                // más alta que ese espacio se saldría por arriba.
+                maxHeight: Math.min(
+                  height * maxAlto,
+                  height - teclado - insets.top - 12
+                ),
                 // El safe area **y nada más**: `insets.bottom` ya son los ~34pt
                 // del indicador de inicio, y sumarle 16 dejaba medio dedo de
                 // blanco debajo del último botón. En un teléfono sin indicador
-                // el inset es 0, así que ahí sí hace falta un mínimo.
-                paddingBottom: Math.max(insets.bottom, 14),
+                // el inset es 0, así que ahí sí hace falta un mínimo. Con el
+                // teclado abierto el indicador queda debajo del teclado, así
+                // que ahí vuelve al mínimo.
+                paddingBottom: teclado > 0 ? 14 : Math.max(insets.bottom, 14),
               },
               estiloHoja,
             ]}
