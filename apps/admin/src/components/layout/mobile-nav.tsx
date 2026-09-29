@@ -294,10 +294,12 @@ export function MobileNav({ branding, role }: MobileNavProps) {
           {conMas ? (
             <button
               type="button"
-              onClick={() => setOpen(true)}
+              // Abre y **cierra**: el menú deja la barra a la vista, y tocar
+              // "Más" otra vez es lo primero que uno prueba para salir.
+              onClick={() => setOpen(!open)}
               aria-haspopup="dialog"
               aria-expanded={open}
-              className={claseTab(enOtraParte)}
+              className={claseTab(enOtraParte || open)}
             >
               <Menu
                 className="h-[22px] w-[22px]"
@@ -311,11 +313,15 @@ export function MobileNav({ branding, role }: MobileNavProps) {
 
       {/* El menú completo ocupa la pantalla entera: un off-canvas al 75% deja
           una franja de contenido a la derecha que invita a tocarla y a cerrar
-          sin querer, y encima recorta las etiquetas largas. */}
-      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+          sin querer, y encima recorta las etiquetas largas. **Menos la barra
+          de abajo**: se queda a la vista y sigue respondiendo (`modal={false}`,
+          si no Base UI bloquea todo lo de afuera), así "Más" lo cierra y
+          cualquier otra pestaña sale directo. Arriba respeta el área segura
+          del teléfono, que con `viewport-fit=cover` metía la ✕ bajo la hora. */}
+      <DialogPrimitive.Root open={open} onOpenChange={setOpen} modal={false}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Popup
-            className="fixed inset-0 z-50 flex h-dvh w-screen flex-col bg-background outline-none data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-4 data-closed:animate-out data-closed:fade-out-0 md:hidden"
+            className="fixed inset-x-0 top-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 flex w-screen flex-col bg-background pt-[env(safe-area-inset-top)] outline-none data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-4 data-closed:animate-out data-closed:fade-out-0 md:hidden"
             aria-label="Menú"
           >
             <DialogPrimitive.Title className="sr-only">
