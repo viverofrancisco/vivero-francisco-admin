@@ -1,24 +1,121 @@
-import { useEffect, useState } from "react";
-import { Alert, ActivityIndicator, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { PersonalForm } from "@/components/PersonalForm";
-import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Text } from "react-native-paper";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { EncabezadoDeFicha } from "@/components/ui/EncabezadoDeFicha";
+import { MenuDeEncabezado, type OpcionDeMenu } from "@/components/ui/MenuDeEncabezado";
+import { Fila, Seccion, estilosDeFicha } from "@/components/ui/SeccionDeFicha";
+import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
+import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
+import { SelectorDeGrupos } from "@/components/personal/SelectorDeGrupos";
+import { HojaDeEnlace } from "@/components/personal/HojaDeEnlace";
 import { apiRequest, mensajeDeError } from "@/lib/api";
-import type { PersonalFicha } from "@/lib/types";
+import { useAuthStore } from "@/lib/auth-store";
+import type { EnlaceGenerado, EstadoAcceso, PersonalFicha } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
+const TIPO_LABEL: Record<string, string> = {
+  JARDINERO: "Jardinero",
+  CHOFER: "Chofer",
+  SUPERVISOR: "Supervisor",
+  MECANICO: "Mecánico",
+};
+
+const ACCESO_LABEL: Record<EstadoAcceso, string> = {
+  ACTIVO: "Activo",
+  PENDIENTE: "Falta que elija su contraseña",
+  REVOCADO: "Revocado",
+  SIN_CUENTA: "Sin cuenta",
+};
+
+/**
+ * La ficha de alguien del vivero, de solo lectura: como la del cliente en la
+ * app y como la del portal. Era el formulario de edición directamente, y ahí
+ * no cabían las demás cosas que se hacen con una persona; ahora viven en el
+ * ⋯ del encabezado —*Editar*, *Restablecer contraseña* o *Enviar invitación*,
+ * *Revocar* o *Restaurar acceso*, *Archivar*— y abajo están sus grupos, que
+ * se editan desde acá como las categorías de un producto.
+ */
 export default function PersonalFichaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const rol = useAuthStore((s) => s.user?.role);
+  const esAdmin = rol === "ADMIN";
+  const puedeEditar = rol === "ADMIN" || rol === "STAFF";
   const [ficha, setFicha] = useState<PersonalFicha | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+  const [eligiendoGrupos, setEligiendoGrupos] = useState(false);
+  const [enlace, setEnlace] = useState<EnlaceGenerado | null>(null);
+  const [confirmandoRevocar, setConfirmandoRevocar] = useState(false);
+
+  const cargar = useCallback(
+    async (silencioso = false) => {
+      if (!id) return;
+      if (!silencioso) setCargando(true);
+      try {
+        setFicha(await apiRequest<PersonalFicha>(`/api/mobile/personal/${id}`));
+        setError(null);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setCargando(false);
+      }
+    },
+    [id]
+  );
 
   useEffect(() => {
-    apiRequest<PersonalFicha>(`/api/mobile/personal/${id}`)
-      .then(setFicha)
-      .catch((e) => setError(mensajeDeError(e, "No pudimos cargar la ficha")));
-  }, [id]);
+    cargar();
+  }, [cargar]);
+
+  // Al volver de editar, la ficha tiene que mostrar lo nuevo. En silencio.
+  useFocusEffect(
+    useCallback(() => {
+      cargar(true);
+    }, [cargar])
+  );
+
+  /** La invitación de quien nunca entró dura una semana; el restablecimiento, una hora. */
+  const tipoDeEnlace: "invitacion" | "restablecer" =
+    ficha?.acceso === "PENDIENTE" ? "invitacion" : "restablecer";
+
+  async function emitirEnlace() {
+    if (!ficha?.user) return;
+    setOcupado(true);
+    setAviso(null);
+    try {
+      const datos = await apiRequest<EnlaceGenerado>(
+        `/api/mobile/users/${ficha.user.id}/enlace-acceso`,
+        { method: "POST", body: { tipo: tipoDeEnlace, enviarCorreo: false } }
+      );
+      setEnlace(datos);
+      await cargar(true);
+    } catch (e) {
+      setAviso(mensajeDeError(e, "No pudimos generar el enlace"));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function cambiarAcceso(revocado: boolean) {
+    setOcupado(true);
+    setAviso(null);
+    try {
+      await apiRequest(`/api/mobile/personal/${id}/acceso`, {
+        method: "POST",
+        body: { revocado },
+      });
+      setConfirmandoRevocar(false);
+      await cargar(true);
+    } catch (e) {
+      setAviso(mensajeDeError(e, "No pudimos cambiar el acceso"));
+    } finally {
+      setOcupado(false);
+    }
+  }
 
   function archivar() {
     Alert.alert(
@@ -34,7 +131,7 @@ export default function PersonalFichaScreen() {
               await apiRequest(`/api/mobile/personal/${id}`, { method: "DELETE" });
               router.back();
             } catch (e) {
-              setError(mensajeDeError(e, "No pudimos archivarla"));
+              setAviso(mensajeDeError(e, "No pudimos archivarla"));
             }
           },
         },
@@ -42,63 +139,170 @@ export default function PersonalFichaScreen() {
     );
   }
 
-  // Sin barra nativa, el encabezado del formulario es el único; mientras
-  // carga va igual, apagado, para que la pantalla no salte al llegar.
-  if (!ficha) {
+  if (cargando && !ficha) {
     return (
       <View style={styles.flex}>
-        <EncabezadoDeFormulario
-          titulo="Ficha"
-          accion="Guardar"
-          onAccion={() => {}}
-          onCancelar={() => router.back()}
-          deshabilitado
-        />
+        <EncabezadoDeFicha titulo="Personal" />
         <View style={styles.centro}>
-          {error ? (
-            <Text style={styles.apagado}>{error}</Text>
-          ) : (
-            <ActivityIndicator size="large" />
-          )}
+          <ActivityIndicator size="large" />
         </View>
       </View>
     );
   }
+  if (error || !ficha) {
+    return (
+      <AvisoDeCarga
+        error={error}
+        tipo="personal"
+        onVolver={() => router.back()}
+        onReintentar={() => cargar()}
+      />
+    );
+  }
+
+  const nombre = `${ficha.nombre} ${ficha.apellido ?? ""}`.trim();
+  const revocado = ficha.acceso === "REVOCADO";
+  const opciones: OpcionDeMenu[] = [];
+  if (puedeEditar) {
+    opciones.push({
+      etiqueta: "Editar",
+      onPress: () => router.push(`/(personal)/personal/editar/${id}`),
+    });
+  }
+  // Dar o quitar acceso es del ADMIN, y solo si la persona tiene cuenta.
+  if (esAdmin && ficha.user) {
+    opciones.push({
+      etiqueta: tipoDeEnlace === "invitacion" ? "Enviar invitación" : "Restablecer contraseña",
+      onPress: () => void emitirEnlace(),
+    });
+    opciones.push(
+      revocado
+        ? { etiqueta: "Restaurar acceso", onPress: () => void cambiarAcceso(false) }
+        : { etiqueta: "Revocar acceso", onPress: () => setConfirmandoRevocar(true) }
+    );
+  }
+  if (puedeEditar) opciones.push({ etiqueta: "Archivar", onPress: archivar });
+
+  const grupos = (ficha.grupos ?? []).map((g) => g.grupo);
 
   return (
-    <PersonalForm
-      inicial={{
-        nombre: ficha.nombre,
-        apellido: ficha.apellido,
-        telefono: ficha.telefono,
-        especialidad: ficha.especialidad,
-        tipo: ficha.tipo,
-        estado: ficha.estado,
-      }}
-      usuario={ficha.user?.usuario ?? null}
-      titulo={`${ficha.nombre} ${ficha.apellido ?? ""}`.trim()}
-      accion="Guardar"
-      onCancelar={() => router.back()}
-      onEliminar={archivar}
-      onSubmit={async (valores) => {
-        await apiRequest(`/api/mobile/personal/${id}`, {
-          method: "PUT",
-          body: valores,
-        });
-        router.back();
-      }}
-    />
+    <View style={styles.flex}>
+      <EncabezadoDeFicha
+        titulo={nombre}
+        derecha={opciones.length > 0 ? <MenuDeEncabezado opciones={opciones} /> : undefined}
+      />
+      <ScrollView style={styles.flex} contentContainerStyle={estilosDeFicha.container}>
+        {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
+        {ocupado ? <ActivityIndicator style={styles.ocupado} /> : null}
+
+        {/* Primero con qué entra: es lo que se dicta por teléfono y lo que
+            alguien abre la ficha a buscar. */}
+        <Seccion titulo="Entra a la app con">
+          <Fila label="Usuario" value={ficha.user?.usuario ?? "—"} />
+          <Fila label="Acceso" value={<PastillaDeAcceso acceso={ficha.acceso} />} />
+        </Seccion>
+
+        <Seccion titulo="Información general">
+          <Fila label="Nombre" value={ficha.nombre} />
+          <Fila label="Apellido" value={ficha.apellido || "—"} />
+          <Fila label="Teléfono" value={ficha.telefono || "—"} />
+          <Fila label="Trabajo" value={ficha.tipo ? (TIPO_LABEL[ficha.tipo] ?? ficha.tipo) : "—"} />
+          <Fila label="Especialidad" value={ficha.especialidad || "—"} />
+          <Fila label="Estado" value={ficha.estado === "ACTIVO" ? "Activo" : "Inactivo"} />
+        </Seccion>
+
+        {/* Sus cuadrillas, editables desde acá como las categorías de un
+            producto: cada una es una fila, y *Editar* abre la lista entera. */}
+        <Seccion
+          titulo="Grupos"
+          accion={puedeEditar ? { etiqueta: "Editar", onPress: () => setEligiendoGrupos(true) } : null}
+        >
+          {grupos.length === 0 ? (
+            <Text style={estilosDeFicha.vacio}>No está en ningún grupo.</Text>
+          ) : (
+            grupos.map((g) => (
+              <Fila
+                key={g.id}
+                label={g.nombre}
+                value=""
+                onPress={() => router.push(`/(personal)/grupos/${g.id}`)}
+              />
+            ))
+          )}
+        </Seccion>
+      </ScrollView>
+
+      {eligiendoGrupos ? (
+        <SelectorDeGrupos
+          personalId={id}
+          elegidos={grupos.map((g) => g.id)}
+          onCerrar={() => setEligiendoGrupos(false)}
+          onGuardado={() => {
+            setEligiendoGrupos(false);
+            void cargar(true);
+          }}
+        />
+      ) : null}
+
+      <HojaDeEnlace
+        datos={enlace}
+        nombre={nombre}
+        tipo={tipoDeEnlace}
+        onCerrar={() => setEnlace(null)}
+      />
+
+      <DialogoConfirmar
+        visible={confirmandoRevocar}
+        titulo={`Revocar el acceso de ${nombre}`}
+        detalle="No va a poder entrar a la app hasta que se lo devuelvas. Su cuenta y su historial quedan como están."
+        confirmar="Revocar acceso"
+        peligro
+        cargando={ocupado}
+        onConfirmar={() => void cambiarAcceso(true)}
+        onCancelar={() => setConfirmandoRevocar(false)}
+      />
+    </View>
+  );
+}
+
+/** Cómo está su acceso, en una pastilla: verde entra, ámbar falta, rojo cortado. */
+function PastillaDeAcceso({ acceso }: { acceso: EstadoAcceso }) {
+  const estilo =
+    acceso === "ACTIVO"
+      ? styles.pastillaVerde
+      : acceso === "PENDIENTE"
+        ? styles.pastillaAmbar
+        : acceso === "REVOCADO"
+          ? styles.pastillaRoja
+          : styles.pastillaGris;
+  const texto =
+    acceso === "ACTIVO"
+      ? styles.pastillaTextoVerde
+      : acceso === "PENDIENTE"
+        ? styles.pastillaTextoAmbar
+        : acceso === "REVOCADO"
+          ? styles.pastillaTextoRoja
+          : styles.pastillaTextoGris;
+  return (
+    <View style={[styles.pastilla, estilo]}>
+      <Text style={[styles.pastillaTexto, texto]}>{ACCESO_LABEL[acceso]}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
-  centro: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-    padding: 24,
-  },
-  apagado: { color: tema.texto3, textAlign: "center" },
+  centro: { flex: 1, alignItems: "center", justifyContent: "center" },
+  aviso: { color: tema.rojo, textAlign: "center", paddingVertical: 8 },
+  ocupado: { paddingVertical: 8 },
+  pastilla: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
+  pastillaVerde: { backgroundColor: tema.verde50 },
+  pastillaAmbar: { backgroundColor: tema.ambar50 },
+  pastillaRoja: { backgroundColor: tema.rojo50 },
+  pastillaGris: { backgroundColor: tema.linea2 },
+  pastillaTexto: { fontSize: 12, fontWeight: "600" },
+  pastillaTextoVerde: { color: tema.verde700 },
+  pastillaTextoAmbar: { color: tema.ambarTexto },
+  pastillaTextoRoja: { color: tema.rojo },
+  pastillaTextoGris: { color: tema.texto2 },
 });

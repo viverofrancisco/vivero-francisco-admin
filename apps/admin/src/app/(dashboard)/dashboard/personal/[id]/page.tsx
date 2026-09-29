@@ -76,6 +76,13 @@ export default async function EditarPersonalPage({
     id: g.grupo.id,
     nombre: g.grupo.nombre,
   }));
+  // Todas las cuadrillas vivas: la tarjeta de grupos las ofrece para
+  // cambiar a la persona de cuadrilla desde su propia ficha.
+  const todosLosGrupos = await prisma.grupo.findMany({
+    where: { deletedAt: null },
+    select: { id: true, nombre: true },
+    orderBy: { nombre: "asc" },
+  });
 
   return (
     <div>
@@ -93,6 +100,7 @@ export default async function EditarPersonalPage({
           createdAt: personal.createdAt.toISOString(),
         }}
         grupos={grupos}
+        todosLosGrupos={todosLosGrupos}
         cuenta={cuenta}
         puedeAdministrarAcceso={actual.role === "ADMIN"}
         visitas={visitas.map((v) => ({

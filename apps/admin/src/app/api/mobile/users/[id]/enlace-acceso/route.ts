@@ -1,37 +1,27 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
-import { getCurrentUser } from "@/lib/auth-helpers";
+import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
 import { emitirEnlaceParaUsuario } from "@/lib/services/acceso.service";
 import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 const bodySchema = z.object({
-  /**
-   * `invitacion` para quien nunca entró (dura una semana) y `restablecer` para
-   * quien ya tiene contraseña (dura una hora).
-   */
   tipo: z.enum(["invitacion", "restablecer"]).default("restablecer"),
-  /**
-   * Mandar el correo, o solo emitir el enlace para copiarlo.
-   *
-   * Copiar sin enviar es para cuando el correo no es el camino: la persona
-   * está al lado, o se le manda por WhatsApp y un correo de más solo confunde.
-   */
-  enviarCorreo: z.boolean().default(true),
+  enviarCorreo: z.boolean().default(false),
 });
 
 /**
- * Genera un enlace para que un usuario ya existente se ponga una contraseña
- * nueva, y se lo manda por correo. El cuerpo vive en
- * `emitirEnlaceParaUsuario`, que también usa la ruta móvil.
+ * Gemela de `POST /api/users/[id]/enlace-acceso`: desde la app, un ADMIN emite
+ * el enlace para que alguien del equipo se ponga contraseña —la invitación de
+ * quien nunca entró, o el restablecimiento de quien la perdió— y lo copia o
+ * lo comparte por WhatsApp. Por defecto sin correo: el personal de campo no
+ * tiene casilla.
  */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const actor = await getCurrentUser();
-  if (!actor || actor.role !== "ADMIN") {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
+  const userOrResponse = await requireMobileRole(request, "ADMIN");
+  if (!isMobileUser(userOrResponse)) return userOrResponse;
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });

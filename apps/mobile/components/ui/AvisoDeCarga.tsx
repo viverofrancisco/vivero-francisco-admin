@@ -13,10 +13,11 @@ import { tema } from "@/lib/tema";
  * señal. Las palabras del sin acceso son las de `SIN_ACCESO_A`, las mismas
  * del portal.
  */
-const NOMBRE: Record<TipoDeReferencia, { este: string; que: string; lo: string }> = {
+const NOMBRE: Record<TipoDeReferencia | "personal", { este: string; que: string; lo: string }> = {
   visita: { este: "esta", que: "visita", lo: "la" },
   cliente: { este: "este", que: "cliente", lo: "lo" },
   producto: { este: "este", que: "producto", lo: "lo" },
+  personal: { este: "esta", que: "persona", lo: "la" },
 };
 
 export function AvisoDeCarga({
@@ -27,7 +28,8 @@ export function AvisoDeCarga({
 }: {
   /** Lo que tiró la carga, tal cual. */
   error: unknown;
-  tipo: TipoDeReferencia;
+  /** Personal no se comparte en el chat, así que no está en `SIN_ACCESO_A`. */
+  tipo: TipoDeReferencia | "personal";
   onVolver: () => void;
   onReintentar?: () => void;
 }) {
@@ -39,7 +41,7 @@ export function AvisoDeCarga({
   let detalle: string | null;
   if (estado === 403) {
     icono = "lock-closed-outline";
-    titulo = SIN_ACCESO_A[tipo];
+    titulo = tipo === "personal" ? "No tienes acceso a esta persona" : SIN_ACCESO_A[tipo];
     detalle = null;
   } else if (estado === 404) {
     icono = "help-circle-outline";

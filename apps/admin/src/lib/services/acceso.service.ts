@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
 import { sha256 } from "@/lib/mobile/jwt";
+import { sendEnlacePortalEmail } from "@/lib/email";
+import { NotFoundError, ValidationError } from "./errors";
 
 /**
  * Enlaces para establecer una contraseña.
@@ -435,4 +437,67 @@ export async function cambiarContrasenaPropia(
     }),
   ]);
   return { ok: true };
+}
+
+/** Lo que devuelve emitir un enlace: lo mismo en el portal y en la app. */
+export interface EnlaceEmitido {
+  enlace: string;
+  /** ISO. Cuándo deja de servir. */
+  expiraEl: string;
+  correoEnviado: boolean;
+  /** Si se intentó mandar el correo: distingue "no salió" de "no se pidió". */
+  correoIntentado: boolean;
+}
+
+/**
+ * Emite un enlace para que un usuario del equipo se ponga contraseña, y lo
+ * manda por correo si se pide y hay casilla. Es el cuerpo de
+ * `POST /api/users/[id]/enlace-acceso` y de su gemela móvil, sacado acá
+ * para que las dos hagan exactamente lo mismo.
+ *
+ * Es el mismo mecanismo que la invitación —la diferencia es solo que la
+ * cuenta ya funciona—, así que sirve para el que perdió su contraseña y para
+ * el que nunca abrió su invitación. Emitirlo **anula el anterior** sin usar.
+ * A alguien bloqueado se le puede emitir uno: usarlo es lo que le devuelve el
+ * acceso; no se desbloquea acá porque entre emitir y abrir pasan horas y en
+ * el medio la cuenta volvería a servir con la contraseña vieja.
+ */
+export async function emitirEnlaceParaUsuario(
+  userId: string,
+  tipo: TipoEnlace,
+  enviarCorreo: boolean
+): Promise<EnlaceEmitido> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, apellido: true, email: true, role: true },
+  });
+  if (!user) throw new NotFoundError("Usuario no encontrado");
+  // Un cliente no entra por acá: su enlace se genera desde Clientes.
+  if (user.role === "CLIENTE") {
+    throw new ValidationError("Los clientes se invitan desde su ficha");
+  }
+  const enlace = await crearEnlaceParaUsuario(user.id, tipo);
+  // Sin correo no hay nada que mandar: el personal de campo entra con un
+  // usuario, y su enlace se copia y se manda por WhatsApp.
+  let correoEnviado = false;
+  if (enviarCorreo && user.email) {
+    try {
+      const res = await sendEnlacePortalEmail(
+        user.email,
+        [user.name, user.apellido].filter(Boolean).join(" "),
+        enlace.url,
+        tipo,
+        VIGENCIA_TEXTO[tipo]
+      );
+      correoEnviado = res.success;
+    } catch (err) {
+      console.warn("No pudimos enviar el enlace por correo", err);
+    }
+  }
+  return {
+    enlace: enlace.url,
+    expiraEl: enlace.expiraEl.toISOString(),
+    correoEnviado,
+    correoIntentado: enviarCorreo && user.email !== null,
+  };
 }

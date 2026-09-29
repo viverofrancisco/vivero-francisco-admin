@@ -109,6 +109,46 @@ export async function actualizarGrupo(
 }
 
 /**
+ * En qué cuadrillas está una persona, dicho desde **su** ficha: lo que llega
+ * es la lista entera, así que sale de las que no están y entra en las que
+ * faltan. Es el espejo de `actualizarGrupo`, que reemplaza a los miembros de
+ * un grupo; acá se reemplazan los grupos de un miembro. Hasta ahora había
+ * que abrir cada grupo para cambiar a una persona de cuadrilla.
+ */
+export async function setGruposDePersonal(
+  viewer: Viewer,
+  personalId: string,
+  grupoIds: string[]
+): Promise<{ id: string; nombre: string }[]> {
+  ensureOficina(viewer);
+  const persona = await prisma.personal.findFirst({
+    where: { id: personalId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!persona) throw new NotFoundError("Personal no encontrado");
+  const unicos = [...new Set(grupoIds)];
+  const vivos = await prisma.grupo.findMany({
+    where: { id: { in: unicos }, deletedAt: null },
+    select: { id: true },
+  });
+  if (vivos.length !== unicos.length) throw new NotFoundError("Grupo no encontrado");
+  await prisma.$transaction(async (tx) => {
+    await tx.grupoMiembro.deleteMany({ where: { personalId } });
+    if (unicos.length > 0) {
+      await tx.grupoMiembro.createMany({
+        data: unicos.map((grupoId) => ({ personalId, grupoId })),
+      });
+    }
+  });
+  const grupos = await prisma.grupo.findMany({
+    where: { id: { in: unicos } },
+    select: { id: true, nombre: true },
+    orderBy: { nombre: "asc" },
+  });
+  return grupos;
+}
+
+/**
  * Archivar la cuadrilla.
  *
  * Es soft delete y no puede ser otra cosa: las visitas que salieron con ella

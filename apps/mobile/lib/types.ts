@@ -479,6 +479,15 @@ export interface PersonalFicha {
   } | null;
 }
 
+/** Un enlace de acceso recién emitido, como lo devuelve el servidor. */
+export interface EnlaceGenerado {
+  enlace: string;
+  /** ISO. Cuándo deja de servir. */
+  expiraEl: string;
+  correoEnviado: boolean;
+  correoIntentado: boolean;
+}
+
 export interface PersonalListResponse {
   items: PersonalOption[];
 }

@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PersonalForm } from "@/components/personal/personal-form";
 import { AccionesAcceso, type EstadoCuenta } from "./acciones-acceso";
+import { EditarGrupos } from "./editar-grupos";
 import {
   VisitasDelPersonal,
   type VisitaDelPersonal,
@@ -41,6 +42,8 @@ interface Props {
   backHref?: string;
   personal: PersonalData;
   grupos: GrupoInfo[];
+  /** Todas las cuadrillas vivas, para cambiar a la persona de grupo desde acá. */
+  todosLosGrupos: GrupoInfo[];
   /** Cómo está su acceso a la app, o `null` si nunca se le creó cuenta. */
   cuenta: EstadoCuenta | null;
   /** Solo un ADMIN da o quita acceso, y solo él puede cambiar el usuario. */
@@ -63,6 +66,7 @@ function formatDate(dateStr: string) {
 export function PersonalDetail({
   personal,
   grupos,
+  todosLosGrupos,
   cuenta,
   puedeAdministrarAcceso,
   visitas,
@@ -179,8 +183,15 @@ export function PersonalDetail({
           {/* Right column - Grupos */}
           <div className="space-y-6">
             <Card>
-              <CardHeader className="border-b">
+              <CardHeader className="flex flex-row items-center justify-between border-b">
                 <CardTitle>Grupos</CardTitle>
+                {/* Editar acá y no en cada grupo: cambiar a alguien de
+                    cuadrilla es una decisión sobre la persona. */}
+                <EditarGrupos
+                  personalId={personal.id}
+                  actuales={grupos.map((g) => g.id)}
+                  todos={todosLosGrupos}
+                />
               </CardHeader>
               <CardContent>
                 {grupos.length === 0 ? (
