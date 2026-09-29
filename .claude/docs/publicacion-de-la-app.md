@@ -149,7 +149,11 @@ versiones que no corresponden al SDK.
 8. *Submit for Review*. Suele tardar uno o dos días.
 
 Las siguientes subidas son `eas build -p ios --profile production` y
-`eas submit -p ios --latest` (o `eas build … --auto-submit`). Un cambio solo
+`eas submit -p ios --latest` (o `eas build … --auto-submit`), **sin
+preguntas**: `eas.json` lleva `submit.production.ios.ascAppId` (el *Apple
+ID* numérico de la app en App Store Connect, 6817389110) y el
+`appleTeamId` (9UGV7JZ9JT), y la clave de App Store Connect que EAS generó
+la primera vez (rol App Manager) queda guardada en EAS. Un cambio solo
 de JS puede ir por EAS Update sin pasar por la tienda, pero eso pide
 `expo-updates`, que no está instalado; por ahora todo va por build.
 
