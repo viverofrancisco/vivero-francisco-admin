@@ -2,11 +2,13 @@ import { useRef, useState } from "react";
 import {
   Dimensions,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   View,
 } from "react-native";
 import { Text } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
@@ -49,6 +51,7 @@ export function MenuDeEncabezado({
   etiqueta?: string;
 }) {
   const ancla = useRef<View>(null);
+  const insets = useSafeAreaInsets();
   const [abierto, setAbierto] = useState(false);
   /*
    * La posición vive aparte de si está abierto, y **no se borra al cerrar**:
@@ -66,8 +69,17 @@ export function MenuDeEncabezado({
   function abrir() {
     ancla.current?.measureInWindow((x, y, ancho, alto) => {
       const ventana = Dimensions.get("window");
+      // En Android `measureInWindow` mide desde debajo de la barra de estado
+      // —la "ventana" es el contenido— mientras que el modal, translúcido,
+      // arranca en el tope de la pantalla: sin sumar la barra el menú caía
+      // una barra más arriba, encima del botón. Lo mismo abajo con la barra
+      // de navegación. En iOS las dos medidas ya coinciden.
+      const arriba = Platform.OS === "android" ? insets.top : 0;
+      const abajo = Platform.OS === "android" ? insets.bottom : 0;
       setDesde({
-        ...(haciaArriba ? { bottom: ventana.height - y + 6 } : { top: y + alto + 6 }),
+        ...(haciaArriba
+          ? { bottom: ventana.height - y + 6 + abajo }
+          : { top: y + alto + 6 + arriba }),
         // Anclado por la derecha: el botón vive en esa esquina y el menú es más
         // ancho que él, así que crece hacia adentro de la pantalla.
         right: ventana.width - (x + ancho),
