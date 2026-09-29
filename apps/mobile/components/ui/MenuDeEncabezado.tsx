@@ -102,6 +102,13 @@ export function MenuDeEncabezado({
         visible={abierto}
         transparent
         animationType="fade"
+        // En Android la app dibuja de borde a borde (`edgeToEdgeEnabled`), así
+        // que `measureInWindow` mide desde el tope de la pantalla; un Modal
+        // sin esto arranca debajo de la barra de estado y el menú caía una
+        // barra más arriba, encima del botón. Con las dos barras translúcidas
+        // el modal usa las mismas coordenadas que la medida. iOS las ignora.
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={cerrar}
       >
         {/* Tocar afuera cierra, que es lo que hace un desplegable. */}
