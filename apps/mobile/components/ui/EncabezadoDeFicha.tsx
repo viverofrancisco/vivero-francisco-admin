@@ -2,8 +2,7 @@ import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { tema } from "@/lib/tema";
 
 /**
@@ -16,6 +15,10 @@ import { tema } from "@/lib/tema";
  * de la que se viene no tiene título del cual tomarlo. La flecha vive al lado
  * del nombre, que es donde el pulgar la busca. Para usarlo la pantalla tiene
  * que ir con `headerShown: false` en su `Stack`.
+ *
+ * La flecha y el ⋯ son el círculo gris de Shopify (`BotonRedondoDeHoja`, 36
+ * con el ícono en 18), centrados con el nombre: la flecha era un chevron
+ * suelto y el ⋯ un cuadrado con borde, y no se leían como pareja.
  */
 export function EncabezadoDeFicha({
   titulo,
@@ -29,14 +32,11 @@ export function EncabezadoDeFicha({
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
-      <PressableScale
+      <BotonRedondoDeHoja
+        icono="chevron-back"
+        etiqueta="Volver"
         onPress={() => router.back()}
-        hitSlop={8}
-        style={styles.volver}
-        accessibilityLabel="Volver"
-      >
-        <Ionicons name="chevron-back" size={24} color={tema.texto} />
-      </PressableScale>
+      />
       <View style={styles.texto}>
         <Text style={styles.titulo} numberOfLines={2}>
           {titulo}
@@ -51,21 +51,15 @@ const styles = StyleSheet.create({
   encabezado: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 10,
     paddingHorizontal: 16,
     paddingBottom: 8,
     backgroundColor: "#fff",
   },
-  volver: {
-    width: 40,
-    height: 40,
-    marginLeft: -10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   texto: { flex: 1 },
   titulo: {
     fontSize: 22,
+    lineHeight: 28,
     fontWeight: "800",
     letterSpacing: -0.4,
     color: tema.texto,

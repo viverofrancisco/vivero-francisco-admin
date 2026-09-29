@@ -19,6 +19,7 @@ import {
 } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import {
   guardarMedios,
@@ -128,13 +129,11 @@ export default function MediosDelChatScreen() {
   return (
     <View style={styles.pantalla}>
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
-        <PressableScale
+        <BotonRedondoDeHoja
+          icono="chevron-back"
+          etiqueta="Volver"
           onPress={() => router.back()}
-          style={styles.iconoCabecera}
-          accessibilityLabel="Volver"
-        >
-          <Ionicons name="chevron-back" size={24} color={tema.texto} />
-        </PressableScale>
+        />
         <View style={styles.pestanas}>
           {pestana("archivos", "Multimedia")}
           {pestana("documentos", "Documentos")}

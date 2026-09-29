@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
 import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
@@ -77,13 +78,11 @@ export default function InfoDelChatScreen() {
   return (
     <View style={styles.pantalla}>
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
-        <PressableScale
+        <BotonRedondoDeHoja
+          icono="chevron-back"
+          etiqueta="Volver"
           onPress={() => router.back()}
-          style={styles.iconoCabecera}
-          accessibilityLabel="Volver"
-        >
-          <Ionicons name="chevron-back" size={24} color={tema.texto} />
-        </PressableScale>
+        />
         <Text style={styles.tituloCabecera}>Info del chat</Text>
         {chat?.puedeEditar ? (
           <MenuDeEncabezado

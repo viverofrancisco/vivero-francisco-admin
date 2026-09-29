@@ -33,6 +33,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { onEnviado, useColaDeEnvio } from "@/lib/cola-de-envio";
 import { guardarChat, leerChat } from "@/lib/cache-de-chats";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { Conectando } from "@/components/ui/Conectando";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { MediaViewer } from "@/components/MediaViewer";
@@ -618,13 +619,11 @@ export default function ChatScreen() {
     >
       {/* El encabezado: la flecha, el nombre y quiénes están. */}
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
-        <PressableScale
+        <BotonRedondoDeHoja
+          icono="chevron-back"
+          etiqueta="Volver"
           onPress={() => router.back()}
-          style={styles.iconoCabecera}
-          accessibilityLabel="Volver"
-        >
-          <Ionicons name="chevron-back" size={24} color={tema.texto} />
-        </PressableScale>
+        />
         {/* El nombre **es** el botón de la info, como en WhatsApp: tocarlo
             abre la foto, la gente y los archivos. El lápiz que había vive
             ahora adentro, en el ⋯ de la info. */}

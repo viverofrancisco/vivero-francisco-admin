@@ -37,6 +37,7 @@ import { MediaViewer, type MediaViewerSource } from "@/components/MediaViewer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { Conectando } from "@/components/ui/Conectando";
 import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
 import { onHecho, trabajosDe, useColaDeVisitas } from "@/lib/cola-de-visitas";
@@ -448,13 +449,11 @@ export default function PersonalVisitaScreen() {
           </>
         ) : (
           <>
-            <PressableScale
+            <BotonRedondoDeHoja
+              icono="chevron-back"
+              etiqueta="Volver"
               onPress={() => router.back()}
-              hitSlop={8}
-              style={styles.volver}
-            >
-              <Ionicons name="chevron-back" size={24} color={tema.texto} />
-            </PressableScale>
+            />
             <View style={styles.encabezadoTexto}>
               <Text style={styles.heroTitle} numberOfLines={2}>
                 {nombreCliente(cliente)}
@@ -1066,13 +1065,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 8,
     backgroundColor: "#fff",
-  },
-  volver: {
-    width: 40,
-    height: 40,
-    marginLeft: -10,
-    alignItems: "center",
-    justifyContent: "center",
   },
   encabezadoTexto: { flex: 1 },
   encabezadoBoton: { paddingHorizontal: 6, paddingVertical: 6, borderRadius: 8 },

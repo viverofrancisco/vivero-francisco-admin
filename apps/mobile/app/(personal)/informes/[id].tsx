@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { fechaSola, nombreCliente, resumenDePropiedades, textoPlanoDeHtml } from "@vivero/shared";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { MenuDeEncabezado } from "@/components/ui/MenuDeEncabezado";
 import { MiniaturaDePdf, VisorDePdf } from "@/components/informes/VisorDePdf";
 import { tema } from "@/lib/tema";
@@ -125,9 +125,11 @@ export default function InformeDetailScreen() {
       {/* El mismo encabezado que la ficha de la visita: la flecha, el nombre
           del cliente en grande y el ⋯ con lo que se hace con el informe. */}
       <View style={[styles.encabezado, { paddingTop: insets.top + 6 }]}>
-        <PressableScale onPress={() => router.back()} hitSlop={8} style={styles.volver}>
-          <Ionicons name="chevron-back" size={24} color={tema.texto} />
-        </PressableScale>
+        <BotonRedondoDeHoja
+          icono="chevron-back"
+          etiqueta="Volver"
+          onPress={() => router.back()}
+        />
         <View style={styles.encabezadoTexto}>
           <Text style={styles.heroTitulo} numberOfLines={2}>
             {nombreCliente(data.cliente)}
@@ -334,7 +336,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tema.linea,
   },
-  volver: { width: 40, height: 40, alignItems: "center", justifyContent: "center", borderRadius: 20 },
   encabezadoTexto: { flex: 1 },
   heroTitulo: { fontSize: 22, fontWeight: "700", color: tema.texto },
   container: { flex: 1 },

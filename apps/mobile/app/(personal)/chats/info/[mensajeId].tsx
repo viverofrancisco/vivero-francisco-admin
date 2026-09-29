@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest, mensajeDeError } from "@/lib/api";
-import { PressableScale } from "@/components/ui/PressableScale";
+import { BotonRedondoDeHoja } from "@/components/ui/CabeceraDeHoja";
 import { Burbuja } from "@/components/chats/Burbuja";
 import { cuandoLeyo, tituloDelDia, type InfoDeMensaje } from "@/lib/chats";
 import { tema } from "@/lib/tema";
@@ -36,13 +36,11 @@ export default function InfoDeMensajeScreen() {
   return (
     <View style={styles.pantalla}>
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
-        <PressableScale
+        <BotonRedondoDeHoja
+          icono="chevron-back"
+          etiqueta="Volver"
           onPress={() => router.back()}
-          style={styles.iconoCabecera}
-          accessibilityLabel="Volver"
-        >
-          <Ionicons name="chevron-back" size={24} color={tema.texto} />
-        </PressableScale>
+        />
         <Text style={styles.titulo}>Info del mensaje</Text>
         <View style={styles.iconoCabecera} />
       </View>

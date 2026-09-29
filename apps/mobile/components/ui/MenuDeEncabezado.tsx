@@ -92,8 +92,8 @@ export function MenuDeEncabezado({
         >
           <Ionicons
             name="ellipsis-horizontal"
-            size={20}
-            color={oscuro ? tema.superficie : tema.texto2}
+            size={18}
+            color={oscuro ? tema.superficie : tema.texto}
           />
         </PressableScale>
       </View>
@@ -140,19 +140,20 @@ export function MenuDeEncabezado({
 }
 
 const styles = StyleSheet.create({
+  /* El círculo gris de Shopify, el mismo que la ✕ y la flecha de volver
+     (`BotonRedondoDeHoja`): 36, sin borde, el ícono en 18. Era un cuadrado
+     con borde, distinto de la flecha que tenía al lado. */
   boton: {
     width: 36,
     height: 36,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: tema.linea,
+    borderRadius: 18,
+    backgroundColor: tema.lienzo,
     alignItems: "center",
     justifyContent: "center",
   },
   botonOscuro: {
     width: 34,
     height: 34,
-    borderWidth: 0,
     backgroundColor: "rgba(255,255,255,0.15)",
   },
   menu: {
