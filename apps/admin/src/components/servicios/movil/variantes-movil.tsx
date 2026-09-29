@@ -5,12 +5,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { UNIDADES_DE_PESO, UNIDAD_PESO_LABEL, gananciaDeVenta, type UnidadPeso } from "@vivero/shared";
-import { Check, ChevronRight, ImagePlus, Minus, Plus, Search } from "lucide-react";
+import { ArrowLeftRight, Check, ChevronRight, Eye, ImagePlus, Minus, Plus, Search, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { CustomSelect } from "@/components/ui/custom-select";
 import type { VarianteFila } from "../producto-variantes";
 import type { ImagenProducto } from "../producto-imagenes";
 import { SelectorFotoDeVariante } from "../selector-foto-de-variante";
+import { VisorDeFotosDeProducto } from "./visor-fotos-producto";
 import type { MediaItem } from "../media-library";
 import {
   CabeceraDeHoja,
@@ -422,7 +423,28 @@ export function FichaDeVarianteMovil({
 }) {
   const router = useRouter();
   const [eligiendoFoto, setEligiendoFoto] = useState(false);
+  /** La hoja *Acciones* de Shopify sobre la foto: ver, cambiar, quitar. */
+  const [acciones, setAcciones] = useState(false);
+  const [viendo, setViendo] = useState(false);
   const foto = producto.imagenes.find((i) => i.id === variante.imagenId) ?? producto.imagenes[0] ?? null;
+  /** Si la foto es una elegida para esta variante: solo esa se puede quitar. */
+  const propia = variante.imagenId !== null;
+
+  /** Una hoja que se abre mientras otra baja se pierde: un respiro. */
+  const despuesDeCerrar = (abrir: () => void) => {
+    setAcciones(false);
+    setTimeout(abrir, 250);
+  };
+
+  const quitarFoto = async () => {
+    setAcciones(false);
+    try {
+      await pedir(`/api/variantes/${variante.id}`, { method: "PATCH", body: { imagenId: null } });
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pudimos quitar la foto");
+    }
+  };
 
   /** El archivo elegido, como fila del producto: si no la tiene, se le suma en el acto. */
   const elegirFoto = async (media: MediaItem | null) => {
@@ -452,7 +474,9 @@ export function FichaDeVarianteMovil({
       <CabeceraDeHoja titulo="" onCerrar={onCerrar} />
       <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-6">
         <div className="flex items-center gap-4 pt-3">
-          <button type="button" onClick={() => setEligiendoFoto(true)} aria-label="Elegir la foto de la variante" className="relative h-[88px] w-[88px] flex-none overflow-hidden rounded-[14px] border bg-muted active:opacity-70">
+          {/* Con foto, tocarla abre la hoja *Acciones* —ver, cambiar,
+              quitar—, como en Shopify y en la app; sin foto, el + elige una. */}
+          <button type="button" onClick={() => (foto ? setAcciones(true) : setEligiendoFoto(true))} aria-label={foto ? "Acciones de la foto" : "Elegir la foto de la variante"} className="relative h-[88px] w-[88px] flex-none overflow-hidden rounded-[14px] border bg-muted active:opacity-70">
             {foto ? <Image src={foto.url} alt="" fill sizes="88px" className="object-cover" unoptimized /> : <span className="flex h-full items-center justify-center"><Plus className="h-6 w-6" /></span>}
           </button>
           <div className="min-w-0 flex-1">
@@ -469,6 +493,30 @@ export function FichaDeVarianteMovil({
         ) : null}
         <CuerpoDeVarianteMovil variante={variante} />
       </div>
+      <Sheet open={acciones} onOpenChange={(o) => !o && setAcciones(false)}>
+        <SheetContent side="bottom" showCloseButton={false} className="gap-0 rounded-t-2xl p-0 pb-[env(safe-area-inset-bottom)]">
+          <SheetTitle className="px-4 pt-4 text-[17px] font-bold">Acciones</SheetTitle>
+          <div className="py-2">
+            <button type="button" onClick={() => despuesDeCerrar(() => setViendo(true))} className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left text-[16px] active:bg-muted">
+              <Eye className="h-5 w-5" />
+              Ver foto
+            </button>
+            <button type="button" onClick={() => despuesDeCerrar(() => setEligiendoFoto(true))} className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left text-[16px] active:bg-muted">
+              <ArrowLeftRight className="h-5 w-5" />
+              Cambiar foto
+            </button>
+            {propia ? (
+              <button type="button" onClick={() => void quitarFoto()} className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left text-[16px] active:bg-muted">
+                <X className="h-5 w-5" />
+                Quitar foto
+              </button>
+            ) : null}
+          </div>
+        </SheetContent>
+      </Sheet>
+      {viendo && foto ? (
+        <VisorDeFotosDeProducto productoId={producto.id} imagenes={[foto]} inicial={0} canEdit={false} onCerrar={() => setViendo(false)} />
+      ) : null}
       {eligiendoFoto ? (
         <SelectorFotoDeVariante imagenes={producto.imagenes} imagenId={variante.imagenId} onListo={(media) => void elegirFoto(media)} onCerrar={() => setEligiendoFoto(false)} />
       ) : null}

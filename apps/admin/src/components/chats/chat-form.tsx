@@ -10,6 +10,7 @@ import { Camera, Search } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { AvatarDeChat } from "./avatar-de-chat";
+import { RecortarAvatar } from "./recortar-avatar";
 
 interface Persona {
   id: string;
@@ -117,6 +118,8 @@ export function FormularioDeChat({
   const [guardando, setGuardando] = useState(false);
   /** La foto elegida y todavía no subida; `quitar` saca la que había. */
   const [foto, setFoto] = useState<{ archivo: File; vista: string } | null>(null);
+  /** La elegida en la galería, mientras se recorta viendo el círculo. */
+  const [recortando, setRecortando] = useState<File | null>(null);
   const [quitar, setQuitar] = useState(false);
   const entradaFoto = useRef<HTMLInputElement>(null);
   const vistaDeFoto = foto?.vista ?? (quitar ? null : chat?.imagenUrl ?? null);
@@ -125,10 +128,20 @@ export function FormularioDeChat({
   function elegirFoto(lista: FileList | null) {
     const archivo = lista?.[0];
     if (!archivo || !archivo.type.startsWith("image/")) return;
-    if (foto) URL.revokeObjectURL(foto.vista);
-    setFoto({ archivo, vista: URL.createObjectURL(archivo) });
-    setQuitar(false);
+    // Primero el recorte con el círculo a la vista, como en la app; lo que
+    // vuelve ya es el cuadrado que se sube.
+    setRecortando(archivo);
     if (entradaFoto.current) entradaFoto.current.value = "";
+  }
+
+  function alRecortar(blob: Blob) {
+    if (foto) URL.revokeObjectURL(foto.vista);
+    setFoto({
+      archivo: new File([blob], "grupo.jpg", { type: "image/jpeg" }),
+      vista: URL.createObjectURL(blob),
+    });
+    setQuitar(false);
+    setRecortando(null);
   }
 
   useEffect(() => {
@@ -224,6 +237,13 @@ export function FormularioDeChat({
             className="hidden"
             onChange={(e) => elegirFoto(e.target.files)}
           />
+          {recortando ? (
+            <RecortarAvatar
+              archivo={recortando}
+              onCancelar={() => setRecortando(null)}
+              onRecortada={alRecortar}
+            />
+          ) : null}
           <button
             type="button"
             onClick={() => entradaFoto.current?.click()}

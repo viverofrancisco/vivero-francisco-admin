@@ -4,19 +4,19 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Expand, Loader2, Plus, Star, Trash2 } from "lucide-react";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { MediaViewer } from "@/components/ui/media-viewer";
+import { Loader2, Plus } from "lucide-react";
 import { MediaLibrary } from "../media-library";
 import type { ImagenProducto } from "../producto-imagenes";
+import { VisorDeFotosDeProducto } from "./visor-fotos-producto";
 import { pedir } from "./piezas";
 
 /**
  * Las fotos del producto en el teléfono, la sección *Media* de Shopify y la
  * misma que la app: las miniaturas grandes en fila y un **+** al final que
  * abre la biblioteca —las del producto ya marcadas, y *Subir* para traer
- * nuevas—. Tocar una foto abre, en una hoja desde abajo, verla, ponerla
- * primera o quitarla del producto.
+ * nuevas—. Tocar una foto la abre en el visor (`VisorDeFotosDeProducto`),
+ * donde están recortar, ponerla primera y quitarla; había una hoja con *Ver
+ * foto* y *Quitar* en el medio, que Shopify no tiene.
  *
  * Cada gesto se guarda en el acto, como en la app: la ficha en el teléfono
  * no tiene la barra de guardar del escritorio. *Listo* en la biblioteca
@@ -31,8 +31,8 @@ export function FotosDeProductoMovil({
   imagenes: ImagenProducto[];
 }) {
   const router = useRouter();
-  const [foto, setFoto] = useState<ImagenProducto | null>(null);
-  const [viendo, setViendo] = useState<string | null>(null);
+  /** En qué foto se abrió el visor, o `null` cerrado. */
+  const [visor, setVisor] = useState<number | null>(null);
   const [eligiendo, setEligiendo] = useState(false);
   const [ocupado, setOcupado] = useState(false);
 
@@ -90,7 +90,7 @@ export function FotosDeProductoMovil({
           <button
             key={img.id}
             type="button"
-            onClick={() => setFoto(img)}
+            onClick={() => setVisor(i)}
             aria-label={i === 0 ? "Foto principal" : `Foto ${i + 1}`}
             className="relative h-[120px] w-[120px] flex-none overflow-hidden rounded-xl bg-muted active:opacity-70"
           >
@@ -108,62 +108,6 @@ export function FotosDeProductoMovil({
         </button>
       </div>
 
-      {/* Qué se hace con una foto: verla, ponerla primera, quitarla. */}
-      <Sheet open={foto !== null} onOpenChange={(o) => !o && setFoto(null)}>
-        <SheetContent
-          side="bottom"
-          showCloseButton={false}
-          className="gap-0 rounded-t-2xl p-0 pb-[env(safe-area-inset-bottom)]"
-        >
-          <SheetTitle className="sr-only">Foto</SheetTitle>
-          {foto ? (
-            <div className="relative mx-4 mt-4 h-[72px] w-[72px] overflow-hidden rounded-[10px] bg-muted">
-              <Image src={foto.url} alt="" fill sizes="72px" className="object-cover" unoptimized />
-            </div>
-          ) : null}
-          <div className="py-2">
-            <button
-              type="button"
-              onClick={() => {
-                const url = foto?.url ?? null;
-                setFoto(null);
-                setTimeout(() => setViendo(url), 250);
-              }}
-              className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left text-[16px] active:bg-muted"
-            >
-              <Expand className="h-5 w-5" />
-              Ver foto
-            </button>
-            {foto && imagenes[0]?.id !== foto.id ? (
-              <button
-                type="button"
-                onClick={() => {
-                  const id = foto.id;
-                  setFoto(null);
-                  void ponerPrimera(id);
-                }}
-                className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left text-[16px] active:bg-muted"
-              >
-                <Star className="h-5 w-5" />
-                Poner como primera
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => {
-                const id = foto?.id;
-                setFoto(null);
-                if (id) void quitar(id);
-              }}
-              className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left text-[16px] text-destructive active:bg-muted"
-            >
-              <Trash2 className="h-5 w-5" />
-              Quitar del producto
-            </button>
-          </div>
-        </SheetContent>
-      </Sheet>
-
       {eligiendo ? (
         <MediaLibrary
           titulo="Elegir fotos"
@@ -178,7 +122,17 @@ export function FotosDeProductoMovil({
         />
       ) : null}
 
-      <MediaViewer media={viendo ? { url: viendo, tipo: "imagen" } : null} onClose={() => setViendo(null)} />
+      {visor !== null ? (
+        <VisorDeFotosDeProducto
+          productoId={productoId}
+          imagenes={imagenes}
+          inicial={visor}
+          canEdit
+          onCerrar={() => setVisor(null)}
+          onPonerPrimera={(id) => void ponerPrimera(id)}
+          onQuitar={(id) => void quitar(id)}
+        />
+      ) : null}
     </section>
   );
 }
