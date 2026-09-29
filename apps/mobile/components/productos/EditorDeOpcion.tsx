@@ -2,7 +2,6 @@ import { useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -174,7 +173,7 @@ export function EditorDeOpcion({
         />
         <KeyboardAvoidingView
           style={styles.pantalla}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior="padding"
         >
           {/* El contenedor de la librería: adentro va una lista arrastrable
               que no scrollea por su cuenta, y el scroll es de esta pantalla. */}

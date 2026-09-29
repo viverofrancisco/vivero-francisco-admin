@@ -3,7 +3,6 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import {
   Image,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -145,7 +144,7 @@ export function CalificarVisita({
     // El comentario va al pie: sin esto el campo quedaba detrás del teclado.
     <KeyboardAvoidingView
       style={styles.crece}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior="padding"
     >
     <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
       <Text variant="titleMedium" style={styles.titulo}>

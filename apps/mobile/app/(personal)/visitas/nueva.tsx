@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -214,7 +213,7 @@ export default function CrearVisitaScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior="padding"
     >
       <View style={styles.flex}>
         {/* La acción del paso arriba, a la derecha del contador, y no en un

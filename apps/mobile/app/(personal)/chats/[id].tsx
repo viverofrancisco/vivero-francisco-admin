@@ -4,7 +4,6 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   TextInput,
   View,
@@ -613,7 +612,7 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.pantalla}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior="padding"
     >
       {/* El encabezado: la flecha, el nombre y quiénes están. */}
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>

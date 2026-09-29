@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, View } from "react-native";
 import { HelperText, Text } from "react-native-paper";
 import {
   UNIDADES_DE_PESO,
@@ -95,7 +95,7 @@ export function HojaPrecioDeVariante({
             />
           }
         />
-        <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView style={styles.pantalla} behavior="padding">
           <ScrollView contentContainerStyle={styles.cuerpo} keyboardShouldPersistTaps="handled">
             <CampoEnCaja
               label="Precio de lista"
@@ -221,7 +221,7 @@ export function HojaInventarioDeVariante({
             />
           }
         />
-        <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView style={styles.pantalla} behavior="padding">
           <ScrollView contentContainerStyle={styles.cuerpo} keyboardShouldPersistTaps="handled">
             <Casilla
               label="Se cuenta"

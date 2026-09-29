@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -292,7 +291,7 @@ export default function NuevaOrdenScreen() {
   return (
     <View style={styles.flex}>
     {encabezado}
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <ScrollView
         style={styles.contenedor}
         contentContainerStyle={styles.scroll}
@@ -555,7 +554,7 @@ function HojaItemPersonalizado({
             <Text style={[hoja.agregar, !listo && hoja.apagado]}>Agregar</Text>
           </PressableScale>
         </View>
-        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView style={styles.flex} behavior="padding">
           <ScrollView contentContainerStyle={hoja.cuerpo} keyboardShouldPersistTaps="handled">
             <Campo label="Nombre del ítem" required value={descripcion} onChangeText={setDescripcion} autoFocus />
             <Campo

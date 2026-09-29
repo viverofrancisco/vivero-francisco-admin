@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -136,7 +135,7 @@ function Contenido({
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView behavior="padding">
       <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
         <Text style={styles.titulo}>No pude hacer la visita</Text>
         <Text style={styles.detalle}>

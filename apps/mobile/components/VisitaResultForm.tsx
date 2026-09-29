@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { PressableScale } from "@/components/ui/PressableScale";
 import {
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -181,7 +180,7 @@ export function VisitaResultForm({
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior="padding"
     >
       <View style={styles.flex}>
         {/* Sin `insets.top`: la pantalla se presenta como modal, así que ya

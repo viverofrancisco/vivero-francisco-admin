@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -119,7 +118,7 @@ export function HojaAjustarStock({
             />
           }
         />
-        <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView style={styles.pantalla} behavior="padding">
           <ScrollView contentContainerStyle={styles.cuerpo} keyboardShouldPersistTaps="handled">
             <Text style={styles.rotuloDisponible}>Disponible</Text>
 

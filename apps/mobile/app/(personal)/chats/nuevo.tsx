@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { ETIQUETA_DE_ROL } from "@vivero/shared";
 import {
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -262,7 +261,7 @@ export default function ChatFormScreen() {
           la lista de resultados quedaba detrás del teclado. */}
       <KeyboardAvoidingView
         style={styles.crece}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior="padding"
       >
       <ScrollView contentContainerStyle={styles.cuerpo}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
