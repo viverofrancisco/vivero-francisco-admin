@@ -173,7 +173,7 @@ export default function PersonalListScreen() {
         puedeEditar
           ? [
               {
-                etiqueta: "Nueva persona",
+                etiqueta: "Nuevo personal",
                 onPress: () => router.push("/(personal)/personal/nuevo"),
               },
               // Prender la selección solo cuando hay algo que marcar y no se

@@ -10,7 +10,7 @@ export default function PersonalNuevoScreen() {
   const router = useRouter();
   return (
     <PersonalForm
-      titulo="Nueva persona"
+      titulo="Nuevo personal"
       accion="Crear"
       onCancelar={() => router.back()}
       onSubmit={async (valores) => {
