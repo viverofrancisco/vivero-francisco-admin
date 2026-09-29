@@ -10,8 +10,12 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { HojaAjustarStock } from "./HojaAjustarStock";
 import { HojaInventarioDeVariante, HojaPrecioDeVariante } from "./HojasDeVariante";
 import { SelectorDeFotoDeVariante } from "./SelectorDeFotoDeVariante";
+import { VisorDeFotosDeProducto } from "./VisorDeFotosDeProducto";
+import { AccionDeHoja, TituloDeHoja } from "./AccionDeHoja";
+import { HojaInferior } from "@/components/ui/HojaInferior";
 import { dinero, pesoTexto, precioTexto } from "./formato";
 import type { ServicioDetail, VarianteDeProducto } from "@/lib/types";
+import { apiRequest } from "@/lib/api";
 import { tema } from "@/lib/tema";
 
 /**
@@ -158,20 +162,49 @@ export function FichaDeVariante({
   onRecargar: () => void;
 }) {
   const [eligiendoFoto, setEligiendoFoto] = useState(false);
+  /** La hoja *Acciones* de Shopify sobre la foto: ver, cambiar, quitar. */
+  const [acciones, setAcciones] = useState(false);
+  const [viendo, setViendo] = useState(false);
+  const [quitando, setQuitando] = useState(false);
   /** La foto elegida, o la principal del producto; con un + si no hay ninguna, como Shopify. */
   const foto = variante.imagenUrl;
+  /** Si la foto es una elegida para esta variante: solo esa se puede quitar. */
+  const propia = variante.imagenId !== null;
+  const imagenDeProducto = producto.imagenes.find((i) => i.id === variante.imagenId) ?? null;
+
+  /** Una hoja que se abre mientras otra baja se pierde: un respiro. */
+  function despuesDeCerrar(abrir: () => void) {
+    setAcciones(false);
+    setTimeout(abrir, 250);
+  }
+
+  async function quitarFoto() {
+    setQuitando(true);
+    try {
+      await apiRequest(`/api/mobile/variantes/${variante.id}`, {
+        method: "PATCH",
+        body: { imagenId: null },
+      });
+      onRecargar();
+    } catch {
+      // La ficha vuelve a mostrar la misma foto: no hay nada más que decir.
+    } finally {
+      setQuitando(false);
+    }
+  }
+
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onCerrar}>
       <View style={estilosDeFicha.flex}>
         <CabeceraDeHoja onCerrar={onCerrar} />
         <ScrollView contentContainerStyle={estilosDeFicha.container}>
           <View style={styles.encabezado}>
-            {/* La foto se toca para elegir cuál de las del producto es la de
-                esta variante, como el + de Shopify. */}
+            {/* Con foto, tocarla abre la hoja *Acciones* de Shopify —ver,
+                cambiar, quitar—; sin foto, el + elige una de las del producto. */}
             <PressableScale
-              onPress={() => setEligiendoFoto(true)}
-              disabled={!canEdit}
-              accessibilityLabel="Elegir la foto de la variante"
+              onPress={() => (foto ? setAcciones(true) : setEligiendoFoto(true))}
+              disabled={!canEdit && !foto}
+              accessibilityLabel={foto ? "Acciones de la foto" : "Elegir la foto de la variante"}
             >
               {foto ? (
                 <Image source={{ uri: foto }} style={styles.foto} contentFit="cover" cachePolicy="disk" />
@@ -202,6 +235,45 @@ export function FichaDeVariante({
           <CuerpoDeVariante variante={variante} canEdit={canEdit} onRecargar={onRecargar} />
         </ScrollView>
       </View>
+
+      <HojaInferior visible={acciones} onCerrar={() => setAcciones(false)}>
+        <TituloDeHoja texto="Acciones" />
+        <AccionDeHoja
+          icono="eye-outline"
+          texto="Ver foto"
+          onPress={() => despuesDeCerrar(() => setViendo(true))}
+        />
+        {canEdit ? (
+          <AccionDeHoja
+            icono="swap-horizontal-outline"
+            texto="Cambiar foto"
+            onPress={() => despuesDeCerrar(() => setEligiendoFoto(true))}
+          />
+        ) : null}
+        {canEdit && propia ? (
+          <AccionDeHoja
+            icono="close-outline"
+            texto="Quitar foto"
+            onPress={() => {
+              setAcciones(false);
+              if (!quitando) void quitarFoto();
+            }}
+          />
+        ) : null}
+      </HojaInferior>
+
+      {viendo && foto ? (
+        <VisorDeFotosDeProducto
+          productoId={producto.id}
+          imagenes={[
+            imagenDeProducto ?? { id: "actual", mediaId: "", url: foto },
+          ]}
+          inicial={0}
+          canEdit={false}
+          onCerrar={() => setViendo(false)}
+          onRecargar={onRecargar}
+        />
+      ) : null}
 
       {eligiendoFoto ? (
         <SelectorDeFotoDeVariante

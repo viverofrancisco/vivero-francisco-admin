@@ -3,10 +3,9 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { Text } from "react-native-paper";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { estilosDeFicha } from "@/components/ui/SeccionDeFicha";
-import { MediaViewer } from "@/components/MediaViewer";
+import { VisorDeFotosDeProducto } from "./VisorDeFotosDeProducto";
 import {
   SelectorDeFotos,
   fotoDeBiblioteca,
@@ -17,8 +16,9 @@ import { tema } from "@/lib/tema";
 /**
  * Las fotos del producto, la sección *Media* de Shopify: las miniaturas
  * grandes en una fila que scrollea, y al final un **+** que agrega. Tocar
- * una foto abre lo que se hace con ella —verla, ponerla primera, quitarla—
- * en una hoja desde abajo.
+ * una foto la abre en el visor (`VisorDeFotosDeProducto`), donde están
+ * recortar, ponerla primera y quitarla; había una hoja con *Ver foto* y
+ * *Quitar* en el medio, que Shopify no tiene.
  *
  * El **+** abre el selector de fotos del informe en modo biblioteca
  * (`SelectorDeFotos`, el *Select files* de Shopify): la grilla de la
@@ -40,16 +40,11 @@ export function FotosDeProducto({
   canEdit: boolean;
   onRecargar: () => void;
 }) {
-  const [foto, setFoto] = useState<{ id: string; url: string } | null>(null);
-  const [viendo, setViendo] = useState<string | null>(null);
+  /** En qué foto se abrió el visor, o `null` cerrado. */
+  const [visor, setVisor] = useState<number | null>(null);
   const [eligiendo, setEligiendo] = useState(false);
   const [aplicando, setAplicando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  /** Una hoja que se abre mientras otra baja se pierde: un respiro. */
-  function despuesDeCerrar(abrir: () => void) {
-    setTimeout(abrir, 250);
-  }
 
   /**
    * Lo que quedó marcado en el selector, contra lo que el producto tiene:
@@ -122,7 +117,7 @@ export function FotosDeProducto({
         {imagenes.map((img, i) => (
           <PressableScale
             key={img.id}
-            onPress={() => (canEdit ? setFoto(img) : setViendo(img.url))}
+            onPress={() => setVisor(i)}
             accessibilityLabel={i === 0 ? "Foto principal" : `Foto ${i + 1}`}
           >
             <Image source={{ uri: img.url }} style={styles.foto} contentFit="cover" cachePolicy="disk" />
@@ -148,45 +143,6 @@ export function FotosDeProducto({
       </ScrollView>
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {/* Qué se hace con una foto: verla, ponerla primera, quitarla. */}
-      <HojaInferior visible={foto !== null} onCerrar={() => setFoto(null)}>
-        <View style={styles.menu}>
-          {foto ? (
-            <Image source={{ uri: foto.url }} style={styles.menuFoto} contentFit="cover" cachePolicy="disk" />
-          ) : null}
-          <Accion
-            icono="expand-outline"
-            texto="Ver foto"
-            onPress={() => {
-              const url = foto?.url ?? null;
-              setFoto(null);
-              despuesDeCerrar(() => setViendo(url));
-            }}
-          />
-          {foto && imagenes[0]?.id !== foto.id ? (
-            <Accion
-              icono="star-outline"
-              texto="Poner como primera"
-              onPress={() => {
-                const id = foto.id;
-                setFoto(null);
-                void ponerPrimera(id);
-              }}
-            />
-          ) : null}
-          <Accion
-            icono="trash-outline"
-            texto="Quitar del producto"
-            peligro
-            onPress={() => {
-              const id = foto?.id;
-              setFoto(null);
-              if (id) void quitar(id);
-            }}
-          />
-        </View>
-      </HojaInferior>
-
       {/* El selector del informe en modo biblioteca: las del producto entran
           marcadas, y lo que vuelve es la lista final. */}
       {eligiendo ? (
@@ -201,36 +157,23 @@ export function FotosDeProducto({
         />
       ) : null}
 
-      <MediaViewer
-        media={viendo ? { url: viendo, tipo: "imagen" } : null}
-        onClose={() => setViendo(null)}
-      />
+      {visor !== null ? (
+        <VisorDeFotosDeProducto
+          productoId={productoId}
+          imagenes={imagenes}
+          inicial={visor}
+          canEdit={canEdit}
+          onCerrar={() => setVisor(null)}
+          onRecargar={onRecargar}
+          onPonerPrimera={(id) => void ponerPrimera(id)}
+          onQuitar={(id) => void quitar(id)}
+        />
+      ) : null}
     </View>
   );
 }
 
-function Accion({
-  icono,
-  texto,
-  peligro = false,
-  onPress,
-}: {
-  icono: React.ComponentProps<typeof Ionicons>["name"];
-  texto: string;
-  peligro?: boolean;
-  onPress: () => void;
-}) {
-  const color = peligro ? tema.rojo : tema.texto;
-  return (
-    <PressableScale onPress={onPress} estiloExterno={styles.ancho} style={styles.accion}>
-      <Ionicons name={icono} size={20} color={color} />
-      <Text style={[styles.accionTexto, { color }]}>{texto}</Text>
-    </PressableScale>
-  );
-}
-
 const styles = StyleSheet.create({
-  ancho: { alignSelf: "stretch" },
   fila: { gap: 10, paddingVertical: 2, paddingRight: 16 },
   foto: { width: 120, height: 120, borderRadius: 12, backgroundColor: tema.lienzo },
   agregar: {
@@ -243,9 +186,4 @@ const styles = StyleSheet.create({
   tocado: { opacity: 0.6 },
   error: { color: tema.rojo, fontSize: 13, paddingHorizontal: 4, paddingTop: 4 },
 
-  menu: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 12 },
-  menuTitulo: { fontSize: 17, fontWeight: "700", color: tema.texto, marginBottom: 6 },
-  menuFoto: { width: 72, height: 72, borderRadius: 10, backgroundColor: tema.lienzo, marginBottom: 6 },
-  accion: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 14 },
-  accionTexto: { fontSize: 17 },
 });
