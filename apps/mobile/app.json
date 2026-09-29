@@ -68,6 +68,14 @@
             "video"
           ]
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Vivero Francisco usa la cámara para tomar fotos del jardín, de una novedad o para un chat.",
+          "microphonePermission": "Vivero Francisco usa el micrófono cuando grabas un video para un chat.",
+          "photosPermission": "Vivero Francisco muestra tus fotos y videos para que elijas cuáles mandar en un chat o adjuntar a una novedad."
+        }
       ]
     ],
     "experiments": {
