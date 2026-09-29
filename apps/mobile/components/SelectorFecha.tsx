@@ -77,18 +77,14 @@ export function SelectorFecha({
   const hoy = new Date();
   const [mes, setMes] = useState(valor.getMonth());
   const [anio, setAnio] = useState(valor.getFullYear());
-  /** Con el panel abierto se eligen mes y año en vez de un día. */
-  const [eligiendoMes, setEligiendoMes] = useState(false);
   /**
-   * El panel, en dos vistas: la grilla de meses del año que se está mirando,
-   * y —tocando ese año— la grilla de años, que scrollea y se abre en el
-   * elegido. Tocar un mes cierra el panel. Es el `MonthYearPicker` del
-   * portal sin sus flechas: acá las de mes ya están en la cabecera de la
-   * hoja, y con un ‹ año › más arriba de la grilla eran seis flechas en una
-   * pantalla; cambiar de año es tocar el año.
+   * Qué panel está abierto: la grilla de meses o la de años, cada una desde
+   * su propio botón en la cabecera —*Septiembre ⌄* y *2026 ⌄*—, o ninguno,
+   * que es el calendario. Elegir cierra el panel. Era un solo botón con el
+   * mes y el año, y adentro un segundo botón para pasar de los meses a los
+   * años: un paso de más para cambiar de año.
    */
-  const [vista, setVista] = useState<"meses" | "anios">("meses");
-  const [anioVisible, setAnioVisible] = useState(valor.getFullYear());
+  const [panel, setPanel] = useState<"meses" | "anios" | null>(null);
   const grillaDeAnios = useRef<ScrollView>(null);
   const anios = Array.from(
     { length: ANIOS_ATRAS + ANIOS_ADELANTE + 1 },
@@ -107,19 +103,12 @@ export function SelectorFecha({
   function alMostrar() {
     setMes(valor.getMonth());
     setAnio(valor.getFullYear());
-    setEligiendoMes(false);
-  }
-
-  /** Abrir el panel parte del mes que se está viendo, no del último toqueteo. */
-  function abrirPanel() {
-    setVista("meses");
-    setAnioVisible(anio);
-    setEligiendoMes(true);
+    setPanel(null);
   }
 
   /** La grilla de años arranca con el elegido a la vista, en la segunda fila. */
   function acomodarAnios() {
-    const fila = Math.floor(anios.indexOf(anioVisible) / 3);
+    const fila = Math.floor(anios.indexOf(anio) / 3);
     grillaDeAnios.current?.scrollTo({
       y: Math.max(0, (fila - 1) * (ALTO_FICHA + SEPARACION)),
       animated: false,
@@ -134,22 +123,41 @@ export function SelectorFecha({
   return (
     <HojaInferior visible={visible} onCerrar={onCerrar}>
           <View style={styles.encabezado}>
-            <PressableScale
-              onPress={() => (eligiendoMes ? setEligiendoMes(false) : abrirPanel())}
-              style={styles.mesBoton}
-              hitSlop={6}
-            >
-              <Text variant="titleMedium" style={styles.mesTexto}>
-                {MESES[mes]} {anio}
-              </Text>
-              <Ionicons
-                name={eligiendoMes ? "chevron-up" : "chevron-down"}
-                size={16}
-                color={VERDE}
-              />
-            </PressableScale>
+            {/* El mes y el año, cada uno su botón: tocar uno abre su grilla. */}
+            <View style={styles.mesYAnio}>
+              <PressableScale
+                onPress={() => setPanel(panel === "meses" ? null : "meses")}
+                style={[styles.mesBoton, panel === "meses" && styles.mesBotonAbierto]}
+                hitSlop={6}
+                accessibilityLabel="Elegir el mes"
+              >
+                <Text variant="titleMedium" style={styles.mesTexto}>
+                  {MESES[mes]}
+                </Text>
+                <Ionicons
+                  name={panel === "meses" ? "chevron-up" : "chevron-down"}
+                  size={16}
+                  color={VERDE}
+                />
+              </PressableScale>
+              <PressableScale
+                onPress={() => setPanel(panel === "anios" ? null : "anios")}
+                style={[styles.mesBoton, panel === "anios" && styles.mesBotonAbierto]}
+                hitSlop={6}
+                accessibilityLabel="Elegir el año"
+              >
+                <Text variant="titleMedium" style={styles.mesTexto}>
+                  {anio}
+                </Text>
+                <Ionicons
+                  name={panel === "anios" ? "chevron-up" : "chevron-down"}
+                  size={16}
+                  color={VERDE}
+                />
+              </PressableScale>
+            </View>
 
-            {!eligiendoMes ? (
+            {panel === null ? (
               <View style={styles.flechas}>
                 <PressableScale onPress={() => correrMes(-1)} hitSlop={10} style={styles.flecha}>
                   <Ionicons name="chevron-back" size={20} color={VERDE} />
@@ -161,37 +169,19 @@ export function SelectorFecha({
             ) : null}
           </View>
 
-          {eligiendoMes ? (
+          {panel !== null ? (
             <View style={styles.panel}>
-              {/* Solo el año, que abre y cierra la grilla de años. */}
-              <View style={styles.panelCabecera}>
-                <PressableScale
-                  onPress={() => setVista(vista === "meses" ? "anios" : "meses")}
-                  hitSlop={6}
-                  style={styles.panelAnio}
-                  accessibilityLabel={vista === "meses" ? "Elegir el año" : "Volver a los meses"}
-                >
-                  <Text style={styles.panelAnioTexto}>{anioVisible}</Text>
-                  <Ionicons
-                    name={vista === "meses" ? "chevron-down" : "chevron-up"}
-                    size={16}
-                    color={VERDE}
-                  />
-                </PressableScale>
-              </View>
-
-              {vista === "meses" ? (
+              {panel === "meses" ? (
               <View style={styles.rejilla}>
                 {MESES.map((m, i) => {
-                      const elegido = anioVisible === anio && i === mes;
-                      const esteMes = anioVisible === hoy.getFullYear() && i === hoy.getMonth();
+                      const elegido = i === mes;
+                      const esteMes = anio === hoy.getFullYear() && i === hoy.getMonth();
                       return (
                         <Pressable
                           key={m}
                           onPress={() => {
                             setMes(i);
-                            setAnio(anioVisible);
-                            setEligiendoMes(false);
+                            setPanel(null);
                           }}
                           style={[styles.ficha, styles.fichaTercio, elegido && styles.fichaActiva]}
                         >
@@ -220,8 +210,8 @@ export function SelectorFecha({
                   <Pressable
                     key={a}
                     onPress={() => {
-                      setAnioVisible(a);
-                      setVista("meses");
+                      setAnio(a);
+                      setPanel(null);
                     }}
                     style={[styles.ficha, styles.fichaTercio, a === anio && styles.fichaActiva]}
                   >
@@ -300,18 +290,8 @@ export function SelectorFecha({
 }
 
 const styles = StyleSheet.create({
-  panelCabecera: { alignItems: "center", marginBottom: 10 },
   /* Cuatro filas a la vista: la grilla scrollea el resto. */
   grillaDeAnios: { maxHeight: ALTO_FICHA * 4 + SEPARACION * 3 },
-  panelAnio: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  panelAnioTexto: { fontSize: 16, fontWeight: "700", color: "#222" },
   fichaTercio: {
     flexBasis: "30%",
     flexGrow: 1,
@@ -327,7 +307,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 8,
   },
-  mesBoton: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 6 },
+  mesYAnio: { flexDirection: "row", alignItems: "center", gap: 6 },
+  mesBoton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  mesBotonAbierto: { backgroundColor: "#eef5ef" },
   mesTexto: { color: "#111", fontWeight: "700" },
   flechas: { flexDirection: "row", gap: 4 },
   flecha: { padding: 8 },
