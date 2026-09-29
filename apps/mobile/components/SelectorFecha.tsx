@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,6 +22,9 @@ import { tema } from "@/lib/tema";
  * años: saltar a marzo del año que viene son dos toques y no catorce flechazos.
  * *Hoy* está siempre a mano, que es adonde se vuelve casi siempre.
  */
+
+/** Ancho fijo de la ficha del año, para poder scrollear hasta el elegido. */
+const ANCHO_ANIO = 72;
 
 const DIAS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 const MESES = [
@@ -87,8 +90,22 @@ export function SelectorFecha({
     setEligiendoMes(false);
   }
 
-  /** Cinco años para atrás y dos para adelante: no se agendan visitas en 2040. */
-  const anios = Array.from({ length: 8 }, (_, i) => hoy.getFullYear() - 5 + i);
+  /**
+   * Diez años para cada lado, en una fila que scrollea y arranca en el año
+   * elegido. Eran ocho fichas fijas —cinco atrás, dos adelante—: un plan a
+   * tres años o una visita vieja no tenían adónde ir.
+   */
+  const anios = Array.from({ length: 21 }, (_, i) => hoy.getFullYear() - 10 + i);
+  const filaDeAnios = useRef<ScrollView>(null);
+  useEffect(() => {
+    if (!eligiendoMes) return;
+    const i = anios.indexOf(anio);
+    if (i < 0) return;
+    // Centrado, sin animar: al abrir el panel el año ya está a la vista.
+    filaDeAnios.current?.scrollTo({ x: Math.max(0, i * (ANCHO_ANIO + 8) - 130), animated: false });
+    // Solo al abrir el panel: al tocar un año no hace falta moverlo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eligiendoMes]);
 
   // La hoja se monta con el valor actual a la vista.
   const visibleAntes = useRef(visible);
@@ -142,19 +159,24 @@ export function SelectorFecha({
                 ))}
               </View>
               <Text style={styles.panelTitulo}>Año</Text>
-              <View style={styles.rejilla}>
+              <ScrollView
+                ref={filaDeAnios}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filaDeAnios}
+              >
                 {anios.map((a) => (
                   <Pressable
                     key={a}
                     onPress={() => setAnio(a)}
-                    style={[styles.ficha, a === anio && styles.fichaActiva]}
+                    style={[styles.ficha, styles.fichaDeAnio, a === anio && styles.fichaActiva]}
                   >
                     <Text style={[styles.fichaTexto, a === anio && styles.fichaTextoActivo]}>
                       {a}
                     </Text>
                   </Pressable>
                 ))}
-              </View>
+              </ScrollView>
               <Pressable
                 onPress={() => setEligiendoMes(false)}
                 style={styles.listo}
@@ -223,6 +245,8 @@ export function SelectorFecha({
 }
 
 const styles = StyleSheet.create({
+  filaDeAnios: { gap: 8, paddingRight: 16 },
+  fichaDeAnio: { width: ANCHO_ANIO, alignItems: "center" },
   encabezado: {
     flexDirection: "row",
     alignItems: "center",
