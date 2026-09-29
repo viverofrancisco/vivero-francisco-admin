@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,8 @@ interface PersonalFormProps {
   cards?: boolean;
   cardsEditing?: boolean;
   onEditDone?: () => void;
+  /** Avisa si lo escrito difiere de la ficha: la página apaga Guardar sin cambios. */
+  onDirtyChange?: (dirty: boolean) => void;
   /** Solo un ADMIN cambia el usuario; el resto lo ve y no lo edita. */
   puedeEditarUsuario?: boolean;
 }
@@ -68,6 +70,7 @@ export function PersonalForm({
   initialData,
   cards,
   cardsEditing,
+  onDirtyChange,
   onEditDone,
   puedeEditarUsuario = false,
 }: PersonalFormProps) {
@@ -80,7 +83,7 @@ export function PersonalForm({
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<PersonalFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(personalSchema as any) as any,
@@ -95,6 +98,10 @@ export function PersonalForm({
       usuario: initialData?.usuario ?? "",
     },
   });
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   // Reset form when leaving edit mode externally
   const prevEditing = useRef(cardsEditing);
@@ -316,6 +323,7 @@ export function PersonalForm({
         titulo={isEditing ? "Editar personal" : "Nuevo personal"}
         accion={isEditing ? "Guardar" : "Crear"}
         cargando={loading}
+        deshabilitado={isEditing && !isDirty}
         onCancelar={() => router.push("/dashboard/personal")}
       />
       <div className="mx-auto max-w-2xl space-y-5 px-4 pt-3 pb-6 md:px-0 md:pt-0 md:pb-24">
@@ -427,6 +435,7 @@ export function PersonalForm({
         <StickyFormActions
           saveLabel={isEditing ? "Guardar cambios" : "Crear personal"}
           saving={loading}
+          disabled={isEditing && !isDirty}
           onCancel={() => router.push("/dashboard/personal")}
         />
       </div>

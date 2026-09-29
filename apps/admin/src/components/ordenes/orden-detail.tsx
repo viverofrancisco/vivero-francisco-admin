@@ -15,8 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  BOTON_REDONDO_MOVIL,
+  ICONO_BOTON_REDONDO,
+  VolverRedondo,
+} from "@/components/shared/boton-redondo-movil";
+import {
   ArrowLeft,
-  ChevronLeft,
   ChevronRight,
   FileText,
   Loader2,
@@ -635,13 +639,7 @@ export function OrdenDetail({
           </>
         ) : (
           <>
-            <Link
-              href={backHref}
-              aria-label="Volver"
-              className="-ml-2.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl active:bg-muted"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Link>
+            <VolverRedondo href={backHref} />
             <h1 className="min-w-0 flex-1 text-[22px] font-extrabold tracking-[-0.4px]">
               Orden #{orden.numero}
             </h1>
@@ -653,12 +651,12 @@ export function OrdenDetail({
                       type="button"
                       aria-label="Acciones"
                       disabled={cargando !== null}
-                      className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border border-border text-ink-2 active:bg-muted disabled:opacity-60"
+                      className={BOTON_REDONDO_MOVIL}
                     >
                       {cargando !== null ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <Loader2 className={`${ICONO_BOTON_REDONDO} animate-spin`} />
                       ) : (
-                        <MoreHorizontal className="h-5 w-5" />
+                        <MoreHorizontal className={ICONO_BOTON_REDONDO} />
                       )}
                     </button>
                   }

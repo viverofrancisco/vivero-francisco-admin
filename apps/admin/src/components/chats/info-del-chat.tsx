@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MediaViewer } from "@/components/ui/media-viewer";
 import { InitialsAvatar } from "@/components/shared/initials-avatar";
-import { ChevronLeft, ChevronRight, FileText, Images, Play, Plus, Search, X } from "lucide-react";
+import { ChevronRight, FileText, Images, Play, Plus, Search, X } from "lucide-react";
+import { VolverRedondoBoton } from "@/components/shared/boton-redondo-movil";
 import { toast } from "sonner";
 import {
   extensionDe,
@@ -143,7 +144,7 @@ function Encabezado({
   derecha?: React.ReactNode;
 }) {
   return (
-    <div className="-mx-4 -mt-4 mb-3 flex flex-none items-center gap-1 border-b border-border px-1 py-1.5">
+    <div className="-mx-4 -mt-4 mb-3 flex flex-none items-center gap-1 border-b border-border px-2 py-1.5">
       {izquierda}
       <DialogTitle className="min-w-0 flex-1 truncate text-center text-base">
         {titulo}
@@ -400,9 +401,7 @@ function VistaMedios({
     <>
       <Encabezado
         izquierda={
-          <Button variant="ghost" size="icon" aria-label="Volver" onClick={onVolver}>
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
+          <VolverRedondoBoton onClick={onVolver} />
         }
         titulo={
           <span className="inline-flex rounded-full bg-muted p-0.5">
@@ -588,9 +587,7 @@ function VistaAgregar({
     <>
       <Encabezado
         izquierda={
-          <Button variant="ghost" size="icon" aria-label="Volver" onClick={onVolver}>
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
+          <VolverRedondoBoton onClick={onVolver} />
         }
         titulo="Agregar miembros"
         derecha={

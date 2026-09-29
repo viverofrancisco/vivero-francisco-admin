@@ -529,8 +529,8 @@ orden*, *Nueva suscripción*, *Emitir*, and the cliente and propiedad forms — 
 title between — the portal's header on the same screens (*Nueva orden*, and
 *Nuevo cliente*, *Nuevo personal* and *Nuevo grupo* below `md` through
 `EncabezadoFormularioMovil` in `components/shared`, with `StickyFormActions`
-kept for the desktop), and the only thing that stays put while a long form scrolls, so
-there is no button at the foot.
+kept for the desktop; the tarea dialog does the same below `md`, and every edit form on both sides — cliente, personal, grupo, tarea — lights *Guardar* only once something differs from what was loaded, `isDirty` on the portal), and the only thing that stays put while a long form scrolls, so
+there is no button at the foot. **The back arrow and the ⋯ of a ficha, and the ⋯ of a list, are one round grey button in both apps** — `BotonRedondoDeHoja` in the app, `VolverRedondo` / `BOTON_REDONDO_MOVIL` in `components/shared/boton-redondo-movil.tsx` on the portal: 36 px, no border, the icon at 18, Shopify's — because a bare chevron beside a bordered square never read as a pair.
 
 **Nothing about a visita becomes an order by itself.** Completing one used to
 open a `BORRADOR` with its loose work at $0, and a nightly cron swept up the

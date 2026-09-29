@@ -80,7 +80,7 @@ export function GrupoDetail({
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<GrupoFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(grupoSchema as any) as any,
@@ -134,6 +134,8 @@ export function GrupoDetail({
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Volver"
+            className="max-md:rounded-full max-md:bg-secondary"
             onClick={() => router.push(backHref)}
           >
             <ArrowLeft className="h-5 w-5" />
@@ -153,7 +155,9 @@ export function GrupoDetail({
                 size="sm"
                 type="submit"
                 form="grupo-cards-form"
-                disabled={loading}
+                // Sin cambios, apagado: un Guardar verde sobre una ficha sin
+                // tocar invita a apretarlo para nada.
+                disabled={loading || !isDirty}
               >
                 {loading ? "Guardando..." : "Guardar cambios"}
               </Button>

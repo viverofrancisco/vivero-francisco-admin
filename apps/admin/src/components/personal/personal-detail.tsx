@@ -73,6 +73,8 @@ export function PersonalDetail({
 }: Props) {
   const router = useRouter();
   const [cardsEditing, setCardsEditing] = useState(false);
+  /** Si el formulario de edición difiere de la ficha: sin cambios, Guardar va apagado. */
+  const [hayCambios, setHayCambios] = useState(false);
 
   const nombreCompleto = `${personal.nombre} ${personal.apellido || ""}`.trim();
 
@@ -84,6 +86,8 @@ export function PersonalDetail({
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Volver"
+            className="max-md:rounded-full max-md:bg-secondary"
             onClick={() => router.push(backHref)}
           >
             <ArrowLeft className="h-5 w-5" />
@@ -121,6 +125,7 @@ export function PersonalDetail({
                 size="sm"
                 type="submit"
                 form="personal-cards-form"
+                disabled={!hayCambios}
               >
                 Guardar cambios
               </Button>
@@ -156,6 +161,7 @@ export function PersonalDetail({
               }}
               cards
               cardsEditing={cardsEditing}
+              onDirtyChange={setHayCambios}
               onEditDone={() => setCardsEditing(false)}
               puedeEditarUsuario={puedeAdministrarAcceso}
             />

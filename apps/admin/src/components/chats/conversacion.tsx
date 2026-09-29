@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { VolverRedondo, VolverRedondoBoton } from "@/components/shared/boton-redondo-movil";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +23,6 @@ import {
   Camera,
   Check,
   CheckCheck,
-  ChevronLeft,
   Copy,
   FileText,
   Info,
@@ -592,12 +591,8 @@ export function Conversacion({
           en el teléfono la conversación ocupa la pantalla, no una tarjeta
           adentro de una página con margen. En el escritorio la lista está al
           lado, así que el chevron no hace falta. */}
-      <div className="flex flex-none items-center gap-1 border-b border-border px-1 pb-1.5 md:px-4 md:py-2.5">
-        <Link href={hrefDeVuelta(from, "/dashboard/chats")} className="md:hidden">
-          <Button variant="ghost" size="icon" aria-label="Volver">
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-        </Link>
+      <div className="flex flex-none items-center gap-1 border-b border-border px-2 pb-1.5 md:px-4 md:py-2.5">
+        <VolverRedondo href={hrefDeVuelta(from, "/dashboard/chats")} className="md:hidden" />
         {/* El nombre **es** el botón de la info, como en WhatsApp: tocarlo
             abre la foto, la gente y los archivos. El lápiz que había vive
             ahora adentro, como *Editar*. */}
@@ -1004,9 +999,7 @@ function InfoDeMensajeDialogo({
         className="gap-0 sm:max-w-md"
       >
         <div className="-mx-4 -mt-4 mb-3 flex flex-none items-center gap-1 border-b border-border px-1 py-1.5">
-          <Button variant="ghost" size="icon" aria-label="Volver" onClick={onClose}>
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
+          <VolverRedondoBoton onClick={onClose} />
           <DialogTitle className="flex-1 text-center text-base">
             Info del mensaje
           </DialogTitle>

@@ -144,7 +144,7 @@ export function ClienteForm({
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = form;
 
   // Reset form when leaving edit mode externally (header cancel)
@@ -452,6 +452,7 @@ export function ClienteForm({
           titulo={titulo}
           accion={isEditing ? "Guardar" : "Crear"}
           cargando={loading}
+          deshabilitado={isEditing && !isDirty}
           onCancelar={() => router.push("/dashboard/clientes")}
         />
 
@@ -474,6 +475,7 @@ export function ClienteForm({
           <StickyFormActions
             saveLabel={isEditing ? "Guardar cambios" : "Crear cliente"}
             saving={loading}
+            disabled={isEditing && !isDirty}
             onCancel={() => router.push("/dashboard/clientes")}
           />
         </div>

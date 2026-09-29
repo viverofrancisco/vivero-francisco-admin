@@ -14,6 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { EncabezadoFormularioMovil } from "@/components/shared/encabezado-formulario-movil";
+import { cn } from "@/lib/utils";
 
 interface TareaEditable {
   id: string;
@@ -46,6 +48,12 @@ export function TareaForm({
   const [borrando, setBorrando] = useState(false);
 
   const esEdicion = tarea !== null;
+  // Al editar, Guardar se prende solo cuando algo difiere de la tarea cargada;
+  // al crear, con el nombre alcanza. Lo mismo que la app.
+  const hayCambios = esEdicion
+    ? nombre.trim() !== tarea.nombre ||
+      (descripcion.trim() || null) !== tarea.descripcion
+    : nombre.trim().length > 0;
 
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
@@ -137,15 +145,28 @@ export function TareaForm({
 
   return (
     <Dialog open onOpenChange={(abierto) => !abierto && onClose()}>
-      {/* A pantalla completa en el teléfono: ver la nota de `DialogContent`. */}
-      <DialogContent pantallaCompletaEnMovil className="sm:max-w-md">
-        <DialogHeader className="flex-none">
+      {/* A pantalla completa en el teléfono: ver la nota de `DialogContent`.
+          Sin la ✕: en el teléfono la cabecera trae *Cancelar* y en el
+          escritorio está el botón del pie. */}
+      <DialogContent pantallaCompletaEnMovil showCloseButton={false} className="sm:max-w-md">
+        <DialogHeader className="hidden flex-none md:flex">
           <DialogTitle>{esEdicion ? "Editar tarea" : "Nueva tarea"}</DialogTitle>
         </DialogHeader>
         {/* El cuerpo scrollea y los botones se quedan: con el teclado abierto,
             un formulario que arrastra su pie fuera de la pantalla obliga a
             cerrar el teclado para poder guardar. */}
         <form onSubmit={guardar} className="flex min-h-0 flex-1 flex-col">
+          {/* Teléfono: Cancelar · título · Crear/Guardar arriba, como todo
+              formulario del portal y de la app en el teléfono. */}
+          <div className="-mx-4 -mt-4 mb-3 md:hidden">
+            <EncabezadoFormularioMovil
+              titulo={esEdicion ? tarea.nombre : "Nueva tarea"}
+              accion={esEdicion ? "Guardar" : "Crear"}
+              cargando={guardando}
+              deshabilitado={!hayCambios}
+              onCancelar={onClose}
+            />
+          </div>
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
           <div className="space-y-2">
             <Label htmlFor="nombre">Nombre *</Label>
@@ -185,7 +206,13 @@ export function TareaForm({
 
           {/* Eliminar a la izquierda y separado de Guardar: es la acción que no
               se deshace, y no tiene que quedar pegada a la que se busca. */}
-          <div className="mt-4 flex flex-none items-center justify-between gap-4 border-t pt-3">
+          <div
+            className={cn(
+              "mt-4 flex flex-none items-center justify-between gap-4 border-t pt-3",
+              // En el teléfono el pie solo queda para Eliminar; al crear no hay nada.
+              !esEdicion && "max-md:hidden"
+            )}
+          >
             {esEdicion ? (
               <Button
                 type="button"
@@ -198,11 +225,11 @@ export function TareaForm({
             ) : (
               <span />
             )}
-            <div className="flex gap-4">
+            <div className="hidden gap-4 md:flex">
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={guardando}>
+              <Button type="submit" disabled={guardando || !hayCambios}>
                 {guardando ? "Guardando..." : esEdicion ? "Guardar" : "Crear"}
               </Button>
             </div>

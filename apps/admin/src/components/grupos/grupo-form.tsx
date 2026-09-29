@@ -39,7 +39,7 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<GrupoFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(grupoSchema as any) as any,
@@ -86,6 +86,7 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
         titulo={isEditing ? "Editar grupo" : "Nuevo grupo"}
         accion={isEditing ? "Guardar" : "Crear"}
         cargando={loading}
+        deshabilitado={isEditing && !isDirty}
         onCancelar={() => router.push("/dashboard/grupos")}
       />
       <div className="mx-auto max-w-2xl space-y-5 px-4 pt-3 pb-6 md:px-0 md:pt-0 md:pb-24">
@@ -131,6 +132,7 @@ export function GrupoForm({ personalList, initialData }: GrupoFormProps) {
         <StickyFormActions
           saveLabel={isEditing ? "Guardar cambios" : "Crear grupo"}
           saving={loading}
+          disabled={isEditing && !isDirty}
           onCancel={() => router.push("/dashboard/grupos")}
         />
       </div>

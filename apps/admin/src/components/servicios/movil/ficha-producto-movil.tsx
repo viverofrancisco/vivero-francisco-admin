@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import type { EstadoProducto } from "@vivero/shared";
-import { ChevronLeft, ChevronRight, ImagePlus, MoreHorizontal, Tags } from "lucide-react";
+import {
+  BOTON_REDONDO_MOVIL,
+  ICONO_BOTON_REDONDO,
+  VolverRedondo,
+} from "@/components/shared/boton-redondo-movil";
+import { ChevronRight, ImagePlus, MoreHorizontal, Tags } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,16 +83,14 @@ export function FichaProductoMovil({
 
   return (
     <div className="-mx-3 -mt-3 md:hidden">
-      <div className="sticky top-0 z-20 flex items-center gap-1.5 bg-card px-3 pt-1.5 pb-2">
-        <Link href={backHref} aria-label="Volver" className="-ml-1.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl active:bg-muted">
-          <ChevronLeft className="h-6 w-6" />
-        </Link>
+      <div className="sticky top-0 z-20 flex items-center gap-2.5 bg-card px-3 pt-1.5 pb-2">
+        <VolverRedondo href={backHref} />
         <h1 className="min-w-0 flex-1 truncate text-[22px] font-extrabold tracking-[-0.4px]">{servicio.nombre}</h1>
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <button type="button" aria-label="Acciones" className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border border-border active:bg-muted">
-                <MoreHorizontal className="h-5 w-5" />
+              <button type="button" aria-label="Acciones" className={BOTON_REDONDO_MOVIL}>
+                <MoreHorizontal className={ICONO_BOTON_REDONDO} />
               </button>
             }
           />

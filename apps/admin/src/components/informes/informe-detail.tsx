@@ -33,7 +33,6 @@ import {
   ArrowLeft,
   CalendarDays,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   FileText,
   ImageIcon,
@@ -41,6 +40,11 @@ import {
   User,
   X,
 } from "lucide-react";
+import {
+  BOTON_REDONDO_MOVIL,
+  ICONO_BOTON_REDONDO,
+  VolverRedondo,
+} from "@/components/shared/boton-redondo-movil";
 import { useEsMovil } from "@/lib/use-es-movil";
 import {
   FilaFichaMovil,
@@ -199,26 +203,16 @@ export function InformeDetail({
         {/* La cabecera de la ficha en el teléfono: la flecha, el nombre del
             cliente y el ⋯ con lo que se hace con el informe —editar, ver el
             PDF, eliminar—. La misma que la app. */}
-        <div className="sticky top-0 z-20 flex items-center gap-1.5 border-b bg-card px-4 pt-1.5 pb-2">
-          <Link
-            href={backHref}
-            aria-label="Volver"
-            className="-ml-2.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl active:bg-muted"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Link>
+        <div className="sticky top-0 z-20 flex items-center gap-2.5 border-b bg-card px-4 pt-1.5 pb-2">
+          <VolverRedondo href={backHref} />
           <h1 className="min-w-0 flex-1 truncate text-[22px] font-extrabold tracking-[-0.4px]">
             {informe.cliente.nombre}
           </h1>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <button
-                  type="button"
-                  aria-label="Acciones"
-                  className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border border-border text-ink-2 active:bg-muted"
-                >
-                  <MoreHorizontal className="h-5 w-5" />
+                <button type="button" aria-label="Acciones" className={BOTON_REDONDO_MOVIL}>
+                  <MoreHorizontal className={ICONO_BOTON_REDONDO} />
                 </button>
               }
             />

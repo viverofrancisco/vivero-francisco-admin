@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { MoreHorizontal, Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  BOTON_REDONDO_MOVIL,
+  ICONO_BOTON_REDONDO,
+} from "@/components/shared/boton-redondo-movil";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -68,9 +72,10 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
   const soloEnElMenu = actions.filter((a) => a.soloMovil);
   return (
     <>
-      {/* Teléfono: todo en el ⋯, aunque sea una sola. */}
+      {/* Teléfono: todo en el ⋯, aunque sea una sola, y redondo como el de
+          las fichas y el de la app. */}
       <div className="sm:hidden">
-        <Menu acciones={actions} />
+        <Menu acciones={actions} redondo />
       </div>
 
       {/* Escritorio: botones en línea, y el ⋯ solo con lo que no es botón. */}
@@ -104,21 +109,32 @@ export function PageHeaderActions({ actions }: { actions: HeaderAction[] }) {
   );
 }
 
-function Menu({ acciones }: { acciones: HeaderAction[] }) {
+function Menu({
+  acciones,
+  redondo = false,
+}: {
+  acciones: HeaderAction[];
+  /** El círculo gris del teléfono; en escritorio, el botón con borde. */
+  redondo?: boolean;
+}) {
   const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Acciones"
-            className="h-9 w-9"
-          />
+          redondo ? (
+            <button type="button" aria-label="Acciones" className={BOTON_REDONDO_MOVIL} />
+          ) : (
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Acciones"
+              className="h-9 w-9"
+            />
+          )
         }
       >
-        <MoreHorizontal className="h-4 w-4" />
+        <MoreHorizontal className={redondo ? ICONO_BOTON_REDONDO : "h-4 w-4"} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44">
         {acciones.map((action, i) => (
