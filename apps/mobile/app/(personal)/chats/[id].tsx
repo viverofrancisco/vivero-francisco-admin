@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -129,16 +128,6 @@ export default function ChatScreen() {
   }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  /**
-   * Lo que mide la barra de pestañas, para descontárselo al teclado.
-   *
-   * `KeyboardAvoidingView` no sabe que abajo hay una barra que ya ocupa su
-   * lugar, así que empuja de más: con el teclado abierto, por el alto de la
-   * barra; y con teclado físico —el simulador reporta la barrita de
-   * sugerencias como si fuera teclado— deja ese hueco blanco con todo cerrado.
-   */
-  const altoDeLasPestanas = useBottomTabBarHeight();
-
   const [chat, setChat] = useState<ChatDetalle | null>(null);
   const [mensajes, setMensajes] = useState<MensajeDeChat[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -611,11 +600,20 @@ export default function ChatScreen() {
   // oficina, y el servidor lo rechazaría igual.
   const esOficina = usuario?.role === "ADMIN" || usuario?.role === "STAFF";
 
+  /*
+   * Sin `keyboardVerticalOffset`: esta vista termina donde empieza la barra
+   * de pestañas, y el teclado tapa la barra. RN calcula el relleno como
+   * "fondo de la vista − tope del teclado + offset", así que con el alto de
+   * la barra de offset el campo quedaba una barra entera por encima del
+   * teclado, con un hueco vacío en el medio; con 0 se apoya justo sobre él.
+   * Y con teclado físico —el simulador reporta la barrita de sugerencias
+   * como teclado— el relleno sale negativo y se recorta a cero, así que
+   * tampoco deja hueco.
+   */
   return (
     <KeyboardAvoidingView
       style={styles.pantalla}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={altoDeLasPestanas}
     >
       {/* El encabezado: la flecha, el nombre y quiénes están. */}
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
