@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { apiRequest } from "@/lib/api";
 import { PressableScale } from "@/components/ui/PressableScale";
@@ -31,6 +32,7 @@ interface Item {
  */
 export default function MasMenuScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const clear = useAuthStore((s) => s.clear);
@@ -110,7 +112,11 @@ export default function MasMenuScreen() {
 
   return (
     <View style={styles.contenedor}>
-      <ScrollView contentContainerStyle={styles.lista}>
+      {/* Sin barra nativa, el margen de arriba lo pone el safe area: la
+          primera fila no tiene que quedar bajo la hora. */}
+      <ScrollView
+        contentContainerStyle={[styles.lista, { paddingTop: insets.top + 12 }]}
+      >
         {items
           .filter((i) => i.visible)
           .map((item) => (
