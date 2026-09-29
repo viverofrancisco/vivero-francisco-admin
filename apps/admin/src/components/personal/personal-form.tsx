@@ -34,6 +34,11 @@ interface PersonalFormProps {
   onDirtyChange?: (dirty: boolean) => void;
   /** Solo un ADMIN cambia el usuario; el resto lo ve y no lo edita. */
   puedeEditarUsuario?: boolean;
+  /**
+   * Adónde ir al cancelar o al guardar en la página propia: la ficha, cuando
+   * se edita desde ella (el teléfono), o la lista por defecto.
+   */
+  volverA?: string;
 }
 
 const formatPrice = (price: number) =>
@@ -73,6 +78,7 @@ export function PersonalForm({
   onDirtyChange,
   onEditDone,
   puedeEditarUsuario = false,
+  volverA = "/dashboard/personal",
 }: PersonalFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -149,7 +155,7 @@ export function PersonalForm({
         onEditDone?.();
         router.refresh();
       } else {
-        router.push("/dashboard/personal");
+        router.push(volverA);
         router.refresh();
       }
     } catch (err) {
@@ -324,7 +330,7 @@ export function PersonalForm({
         accion={isEditing ? "Guardar" : "Crear"}
         cargando={loading}
         deshabilitado={isEditing && !isDirty}
-        onCancelar={() => router.push("/dashboard/personal")}
+        onCancelar={() => router.push(volverA)}
       />
       <div className="mx-auto max-w-2xl space-y-5 px-4 pt-3 pb-6 md:px-0 md:pt-0 md:pb-24">
         <div className="hidden md:block">
@@ -436,7 +442,7 @@ export function PersonalForm({
           saveLabel={isEditing ? "Guardar cambios" : "Crear personal"}
           saving={loading}
           disabled={isEditing && !isDirty}
-          onCancel={() => router.push("/dashboard/personal")}
+          onCancel={() => router.push(volverA)}
         />
       </div>
     </form>

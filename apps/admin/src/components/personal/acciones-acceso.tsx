@@ -53,6 +53,7 @@ export function AccionesAcceso({
   estado,
   puedeAdministrar,
   onEditar,
+  onArchivar,
 }: {
   personalId: string;
   nombre: string;
@@ -60,11 +61,27 @@ export function AccionesAcceso({
   /** Solo un ADMIN da o quita acceso. Para el resto queda solo Editar. */
   puedeAdministrar: boolean;
   onEditar: () => void;
+  /** Con esto el menú ofrece *Archivar*, con su confirmación (el teléfono, como la app). */
+  onArchivar?: () => Promise<void>;
 }) {
   const router = useRouter();
   const [cargando, setCargando] = useState(false);
   const [generado, setGenerado] = useState<EnlaceGenerado | null>(null);
   const [confirmandoRevocar, setConfirmandoRevocar] = useState(false);
+  const [confirmandoArchivar, setConfirmandoArchivar] = useState(false);
+
+  async function archivar() {
+    if (!onArchivar) return;
+    setCargando(true);
+    try {
+      await onArchivar();
+      setConfirmandoArchivar(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No pudimos archivarla");
+    } finally {
+      setCargando(false);
+    }
+  }
 
   /** Un enlace nuevo. Anula el anterior, así que también sirve para cortarlo. */
   async function generarEnlace() {
@@ -159,6 +176,14 @@ export function AccionesAcceso({
               )}
             </>
           )}
+          {onArchivar ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setConfirmandoArchivar(true)}>
+                Archivar
+              </DropdownMenuItem>
+            </>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -174,6 +199,33 @@ export function AccionesAcceso({
           {generado && <EnlaceAcceso datos={generado} />}
           <DialogFooter>
             <Button onClick={() => setGenerado(null)}>Listo</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={confirmandoArchivar}
+        onOpenChange={(v) => !v && !cargando && setConfirmandoArchivar(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Archivar a {nombre}</DialogTitle>
+            <DialogDescription>
+              Sale de las listas y pierde el acceso a la app. La cuenta no se
+              borra: su nombre firma los partes que cargó.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              disabled={cargando}
+              onClick={() => setConfirmandoArchivar(false)}
+            >
+              Cancelar
+            </Button>
+            <Button variant="destructive" disabled={cargando} onClick={archivar}>
+              {cargando ? "Archivando…" : "Archivar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

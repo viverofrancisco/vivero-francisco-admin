@@ -39,6 +39,9 @@ export function EnlaceAcceso({
   correo?: string;
 }) {
   const [copiado, setCopiado] = useState(false);
+  // El teléfono ofrece compartir —por WhatsApp, que es como le llega al
+  // personal de campo—; el escritorio casi nunca, y ahí queda copiar.
+  const puedeCompartir = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const seIntento = datos.correoIntentado ?? true;
   const fallo = seIntento && !datos.correoEnviado;
 
@@ -106,6 +109,15 @@ export function EnlaceAcceso({
             </>
           )}
         </Button>
+        {puedeCompartir ? (
+          <Button
+            type="button"
+            onClick={() => navigator.share({ text: datos.enlace }).catch(() => {})}
+            className="flex-none"
+          >
+            Compartir
+          </Button>
+        ) : null}
       </div>
 
       {/* La caducidad y el "no se vuelve a mostrar" son lo único que no se

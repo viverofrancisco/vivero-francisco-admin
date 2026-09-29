@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { PersonalForm } from "@/components/personal/personal-form";
 import { AccionesAcceso, type EstadoCuenta } from "./acciones-acceso";
 import { EditarGrupos } from "./editar-grupos";
+import { FichaPersonalMovil } from "./ficha-personal-movil";
+import { useEsMovil } from "@/lib/use-es-movil";
 import {
   VisitasDelPersonal,
   type VisitaDelPersonal,
@@ -76,11 +78,28 @@ export function PersonalDetail({
   backHref = "/dashboard/personal",
 }: Props) {
   const router = useRouter();
+  const esMovil = useEsMovil();
   const [cardsEditing, setCardsEditing] = useState(false);
   /** Si el formulario de edición difiere de la ficha: sin cambios, Guardar va apagado. */
   const [hayCambios, setHayCambios] = useState(false);
 
   const nombreCompleto = `${personal.nombre} ${personal.apellido || ""}`.trim();
+
+  // Debajo de `md`, la ficha de la app. Por el hook y no por clases: dos
+  // árboles montados a la vez duplican el formulario y sus efectos.
+  if (esMovil) {
+    return (
+      <FichaPersonalMovil
+        personal={personal}
+        nombre={nombreCompleto}
+        grupos={grupos}
+        todosLosGrupos={todosLosGrupos}
+        cuenta={cuenta}
+        puedeAdministrarAcceso={puedeAdministrarAcceso}
+        backHref={backHref}
+      />
+    );
+  }
 
   return (
     <div>
