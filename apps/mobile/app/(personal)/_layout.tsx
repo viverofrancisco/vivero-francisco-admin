@@ -181,6 +181,28 @@ export default function PersonalTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="empresa"
+        options={{
+          title: "Empresa",
+          href: isAdmin ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="business-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="facturacion"
+        options={{
+          title: "Facturación electrónica",
+          href: isAdmin ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-lock-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="usuarios"
         options={{
           title: "Usuarios",

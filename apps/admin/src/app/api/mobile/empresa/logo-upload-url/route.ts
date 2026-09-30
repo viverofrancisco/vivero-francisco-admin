@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
-import { viewerFromSession } from "@/lib/auth-helpers";
+import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
+import { serviceErrorResponse, viewerFromMobileUser } from "@/lib/mobile/route-helpers";
 import { urlParaSubirLogo } from "@/lib/services/empresa-config.service";
-import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 const schema = z.object({
   fileName: z.string().min(1).max(200),
@@ -10,15 +10,16 @@ const schema = z.object({
   size: z.number().int().positive().optional(),
 });
 
-/** URL firmada para subir el logo. Ver `urlParaSubirLogo`. */
+/** Gemela de `/api/admin/empresa-config/logo-upload-url`. */
 export async function POST(request: Request) {
-  const viewer = await viewerFromSession();
+  const u = await requireMobileRole(request, "ADMIN");
+  if (!isMobileUser(u)) return u;
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
   try {
-    return NextResponse.json(await urlParaSubirLogo(viewer, parsed.data));
+    return NextResponse.json(await urlParaSubirLogo(viewerFromMobileUser(u), parsed.data));
   } catch (error) {
     return serviceErrorResponse(error);
   }

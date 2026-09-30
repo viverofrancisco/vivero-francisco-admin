@@ -488,6 +488,28 @@ export interface EnlaceGenerado {
   correoIntentado: boolean;
 }
 
+/** Un RUC con el que el portal factura, como configuración (ADMIN). */
+export interface EmisorConfig {
+  id: string;
+  ruc: string;
+  razonSocial: string;
+  nombreComercial: string | null;
+  dirMatriz: string;
+  direccionEstablecimiento: string | null;
+  establecimiento: string;
+  puntoEmision: string;
+  obligadoContabilidad: boolean;
+  contribuyenteEspecial: string | null;
+  agenteRetencion: string | null;
+  ambiente: "PRUEBAS" | "PRODUCCION";
+  certificadoSujeto: string | null;
+  certificadoVence: string | null;
+  activo: boolean;
+  predeterminado: boolean;
+  /** Cuántas facturas salieron a su nombre. Con una sola ya no se borra. */
+  facturas: number;
+}
+
 /** Una cuenta del equipo (ADMIN o STAFF): la pantalla de Usuarios. */
 export interface UsuarioDelEquipo {
   id: string;

@@ -82,6 +82,18 @@ export default function MasMenuScreen() {
       visible: isAdminOrStaff,
     },
     {
+      label: "Empresa",
+      icon: "business-outline",
+      href: "/(personal)/empresa",
+      visible: isAdmin,
+    },
+    {
+      label: "Facturación electrónica",
+      icon: "document-lock-outline",
+      href: "/(personal)/facturacion",
+      visible: isAdmin,
+    },
+    {
       label: "Usuarios",
       icon: "person-add-outline",
       href: "/(personal)/usuarios",
