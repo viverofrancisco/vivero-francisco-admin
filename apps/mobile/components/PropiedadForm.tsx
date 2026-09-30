@@ -169,10 +169,7 @@ export function useCamposDePropiedad(initial?: PropiedadInicial | null) {
     setUbicando(false);
 
     if (res.estado === "sin-permiso") {
-      avisarFaltaUbicacion(
-        "Sin ubicación no podemos marcar dónde queda la propiedad.",
-        res.ajustes
-      );
+      avisarFaltaUbicacion("Sin ubicación no podemos marcar dónde queda la propiedad.", res);
       return;
     }
     if (res.estado === "sin-senal") {

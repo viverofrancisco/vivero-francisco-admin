@@ -307,12 +307,25 @@ reviewing anybody, and it cost a second line on every row. Marking twice is
 refused and correcting is the office's, since the first mark is the one that
 says when they arrived. **Where they were is recorded and never required**:
 `entradaLat/Lng/Precision/Simulada` and the same four for salida, `null` when
-permission was denied or there was no signal. Refusing the mark for that leaves
+there was no signal. Refusing the mark for that leaves
 someone unable to record work they actually did — the real datum lost chasing a
 fake one — and the signal is spoofable anyway: three clicks in Chrome's
 DevTools, a mock app on Android (which `simulada` exposes, when the OS says so;
 iOS doesn't, so `null` there means "we don't know", not "not faked"). So this is
-evidence the office looks at, not a lock. Each mark also carries
+evidence the office looks at, not a lock. **What the app does demand is the
+decision**, in `lib/ubicacion.ts`: a denied permission refuses the mark and
+sends to Ajustes, and so does **the phone's own location switch being off** —
+it used to come back as an error, land as "no signal" and mark blank, the
+easiest way to mark without saying where; now Android first shows its own
+*turn on location* dialog (`enableNetworkProviderAsync`) and, if it stays off,
+the notice opens the location settings screen through its intent, while iOS
+has no such dialog and the notice spells out the path. No signal is not a
+decision: after ten seconds without a fresh fix — a cold GPS start in a quinta
+without WiFi takes half a minute — the app takes the phone's **last known
+position if it is under a minute old** (`getLastKnownPositionAsync`, `maxAge`):
+whoever arrives with Waze open has one seconds old, and a minute ago they were
+there or a few blocks away. Only past that does the mark go out blank, with the
+notice saying so. Each mark also carries
 `entradaDispositivo`/`salidaDispositivo`, an id for the app **installation** —
 not the person — answering one question: did two people on the same visita mark
 from the same phone? That is somebody logging in with a coworker's account to

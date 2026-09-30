@@ -322,10 +322,7 @@ export default function PersonalVisitaScreen() {
       if (donde.estado === "sin-permiso") {
         setMarcando(false);
         setConfirmandoEntrada(false);
-        avisarFaltaUbicacion(
-          "Para marcar tu entrada necesitamos saber dónde estás.",
-          donde.ajustes
-        );
+        avisarFaltaUbicacion("Para marcar tu entrada necesitamos saber dónde estás.", donde);
         return;
       }
 
@@ -372,7 +369,7 @@ export default function PersonalVisitaScreen() {
         setReportando(false);
         avisarFaltaUbicacion(
           "Para reportar que no pudiste hacer la visita necesitamos saber dónde estás.",
-          donde.ajustes
+          donde
         );
         return;
       }

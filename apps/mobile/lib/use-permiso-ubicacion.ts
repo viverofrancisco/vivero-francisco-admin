@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import {
   avisarFaltaUbicacion,
+  encenderUbicacion,
   pedirPermisoDeUbicacion,
   permisoDeUbicacion,
 } from "@/lib/ubicacion";
@@ -28,6 +29,11 @@ import {
  * Se revisa al montar y cada vez que la app vuelve al frente, que es
  * exactamente cuando el permiso pudo haber cambiado: se cambia en Ajustes, o
  * sea afuera de la app.
+ *
+ * **La ubicación del teléfono apagada** se trata igual que el permiso: con el
+ * permiso dado y el interruptor general apagado, en Android sale el diálogo
+ * del sistema para encenderla (una vez por sesión, o saldría en cada vuelta
+ * al frente) y, si sigue apagada, nuestro cartel con el camino a Ajustes.
  */
 export function usePermisoDeUbicacion(activo: boolean) {
   const yaAvisamos = useRef(false);
@@ -37,8 +43,21 @@ export function usePermisoDeUbicacion(activo: boolean) {
 
     const estado = await permisoDeUbicacion();
     if (estado.concedido) {
-      // Si más adelante lo revocan, esto vuelve a avisar.
-      yaAvisamos.current = false;
+      if (estado.encendida) {
+        // Si más adelante lo revocan, esto vuelve a avisar.
+        yaAvisamos.current = false;
+        return;
+      }
+      if (yaAvisamos.current) return;
+      yaAvisamos.current = true;
+      if (await encenderUbicacion()) {
+        yaAvisamos.current = false;
+        return;
+      }
+      avisarFaltaUbicacion("La app usa tu ubicación para algunas de sus funciones.", {
+        ajustes: true,
+        apagada: true,
+      });
       return;
     }
 
@@ -54,10 +73,10 @@ export function usePermisoDeUbicacion(activo: boolean) {
     // General a propósito: acá todavía no se está haciendo nada. Detallar para
     // qué sirve, al abrir la app, es contestar una pregunta que nadie hizo; el
     // motivo concreto se dice en el momento de marcar, que es cuando importa.
-    avisarFaltaUbicacion(
-      "La app usa tu ubicación para algunas de sus funciones.",
-      true
-    );
+    avisarFaltaUbicacion("La app usa tu ubicación para algunas de sus funciones.", {
+      ajustes: true,
+      apagada: false,
+    });
   }, [activo]);
 
   useEffect(() => {

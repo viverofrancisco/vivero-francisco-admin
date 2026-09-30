@@ -139,10 +139,7 @@ export function VisitaResultForm({
       const donde = modo === "SALIDA" && ubicacion ? await ubicacion() : null;
       if (donde?.estado === "sin-permiso") {
         setSubmitting(false);
-        avisarFaltaUbicacion(
-          "Para marcar tu salida necesitamos saber dónde estás.",
-          donde.ajustes
-        );
+        avisarFaltaUbicacion("Para marcar tu salida necesitamos saber dónde estás.", donde);
         return;
       }
 
