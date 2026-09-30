@@ -165,6 +165,19 @@ sesión. Un cambio solo
 de JS puede ir por EAS Update sin pasar por la tienda, pero eso pide
 `expo-updates`, que no está instalado; por ahora todo va por build.
 
+**Una capacidad nueva de iOS pide un build interactivo, con el Apple ID.**
+Al agregar `associatedDomains` a `app.json`, los builds lanzados sin
+preguntas fallaron en la firma con *Provisioning profile … doesn't support
+the Associated Domains capability*, y borrar el perfil con
+`eas credentials -p ios` no alcanzó: EAS lo regenera con la clave de App
+Store Connect, pero **sincronizar las capacidades del App ID solo lo hace
+con la sesión del Apple ID**, que un build no interactivo no tiene. El
+camino es correr `eas build -p ios --profile production` a mano, contestar
+que sí a *log in to your Apple account*, y ver la línea *Synced
+capabilities*; o activar la capacidad en developer.apple.com (Identifiers ›
+la app) y borrar el perfil después. Vale para cualquier capacidad futura
+(push, Sign in with Apple).
+
 **Correr `eas` desde `apps/mobile`**, siempre: lanzado desde la raíz del
 monorepo, EAS CLI deja un `app.json` vacío (`{"expo": {}}`) al lado del
 `package.json` de la raíz, que un `git add -A` se lleva sin que nadie lo
