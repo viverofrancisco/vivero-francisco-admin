@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { StyleSheet } from "react-native";
 import { Tabs, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,7 +11,20 @@ import { usePermisoDeUbicacion } from "@/lib/use-permiso-ubicacion";
 export default function PersonalTabsLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const role = useAuthStore((s) => s.user?.role);
+  /**
+   * El último rol conocido, no el de este instante.
+   *
+   * Al cerrar sesión el usuario pasa a `null` un momento antes de que la
+   * puerta de `_layout` saque esta pantalla, y en ese momento cada pestaña
+   * recalculaba su `href` como si no hubiera rol: la barra entera se
+   * reacomodaba mientras se desmontaba, y en Android Fabric se caía
+   * (`addViewAt: failed to insert view … already has a parent`). Con el rol
+   * anterior la barra no cambia en su último render.
+   */
+  const rolActual = useAuthStore((s) => s.user?.role);
+  const ultimoRol = useRef(rolActual);
+  if (rolActual) ultimoRol.current = rolActual;
+  const role = rolActual ?? ultimoRol.current;
   const isAdmin = role === "ADMIN";
   const isAdminOrStaff = role === "ADMIN" || role === "STAFF";
   /**
