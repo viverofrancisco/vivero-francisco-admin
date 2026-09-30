@@ -165,6 +165,11 @@ sesión. Un cambio solo
 de JS puede ir por EAS Update sin pasar por la tienda, pero eso pide
 `expo-updates`, que no está instalado; por ahora todo va por build.
 
+**Correr `eas` desde `apps/mobile`**, siempre: lanzado desde la raíz del
+monorepo, EAS CLI deja un `app.json` vacío (`{"expo": {}}`) al lado del
+`package.json` de la raíz, que un `git add -A` se lleva sin que nadie lo
+mire. Ya pasó dos veces.
+
 ## Visto en TestFlight
 
 - **La barra de estado salía invisible** en el iPhone del usuario: hora y
@@ -187,5 +192,11 @@ de JS puede ir por EAS Update sin pasar por la tienda, pero eso pide
    se puede dar una vez que la app existe.
 4. Restringir `GOOGLE_MAPS_ANDROID_KEY` al paquete + SHA-1 del keystore de
    EAS **y** al SHA-1 de Play App Signing (Play refirma el binario).
+   Por el mismo motivo, agregar el **SHA-256** de Play App Signing a
+   `APP_ANDROID_SHA256` en `apps/admin/src/lib/enlaces-a-la-app.ts`, que es
+   lo que hace que el enlace de acceso abra en la app instalada desde la
+   tienda (ver el doc de contraseñas, *El enlace abre en la app*). La huella
+   del keystore de EAS ya está: sale de `apksigner verify --print-certs`
+   sobre cualquier build de EAS.
 5. La ficha de Play pide lo mismo que Apple más el formulario de *Data safety*
    y, para una app con login, credenciales de prueba en *App content*.

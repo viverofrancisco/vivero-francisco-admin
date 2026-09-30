@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { nombreCliente } from "@vivero/shared";
 import { prisma } from "@/lib/prisma";
+import type { UserRole } from "@/generated/prisma/client";
 import { sha256 } from "@/lib/mobile/jwt";
 import { sendEnlacePortalEmail } from "@/lib/email";
 import { NotFoundError, ValidationError } from "./errors";
@@ -87,6 +88,16 @@ function baseUrl(): string {
 /** A dónde entra quien usa el enlace. Cambia el texto, no el mecanismo. */
 export type DestinoAcceso = "portal" | "app";
 
+/**
+ * Un cliente entra por la app, y **un jardinero también**: su cuenta nace con
+ * su ficha para cargar el parte desde el teléfono, y la página le decía
+ * "entra al portal con tu correo" a alguien que no tiene correo. Solo la
+ * oficina —ADMIN y STAFF— tiene el portal como lugar de trabajo.
+ */
+function destinoDeUsuario(role: UserRole): DestinoAcceso {
+  return role === "PERSONAL" ? "app" : "portal";
+}
+
 export interface EnlaceDeAcceso {
   /** La URL completa, lista para copiar. */
   url: string;
@@ -167,7 +178,7 @@ export async function infoDeEnlace(token: string): Promise<InfoDeEnlace> {
       cliente: {
         select: { nombre: true, apellido: true, empresa: true, deletedAt: true },
       },
-      user: { select: { name: true, apellido: true } },
+      user: { select: { name: true, apellido: true, role: true } },
     },
   });
   if (!record) return { valido: false, motivo: "desconocido" };
@@ -175,7 +186,7 @@ export async function infoDeEnlace(token: string): Promise<InfoDeEnlace> {
   const destino: DestinoAcceso | undefined = record.cliente
     ? "app"
     : record.user
-      ? "portal"
+      ? destinoDeUsuario(record.user.role)
       : undefined;
   // Sin dueño (o con un cliente borrado) no hay nada que ofrecer, y tampoco
   // vale la pena explicar por qué.
@@ -243,7 +254,7 @@ export async function establecerContrasena(
         data: { usedAt: new Date() },
       }),
     ]);
-    return { ok: true, destino: "portal" };
+    return { ok: true, destino: destinoDeUsuario(user.role) };
   }
 
   const cliente = record.clienteId

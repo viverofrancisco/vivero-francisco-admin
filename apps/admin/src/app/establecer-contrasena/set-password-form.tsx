@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,26 @@ type Destino = "portal" | "app";
 /** Por qué el enlace no sirve. Cada caso tiene una salida distinta. */
 type Motivo = "vencido" | "usado" | "anulado" | "desconocido";
 
+/**
+ * Si esto se está leyendo en un teléfono. Con la app instalada el enlace ya
+ * abre en ella solo (Universal Links / App Links), pero no desde cualquier
+ * lado: el navegador interno de un correo o de un chat a veces se lo queda.
+ * Para ese caso la página ofrece abrirla por el esquema propio; en una
+ * computadora no hay app y el botón sobra. Por `useSyncExternalStore` y no
+ * por estado: el servidor no tiene `navigator`, y el HTML tiene que salir sin
+ * el botón o es un error de hidratación.
+ */
+const nada = () => () => {};
+function useEsTelefono() {
+  return useSyncExternalStore(
+    nada,
+    () => /iPhone|iPad|Android/i.test(navigator.userAgent),
+    () => false
+  );
+}
+
+const ESQUEMA_DE_LA_APP = "viverofrancisco://";
+
 export function SetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -40,6 +60,7 @@ export function SetPasswordForm() {
   const [confirmar, setConfirmar] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const esTelefono = useEsTelefono();
 
   useEffect(() => {
     if (!token) return;
@@ -134,7 +155,7 @@ export function SetPasswordForm() {
                     Este enlace caducó.{" "}
                     {destino === "portal"
                       ? "Pídele uno nuevo a un administrador."
-                      : "Pide uno nuevo desde la app."}
+                      : "Pide uno nuevo desde la app o a un administrador."}
                   </>
                 ) : motivo === "usado" ? (
                   <>
@@ -146,7 +167,7 @@ export function SetPasswordForm() {
                     Este enlace fue reemplazado por uno más nuevo.{" "}
                     {destino === "portal"
                       ? "Busca el último que te enviaron, o pídele uno a un administrador."
-                      : "Busca el último que te enviamos, o pide uno nuevo desde la app."}
+                      : "Busca el último que te enviaron, o pide uno nuevo desde la app o a un administrador."}
                   </>
                 ) : (
                   <>
@@ -185,10 +206,21 @@ export function SetPasswordForm() {
                 </Button>
               </div>
             ) : (
-              <p className="text-center text-sm text-muted-foreground">
-                ¡Listo! Ya puedes abrir la app de Vivero Francisco e iniciar
-                sesión con tu teléfono o correo y tu nueva contraseña.
-              </p>
+              <div className="space-y-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  ¡Listo! Ya puedes abrir la app de Vivero Francisco e iniciar
+                  sesión con tu nueva contraseña.
+                </p>
+                {esTelefono ? (
+                  <Button
+                    className="w-full"
+                    nativeButton={false}
+                    render={<a href={ESQUEMA_DE_LA_APP} />}
+                  >
+                    Abrir la app
+                  </Button>
+                ) : null}
+              </div>
             ))}
 
           {estado === "valido" && (
@@ -228,6 +260,24 @@ export function SetPasswordForm() {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Guardando…" : "Crear contraseña"}
               </Button>
+              {/* El mismo enlace, entregado a la app. Solo en un teléfono y
+                  solo para quien entra por la app: si el navegador se quedó
+                  con el enlace, acá está la salida. */}
+              {esTelefono && destino === "app" && token ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  nativeButton={false}
+                  render={
+                    <a
+                      href={`${ESQUEMA_DE_LA_APP}establecer-contrasena?token=${encodeURIComponent(token)}`}
+                    />
+                  }
+                >
+                  Continuar en la app
+                </Button>
+              ) : null}
             </form>
           )}
         </CardContent>

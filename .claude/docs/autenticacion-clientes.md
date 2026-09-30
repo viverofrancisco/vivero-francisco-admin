@@ -49,6 +49,8 @@ publicada, y por eso su Zod ya **no** valida como dirección.
    `/establecer-contrasena` (fuera de `/dashboard`, sin NextAuth). Valida el token
    (`GET /api/auth/set-password?token=…`) y guarda la contraseña
    (`POST /api/auth/set-password`). Crea/enlaza un `User` (rol `CLIENTE`, bcrypt 12).
+   **Con la app instalada, ese mismo enlace abre en la app** (ver
+   [El enlace abre en la app](#el-enlace-abre-en-la-app)).
 4. **Login** — `POST /api/mobile/auth/login` `{ email, password }`, **la misma
    ruta para todos**. El campo se llama `email` por historia y acepta cualquier
    cosa: el usuario dictado del jardinero, un correo o el teléfono del cliente.
@@ -199,6 +201,47 @@ la cuenta seguía entrando —y con ella el chat de las visitas—. La cuenta no
 borra: su nombre firma los partes que cargó, y devolverle el acceso es un clic
 si vuelve.
 
+## El enlace abre en la app
+
+El enlace es uno solo —`https://admin.viverofrancisco.com/establecer-contrasena?token=…`—
+y **quien tiene la app instalada lo abre en la app; quien no, en el
+navegador**, sin que el enlace cambie ni haya que elegir. Son los *Universal
+Links* de iOS y los *App Links* de Android: la app declara qué ruta del
+dominio reclama y el dominio publica que esa app es suya, y con las dos
+mitades el sistema entrega el enlace a la app sin preguntar.
+
+- **La mitad del portal** son dos archivos bajo `/.well-known/`, servidos por
+  rutas (`src/app/.well-known/*/route.ts`) y no desde `public/`, porque el de
+  Apple no lleva extensión y saldría como binario: `apple-app-site-association`
+  (el `teamId.bundleId` y la ruta) y `assetlinks.json` (el paquete y los
+  **SHA-256 de los certificados de firma**). La identidad está en
+  `src/lib/enlaces-a-la-app.ts`. **Cuando la app esté en Google Play hay que
+  agregar ahí la huella de Play App Signing** (Play refirma el binario; la
+  huella está en la consola, *Integridad de la app*), o en las instalaciones
+  desde la tienda el enlace seguirá abriendo en el navegador. Solo se reclama
+  `/establecer-contrasena`: reclamar el dominio entero mandaría a la app a un
+  administrador que toque cualquier enlace del portal desde el teléfono.
+- **La mitad de la app** es `ios.associatedDomains` e `android.intentFilters`
+  (con `autoVerify`) en `app.json` —cambiarlos pide un build nativo nuevo, y
+  en iOS EAS enciende la capacidad *Associated Domains* en el App ID solo— y
+  la pantalla `apps/mobile/app/establecer-contrasena.tsx`, a la que expo-router
+  enruta la URL por el camino. Es la página del portal en la app: las mismas
+  rutas públicas, los mismos estados (válido, caducado, usado, reemplazado),
+  y al terminar *Iniciar sesión*, que cierra la sesión que hubiera —un
+  administrador puede abrir el enlace de un jardinero desde su propio
+  teléfono— y lleva al login. Vive fuera de `(auth)` y de los grupos por rol,
+  y `useAuthGate` la deja pasar, porque vale con o sin sesión.
+- **La página del portal ayuda cuando el navegador se queda con el enlace**
+  (el navegador interno de un correo o de un chat a veces no lo cede): en un
+  teléfono ofrece *Continuar en la app*, por el esquema propio
+  (`viverofrancisco://establecer-contrasena?token=…`), y al terminar *Abrir
+  la app*. En una computadora ninguno de los dos aparece.
+
+También ahí se decidió que **el jardinero entra por la app**: `destino` era
+"portal" para todo `User`, y a alguien sin correo la página le decía "entra al
+portal con tu correo". Ahora es "app" para `PERSONAL` y para los clientes, y
+"portal" solo para ADMIN y STAFF (`destinoDeUsuario` en `acceso.service.ts`).
+
 ## Piezas clave
 
 | Pieza | Ruta |
@@ -213,6 +256,8 @@ si vuelve.
 | Rutas públicas set-password | `apps/admin/src/app/api/auth/set-password/route.ts` |
 | Invitación desde admin | `apps/admin/src/app/api/clientes/[id]/invitar/route.ts` |
 | Página pública | `apps/admin/src/app/establecer-contrasena/` |
+| El enlace abre en la app: identidad y los dos `.well-known` | `apps/admin/src/lib/enlaces-a-la-app.ts` + `apps/admin/src/app/.well-known/{apple-app-site-association,assetlinks.json}/route.ts` |
+| La misma pantalla en la app | `apps/mobile/app/establecer-contrasena.tsx` (+ `associatedDomains` / `intentFilters` en `app.json`) |
 | Modelo del token | `SetPasswordToken` en `prisma/schema.prisma` — apunta a **un** `clienteId` **o** a **un** `userId`, nunca a los dos (`CHECK`) |
 | Pantallas móviles | `apps/mobile/app/(auth)/{onboarding,solicitar-acceso}.tsx` |
 
