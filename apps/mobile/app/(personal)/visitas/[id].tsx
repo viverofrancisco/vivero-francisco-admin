@@ -1108,7 +1108,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   rowLabel: { color: "#888", flexShrink: 0 },
-  rowValue: { color: "#111", textAlign: "right", flexShrink: 1 },
+  // `flex: 1` y no `flexShrink`: en Android el texto que se encogía medía un
+  // renglón y cortaba el segundo — la fecha salía "jueves, 1 de octubre de".
+  rowValue: { color: "#111", textAlign: "right", flex: 1 },
 
   rowDivider: {
     height: StyleSheet.hairlineWidth,
