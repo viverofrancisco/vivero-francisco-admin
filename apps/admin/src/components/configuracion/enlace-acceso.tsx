@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Check, Copy, Loader2, Mail, MailX } from "lucide-react";
+import { Check, Clock, Copy, Loader2, Mail, MailX, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 export interface EnlaceGenerado {
@@ -72,7 +71,7 @@ export function EnlaceAcceso({
   // El teléfono ofrece compartir —por WhatsApp, que es como le llega al
   // personal de campo—; el escritorio casi nunca, y ahí queda copiar.
   const puedeCompartir = typeof navigator !== "undefined" && typeof navigator.share === "function";
-  const seIntento = datos.correoIntentado ?? true;
+  const seIntento = datos.correoIntentado ?? false;
   const fallo = seIntento && !datos.correoEnviado;
 
   async function copiar() {
@@ -87,92 +86,94 @@ export function EnlaceAcceso({
   }
 
   return (
-    <div className="space-y-3">
-      {/* Solo cuando hubo un correo de por medio: ahí el aviso dice algo que no
-          se ve —si salió, y a qué dirección—. Sin correo decía "copia el
-          enlace" arriba del campo con el enlace y el botón de copiar, que es
-          repetir en un recuadro lo que la pantalla ya está haciendo. */}
-      {seIntento && (
-        <div
-          className={`flex items-start gap-2 rounded-md border px-3 py-2 text-sm ${
-            fallo
-              ? "border-amber-300 bg-amber-50 text-amber-900"
-              : "border-primary/30 bg-primary/5"
-          }`}
-        >
-          {fallo ? (
-            <MailX className="mt-0.5 h-4 w-4 flex-none" />
-          ) : (
-            <Mail className="mt-0.5 h-4 w-4 flex-none text-primary" />
-          )}
-          <p>
-            {datos.correoEnviado ? (
-              <>
-                Le enviamos el enlace a <strong>{correo}</strong>. También se lo
-                puedes enviar por otro medio.
-              </>
-            ) : (
-              <>
-                No pudimos enviar el correo. Copia el enlace y envíaselo por
-                donde prefieras.
-              </>
-            )}
-          </p>
-        </div>
-      )}
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Pásale este enlace para que elija su contraseña.
+      </p>
 
-      <div className="flex gap-2">
-        <Input
-          value={datos.enlace}
-          readOnly
-          onFocus={(e) => e.currentTarget.select()}
-          className="font-mono text-xs"
-        />
-        <Button type="button" variant="outline" onClick={copiar} className="flex-none">
+      {/* El enlace en una tarjeta y no en un campo: no se edita, y un input
+          con el texto cortado pedía que alguien lo tocara. Clic lo copia. */}
+      <button
+        type="button"
+        onClick={copiar}
+        className="block w-full rounded-xl border bg-muted/50 px-3.5 py-3 text-left transition-colors hover:bg-muted"
+      >
+        <span className="block truncate font-mono text-xs text-foreground">
+          {datos.enlace}
+        </span>
+        <span className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Clock className="h-3.5 w-3.5" />
+          Caduca {vencimiento(datos.expiraEl)}
+        </span>
+      </button>
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button type="button" onClick={copiar} className="h-10 sm:flex-1">
           {copiado ? (
             <>
               <Check className="mr-1.5 h-4 w-4" /> Copiado
             </>
           ) : (
             <>
-              <Copy className="mr-1.5 h-4 w-4" /> Copiar
+              <Copy className="mr-1.5 h-4 w-4" /> Copiar enlace
             </>
           )}
         </Button>
         {puedeCompartir ? (
           <Button
             type="button"
+            variant="outline"
             onClick={() => navigator.share({ text: datos.enlace }).catch(() => {})}
-            className="flex-none"
+            className="h-10 sm:flex-1"
           >
-            Compartir
+            <Share2 className="mr-1.5 h-4 w-4" /> Compartir
+          </Button>
+        ) : null}
+        {enviarA && correo && !datos.correoEnviado ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={enviarPorCorreo}
+            disabled={enviando}
+            className="h-10 sm:flex-1"
+          >
+            {enviando ? (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : (
+              <Mail className="mr-1.5 h-4 w-4" />
+            )}
+            Enviar por correo
           </Button>
         ) : null}
       </div>
 
-      {enviarA && correo && !datos.correoEnviado ? (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={enviarPorCorreo}
-          disabled={enviando}
-          className="w-full"
+      {/* Qué pasó con el correo, cuando hubo uno de por medio. */}
+      {seIntento ? (
+        <div
+          className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm ${
+            fallo ? "bg-amber-50 text-amber-900" : "bg-primary/5 text-foreground"
+          }`}
         >
-          {enviando ? (
-            <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+          {fallo ? (
+            <MailX className="mt-0.5 h-4 w-4 flex-none" />
           ) : (
-            <Mail className="mr-1.5 h-4 w-4" />
+            <Check className="mt-0.5 h-4 w-4 flex-none text-primary" />
           )}
-          Enviar por correo a {correo}
-        </Button>
+          <p>
+            {datos.correoEnviado ? (
+              <>
+                Enviado a <strong>{correo}</strong>.
+              </>
+            ) : (
+              <>No pudimos enviar el correo. Copia el enlace y envíaselo por otro lado.</>
+            )}
+          </p>
+        </div>
       ) : null}
 
-      {/* La caducidad y el "no se vuelve a mostrar" son lo único que no se
-          puede averiguar después: el resto —que al abrirlo elige su contraseña—
-          se entiende al abrirlo. */}
+      {/* Lo único que no se puede averiguar después. */}
       <p className="text-xs text-muted-foreground">
-        Caduca {vencimiento(datos.expiraEl)}. No se vuelve a mostrar y anula los
-        enlaces anteriores.
+        El enlace no se vuelve a mostrar, y anula los que se hayan generado antes.
       </p>
     </div>
   );
