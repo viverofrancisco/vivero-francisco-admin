@@ -125,9 +125,6 @@ export function InviteForm() {
               correo={email}
               enviarA={generado.userId ? { userId: generado.userId, tipo: "invitacion" } : undefined}
             />
-            <div className="flex justify-end">
-              <Button onClick={() => cambiarApertura(false)}>Listo</Button>
-            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

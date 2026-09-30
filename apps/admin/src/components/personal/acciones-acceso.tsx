@@ -197,9 +197,6 @@ export function AccionesAcceso({
             <DialogTitle>Enlace para {nombre}</DialogTitle>
           </DialogHeader>
           {generado && <EnlaceAcceso datos={generado} />}
-          <DialogFooter>
-            <Button onClick={() => setGenerado(null)}>Listo</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

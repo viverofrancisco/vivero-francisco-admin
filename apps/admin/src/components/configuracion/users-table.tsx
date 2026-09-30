@@ -393,9 +393,6 @@ export function UsersTable({
                 correo={enlace.correo ?? undefined}
                 enviarA={{ userId: enlace.userId, tipo: enlace.tipo }}
               />
-              <div className="flex justify-end">
-                <Button onClick={() => setEnlace(null)}>Listo</Button>
-              </div>
             </div>
           ) : null}
         </DialogContent>

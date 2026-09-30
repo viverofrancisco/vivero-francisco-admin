@@ -210,9 +210,6 @@ export function UserDetail({ user }: Props) {
                 correo={user.email ?? undefined}
                 enviarA={{ userId: user.id, tipo: "restablecer" }}
               />
-              <div className="flex justify-end">
-                <Button onClick={() => setResetOpen(false)}>Listo</Button>
-              </div>
             </div>
           ) : (
             <div className="space-y-4">
