@@ -87,7 +87,7 @@ export function InviteForm() {
         correoIntentado: data.correoIntentado,
         userId: data.id,
       });
-      toast.success("Usuario invitado");
+      toast.success("Usuario creado");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear usuario");
@@ -103,18 +103,18 @@ export function InviteForm() {
       <DialogTrigger
         render={
           <Button
-            aria-label="Invitar usuario"
+            aria-label="Crear usuario"
             className="h-9 w-9 p-0 md:w-auto md:px-2.5"
           />
         }
       >
         <Plus className="h-4 w-4" />
-        <span className="hidden md:ml-2 md:inline">Invitar Usuario</span>
+        <span className="hidden md:ml-2 md:inline">Crear usuario</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
-            {generado ? "Usuario invitado" : "Invitar nuevo usuario"}
+            {generado ? "Usuario creado" : "Nuevo usuario"}
           </DialogTitle>
         </DialogHeader>
 
@@ -151,7 +151,7 @@ export function InviteForm() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="invite-email">Email</Label>
+              <Label htmlFor="invite-email">Correo</Label>
               <Input
                 id="invite-email"
                 type="email"
@@ -171,7 +171,7 @@ export function InviteForm() {
                 Cancelar
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Invitando..." : "Enviar invitación"}
+                {loading ? "Creando..." : "Crear"}
               </Button>
             </div>
           </form>
