@@ -79,7 +79,7 @@ export function UserDetail({ user }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo: "restablecer",
-          enviarCorreo: user.email !== null,
+          enviarCorreo: false,
         }),
       });
       const data = await res.json();
@@ -205,7 +205,11 @@ export function UserDetail({ user }: Props) {
           </DialogHeader>
           {generado ? (
             <div className="space-y-4">
-              <EnlaceAcceso datos={generado} correo={user.email ?? undefined} />
+              <EnlaceAcceso
+                datos={generado}
+                correo={user.email ?? undefined}
+                enviarA={{ userId: user.id, tipo: "restablecer" }}
+              />
               <div className="flex justify-end">
                 <Button onClick={() => setResetOpen(false)}>Listo</Button>
               </div>
@@ -214,8 +218,8 @@ export function UserDetail({ user }: Props) {
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 <strong>{nombreCompleto}</strong> elige su contraseña con un
-                enlace de un solo uso.
-                {user.email && " Se lo enviamos por correo."}
+                enlace de un solo uso. Puedes copiarlo, compartirlo o
+                enviárselo por correo.
               </p>
               <div className="flex justify-end gap-2">
                 <Button

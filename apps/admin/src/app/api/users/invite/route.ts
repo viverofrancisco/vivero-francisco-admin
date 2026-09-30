@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { z } from "zod/v4";
-import {
-  crearEnlaceParaUsuario,
-  VIGENCIA_TEXTO,
-} from "@/lib/services/acceso.service";
-import { sendEnlacePortalEmail } from "@/lib/email";
+import { crearEnlaceParaUsuario } from "@/lib/services/acceso.service";
 
 /**
  * El admin ya no elige una contraseña por el otro: el usuario se crea **sin**
@@ -69,23 +65,11 @@ export async function POST(request: Request) {
 
   const enlace = await crearEnlaceParaUsuario(newUser.id, "invitacion");
 
-  // El correo es la comodidad; el enlace que se devuelve es la garantía. Si el
-  // correo no sale —falta configuración de Gmail, la casilla rebota— el admin
-  // igual tiene algo que mandar por WhatsApp, y se le dice cuál de las dos
-  // cosas pasó.
-  let correoEnviado = false;
-  try {
-    const res = await sendEnlacePortalEmail(
-      data.email,
-      [newUser.name, newUser.apellido].filter(Boolean).join(" "),
-      enlace.url,
-      "invitacion",
-      VIGENCIA_TEXTO.invitacion
-    );
-    correoEnviado = res.success;
-  } catch (err) {
-    console.warn("No pudimos enviar la invitación por correo", err);
-  }
+  // No se manda sola: el enlace se muestra para copiarlo o compartirlo, como el
+  // del personal, y el correo es un botón en ese mismo diálogo
+  // (`/enlace-acceso/enviar`). Mandarlo siempre obligaba a tener un correo
+  // de verdad para dar de alta a alguien que igual recibe el enlace por
+  // WhatsApp.
 
   return NextResponse.json(
     {
@@ -97,7 +81,8 @@ export async function POST(request: Request) {
       createdAt: newUser.createdAt,
       enlace: enlace.url,
       expiraEl: enlace.expiraEl.toISOString(),
-      correoEnviado,
+      correoEnviado: false,
+      correoIntentado: false,
     },
     { status: 201 }
   );

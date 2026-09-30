@@ -11,12 +11,14 @@ const bodySchema = z.object({
    */
   tipo: z.enum(["invitacion", "restablecer"]).default("restablecer"),
   /**
-   * Mandar el correo, o solo emitir el enlace para copiarlo.
+   * Mandar el correo, o solo emitir el enlace para copiarlo. Por defecto no:
+   * el portal lo genera y lo muestra, y *Enviar por correo* es un botón aparte
+   * (`/enlace-acceso/enviar`), que no emite otro.
    *
    * Copiar sin enviar es para cuando el correo no es el camino: la persona
    * está al lado, o se le manda por WhatsApp y un correo de más solo confunde.
    */
-  enviarCorreo: z.boolean().default(true),
+  enviarCorreo: z.boolean().default(false),
 });
 
 /**

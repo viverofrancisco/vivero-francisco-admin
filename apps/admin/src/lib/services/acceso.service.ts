@@ -512,3 +512,60 @@ export async function emitirEnlaceParaUsuario(
     correoIntentado: enviarCorreo && user.email !== null,
   };
 }
+
+/**
+ * Manda por correo un enlace **ya emitido**, sin emitir otro.
+ *
+ * Emitir y enviar son dos gestos desde que el portal genera el enlace como al
+ * personal —para copiarlo o compartirlo— y deja el correo como opción. Volver
+ * a emitir para mandarlo anularía el que se acaba de copiar. Se comprueba que
+ * el token sea de esa cuenta y siga vivo: sin eso, esta ruta mandaría
+ * cualquier enlace a cualquier casilla.
+ */
+export async function enviarEnlacePorCorreo(
+  userId: string,
+  enlace: string,
+  tipo: TipoEnlace
+): Promise<{ correoEnviado: boolean; correo: string }> {
+  let token: string | null = null;
+  try {
+    token = new URL(enlace).searchParams.get("token");
+  } catch {
+    token = null;
+  }
+  if (!token) throw new ValidationError("El enlace no es válido");
+
+  const record = await prisma.setPasswordToken.findUnique({
+    where: { tokenHash: sha256(token) },
+    select: {
+      userId: true,
+      usedAt: true,
+      anuladoEl: true,
+      expiresAt: true,
+      user: { select: { name: true, apellido: true, email: true } },
+    },
+  });
+  if (!record || record.userId !== userId || !record.user) {
+    throw new ValidationError("El enlace no es de esta cuenta");
+  }
+  if (record.usedAt || record.anuladoEl || record.expiresAt.getTime() < Date.now()) {
+    throw new ValidationError("Este enlace ya no sirve: genera uno nuevo");
+  }
+  const correo = record.user.email;
+  if (!correo) throw new ValidationError("Esta cuenta no tiene correo");
+
+  let correoEnviado = false;
+  try {
+    const res = await sendEnlacePortalEmail(
+      correo,
+      [record.user.name, record.user.apellido].filter(Boolean).join(" "),
+      enlace,
+      tipo,
+      VIGENCIA_TEXTO[tipo]
+    );
+    correoEnviado = res.success;
+  } catch (err) {
+    console.warn("No pudimos enviar el enlace por correo", err);
+  }
+  return { correoEnviado, correo };
+}

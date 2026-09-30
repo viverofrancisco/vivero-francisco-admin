@@ -19,7 +19,8 @@ import { EnlaceAcceso, type EnlaceGenerado } from "./enlace-acceso";
 /**
  * Invita a alguien de la oficina.
  *
- * Solo pide nombre y correo: el rol es STAFF —un ADMIN se hace desde la base,
+ * Pide nombre y correo, y no manda nada solo: muestra el enlace para copiarlo o
+ * compartirlo, con *Enviar por correo* al lado. Del resto: el rol es STAFF —un ADMIN se hace desde la base,
  * y son dos— y no hay sectores que asignar desde que se fue `PERSONAL_ADMIN`.
  * Al personal de campo no se lo invita desde acá: no tiene correo, y su cuenta
  * se crea desde su propia ficha.
@@ -32,7 +33,9 @@ export function InviteForm() {
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
   /** El enlace recién emitido. Mientras exista, el diálogo lo muestra. */
-  const [generado, setGenerado] = useState<EnlaceGenerado | null>(null);
+  const [generado, setGenerado] = useState<
+    (EnlaceGenerado & { userId?: string }) | null
+  >(null);
   const [error, setError] = useState("");
 
   /**
@@ -81,6 +84,8 @@ export function InviteForm() {
         enlace: data.enlace,
         expiraEl: data.expiraEl,
         correoEnviado: data.correoEnviado,
+        correoIntentado: data.correoIntentado,
+        userId: data.id,
       });
       toast.success("Usuario invitado");
       router.refresh();
@@ -115,7 +120,11 @@ export function InviteForm() {
 
         {generado ? (
           <div className="space-y-4">
-            <EnlaceAcceso datos={generado} correo={email} />
+            <EnlaceAcceso
+              datos={generado}
+              correo={email}
+              enviarA={generado.userId ? { userId: generado.userId, tipo: "invitacion" } : undefined}
+            />
             <div className="flex justify-end">
               <Button onClick={() => cambiarApertura(false)}>Listo</Button>
             </div>

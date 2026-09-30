@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Copy, Mail, MailX } from "lucide-react";
+import { Check, Copy, Loader2, Mail, MailX } from "lucide-react";
+import { toast } from "sonner";
 
 export interface EnlaceGenerado {
   enlace: string;
@@ -27,8 +28,9 @@ export interface EnlaceGenerado {
  * esto sin copiarlo, el camino es generar otro.
  */
 export function EnlaceAcceso({
-  datos,
+  datos: inicial,
   correo,
+  enviarA,
 }: {
   datos: EnlaceGenerado;
   /**
@@ -37,8 +39,36 @@ export function EnlaceAcceso({
    * copia y se manda por donde sea.
    */
   correo?: string;
+  /**
+   * Con esto, y con `correo`, aparece *Enviar por correo*: manda **este**
+   * enlace —no emite otro, que anularía el que ya se copió— a la casilla de
+   * la cuenta.
+   */
+  enviarA?: { userId: string; tipo: "invitacion" | "restablecer" };
 }) {
   const [copiado, setCopiado] = useState(false);
+  const [datos, setDatos] = useState(inicial);
+  const [enviando, setEnviando] = useState(false);
+
+  async function enviarPorCorreo() {
+    if (!enviarA) return;
+    setEnviando(true);
+    try {
+      const res = await fetch(`/api/users/${enviarA.userId}/enlace-acceso/enviar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enlace: datos.enlace, tipo: enviarA.tipo }),
+      });
+      const r = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(r.error ?? "No pudimos enviar el correo");
+      setDatos((d) => ({ ...d, correoEnviado: r.correoEnviado, correoIntentado: true }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No pudimos enviar el correo");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
   // El teléfono ofrece compartir —por WhatsApp, que es como le llega al
   // personal de campo—; el escritorio casi nunca, y ahí queda copiar.
   const puedeCompartir = typeof navigator !== "undefined" && typeof navigator.share === "function";
@@ -119,6 +149,23 @@ export function EnlaceAcceso({
           </Button>
         ) : null}
       </div>
+
+      {enviarA && correo && !datos.correoEnviado ? (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={enviarPorCorreo}
+          disabled={enviando}
+          className="w-full"
+        >
+          {enviando ? (
+            <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+          ) : (
+            <Mail className="mr-1.5 h-4 w-4" />
+          )}
+          Enviar por correo a {correo}
+        </Button>
+      ) : null}
 
       {/* La caducidad y el "no se vuelve a mostrar" son lo único que no se
           puede averiguar después: el resto —que al abrirlo elige su contraseña—

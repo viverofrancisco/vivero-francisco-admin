@@ -76,18 +76,24 @@ publicada, y por eso su Zod ya **no** valida como dirección.
 Invitar a alguien **no crea una contraseña temporal**. El usuario se crea con
 `password: null` —los dos caminos de login rechazan a un usuario sin
 contraseña, así que la cuenta existe pero no entra— y se emite un enlace que el
-admin puede copiar y mandar por donde quiera. El correo se envía además
-automáticamente; el enlace se muestra en pantalla igual, porque el correo puede
-demorar, caer en spam o ir a una casilla que nadie mira.
+admin copia o comparte, **como el del personal**. **Nada sale por correo solo**:
+el diálogo del enlace tiene *Enviar por correo a …*, que manda **ese mismo**
+enlace (`POST /api/users/[id]/enlace-acceso/enviar` `{ enlace, tipo }` →
+`enviarEnlacePorCorreo`, que comprueba que el token sea de esa cuenta y siga
+vivo, para que la ruta no mande cualquier enlace a cualquier casilla). Emitir
+otro para mandarlo anularía el que ya se copió. Antes el correo salía siempre,
+y eso obligaba a tener una casilla de verdad para dar de alta a alguien que
+igual recibía el enlace por WhatsApp.
 
 - **Invitar**: `POST /api/users/invite` `{ name, apellido?, email, role }`
-  → crea el usuario, emite el enlace, manda el correo y devuelve
-  `{ enlace, expiraEl, correoEnviado }`.
+  → crea el usuario, emite el enlace y lo devuelve
+  `{ id, enlace, expiraEl, correoEnviado: false, correoIntentado: false }`.
 - `PUT /api/users/[id]` **no acepta `password`**. Lo aceptaba, y la ficha tenía
   un campo para tipearle una contraseña al otro: una puerta de servicio abierta
   contra la regla que el resto del portal sostiene. Restablecer es emitir un
   enlace, ahí también.
-- **Restablecer**: `POST /api/users/[id]/enlace-acceso` → lo mismo para una
+- **Restablecer**: `POST /api/users/[id]/enlace-acceso` (`enviarCorreo` por
+  defecto `false`) → lo mismo para una
   cuenta que ya existe. Sirve igual para quien perdió su contraseña y para quien
   nunca abrió su invitación.
 - Ambos son **solo para ADMIN**, y ambos **anulan el enlace anterior** que
@@ -299,7 +305,8 @@ en la consola del servidor (bypass de desarrollo).
 
 ## Nota: solo correo (no WhatsApp)
 
-La invitación se envía **únicamente por correo** (Gmail API). Se evaluó enviarla
+El único envío automático es por correo (Gmail API), y desde que el enlace se
+genera para copiarlo es un botón, no un paso obligado. Se evaluó enviarla
 también por WhatsApp, pero Meta rechaza la plantilla con un botón URL como
 `INCORRECT_CATEGORY` (un enlace de "crear contraseña" no encaja en sus categorías
 UTILITY/AUTHENTICATION). Por eso el canal es solo correo. El `APP_BASE_URL` debe

@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Ban,
-  Copy,
   KeyRound,
   Loader2,
   MoreVertical,
@@ -78,7 +77,11 @@ export function UsersTable({
   /** A quién se le está generando el enlace, para no repetir el clic. */
   const [generando, setGenerando] = useState<string | null>(null);
   const [enlace, setEnlace] = useState<
-    | (EnlaceGenerado & { correo: string; tipo: "invitacion" | "restablecer" })
+    | (EnlaceGenerado & {
+        correo: string | null;
+        tipo: "invitacion" | "restablecer";
+        userId: string;
+      })
     | null
   >(null);
 
@@ -105,47 +108,22 @@ export function UsersTable({
   }
 
   /**
-   * Emite un enlace nuevo y lo entrega según lo que se haya pedido.
-   *
-   * *Enviar* abre el diálogo, porque conviene ver a dónde fue y poder mandarlo
-   * también por otro lado. *Copiar* copia y ya está: pedirlo ya dice qué se
-   * quiere hacer con él, y un diálogo en el medio es un clic de más.
-   *
-   * El enlace no se puede volver a ver, así que si el portapapeles falla se
-   * muestra igual: quedarse sin nada después de haber anulado el anterior
-   * sería lo peor que puede pasar acá.
+   * Emite un enlace nuevo y lo muestra, como el del personal: para copiarlo,
+   * compartirlo o —con un botón en el mismo diálogo— mandarlo por correo. No
+   * sale solo por correo: eso obligaba a tener una casilla de verdad para
+   * algo que casi siempre se manda por WhatsApp.
    */
-  async function generarEnlace(
-    user: UserData,
-    tipo: "invitacion" | "restablecer",
-    modo: "enviar" | "copiar"
-  ) {
+  async function generarEnlace(user: UserData, tipo: "invitacion" | "restablecer") {
     setGenerando(user.id);
     try {
       const res = await fetch(`/api/users/${user.id}/enlace-acceso`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipo, enviarCorreo: modo === "enviar" }),
+        body: JSON.stringify({ tipo, enviarCorreo: false }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "No pudimos generar el enlace");
-
-      if (modo === "copiar") {
-        try {
-          await navigator.clipboard.writeText(data.enlace);
-          // Cada enlace es nuevo —del anterior solo guardamos el hash, no se
-          // puede recuperar— así que copiar mata el que se haya mandado antes.
-          // Sin este aviso, mandar el mismo acceso por correo y por WhatsApp
-          // deja el del correo muerto sin que nadie se entere.
-          toast.success("Enlace copiado", {
-            description: "El anterior, si le habías mandado uno, dejó de servir.",
-          });
-          return;
-        } catch {
-          // Sin portapapeles queda mostrarlo para copiarlo a mano.
-        }
-      }
-      setEnlace({ ...data, correo: user.email, tipo });
+      setEnlace({ ...data, correo: user.email, tipo, userId: user.id });
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "No pudimos generar el enlace"
@@ -154,11 +132,6 @@ export function UsersTable({
     } finally {
       setGenerando(null);
     }
-    // La fila se relee después de cualquier acción sobre el usuario. Hoy
-    // emitir un enlace no le cambia el estado —el bloqueo se levanta recién
-    // cuando la persona lo usa— pero la lista sale del servidor y quedarse con
-    // una versión vieja en pantalla es el tipo de cosa que aparece cuando algo
-    // de esto cambia y nadie se acuerda de este renglón.
     router.refresh();
   }
 
@@ -282,20 +255,10 @@ export function UsersTable({
                               misma decisión y conviene que se busquen en el
                               mismo renglón. */}
                           <DropdownMenuItem
-                            onClick={() =>
-                              generarEnlace(user, "invitacion", "enviar")
-                            }
+                            onClick={() => generarEnlace(user, "invitacion")}
                           >
                             <Send className="mr-2 h-4 w-4" />
                             Volver a invitar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              generarEnlace(user, "invitacion", "copiar")
-                            }
-                          >
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copiar enlace de invitación
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -309,39 +272,19 @@ export function UsersTable({
                       ) : user.tieneContrasena ? (
                         <>
                           <DropdownMenuItem
-                            onClick={() =>
-                              generarEnlace(user, "restablecer", "enviar")
-                            }
+                            onClick={() => generarEnlace(user, "restablecer")}
                           >
                             <KeyRound className="mr-2 h-4 w-4" />
                             Restablecer contraseña
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              generarEnlace(user, "restablecer", "copiar")
-                            }
-                          >
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copiar enlace sin enviar
                           </DropdownMenuItem>
                         </>
                       ) : (
                         <>
                           <DropdownMenuItem
-                            onClick={() =>
-                              generarEnlace(user, "invitacion", "enviar")
-                            }
+                            onClick={() => generarEnlace(user, "invitacion")}
                           >
                             <Send className="mr-2 h-4 w-4" />
-                            Reenviar invitación
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              generarEnlace(user, "invitacion", "copiar")
-                            }
-                          >
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copiar enlace de invitación
+                            Enlace de invitación
                           </DropdownMenuItem>
                         </>
                       )}
@@ -445,7 +388,11 @@ export function UsersTable({
           </DialogHeader>
           {enlace ? (
             <div className="space-y-4">
-              <EnlaceAcceso datos={enlace} correo={enlace.correo} />
+              <EnlaceAcceso
+                datos={enlace}
+                correo={enlace.correo ?? undefined}
+                enviarA={{ userId: enlace.userId, tipo: enlace.tipo }}
+              />
               <div className="flex justify-end">
                 <Button onClick={() => setEnlace(null)}>Listo</Button>
               </div>
