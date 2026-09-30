@@ -45,6 +45,11 @@ export default async function PrivacidadPage() {
         {/* El índice fijo a la izquierda en pantallas anchas; en el teléfono va
             arriba del texto, dentro de la tarjeta. */}
         <nav className="sticky top-10 hidden h-fit w-56 flex-none lg:block" aria-label="Secciones">
+          {/* En computadora el logo va acá, encabezando el índice; en el
+              teléfono, arriba del texto. */}
+          <div className="mb-6 px-3">
+            <Brand logoUrl={empresa.logoUrl} nombre={empresa.nombre} />
+          </div>
           <p className="mb-2 px-3 text-xs font-semibold tracking-wide text-gray-500 uppercase">
             En esta página
           </p>
@@ -65,7 +70,7 @@ export default async function PrivacidadPage() {
         <header className="space-y-1">
           {/* El logo de *Empresa*, el mismo del portal: esta página es lo que
               ven las tiendas y quien llega desde ellas. */}
-          <div className="mb-6 flex justify-center border-b pb-6">
+          <div className="mb-6 flex justify-center border-b pb-6 lg:hidden">
             <Brand logoUrl={empresa.logoUrl} nombre={empresa.nombre} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Política de privacidad</h1>
