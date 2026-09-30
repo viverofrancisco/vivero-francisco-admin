@@ -22,11 +22,46 @@ export const metadata: Metadata = {
 const CONTACTO = "info@viverofrancisco.com";
 const ACTUALIZADA = "30 de septiembre de 2026";
 
+/** El índice de la izquierda; cada `id` es el de su `Seccion`. */
+const SECCIONES = [
+  { id: "quien-usa-la-app", titulo: "Quién usa la app" },
+  { id: "que-datos-recogemos", titulo: "Qué datos recogemos" },
+  { id: "para-que-los-usamos", titulo: "Para qué los usamos" },
+  { id: "con-quien-se-comparten", titulo: "Con quién se comparten" },
+  { id: "cuanto-tiempo-los-guardamos", titulo: "Cuánto tiempo los guardamos" },
+  { id: "tus-derechos", titulo: "Tus derechos" },
+  { id: "seguridad", titulo: "Seguridad" },
+  { id: "cambios-a-esta-politica", titulo: "Cambios a esta política" },
+];
+
+
 export default async function PrivacidadPage() {
   const empresa = await getEmpresaConfig();
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
-      <article className="mx-auto max-w-2xl space-y-6 rounded-2xl bg-white p-6 text-[15px] leading-relaxed text-gray-700 shadow-sm md:p-10">
+      {/* Los saltos del índice, suaves. */}
+      <style>{"html{scroll-behavior:smooth}"}</style>
+      <div className="mx-auto flex max-w-5xl gap-8">
+        {/* El índice fijo a la izquierda en pantallas anchas; en el teléfono va
+            arriba del texto, dentro de la tarjeta. */}
+        <nav className="sticky top-10 hidden h-fit w-56 flex-none lg:block" aria-label="Secciones">
+          <p className="mb-2 px-3 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+            En esta página
+          </p>
+          <ul className="space-y-0.5 text-sm">
+            {SECCIONES.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className="block rounded-lg px-3 py-1.5 text-gray-600 hover:bg-white hover:text-gray-900"
+                >
+                  {s.titulo}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      <article className="min-w-0 flex-1 space-y-6 rounded-2xl bg-white p-6 text-[15px] leading-relaxed text-gray-700 shadow-sm md:p-10">
         <header className="space-y-1">
           {/* El logo de *Empresa*, el mismo del portal: esta página es lo que
               ven las tiendas y quien llega desde ellas. */}
@@ -39,6 +74,21 @@ export default async function PrivacidadPage() {
           </p>
         </header>
 
+        <nav className="rounded-xl bg-gray-50 p-4 lg:hidden" aria-label="Secciones">
+          <p className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+            En esta página
+          </p>
+          <ul className="grid gap-1 text-sm sm:grid-cols-2">
+            {SECCIONES.map((s) => (
+              <li key={s.id}>
+                <a href={`#${s.id}`} className="text-green-700 hover:underline">
+                  {s.titulo}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
         <p>
           Esta política explica qué datos personales recogen la aplicación móvil{" "}
           <strong>Vivero Francisco</strong> y el portal{" "}
@@ -48,7 +98,7 @@ export default async function PrivacidadPage() {
           Ecuador.
         </p>
 
-        <Seccion titulo="Quién usa la app">
+        <Seccion id="quien-usa-la-app" titulo="Quién usa la app">
           <p>
             La app es una herramienta de trabajo del vivero. La usan su equipo
             —administradores, staff y personal de campo— y sus clientes, para
@@ -59,7 +109,7 @@ export default async function PrivacidadPage() {
           </p>
         </Seccion>
 
-        <Seccion titulo="Qué datos recogemos">
+        <Seccion id="que-datos-recogemos" titulo="Qué datos recogemos">
           <ul className="list-disc space-y-2 pl-5">
             <li>
               <strong>Datos de la cuenta:</strong> nombre, apellido, usuario,
@@ -102,7 +152,7 @@ export default async function PrivacidadPage() {
           </ul>
         </Seccion>
 
-        <Seccion titulo="Para qué los usamos">
+        <Seccion id="para-que-los-usamos" titulo="Para qué los usamos">
           <ul className="list-disc space-y-2 pl-5">
             <li>Organizar, realizar y registrar las visitas de mantenimiento.</li>
             <li>
@@ -122,7 +172,7 @@ export default async function PrivacidadPage() {
           </p>
         </Seccion>
 
-        <Seccion titulo="Con quién se comparten">
+        <Seccion id="con-quien-se-comparten" titulo="Con quién se comparten">
           <p>
             Solo con los proveedores que hacen funcionar la app, que los tratan
             por cuenta nuestra:
@@ -143,7 +193,7 @@ export default async function PrivacidadPage() {
           </p>
         </Seccion>
 
-        <Seccion titulo="Cuánto tiempo los guardamos">
+        <Seccion id="cuanto-tiempo-los-guardamos" titulo="Cuánto tiempo los guardamos">
           <p>
             Mientras la cuenta o la relación con el vivero esté activa, y
             después el tiempo que exijan las obligaciones tributarias y legales.
@@ -153,7 +203,7 @@ export default async function PrivacidadPage() {
           </p>
         </Seccion>
 
-        <Seccion titulo="Tus derechos">
+        <Seccion id="tus-derechos" titulo="Tus derechos">
           <p>
             Conforme a la Ley Orgánica de Protección de Datos Personales del
             Ecuador, puedes pedir acceder a tus datos, corregirlos, eliminarlos
@@ -167,7 +217,7 @@ export default async function PrivacidadPage() {
           </p>
         </Seccion>
 
-        <Seccion titulo="Seguridad">
+        <Seccion id="seguridad" titulo="Seguridad">
           <p>
             Las conexiones van cifradas, las contraseñas se guardan con un hash
             que no se puede revertir y el certificado de firma electrónica se
@@ -177,7 +227,7 @@ export default async function PrivacidadPage() {
           </p>
         </Seccion>
 
-        <Seccion titulo="Cambios a esta política">
+        <Seccion id="cambios-a-esta-politica" titulo="Cambios a esta política">
           <p>
             Si cambia algo importante, actualizamos esta página y su fecha. Para
             cualquier pregunta, escríbenos a{" "}
@@ -188,13 +238,22 @@ export default async function PrivacidadPage() {
           </p>
         </Seccion>
       </article>
+      </div>
     </main>
   );
 }
 
-function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+function Seccion({
+  id,
+  titulo,
+  children,
+}: {
+  id: string;
+  titulo: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="space-y-2">
+    <section id={id} className="scroll-mt-6 space-y-2">
       <h2 className="text-lg font-semibold text-gray-900">{titulo}</h2>
       {children}
     </section>
