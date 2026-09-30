@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAuthStore } from "@/lib/auth-store";
 import { apiRequest } from "@/lib/api";
 import { resolverServidor } from "@/lib/config";
+import { precargarBranding } from "@/lib/branding";
 import type { MeResponse } from "@vivero/shared";
 import { tema } from "@/lib/tema";
 
@@ -48,7 +49,8 @@ function useAuthGate() {
   useEffect(() => {
     // Primero dónde está el portal, después la sesión: en desarrollo el
     // puerto puede no ser el 3000.
-    resolverServidor().finally(() => hydrate());
+    // El logo guardado también: si no, el login pinta antes de tenerlo.
+    Promise.all([resolverServidor(), precargarBranding()]).finally(() => hydrate());
   }, [hydrate]);
 
   useEffect(() => {

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -14,14 +13,13 @@ import {
 import { nombreCliente } from "@vivero/shared";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
-import { useBranding } from "@/lib/branding";
 import type { ClienteProfileResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 
 export default function ClienteConfiguracionScreen() {
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const clear = useAuthStore((s) => s.clear);
-  const branding = useBranding();
   const [data, setData] = useState<ClienteProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -147,17 +145,7 @@ export default function ClienteConfiguracionScreen() {
         Cerrar sesión
       </Button>
 
-      {branding.logoUrl ? (
-        <Image
-          source={{ uri: branding.logoUrl }}
-          style={styles.footerLogo}
-          resizeMode="contain"
-        />
-      ) : (
-        <Text variant="bodySmall" style={styles.footer}>
-          {branding.nombre ?? "Vivero Francisco"}
-        </Text>
-      )}
+      <LogoDeLaEmpresa style={styles.footerLogo} />
     </ScrollView>
   );
 }

@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { Image, KeyboardAvoidingView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
 import type { AuthSuccessResponse } from "@vivero/shared";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
-import { useBranding } from "@/lib/branding";
 import { registerForPushNotifications } from "@/lib/push";
+import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 
 export default function LoginScreen() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
-  const branding = useBranding();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,17 +53,7 @@ export default function LoginScreen() {
         style={styles.flex}
       >
         <View style={styles.content}>
-          {branding.logoUrl ? (
-            <Image
-              source={{ uri: branding.logoUrl }}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          ) : (
-            <Text variant="headlineMedium" style={styles.title}>
-              {branding.nombre ?? "Vivero Francisco"}
-            </Text>
-          )}
+          <LogoDeLaEmpresa style={styles.logo} />
           <Text variant="bodyLarge" style={styles.subtitle}>
             Inicia sesión con tu usuario, tu correo o tu teléfono
           </Text>
@@ -129,7 +118,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   flex: { flex: 1 },
   content: { flex: 1, padding: 24, justifyContent: "center" },
-  title: { textAlign: "center", marginBottom: 8 },
   logo: { alignSelf: "center", height: 80, width: 220, marginBottom: 16 },
   subtitle: { textAlign: "center", marginBottom: 32, color: "#555" },
   input: { marginBottom: 16 },

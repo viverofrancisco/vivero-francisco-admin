@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { ETIQUETA_DE_ROL } from "@vivero/shared";
-import { Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,8 +12,8 @@ import { apiRequest, mensajeDeError } from "@/lib/api";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { useAuthStore } from "@/lib/auth-store";
-import { useBranding } from "@/lib/branding";
 import { tema } from "@/lib/tema";
+import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 
 const ROLE_LABEL: Record<string, string> = ETIQUETA_DE_ROL;
 
@@ -58,7 +58,6 @@ function usePermisos(pedirUbicacion: boolean) {
 
 export default function PersonalConfiguracionScreen() {
   const user = useAuthStore((s) => s.user);
-  const branding = useBranding();
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const clear = useAuthStore((s) => s.clear);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -164,17 +163,7 @@ export default function PersonalConfiguracionScreen() {
         Cerrar sesión
       </Button>
 
-      {branding.logoUrl ? (
-        <Image
-          source={{ uri: branding.logoUrl }}
-          style={styles.footerLogo}
-          resizeMode="contain"
-        />
-      ) : (
-        <Text variant="bodySmall" style={styles.footer}>
-          {branding.nombre ?? "Vivero Francisco"}
-        </Text>
-      )}
+      <LogoDeLaEmpresa style={styles.footerLogo} />
 
       {version ? (
         <Text variant="bodySmall" style={styles.version}>

@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { tema } from "@/lib/tema";
+import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 
 /**
  * El enlace de acceso —invitación o restablecer contraseña— abierto **en la
@@ -132,9 +133,7 @@ export default function EstablecerContrasenaScreen() {
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text variant="headlineSmall" style={styles.marca}>
-            Vivero Francisco
-          </Text>
+          <LogoDeLaEmpresa style={styles.logo} />
           <Text variant="bodyLarge" style={styles.subtitulo}>
             {titulo}
           </Text>
@@ -234,7 +233,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   flex: { flex: 1 },
   content: { flexGrow: 1, padding: 24, justifyContent: "center" },
-  marca: { textAlign: "center", marginBottom: 6, fontWeight: "700" },
+  logo: { alignSelf: "center", height: 80, width: 220, marginBottom: 12 },
   subtitulo: { textAlign: "center", marginBottom: 28, color: "#555" },
   bloque: { gap: 4 },
   texto: { textAlign: "center", color: "#555", marginBottom: 16 },
