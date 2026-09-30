@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Brand } from "@/components/layout/brand";
+import { getEmpresaConfig } from "@/lib/services/empresa-config.service";
 
 export const metadata: Metadata = {
   title: "Política de privacidad — Vivero Francisco",
@@ -20,11 +22,17 @@ export const metadata: Metadata = {
 const CONTACTO = "info@viverofrancisco.com";
 const ACTUALIZADA = "30 de septiembre de 2026";
 
-export default function PrivacidadPage() {
+export default async function PrivacidadPage() {
+  const empresa = await getEmpresaConfig();
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <article className="mx-auto max-w-2xl space-y-6 rounded-2xl bg-white p-6 text-[15px] leading-relaxed text-gray-700 shadow-sm md:p-10">
         <header className="space-y-1">
+          {/* El logo de *Empresa*, el mismo del portal: esta página es lo que
+              ven las tiendas y quien llega desde ellas. */}
+          <div className="mb-6 flex justify-center border-b pb-6">
+            <Brand logoUrl={empresa.logoUrl} nombre={empresa.nombre} />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900">Política de privacidad</h1>
           <p className="text-sm text-gray-500">
             Vivero Francisco · Última actualización: {ACTUALIZADA}
