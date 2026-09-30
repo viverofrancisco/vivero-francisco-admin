@@ -11,7 +11,6 @@ import {
   Button,
   HelperText,
   Searchbar,
-  Switch,
   Text,
   TextInput,
 } from "react-native-paper";
@@ -31,6 +30,7 @@ import type {
   PropiedadResumen,
 } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { Conmutador } from "@/components/ui/Conmutador";
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -912,7 +912,7 @@ function PersonalRow({
           {p.tipo}
         </Text>
       </View>
-      <Switch value={checked} onValueChange={onToggle} />
+      <Conmutador value={checked} onValueChange={onToggle} />
     </Pressable>
   );
 }

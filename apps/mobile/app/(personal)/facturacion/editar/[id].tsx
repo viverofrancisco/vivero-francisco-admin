@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   View,
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
@@ -15,6 +14,7 @@ import { Campo, Titulo } from "@/components/ui/Formulario";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { EmisorConfig } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { Conmutador } from "@/components/ui/Conmutador";
 
 type Datos = Omit<EmisorConfig, "id" | "certificadoSujeto" | "certificadoVence" | "facturas">;
 
@@ -270,12 +270,7 @@ function Interruptor({
         </Text>
         {ayuda ? <Text style={styles.nota}>{ayuda}</Text> : null}
       </View>
-      <Switch
-        value={valor}
-        onValueChange={onCambiar}
-        trackColor={{ true: tema.verde100, false: undefined }}
-        thumbColor={valor ? tema.verde : undefined}
-      />
+      <Conmutador value={valor} onValueChange={onCambiar} />
     </View>
   );
 }

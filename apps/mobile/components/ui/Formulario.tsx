@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, Switch, TextInput as TextInputNativo, View } from "react-native";
+import { Pressable, StyleSheet, TextInput as TextInputNativo, View } from "react-native";
 import { Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale } from "@/components/ui/PressableScale";
 import { tema } from "@/lib/tema";
+import { Conmutador } from "./Conmutador";
 
 /**
  * Las piezas de un formulario de la app, en un solo lugar.
@@ -188,12 +189,7 @@ export function Interruptor({
           </Text>
         ) : null}
       </View>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ true: tema.verde100, false: undefined }}
-        thumbColor={value ? tema.verde : undefined}
-      />
+      <Conmutador value={value} onValueChange={onValueChange} />
     </View>
   );
 }

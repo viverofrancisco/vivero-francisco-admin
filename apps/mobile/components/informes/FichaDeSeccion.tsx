@@ -7,7 +7,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { Switch, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -24,6 +24,7 @@ import {
 } from "@/components/informes/EditorDeTextoRico";
 import type { SeccionFotoDraft } from "@/components/informes/SelectorDeFotos";
 import { tema } from "@/lib/tema";
+import { Conmutador } from "@/components/ui/Conmutador";
 
 export type FotosPorFila = 2 | 3 | 4 | 5 | 6;
 export type AlineacionDeFotos = "IZQUIERDA" | "CENTRO" | "DERECHA";
@@ -252,10 +253,9 @@ export function FichaDeSeccion({
             </View>
             <View style={styles.filaDeLayout}>
               <Text style={styles.rotulo}>Empezar en hoja nueva</Text>
-              <Switch
+              <Conmutador
                 value={seccion.saltoDePagina}
                 onValueChange={(v) => onCambiar({ saltoDePagina: v })}
-                color={tema.verde}
               />
             </View>
 

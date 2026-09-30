@@ -4,7 +4,6 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
-  Switch,
   View,
 } from "react-native";
 import { HelperText, Text, TextInput } from "react-native-paper";
@@ -24,6 +23,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { avisarFaltaUbicacion, ubicacionActual } from "@/lib/ubicacion";
 import type { PropiedadResumen } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { Conmutador } from "@/components/ui/Conmutador";
 
 /**
  * Una propiedad: el lugar donde se trabaja.
@@ -392,12 +392,7 @@ export function CamposDePropiedad({
         <Text variant="bodyLarge" style={styles.interruptorTexto}>
           Jardineras en planta alta
         </Text>
-        <Switch
-          value={c.jardineras}
-          onValueChange={c.setJardineras}
-          trackColor={{ true: tema.verde100, false: undefined }}
-          thumbColor={c.jardineras ? tema.verde : undefined}
-        />
+        <Conmutador value={c.jardineras} onValueChange={c.setJardineras} />
       </View>
 
       <Titulo>{dentroDelCliente ? "Notas de la propiedad" : "Notas"}</Titulo>

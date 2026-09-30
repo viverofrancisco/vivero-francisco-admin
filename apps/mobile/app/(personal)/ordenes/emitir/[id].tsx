@@ -3,7 +3,6 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
-  Switch,
   View,
 } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
@@ -20,6 +19,7 @@ import type {
   OrdenDetalle,
 } from "@/lib/types";
 import { tema } from "@/lib/tema";
+import { Conmutador } from "@/components/ui/Conmutador";
 
 const plata = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -327,10 +327,9 @@ export default function EmitirOrdenScreen() {
                 <Text variant="bodyMedium" style={styles.valor}>
                   Guardar en la ficha del cliente
                 </Text>
-                <Switch
+                <Conmutador
                   value={nuevo.guardarEnFicha}
                   onValueChange={(v) => setNuevo({ ...nuevo, guardarEnFicha: v })}
-                  trackColor={{ true: tema.verde }}
                 />
               </View>
               <View style={styles.botones}>

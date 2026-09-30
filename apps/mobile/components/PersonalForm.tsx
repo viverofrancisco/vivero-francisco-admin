@@ -4,7 +4,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   View,
 } from "react-native";
 import { HelperText, Text } from "react-native-paper";
@@ -13,6 +12,7 @@ import { EncabezadoDeFormulario } from "@/components/ui/EncabezadoDeFormulario";
 import { mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { tema } from "@/lib/tema";
+import { Conmutador } from "@/components/ui/Conmutador";
 
 export interface DatosPersonal {
   nombre: string;
@@ -206,12 +206,7 @@ export function PersonalForm({
               Inactivo deja de ofrecerse al asignar una visita.
             </Text>
           </View>
-          <Switch
-            value={activo}
-            onValueChange={setActivo}
-            trackColor={{ true: tema.verde100, false: undefined }}
-            thumbColor={activo ? tema.verde : undefined}
-          />
+          <Conmutador value={activo} onValueChange={setActivo} />
         </View>
 
         {error ? (
