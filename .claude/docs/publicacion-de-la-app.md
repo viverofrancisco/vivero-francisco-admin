@@ -153,7 +153,15 @@ Las siguientes subidas son `eas build -p ios --profile production` y
 preguntas**: `eas.json` lleva `submit.production.ios.ascAppId` (el *Apple
 ID* numérico de la app en App Store Connect, 6817389110) y el
 `appleTeamId` (9UGV7JZ9JT), y la clave de App Store Connect que EAS generó
-la primera vez (rol App Manager) queda guardada en EAS. Un cambio solo
+la primera vez (rol App Manager) queda guardada en EAS. **Mejor el
+`eas submit` aparte que el `--auto-submit`**: en el build 4 la submission
+que programó `--auto-submit` se quedó *in queue* más de una hora después
+de terminado el build (sin incidente en status.expo.dev), y un
+`eas submit -p ios --id <build> --no-wait` lanzado a mano por encima llegó
+a Apple en un minuto; la automática se canceló con `submit:cancel` para
+que no corriera después como duplicado. `--no-wait` siempre: sin él el
+comando espera a Apple y se pasa de los diez minutos que aguanta una
+sesión. Un cambio solo
 de JS puede ir por EAS Update sin pasar por la tienda, pero eso pide
 `expo-updates`, que no está instalado; por ahora todo va por build.
 
