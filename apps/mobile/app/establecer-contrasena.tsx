@@ -109,6 +109,16 @@ export default function EstablecerContrasenaScreen() {
     router.replace("/(auth)/login");
   }
 
+  /**
+   * Salir sin tocar nada. Abierta desde un enlace no hay atrás: la pantalla
+   * era la única de la pila y no tenía por dónde cerrarse. Al login, y si hay
+   * sesión la puerta de `_layout` lo devuelve a su pantalla de siempre.
+   */
+  function salir() {
+    if (router.canGoBack()) router.back();
+    else router.replace("/(auth)/login");
+  }
+
   const titulo =
     estado === "listo"
       ? "Contraseña creada"
@@ -203,6 +213,9 @@ export default function EstablecerContrasenaScreen() {
                 style={styles.boton}
               >
                 Crear contraseña
+              </Button>
+              <Button mode="text" onPress={salir} disabled={guardando}>
+                Cancelar
               </Button>
               {error ? (
                 <HelperText type="error" visible style={styles.error}>

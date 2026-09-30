@@ -27,9 +27,22 @@ const nextConfig: NextConfig = {
     // `@img`: la libvips que `sharp` abre con dlopen. `ffmpeg-static`: el
     // binario que transcodifica los videos del chat; se resuelve por ruta,
     // así que el trazado tampoco lo ve solo.
+    //
+    // **En las dos ubicaciones posibles.** Estos patrones son relativos a
+    // `apps/admin`, y npm decide en cada `npm install` si un paquete queda
+    // en `apps/admin/node_modules` o subido a la raíz del monorepo: mientras
+    // `next` traía su propio `sharp` 0.34, el nuestro (0.35) quedaba abajo y
+    // el primer patrón lo encontraba; al regenerar el lockfile el nuestro
+    // subió a la raíz y el de `next` se anidó, el patrón dejó de coincidir
+    // con nada y producción volvió a morir con `ERR_DLOPEN_FAILED` en todo
+    // lo que carga `sharp` —informes, media, los mensajes del chat—, con el
+    // `next build` pasando en verde. Pedir las dos rutas cuesta nada y no
+    // depende de cómo hoiste npm la próxima vez.
     "/**": [
       "node_modules/@img/**",
+      "../../node_modules/@img/**",
       "node_modules/ffmpeg-static/**",
+      "../../node_modules/ffmpeg-static/**",
       // Las fuentes del informe: react-pdf las abre por ruta al registrarlas.
       "./src/lib/informes/fuentes/**",
     ],
