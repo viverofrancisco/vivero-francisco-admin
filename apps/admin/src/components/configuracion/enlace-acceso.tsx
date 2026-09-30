@@ -86,8 +86,10 @@ export function EnlaceAcceso({
   }
 
   return (
-    // `min-w-0`: el diálogo es una grilla, y sin esto el enlace —una sola
-    // palabra de cien caracteres— la estiraba más allá del borde.
+    // El enlace es una sola palabra de cien caracteres, y el diálogo es una
+    // grilla que se mide por su contenido: con `truncate` su ancho mínimo
+    // seguía siendo el enlace entero y lo estiraba más allá del borde.
+    // `break-all` lo deja partirse en cualquier letra, así que no empuja nada.
     <div className="min-w-0 space-y-4">
       <p className="text-sm text-muted-foreground">
         Pásale este enlace para que elija su contraseña.
@@ -100,7 +102,7 @@ export function EnlaceAcceso({
         onClick={copiar}
         className="block w-full min-w-0 overflow-hidden rounded-xl border bg-muted/50 px-3.5 py-3 text-left transition-colors hover:bg-muted"
       >
-        <span className="block truncate font-mono text-xs text-foreground">
+        <span className="line-clamp-2 font-mono text-xs break-all text-foreground">
           {datos.enlace}
         </span>
         <span className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
