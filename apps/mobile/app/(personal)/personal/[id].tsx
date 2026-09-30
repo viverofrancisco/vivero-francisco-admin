@@ -9,9 +9,10 @@ import { DialogoConfirmar } from "@/components/ui/DialogoConfirmar";
 import { AvisoDeCarga } from "@/components/ui/AvisoDeCarga";
 import { SelectorDeGrupos } from "@/components/personal/SelectorDeGrupos";
 import { HojaDeEnlace } from "@/components/personal/HojaDeEnlace";
+import { PastillaDeAcceso } from "@/components/personal/PastillaDeAcceso";
 import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
-import type { EnlaceGenerado, EstadoAcceso, PersonalFicha } from "@/lib/types";
+import type { EnlaceGenerado, PersonalFicha } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
 const TIPO_LABEL: Record<string, string> = {
@@ -19,13 +20,6 @@ const TIPO_LABEL: Record<string, string> = {
   CHOFER: "Chofer",
   SUPERVISOR: "Supervisor",
   MECANICO: "Mecánico",
-};
-
-const ACCESO_LABEL: Record<EstadoAcceso, string> = {
-  ACTIVO: "Activo",
-  PENDIENTE: "Falta que elija su contraseña",
-  REVOCADO: "Revocado",
-  SIN_CUENTA: "Sin cuenta",
 };
 
 /**
@@ -265,44 +259,9 @@ export default function PersonalFichaScreen() {
   );
 }
 
-/** Cómo está su acceso, en una pastilla: verde entra, ámbar falta, rojo cortado. */
-function PastillaDeAcceso({ acceso }: { acceso: EstadoAcceso }) {
-  const estilo =
-    acceso === "ACTIVO"
-      ? styles.pastillaVerde
-      : acceso === "PENDIENTE"
-        ? styles.pastillaAmbar
-        : acceso === "REVOCADO"
-          ? styles.pastillaRoja
-          : styles.pastillaGris;
-  const texto =
-    acceso === "ACTIVO"
-      ? styles.pastillaTextoVerde
-      : acceso === "PENDIENTE"
-        ? styles.pastillaTextoAmbar
-        : acceso === "REVOCADO"
-          ? styles.pastillaTextoRoja
-          : styles.pastillaTextoGris;
-  return (
-    <View style={[styles.pastilla, estilo]}>
-      <Text style={[styles.pastillaTexto, texto]}>{ACCESO_LABEL[acceso]}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: "#fff" },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
   aviso: { color: tema.rojo, textAlign: "center", paddingVertical: 8 },
   ocupado: { paddingVertical: 8 },
-  pastilla: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
-  pastillaVerde: { backgroundColor: tema.verde50 },
-  pastillaAmbar: { backgroundColor: tema.ambar50 },
-  pastillaRoja: { backgroundColor: tema.rojo50 },
-  pastillaGris: { backgroundColor: tema.linea2 },
-  pastillaTexto: { fontSize: 12, fontWeight: "600" },
-  pastillaTextoVerde: { color: tema.verde700 },
-  pastillaTextoAmbar: { color: tema.ambarTexto },
-  pastillaTextoRoja: { color: tema.rojo },
-  pastillaTextoGris: { color: tema.texto2 },
 });

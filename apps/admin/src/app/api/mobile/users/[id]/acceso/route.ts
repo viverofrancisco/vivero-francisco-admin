@@ -1,31 +1,27 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
-import { getCurrentUser, viewerFromUser } from "@/lib/auth-helpers";
+import { requireMobileRole, isMobileUser } from "@/lib/mobile/auth";
+import { serviceErrorResponse, viewerFromMobileUser } from "@/lib/mobile/route-helpers";
 import { cambiarAccesoUsuario } from "@/lib/services/usuario.service";
-import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 const bodySchema = z.object({ revocado: z.boolean() });
 
-/**
- * Corta o devuelve el acceso de un usuario. No borra la cuenta: su nombre
- * sigue firmando lo que hizo. Ver `cambiarAccesoUsuario`.
- */
+/** Gemela de `POST /api/users/[id]/acceso`. */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const actor = await getCurrentUser();
-  if (!actor || actor.role !== "ADMIN") {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
+  const u = await requireMobileRole(request, "ADMIN");
+  if (!isMobileUser(u)) return u;
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
   const { id } = await params;
   try {
-    await cambiarAccesoUsuario(viewerFromUser(actor), id, parsed.data.revocado);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json(
+      await cambiarAccesoUsuario(viewerFromMobileUser(u), id, parsed.data.revocado)
+    );
   } catch (error) {
     return serviceErrorResponse(error);
   }

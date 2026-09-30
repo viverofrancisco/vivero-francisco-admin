@@ -82,6 +82,12 @@ export default function MasMenuScreen() {
       visible: isAdminOrStaff,
     },
     {
+      label: "Usuarios",
+      icon: "person-add-outline",
+      href: "/(personal)/usuarios",
+      visible: isAdmin,
+    },
+    {
       label: "Cuenta",
       icon: "settings-outline",
       href: "/(personal)/configuracion",

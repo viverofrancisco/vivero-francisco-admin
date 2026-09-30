@@ -488,6 +488,20 @@ export interface EnlaceGenerado {
   correoIntentado: boolean;
 }
 
+/** Una cuenta del equipo (ADMIN o STAFF): la pantalla de Usuarios. */
+export interface UsuarioDelEquipo {
+  id: string;
+  name: string | null;
+  apellido: string | null;
+  email: string | null;
+  usuario: string | null;
+  role: string;
+  createdAt: string;
+  acceso: EstadoAcceso;
+  /** Tiene un enlace vivo sin usar: se le generó y falta que lo abra. */
+  enlacePendiente: boolean;
+}
+
 export interface PersonalListResponse {
   items: PersonalOption[];
 }

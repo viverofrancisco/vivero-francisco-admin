@@ -181,6 +181,17 @@ export default function PersonalTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="usuarios"
+        options={{
+          title: "Usuarios",
+          href: isAdmin ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-add-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="grupos"
         options={{
           title: "Grupos",

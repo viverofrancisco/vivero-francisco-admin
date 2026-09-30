@@ -4,6 +4,7 @@ import { Text } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { HojaInferior } from "@/components/ui/HojaInferior";
 import { PressableScale } from "@/components/ui/PressableScale";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import type { EnlaceGenerado } from "@/lib/types";
 import { tema } from "@/lib/tema";
 
@@ -18,13 +19,43 @@ export function HojaDeEnlace({
   nombre,
   tipo,
   onCerrar,
+  correo,
+  userId,
 }: {
   datos: EnlaceGenerado | null;
   nombre: string;
   tipo: "invitacion" | "restablecer";
   onCerrar: () => void;
+  /**
+   * Con los dos, aparece *Enviar por correo*: manda **este** enlace —no emite
+   * otro, que anularía el que ya se copió— a la casilla de la cuenta. El
+   * personal de campo no tiene correo, así que ahí no se pasa.
+   */
+  correo?: string | null;
+  userId?: string;
 }) {
   const [copiado, setCopiado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  /** Qué pasó al mandarlo, atado a su enlace: uno nuevo empieza sin mandar. */
+  const [envioDe, setEnvioDe] = useState<{ enlace: string; texto: string } | null>(null);
+  const envio = envioDe && envioDe.enlace === datos?.enlace ? envioDe.texto : null;
+  const setEnvio = (texto: string) => datos && setEnvioDe({ enlace: datos.enlace, texto });
+
+  async function enviarPorCorreo() {
+    if (!datos || !userId) return;
+    setEnviando(true);
+    try {
+      const r = await apiRequest<{ correoEnviado: boolean }>(
+        `/api/mobile/users/${userId}/enlace-acceso/enviar`,
+        { method: "POST", body: { enlace: datos.enlace, tipo } }
+      );
+      setEnvio(r.correoEnviado ? `Enviado a ${correo}.` : "No pudimos enviar el correo.");
+    } catch (e) {
+      setEnvio(mensajeDeError(e, "No pudimos enviar el correo"));
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   async function copiar() {
     if (!datos) return;
@@ -72,6 +103,22 @@ export function HojaDeEnlace({
           <Text style={[styles.botonTexto, styles.botonTextoPrimario]}>Compartir</Text>
         </PressableScale>
       </View>
+      {correo && userId ? (
+        envio ? (
+          <Text style={styles.envio}>{envio}</Text>
+        ) : (
+          <PressableScale
+            onPress={enviarPorCorreo}
+            disabled={enviando}
+            style={[styles.boton, styles.botonCorreo]}
+          >
+            <Ionicons name="mail-outline" size={18} color={tema.texto} />
+            <Text style={styles.botonTexto}>
+              {enviando ? "Enviando…" : "Enviar por correo"}
+            </Text>
+          </PressableScale>
+        )
+      ) : null}
     </HojaInferior>
   );
 }
@@ -99,6 +146,8 @@ const styles = StyleSheet.create({
     backgroundColor: tema.lienzo,
   },
   botonPrimario: { backgroundColor: tema.verde },
+  botonCorreo: { marginTop: 10, marginBottom: 4 },
+  envio: { fontSize: 14, color: tema.texto2, textAlign: "center", paddingTop: 12, paddingBottom: 4 },
   botonTexto: { fontSize: 15, fontWeight: "600", color: tema.texto },
   botonTextoPrimario: { color: "#fff" },
 });

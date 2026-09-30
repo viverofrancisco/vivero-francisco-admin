@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth-helpers";
 import { z } from "zod/v4";
+import { getCurrentUser, viewerFromUser } from "@/lib/auth-helpers";
+import {
+  actualizarUsuarioDelEquipo,
+  getUsuarioDelEquipo,
+} from "@/lib/services/usuario.service";
+import { serviceErrorResponse } from "@/lib/mobile/route-helpers";
 
 // Sin `password`: nadie le pone la contraseña a nadie. Para eso está
 // `POST /api/users/[id]/enlace-acceso`, que emite un enlace de un solo uso y
-// deja que la elija su dueño. Mientras esto lo aceptaba, la regla que el resto
-// del portal sostiene tenía una puerta de servicio abierta.
+// deja que la elija su dueño.
 const updateSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").optional(),
   apellido: z.string().optional(),
-  email: z.email("Email inválido").optional(),
+  email: z.email("Correo inválido").optional(),
 });
 
 export async function GET(
@@ -21,25 +24,12 @@ export async function GET(
   if (!user || user.role !== "ADMIN") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
-
   const { id } = await params;
-  const found = await prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-      apellido: true,
-      email: true,
-      role: true,
-      createdAt: true,
-    },
-  });
-
-  if (!found) {
-    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+  try {
+    return NextResponse.json(await getUsuarioDelEquipo(viewerFromUser(user), id));
+  } catch (error) {
+    return serviceErrorResponse(error);
   }
-
-  return NextResponse.json(found);
 }
 
 export async function PUT(
@@ -50,58 +40,19 @@ export async function PUT(
   if (!user || user.role !== "ADMIN") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
-
-  const { id } = await params;
-  const body = await request.json();
-  const result = updateSchema.safeParse(body);
-
+  const result = updateSchema.safeParse(await request.json().catch(() => ({})));
   if (!result.success) {
     return NextResponse.json(
-      { error: "Datos inválidos", details: result.error.issues },
+      { error: result.error.issues[0]?.message ?? "Datos inválidos" },
       { status: 400 }
     );
   }
-
-  const data = result.data;
-
-  const existing = await prisma.user.findUnique({ where: { id } });
-  if (!existing) {
-    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+  const { id } = await params;
+  try {
+    return NextResponse.json(
+      await actualizarUsuarioDelEquipo(viewerFromUser(user), id, result.data)
+    );
+  } catch (error) {
+    return serviceErrorResponse(error);
   }
-
-  if (data.email && data.email !== existing.email) {
-    const emailTaken = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
-    if (emailTaken) {
-      return NextResponse.json(
-        { error: "Ya existe un usuario con ese email" },
-        { status: 409 }
-      );
-    }
-  }
-
-  const updated = await prisma.$transaction(async (tx) => {
-    const updateData: Record<string, unknown> = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.apellido !== undefined) updateData.apellido = data.apellido || null;
-    if (data.email !== undefined) updateData.email = data.email;
-
-    const updatedUser = await tx.user.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        apellido: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
-    });
-
-    return updatedUser;
-  });
-
-  return NextResponse.json(updated);
 }

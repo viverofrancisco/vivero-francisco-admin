@@ -161,7 +161,7 @@ export function usuarioSugerido(nombre: string, apellido: string | null): string
  * rechazaría al segundo justo al guardar su ficha, donde nadie está pensando en
  * usuarios. El número se agrega acá y después se puede cambiar a mano.
  */
-async function usuarioLibre(
+export async function usuarioLibre(
   tx: Prisma.TransactionClient,
   nombre: string,
   apellido: string | null
