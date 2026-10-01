@@ -221,10 +221,9 @@ mitades el sistema entrega el enlace a la app sin preguntar.
   Apple no lleva extensión y saldría como binario: `apple-app-site-association`
   (el `teamId.bundleId` y la ruta) y `assetlinks.json` (el paquete y los
   **SHA-256 de los certificados de firma**). La identidad está en
-  `src/lib/enlaces-a-la-app.ts`. **Cuando la app esté en Google Play hay que
-  agregar ahí la huella de Play App Signing** (Play refirma el binario; la
-  huella está en la consola, *Integridad de la app*), o en las instalaciones
-  desde la tienda el enlace seguirá abriendo en el navegador. Solo se reclama
+  `src/lib/enlaces-a-la-app.ts`. Ahí están las dos huellas: la del keystore de EAS (los apk de prueba) y la
+  de **Play App Signing** (lo que se instala desde Play, que Play refirma con
+  su clave; en la consola está en *Protegido con Play › Firma de apps*). Solo se reclama
   `/establecer-contrasena`: reclamar el dominio entero mandaría a la app a un
   administrador que toque cualquier enlace del portal desde el teléfono.
 - **La mitad de la app** es `ios.associatedDomains` e `android.intentFilters`

@@ -24,13 +24,17 @@ export const APP_ANDROID_PACKAGE = "com.viverofrancisco.app";
  *
  * El primero es el keystore que EAS generó y guarda (sale de
  * `apksigner verify --print-certs` sobre cualquier build de EAS, o de
- * `eas credentials -p android`). **Cuando la app esté en Google Play hay que
- * agregar el de Play App Signing** —Play refirma el binario con su propia
- * clave, y es esa firma la que ve el teléfono—: está en la consola de Play,
- * *Configuración › Integridad de la app*. Sin él, los App Links no se
- * verifican en las instalaciones desde la tienda y el enlace abre en el
+ * `eas credentials -p android`); el segundo es el de **Play App Signing**
+ * —Play refirma el binario con su propia clave, y es esa firma la que ve el
+ * teléfono instalado desde la tienda—, en la consola de Play, *Protegido con
+ * Play › Protección de Play Store › Firma de apps*. Sin él, los App Links no
+ * se verifican en las instalaciones desde Play y el enlace abre en el
  * navegador.
  */
 export const APP_ANDROID_SHA256 = [
+  // El keystore de EAS: los apk de prueba que se instalan a mano.
   "66:48:66:69:A6:32:CD:B5:E4:56:09:21:D1:A8:62:27:E7:2C:AD:70:3C:E6:45:62:25:CC:56:5A:3B:D8:9B:62",
+  // Play App Signing: lo que se instala desde Google Play (Play refirma el
+  // .aab con esta clave). Consola de Play › Protegido con Play › Firma de apps.
+  "3E:50:B5:AC:35:D1:3C:9C:39:9D:C0:2A:9D:FD:94:3F:A6:DF:2E:6A:17:D0:05:2A:78:A9:91:12:3C:E2:8F:69",
 ];

@@ -205,11 +205,15 @@ mire. Ya pasó dos veces.
    se puede dar una vez que la app existe.
 4. Restringir `GOOGLE_MAPS_ANDROID_KEY` al paquete + SHA-1 del keystore de
    EAS **y** al SHA-1 de Play App Signing (Play refirma el binario).
-   Por el mismo motivo, agregar el **SHA-256** de Play App Signing a
-   `APP_ANDROID_SHA256` en `apps/admin/src/lib/enlaces-a-la-app.ts`, que es
-   lo que hace que el enlace de acceso abra en la app instalada desde la
-   tienda (ver el doc de contraseñas, *El enlace abre en la app*). La huella
-   del keystore de EAS ya está: sale de `apksigner verify --print-certs`
-   sobre cualquier build de EAS.
+   Por el mismo motivo, el **SHA-256** de Play App Signing está en
+   `APP_ANDROID_SHA256` (`apps/admin/src/lib/enlaces-a-la-app.ts`), junto al
+   del keystore de EAS: es lo que hace que el enlace de acceso abra en la
+   app instalada desde la tienda. Las huellas de Play están en la consola,
+   *Protegido con Play › Protección de Play Store › Firma de apps* (se mudó
+   de *Integridad de la app* en 2026). Play App Signing:
+   SHA-1 `AC:3C:BF:B5:AD:65:64:54:5B:7C:EA:12:A3:7C:B9:B6:64:DF:A9:82`,
+   SHA-256 `3E:50:B5:AC:…:8F:69`. El keystore de EAS: SHA-1
+   `CF:E5:2D:80:74:1C:DA:56:EB:E4:B9:10:C7:D9:F9:BE:C6:5A:ED:8E`, SHA-256
+   `66:48:66:69:…:9B:62`.
 5. La ficha de Play pide lo mismo que Apple más el formulario de *Data safety*
    y, para una app con login, credenciales de prueba en *App content*.
