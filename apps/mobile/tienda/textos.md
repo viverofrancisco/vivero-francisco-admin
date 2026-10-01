@@ -1,8 +1,21 @@
 # Textos de las fichas de las tiendas
 
+Esta primera versión es **solo para el equipo** (administradores, staff y
+personal de campo); el acceso de los clientes llega después, y entonces se
+vuelve a agregar su parte a la descripción.
+
 Para copiar y pegar en App Store Connect y en Google Play Console. Los
 límites de caracteres de cada campo van entre paréntesis; todos los textos
 de acá entran.
+
+## Capturas
+
+- **App Store**: `capturas/ios-6.5/` (1284×2778, el espacio de 6.5" que pide
+  App Store Connect; las de `capturas/ios/` son de 6.9", 1320×2868, por si
+  lo pide después).
+- **Google Play**: `capturas/android/` (1080×2160).
+
+Las cinco de iPhone sirven todas: ninguna muestra la parte del cliente.
 
 ## Comunes
 
@@ -29,7 +42,7 @@ de acá entran.
 
 **Descripción** (4000):
 
-> Vivero Francisco es la app de trabajo de Vivero Francisco para su equipo y sus clientes. Reúne en el teléfono todo lo que pasa en cada visita de mantenimiento de jardines.
+> Vivero Francisco es la app de trabajo del equipo de Vivero Francisco. Reúne en el teléfono todo lo que pasa en cada visita de mantenimiento de jardines.
 >
 > PARA EL PERSONAL DE CAMPO
 > • Las visitas del día y de la semana, con la dirección, el mapa y cómo llegar.
@@ -45,11 +58,7 @@ de acá entran.
 > • Órdenes, facturación electrónica y cobros.
 > • Personal, grupos, usuarios y accesos.
 >
-> PARA LOS CLIENTES
-> • Ver las visitas programadas y realizadas en sus propiedades.
-> • Calificar cada visita terminada.
->
-> Las cuentas las crea un administrador del vivero; cada persona elige su contraseña con un enlace de un solo uso.
+> Es una app interna: las cuentas las crea un administrador del vivero, y cada persona elige su contraseña con un enlace de un solo uso.
 
 **Novedades de esta versión** (4000):
 
@@ -61,7 +70,7 @@ de acá entran.
 - Contraseña: *(la que elegiste)*
 - Notas:
 
-> Vivero Francisco es la aplicación interna de un vivero y empresa de mantenimiento de jardines en Guayaquil, Ecuador. La usan su personal (administradores, staff y jardineros) y sus clientes. Las cuentas no se crean desde la app: las crea un administrador y cada persona elige su contraseña con un enlace. La cuenta de prueba tiene rol Staff y acceso a clientes, visitas, informes, órdenes y chats con datos de demostración. La ubicación se usa solo mientras la app está en uso, al marcar la entrada o la salida de una visita.
+> Vivero Francisco es la aplicación interna de un vivero y empresa de mantenimiento de jardines en Guayaquil, Ecuador. La usa su equipo: administradores, staff y jardineros. Las cuentas no se crean desde la app: las crea un administrador y cada persona elige su contraseña con un enlace. La cuenta de prueba tiene rol Staff y acceso a clientes, visitas, informes, órdenes y chats con datos de demostración. La ubicación se usa solo mientras la app está en uso, al marcar la entrada o la salida de una visita.
 
 ## Google Play (Android)
 
