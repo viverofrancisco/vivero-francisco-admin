@@ -30,6 +30,7 @@ const SECCIONES = [
   { id: "con-quien-se-comparten", titulo: "Con quién se comparten" },
   { id: "cuanto-tiempo-los-guardamos", titulo: "Cuánto tiempo los guardamos" },
   { id: "tus-derechos", titulo: "Tus derechos" },
+  { id: "eliminar-tu-cuenta", titulo: "Eliminar tu cuenta" },
   { id: "seguridad", titulo: "Seguridad" },
   { id: "cambios-a-esta-politica", titulo: "Cambios a esta política" },
 ];
@@ -219,6 +220,44 @@ export default async function PrivacidadPage() {
             </a>{" "}
             desde el correo o el teléfono registrados, o pídeselo a un
             administrador del vivero. Respondemos en un plazo máximo de 15 días.
+          </p>
+        </Seccion>
+
+        {/* Lo que pide Google Play para la "URL de eliminación de cuenta": el
+            nombre de la app, los pasos, qué se borra y qué se conserva. */}
+        <Seccion id="eliminar-tu-cuenta" titulo="Eliminar tu cuenta">
+          <p>
+            Puedes pedir que se elimine tu cuenta de la app{" "}
+            <strong>Vivero Francisco</strong> y los datos asociados en cualquier
+            momento:
+          </p>
+          <ol className="list-decimal space-y-1 pl-5">
+            <li>
+              Escribe a{" "}
+              <a className="font-medium text-green-700 underline" href={`mailto:${CONTACTO}?subject=Eliminar%20mi%20cuenta`}>
+                {CONTACTO}
+              </a>{" "}
+              con el asunto “Eliminar mi cuenta”, desde el correo registrado, o
+              pídeselo a un administrador del vivero.
+            </li>
+            <li>Indica tu nombre y el usuario, correo o teléfono con el que entras.</li>
+            <li>
+              Confirmamos que eres tú y eliminamos la cuenta en un plazo máximo de
+              15 días; te avisamos cuando esté hecho.
+            </li>
+          </ol>
+          <p>
+            <strong>Se elimina:</strong> la cuenta y su acceso, la contraseña,
+            el correo y el teléfono, el identificador del dispositivo y el token
+            de notificaciones, y las fotos y mensajes que no formen parte de un
+            registro de trabajo.
+          </p>
+          <p>
+            <strong>Se conserva</strong>, por obligación legal o porque forma
+            parte de documentos ya entregados: las facturas emitidas (el tiempo
+            que exige el SRI, hasta 7 años) y, en los registros de visitas e
+            informes ya entregados a los clientes, el nombre de quien hizo el
+            trabajo, con sus horarios y la ubicación de sus marcas.
           </p>
         </Seccion>
 
