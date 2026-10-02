@@ -8,6 +8,7 @@ import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { registerForPushNotifications } from "@/lib/push";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
+import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -29,6 +30,8 @@ export default function LoginScreen() {
           authenticated: false,
         }
       );
+      // Antes de la sesión: lo guardado de otra cuenta no se pinta ni un instante.
+      await prepararDatosPara(res.user.id);
       await setSession(res, res.user);
       registerForPushNotifications().catch(() => {});
       // Oficina y jardineros van al mismo lugar: la lista de visitas. Lo que

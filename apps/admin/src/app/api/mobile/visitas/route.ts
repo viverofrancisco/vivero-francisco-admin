@@ -66,10 +66,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN"
-  );
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const parsed = createVisitasSchema.safeParse(
@@ -89,6 +86,9 @@ export async function POST(request: Request) {
         clienteId: parsed.data.clienteId,
         propiedadId: parsed.data.propiedadId,
         tareasObligatoriasIds: parsed.data.tareasObligatoriasIds,
+        // El asistente de la app la manda y se perdía acá: la visita
+        // agendada desde un plan quedaba sin plan.
+        suscripcionId: parsed.data.suscripcionId ?? null,
         fechas: parsed.data.fechas.map((f) => new Date(f)),
         grupoId: parsed.data.grupoId ?? null,
         notas: parsed.data.notas ?? null,

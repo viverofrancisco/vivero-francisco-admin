@@ -37,10 +37,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN"
-  );
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const parsed = updateClienteSchema.safeParse(

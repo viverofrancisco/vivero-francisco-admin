@@ -141,7 +141,6 @@ export default function CrearVisitaScreen() {
   const selectedServicios = catalogoDisponible.filter((sv) =>
     selectedProductoIds.includes(sv.id)
   );
-  const totalServicios = selectedServicios.length;
 
   const resumenTareasElegidos = selectedServicios.map((sv) => sv.nombre);
 
@@ -157,7 +156,10 @@ export default function CrearVisitaScreen() {
   function canContinue(): boolean {
     if (step === 0) return !!selectedClienteId;
     if (step === 1) return !!selectedPropiedadId;
-    if (step === 2) return totalServicios > 0;
+    // Las tareas obligatorias son opcionales, como en el portal: una visita
+    // sin ninguna exigida es la de todos los días, y lo que se hizo lo anota
+    // cada uno en su parte.
+    if (step === 2) return true;
     if (step === 3) return fechas.length > 0;
     if (step === 4) return true; // personal optional
     return true;

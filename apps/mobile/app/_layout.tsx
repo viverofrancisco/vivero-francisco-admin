@@ -10,6 +10,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { apiRequest } from "@/lib/api";
 import { resolverServidor } from "@/lib/config";
 import { precargarBranding } from "@/lib/branding";
+import { prepararDatosPara } from "@/lib/datos-de-la-cuenta";
 import type { MeResponse } from "@vivero/shared";
 import { tema } from "@/lib/tema";
 
@@ -61,6 +62,8 @@ function useAuthGate() {
       if (user || !refreshToken) return;
       try {
         const me = await apiRequest<MeResponse>("/api/mobile/auth/me");
+        if (cancelled) return;
+        await prepararDatosPara(me.id);
         if (cancelled) return;
         setUser({
           id: me.id,

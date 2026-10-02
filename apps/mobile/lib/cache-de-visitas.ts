@@ -35,6 +35,11 @@ interface Indice {
 
 let indiceEnMemoria: Indice | null = null;
 
+/** Al cambiar de cuenta: el índice en memoria es de la anterior. */
+export function olvidarIndiceEnMemoria() {
+  indiceEnMemoria = null;
+}
+
 async function leerIndice(): Promise<Indice> {
   if (indiceEnMemoria) return indiceEnMemoria;
   try {

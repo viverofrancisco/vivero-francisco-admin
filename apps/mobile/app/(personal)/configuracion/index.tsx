@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { ETIQUETA_DE_ROL } from "@vivero/shared";
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,6 +14,7 @@ import { PressableScale } from "@/components/ui/PressableScale";
 import { useAuthStore } from "@/lib/auth-store";
 import { tema } from "@/lib/tema";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
+import { pendientesSinEnviar } from "@/lib/datos-de-la-cuenta";
 
 const ROLE_LABEL: Record<string, string> = ETIQUETA_DE_ROL;
 
@@ -61,6 +62,27 @@ export default function PersonalConfiguracionScreen() {
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const clear = useAuthStore((s) => s.clear);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  /**
+   * Con algo esperando señal, se avisa antes: si después entra otra cuenta en
+   * este teléfono, se descarta (ver `datos-de-la-cuenta.ts`). Volver a entrar
+   * con la misma lo conserva.
+   */
+  function pedirSalir() {
+    const n = pendientesSinEnviar();
+    if (n === 0) {
+      void logout();
+      return;
+    }
+    Alert.alert(
+      "Tienes cosas sin enviar",
+      `${n === 1 ? "Hay 1 envío" : `Hay ${n} envíos`} esperando señal (mensajes, marcas o fotos). Si cierras sesión y entra otra cuenta en este teléfono, se pierden.`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Cerrar sesión", style: "destructive", onPress: () => void logout() },
+      ]
+    );
+  }
 
   async function logout() {
     setLoggingOut(true);
@@ -153,7 +175,7 @@ export default function PersonalConfiguracionScreen() {
           más fuerte que todo lo demás de la pantalla. Texto rojo alcanza. */}
       <Button
         mode="text"
-        onPress={logout}
+        onPress={pedirSalir}
         loading={loggingOut}
         disabled={loggingOut}
         textColor={tema.rojo}

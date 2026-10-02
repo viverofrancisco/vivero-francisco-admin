@@ -41,10 +41,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const userOrResponse = await requireMobileRole(
-    request,
-    "ADMIN"
-  );
+  const userOrResponse = await requireMobileRole(request, "ADMIN", "STAFF");
   if (!isMobileUser(userOrResponse)) return userOrResponse;
 
   const parsed = createClienteSchema.safeParse(
