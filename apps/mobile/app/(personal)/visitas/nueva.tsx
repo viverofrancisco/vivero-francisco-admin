@@ -42,7 +42,7 @@ interface TareaDelCatalogo {
 }
 // La propiedad es un paso propio: iba al pie de la lista de clientes, y con
 // cuarenta clientes quedaba fuera de la pantalla, donde nadie la veía.
-const STEP_LABELS = ["Cliente", "Propiedad", "Servicios", "Fechas", "Personal", "Revisar"];
+const STEP_LABELS = ["Cliente", "Propiedad", "Tareas", "Fechas", "Personal", "Revisar"];
 
 export default function CrearVisitaScreen() {
   const router = useRouter();
@@ -957,10 +957,8 @@ function RevisarStep({
         />
         <SummaryRow label="Propiedad" value={propiedad ?? "—"} />
         <SummaryRow
-          label={servicio.length === 1 ? "Servicio" : "Servicios"}
-          value={
-            servicio.length > 0 ? servicio.join("\n") : "—"
-          }
+          label="Tareas obligatorias"
+          value={servicio.length > 0 ? servicio.join("\n") : "Ninguna"}
         />
         <SummaryRow
           label="Fechas"
