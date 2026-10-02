@@ -101,6 +101,12 @@ export const informePreviewSchema = informeGenerateSchema.extend({
   firmantes: z.array(informeFirmanteSchema).max(3).default([]),
   /** Fotos achicadas y cacheadas: para la previa que se refresca sola. */
   borrador: z.boolean().default(false),
+  /**
+   * Sin secciones también: el encabezado ya es lo primero del documento, y la
+   * previa en blanco hasta agregar la primera escondía cómo quedaba. Generar
+   * sí sigue exigiendo una.
+   */
+  secciones: z.array(informeSeccionSchema).default([]),
 });
 
 /** Cuerpo de POST /informes/uploads — pide URLs prefirmadas para las imágenes. */

@@ -821,13 +821,22 @@ async function armarDatosDelInforme(
    * archivo— así que lo que se ve es lo que va a salir; lo único que cambia es
    * la resolución, que en pantalla no se nota y en tiempo es todo.
    */
-  { borrador }: { borrador: boolean }
+  {
+    borrador,
+    vistaPrevia = false,
+  }: {
+    borrador: boolean;
+    /** Solo mirar, sin guardar: ahí no hacen falta secciones. */
+    vistaPrevia?: boolean;
+  }
 ) {
   ensureInformes(viewer);
 
   // Sin visitas se puede: un informe es un documento, y hay documentos que no
-  // salen de una visita. Lo que sí necesita es contenido, que es lo de abajo.
-  if (payload.secciones.length === 0) {
+  // salen de una visita. Lo que sí necesita es contenido para **guardarse**;
+  // la vista previa se dibuja igual sin secciones, porque el encabezado ya es
+  // lo primero que se ve.
+  if (!vistaPrevia && payload.secciones.length === 0) {
     throw new ValidationError("Agrega al menos una sección al informe.");
   }
   const firmantesNormalizados = normalizarFirmantes(payload.firmantes);
@@ -1057,6 +1066,7 @@ export async function previsualizarInforme(
   opciones: { borrador?: boolean } = {}
 ): Promise<Buffer> {
   const { renderData } = await armarDatosDelInforme(viewer, payload, {
+    vistaPrevia: true,
     borrador: opciones.borrador ?? false,
   });
   return renderInformePDF(renderData);

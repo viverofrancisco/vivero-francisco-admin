@@ -787,13 +787,11 @@ export function InformeWizard({
     };
   }
 
-  // Solo en el paso de las secciones, y solo si hay algo que dibujar: sin
-  // secciones el servidor rechaza, y pedirlo para que falle es ruido.
+  // Solo en el paso de las secciones, y también sin secciones: el encabezado
+  // ya se ve en el PDF, y la previa en blanco hasta agregar la primera
+  // escondía cómo quedaba.
   const cuerpoVivo = cuerpoBase();
-  const enVivo = useVistaPreviaEnVivo(
-    cuerpoVivo && cuerpoVivo.secciones.length > 0 ? cuerpoVivo : null,
-    step === 2,
-  );
+  const enVivo = useVistaPreviaEnVivo(cuerpoVivo, step === 2);
 
   /**
    * Arma la previa y la muestra a pantalla completa.
@@ -806,9 +804,6 @@ export function InformeWizard({
   async function vistaPrevia() {
     const cuerpo = cuerpoBase();
     if (!cuerpo) return toast.error("Selecciona un cliente");
-    if (cuerpo.secciones.length === 0) {
-      return toast.error("Agrega al menos una sección");
-    }
     const url = await armarVistaPrevia(cuerpo, { borrador: true });
     if (url) setAPantallaCompleta(url);
   }
@@ -2175,8 +2170,8 @@ function Step3Secciones({
   /**
    * La sección que se está editando. La lista muestra solo renglones —número,
    * título, cuántas fotos— y la sección abierta se edita aparte, con el
-   * editor alto y sus fotos: en el panel de la vista previa desde `xl`, que
-   * vuelve al cerrar, y en el lugar de la lista en pantallas angostas. Con
+   * editor alto y sus fotos, en el lugar de la lista; desde `xl` la vista
+   * previa sigue al lado mientras tanto. Con
    * todo desplegado en la columna, el encabezado más una sección no dejaban
    * ver la segunda.
    */
@@ -2703,8 +2698,8 @@ function Step3Secciones({
   /**
    * La sección abierta: su cabecera —cuál es, la anterior y la siguiente,
    * eliminar, y *Listo*— y debajo el cuerpo. Los cambios se aplican al
-   * escribir; *Listo* solo cierra, y con eso vuelve la vista previa, que es
-   * donde se ve lo que se acaba de tocar.
+   * escribir y la vista previa de al lado se actualiza sola; *Listo* solo
+   * cierra y vuelve a la lista.
    */
   const panelDeSeccion = (s: SeccionDraft) => (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -2730,17 +2725,19 @@ function Step3Secciones({
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
-        {/* La previa a pantalla completa, porque el editor está tapando la
-            del panel. */}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onVistaPrevia}
-          disabled={previsualizando}
-          title={previsualizando ? "Armando la vista previa…" : "Ver cómo queda"}
-        >
-          <Maximize2 className="h-4 w-4" />
-        </Button>
+        {/* La previa a pantalla completa, solo donde no hay panel de al
+            lado: con pantalla ancha ya está a la vista. */}
+        {!conPanel ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onVistaPrevia}
+            disabled={previsualizando}
+            title={previsualizando ? "Armando la vista previa…" : "Ver cómo queda"}
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+        ) : null}
         <Button
           variant="ghost"
           size="icon-sm"
@@ -2819,15 +2816,17 @@ function Step3Secciones({
         <span className="min-w-0 flex-1 truncate text-sm font-semibold">
           Encabezado
         </span>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onVistaPrevia}
-          disabled={previsualizando}
-          title={previsualizando ? "Armando la vista previa…" : "Ver cómo queda"}
-        >
-          <Maximize2 className="h-4 w-4" />
-        </Button>
+        {!conPanel ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onVistaPrevia}
+            disabled={previsualizando}
+            title={previsualizando ? "Armando la vista previa…" : "Ver cómo queda"}
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+        ) : null}
         <Button size="sm" className="ml-1" onClick={() => setAbiertaId(null)}>
           Listo
         </Button>
@@ -2877,7 +2876,7 @@ function Step3Secciones({
                 <div>
                   <p className="text-sm font-medium">Aún no hay secciones</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Empieza agregando una desde el catálogo o crea una custom.
+                    Agrega una desde el catálogo o crea una personalizada.
                   </p>
                 </div>
               </div>
@@ -2976,17 +2975,25 @@ function Step3Secciones({
 
   return (
     <>
-      {/* La columna: el encabezado, la lista y —sin panel de al lado— la
-          sección abierta en lugar de la lista. */}
+      {/* La columna: el encabezado y la lista, o la sección abierta en lugar
+          de la lista. El editor se abría en el panel de la derecha, tapando
+          la vista previa justo mientras se escribía lo que ella muestra;
+          ahora toma el lugar de la lista y la previa queda a la vista. */}
       <div className="flex min-w-0 flex-1 flex-col gap-4 px-4 py-6 md:px-8">
-        {hayAlgoAbierto && !conPanel ? (
+        {hayAlgoAbierto ? (
           <>
-            <div className="flex flex-none items-center">
-              <Button variant="ghost" size="sm" onClick={() => setAbiertaId(null)}>
-                <ChevronLeft className="mr-1 h-4 w-4" /> Volver a la lista
-              </Button>
+            {/* Con pantalla ancha la cabecera del editor ya tiene *Listo*;
+                abajo de eso, la flecha es lo que se busca para volver. */}
+            {!conPanel ? (
+              <div className="flex flex-none items-center">
+                <Button variant="ghost" size="sm" onClick={() => setAbiertaId(null)}>
+                  <ChevronLeft className="mr-1 h-4 w-4" /> Volver a la lista
+                </Button>
+              </div>
+            ) : null}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card">
+              {abierta ? panelDeSeccion(abierta) : panelDeEncabezado}
             </div>
-            {abierta ? panelDeSeccion(abierta) : panelDeEncabezado}
           </>
         ) : (
           <>
@@ -3055,21 +3062,15 @@ function Step3Secciones({
 
       {/* Al lado y no debajo: el punto es ver el efecto de lo que se toca sin
           dejar de mirar lo que se toca. Desde `xl` porque abajo de eso las
-          dos columnas dejan a las dos sin ancho. Mientras hay una sección
-          abierta, el panel es su editor; al cerrarla vuelve la previa. */}
+          dos columnas dejan a las dos sin ancho. Siempre la previa, también
+          mientras se edita. */}
       <aside className="hidden w-[440px] flex-none flex-col border-l bg-muted/20 xl:flex">
-        {abierta && conPanel ? (
-          panelDeSeccion(abierta)
-        ) : encabezadoAbierto && conPanel ? (
-          panelDeEncabezado
-        ) : (
-          <PanelEnVivo
-            url={panel.url}
-            actualizando={panel.actualizando}
-            error={panel.error}
-            onExpandir={panel.onExpandir}
-          />
-        )}
+        <PanelEnVivo
+          url={panel.url}
+          actualizando={panel.actualizando}
+          error={panel.error}
+          onExpandir={panel.onExpandir}
+        />
       </aside>
 
       {addPhotosFor !== null ? (
@@ -4091,7 +4092,7 @@ function PanelEnVivo({
               ? error
               : actualizando
                 ? "Armando la vista previa…"
-                : "Agrega una sección para ver cómo queda."}
+                : "La vista previa aparece en cuanto haya un cliente."}
           </p>
         )}
         {/* Encima y translúcido, no en lugar del visor: se sigue viendo lo
