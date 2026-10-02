@@ -251,6 +251,10 @@ function useVistaPreviaEnVivo(cuerpo: object | null, activo: boolean) {
         .catch((e: unknown) => {
           // Un pedido cancelado no es un error: es que llegó un cambio nuevo.
           if (e instanceof DOMException && e.name === "AbortError") return;
+          // Este contenido ya tuvo su respuesta, aunque sea un error: sin esto
+          // `desactualizada` quedaba prendida y el aviso decía "actualizando"
+          // para siempre, tapando el motivo.
+          setClaveMostrada(clave);
           setError(e instanceof Error ? e.message : "No pudimos armarla");
         })
         .finally(() => setArmando(false));
@@ -1755,12 +1759,22 @@ function SelectorCliente({
 }) {
   const [search, setSearch] = useState("");
   const elegido = useRef<HTMLButtonElement>(null);
+  const lista = useRef<HTMLDivElement>(null);
 
   // Retomando un borrador el elegido puede estar a veinte filas de distancia,
   // o sea marcado pero fuera de la parte visible: se ve una lista sin nada
-  // seleccionado. `nearest` para no mover la página, solo la lista.
+  // seleccionado. Se mueve **la lista, a mano y solo en vertical**:
+  // `scrollIntoView` también corre hacia los costados a los contenedores de
+  // arriba, y dejaba la columna cortada por la izquierda.
   useEffect(() => {
-    elegido.current?.scrollIntoView({ block: "nearest" });
+    const fila = elegido.current;
+    const caja = lista.current;
+    if (!fila || !caja) return;
+    const arriba = fila.offsetTop - caja.offsetTop;
+    if (arriba < caja.scrollTop) caja.scrollTop = arriba;
+    else if (arriba + fila.offsetHeight > caja.scrollTop + caja.clientHeight) {
+      caja.scrollTop = arriba + fila.offsetHeight - caja.clientHeight;
+    }
   }, [clienteId, clientes.length]);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -1793,7 +1807,7 @@ function SelectorCliente({
       ) : (
         /* Con scroll propio: la lista completa empujaba el resto de la página
            hacia abajo y dejaba las visitas fuera de la pantalla. */
-        <div className="grid max-h-[26rem] gap-2 overflow-y-auto pr-1">
+        <div ref={lista} className="grid max-h-[26rem] gap-2 overflow-x-hidden overflow-y-auto pr-1">
           {filtered.map((c) => {
             const selected = clienteId === c.id;
             const initials = nombreCliente(c).slice(0, 2).toUpperCase();
@@ -1823,11 +1837,6 @@ function SelectorCliente({
                     {nombreCliente(c)}
                   </p>
                 </div>
-                {selected ? (
-                  <span className="text-xs font-medium text-primary">
-                    Seleccionado
-                  </span>
-                ) : null}
               </button>
             );
           })}
@@ -2540,7 +2549,6 @@ function Step3Secciones({
         });
       }}
       llenar
-      placeholder="El título en la primera línea; debajo, la descripción"
       listas
       primeraLineaComoTitulo
       className="bg-card"
@@ -2701,11 +2709,22 @@ function Step3Secciones({
    * escribir y la vista previa de al lado se actualiza sola; *Listo* solo
    * cierra y vuelve a la lista.
    */
+  /** La tarea de la que sale la sección, o *Personalizada*. */
+  const origenDeSeccion = (s: SeccionDraft) =>
+    s.tareaId
+      ? (catalogo.find((t) => t.id === s.tareaId)?.nombre ??
+        productos.find((p) => p.tareaId === s.tareaId)?.nombre ??
+        "Tarea")
+      : "Personalizada";
+
   const panelDeSeccion = (s: SeccionDraft) => (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-none items-center gap-1 border-b bg-card px-3 py-2">
         <span className="min-w-0 flex-1 truncate text-sm font-semibold">
           Sección {indiceAbierta + 1} de {secciones.length}
+          {/* De dónde sale: la tarea, o que se escribió a mano. El título
+              se puede cambiar; esto dice qué fotos de las visitas le tocan. */}
+          <span className="font-normal text-muted-foreground"> ({origenDeSeccion(s)})</span>
         </span>
         <Button
           variant="ghost"

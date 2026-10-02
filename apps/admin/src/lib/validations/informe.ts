@@ -104,9 +104,13 @@ export const informePreviewSchema = informeGenerateSchema.extend({
   /**
    * Sin secciones también: el encabezado ya es lo primero del documento, y la
    * previa en blanco hasta agregar la primera escondía cómo quedaba. Generar
-   * sí sigue exigiendo una.
+   * sí sigue exigiendo una. Y una sección **sin título** también se dibuja:
+   * es la que se acaba de agregar y todavía no se escribió, y rechazarla
+   * dejaba la previa "actualizando" para siempre.
    */
-  secciones: z.array(informeSeccionSchema).default([]),
+  secciones: z
+    .array(informeSeccionSchema.extend({ titulo: z.string().max(4000) }))
+    .default([]),
 });
 
 /** Cuerpo de POST /informes/uploads — pide URLs prefirmadas para las imágenes. */

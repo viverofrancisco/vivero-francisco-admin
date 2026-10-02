@@ -67,6 +67,7 @@ export function FichaDeSeccion({
   indice,
   total,
   pestanaInicial = "texto",
+  origen,
   onCambiar,
   onEliminar,
   onIr,
@@ -77,6 +78,8 @@ export function FichaDeSeccion({
   seccion: SeccionEditable;
   indice: number;
   total: number;
+  /** De qué tarea sale, o *Personalizada*; va entre paréntesis en la cabecera. */
+  origen: string;
   pestanaInicial?: Pestana;
   onCambiar: (patch: Partial<SeccionEditable>) => void;
   onEliminar: () => void;
@@ -144,6 +147,7 @@ export function FichaDeSeccion({
           </Pressable>
           <Text style={styles.titulo} numberOfLines={1}>
             Sección {indice + 1} de {total}
+            <Text style={styles.origen}> ({origen})</Text>
           </Text>
           <Pressable
             onPress={() => void ir(1)}
@@ -196,7 +200,6 @@ export function FichaDeSeccion({
             key={seccion.tempId}
             ref={editor}
             html={tituloDeSeccionEnHtml(seccion.titulo) + aHtml(seccion.descripcion)}
-            placeholder="El título en la primera línea; debajo, la descripción"
             primeraLineaComoTitulo
           />
         ) : (
@@ -335,6 +338,7 @@ const styles = StyleSheet.create({
   },
   apagado: { opacity: 0.3 },
   tocado: { opacity: 0.6 },
+  origen: { fontWeight: "400", color: tema.texto3 },
   titulo: {
     flex: 1,
     textAlign: "center",

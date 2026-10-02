@@ -1207,6 +1207,11 @@ function SeccionesStep({
           seccion={seccionAbierta}
           indice={indiceAbierto}
           total={secciones.length}
+          origen={
+            seccionAbierta.tareaId
+              ? (catalogo.find((t) => t.id === seccionAbierta.tareaId)?.nombre ?? "Tarea")
+              : "Personalizada"
+          }
           pestanaInicial={abierta.pestana}
           onCambiar={(patch) => update(seccionAbierta.tempId, patch)}
           onEliminar={() => {
