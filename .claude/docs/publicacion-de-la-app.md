@@ -217,3 +217,49 @@ mire. Ya pasó dos veces.
    `66:48:66:69:…:9B:62`.
 5. La ficha de Play pide lo mismo que Apple más el formulario de *Data safety*
    y, para una app con login, credenciales de prueba en *App content*.
+
+## Pendientes para las próximas versiones
+
+Avisos de Google Play sobre la versión 1.0.0 (4), la primera enviada a
+producción (1-oct-2026). Ninguno bloqueó la revisión; quedan para una 1.0.1
+una vez aprobadas las dos tiendas.
+
+1. **Activar R8 (minificación y ofuscación) en Android — antes de febrero
+   de 2027.** Play marca *"La optimización del código DEX está por debajo
+   de nuestro umbral"* (ofuscación al 1 %) y avisa que bajo el 25 % puede
+   afectar la visibilidad y la publicación. Expo lo deja apagado; se
+   enciende con `expo-build-properties` en `app.json`
+   (`android.enableMinifyInReleaseBuilds: true` y
+   `enableShrinkResourcesInReleaseBuilds: true`). **Probar a fondo antes
+   de enviar**: R8 a veces rompe librerías que usan reflexión, y el fallo
+   aparece solo en el build de release, no en desarrollo — instalar el
+   `.aab` desde la prueba interna y recorrer login, visitas (marcar, fotos,
+   mapa), chat (fotos, documentos, videos), informes (editor y PDF) y la
+   galería propia. Con R8 encendido, subir también el `mapping.txt` que
+   genera, para que los reportes de fallas de Play lleguen legibles (es la
+   advertencia del *archivo de desofuscación* que salió al subir la 1.0.0).
+2. **APIs obsoletas de borde a borde** (`Window.setStatusBarColor`,
+   `setNavigationBarColor`, `LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`),
+   recomendado y sin fecha. Vienen de React Native
+   (`StatusBarModule`, `WindowUtilKt.enableEdgeToEdge`) y de
+   `com.google.android.material.bottomsheet`, no del código de la app: se
+   resuelve al subir de SDK de Expo (`npx expo install expo@latest --fix`,
+   moviendo junto el `overrides.expo` de la raíz).
+3. **Orientación fija en vertical**, recomendado y sin fecha. `app.json`
+   tiene `"orientation": "portrait"`, y desde Android 16 las tablets y los
+   plegables lo ignoran. En un teléfono no cambia nada; en una tablet la
+   app se podrá girar sin que las pantallas estén pensadas para eso.
+   Cuando se aborde: probar en una tablet de Android Studio en horizontal
+   y decidir si se adaptan las pantallas o se deja así. También aparece
+   `GmsBarcodeScanningDelegateActivity` (ML Kit, de una dependencia), que
+   no es nuestra.
+4. **Si Google rechaza el permiso de fotos y videos**
+   (`READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO`): la galería propia
+   (`SelectorDeGaleria`, `expo-media-library`) es lo que lo pide. La salida
+   es que en Android la app use el selector de fotos del sistema
+   (`expo-image-picker`) en lugar de la galería propia, y quitar esos
+   permisos del manifiesto; en iOS se queda igual. Se pierde ver las fotos
+   ya marcadas al volver a abrirla.
+5. **Cuando se abra el acceso a los clientes**, volver a agregar su parte a
+   `apps/mobile/tienda/textos.md` y a las fichas de las dos tiendas (la
+   primera versión es solo para administración y personal).
