@@ -3,7 +3,9 @@ import type { AuthUser, MeResponse, TokenPair, UserRole } from "@vivero/shared";
 import {
   clearStoredRefreshToken,
   getStoredRefreshToken,
+  getStoredUsuario,
   setStoredRefreshToken,
+  setStoredUsuario,
 } from "./auth-storage";
 
 export interface SessionUser {
@@ -54,19 +56,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   hydrate: async () => {
     if (get().hydrated) return;
     const refreshToken = await getStoredRefreshToken();
-    set({ hydrated: true, refreshToken });
+    // Con sesión, quién es sale del teléfono y no del servidor: la app entra
+    // directo, con o sin señal. `useAuthGate` lo pone al día detrás.
+    const user = refreshToken ? await getStoredUsuario<SessionUser>() : null;
+    set({ hydrated: true, refreshToken, user });
   },
 
   setSession: async (tokens, user) => {
     await setStoredRefreshToken(tokens.refreshToken);
+    const sesion = toSessionUser(user);
+    await setStoredUsuario(sesion);
     set({
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      user: toSessionUser(user),
+      user: sesion,
     });
   },
 
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    void setStoredUsuario(user);
+    set({ user });
+  },
 
   setAccessToken: (token) => set({ accessToken: token }),
 
