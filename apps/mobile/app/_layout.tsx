@@ -62,25 +62,34 @@ function useAuthGate() {
     Promise.all([resolverServidor(), precargarBranding()]).finally(() => hydrate());
   }, [hydrate]);
 
+  /**
+   * Quién es, al día: **una vez por arranque**, en cuanto se sabe si hay
+   * sesión. Con el usuario guardado en el teléfono la app ya entró y esto corre
+   * detrás, por si cambió el rol o el nombre; sin usuario guardado (quien viene
+   * de una versión que no lo guardaba) la pantalla de carga lo espera.
+   *
+   * No depende de `refreshToken` ni de `user` a propósito: consultar `/me`
+   * renueva el token, y con el token en las dependencias el efecto se
+   * reiniciaba en medio de su propia consulta, descartaba la respuesta y ya no
+   * volvía a preguntar —la app quedaba en la pantalla de carga para siempre
+   * (build 11, 2-oct-2026)—. Lo que hace falta del store se lee en el momento.
+   *
+   * **Solo un rechazo del servidor cierra la sesión**: no tener señal al abrir
+   * la app dejaba afuera a quien la abría en un jardín sin cobertura.
+   */
   useEffect(() => {
-    if (!hydrated) return;
-
-    let cancelled = false;
-    /**
-     * Quién es, al día. Con el usuario guardado en el teléfono la app ya entró;
-     * esto corre igual una vez por arranque, detrás, por si cambió algo —el
-     * rol, el nombre—. **Solo un rechazo del servidor cierra la sesión**: no
-     * tener señal al abrir la app dejaba afuera a quien la abría en un jardín
-     * sin cobertura, sin poder volver a entrar hasta tenerla.
-     */
-    async function ensureUser() {
-      if (!refreshToken || consultado.current) return;
-      consultado.current = true;
+    if (!hydrated || consultado.current) return;
+    if (!useAuthStore.getState().refreshToken) return;
+    consultado.current = true;
+    // Sin marca de "sigue montado": es el layout raíz, no se desmonta, y una
+    // marca así hacía descartar la respuesta cuando React corre el efecto dos
+    // veces en desarrollo.
+    void (async () => {
       try {
         const me = await apiRequest<MeResponse>("/api/mobile/auth/me");
-        if (cancelled) return;
         await prepararDatosPara(me.id);
-        if (cancelled) return;
+        // Si en el medio cerró sesión, no se le vuelve a abrir.
+        if (!useAuthStore.getState().refreshToken) return;
         setUser({
           id: me.id,
           role: me.role,
@@ -92,18 +101,23 @@ function useAuthGate() {
           clienteId: me.clienteId,
         });
       } catch (e) {
-        consultado.current = false;
         const rechazada = esApiError(e) && (e.status === 401 || e.status === 403);
-        if (cancelled) return;
         if (rechazada) await clear();
         else setSinRespuesta(true);
       }
-    }
-    ensureUser();
-    return () => {
-      cancelled = true;
-    };
-  }, [hydrated, user, refreshToken, setUser, clear]);
+    })();
+  }, [hydrated, setUser, clear]);
+
+  /**
+   * Red de seguridad: la pantalla de carga **nunca** se queda sola esperando.
+   * Si a los 12 s todavía no se sabe quién es, va al login sin cerrar la
+   * sesión —la consulta sigue y, si llega, entra—.
+   */
+  useEffect(() => {
+    if (!hydrated || user || !refreshToken || sinRespuesta) return;
+    const reloj = setTimeout(() => setSinRespuesta(true), 12_000);
+    return () => clearTimeout(reloj);
+  }, [hydrated, user, refreshToken, sinRespuesta]);
 
   useEffect(() => {
     if (!hydrated) return;
