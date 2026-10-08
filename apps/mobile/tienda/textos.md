@@ -76,7 +76,7 @@ muestra a Apple y a quien busca la app que le sirve a cualquiera.
 - Contraseña: *(la que elegiste)*
 - Notas:
 
-> Vivero Francisco es la app de un vivero y empresa de mantenimiento de jardines en Guayaquil, Ecuador. Cualquier persona, sin cuenta, puede tocar “Seguir como invitado” en la pantalla de inicio: ve el catálogo de plantas, productos y servicios con sus precios y puede pedir una visita o una cotización dejando su nombre y teléfono (le llega al vivero al momento). Los clientes del vivero, con la cuenta que el vivero les abre, ven además sus visitas con las fotos del trabajo, y pueden eliminar su cuenta desde Cuenta → Eliminar mi cuenta.
+> Vivero Francisco es la app de un vivero y empresa de mantenimiento de jardines en Guayaquil, Ecuador. Cualquier persona, sin cuenta, puede tocar “Seguir como invitado” en la pantalla de inicio: ve el catálogo de plantas, productos y servicios con sus precios y puede pedir una visita o una cotización dejando su nombre y teléfono (le llega al vivero al momento).
 >
 > La misma app la usa el equipo del vivero (administradores, staff y jardineros). La cuenta de prueba que les damos tiene rol Staff y muestra esa parte, con datos de demostración: clientes, visitas, informes, órdenes y chats. La ubicación se usa solo mientras la app está en uso, cuando un jardinero marca su entrada o su salida de una visita.
 
