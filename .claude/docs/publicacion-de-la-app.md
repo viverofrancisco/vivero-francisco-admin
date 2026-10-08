@@ -194,6 +194,30 @@ mire. Ya pasó dos veces.
   porque estaba en modo claro: **probar en modo oscuro** antes de cada
   subida.
 
+## Apple y la regla 3.2: la app tiene que servirle a un desconocido
+
+La 1.0 (build 12) se rechazó por la **regla 3.2 (Business)**: Apple la leyó
+como una app para un negocio específico, porque quien la descargaba sin
+cuenta solo veía un login al que no podía entrar —las cuentas las creaba el
+vivero—. Ofreció la **distribución no listada**, y no se pidió a propósito:
+una app no listada **no puede volver a ser pública**, y la idea es que los
+clientes la encuentren en la tienda y, más adelante, compren desde ella.
+
+La salida fue que la app le sirva a cualquiera desde el primer minuto
+(5-oct-2026): un **modo invitado** con el **catálogo** y **solicitudes** de
+visita y de cotización sin cuenta, y además la pestaña del catálogo y las
+solicitudes para el cliente con sesión y *Eliminar mi cuenta* en su Cuenta.
+Ver [el doc de contraseñas](./autenticacion-clientes.md#modo-invitado). El
+registro abierto queda para después, con el teléfono y un código por
+WhatsApp. En las notas para la revisión conviene decirlo con todas las
+letras: sin cuenta se puede ver el catálogo con precios y pedir una visita o
+una cotización; los clientes del vivero entran además a ver sus visitas, y
+el equipo entra con la cuenta de prueba.
+
+**Las rutas nuevas tienen que estar en producción antes de mandar el build**:
+el revisor se registra contra el portal publicado, y un 404 en
+`/api/mobile/publico/catalogo` es otro rechazo.
+
 ## Android, después
 
 1. Google Play Console (US$ 25 una vez) a nombre del negocio.
@@ -260,6 +284,9 @@ una vez aprobadas las dos tiendas.
    (`expo-image-picker`) en lugar de la galería propia, y quitar esos
    permisos del manifiesto; en iOS se queda igual. Se pierde ver las fotos
    ya marcadas al volver a abrirla.
-5. **Cuando se abra el acceso a los clientes**, volver a agregar su parte a
-   `apps/mobile/tienda/textos.md` y a las fichas de las dos tiendas (la
-   primera versión es solo para administración y personal).
+5. **Los textos de las tiendas todavía son solo del equipo**: con el
+   modo invitado, agregar la parte de los clientes (catálogo,
+   solicitudes, ver sus visitas) a las dos fichas —ya está en
+   `apps/mobile/tienda/textos.md`— y responder de nuevo *Data safety* de Play
+   y la privacidad de App Store: ahora se recogen nombre y teléfono de
+   cualquiera que mande una solicitud.

@@ -50,6 +50,11 @@ export default function PersonalTabsLayout() {
         router.push({ pathname: "/(personal)/chats/[id]", params: { id: chatId } });
         return;
       }
+      // Un cliente pidió algo desde la app: a la lista, donde se atiende.
+      if (data.type === "solicitud_cliente") {
+        router.push("/(personal)/solicitudes");
+        return;
+      }
       const visitaId = data.visitaId;
       if (typeof visitaId !== "string") return;
       router.push(`/(personal)/visitas/${visitaId}`);
@@ -212,6 +217,17 @@ export default function PersonalTabsLayout() {
           tabBarItemStyle: { display: "none" },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="document-lock-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="solicitudes"
+        options={{
+          title: "Solicitudes",
+          href: isAdminOrStaff ? undefined : null,
+          tabBarItemStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="mail-unread-outline" size={size} color={color} />
           ),
         }}
       />

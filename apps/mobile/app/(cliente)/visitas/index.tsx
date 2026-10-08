@@ -7,9 +7,10 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { ActivityIndicator, Text } from "react-native-paper";
+import { ActivityIndicator, Button, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { apiRequest } from "@/lib/api";
+import { PantallaLista } from "@/components/ui/PantallaLista";
 import type { VisitaDetail, VisitasListResponse } from "@/lib/types";
 import { resumenTareas } from "@/lib/types";
 import { hoyEnEcuador } from "@/lib/hora";
@@ -49,18 +50,25 @@ export default function ClienteVisitasListScreen() {
     load(true);
   }, [load]);
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   const sections = groupVisitas(items);
+  const solicitar = () => router.push("/(cliente)/solicitudes/nueva");
 
   return (
-    <View style={styles.container}>
+    <PantallaLista
+      titulo="Mis visitas"
+      acciones={[
+        { etiqueta: "Solicitar una visita", onPress: solicitar },
+        {
+          etiqueta: "Mis solicitudes",
+          onPress: () => router.push("/(cliente)/solicitudes"),
+        },
+      ]}
+    >
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
       <FlatList
         data={sections}
         keyExtractor={(s) => s.label}
@@ -74,8 +82,12 @@ export default function ClienteVisitasListScreen() {
               Aún no tienes visitas
             </Text>
             <Text variant="bodyMedium" style={styles.emptyBody}>
-              Te avisaremos por notificación cuando se programe una.
+              Cuéntanos qué necesita tu jardín y coordinamos una visita.
+              Te avisaremos por notificación cuando se programe.
             </Text>
+            <Button mode="contained" onPress={solicitar} style={styles.emptyButton}>
+              Solicitar una visita
+            </Button>
           </View>
         }
         renderItem={({ item }) => (
@@ -98,7 +110,8 @@ export default function ClienteVisitasListScreen() {
           </View>
         )}
       />
-    </View>
+      )}
+    </PantallaLista>
   );
 }
 
@@ -257,4 +270,5 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { color: "#444" },
   emptyBody: { color: "#888", textAlign: "center", paddingHorizontal: 24 },
+  emptyButton: { marginTop: 12, borderRadius: 12 },
 });

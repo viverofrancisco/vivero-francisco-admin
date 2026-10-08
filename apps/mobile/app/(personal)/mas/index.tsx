@@ -52,6 +52,12 @@ export default function MasMenuScreen() {
       visible: isAdminOrStaff,
     },
     {
+      label: "Solicitudes",
+      icon: "mail-unread-outline",
+      href: "/(personal)/solicitudes",
+      visible: isAdminOrStaff,
+    },
+    {
       label: "Suscripciones",
       icon: "sync-outline",
       href: "/(personal)/suscripciones",

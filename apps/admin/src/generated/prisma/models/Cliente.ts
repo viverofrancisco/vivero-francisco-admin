@@ -305,6 +305,7 @@ export type ClienteWhereInput = {
   informes?: Prisma.InformeListRelationFilter
   informeBorradores?: Prisma.InformeBorradorListRelationFilter
   setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
+  solicitudes?: Prisma.SolicitudClienteListRelationFilter
 }
 
 export type ClienteOrderByWithRelationInput = {
@@ -338,6 +339,7 @@ export type ClienteOrderByWithRelationInput = {
   informes?: Prisma.InformeOrderByRelationAggregateInput
   informeBorradores?: Prisma.InformeBorradorOrderByRelationAggregateInput
   setPasswordTokens?: Prisma.SetPasswordTokenOrderByRelationAggregateInput
+  solicitudes?: Prisma.SolicitudClienteOrderByRelationAggregateInput
 }
 
 export type ClienteWhereUniqueInput = Prisma.AtLeast<{
@@ -374,6 +376,7 @@ export type ClienteWhereUniqueInput = Prisma.AtLeast<{
   informes?: Prisma.InformeListRelationFilter
   informeBorradores?: Prisma.InformeBorradorListRelationFilter
   setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
+  solicitudes?: Prisma.SolicitudClienteListRelationFilter
 }, "id" | "userId">
 
 export type ClienteOrderByWithAggregationInput = {
@@ -454,6 +457,7 @@ export type ClienteCreateInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateInput = {
@@ -484,6 +488,7 @@ export type ClienteUncheckedCreateInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUpdateInput = {
@@ -514,6 +519,7 @@ export type ClienteUpdateInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateInput = {
@@ -544,6 +550,7 @@ export type ClienteUncheckedUpdateInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateManyInput = {
@@ -935,6 +942,22 @@ export type ClienteUpdateOneRequiredWithoutDatosFacturacionNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ClienteUpdateToOneWithWhereWithoutDatosFacturacionInput, Prisma.ClienteUpdateWithoutDatosFacturacionInput>, Prisma.ClienteUncheckedUpdateWithoutDatosFacturacionInput>
 }
 
+export type ClienteCreateNestedOneWithoutSolicitudesInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutSolicitudesInput, Prisma.ClienteUncheckedCreateWithoutSolicitudesInput>
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutSolicitudesInput
+  connect?: Prisma.ClienteWhereUniqueInput
+}
+
+export type ClienteUpdateOneWithoutSolicitudesNestedInput = {
+  create?: Prisma.XOR<Prisma.ClienteCreateWithoutSolicitudesInput, Prisma.ClienteUncheckedCreateWithoutSolicitudesInput>
+  connectOrCreate?: Prisma.ClienteCreateOrConnectWithoutSolicitudesInput
+  upsert?: Prisma.ClienteUpsertWithoutSolicitudesInput
+  disconnect?: Prisma.ClienteWhereInput | boolean
+  delete?: Prisma.ClienteWhereInput | boolean
+  connect?: Prisma.ClienteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClienteUpdateToOneWithWhereWithoutSolicitudesInput, Prisma.ClienteUpdateWithoutSolicitudesInput>, Prisma.ClienteUncheckedUpdateWithoutSolicitudesInput>
+}
+
 export type ClienteCreateWithoutCreatedByInput = {
   id?: string
   nombre: string
@@ -962,6 +985,7 @@ export type ClienteCreateWithoutCreatedByInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutCreatedByInput = {
@@ -991,6 +1015,7 @@ export type ClienteUncheckedCreateWithoutCreatedByInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutCreatedByInput = {
@@ -1030,6 +1055,7 @@ export type ClienteCreateWithoutUpdatedByInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutUpdatedByInput = {
@@ -1059,6 +1085,7 @@ export type ClienteUncheckedCreateWithoutUpdatedByInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutUpdatedByInput = {
@@ -1098,6 +1125,7 @@ export type ClienteCreateWithoutUserInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutUserInput = {
@@ -1127,6 +1155,7 @@ export type ClienteUncheckedCreateWithoutUserInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutUserInput = {
@@ -1229,6 +1258,7 @@ export type ClienteUpdateWithoutUserInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutUserInput = {
@@ -1258,6 +1288,7 @@ export type ClienteUncheckedUpdateWithoutUserInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutPropiedadesInput = {
@@ -1287,6 +1318,7 @@ export type ClienteCreateWithoutPropiedadesInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutPropiedadesInput = {
@@ -1316,6 +1348,7 @@ export type ClienteUncheckedCreateWithoutPropiedadesInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutPropiedadesInput = {
@@ -1361,6 +1394,7 @@ export type ClienteUpdateWithoutPropiedadesInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutPropiedadesInput = {
@@ -1390,6 +1424,7 @@ export type ClienteUncheckedUpdateWithoutPropiedadesInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutSuscripcionesInput = {
@@ -1419,6 +1454,7 @@ export type ClienteCreateWithoutSuscripcionesInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutSuscripcionesInput = {
@@ -1448,6 +1484,7 @@ export type ClienteUncheckedCreateWithoutSuscripcionesInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutSuscripcionesInput = {
@@ -1493,6 +1530,7 @@ export type ClienteUpdateWithoutSuscripcionesInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutSuscripcionesInput = {
@@ -1522,6 +1560,7 @@ export type ClienteUncheckedUpdateWithoutSuscripcionesInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutVisitasInput = {
@@ -1551,6 +1590,7 @@ export type ClienteCreateWithoutVisitasInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutVisitasInput = {
@@ -1580,6 +1620,7 @@ export type ClienteUncheckedCreateWithoutVisitasInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutVisitasInput = {
@@ -1625,6 +1666,7 @@ export type ClienteUpdateWithoutVisitasInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutVisitasInput = {
@@ -1654,6 +1696,7 @@ export type ClienteUncheckedUpdateWithoutVisitasInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutSetPasswordTokensInput = {
@@ -1683,6 +1726,7 @@ export type ClienteCreateWithoutSetPasswordTokensInput = {
   ordenes?: Prisma.OrdenCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutSetPasswordTokensInput = {
@@ -1712,6 +1756,7 @@ export type ClienteUncheckedCreateWithoutSetPasswordTokensInput = {
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutSetPasswordTokensInput = {
@@ -1757,6 +1802,7 @@ export type ClienteUpdateWithoutSetPasswordTokensInput = {
   ordenes?: Prisma.OrdenUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutSetPasswordTokensInput = {
@@ -1786,6 +1832,7 @@ export type ClienteUncheckedUpdateWithoutSetPasswordTokensInput = {
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutInformesInput = {
@@ -1815,6 +1862,7 @@ export type ClienteCreateWithoutInformesInput = {
   ordenes?: Prisma.OrdenCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutInformesInput = {
@@ -1844,6 +1892,7 @@ export type ClienteUncheckedCreateWithoutInformesInput = {
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutInformesInput = {
@@ -1889,6 +1938,7 @@ export type ClienteUpdateWithoutInformesInput = {
   ordenes?: Prisma.OrdenUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutInformesInput = {
@@ -1918,6 +1968,7 @@ export type ClienteUncheckedUpdateWithoutInformesInput = {
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutInformeBorradoresInput = {
@@ -1947,6 +1998,7 @@ export type ClienteCreateWithoutInformeBorradoresInput = {
   ordenes?: Prisma.OrdenCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutInformeBorradoresInput = {
@@ -1976,6 +2028,7 @@ export type ClienteUncheckedCreateWithoutInformeBorradoresInput = {
   ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutClienteInput
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutInformeBorradoresInput = {
@@ -2021,6 +2074,7 @@ export type ClienteUpdateWithoutInformeBorradoresInput = {
   ordenes?: Prisma.OrdenUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutInformeBorradoresInput = {
@@ -2050,6 +2104,7 @@ export type ClienteUncheckedUpdateWithoutInformeBorradoresInput = {
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutOrdenesInput = {
@@ -2079,6 +2134,7 @@ export type ClienteCreateWithoutOrdenesInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutOrdenesInput = {
@@ -2108,6 +2164,7 @@ export type ClienteUncheckedCreateWithoutOrdenesInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutOrdenesInput = {
@@ -2153,6 +2210,7 @@ export type ClienteUpdateWithoutOrdenesInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutOrdenesInput = {
@@ -2182,6 +2240,7 @@ export type ClienteUncheckedUpdateWithoutOrdenesInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteCreateWithoutDatosFacturacionInput = {
@@ -2211,6 +2270,7 @@ export type ClienteCreateWithoutDatosFacturacionInput = {
   informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteUncheckedCreateWithoutDatosFacturacionInput = {
@@ -2240,6 +2300,7 @@ export type ClienteUncheckedCreateWithoutDatosFacturacionInput = {
   informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
   informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutClienteInput
 }
 
 export type ClienteCreateOrConnectWithoutDatosFacturacionInput = {
@@ -2285,6 +2346,7 @@ export type ClienteUpdateWithoutDatosFacturacionInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutDatosFacturacionInput = {
@@ -2309,6 +2371,143 @@ export type ClienteUncheckedUpdateWithoutDatosFacturacionInput = {
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
   suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
+  visitas?: Prisma.VisitaUncheckedUpdateManyWithoutClienteNestedInput
+  ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
+  informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteCreateWithoutSolicitudesInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  empresa?: string | null
+  email?: string | null
+  telefono?: string | null
+  notas?: string | null
+  cedula?: string | null
+  ruc?: string | null
+  tipoPersona?: $Enums.TipoPersona | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
+  createdBy?: Prisma.UserCreateNestedOneWithoutClientesCreatedInput
+  updatedBy?: Prisma.UserCreateNestedOneWithoutClientesUpdatedInput
+  user?: Prisma.UserCreateNestedOneWithoutClienteInput
+  propiedades?: Prisma.PropiedadCreateNestedManyWithoutClienteInput
+  suscripciones?: Prisma.SuscripcionCreateNestedManyWithoutClienteInput
+  datosFacturacion?: Prisma.DatoFacturacionCreateNestedManyWithoutClienteInput
+  visitas?: Prisma.VisitaCreateNestedManyWithoutClienteInput
+  ordenes?: Prisma.OrdenCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeCreateNestedManyWithoutClienteInput
+  informeBorradores?: Prisma.InformeBorradorCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteUncheckedCreateWithoutSolicitudesInput = {
+  id?: string
+  nombre: string
+  apellido?: string | null
+  empresa?: string | null
+  email?: string | null
+  telefono?: string | null
+  notas?: string | null
+  cedula?: string | null
+  ruc?: string | null
+  tipoPersona?: $Enums.TipoPersona | null
+  recibirRecordatorios?: boolean
+  recibirConfirmaciones?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  inactivoDesde?: Date | string | null
+  createdById?: string | null
+  updatedById?: string | null
+  userId?: string | null
+  propiedades?: Prisma.PropiedadUncheckedCreateNestedManyWithoutClienteInput
+  suscripciones?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutClienteInput
+  datosFacturacion?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutClienteInput
+  visitas?: Prisma.VisitaUncheckedCreateNestedManyWithoutClienteInput
+  ordenes?: Prisma.OrdenUncheckedCreateNestedManyWithoutClienteInput
+  informes?: Prisma.InformeUncheckedCreateNestedManyWithoutClienteInput
+  informeBorradores?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutClienteInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutClienteInput
+}
+
+export type ClienteCreateOrConnectWithoutSolicitudesInput = {
+  where: Prisma.ClienteWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutSolicitudesInput, Prisma.ClienteUncheckedCreateWithoutSolicitudesInput>
+}
+
+export type ClienteUpsertWithoutSolicitudesInput = {
+  update: Prisma.XOR<Prisma.ClienteUpdateWithoutSolicitudesInput, Prisma.ClienteUncheckedUpdateWithoutSolicitudesInput>
+  create: Prisma.XOR<Prisma.ClienteCreateWithoutSolicitudesInput, Prisma.ClienteUncheckedCreateWithoutSolicitudesInput>
+  where?: Prisma.ClienteWhereInput
+}
+
+export type ClienteUpdateToOneWithWhereWithoutSolicitudesInput = {
+  where?: Prisma.ClienteWhereInput
+  data: Prisma.XOR<Prisma.ClienteUpdateWithoutSolicitudesInput, Prisma.ClienteUncheckedUpdateWithoutSolicitudesInput>
+}
+
+export type ClienteUpdateWithoutSolicitudesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cedula?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoPersona?: Prisma.NullableEnumTipoPersonaFieldUpdateOperationsInput | $Enums.TipoPersona | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdBy?: Prisma.UserUpdateOneWithoutClientesCreatedNestedInput
+  updatedBy?: Prisma.UserUpdateOneWithoutClientesUpdatedNestedInput
+  user?: Prisma.UserUpdateOneWithoutClienteNestedInput
+  propiedades?: Prisma.PropiedadUpdateManyWithoutClienteNestedInput
+  suscripciones?: Prisma.SuscripcionUpdateManyWithoutClienteNestedInput
+  datosFacturacion?: Prisma.DatoFacturacionUpdateManyWithoutClienteNestedInput
+  visitas?: Prisma.VisitaUpdateManyWithoutClienteNestedInput
+  ordenes?: Prisma.OrdenUpdateManyWithoutClienteNestedInput
+  informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
+  informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+}
+
+export type ClienteUncheckedUpdateWithoutSolicitudesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cedula?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoPersona?: Prisma.NullableEnumTipoPersonaFieldUpdateOperationsInput | $Enums.TipoPersona | null
+  recibirRecordatorios?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  recibirConfirmaciones?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  inactivoDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  propiedades?: Prisma.PropiedadUncheckedUpdateManyWithoutClienteNestedInput
+  suscripciones?: Prisma.SuscripcionUncheckedUpdateManyWithoutClienteNestedInput
+  datosFacturacion?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutClienteNestedInput
   visitas?: Prisma.VisitaUncheckedUpdateManyWithoutClienteNestedInput
   ordenes?: Prisma.OrdenUncheckedUpdateManyWithoutClienteNestedInput
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
@@ -2385,6 +2584,7 @@ export type ClienteUpdateWithoutCreatedByInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutCreatedByInput = {
@@ -2414,6 +2614,7 @@ export type ClienteUncheckedUpdateWithoutCreatedByInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateManyWithoutCreatedByInput = {
@@ -2464,6 +2665,7 @@ export type ClienteUpdateWithoutUpdatedByInput = {
   informes?: Prisma.InformeUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateWithoutUpdatedByInput = {
@@ -2493,6 +2695,7 @@ export type ClienteUncheckedUpdateWithoutUpdatedByInput = {
   informes?: Prisma.InformeUncheckedUpdateManyWithoutClienteNestedInput
   informeBorradores?: Prisma.InformeBorradorUncheckedUpdateManyWithoutClienteNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutClienteNestedInput
+  solicitudes?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutClienteNestedInput
 }
 
 export type ClienteUncheckedUpdateManyWithoutUpdatedByInput = {
@@ -2530,6 +2733,7 @@ export type ClienteCountOutputType = {
   informes: number
   informeBorradores: number
   setPasswordTokens: number
+  solicitudes: number
 }
 
 export type ClienteCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2541,6 +2745,7 @@ export type ClienteCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   informes?: boolean | ClienteCountOutputTypeCountInformesArgs
   informeBorradores?: boolean | ClienteCountOutputTypeCountInformeBorradoresArgs
   setPasswordTokens?: boolean | ClienteCountOutputTypeCountSetPasswordTokensArgs
+  solicitudes?: boolean | ClienteCountOutputTypeCountSolicitudesArgs
 }
 
 /**
@@ -2609,6 +2814,13 @@ export type ClienteCountOutputTypeCountSetPasswordTokensArgs<ExtArgs extends run
   where?: Prisma.SetPasswordTokenWhereInput
 }
 
+/**
+ * ClienteCountOutputType without action
+ */
+export type ClienteCountOutputTypeCountSolicitudesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SolicitudClienteWhereInput
+}
+
 
 export type ClienteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2641,6 +2853,7 @@ export type ClienteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   informes?: boolean | Prisma.Cliente$informesArgs<ExtArgs>
   informeBorradores?: boolean | Prisma.Cliente$informeBorradoresArgs<ExtArgs>
   setPasswordTokens?: boolean | Prisma.Cliente$setPasswordTokensArgs<ExtArgs>
+  solicitudes?: boolean | Prisma.Cliente$solicitudesArgs<ExtArgs>
   _count?: boolean | Prisma.ClienteCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["cliente"]>
 
@@ -2729,6 +2942,7 @@ export type ClienteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   informes?: boolean | Prisma.Cliente$informesArgs<ExtArgs>
   informeBorradores?: boolean | Prisma.Cliente$informeBorradoresArgs<ExtArgs>
   setPasswordTokens?: boolean | Prisma.Cliente$setPasswordTokensArgs<ExtArgs>
+  solicitudes?: boolean | Prisma.Cliente$solicitudesArgs<ExtArgs>
   _count?: boolean | Prisma.ClienteCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ClienteIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2756,6 +2970,7 @@ export type $ClientePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     informes: Prisma.$InformePayload<ExtArgs>[]
     informeBorradores: Prisma.$InformeBorradorPayload<ExtArgs>[]
     setPasswordTokens: Prisma.$SetPasswordTokenPayload<ExtArgs>[]
+    solicitudes: Prisma.$SolicitudClientePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3192,6 +3407,7 @@ export interface Prisma__ClienteClient<T, Null = never, ExtArgs extends runtime.
   informes<T extends Prisma.Cliente$informesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$informesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   informeBorradores<T extends Prisma.Cliente$informeBorradoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$informeBorradoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InformeBorradorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   setPasswordTokens<T extends Prisma.Cliente$setPasswordTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$setPasswordTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SetPasswordTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  solicitudes<T extends Prisma.Cliente$solicitudesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cliente$solicitudesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SolicitudClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3887,6 +4103,30 @@ export type Cliente$setPasswordTokensArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.SetPasswordTokenScalarFieldEnum | Prisma.SetPasswordTokenScalarFieldEnum[]
+}
+
+/**
+ * Cliente.solicitudes
+ */
+export type Cliente$solicitudesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SolicitudCliente
+   */
+  select?: Prisma.SolicitudClienteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SolicitudCliente
+   */
+  omit?: Prisma.SolicitudClienteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SolicitudClienteInclude<ExtArgs> | null
+  where?: Prisma.SolicitudClienteWhereInput
+  orderBy?: Prisma.SolicitudClienteOrderByWithRelationInput | Prisma.SolicitudClienteOrderByWithRelationInput[]
+  cursor?: Prisma.SolicitudClienteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SolicitudClienteScalarFieldEnum | Prisma.SolicitudClienteScalarFieldEnum[]
 }
 
 /**

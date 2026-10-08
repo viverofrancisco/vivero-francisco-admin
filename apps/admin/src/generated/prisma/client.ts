@@ -585,3 +585,30 @@ export type ChatLectura = Prisma.ChatLecturaModel
  *  * fotos de una calificación.
  */
 export type ChatAdjunto = Prisma.ChatAdjuntoModel
+/**
+ * Model RegistroPendiente
+ * Alguien que pidió crear su cuenta desde la app y todavía no puso el código
+ * que le llegó al correo.
+ * 
+ * Es una tabla aparte y no un `Cliente` a medio hacer: quien se registra con
+ * un correo ajeno, o se arrepiente antes de abrirlo, no debe dejar una ficha
+ * en la lista de clientes. La ficha nace recién cuando el código coincide,
+ * que es cuando se sabe que el correo es suyo. Una fila por correo: pedir el
+ * código otra vez la reescribe.
+ */
+export type RegistroPendiente = Prisma.RegistroPendienteModel
+/**
+ * Model SolicitudCliente
+ * Lo que un cliente le pide al vivero desde la app: una visita, una
+ * cotización de un producto o lo que haga falta, en sus palabras.
+ * 
+ * Les llega a los administradores como notificación en el momento, y queda
+ * acá para que no se pierda si nadie la vio: se marca atendida a mano, porque
+ * "ya lo llamé" es algo que solo sabe quien llamó.
+ * 
+ * La puede mandar también **alguien sin cuenta**, desde el modo invitado:
+ * entonces no hay `clienteId` y quien la pidió queda en los tres `contacto*`,
+ * que es lo que hace falta para llamarlo. Es un pedido, no un cliente: si se
+ * convierte en uno, lo carga el vivero.
+ */
+export type SolicitudCliente = Prisma.SolicitudClienteModel

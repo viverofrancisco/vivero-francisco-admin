@@ -125,6 +125,8 @@ function useAuthGate() {
     // cualquier rol, así que no se lo manda a ningún lado. Ver la pantalla.
     if (segments[0] === "establecer-contrasena") return;
     const inAuth = segments[0] === "(auth)";
+    // El modo invitado es para quien no tiene sesión: se queda ahí.
+    const inInvitado = segments[0] === "(invitado)";
     const inCliente = segments[0] === "(cliente)";
     const inPersonal = segments[0] === "(personal)";
 
@@ -132,7 +134,7 @@ function useAuthGate() {
       // Con token y sin usuario guardado, se espera al servidor en la
       // pantalla de carga en vez de mostrar el login un instante.
       if (refreshToken && !sinRespuesta) return;
-      if (!inAuth) router.replace("/(auth)/login");
+      if (!inAuth && !inInvitado) router.replace("/(auth)/login");
       return;
     }
 
@@ -157,6 +159,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(cliente)" />
           <Stack.Screen name="(personal)" />
+          <Stack.Screen name="(invitado)" />
           <Stack.Screen name="establecer-contrasena" />
         </Stack>
         {/* Oscuro y no "auto": la app es clara siempre —`tema.ts` no tiene

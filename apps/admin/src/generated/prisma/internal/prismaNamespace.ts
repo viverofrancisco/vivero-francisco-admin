@@ -457,7 +457,9 @@ export const ModelName = {
   ChatMiembro: 'ChatMiembro',
   ChatMensaje: 'ChatMensaje',
   ChatLectura: 'ChatLectura',
-  ChatAdjunto: 'ChatAdjunto'
+  ChatAdjunto: 'ChatAdjunto',
+  RegistroPendiente: 'RegistroPendiente',
+  SolicitudCliente: 'SolicitudCliente'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -473,7 +475,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "personal" | "grupo" | "tarea" | "visita" | "visitaNovedad" | "visitaNovedadFoto" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto"
+    modelProps: "account" | "session" | "verificationToken" | "user" | "cliente" | "propiedad" | "producto" | "categoria" | "productoCategoria" | "opcionProducto" | "valorOpcion" | "variante" | "varianteValor" | "media" | "productoImagen" | "movimientoInventario" | "suscripcion" | "personal" | "grupo" | "tarea" | "visita" | "visitaNovedad" | "visitaNovedadFoto" | "visitaPersonal" | "visitaPersonalTarea" | "calificacionVisita" | "calificacionVisitaFoto" | "visitaTareaObligatoria" | "visitaMedia" | "grupoMiembro" | "sector" | "notificacionConfig" | "notificacionPlantilla" | "notificacionLog" | "pushToken" | "otpCode" | "refreshToken" | "clienteImport" | "setPasswordToken" | "informe" | "informeVersion" | "informeBorrador" | "informeVisita" | "informeSeccion" | "informeSeccionFoto" | "empresaConfig" | "emisor" | "secuencialSri" | "firmante" | "orden" | "ordenVisita" | "ordenLinea" | "datoFacturacion" | "factura" | "cobro" | "facturaLinea" | "chat" | "chatMiembro" | "chatMensaje" | "chatLectura" | "chatAdjunto" | "registroPendiente" | "solicitudCliente"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4991,6 +4993,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RegistroPendiente: {
+      payload: Prisma.$RegistroPendientePayload<ExtArgs>
+      fields: Prisma.RegistroPendienteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RegistroPendienteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RegistroPendienteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>
+        }
+        findFirst: {
+          args: Prisma.RegistroPendienteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RegistroPendienteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>
+        }
+        findMany: {
+          args: Prisma.RegistroPendienteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>[]
+        }
+        create: {
+          args: Prisma.RegistroPendienteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>
+        }
+        createMany: {
+          args: Prisma.RegistroPendienteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RegistroPendienteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>[]
+        }
+        delete: {
+          args: Prisma.RegistroPendienteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>
+        }
+        update: {
+          args: Prisma.RegistroPendienteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>
+        }
+        deleteMany: {
+          args: Prisma.RegistroPendienteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RegistroPendienteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RegistroPendienteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>[]
+        }
+        upsert: {
+          args: Prisma.RegistroPendienteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RegistroPendientePayload>
+        }
+        aggregate: {
+          args: Prisma.RegistroPendienteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRegistroPendiente>
+        }
+        groupBy: {
+          args: Prisma.RegistroPendienteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RegistroPendienteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RegistroPendienteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RegistroPendienteCountAggregateOutputType> | number
+        }
+      }
+    }
+    SolicitudCliente: {
+      payload: Prisma.$SolicitudClientePayload<ExtArgs>
+      fields: Prisma.SolicitudClienteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SolicitudClienteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SolicitudClienteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>
+        }
+        findFirst: {
+          args: Prisma.SolicitudClienteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SolicitudClienteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>
+        }
+        findMany: {
+          args: Prisma.SolicitudClienteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>[]
+        }
+        create: {
+          args: Prisma.SolicitudClienteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>
+        }
+        createMany: {
+          args: Prisma.SolicitudClienteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SolicitudClienteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>[]
+        }
+        delete: {
+          args: Prisma.SolicitudClienteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>
+        }
+        update: {
+          args: Prisma.SolicitudClienteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>
+        }
+        deleteMany: {
+          args: Prisma.SolicitudClienteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SolicitudClienteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SolicitudClienteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>[]
+        }
+        upsert: {
+          args: Prisma.SolicitudClienteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SolicitudClientePayload>
+        }
+        aggregate: {
+          args: Prisma.SolicitudClienteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSolicitudCliente>
+        }
+        groupBy: {
+          args: Prisma.SolicitudClienteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SolicitudClienteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SolicitudClienteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SolicitudClienteCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -6007,6 +6157,41 @@ export const ChatAdjuntoScalarFieldEnum = {
 export type ChatAdjuntoScalarFieldEnum = (typeof ChatAdjuntoScalarFieldEnum)[keyof typeof ChatAdjuntoScalarFieldEnum]
 
 
+export const RegistroPendienteScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  nombre: 'nombre',
+  apellido: 'apellido',
+  telefono: 'telefono',
+  passwordHash: 'passwordHash',
+  codigoHash: 'codigoHash',
+  expiresAt: 'expiresAt',
+  intentos: 'intentos',
+  createdAt: 'createdAt'
+} as const
+
+export type RegistroPendienteScalarFieldEnum = (typeof RegistroPendienteScalarFieldEnum)[keyof typeof RegistroPendienteScalarFieldEnum]
+
+
+export const SolicitudClienteScalarFieldEnum = {
+  id: 'id',
+  numero: 'numero',
+  clienteId: 'clienteId',
+  productoId: 'productoId',
+  mensaje: 'mensaje',
+  direccion: 'direccion',
+  contactoNombre: 'contactoNombre',
+  contactoTelefono: 'contactoTelefono',
+  contactoEmail: 'contactoEmail',
+  createdAt: 'createdAt',
+  atendidaEl: 'atendidaEl',
+  atendidaPorId: 'atendidaPorId',
+  atendidaPorNombre: 'atendidaPorNombre'
+} as const
+
+export type SolicitudClienteScalarFieldEnum = (typeof SolicitudClienteScalarFieldEnum)[keyof typeof SolicitudClienteScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -6671,6 +6856,8 @@ export type GlobalOmitConfig = {
   chatMensaje?: Prisma.ChatMensajeOmit
   chatLectura?: Prisma.ChatLecturaOmit
   chatAdjunto?: Prisma.ChatAdjuntoOmit
+  registroPendiente?: Prisma.RegistroPendienteOmit
+  solicitudCliente?: Prisma.SolicitudClienteOmit
 }
 
 /* Types for Logging */

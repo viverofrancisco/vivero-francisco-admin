@@ -20,7 +20,7 @@ export const metadata: Metadata = {
  * con la app es motivo de rechazo, y una promesa que no se cumple.
  */
 const CONTACTO = "info@viverofrancisco.com";
-const ACTUALIZADA = "30 de septiembre de 2026";
+const ACTUALIZADA = "5 de octubre de 2026";
 
 /** El índice de la izquierda; cada `id` es el de su `Seccion`. */
 const SECCIONES = [
@@ -106,12 +106,12 @@ export default async function PrivacidadPage() {
 
         <Seccion id="quien-usa-la-app" titulo="Quién usa la app">
           <p>
-            La app es una herramienta de trabajo del vivero. La usan su equipo
-            —administradores, staff y personal de campo— y sus clientes, para
-            ver sus visitas de mantenimiento. No es una red social ni una tienda
-            abierta al público: las cuentas las crea un administrador del
-            vivero, y cada persona elige su propia contraseña con un enlace de
-            un solo uso. No está dirigida a menores de edad.
+            La app la usan el equipo del vivero —administradores, staff y
+            personal de campo— y sus clientes. Cualquier persona, sin crear una
+            cuenta, puede ver el catálogo y pedir una visita o una cotización
+            dejando su nombre y su teléfono. Las cuentas las crea un
+            administrador del vivero, y cada persona elige su propia
+            contraseña. No está dirigida a menores de edad.
           </p>
         </Seccion>
 
@@ -126,6 +126,12 @@ export default async function PrivacidadPage() {
               <strong>Datos de clientes:</strong> nombre, contacto, datos de
               facturación y las direcciones de sus propiedades, con su ubicación
               en el mapa y sus medidas.
+            </li>
+            <li>
+              <strong>Solicitudes:</strong> lo que nos pides desde la app —una
+              visita o una cotización—, con tu nombre, tu teléfono, tu correo
+              si lo dejas y la dirección que escribas, para poder contactarte
+              y atenderla. Puedes pedir que la borremos escribiéndonos.
             </li>
             <li>
               <strong>Ubicación:</strong> cuando alguien del personal marca su
@@ -227,9 +233,15 @@ export default async function PrivacidadPage() {
             nombre de la app, los pasos, qué se borra y qué se conserva. */}
         <Seccion id="eliminar-tu-cuenta" titulo="Eliminar tu cuenta">
           <p>
-            Puedes pedir que se elimine tu cuenta de la app{" "}
-            <strong>Vivero Francisco</strong> y los datos asociados en cualquier
-            momento:
+            <strong>Si eres cliente</strong>, puedes eliminar tu cuenta tú mismo
+            desde la app <strong>Vivero Francisco</strong>: entra a{" "}
+            <strong>Cuenta</strong> y toca <strong>Eliminar mi cuenta</strong>.
+            Se elimina en el momento.
+          </p>
+          <p>
+            Si eres parte del equipo del vivero, o prefieres pedirlo por correo,
+            puedes solicitar que se elimine tu cuenta y los datos asociados en
+            cualquier momento:
           </p>
           <ol className="list-decimal space-y-1 pl-5">
             <li>

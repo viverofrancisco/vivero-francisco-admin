@@ -1,29 +1,35 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
   Button,
   Text,
 } from "react-native-paper";
 import { nombreCliente } from "@vivero/shared";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, mensajeDeError } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import type { ClienteProfileResponse } from "@/lib/types";
 import { tema } from "@/lib/tema";
 import { LogoDeLaEmpresa } from "@/components/ui/LogoDeLaEmpresa";
 
 export default function ClienteConfiguracionScreen() {
+  const router = useRouter();
   const refreshToken = useAuthStore((s) => s.refreshToken);
   const clear = useAuthStore((s) => s.clear);
   const [data, setData] = useState<ClienteProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
 
   const load = useCallback(async (initial = false) => {
     if (initial) setLoading(true);
@@ -55,6 +61,38 @@ export default function ClienteConfiguracionScreen() {
       }).catch(() => {});
     }
     await clear();
+  }
+
+  /**
+   * Eliminar la cuenta, como pide Apple a toda app donde uno se registra. Se
+   * va la forma de entrar; la ficha queda solo si tiene visitas o facturas,
+   * que el vivero tiene que conservar. Lo dice antes de confirmar.
+   */
+  function eliminarCuenta() {
+    Alert.alert(
+      "¿Eliminar tu cuenta?",
+      "Ya no podrás entrar a la app con este correo. Si tienes visitas o facturas con nosotros, las conservamos porque la ley nos lo exige. Esto no se puede deshacer.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            setEliminando(true);
+            try {
+              await apiRequest("/api/mobile/auth/cuenta", { method: "DELETE" });
+              await clear();
+            } catch (e) {
+              setEliminando(false);
+              Alert.alert(
+                "No pudimos eliminar tu cuenta",
+                mensajeDeError(e, "Intenta de nuevo en un momento.")
+              );
+            }
+          },
+        },
+      ]
+    );
   }
 
   if (loading) {
@@ -102,11 +140,24 @@ export default function ClienteConfiguracionScreen() {
       </View>
 
       {/* Datos */}
-      {cliente?.telefono ? (
+      {cliente?.telefono || cliente?.email ? (
         <Section title="Datos de contacto">
-          <Row label="Teléfono" value={cliente.telefono} />
+          {cliente.email ? <Row label="Correo" value={cliente.email} /> : null}
+          {cliente.telefono ? <Row label="Teléfono" value={cliente.telefono} /> : null}
         </Section>
       ) : null}
+
+      <Section title="Pedidos">
+        <Pressable
+          onPress={() => router.push("/(cliente)/solicitudes")}
+          style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+        >
+          <Text variant="bodyMedium" style={styles.rowLink}>
+            Mis solicitudes
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color="#aaa" />
+        </Pressable>
+      </Section>
 
       {/* Dónde se le trabaja. Una fila por propiedad: quien tiene dos las ve
           las dos, en vez de una dirección elegida a dedo. */}
@@ -143,6 +194,17 @@ export default function ClienteConfiguracionScreen() {
         labelStyle={styles.logoutLabel}
       >
         Cerrar sesión
+      </Button>
+
+      <Button
+        mode="text"
+        onPress={eliminarCuenta}
+        loading={eliminando}
+        disabled={eliminando || loggingOut}
+        textColor="#c62828"
+        style={styles.eliminar}
+      >
+        Eliminar mi cuenta
       </Button>
 
       <LogoDeLaEmpresa style={styles.footerLogo} />
@@ -243,6 +305,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   rowLabel: { color: "#888", flexShrink: 0 },
+  rowLink: { color: "#111", flex: 1 },
+  rowPressed: { opacity: 0.6 },
+  eliminar: { marginTop: 12 },
   rowValue: { color: "#111", textAlign: "right", flexShrink: 1 },
   rowDivider: {
     height: StyleSheet.hairlineWidth,

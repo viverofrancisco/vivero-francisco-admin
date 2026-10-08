@@ -56,3 +56,51 @@ export async function enforceLoginLimit(
   }
   return null;
 }
+
+const registroPorCorreoHora = make("registro:email:1h", 5, "1 h");
+const registroPorIpHora = make("registro:ip:1h", 20, "1 h");
+
+/**
+ * Pedir el código de registro manda un correo, y un correo cuesta cuota de la
+ * cuenta de Gmail y molesta a quien lo recibe si no lo pidió. Por correo y por
+ * IP: cinco por casilla alcanzan para equivocarse y volver a pedir, y la IP
+ * frena a quien pruebe muchas casillas.
+ */
+export async function enforceRegistroLimit(
+  email: string,
+  ip: string | null
+): Promise<RateLimitError | null> {
+  const porCorreo = await registroPorCorreoHora.limit(email.toLowerCase());
+  const porIp = ip ? await registroPorIpHora.limit(ip) : null;
+  const bloqueo = !porCorreo.success ? porCorreo : porIp && !porIp.success ? porIp : null;
+  if (bloqueo) {
+    return {
+      blocked: true,
+      reason: "Pediste demasiados códigos. Intenta de nuevo en una hora.",
+      retryAfterSeconds: retryAfter(bloqueo.reset),
+    };
+  }
+  return null;
+}
+
+const solicitudInvitadoPorIp = make("solicitud-invitado:ip:1h", 10, "1 h");
+
+/**
+ * Una solicitud sin cuenta no tiene a quién atarse, y cada una le suena a un
+ * administrador en el teléfono. Diez por hora y por IP alcanzan para quien de
+ * verdad pide algo, y frenan a quien quiera llenar la lista.
+ */
+export async function enforceSolicitudInvitadoLimit(
+  ip: string | null
+): Promise<RateLimitError | null> {
+  if (!ip) return null;
+  const res = await solicitudInvitadoPorIp.limit(ip);
+  if (!res.success) {
+    return {
+      blocked: true,
+      reason: "Enviaste muchas solicitudes. Intenta de nuevo en una hora.",
+      retryAfterSeconds: retryAfter(res.reset),
+    };
+  }
+  return null;
+}

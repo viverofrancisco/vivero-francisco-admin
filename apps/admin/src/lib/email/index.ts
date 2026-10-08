@@ -131,6 +131,30 @@ export async function sendSetPasswordEmail(
 }
 
 /**
+ * El código para crear una cuenta de cliente desde la app. Un código y no un
+ * enlace: quien se registra está mirando la app, y tener que ir al correo,
+ * tocar un enlace y volver es perderlo a mitad de camino.
+ */
+export async function sendCodigoDeRegistroEmail(
+  to: string,
+  nombre: string,
+  codigo: string
+): Promise<SendEmailResult> {
+  const saludo = nombre ? `Hola ${nombre},` : "Hola,";
+  const subject = `${codigo} es tu código — Vivero Francisco`;
+  const text = `${saludo}\n\nTu código para crear tu cuenta en la app de Vivero Francisco es:\n\n${codigo}\n\nVence en 15 minutos. Si no pediste esto, ignora este correo.`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; color: #222; max-width: 480px; margin: 0 auto;">
+      <p>${saludo}</p>
+      <p>Tu código para crear tu cuenta en la app de <strong>Vivero Francisco</strong> es:</p>
+      <p style="text-align: center; margin: 28px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #2e7d32;">${codigo}</p>
+      <p style="font-size: 13px; color: #666;">Vence en 15 minutos. Si no pediste esto, ignora este correo.</p>
+    </div>
+  `;
+  return sendEmail({ to, subject, html, text });
+}
+
+/**
  * El enlace de acceso al **portal**, para alguien del personal.
  *
  * Aparte del de clientes porque dice otra cosa: los clientes entran a la app,

@@ -71,6 +71,95 @@ publicada, y por eso su Zod ya **no** valida como dirección.
    el que valide la contraseña. El mismo flujo de invitación sirve como
    **restablecimiento de contraseña**.
 
+## Modo invitado
+
+**Quien abre la app sin cuenta puede mirar el catálogo y pedir una visita o
+una cotización** (*Seguir como invitado*, al pie del login →
+`apps/mobile/app/(invitado)/`). Es lo que hace que la app le sirva a alguien
+que todavía no es cliente, y lo que Apple pidió para publicarla: la rechazó
+por la regla 3.2 mientras solo se podía entrar con una cuenta creada por el
+vivero. `useAuthGate` deja pasar `(invitado)` sin sesión.
+
+- El catálogo sale de `/api/mobile/publico/catalogo` (y `/[id]`), **sin
+  sesión**: es la misma vidriera que ve un cliente (`catalogo.service.ts`), y
+  no muestra nada que no esté ya a la vista. Las pantallas son las del cliente
+  (`components/catalogo/`), con `publico`.
+- La solicitud va a `POST /api/mobile/publico/solicitudes`
+  (`crearSolicitudDeInvitado`): como no hay cuenta, trae **nombre y teléfono**
+  —el correo es opcional— y queda en `SolicitudCliente` **sin `clienteId`**,
+  con los tres `contacto*`. No crea un cliente: un pedido no es un cliente, y
+  una ficha por cada curioso llenaría la lista. Límite: 10 por hora por IP
+  (`enforceSolicitudInvitadoLimit`), porque cada una le suena a un
+  administrador en el teléfono. Las listas la marcan *Sin cuenta*.
+
+## Registro desde la app (hecho, sin botón todavía)
+
+**El registro está construido pero no se ofrece**: el login ya no tiene
+*Crear cuenta*. Se hizo con el correo, y la mayoría de los clientes del
+vivero tienen teléfono y no correo; la versión buena pide el **teléfono** y
+verifica con un código por **WhatsApp** (una plantilla de categoría
+*AUTHENTICATION* de Meta, que `meta-provider.ts` ya sabe crear; se cobra por
+código enviado), y entonces el teléfono sí puede vincular la cuenta a la
+ficha. Lo de abajo describe lo que existe hoy, por correo: la pantalla
+(`apps/mobile/app/(auth)/registro.tsx`) y las rutas siguen ahí para
+rehacerlas. Quien se registra **queda como cliente**,
+sin estado aparte y sin propiedad, que es lo que tiene un cliente nuevo hasta
+que alguien va a ver el jardín.
+
+Son dos pasos (`registro-cliente.service.ts`):
+
+1. `POST /api/mobile/auth/registro` `{ nombre, apellido?, email, telefono?,
+   password }` → guarda todo en **`RegistroPendiente`** (una fila por correo,
+   la contraseña ya en bcrypt, el código solo como `sha256`) y manda un
+   **código de seis dígitos** por correo, que vence a los 15 minutos. Pedirlo
+   otra vez reescribe la fila. Límite: 5 por correo y 20 por IP por hora
+   (`enforceRegistroLimit`). La ficha **no** nace todavía: quien escribe un
+   correo ajeno o se arrepiente no deja un cliente en la lista.
+2. `POST /api/mobile/auth/registro/confirmar` `{ email, codigo }` → con el
+   código correcto crea la cuenta y responde **lo mismo que el login**, con
+   la sesión abierta. Cinco códigos equivocados descartan el pendiente.
+
+**El código es lo que permite vincular.** Si el correo ya está en la ficha de
+un cliente, la cuenta se cuelga de **esa ficha** y entra viendo sus visitas
+(lo que escribió de nombre y teléfono no pisa lo que cargó el vivero); si esa
+ficha ya tenía cuenta, el código vale como restablecer la contraseña. Si hay
+dos fichas con el mismo correo se rechaza —elegir una a ciegas podría mostrar
+las visitas de otra persona— y si el acceso está revocado, también. **El
+teléfono no vincula**: no hay cómo probar que es de quien lo escribe.
+
+El código y no un enlace porque quien se registra está mirando la app: ir al
+correo, tocar un enlace y volver es perderlo a mitad de camino. El enlace de
+un solo uso sigue siendo el camino para quien el vivero invita y para
+*¿Olvidaste tu contraseña?*.
+
+### Eliminar la cuenta
+
+Apple exige que una app donde uno se registra permita **eliminar la cuenta
+desde la app**. El cliente lo hace en *Cuenta → Eliminar mi cuenta*
+(`DELETE /api/mobile/auth/cuenta`, `eliminarCuentaDeCliente`). Lo que se
+elimina es **la forma de entrar**: el `User`, y con él sus sesiones y sus
+avisos. La ficha se va también **si no tiene historia** —ni visitas, ni
+órdenes, ni planes, ni informes, ni datos de facturación: alguien que se
+registró y nunca llegó a ser cliente—; si la tiene, queda sin cuenta, porque
+las facturas se guardan por ley y las visitas las firmó quien las hizo. La
+política de privacidad lo dice así (`/privacidad#eliminar-tu-cuenta`). Las
+cuentas del equipo no se eliminan desde la app: las abre y las cierra el
+vivero.
+
+### Lo que hace un cliente nuevo
+
+- **Catálogo** (pestaña propia del cliente con sesión): `GET /api/mobile/catalogo` y
+  `/api/mobile/catalogo/[id]` (`catalogo.service.ts`), la vidriera aparte de
+  la herramienta de la oficina: solo productos `ACTIVO` y vivos, el precio
+  **con IVA**, sin costo ni stock. Un servicio dice *Se cotiza*, y un bien con
+  precio cero también —cero casi siempre es "nadie le puso precio"—.
+- **Solicitudes** (`SolicitudCliente`, `solicitud.service.ts`): *Solicitar
+  una visita* desde Mis visitas y *Solicitar cotización* desde un producto.
+  Les llega a ADMIN y STAFF como notificación en el momento
+  (`pushSolicitudDeCliente`) y queda en *Clientes → Solicitudes* del portal y
+  en *Más → Solicitudes* de la app hasta que alguien la marca atendida. El
+  cliente ve las suyas en *Cuenta → Mis solicitudes*.
+
 ## Usuarios del portal (la oficina)
 
 Invitar a alguien **no crea una contraseña temporal**. El usuario se crea con
@@ -264,7 +353,8 @@ portal con tu correo". Ahora es "app" para `PERSONAL` y para los clientes, y
 | El enlace abre en la app: identidad y los dos `.well-known` | `apps/admin/src/lib/enlaces-a-la-app.ts` + `apps/admin/src/app/.well-known/{apple-app-site-association,assetlinks.json}/route.ts` |
 | La misma pantalla en la app | `apps/mobile/app/establecer-contrasena.tsx` (+ `associatedDomains` / `intentFilters` en `app.json`) |
 | Modelo del token | `SetPasswordToken` en `prisma/schema.prisma` — apunta a **un** `clienteId` **o** a **un** `userId`, nunca a los dos (`CHECK`) |
-| Pantallas móviles | `apps/mobile/app/(auth)/{onboarding,solicitar-acceso}.tsx` |
+| Pantallas móviles | `apps/mobile/app/(auth)/{login,registro,solicitar-acceso}.tsx` |
+| Registro, código y eliminar la cuenta | `apps/admin/src/lib/services/registro-cliente.service.ts` + `apps/admin/src/app/api/mobile/auth/{registro,registro/confirmar,cuenta}/route.ts` |
 
 Nota: `User.email` de un cliente siempre es un placeholder (`cliente+{id}@…`). El login
 resuelve por la **ficha del cliente**, no por `User.email`, para evitar choques con

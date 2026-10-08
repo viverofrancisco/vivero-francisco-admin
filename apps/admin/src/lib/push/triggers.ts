@@ -66,7 +66,7 @@ function tareasParaAvisar(visita: {
 
 async function getAdminUserIds(): Promise<string[]> {
   const admins = await prisma.user.findMany({
-    where: { role: { in: ["ADMIN", "STAFF"] } },
+    where: { role: { in: ["ADMIN", "STAFF"] }, accesoRevocadoEl: null },
     select: { id: true },
   });
   return admins.map((a) => a.id);
@@ -343,5 +343,38 @@ export async function pushChatAgregado(
     title: "Te agregaron a un chat",
     body: chat.nombre,
     data: { type: "chat_agregado", chatId: chat.id },
+  });
+}
+
+/**
+ * Un cliente pidió algo desde la app: **a los administradores y al staff**,
+ * en el momento. Una cotización contestada el mismo día es la que se cierra.
+ */
+export async function pushSolicitudDeCliente(solicitudId: string): Promise<void> {
+  const s = await prisma.solicitudCliente.findUnique({
+    where: { id: solicitudId },
+    select: {
+      numero: true,
+      mensaje: true,
+      contactoNombre: true,
+      producto: { select: { nombre: true } },
+      cliente: { select: { nombre: true, apellido: true, empresa: true } },
+    },
+  });
+  if (!s) return;
+  // Sin cliente es alguien del modo invitado: se nombra con lo que escribió.
+  const quien = s.cliente
+    ? nombreCliente(s.cliente)
+    : `${s.contactoNombre ?? "Sin nombre"} (sin cuenta)`;
+
+  const admins = await getAdminUserIds();
+  if (admins.length === 0) return;
+
+  const que = s.producto ? `Cotización de ${s.producto.nombre}` : "Nueva solicitud";
+  const mensaje = s.mensaje.length > 120 ? `${s.mensaje.slice(0, 117)}…` : s.mensaje;
+  await sendPushToUsers(admins, {
+    title: `${que} — ${quien}`,
+    body: mensaje,
+    data: { type: "solicitud_cliente", solicitudId },
   });
 }

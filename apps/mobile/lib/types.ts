@@ -246,6 +246,7 @@ export interface ClienteProfileResponse {
     apellido: string | null;
     empresa: string | null;
     telefono: string | null;
+    email: string | null;
     propiedades: PropiedadResumen[];
   };
   proximaVisita: VisitaSummary | null;

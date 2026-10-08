@@ -41,6 +41,21 @@ export default function ClienteTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="catalogo"
+        options={{
+          title: "Catálogo",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="leaf-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      {/* Sin pestaña: se llega desde Mis visitas, desde un producto y desde
+          Cuenta. Sin barra abajo, porque el formulario ocupa la pantalla. */}
+      <Tabs.Screen
+        name="solicitudes"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
+      <Tabs.Screen
         name="configuracion"
         options={{
           title: "Cuenta",

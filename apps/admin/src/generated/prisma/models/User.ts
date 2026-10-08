@@ -241,6 +241,7 @@ export type UserWhereInput = {
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
+  solicitudesAtendidas?: Prisma.SolicitudClienteListRelationFilter
   clientesCreated?: Prisma.ClienteListRelationFilter
   clientesUpdated?: Prisma.ClienteListRelationFilter
   propiedadesCreated?: Prisma.PropiedadListRelationFilter
@@ -302,6 +303,7 @@ export type UserOrderByWithRelationInput = {
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   setPasswordTokens?: Prisma.SetPasswordTokenOrderByRelationAggregateInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteOrderByRelationAggregateInput
   clientesCreated?: Prisma.ClienteOrderByRelationAggregateInput
   clientesUpdated?: Prisma.ClienteOrderByRelationAggregateInput
   propiedadesCreated?: Prisma.PropiedadOrderByRelationAggregateInput
@@ -366,6 +368,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   setPasswordTokens?: Prisma.SetPasswordTokenListRelationFilter
+  solicitudesAtendidas?: Prisma.SolicitudClienteListRelationFilter
   clientesCreated?: Prisma.ClienteListRelationFilter
   clientesUpdated?: Prisma.ClienteListRelationFilter
   propiedadesCreated?: Prisma.PropiedadListRelationFilter
@@ -463,6 +466,7 @@ export type UserCreateInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -524,6 +528,7 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -585,6 +590,7 @@ export type UserUpdateInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -646,6 +652,7 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1521,6 +1528,22 @@ export type UserUpdateOneRequiredWithoutChatLecturasNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutChatLecturasInput, Prisma.UserUpdateWithoutChatLecturasInput>, Prisma.UserUncheckedUpdateWithoutChatLecturasInput>
 }
 
+export type UserCreateNestedOneWithoutSolicitudesAtendidasInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSolicitudesAtendidasInput, Prisma.UserUncheckedCreateWithoutSolicitudesAtendidasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSolicitudesAtendidasInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutSolicitudesAtendidasNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSolicitudesAtendidasInput, Prisma.UserUncheckedCreateWithoutSolicitudesAtendidasInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSolicitudesAtendidasInput
+  upsert?: Prisma.UserUpsertWithoutSolicitudesAtendidasInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSolicitudesAtendidasInput, Prisma.UserUpdateWithoutSolicitudesAtendidasInput>, Prisma.UserUncheckedUpdateWithoutSolicitudesAtendidasInput>
+}
+
 export type UserCreateWithoutAccountsInput = {
   id?: string
   name?: string | null
@@ -1536,6 +1559,7 @@ export type UserCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -1596,6 +1620,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1672,6 +1697,7 @@ export type UserUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -1732,6 +1758,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1792,6 +1819,7 @@ export type UserCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -1852,6 +1880,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1928,6 +1957,7 @@ export type UserUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -1988,6 +2018,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2049,6 +2080,7 @@ export type UserCreateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
   propiedadesUpdated?: Prisma.PropiedadCreateNestedManyWithoutUpdatedByInput
@@ -2109,6 +2141,7 @@ export type UserUncheckedCreateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
   propiedadesUpdated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -2174,6 +2207,7 @@ export type UserCreateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
   propiedadesUpdated?: Prisma.PropiedadCreateNestedManyWithoutUpdatedByInput
@@ -2234,6 +2268,7 @@ export type UserUncheckedCreateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
   propiedadesUpdated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -2299,6 +2334,7 @@ export type UserCreateWithoutClienteInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -2359,6 +2395,7 @@ export type UserUncheckedCreateWithoutClienteInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2435,6 +2472,7 @@ export type UserUpdateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
   propiedadesUpdated?: Prisma.PropiedadUpdateManyWithoutUpdatedByNestedInput
@@ -2495,6 +2533,7 @@ export type UserUncheckedUpdateWithoutClientesCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
   propiedadesUpdated?: Prisma.PropiedadUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -2566,6 +2605,7 @@ export type UserUpdateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
   propiedadesUpdated?: Prisma.PropiedadUpdateManyWithoutUpdatedByNestedInput
@@ -2626,6 +2666,7 @@ export type UserUncheckedUpdateWithoutClientesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
   propiedadesUpdated?: Prisma.PropiedadUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -2697,6 +2738,7 @@ export type UserUpdateWithoutClienteInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -2757,6 +2799,7 @@ export type UserUncheckedUpdateWithoutClienteInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2817,6 +2860,7 @@ export type UserCreateWithoutPropiedadesCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesUpdated?: Prisma.PropiedadCreateNestedManyWithoutUpdatedByInput
@@ -2877,6 +2921,7 @@ export type UserUncheckedCreateWithoutPropiedadesCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesUpdated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -2942,6 +2987,7 @@ export type UserCreateWithoutPropiedadesUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -3002,6 +3048,7 @@ export type UserUncheckedCreateWithoutPropiedadesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3078,6 +3125,7 @@ export type UserUpdateWithoutPropiedadesCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesUpdated?: Prisma.PropiedadUpdateManyWithoutUpdatedByNestedInput
@@ -3138,6 +3186,7 @@ export type UserUncheckedUpdateWithoutPropiedadesCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesUpdated?: Prisma.PropiedadUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -3209,6 +3258,7 @@ export type UserUpdateWithoutPropiedadesUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -3269,6 +3319,7 @@ export type UserUncheckedUpdateWithoutPropiedadesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3329,6 +3380,7 @@ export type UserCreateWithoutProductosCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -3389,6 +3441,7 @@ export type UserUncheckedCreateWithoutProductosCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3454,6 +3507,7 @@ export type UserCreateWithoutProductosUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -3514,6 +3568,7 @@ export type UserUncheckedCreateWithoutProductosUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3590,6 +3645,7 @@ export type UserUpdateWithoutProductosCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -3650,6 +3706,7 @@ export type UserUncheckedUpdateWithoutProductosCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3721,6 +3778,7 @@ export type UserUpdateWithoutProductosUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -3781,6 +3839,7 @@ export type UserUncheckedUpdateWithoutProductosUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -3841,6 +3900,7 @@ export type UserCreateWithoutMediaInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -3901,6 +3961,7 @@ export type UserUncheckedCreateWithoutMediaInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -3977,6 +4038,7 @@ export type UserUpdateWithoutMediaInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -4037,6 +4099,7 @@ export type UserUncheckedUpdateWithoutMediaInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4097,6 +4160,7 @@ export type UserCreateWithoutMovimientosInventarioInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -4157,6 +4221,7 @@ export type UserUncheckedCreateWithoutMovimientosInventarioInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4233,6 +4298,7 @@ export type UserUpdateWithoutMovimientosInventarioInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -4293,6 +4359,7 @@ export type UserUncheckedUpdateWithoutMovimientosInventarioInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4353,6 +4420,7 @@ export type UserCreateWithoutSuscripcionesCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -4413,6 +4481,7 @@ export type UserUncheckedCreateWithoutSuscripcionesCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4478,6 +4547,7 @@ export type UserCreateWithoutSuscripcionesUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -4538,6 +4608,7 @@ export type UserUncheckedCreateWithoutSuscripcionesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4614,6 +4685,7 @@ export type UserUpdateWithoutSuscripcionesCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -4674,6 +4746,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4745,6 +4818,7 @@ export type UserUpdateWithoutSuscripcionesUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -4805,6 +4879,7 @@ export type UserUncheckedUpdateWithoutSuscripcionesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -4865,6 +4940,7 @@ export type UserCreateWithoutPersonalCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -4925,6 +5001,7 @@ export type UserUncheckedCreateWithoutPersonalCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -4990,6 +5067,7 @@ export type UserCreateWithoutPersonalUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -5050,6 +5128,7 @@ export type UserUncheckedCreateWithoutPersonalUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5115,6 +5194,7 @@ export type UserCreateWithoutPersonalInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -5175,6 +5255,7 @@ export type UserUncheckedCreateWithoutPersonalInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5251,6 +5332,7 @@ export type UserUpdateWithoutPersonalCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -5311,6 +5393,7 @@ export type UserUncheckedUpdateWithoutPersonalCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5382,6 +5465,7 @@ export type UserUpdateWithoutPersonalUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -5442,6 +5526,7 @@ export type UserUncheckedUpdateWithoutPersonalUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5513,6 +5598,7 @@ export type UserUpdateWithoutPersonalInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -5573,6 +5659,7 @@ export type UserUncheckedUpdateWithoutPersonalInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5633,6 +5720,7 @@ export type UserCreateWithoutGruposCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -5693,6 +5781,7 @@ export type UserUncheckedCreateWithoutGruposCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5758,6 +5847,7 @@ export type UserCreateWithoutGruposUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -5818,6 +5908,7 @@ export type UserUncheckedCreateWithoutGruposUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -5894,6 +5985,7 @@ export type UserUpdateWithoutGruposCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -5954,6 +6046,7 @@ export type UserUncheckedUpdateWithoutGruposCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6025,6 +6118,7 @@ export type UserUpdateWithoutGruposUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -6085,6 +6179,7 @@ export type UserUncheckedUpdateWithoutGruposUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6145,6 +6240,7 @@ export type UserCreateWithoutTareasCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -6205,6 +6301,7 @@ export type UserUncheckedCreateWithoutTareasCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6270,6 +6367,7 @@ export type UserCreateWithoutTareasUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -6330,6 +6428,7 @@ export type UserUncheckedCreateWithoutTareasUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6395,6 +6494,7 @@ export type UserCreateWithoutTareasEliminadasInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -6455,6 +6555,7 @@ export type UserUncheckedCreateWithoutTareasEliminadasInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -6531,6 +6632,7 @@ export type UserUpdateWithoutTareasCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -6591,6 +6693,7 @@ export type UserUncheckedUpdateWithoutTareasCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6662,6 +6765,7 @@ export type UserUpdateWithoutTareasUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -6722,6 +6826,7 @@ export type UserUncheckedUpdateWithoutTareasUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6793,6 +6898,7 @@ export type UserUpdateWithoutTareasEliminadasInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -6853,6 +6959,7 @@ export type UserUncheckedUpdateWithoutTareasEliminadasInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -6913,6 +7020,7 @@ export type UserCreateWithoutVisitasCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -6973,6 +7081,7 @@ export type UserUncheckedCreateWithoutVisitasCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7038,6 +7147,7 @@ export type UserCreateWithoutVisitasUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -7098,6 +7208,7 @@ export type UserUncheckedCreateWithoutVisitasUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7163,6 +7274,7 @@ export type UserCreateWithoutVisitasCompletadasInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -7223,6 +7335,7 @@ export type UserUncheckedCreateWithoutVisitasCompletadasInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7288,6 +7401,7 @@ export type UserCreateWithoutVisitasEliminadasInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -7348,6 +7462,7 @@ export type UserUncheckedCreateWithoutVisitasEliminadasInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -7424,6 +7539,7 @@ export type UserUpdateWithoutVisitasCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -7484,6 +7600,7 @@ export type UserUncheckedUpdateWithoutVisitasCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7555,6 +7672,7 @@ export type UserUpdateWithoutVisitasUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -7615,6 +7733,7 @@ export type UserUncheckedUpdateWithoutVisitasUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7686,6 +7805,7 @@ export type UserUpdateWithoutVisitasCompletadasInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -7746,6 +7866,7 @@ export type UserUncheckedUpdateWithoutVisitasCompletadasInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7817,6 +7938,7 @@ export type UserUpdateWithoutVisitasEliminadasInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -7877,6 +7999,7 @@ export type UserUncheckedUpdateWithoutVisitasEliminadasInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -7937,6 +8060,7 @@ export type UserCreateWithoutVisitaPersonalAddedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -7997,6 +8121,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalAddedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -8062,6 +8187,7 @@ export type UserCreateWithoutVisitaPersonalRemovedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -8122,6 +8248,7 @@ export type UserUncheckedCreateWithoutVisitaPersonalRemovedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -8198,6 +8325,7 @@ export type UserUpdateWithoutVisitaPersonalAddedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -8258,6 +8386,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalAddedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -8329,6 +8458,7 @@ export type UserUpdateWithoutVisitaPersonalRemovedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -8389,6 +8519,7 @@ export type UserUncheckedUpdateWithoutVisitaPersonalRemovedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -8449,6 +8580,7 @@ export type UserCreateWithoutVisitaMediaSubidasInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -8509,6 +8641,7 @@ export type UserUncheckedCreateWithoutVisitaMediaSubidasInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -8585,6 +8718,7 @@ export type UserUpdateWithoutVisitaMediaSubidasInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -8645,6 +8779,7 @@ export type UserUncheckedUpdateWithoutVisitaMediaSubidasInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -8705,6 +8840,7 @@ export type UserCreateWithoutPushTokensInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -8765,6 +8901,7 @@ export type UserUncheckedCreateWithoutPushTokensInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -8841,6 +8978,7 @@ export type UserUpdateWithoutPushTokensInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -8901,6 +9039,7 @@ export type UserUncheckedUpdateWithoutPushTokensInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -8961,6 +9100,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -9021,6 +9161,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -9097,6 +9238,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -9157,6 +9299,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -9217,6 +9360,7 @@ export type UserCreateWithoutClienteImportsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -9277,6 +9421,7 @@ export type UserUncheckedCreateWithoutClienteImportsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -9353,6 +9498,7 @@ export type UserUpdateWithoutClienteImportsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -9413,6 +9559,7 @@ export type UserUncheckedUpdateWithoutClienteImportsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -9472,6 +9619,7 @@ export type UserCreateWithoutSetPasswordTokensInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -9532,6 +9680,7 @@ export type UserUncheckedCreateWithoutSetPasswordTokensInput = {
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -9608,6 +9757,7 @@ export type UserUpdateWithoutSetPasswordTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -9668,6 +9818,7 @@ export type UserUncheckedUpdateWithoutSetPasswordTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -9729,6 +9880,7 @@ export type UserCreateWithoutInformesGeneradosInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -9789,6 +9941,7 @@ export type UserUncheckedCreateWithoutInformesGeneradosInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -9854,6 +10007,7 @@ export type UserCreateWithoutInformesActualizadosInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -9914,6 +10068,7 @@ export type UserUncheckedCreateWithoutInformesActualizadosInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -9990,6 +10145,7 @@ export type UserUpdateWithoutInformesGeneradosInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -10050,6 +10206,7 @@ export type UserUncheckedUpdateWithoutInformesGeneradosInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -10121,6 +10278,7 @@ export type UserUpdateWithoutInformesActualizadosInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -10181,6 +10339,7 @@ export type UserUncheckedUpdateWithoutInformesActualizadosInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -10241,6 +10400,7 @@ export type UserCreateWithoutInformeVersionesInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -10301,6 +10461,7 @@ export type UserUncheckedCreateWithoutInformeVersionesInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -10377,6 +10538,7 @@ export type UserUpdateWithoutInformeVersionesInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -10437,6 +10599,7 @@ export type UserUncheckedUpdateWithoutInformeVersionesInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -10497,6 +10660,7 @@ export type UserCreateWithoutInformeBorradoresCreadosInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -10557,6 +10721,7 @@ export type UserUncheckedCreateWithoutInformeBorradoresCreadosInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -10622,6 +10787,7 @@ export type UserCreateWithoutInformeBorradoresActualizadosInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -10682,6 +10848,7 @@ export type UserUncheckedCreateWithoutInformeBorradoresActualizadosInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -10758,6 +10925,7 @@ export type UserUpdateWithoutInformeBorradoresCreadosInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -10818,6 +10986,7 @@ export type UserUncheckedUpdateWithoutInformeBorradoresCreadosInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -10889,6 +11058,7 @@ export type UserUpdateWithoutInformeBorradoresActualizadosInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -10949,6 +11119,7 @@ export type UserUncheckedUpdateWithoutInformeBorradoresActualizadosInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -11009,6 +11180,7 @@ export type UserCreateWithoutOrdenesCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -11069,6 +11241,7 @@ export type UserUncheckedCreateWithoutOrdenesCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -11134,6 +11307,7 @@ export type UserCreateWithoutOrdenesUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -11194,6 +11368,7 @@ export type UserUncheckedCreateWithoutOrdenesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -11270,6 +11445,7 @@ export type UserUpdateWithoutOrdenesCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -11330,6 +11506,7 @@ export type UserUncheckedUpdateWithoutOrdenesCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -11401,6 +11578,7 @@ export type UserUpdateWithoutOrdenesUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -11461,6 +11639,7 @@ export type UserUncheckedUpdateWithoutOrdenesUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -11521,6 +11700,7 @@ export type UserCreateWithoutDatosFacturacionCreatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -11581,6 +11761,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionCreatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -11646,6 +11827,7 @@ export type UserCreateWithoutDatosFacturacionUpdatedInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -11706,6 +11888,7 @@ export type UserUncheckedCreateWithoutDatosFacturacionUpdatedInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -11782,6 +11965,7 @@ export type UserUpdateWithoutDatosFacturacionCreatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -11842,6 +12026,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionCreatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -11913,6 +12098,7 @@ export type UserUpdateWithoutDatosFacturacionUpdatedInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -11973,6 +12159,7 @@ export type UserUncheckedUpdateWithoutDatosFacturacionUpdatedInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -12033,6 +12220,7 @@ export type UserCreateWithoutCobrosRegistradosInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -12093,6 +12281,7 @@ export type UserUncheckedCreateWithoutCobrosRegistradosInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -12169,6 +12358,7 @@ export type UserUpdateWithoutCobrosRegistradosInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -12229,6 +12419,7 @@ export type UserUncheckedUpdateWithoutCobrosRegistradosInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -12289,6 +12480,7 @@ export type UserCreateWithoutChatsCreadosInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -12349,6 +12541,7 @@ export type UserUncheckedCreateWithoutChatsCreadosInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -12425,6 +12618,7 @@ export type UserUpdateWithoutChatsCreadosInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -12485,6 +12679,7 @@ export type UserUncheckedUpdateWithoutChatsCreadosInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -12545,6 +12740,7 @@ export type UserCreateWithoutChatsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -12605,6 +12801,7 @@ export type UserUncheckedCreateWithoutChatsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -12681,6 +12878,7 @@ export type UserUpdateWithoutChatsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -12741,6 +12939,7 @@ export type UserUncheckedUpdateWithoutChatsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -12801,6 +13000,7 @@ export type UserCreateWithoutChatMensajesInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -12861,6 +13061,7 @@ export type UserUncheckedCreateWithoutChatMensajesInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -12937,6 +13138,7 @@ export type UserUpdateWithoutChatMensajesInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -12997,6 +13199,7 @@ export type UserUncheckedUpdateWithoutChatMensajesInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -13057,6 +13260,7 @@ export type UserCreateWithoutChatLecturasInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
@@ -13117,6 +13321,7 @@ export type UserUncheckedCreateWithoutChatLecturasInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedCreateNestedManyWithoutAtendidaPorInput
   clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
   clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
   propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
@@ -13193,6 +13398,7 @@ export type UserUpdateWithoutChatLecturasInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
@@ -13253,6 +13459,7 @@ export type UserUncheckedUpdateWithoutChatLecturasInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  solicitudesAtendidas?: Prisma.SolicitudClienteUncheckedUpdateManyWithoutAtendidaPorNestedInput
   clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
   clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
   propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -13297,6 +13504,266 @@ export type UserUncheckedUpdateWithoutChatLecturasInput = {
   chatMensajes?: Prisma.ChatMensajeUncheckedUpdateManyWithoutAutorNestedInput
 }
 
+export type UserCreateWithoutSolicitudesAtendidasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email?: string | null
+  usuario?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteCreateNestedManyWithoutUpdatedByInput
+  propiedadesCreated?: Prisma.PropiedadCreateNestedManyWithoutCreatedByInput
+  propiedadesUpdated?: Prisma.PropiedadCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaCreateNestedManyWithoutSubidaPorInput
+  chatsCreados?: Prisma.ChatCreateNestedManyWithoutCreatedByInput
+  chats?: Prisma.ChatMiembroCreateNestedManyWithoutUserInput
+  chatMensajes?: Prisma.ChatMensajeCreateNestedManyWithoutAutorInput
+  chatLecturas?: Prisma.ChatLecturaCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutSolicitudesAtendidasInput = {
+  id?: string
+  name?: string | null
+  apellido?: string | null
+  email?: string | null
+  usuario?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  password?: string | null
+  role?: $Enums.UserRole
+  accesoRevocadoEl?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedCreateNestedManyWithoutUserInput
+  clientesCreated?: Prisma.ClienteUncheckedCreateNestedManyWithoutCreatedByInput
+  clientesUpdated?: Prisma.ClienteUncheckedCreateNestedManyWithoutUpdatedByInput
+  propiedadesCreated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutCreatedByInput
+  propiedadesUpdated?: Prisma.PropiedadUncheckedCreateNestedManyWithoutUpdatedByInput
+  media?: Prisma.MediaUncheckedCreateNestedManyWithoutCreatedByInput
+  productosCreated?: Prisma.ProductoUncheckedCreateNestedManyWithoutCreatedByInput
+  productosUpdated?: Prisma.ProductoUncheckedCreateNestedManyWithoutUpdatedByInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedCreateNestedManyWithoutCreatedByInput
+  cobrosRegistrados?: Prisma.CobroUncheckedCreateNestedManyWithoutCreatedByInput
+  personalCreated?: Prisma.PersonalUncheckedCreateNestedManyWithoutCreatedByInput
+  personalUpdated?: Prisma.PersonalUncheckedCreateNestedManyWithoutUpdatedByInput
+  gruposCreated?: Prisma.GrupoUncheckedCreateNestedManyWithoutCreatedByInput
+  gruposUpdated?: Prisma.GrupoUncheckedCreateNestedManyWithoutUpdatedByInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutCreatedByInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCreated?: Prisma.VisitaUncheckedCreateNestedManyWithoutCreatedByInput
+  visitasUpdated?: Prisma.VisitaUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitasCompletadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutCompletadaPorInput
+  visitasEliminadas?: Prisma.VisitaUncheckedCreateNestedManyWithoutDeletedByInput
+  tareasCreated?: Prisma.TareaUncheckedCreateNestedManyWithoutCreatedByInput
+  tareasUpdated?: Prisma.TareaUncheckedCreateNestedManyWithoutUpdatedByInput
+  tareasEliminadas?: Prisma.TareaUncheckedCreateNestedManyWithoutDeletedByInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutAddedByInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedCreateNestedManyWithoutRemovedByInput
+  personal?: Prisma.PersonalUncheckedCreateNestedOneWithoutUserInput
+  cliente?: Prisma.ClienteUncheckedCreateNestedOneWithoutUserInput
+  pushTokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  informesGenerados?: Prisma.InformeUncheckedCreateNestedManyWithoutGeneratedByInput
+  informesActualizados?: Prisma.InformeUncheckedCreateNestedManyWithoutUpdatedByInput
+  informeVersiones?: Prisma.InformeVersionUncheckedCreateNestedManyWithoutGeneratedByInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutCreatedByInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedCreateNestedManyWithoutUpdatedByInput
+  clienteImports?: Prisma.ClienteImportUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesCreated?: Prisma.OrdenUncheckedCreateNestedManyWithoutCreatedByInput
+  ordenesUpdated?: Prisma.OrdenUncheckedCreateNestedManyWithoutUpdatedByInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutCreatedByInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedCreateNestedManyWithoutUpdatedByInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedCreateNestedManyWithoutSubidaPorInput
+  chatsCreados?: Prisma.ChatUncheckedCreateNestedManyWithoutCreatedByInput
+  chats?: Prisma.ChatMiembroUncheckedCreateNestedManyWithoutUserInput
+  chatMensajes?: Prisma.ChatMensajeUncheckedCreateNestedManyWithoutAutorInput
+  chatLecturas?: Prisma.ChatLecturaUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutSolicitudesAtendidasInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSolicitudesAtendidasInput, Prisma.UserUncheckedCreateWithoutSolicitudesAtendidasInput>
+}
+
+export type UserUpsertWithoutSolicitudesAtendidasInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSolicitudesAtendidasInput, Prisma.UserUncheckedUpdateWithoutSolicitudesAtendidasInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSolicitudesAtendidasInput, Prisma.UserUncheckedCreateWithoutSolicitudesAtendidasInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSolicitudesAtendidasInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSolicitudesAtendidasInput, Prisma.UserUncheckedUpdateWithoutSolicitudesAtendidasInput>
+}
+
+export type UserUpdateWithoutSolicitudesAtendidasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUpdateManyWithoutUpdatedByNestedInput
+  propiedadesCreated?: Prisma.PropiedadUpdateManyWithoutCreatedByNestedInput
+  propiedadesUpdated?: Prisma.PropiedadUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUpdateManyWithoutSubidaPorNestedInput
+  chatsCreados?: Prisma.ChatUpdateManyWithoutCreatedByNestedInput
+  chats?: Prisma.ChatMiembroUpdateManyWithoutUserNestedInput
+  chatMensajes?: Prisma.ChatMensajeUpdateManyWithoutAutorNestedInput
+  chatLecturas?: Prisma.ChatLecturaUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSolicitudesAtendidasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accesoRevocadoEl?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  setPasswordTokens?: Prisma.SetPasswordTokenUncheckedUpdateManyWithoutUserNestedInput
+  clientesCreated?: Prisma.ClienteUncheckedUpdateManyWithoutCreatedByNestedInput
+  clientesUpdated?: Prisma.ClienteUncheckedUpdateManyWithoutUpdatedByNestedInput
+  propiedadesCreated?: Prisma.PropiedadUncheckedUpdateManyWithoutCreatedByNestedInput
+  propiedadesUpdated?: Prisma.PropiedadUncheckedUpdateManyWithoutUpdatedByNestedInput
+  media?: Prisma.MediaUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosCreated?: Prisma.ProductoUncheckedUpdateManyWithoutCreatedByNestedInput
+  productosUpdated?: Prisma.ProductoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  movimientosInventario?: Prisma.MovimientoInventarioUncheckedUpdateManyWithoutCreatedByNestedInput
+  cobrosRegistrados?: Prisma.CobroUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalCreated?: Prisma.PersonalUncheckedUpdateManyWithoutCreatedByNestedInput
+  personalUpdated?: Prisma.PersonalUncheckedUpdateManyWithoutUpdatedByNestedInput
+  gruposCreated?: Prisma.GrupoUncheckedUpdateManyWithoutCreatedByNestedInput
+  gruposUpdated?: Prisma.GrupoUncheckedUpdateManyWithoutUpdatedByNestedInput
+  suscripcionesCreated?: Prisma.SuscripcionUncheckedUpdateManyWithoutCreatedByNestedInput
+  suscripcionesUpdated?: Prisma.SuscripcionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCreated?: Prisma.VisitaUncheckedUpdateManyWithoutCreatedByNestedInput
+  visitasUpdated?: Prisma.VisitaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitasCompletadas?: Prisma.VisitaUncheckedUpdateManyWithoutCompletadaPorNestedInput
+  visitasEliminadas?: Prisma.VisitaUncheckedUpdateManyWithoutDeletedByNestedInput
+  tareasCreated?: Prisma.TareaUncheckedUpdateManyWithoutCreatedByNestedInput
+  tareasUpdated?: Prisma.TareaUncheckedUpdateManyWithoutUpdatedByNestedInput
+  tareasEliminadas?: Prisma.TareaUncheckedUpdateManyWithoutDeletedByNestedInput
+  visitaPersonalAdded?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutAddedByNestedInput
+  visitaPersonalRemoved?: Prisma.VisitaPersonalUncheckedUpdateManyWithoutRemovedByNestedInput
+  personal?: Prisma.PersonalUncheckedUpdateOneWithoutUserNestedInput
+  cliente?: Prisma.ClienteUncheckedUpdateOneWithoutUserNestedInput
+  pushTokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  informesGenerados?: Prisma.InformeUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informesActualizados?: Prisma.InformeUncheckedUpdateManyWithoutUpdatedByNestedInput
+  informeVersiones?: Prisma.InformeVersionUncheckedUpdateManyWithoutGeneratedByNestedInput
+  informeBorradoresCreados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutCreatedByNestedInput
+  informeBorradoresActualizados?: Prisma.InformeBorradorUncheckedUpdateManyWithoutUpdatedByNestedInput
+  clienteImports?: Prisma.ClienteImportUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesCreated?: Prisma.OrdenUncheckedUpdateManyWithoutCreatedByNestedInput
+  ordenesUpdated?: Prisma.OrdenUncheckedUpdateManyWithoutUpdatedByNestedInput
+  datosFacturacionCreated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutCreatedByNestedInput
+  datosFacturacionUpdated?: Prisma.DatoFacturacionUncheckedUpdateManyWithoutUpdatedByNestedInput
+  visitaMediaSubidas?: Prisma.VisitaMediaUncheckedUpdateManyWithoutSubidaPorNestedInput
+  chatsCreados?: Prisma.ChatUncheckedUpdateManyWithoutCreatedByNestedInput
+  chats?: Prisma.ChatMiembroUncheckedUpdateManyWithoutUserNestedInput
+  chatMensajes?: Prisma.ChatMensajeUncheckedUpdateManyWithoutAutorNestedInput
+  chatLecturas?: Prisma.ChatLecturaUncheckedUpdateManyWithoutUserNestedInput
+}
+
 
 /**
  * Count Type UserCountOutputType
@@ -13306,6 +13773,7 @@ export type UserCountOutputType = {
   accounts: number
   sessions: number
   setPasswordTokens: number
+  solicitudesAtendidas: number
   clientesCreated: number
   clientesUpdated: number
   propiedadesCreated: number
@@ -13353,6 +13821,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   setPasswordTokens?: boolean | UserCountOutputTypeCountSetPasswordTokensArgs
+  solicitudesAtendidas?: boolean | UserCountOutputTypeCountSolicitudesAtendidasArgs
   clientesCreated?: boolean | UserCountOutputTypeCountClientesCreatedArgs
   clientesUpdated?: boolean | UserCountOutputTypeCountClientesUpdatedArgs
   propiedadesCreated?: boolean | UserCountOutputTypeCountPropiedadesCreatedArgs
@@ -13425,6 +13894,13 @@ export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.E
  */
 export type UserCountOutputTypeCountSetPasswordTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SetPasswordTokenWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSolicitudesAtendidasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SolicitudClienteWhereInput
 }
 
 /**
@@ -13731,6 +14207,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   setPasswordTokens?: boolean | Prisma.User$setPasswordTokensArgs<ExtArgs>
+  solicitudesAtendidas?: boolean | Prisma.User$solicitudesAtendidasArgs<ExtArgs>
   clientesCreated?: boolean | Prisma.User$clientesCreatedArgs<ExtArgs>
   clientesUpdated?: boolean | Prisma.User$clientesUpdatedArgs<ExtArgs>
   propiedadesCreated?: boolean | Prisma.User$propiedadesCreatedArgs<ExtArgs>
@@ -13827,6 +14304,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   setPasswordTokens?: boolean | Prisma.User$setPasswordTokensArgs<ExtArgs>
+  solicitudesAtendidas?: boolean | Prisma.User$solicitudesAtendidasArgs<ExtArgs>
   clientesCreated?: boolean | Prisma.User$clientesCreatedArgs<ExtArgs>
   clientesUpdated?: boolean | Prisma.User$clientesUpdatedArgs<ExtArgs>
   propiedadesCreated?: boolean | Prisma.User$propiedadesCreatedArgs<ExtArgs>
@@ -13884,6 +14362,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      * Enlaces de invitación / restablecimiento pendientes o ya usados.
      */
     setPasswordTokens: Prisma.$SetPasswordTokenPayload<ExtArgs>[]
+    solicitudesAtendidas: Prisma.$SolicitudClientePayload<ExtArgs>[]
     clientesCreated: Prisma.$ClientePayload<ExtArgs>[]
     clientesUpdated: Prisma.$ClientePayload<ExtArgs>[]
     propiedadesCreated: Prisma.$PropiedadPayload<ExtArgs>[]
@@ -14364,6 +14843,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   setPasswordTokens<T extends Prisma.User$setPasswordTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$setPasswordTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SetPasswordTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  solicitudesAtendidas<T extends Prisma.User$solicitudesAtendidasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$solicitudesAtendidasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SolicitudClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   clientesCreated<T extends Prisma.User$clientesCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   clientesUpdated<T extends Prisma.User$clientesUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$clientesUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClientePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   propiedadesCreated<T extends Prisma.User$propiedadesCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$propiedadesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PropiedadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -14910,6 +15390,30 @@ export type User$setPasswordTokensArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.SetPasswordTokenScalarFieldEnum | Prisma.SetPasswordTokenScalarFieldEnum[]
+}
+
+/**
+ * User.solicitudesAtendidas
+ */
+export type User$solicitudesAtendidasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SolicitudCliente
+   */
+  select?: Prisma.SolicitudClienteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SolicitudCliente
+   */
+  omit?: Prisma.SolicitudClienteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SolicitudClienteInclude<ExtArgs> | null
+  where?: Prisma.SolicitudClienteWhereInput
+  orderBy?: Prisma.SolicitudClienteOrderByWithRelationInput | Prisma.SolicitudClienteOrderByWithRelationInput[]
+  cursor?: Prisma.SolicitudClienteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SolicitudClienteScalarFieldEnum | Prisma.SolicitudClienteScalarFieldEnum[]
 }
 
 /**

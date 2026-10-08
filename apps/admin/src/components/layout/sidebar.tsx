@@ -51,6 +51,8 @@ const mainItems: NavItem[] = [
     href: "/dashboard/clientes",
     icon: Users,
     roles: ["ADMIN", "STAFF"],
+    // Lo que los clientes piden desde la app: visitas y cotizaciones.
+    children: [{ label: "Solicitudes", href: "/dashboard/clientes/solicitudes" }],
   },
   {
     label: "Productos",

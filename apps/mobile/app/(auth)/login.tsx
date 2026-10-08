@@ -103,7 +103,7 @@ export default function LoginScreen() {
             onPress={() => router.push("/(auth)/solicitar-acceso")}
             disabled={loading}
           >
-            ¿Primera vez o olvidaste tu contraseña?
+            ¿Olvidaste tu contraseña?
           </Button>
 
           {error ? (
@@ -113,6 +113,22 @@ export default function LoginScreen() {
           ) : null}
         </View>
       </KeyboardAvoidingView>
+      {/* Al pie: quien todavía no es cliente mira el catálogo y pide una
+          visita sin crear nada. Crear cuenta llega después, con el teléfono
+          y un código por WhatsApp (el registro por correo está hecho pero
+          sin botón: la mayoría de los clientes no usa correo). */}
+      <View style={styles.footer}>
+        <Text variant="bodyMedium" style={styles.footerTexto}>
+          ¿No tienes una cuenta?
+        </Text>
+        <Button
+          mode="outlined"
+          onPress={() => router.push("/(invitado)")}
+          disabled={loading}
+        >
+          Seguir como invitado
+        </Button>
+      </View>
     </SafeAreaView>
   );
 }
@@ -126,5 +142,6 @@ const styles = StyleSheet.create({
   input: { marginBottom: 16 },
   button: { marginBottom: 8 },
   error: { textAlign: "center" },
-  footer: { padding: 24 },
+  footer: { paddingHorizontal: 24, paddingBottom: 16, gap: 8 },
+  footerTexto: { textAlign: "center", color: "#555" },
 });

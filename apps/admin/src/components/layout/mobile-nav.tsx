@@ -51,6 +51,7 @@ const navItems: NavItem[] = [
     href: "/dashboard/clientes",
     icon: Users,
     roles: ["ADMIN", "STAFF"],
+    children: [{ label: "Solicitudes", href: "/dashboard/clientes/solicitudes" }],
   },
   {
     label: "Productos",

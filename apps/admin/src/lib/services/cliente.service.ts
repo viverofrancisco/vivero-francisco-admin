@@ -56,6 +56,7 @@ export async function getClienteProfile(viewer: Viewer) {
       apellido: true,
       empresa: true,
       telefono: true,
+      email: true,
       propiedades: PROPIEDADES_DEL_CLIENTE,
     },
   });

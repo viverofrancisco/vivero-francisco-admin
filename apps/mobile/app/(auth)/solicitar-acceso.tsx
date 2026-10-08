@@ -49,7 +49,7 @@ export default function SolicitarAccesoScreen() {
       >
         <View style={styles.content}>
           <Text variant="headlineSmall" style={styles.title}>
-            Crear o recuperar contraseña
+            Recuperar tu contraseña
           </Text>
 
           {sent ? (
@@ -70,7 +70,7 @@ export default function SolicitarAccesoScreen() {
             <>
               <Text variant="bodyLarge" style={styles.subtitle}>
                 Ingresa tu teléfono o correo y te enviaremos un enlace a tu
-                correo para crear tu contraseña.
+                correo para elegir una contraseña nueva.
               </Text>
               {/* Esto es para el cliente: el enlace sale de su ficha. Quien
                   trabaja en el vivero no tiene por dónde recibirlo —el

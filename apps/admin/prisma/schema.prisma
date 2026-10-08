@@ -230,10 +230,11 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  accounts          Account[]
-  sessions          Session[]
+  accounts             Account[]
+  sessions             Session[]
   /// Enlaces de invitación / restablecimiento pendientes o ya usados.
-  setPasswordTokens SetPasswordToken[]
+  setPasswordTokens    SetPasswordToken[]
+  solicitudesAtendidas SolicitudCliente[] @relation("SolicitudAtendidaPor")
 
   // Audit relations
   clientesCreated               Cliente[]              @relation("ClienteCreatedBy")
@@ -322,6 +323,7 @@ model Cliente {
   informes          Informe[]
   informeBorradores InformeBorrador[]
   setPasswordTokens SetPasswordToken[]
+  solicitudes       SolicitudCliente[]
 }
 
 /// Un lugar donde se trabaja: la casa, la oficina, la villa de la playa.
@@ -383,11 +385,11 @@ model Propiedad {
   createdById String?
   updatedById String?
 
-  cliente   Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  sector    Sector?  @relation(fields: [sectorId], references: [id], onDelete: SetNull)
-  createdBy User?    @relation("PropiedadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy User?    @relation("PropiedadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  visitas   Visita[]
+  cliente       Cliente       @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  sector        Sector?       @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  createdBy     User?         @relation("PropiedadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy     User?         @relation("PropiedadUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  visitas       Visita[]
   /// Los planes de esta propiedad. `Restrict` en la FK: un plan que renueva
   /// solo no puede quedar apuntando a un lugar que ya no está.
   suscripciones Suscripcion[]
@@ -427,10 +429,11 @@ model Producto {
   facturaLineas FacturaLinea[]
 
   /// Un producto puede estar en varias: "Plantas" y "Interior" a la vez.
-  categorias ProductoCategoria[]
-  opciones   OpcionProducto[]
-  variantes  Variante[]
-  imagenes   ProductoImagen[]
+  categorias  ProductoCategoria[]
+  opciones    OpcionProducto[]
+  variantes   Variante[]
+  imagenes    ProductoImagen[]
+  solicitudes SolicitudCliente[]
 }
 
 /// Cómo se agrupa el catálogo: lo que sirve para encontrar un producto en una
@@ -729,15 +732,15 @@ model MovimientoInventario {
 /// Un contrato recurrente. Agrupa uno o más productos que se cobran juntos en
 /// el mismo ciclo: cada renovación genera una orden con una línea por ítem.
 model Suscripcion {
-  id           String         @id @default(cuid())
+  id                String         @id @default(cuid())
   /// Número corto para nombrarla: "Suscripción #12".
   ///
   /// Secuencia **propia**, independiente de la de órdenes. Que exista una orden
   /// #12 y una suscripción #12 a la vez está bien: son cosas distintas y en
   /// pantalla siempre van con su prefijo. Compartir una sola secuencia las
   /// dejaría salteadas —#3, #17, #40— sin ganar nada a cambio.
-  numero       Int            @unique @default(autoincrement())
-  clienteId    String
+  numero            Int            @unique @default(autoincrement())
+  clienteId         String
   /// De qué propiedad del cliente es el plan.
   ///
   /// Un plan es "mantener este jardín": el precio y las visitas son de un
@@ -746,13 +749,13 @@ model Suscripcion {
   /// plan de la propiedad donde pasan. Obligatoria porque un plan sin lugar no
   /// dice qué jardín cubre, y `Restrict` porque un plan que renueva solo no
   /// puede quedar apuntando a una propiedad que ya no está.
-  propiedadId  String
-  estado       EstadoServicio @default(ACTIVO)
+  propiedadId       String
+  estado            EstadoServicio @default(ACTIVO)
   /// El ciclo lo define la suscripción: el mismo trabajo puede ser mensual
   /// para un cliente y trimestral para otro.
-  periodicidad Periodicidad   @default(MENSUAL)
-  fechaInicio  DateTime       @db.Date
-  fechaFin     DateTime?      @db.Date
+  periodicidad      Periodicidad   @default(MENSUAL)
+  fechaInicio       DateTime       @db.Date
+  fechaFin          DateTime?      @db.Date
   /// Lo que se cobra **por período**, sin IVA. En una trimestral es el precio
   /// del trimestre.
   ///
@@ -761,13 +764,13 @@ model Suscripcion {
   /// ponerles precio a cada uno para llegar a la mensualidad que ya se había
   /// acordado con el cliente. Lo que se pacta es un número por un jardín, y
   /// eso es lo que se guarda.
-  precio            Decimal @db.Decimal(10, 2)
+  precio            Decimal        @db.Decimal(10, 2)
   /// Porcentaje. En Ecuador conviven 0% y 15%.
-  ivaTasa           Decimal @default(0) @db.Decimal(5, 2)
+  ivaTasa           Decimal        @default(0) @db.Decimal(5, 2)
   /// Visitas que incluye **por período de cobro**: en una trimestral son las
   /// del trimestre. Es informativo — no es un tope, se puede agendar de más.
   visitasPorPeriodo Int
-  notas        String?        @db.Text
+  notas             String?        @db.Text
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -808,8 +811,8 @@ model Personal {
   createdBy   User?   @relation("JardineroCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy   User?   @relation("JardineroUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  user    User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  grupos  GrupoMiembro[]
+  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  grupos    GrupoMiembro[]
   visitas   VisitaPersonal[]
   novedades VisitaNovedad[]
 }
@@ -891,13 +894,13 @@ model Tarea {
 }
 
 model Visita {
-  id                  String       @id @default(cuid())
+  id                  String         @id @default(cuid())
   /// Número corto para nombrarla: "Visita #34".
   ///
   /// Secuencia propia, como la de órdenes y suscripciones. En pantalla siempre
   /// va con su prefijo, así que que coexistan la orden #34 y la visita #34 no
   /// confunde a nadie.
-  numero              Int          @unique @default(autoincrement())
+  numero              Int            @unique @default(autoincrement())
   clienteId           String
   /// Dónde se hace. Obligatorio: una visita pasa en un lugar, y el lugar es lo
   /// que dice cuánto césped hay que cortar. Con una sola propiedad se elige
@@ -913,16 +916,16 @@ model Visita {
   /// En null, lo que se haga se cobra aparte. Es lo que permite hacerle a
   /// alguien una visita extra de algo que igual tiene contratado.
   suscripcionId       String?
-  fechaProgramada     DateTime     @db.Date
-  fechaRealizada      DateTime?    @db.Date
+  fechaProgramada     DateTime       @db.Date
+  fechaRealizada      DateTime?      @db.Date
   horaEntrada         String?
   horaSalida          String?
-  estado              EstadoVisita @default(PROGRAMADA)
+  estado              EstadoVisita   @default(PROGRAMADA)
   grupoId             String?
-  notas               String?      @db.Text
-  notasIncompleto     String?      @db.Text
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  notas               String?        @db.Text
+  notasIncompleto     String?        @db.Text
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
   deletedAt           DateTime?
   createdById         String?
   updatedById         String?
@@ -1127,7 +1130,6 @@ model VisitaPersonal {
 
   /**
    * Cuándo **llegó** la marca al servidor, y si el teléfono la hizo sin señal.
-   *
    * `entradaEl` es la hora de la marca. Con señal la pone el servidor; sin
    * señal no hay otra forma que el teléfono la anote al apretar el botón y la
    * mande cuando vuelva a tener red — si no, una entrada de las 8:05 en un
@@ -1658,11 +1660,11 @@ model InformeSeccion {
   orden       Int
 
   /// Empieza en una hoja nueva. Para separar bloques que no se leen juntos.
-  saltoDePagina Boolean @default(false)
+  saltoDePagina   Boolean           @default(false)
   /// Cuántas fotos por fila: 2 (grandes), 3 (por defecto) o 4 (chicas). Es la
   /// palanca de densidad — pocas fotos grandes llenan la hoja, muchas chicas la
   /// dejan corta.
-  fotosPorFila  Int     @default(3)
+  fotosPorFila    Int               @default(3)
   /// Hacia dónde se arriman las fotos en una fila incompleta. Solo se nota en
   /// la última fila de la sección: las llenas ocupan todo el ancho igual.
   fotosAlineacion AlineacionDeFotos @default(IZQUIERDA)
@@ -1948,17 +1950,17 @@ model OrdenLinea {
   /// trabajo puntual escrito a mano —el "ítem personalizado" de Shopify— con
   /// un código genérico impreso. Las líneas migradas desde los ítems viejos
   /// conservan su producto además del período: es historia.
-  productoId        String?
+  productoId    String?
   /// **Qué variante se vendió.** Todo producto tiene al menos una —un servicio
   /// y un bien sin opciones tienen exactamente una; con opciones hay una por
   /// combinación— así que con producto nunca falta: `ensureVariantes` la
   /// completa. Sin producto no hay variante. De acá salen el SKU impreso y el
   /// stock que baja.
-  varianteId        String?
+  varianteId    String?
   /// De qué plan es el período que cobra esta línea, si cobra uno.
-  suscripcionId     String?
-  periodoInicio     DateTime? @db.Date
-  periodoFin        DateTime? @db.Date
+  suscripcionId String?
+  periodoInicio DateTime? @db.Date
+  periodoFin    DateTime? @db.Date
 
   orden       Orden        @relation(fields: [ordenId], references: [id], onDelete: Cascade)
   /// `Restrict` y no `SetNull`: un producto que ya se vendió no se puede
@@ -2375,10 +2377,10 @@ model ChatLectura {
  * fotos de una calificación.
  */
 model ChatAdjunto {
-  id        String   @id @default(cuid())
-  mensajeId String
-  key       String
-  url       String
+  id            String   @id @default(cuid())
+  mensajeId     String
+  key           String
+  url           String
   /**
    * Cómo se llamaba el archivo cuando lo mandaron.
    * La clave en R2 es un uuid —tiene que serlo, dos fotos "IMG_0001.jpg" no
@@ -2386,11 +2388,11 @@ model ChatAdjunto {
    * cual encontrarla. Es lo único con lo que se puede buscar una imagen: el
    * nombre que le puso la cámara o quien la guardó.
    */
-  nombre    String?
+  nombre        String?
   /// `imagen`, `video` o `documento`. Lo decide el servidor por el tipo de contenido firmado.
-  tipo      String   @default("imagen")
+  tipo          String   @default("imagen")
   /// Bytes, para decir "1,7 MB" al lado de un documento. Las fotos no lo necesitan.
-  tamano    Int?
+  tamano        Int?
   /**
    * Las tres versiones de una foto —480, 1024 y 2048 px de lado mayor— que se
    * escriben después de mandarla (`lib/chats/variantes.ts`). `null` hasta que
@@ -2401,10 +2403,71 @@ model ChatAdjunto {
   urlEscritorio String?
   /// El cuadro del segundo uno de un video, a 480 px: lo que muestra la burbuja.
   posterUrl     String?
-  createdAt DateTime @default(now())
+  createdAt     DateTime @default(now())
 
   mensaje ChatMensaje @relation(fields: [mensajeId], references: [id], onDelete: Cascade)
 
   @@index([mensajeId])
   @@index([nombre])
+}
+
+/// Alguien que pidió crear su cuenta desde la app y todavía no puso el código
+/// que le llegó al correo.
+///
+/// Es una tabla aparte y no un `Cliente` a medio hacer: quien se registra con
+/// un correo ajeno, o se arrepiente antes de abrirlo, no debe dejar una ficha
+/// en la lista de clientes. La ficha nace recién cuando el código coincide,
+/// que es cuando se sabe que el correo es suyo. Una fila por correo: pedir el
+/// código otra vez la reescribe.
+model RegistroPendiente {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  nombre       String
+  apellido     String?
+  telefono     String?
+  /// La contraseña ya elegida, en bcrypt: el segundo paso solo trae el código.
+  passwordHash String
+  /// `sha256` del código de seis dígitos; el código en sí no se guarda.
+  codigoHash   String
+  expiresAt    DateTime
+  /// Códigos equivocados. Al quinto se descarta y hay que pedir otro: seis
+  /// dígitos son un millón de combinaciones, y sin tope se adivinan.
+  intentos     Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+/// Lo que un cliente le pide al vivero desde la app: una visita, una
+/// cotización de un producto o lo que haga falta, en sus palabras.
+///
+/// Les llega a los administradores como notificación en el momento, y queda
+/// acá para que no se pierda si nadie la vio: se marca atendida a mano, porque
+/// "ya lo llamé" es algo que solo sabe quien llamó.
+///
+/// La puede mandar también **alguien sin cuenta**, desde el modo invitado:
+/// entonces no hay `clienteId` y quien la pidió queda en los tres `contacto*`,
+/// que es lo que hace falta para llamarlo. Es un pedido, no un cliente: si se
+/// convierte en uno, lo carga el vivero.
+model SolicitudCliente {
+  id         String  @id @default(cuid())
+  numero     Int     @unique @default(autoincrement())
+  clienteId  String?
+  productoId String?
+  mensaje    String  @db.Text
+  direccion  String?
+
+  contactoNombre   String?
+  contactoTelefono String?
+  contactoEmail    String?
+
+  createdAt         DateTime  @default(now())
+  atendidaEl        DateTime?
+  atendidaPorId     String?
+  atendidaPorNombre String?
+
+  cliente     Cliente?  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  producto    Producto? @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  atendidaPor User?     @relation("SolicitudAtendidaPor", fields: [atendidaPorId], references: [id], onDelete: SetNull)
+
+  @@index([clienteId])
+  @@index([atendidaEl])
 }

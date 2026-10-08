@@ -111,7 +111,9 @@ export const ModelName = {
   ChatMiembro: 'ChatMiembro',
   ChatMensaje: 'ChatMensaje',
   ChatLectura: 'ChatLectura',
-  ChatAdjunto: 'ChatAdjunto'
+  ChatAdjunto: 'ChatAdjunto',
+  RegistroPendiente: 'RegistroPendiente',
+  SolicitudCliente: 'SolicitudCliente'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1105,6 +1107,41 @@ export const ChatAdjuntoScalarFieldEnum = {
 } as const
 
 export type ChatAdjuntoScalarFieldEnum = (typeof ChatAdjuntoScalarFieldEnum)[keyof typeof ChatAdjuntoScalarFieldEnum]
+
+
+export const RegistroPendienteScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  nombre: 'nombre',
+  apellido: 'apellido',
+  telefono: 'telefono',
+  passwordHash: 'passwordHash',
+  codigoHash: 'codigoHash',
+  expiresAt: 'expiresAt',
+  intentos: 'intentos',
+  createdAt: 'createdAt'
+} as const
+
+export type RegistroPendienteScalarFieldEnum = (typeof RegistroPendienteScalarFieldEnum)[keyof typeof RegistroPendienteScalarFieldEnum]
+
+
+export const SolicitudClienteScalarFieldEnum = {
+  id: 'id',
+  numero: 'numero',
+  clienteId: 'clienteId',
+  productoId: 'productoId',
+  mensaje: 'mensaje',
+  direccion: 'direccion',
+  contactoNombre: 'contactoNombre',
+  contactoTelefono: 'contactoTelefono',
+  contactoEmail: 'contactoEmail',
+  createdAt: 'createdAt',
+  atendidaEl: 'atendidaEl',
+  atendidaPorId: 'atendidaPorId',
+  atendidaPorNombre: 'atendidaPorNombre'
+} as const
+
+export type SolicitudClienteScalarFieldEnum = (typeof SolicitudClienteScalarFieldEnum)[keyof typeof SolicitudClienteScalarFieldEnum]
 
 
 export const SortOrder = {

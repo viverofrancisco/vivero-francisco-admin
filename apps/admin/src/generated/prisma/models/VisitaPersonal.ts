@@ -2170,7 +2170,6 @@ export type $VisitaPersonalPayload<ExtArgs extends runtime.Types.Extensions.Inte
     /**
      * *
      *    * Cuándo **llegó** la marca al servidor, y si el teléfono la hizo sin señal.
-     *    *
      *    * `entradaEl` es la hora de la marca. Con señal la pone el servidor; sin
      *    * señal no hay otra forma que el teléfono la anote al apretar el botón y la
      *    * mande cuando vuelva a tener red — si no, una entrada de las 8:05 en un
