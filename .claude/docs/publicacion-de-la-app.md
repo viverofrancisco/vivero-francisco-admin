@@ -161,7 +161,12 @@ de terminado el build (sin incidente en status.expo.dev), y un
 a Apple en un minuto; la automática se canceló con `submit:cancel` para
 que no corriera después como duplicado. `--no-wait` siempre: sin él el
 comando espera a Apple y se pasa de los diez minutos que aguanta una
-sesión. Un cambio solo
+sesión. **El envío espera a que termine cualquier build en curso** (el plan
+gratuito de EAS tiene un solo lugar): el 8-oct-2026 el envío del build 13
+de iOS se quedó *in queue* más de media hora, cancelado y reenviado
+incluido, mientras corría el build de Android, y salió solo apenas ese
+terminó. Antes de cancelar un envío atascado, mirar si hay un build
+corriendo (`eas build:list --status in-progress`). Un cambio solo
 de JS puede ir por EAS Update sin pasar por la tienda, pero eso pide
 `expo-updates`, que no está instalado; por ahora todo va por build.
 
