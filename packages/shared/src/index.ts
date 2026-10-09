@@ -11,3 +11,4 @@ export * from "./tarea";
 export * from "./chat";
 export * from "./informe";
 export * from "./registro";
+export * from "./contabilidad";

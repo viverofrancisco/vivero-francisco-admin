@@ -612,3 +612,47 @@ export type RegistroPendiente = Prisma.RegistroPendienteModel
  * convierte en uno, lo carga el vivero.
  */
 export type SolicitudCliente = Prisma.SolicitudClienteModel
+/**
+ * Model CuentaContable
+ * El plan de cuentas: un árbol de códigos punteados (`1`, `1.1`, `1.1.1`…).
+ * 
+ * Arrancó como copia del que el vivero llevaba en Contífico —584 cuentas en
+ * el modelo de la Superintendencia de Compañías—, y desde ahí se edita. El
+ * código de una cuenta hija empieza siempre por el de su padre, y **no se
+ * cambia** después de crearla: es lo que la ordena en el árbol y lo que la
+ * nombra en un asiento, y moverla reescribiría la historia de lo que ya se
+ * contabilizó en ella. El nombre sí se corrige.
+ * 
+ * La naturaleza (deudora o acreedora) no se guarda: sale del primer dígito
+ * (`naturalezaDeCuenta` en `@vivero/shared`), y guardarla sería una segunda
+ * respuesta a la misma pregunta.
+ */
+export type CuentaContable = Prisma.CuentaContableModel
+/**
+ * Model CentroCosto
+ * Una parte de la empresa: Administración, una sucursal, Mantenimiento,
+ * Obras.
+ * 
+ * Es la etiqueta que responde "¿cuánto cuesta y cuánto deja cada parte del
+ * vivero?". Son pocos y permanentes, a diferencia de las obras, que son
+ * muchas y terminan. En Contífico el vivero no tenía otra etiqueta que esta
+ * —su plan no incluye *proyectos*—, así que cargaba ahí las obras mezcladas
+ * con las áreas; acá son dos cosas: cada movimiento lleva su centro de costo
+ * y, si es de una obra, también la obra.
+ */
+export type CentroCosto = Prisma.CentroCostoModel
+/**
+ * Model Obra
+ * Un trabajo puntual: un jardín por diseñar, una urbanización que se
+ * siembra. Tiene principio y fin, y pertenece a un centro de costo (casi
+ * siempre *Obras*).
+ * 
+ * El vivero llevaba la contabilidad en Contífico **por obra**, con un centro
+ * de costo por cada una, y lo que quien lleva las cuentas quiere saber es
+ * cuánto dejó cada obra. Acá la obra es una entidad del portal —con su
+ * cliente, su propiedad, su presupuesto y sus fechas— para que las ventas, las
+ * compras y lo que sale del inventario se le puedan cargar y la rentabilidad
+ * se calcule sola. El cliente y la propiedad son opcionales: las obras
+ * importadas de Contífico llegan solo con su nombre.
+ */
+export type Obra = Prisma.ObraModel

@@ -208,3 +208,20 @@ export const FormaPago = {
 } as const
 
 export type FormaPago = (typeof FormaPago)[keyof typeof FormaPago]
+
+
+export const TipoCuentaContable = {
+  GRUPO: 'GRUPO',
+  DETALLE: 'DETALLE'
+} as const
+
+export type TipoCuentaContable = (typeof TipoCuentaContable)[keyof typeof TipoCuentaContable]
+
+
+export const EstadoObra = {
+  EN_CURSO: 'EN_CURSO',
+  TERMINADA: 'TERMINADA',
+  CANCELADA: 'CANCELADA'
+} as const
+
+export type EstadoObra = (typeof EstadoObra)[keyof typeof EstadoObra]

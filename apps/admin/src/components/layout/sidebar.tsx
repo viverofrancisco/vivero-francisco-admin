@@ -19,6 +19,8 @@ import {
   MapPin,
   ChevronDown,
   Receipt,
+  Construction,
+  Calculator,
   RefreshCw,
 } from "lucide-react";
 import type { UserRole } from "@/generated/prisma/client";
@@ -100,6 +102,19 @@ const mainItems: NavItem[] = [
     children: [
       { label: "Borradores", href: "/dashboard/ordenes/borradores" },
       { label: "Por cobrar", href: "/dashboard/ordenes/por-cobrar" },
+    ],
+  },
+  // Cada trabajo puntual: se le cargan ventas, compras y consumos, para
+  // saber cuánto deja.
+  { label: "Obras", href: "/dashboard/obras", icon: Construction, roles: ["ADMIN", "STAFF"] },
+  {
+    label: "Contabilidad",
+    href: "/dashboard/contabilidad",
+    icon: Calculator,
+    roles: ["ADMIN", "STAFF"],
+    children: [
+      { label: "Plan de cuentas", href: "/dashboard/contabilidad/plan-de-cuentas" },
+      { label: "Centros de costo", href: "/dashboard/contabilidad/centros-costo" },
     ],
   },
   { label: "Personal", href: "/dashboard/personal", icon: UserCheck, roles: ["ADMIN", "STAFF"] },

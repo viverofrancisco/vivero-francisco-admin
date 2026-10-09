@@ -235,6 +235,9 @@ model User {
   /// Enlaces de invitación / restablecimiento pendientes o ya usados.
   setPasswordTokens    SetPasswordToken[]
   solicitudesAtendidas SolicitudCliente[] @relation("SolicitudAtendidaPor")
+  cuentasCreadas       CuentaContable[]   @relation("CuentaCreatedBy")
+  obrasCreadas         Obra[]             @relation("ObraCreatedBy")
+  obrasActualizadas    Obra[]             @relation("ObraUpdatedBy")
 
   // Audit relations
   clientesCreated               Cliente[]              @relation("ClienteCreatedBy")
@@ -324,6 +327,7 @@ model Cliente {
   informeBorradores InformeBorrador[]
   setPasswordTokens SetPasswordToken[]
   solicitudes       SolicitudCliente[]
+  obras             Obra[]
 }
 
 /// Un lugar donde se trabaja: la casa, la oficina, la villa de la playa.
@@ -393,6 +397,7 @@ model Propiedad {
   /// Los planes de esta propiedad. `Restrict` en la FK: un plan que renueva
   /// solo no puede quedar apuntando a un lugar que ya no está.
   suscripciones Suscripcion[]
+  obras         Obra[]
 
   @@index([clienteId])
   @@index([sectorId])
@@ -2470,4 +2475,138 @@ model SolicitudCliente {
 
   @@index([clienteId])
   @@index([atendidaEl])
+}
+
+// ──────────────────────────────────────────────
+// Contabilidad
+// ──────────────────────────────────────────────
+
+/// Si una cuenta agrupa a otras o recibe movimientos.
+///
+/// Las de grupo solo suman lo de abajo; los asientos van siempre a una de
+/// detalle. Así el balance se arma sumando hojas y ninguna cifra se cuenta dos
+/// veces.
+enum TipoCuentaContable {
+  GRUPO
+  DETALLE
+}
+
+/// El plan de cuentas: un árbol de códigos punteados (`1`, `1.1`, `1.1.1`…).
+///
+/// Arrancó como copia del que el vivero llevaba en Contífico —584 cuentas en
+/// el modelo de la Superintendencia de Compañías—, y desde ahí se edita. El
+/// código de una cuenta hija empieza siempre por el de su padre, y **no se
+/// cambia** después de crearla: es lo que la ordena en el árbol y lo que la
+/// nombra en un asiento, y moverla reescribiría la historia de lo que ya se
+/// contabilizó en ella. El nombre sí se corrige.
+///
+/// La naturaleza (deudora o acreedora) no se guarda: sale del primer dígito
+/// (`naturalezaDeCuenta` en `@vivero/shared`), y guardarla sería una segunda
+/// respuesta a la misma pregunta.
+model CuentaContable {
+  id          String             @id @default(cuid())
+  codigo      String             @unique
+  nombre      String
+  tipo        TipoCuentaContable
+  padreId     String?
+  /// Una inactiva no se ofrece para nuevos movimientos, pero sigue en el árbol
+  /// y en los reportes de lo que ya tiene. Es lo que se hace con una cuenta que
+  /// se dejó de usar: borrarla dejaría huérfanos sus movimientos.
+  activa      Boolean            @default(true)
+  /// El id de la cuenta en Contífico, de la importación. Hace que volver a
+  /// importar actualice en vez de duplicar.
+  contificoId String?            @unique
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  padre     CuentaContable?  @relation("CuentaPadre", fields: [padreId], references: [id], onDelete: Restrict)
+  hijas     CuentaContable[] @relation("CuentaPadre")
+  createdBy User?            @relation("CuentaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([padreId])
+}
+
+/// Una parte de la empresa: Administración, una sucursal, Mantenimiento,
+/// Obras.
+///
+/// Es la etiqueta que responde "¿cuánto cuesta y cuánto deja cada parte del
+/// vivero?". Son pocos y permanentes, a diferencia de las obras, que son
+/// muchas y terminan. En Contífico el vivero no tenía otra etiqueta que esta
+/// —su plan no incluye *proyectos*—, así que cargaba ahí las obras mezcladas
+/// con las áreas; acá son dos cosas: cada movimiento lleva su centro de costo
+/// y, si es de una obra, también la obra.
+model CentroCosto {
+  id          String  @id @default(cuid())
+  nombre      String  @unique
+  /// Para ordenar la lista a mano: Administración primero, por ejemplo.
+  orden       Int     @default(0)
+  /// Uno inactivo no se ofrece para nuevos movimientos, pero sigue en los
+  /// reportes de lo que ya tiene.
+  activo      Boolean @default(true)
+  /// El id del centro de costo en Contífico, para las áreas que vinieron de
+  /// allá (Mantenimiento, las sucursales).
+  contificoId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  obras Obra[]
+}
+
+enum EstadoObra {
+  EN_CURSO
+  TERMINADA
+  CANCELADA
+}
+
+/// Un trabajo puntual: un jardín por diseñar, una urbanización que se
+/// siembra. Tiene principio y fin, y pertenece a un centro de costo (casi
+/// siempre *Obras*).
+///
+/// El vivero llevaba la contabilidad en Contífico **por obra**, con un centro
+/// de costo por cada una, y lo que quien lleva las cuentas quiere saber es
+/// cuánto dejó cada obra. Acá la obra es una entidad del portal —con su
+/// cliente, su propiedad, su presupuesto y sus fechas— para que las ventas, las
+/// compras y lo que sale del inventario se le puedan cargar y la rentabilidad
+/// se calcule sola. El cliente y la propiedad son opcionales: las obras
+/// importadas de Contífico llegan solo con su nombre.
+model Obra {
+  id              String     @id @default(cuid())
+  numero          Int        @unique @default(autoincrement())
+  nombre          String
+  /// A qué parte de la empresa pertenece. Casi siempre *Obras*; opcional
+  /// para no bloquear el alta de una obra mientras se decide.
+  centroCostoId   String?
+  estado          EstadoObra @default(EN_CURSO)
+  clienteId       String?
+  propiedadId     String?
+  /// Sin IVA: es lo que se piensa cobrar, para comparar con lo que costó.
+  presupuesto     Decimal?   @db.Decimal(12, 2)
+  fechaInicio     DateTime?  @db.Date
+  fechaFin        DateTime?  @db.Date
+  notas           String?    @db.Text
+  /// El código del centro de costo en Contífico (`1.27`), de la importación.
+  contificoCodigo String?
+  contificoId     String?    @unique
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  /// Archivar es soft: los asientos que la citen tienen que seguir diciendo
+  /// de qué obra eran.
+  deletedAt       DateTime?
+  createdById     String?
+  updatedById     String?
+  updatedByNombre String?
+
+  cliente     Cliente?     @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  propiedad   Propiedad?   @relation(fields: [propiedadId], references: [id], onDelete: SetNull)
+  centroCosto CentroCosto? @relation(fields: [centroCostoId], references: [id], onDelete: Restrict)
+  createdBy   User?        @relation("ObraCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?        @relation("ObraUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([clienteId])
+  @@index([estado])
+  @@index([centroCostoId])
 }

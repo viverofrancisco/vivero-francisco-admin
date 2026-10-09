@@ -823,6 +823,40 @@ export type EnumFormaPagoWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel>
 }
 
+export type EnumTipoCuentaContableFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoCuentaContable | Prisma.EnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoCuentaContableFilter<$PrismaModel> | $Enums.TipoCuentaContable
+}
+
+export type EnumTipoCuentaContableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoCuentaContable | Prisma.EnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoCuentaContableWithAggregatesFilter<$PrismaModel> | $Enums.TipoCuentaContable
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTipoCuentaContableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTipoCuentaContableFilter<$PrismaModel>
+}
+
+export type EnumEstadoObraFilter<$PrismaModel = never> = {
+  equals?: $Enums.EstadoObra | Prisma.EnumEstadoObraFieldRefInput<$PrismaModel>
+  in?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEstadoObraFilter<$PrismaModel> | $Enums.EstadoObra
+}
+
+export type EnumEstadoObraWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EstadoObra | Prisma.EnumEstadoObraFieldRefInput<$PrismaModel>
+  in?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEstadoObraWithAggregatesFilter<$PrismaModel> | $Enums.EstadoObra
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEstadoObraFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEstadoObraFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1578,6 +1612,40 @@ export type NestedEnumFormaPagoWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFormaPagoFilter<$PrismaModel>
+}
+
+export type NestedEnumTipoCuentaContableFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoCuentaContable | Prisma.EnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoCuentaContableFilter<$PrismaModel> | $Enums.TipoCuentaContable
+}
+
+export type NestedEnumTipoCuentaContableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoCuentaContable | Prisma.EnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoCuentaContable[] | Prisma.ListEnumTipoCuentaContableFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoCuentaContableWithAggregatesFilter<$PrismaModel> | $Enums.TipoCuentaContable
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTipoCuentaContableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTipoCuentaContableFilter<$PrismaModel>
+}
+
+export type NestedEnumEstadoObraFilter<$PrismaModel = never> = {
+  equals?: $Enums.EstadoObra | Prisma.EnumEstadoObraFieldRefInput<$PrismaModel>
+  in?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEstadoObraFilter<$PrismaModel> | $Enums.EstadoObra
+}
+
+export type NestedEnumEstadoObraWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EstadoObra | Prisma.EnumEstadoObraFieldRefInput<$PrismaModel>
+  in?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EstadoObra[] | Prisma.ListEnumEstadoObraFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEstadoObraWithAggregatesFilter<$PrismaModel> | $Enums.EstadoObra
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEstadoObraFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEstadoObraFilter<$PrismaModel>
 }
 
 

@@ -113,7 +113,10 @@ export const ModelName = {
   ChatLectura: 'ChatLectura',
   ChatAdjunto: 'ChatAdjunto',
   RegistroPendiente: 'RegistroPendiente',
-  SolicitudCliente: 'SolicitudCliente'
+  SolicitudCliente: 'SolicitudCliente',
+  CuentaContable: 'CuentaContable',
+  CentroCosto: 'CentroCosto',
+  Obra: 'Obra'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1142,6 +1145,60 @@ export const SolicitudClienteScalarFieldEnum = {
 } as const
 
 export type SolicitudClienteScalarFieldEnum = (typeof SolicitudClienteScalarFieldEnum)[keyof typeof SolicitudClienteScalarFieldEnum]
+
+
+export const CuentaContableScalarFieldEnum = {
+  id: 'id',
+  codigo: 'codigo',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  padreId: 'padreId',
+  activa: 'activa',
+  contificoId: 'contificoId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  createdById: 'createdById'
+} as const
+
+export type CuentaContableScalarFieldEnum = (typeof CuentaContableScalarFieldEnum)[keyof typeof CuentaContableScalarFieldEnum]
+
+
+export const CentroCostoScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  orden: 'orden',
+  activo: 'activo',
+  contificoId: 'contificoId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CentroCostoScalarFieldEnum = (typeof CentroCostoScalarFieldEnum)[keyof typeof CentroCostoScalarFieldEnum]
+
+
+export const ObraScalarFieldEnum = {
+  id: 'id',
+  numero: 'numero',
+  nombre: 'nombre',
+  centroCostoId: 'centroCostoId',
+  estado: 'estado',
+  clienteId: 'clienteId',
+  propiedadId: 'propiedadId',
+  presupuesto: 'presupuesto',
+  fechaInicio: 'fechaInicio',
+  fechaFin: 'fechaFin',
+  notas: 'notas',
+  contificoCodigo: 'contificoCodigo',
+  contificoId: 'contificoId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  updatedByNombre: 'updatedByNombre'
+} as const
+
+export type ObraScalarFieldEnum = (typeof ObraScalarFieldEnum)[keyof typeof ObraScalarFieldEnum]
 
 
 export const SortOrder = {

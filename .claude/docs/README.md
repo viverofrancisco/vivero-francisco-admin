@@ -24,3 +24,7 @@ aquí para los detalles.
   con EAS: identidad (bundle id `com.viverofrancisco.app`), los íconos generados del
   logo, las variables que EAS necesita (la URL del portal y las claves de Maps), y los
   pasos de iOS y de Android la primera vez.
+- [contabilidad.md](./contabilidad.md) — la contabilidad que reemplaza a Contífico, por
+  fases: el plan de cuentas (árbol, reglas, importado del vivero), los centros de
+  costo y las obras como dos etiquetas, por qué el inventario tiene que pasar por la obra, y cómo
+  importar desde Contífico.
